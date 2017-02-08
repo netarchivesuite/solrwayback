@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
+
+  <display-name>dk.kb.netarchivesuite.solrwayback.service</display-name>
+  
+  <listener>  
+      <listener-class>dk.kb.netarchivesuite.solrwayback.listeners.Log4JContextListener</listener-class>
+   </listener>
+  
+   <listener>
+      <listener-class>dk.kb.netarchivesuite.solrwayback.listeners.InitializationContextListener</listener-class>
+   </listener>
+  
+  <servlet>
+    <servlet-name>SolrWayback Service</servlet-name>
+    <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+    <init-param>
+      <param-name>com.sun.jersey.config.property.packages</param-name>
+      <param-value>dk.kb.netarchivesuite.solrwayback.service</param-value>
+    </init-param>
+    <init-param>
+      <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+      <param-value>true</param-value>
+    </init-param> 
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+ 
+  <servlet-mapping>
+    <servlet-name>SolrWayback Service</servlet-name>
+    <url-pattern>/services/*</url-pattern>
+  </servlet-mapping>
+
+
+        <!-- Define a JSP file to respond to /wayback/* URL's -->
+        <servlet>
+                <servlet-name>wayback</servlet-name>
+                <jsp-file>/wayback_forward.jsp</jsp-file>
+        </servlet>
+
+        <servlet-mapping>
+                <servlet-name>wayback</servlet-name>
+                <url-pattern>/wayback/*</url-pattern>
+        </servlet-mapping> 
+
+
+ <servlet>
+    <servlet-name>searchServlet</servlet-name>
+    <servlet-class>dk.kb.netarchivesuite.solrwayback.servlets.SearchServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>searchServlet</servlet-name>
+    <url-pattern>/searchServlet</url-pattern>
+  </servlet-mapping>
+
+
+ <servlet>
+    <servlet-name>findimagesServlet</servlet-name>
+    <servlet-class>dk.kb.netarchivesuite.solrwayback.servlets.FindImagesServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>findimagesServlet</servlet-name>
+    <url-pattern>/findimagesServlet</url-pattern>
+  </servlet-mapping>
+
+ <servlet>
+     <servlet-name>CommonsFileUploadServlet</servlet-name>
+     <servlet-class>dk.kb.netarchivesuite.solrwayback.servlets.CommonsFileUploadServlet</servlet-class>
+   </servlet>
+   
+   <servlet-mapping>
+     <servlet-name>CommonsFileUploadServlet</servlet-name>
+     <url-pattern>/Commonsfileuploadservlet</url-pattern>
+   </servlet-mapping>
+
+
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+
+
+
+</web-app>
