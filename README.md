@@ -1,9 +1,11 @@
 # SolrWayback
 
 SolrWayback is web-application for browsing historical harvested ARC/WARC files similar
-to the Internet Archive Wayback Machine. The Solrwayback depend on a Solr server where
-Arc/Warc files has been indexed using the British Library WARC-Indexer. The netsearch application is just a simple book keeping application on top of the WARC-Indexer that also
-controls the indexing.
+to the Internet Archive Wayback Machine. The SolrWayback depends on a Solr server where
+Arc/Warc files have been indexed using the British Library WARC-Indexer. The netsearch application is just a simple book keeping application on top of the WARC-Indexer that also
+controls the indexing. Unlike the Wayback Machine the SolrWayback does not need the
+CDX-server with meta data for the harvest. It only uses the Solr server and the raw
+Arc/Warc files.
 
  Warc-indexer: https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer<br>
  Netsearch(Archon/Arctika): https://github.com/netarchivesuite/netsearch<br>
