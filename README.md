@@ -12,6 +12,14 @@ ARC/WARC files has been index using the British Library WARC-Indexer. (https://g
 Solrwayback showing an archived webpage with an overlay showing statistics for the page and previous/next harvested version link.
 </p>
 
+Solrwayback comes with additional features:
+* Image search similar to google images
+* Link graphs showing how links (ingoing/outgoing) for domains using the D3 javascript framework.
+* Raw download of any harvested resource from the binary Arc/Warc file.
+
+
+
+
 
 Servlet that extracts resources from Warc/Arc-files containing harvested web-pages.
 It can be used to enrich a web-search(Solr etc.) result in warc/arc files with images or direct download link of any mime type in the Warc/Arc-files.
