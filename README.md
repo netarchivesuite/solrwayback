@@ -1,4 +1,11 @@
 # SolrWayback
+
+
+ <p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_demo.png?raw=true" width="600" height="400"/>
+</p>
+
+
 Servlet that extracts resources from Warc/Arc-files containing harvested web-pages.
 It can be used to enrich a web-search(Solr etc.) result in warc/arc files with images or direct download link of any mime type in the Warc/Arc-files.
 A Simple front-end is included to demostrate image search from a solr-server where arc-files has been index using 
