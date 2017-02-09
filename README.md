@@ -20,7 +20,7 @@ Solrwayback showing an archived webpage with an overlay statistics and further n
 
 SolrWayback comes with additional features:
 * Image search similar to google images
-* Link graphs showing how links (ingoing/outgoing) for domains using the D3 javascript framework.
+* Link graph showing links (ingoing/outgoing) for domains using the D3 javascript framework.
 * Raw download of any harvested resource from the binary Arc/Warc file.
 
 
