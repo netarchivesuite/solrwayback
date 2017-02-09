@@ -1,8 +1,15 @@
 # SolrWayback
 
+Solrwayback is web-application for browser historical harvested ARC/WARC files similar
+to the Internet Archive Wayback Machine. The Solrwayback depend on a Solr server where
+ARC/WARC files has been index using the British Library WARC-Indexer. (https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer).
+ 
 
- <p align="center"> 
+<p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_demo.png?raw=true" width="600" height="400"/>
+</p>
+<p align="center">
+Solrwayback showing an archived webpage with an overlay showing statistics for the page and previous/next harvested version link.
 </p>
 
 
