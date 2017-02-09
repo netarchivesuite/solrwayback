@@ -1,9 +1,11 @@
-A brief explanation behind the image search.
+##A brief explanation behind the image search.
 
 The SolrWayback web application comes with a simple frontend where you can test
 the image search feature.
 
-
+##Demo
+See a live demo  of the image search running on a 8 billion docs index (280MB avi)
+https://dl.dropboxusercontent.com/u/51314887/WebarchivemimetypeServlet_demo.avi  
 
 Worklow:
 A search text is passed to Solr and return a list of documents:

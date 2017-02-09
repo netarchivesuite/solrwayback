@@ -40,7 +40,7 @@ SolrWayback: http://server/solrwayback/services/wayback?waybackdata=201405151408
 If using a Solr search based web archive such as Shine (https://github.com/netarchivesuite/shine) or Blacklight (https://github.com/projectblacklight/blacklight)
 you only need to change to property pointing from the wayback server to the SolrWayback server.
 
-The Solrwayback web application comes with a simple front-end for testing Solr-search and image search.
+The SolrWayback web application comes with a simple front-end for testing Solr-search and image search.
  
  
  
@@ -63,30 +63,18 @@ The Solrwayback web application comes with a simple front-end for testing Solr-s
 Developed by Thomas Egense (thomas.egense@gmail.com) 
 Feel free to send emails with comments and questions.
 
-##Demo
-See a live demo  of the application running on a 8 billion docs index (280MB avi)
-https://dl.dropboxusercontent.com/u/51314887/WebarchivemimetypeServlet_demo.avi    
 
-
-## How Image search works
-
-##Solr 
-All entries from the arc/warc files are indexed as separate documents using the WARCindexer and using the lucene schema required by the WARCIndexer.
-A document is solr can be html, image, video, audio, js etc. (content_type_norm)
+##Warc-indexer/Solr 
+All entries from the arc/warc files are indexed as separate documents using the WARC-Indexer and using the lucene schema required by the WARCIndexer.
+A document is Solr can be html, image, video, audio, js etc. (content_type_norm)
 All document contains a field with arcfilename and offset, this is so  the binary from
 the arc/warc file can be loaded again - not through solr but by IO read on the disk where the 
 arc/warc file is stored.
 
        
-##Future improvements:
-Perfomance: When load and parse the html to find images, this is just done sequential. It can be made multithread (Executor)
-and load/parse several arc/warc files simultaneous. <-- This is is now implemented . 20 Threads is default
+##Future improvements comming your way
+Further work on the link domain graph with date ranges as options also.
 
-Ranking:Only extract the images near where the search-term is found. This will probably give more
-relevant images when there are many images on a page.
-
-When indexing a html-page we can at index time find the images and add these to a new multivalued field
-in the index. This will improve performance by many factors since the single hardest operation is loading and parsing all the HTML-pages from the binaries. But it will make it difficult (impossible?) to improve ranking by finding images that are close to the matching terms in the document. 
 
 
  
