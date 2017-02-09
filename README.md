@@ -59,12 +59,12 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
  * Deploy the solrwayback.war file in a web-container.
  * For the API open:  localhost:8080/solrwayback
  * Copy resources/properties/solrwayback.properties to user/home/ folder for the J2EE server
+ * Modify the 2 properties in solrwayback.properties
  * Optional: configure the log4j using the files in resources/tomcat
 
 ## Contact
 Developed by Thomas Egense (thomas.egense@gmail.com) 
 Feel free to send emails with comments and questions.
-
 
 ##Warc-indexer/Solr 
 All entries from the arc/warc files are indexed as separate documents using the WARC-Indexer and using the lucene schema required by the WARCIndexer.
@@ -72,11 +72,6 @@ A document is Solr can be html, image, video, audio, js etc. (content_type_norm)
 All document contains a field with arcfilename and offset, this is so  the binary from
 the arc/warc file can be loaded again - not through solr but by IO read on the disk where the 
 arc/warc file is stored.
-
-       
+      
 ##Future improvements coming your way
 Further work on the link domain graph with date ranges as options also.
-
-
-
- 
