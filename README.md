@@ -1,6 +1,6 @@
 # SolrWayback
 
-Solrwayback is web-application for browsing historical harvested ARC/WARC files similar
+SolrWayback is web-application for browsing historical harvested ARC/WARC files similar
 to the Internet Archive Wayback Machine. The Solrwayback depend on a Solr server where
 ARC/WARC files has been index using the British Library WARC-Indexer. (https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer). 
  
@@ -26,8 +26,8 @@ Interactive domain link graph
 </p>
 
 The API for linking to and browsing archived webpages is the same as for Internet Archive:
-Internet Archive:https://web.archive.org/web/20080213093319/http://www.statsbiblioteket.dk/
-SolrWayback: http://server/solrwayback/services/wayback?waybackdata=20140515140841/http://statsbiblioteket.dk/
+Internet Archive:https://web.archive.org/web/20080213093319/http://www.statsbiblioteket.dk/ <br>
+SolrWayback: http://server/solrwayback/services/wayback?waybackdata=20140515140841/http://statsbiblioteket.dk/ <br>
 
 If using a Solr search based web archive such as Shine (https://github.com/ukwa/shine)
 you only need to change to property pointing from the wayback server to the SolrWayback server.
