@@ -1,0 +1,46 @@
+A brief explanation behind the image search.
+
+The SolrWayback web application comes with a simple frontend where you can test
+the image search feature.
+
+
+
+Worklow:
+A search text is passed to Solr and return a list of documents:
+doc1
+doc2
+...
+docn
+
+For each document:
+ * If it is an HTML page, load it from the arc-file(on disk) and parse the HTML to find
+   images. For each image find the image-document is solr (temporally near) and collect these image documents.
+ * If the document already is an image just add it to the collection (and no need to read the arc/warc file)
+ 
+Since the images have a hash we only collect the same image once.
+Now return a list of ArcFileEntries (for the images) to the frontend.
+The front-end renders all the images by getting the image from the servlet with arcfile and offset as
+queryparams(and scale parameters). The servlet reads the image binaries from the arc/warc and scale the image and return it.
+
+=== Visualized: <br>
+So from the original resultset from solr, we generate a list of images for each document <br>
+doc1 <br>
+   image1 <br>
+   image2 <br>
+   ...<br>
+doc2<br>
+   image1<br>
+   image2<br>
+   ...<br>
+doc3<br>
+    image1  (if it is an image there is also only one)      <br>
+...<br>
+docn:<br>
+    image1<br>
+    ...<br>
+<br>
+The method now returns all the images meta data (ArcEntryDescriptor) that has file+offset<br>
+
+The frontend can now load all the images using the REST API that loads the binary from
+the arc/warc-files.
+    
