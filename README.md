@@ -74,7 +74,7 @@ the arc/warc file can be loaded again - not through solr but by IO read on the d
 arc/warc file is stored.
 
        
-##Future improvements comming your way
+##Future improvements coming your way
 Further work on the link domain graph with date ranges as options also.
 
 
