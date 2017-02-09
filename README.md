@@ -18,6 +18,12 @@ Solrwayback comes with additional features:
 * Raw download of any harvested resource from the binary Arc/Warc file.
 
 
+<p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_linkgraph.png?raw=true" width="600" height="400"/>
+</p>
+<p align="center">
+Interactive domains link graph
+</p>
 
 
 
