@@ -2,7 +2,11 @@
 
 SolrWayback is web-application for browsing historical harvested ARC/WARC files similar
 to the Internet Archive Wayback Machine. The Solrwayback depend on a Solr server where
-ARC/WARC files has been index using the British Library WARC-Indexer. (https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer). 
+Arc/Warc files has been indexed using the British Library WARC-Indexer. The netsearch application is just a simple book keeping application on top of the WARC-Indexer that also
+controls the indexing.
+
+ Warc-indexer: https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer<br>
+ Netsearch(Archon/Arctika): https://github.com/netarchivesuite/netsearch<br>
  
 
 <p align="center"> 
@@ -25,18 +29,19 @@ Solrwayback comes with additional features:
 Interactive domain link graph
 </p>
 
-The API for linking to and browsing archived webpages is the same as for Internet Archive:
+The API for linking to and browsing archived webpages is the same as for Internet Archive:<br>
 Internet Archive:https://web.archive.org/web/20080213093319/http://www.statsbiblioteket.dk/ <br>
 SolrWayback: http://server/solrwayback/services/wayback?waybackdata=20140515140841/http://statsbiblioteket.dk/ <br>
 
-If using a Solr search based web archive such as Shine (https://github.com/ukwa/shine)
+If using a Solr search based web archive such as Shine (https://github.com/ukwa/shine) or Blacklight (https://github.com/projectblacklight/blacklight)
 you only need to change to property pointing from the wayback server to the SolrWayback server.
 
   
-
- 
-
-
+  
+  
+  
+  
+  
 Servlet that extracts resources from Warc/Arc-files containing harvested web-pages.
 It can be used to enrich a web-search(Solr etc.) result in warc/arc files with images or direct download link of any mime type in the Warc/Arc-files.
 A Simple front-end is included to demostrate image search from a solr-server where arc-files has been index using 
