@@ -56,11 +56,11 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
  
 ## Build and usage
  * Build the application with: mvn package
- * Deploy the solrwayback.war file in a web-container.
- * For the API open:  localhost:8080/solrwayback
+ * Deploy the solrwayback.war file in a web-container. 
  * Copy resources/properties/solrwayback.properties to user/home/ folder for the J2EE server
  * Modify the 2 properties in solrwayback.properties
  * Optional: configure the log4j using the files in resources/tomcat
+ * For the API and simple frontend demo open: localhost:8080/solrwayback
 
 ## Contact
 Developed by Thomas Egense (thomas.egense@gmail.com) 
