@@ -154,8 +154,20 @@ public class Facade {
     
     
     
-    public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing) throws Exception{
-      List<FacetCount>  facets = SolrClient.getInstance().getDomainFacets(domain,facetLimit, ingoing);
+    public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing , String dateStart, String dateEnd) throws Exception{
+      
+      //Default dates
+      Date start = new Date(System.currentTimeMillis()-25L*365*86400*1000L); // 25 years ago
+      Date end = new Date();
+      
+      if (dateStart != null){
+        start = new Date(Long.valueOf(dateStart));
+      }
+      if (dateEnd != null){
+        end = new Date(Long.valueOf(dateEnd));
+      }
+      
+      List<FacetCount>  facets = SolrClient.getInstance().getDomainFacets(domain,facetLimit, ingoing, start, end);
       log.info("Creating graph for domain:"+domain +" ingoing:"+ingoing +" and facetLimit:"+facetLimit);
       
       HashMap<String, List<FacetCount>> domainFacetMap = new HashMap<String, List<FacetCount>>();
@@ -165,7 +177,7 @@ public class Facade {
       //Do all queries
       for (FacetCount f : facets){
         String facetDomain =f.getValue();                  
-        List<FacetCount>  fc = SolrClient.getInstance().getDomainFacets(facetDomain,facetLimit, ingoing);
+        List<FacetCount>  fc = SolrClient.getInstance().getDomainFacets(facetDomain,facetLimit, ingoing,start,end);
         domainFacetMap.put(f.getValue(),fc);        
       }
       

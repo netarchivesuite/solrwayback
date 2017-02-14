@@ -65,13 +65,13 @@ public class SolrClient {
   /*
    * Delegate 
    */
-  public  List<FacetCount> getDomainFacets(String domain, int facetLimit, boolean ingoing) throws Exception{
+  public  List<FacetCount> getDomainFacets(String domain, int facetLimit, boolean ingoing, Date crawlDateStart, Date crawlDateEnd) throws Exception{
     
     if (ingoing){
-      return getDomainFacetsIngoing(domain, facetLimit);
+      return getDomainFacetsIngoing(domain, facetLimit, crawlDateStart,crawlDateEnd);
     }
     else{
-      return getDomainFacetsOutgoing(domain, facetLimit);
+      return getDomainFacetsOutgoing(domain, facetLimit, crawlDateStart,crawlDateEnd);
     }       
   }
   
@@ -79,16 +79,21 @@ public class SolrClient {
    * Get other domains linking to this domain
    * 
    */
-  public  List<FacetCount> getDomainFacetsIngoing(String domain, int facetLimit) throws Exception{
+  public  List<FacetCount> getDomainFacetsIngoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception{
 
+    
+    String dateStart= getSolrTimeStamp(crawlDateStart);
+    String dateEnd = getSolrTimeStamp(crawlDateEnd);
+    
+    
     SolrQuery solrQuery = new SolrQuery();
-    solrQuery.setQuery("links_domains:\""+domain+"\" AND -domain:\""+domain+"\"" );
-
+    solrQuery.setQuery("links_domains:\""+domain+"\" AND -domain:\""+domain+"\"");
     solrQuery.setRows(0);
     solrQuery.set("facet", "true");       
     solrQuery.add("facet.field","domain");
     solrQuery.add("facet.limit",""+facetLimit);
-
+    solrQuery.addFilterQuery("crawl_date:["+dateStart+ " TO "+dateEnd+"]");
+    
     solrQuery.add("fl","id,score,title,arc_full,url, url_norm,source_file_s,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);      
@@ -106,16 +111,20 @@ public class SolrClient {
   /* 
    *Get the domains this domain links to this domain 
    */
-  public  List<FacetCount> getDomainFacetsOutgoing(String domain, int facetLimit) throws Exception{
+  public  List<FacetCount> getDomainFacetsOutgoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception{
 
+
+    String dateStart= getSolrTimeStamp(crawlDateStart);
+    String dateEnd = getSolrTimeStamp(crawlDateEnd);
+            
     SolrQuery solrQuery = new SolrQuery();
-    solrQuery.setQuery("domain:\""+domain+"\"" );  
+    solrQuery.setQuery("domain:\""+domain+"\"");  
 
     solrQuery.setRows(0);
     solrQuery.set("facet", "true");       
     solrQuery.add("facet.field","links_domains");
     solrQuery.add("facet.limit",""+(facetLimit+1)); //+1 because itself will be removed and is almost certain of resultset if self-linking
-
+    solrQuery.addFilterQuery("crawl_date:["+dateStart+ " TO "+dateEnd+"]");
     solrQuery.add("fl","id,score,title,arc_full,url, url_norm,source_file_s,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);      

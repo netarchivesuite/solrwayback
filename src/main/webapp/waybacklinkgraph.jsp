@@ -4,8 +4,22 @@
 String domain=request.getParameter("domain");
 String facetLimit=request.getParameter("facetLimit");
 String ingoingStr=request.getParameter("ingoing");
+String dateStartStr=request.getParameter("dateStart");
+String dateEndStr=request.getParameter("dateEnd");
+
 String checkedStr="";
 boolean ingoing=false;
+
+//Just default if none is set
+long selectedDateMin= 1104537600000l;
+long selectedDateMax=System.currentTimeMillis();
+
+if (dateStartStr != null){
+  selectedDateMin = Long.parseLong(dateStartStr); 
+}
+if (dateEndStr != null){
+  selectedDateMax = Long.parseLong(dateEndStr); 
+}
 
 
 if (facetLimit == null){
@@ -27,7 +41,12 @@ if (ingoing){
 
 <html>
 <meta charset="utf-8">
+<link rel="stylesheet" href="css/iThing-min.css" type="text/css" />
 <script src="http://d3js.org/d3.v2.min.js?2.9.3"></script>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>        
+<script src="js/jQDateRangeSlider-min.js"></script>
+
 <style>
 
 .link {
@@ -106,8 +125,7 @@ input:checked + .slider:before {
 
 </style>
 <head>
-    <title>Link graph for <%=domain%></title>
-    <script type="text/javascript" src="js/jquery-1.8.3.js"></script>       
+    <title>Link graph for <%=domain%></title>          
 </head>
 <body>
 
@@ -126,8 +144,29 @@ input:checked + .slider:before {
 </label> <span style="color:<%if(ingoing){out.println("#2196F3");} else{ out.println("#ccc");}%>">Ingoing</span>
 </span>
 </div>
+ <div id="rangeslider"></div>
+      
 
 <script>
+
+
+
+$("#rangeslider").dateRangeSlider({          
+    defaultValues: {min: new Date(<%=selectedDateMin%>), max: new Date(<%=selectedDateMax%>)},
+    bounds:{
+    	min: new Date(2005, 0, 1),
+      max: new Date()
+   }});
+
+
+  
+$("#rangeslider").bind("userValuesChanged", function(e, data){	
+    var min=  $("#rangeslider").dateRangeSlider("min").getTime();
+    var max=  $("#rangeslider").dateRangeSlider("max").getTime();    
+    location.href='/solrwayback/waybacklinkgraph.jsp?domain=<%=domain%>&facetLimit=<%=facetLimit%>&ingoing=<%=ingoing%>&dateStart='+ min+'&dateEnd='+ max;
+});
+
+
 
 function outputUpdate(vol) {
 	  document.querySelector('#volume').value = vol;
@@ -137,7 +176,10 @@ function reload(){
 	   var ingoingCheckbox = document.getElementById('ingoingCheckbox');
 	   var facets =  document.getElementById('fader').value;
 	   var checked=ingoingCheckbox.checked; 	   
-	   location.href='/webarchivemimetypeservlet/waybacklinkgraph.jsp?domain=<%=domain%>&facetLimit='+facets+'&ingoing='+checked;	
+	   var min=  $("#rangeslider").dateRangeSlider("min").getTime();
+	   var max=  $("#rangeslider").dateRangeSlider("max").getTime();
+	   
+	   location.href='/solrwayback/waybacklinkgraph.jsp?domain=<%=domain%>&facetLimit='+facets+'&ingoing='+checked+'&dateStart='+ min+'&dateEnd='+ max;	
 }
 
 //action to take on mouse click
@@ -157,7 +199,11 @@ function click() {
 //action to take on mouse double click
 function dblclick() {
 var newDomain= d3.select(this).select("text").text();
-  location.href='/webarchivemimetypeservlet/waybacklinkgraph.jsp?domain='+newDomain+'&facetLimit=<%=facetLimit%>&ingoing=<%=ingoing%>'
+
+var min=  $("#rangeslider").dateRangeSlider("min").getTime();
+var max=  $("#rangeslider").dateRangeSlider("max").getTime();
+
+  location.href='/solrwayback/waybacklinkgraph.jsp?domain='+newDomain+'&facetLimit=<%=facetLimit%>&ingoing=<%=ingoing%>&dateStart='+min+'&dateEnd='+max;
 }
 
 var width =  1920,
@@ -193,7 +239,13 @@ var force = d3.layout.force()
     .charge(-100)
     .size([width, height]);
 
-d3.json("services/waybacklinkgraph?domain=<%=domain%>&facetLimit=<%=facetLimit%>&ingoing=<%=ingoing%>", function(json) {
+var min=  $("#rangeslider").dateRangeSlider("min").getTime();
+var max=  $("#rangeslider").dateRangeSlider("max").getTime();
+
+var serviceUrl='services/waybacklinkgraph?domain=<%=domain%>&facetLimit=<%=facetLimit%>&ingoing=<%=ingoing%>&dateStart='+min +'&dateEnd='+max;
+alert(serviceUrl);
+
+d3.json(serviceUrl, function(json) {
   force
       .nodes(json.nodes)
       .links(json.links)
@@ -232,6 +284,13 @@ d3.json("services/waybacklinkgraph?domain=<%=domain%>&facetLimit=<%=facetLimit%>
     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
   });
 });
+
+
+function formatDate(date) {
+ 
+	return date; 
+}
+
 
 </script>
 

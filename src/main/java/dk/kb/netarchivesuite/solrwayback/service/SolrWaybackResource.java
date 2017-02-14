@@ -237,9 +237,9 @@ public class SolrWaybackResource {
     @GET
     @Path("/waybacklinkgraph")
     @Produces(MediaType.APPLICATION_JSON)
-    public D3Graph waybackgraph(@QueryParam("domain") String domain, @QueryParam("ingoing") Boolean ingoing, @QueryParam("facetLimit") Integer facetLimit) throws ServiceException {
+    public D3Graph waybackgraph(@QueryParam("domain") String domain, @QueryParam("ingoing") Boolean ingoing, @QueryParam("facetLimit") Integer facetLimit, @QueryParam("dateStart") String dateStart, @QueryParam("dateEnd") String dateEnd) throws ServiceException {
       try{        
-           System.out.println("ingoing:"+ingoing +" facetLimit:"+facetLimit);
+           log.info("ingoing:"+ingoing +" facetLimit:"+facetLimit +" dateStart:"+dateStart +" dateEnd:"+dateEnd);
            int fLimit =10;//Default
            boolean in=false;//Default
            if (facetLimit != null){
@@ -250,7 +250,7 @@ public class SolrWaybackResource {
            }
                               
         //TODO use invoing, facetlimit. with defaults
-          return Facade.waybackgraph(domain, fLimit,in);        
+          return Facade.waybackgraph(domain, fLimit,in,dateStart,dateEnd);        
                                      
         } catch (Exception e) {
             e.printStackTrace();

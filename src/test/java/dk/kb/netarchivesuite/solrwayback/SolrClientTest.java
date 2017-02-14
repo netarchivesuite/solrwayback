@@ -40,9 +40,9 @@ public class SolrClientTest {
 	        String format = dateFormat.format(date);
 	        System.out.println(format+"Z");
 	        */  
-	        testWaybackStats();
+	       // testWaybackStats();
 	      	  
-	        //testFacetLinks();
+	        testFacetLinks();
 	       // testSolrDate();
 	}
 	
@@ -73,7 +73,10 @@ public static void testFacetLinks() throws Exception{
       
       SolrClient solr = SolrClient.getInstance();
       
-      List<FacetCount>  fc = solr.getDomainFacets("jp.dk",20, true);      
+      Date start= new Date(System.currentTimeMillis()-25L*365*86400*1000); //25 years ago
+      Date end = new Date();
+      
+      List<FacetCount>  fc = solr.getDomainFacets("jp.dk",20, true, start,end);      
       
       for (FacetCount f : fc){
         System.out.println(f.getValue() +" : " +f.getCount());
