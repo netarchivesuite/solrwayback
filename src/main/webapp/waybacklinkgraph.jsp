@@ -21,7 +21,6 @@ if (dateEndStr != null){
   selectedDateMax = Long.parseLong(dateEndStr); 
 }
 
-
 if (facetLimit == null){
   facetLimit="10";
 }
@@ -29,14 +28,10 @@ if (ingoingStr  != null){
   ingoing="true".equalsIgnoreCase(ingoingStr);
 }
 
-boolean in =false;
-
 String directionStr;
 if (ingoing){
  checkedStr="checked";
 }
-
-
 %>
 
 <html>
