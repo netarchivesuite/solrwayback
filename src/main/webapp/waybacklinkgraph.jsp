@@ -161,9 +161,9 @@ $("#rangeslider").dateRangeSlider({
 
   
 $("#rangeslider").bind("userValuesChanged", function(e, data){	
-    var min=  $("#rangeslider").dateRangeSlider("min").getTime();
-    var max=  $("#rangeslider").dateRangeSlider("max").getTime();    
-    location.href='/solrwayback/waybacklinkgraph.jsp?domain=<%=domain%>&facetLimit=<%=facetLimit%>&ingoing=<%=ingoing%>&dateStart='+ min+'&dateEnd='+ max;
+	  var serviceParameters = getServiceParameters();     
+	  var url='/solrwayback/waybacklinkgraph.jsp'+serviceParameters;    
+	  location.href=url;  
 });
 
 
@@ -173,13 +173,9 @@ function outputUpdate(vol) {
 	}
 
 function reload(){
-	   var ingoingCheckbox = document.getElementById('ingoingCheckbox');
-	   var facets =  document.getElementById('fader').value;
-	   var checked=ingoingCheckbox.checked; 	   
-	   var min=  $("#rangeslider").dateRangeSlider("min").getTime();
-	   var max=  $("#rangeslider").dateRangeSlider("max").getTime();
-	   
-	   location.href='/solrwayback/waybacklinkgraph.jsp?domain=<%=domain%>&facetLimit='+facets+'&ingoing='+checked+'&dateStart='+ min+'&dateEnd='+ max;	
+	   var serviceParameters = getServiceParameters();	   
+	   var url='/solrwayback/waybacklinkgraph.jsp'+serviceParameters;	   
+	   location.href=url;
 }
 
 //action to take on mouse click
@@ -198,11 +194,9 @@ function click() {
 }
 //action to take on mouse double click
 function dblclick() {
-var newDomain= d3.select(this).select("text").text();
-
-var min=  $("#rangeslider").dateRangeSlider("min").getTime();
-var max=  $("#rangeslider").dateRangeSlider("max").getTime();
-
+  var newDomain= d3.select(this).select("text").text();
+  var min=  $("#rangeslider").dateRangeSlider("min").getTime();
+  var max=  $("#rangeslider").dateRangeSlider("max").getTime();
   location.href='/solrwayback/waybacklinkgraph.jsp?domain='+newDomain+'&facetLimit=<%=facetLimit%>&ingoing=<%=ingoing%>&dateStart='+min+'&dateEnd='+max;
 }
 
@@ -239,11 +233,7 @@ var force = d3.layout.force()
     .charge(-100)
     .size([width, height]);
 
-var min=  $("#rangeslider").dateRangeSlider("min").getTime();
-var max=  $("#rangeslider").dateRangeSlider("max").getTime();
-
-var serviceUrl='services/waybacklinkgraph?domain=<%=domain%>&facetLimit=<%=facetLimit%>&ingoing=<%=ingoing%>&dateStart='+min +'&dateEnd='+max;
-alert(serviceUrl);
+var serviceUrl='services/waybacklinkgraph'+getServiceParameters();
 
 d3.json(serviceUrl, function(json) {
   force
@@ -285,10 +275,15 @@ d3.json(serviceUrl, function(json) {
   });
 });
 
-
-function formatDate(date) {
- 
-	return date; 
+function getServiceParameters(){
+    var ingoingCheckbox = document.getElementById('ingoingCheckbox');
+    var facets =  document.getElementById('fader').value;
+    var checked=ingoingCheckbox.checked;      
+    var min=  $("#rangeslider").dateRangeSlider("min").getTime();
+    var max=  $("#rangeslider").dateRangeSlider("max").getTime();
+    
+    var serviceParameters='?domain=<%=domain%>&facetLimit='+facets+'&ingoing='+checked+'&dateStart='+ min+'&dateEnd='+ max;
+    return serviceParameters;
 }
 
 
