@@ -53,9 +53,15 @@ if (ingoing){
   stroke: #aaa;
 }
 
+
+.box {
+margin-left: 40px;
+margin-right: 40px;
+}
+
 .node text {
 stroke:#333;
-cursos:pointer;
+cursor:pointer;
 }
 
 .node circle{
@@ -144,7 +150,7 @@ input:checked + .slider:before {
 </label> <span style="color:<%if(ingoing){out.println("#2196F3");} else{ out.println("#ccc");}%>">Ingoing</span>
 </span>
 </div>
- <div id="rangeslider"></div>
+ <div id="rangeslider" class="box"></div>
       
 
 <script>
