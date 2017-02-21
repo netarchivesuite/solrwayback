@@ -158,7 +158,7 @@ public class WaybackToolbarInjecter {
     "       #toggleSpinner{margin-left: 1em;}" +
     "       #tegModal.closed #tegContent,#tegModal.closed #closeSpinner{display: none}" +
     "       #tegModal .infoLine{margin-bottom: .5em;}" +
-    "       #tegModal a img {display: inline-block; margin: 2em 3em 2em 0;  -height: 60px; }" +        
+    "       #tegModal a img {display: inline-block; margin: 2em 3em 2em 0; max-height: 60px; }" +        
     "       #tegModal a {color: #0000cc; font-size: 14px; text-decoration: none}" +
     "       #tegModal a:hover {color: #0000cc; text-decoration: underline}"+    
     "       #tegModal .label{display: inline-block;font-weight: bold; min-width: 110px;}" +
