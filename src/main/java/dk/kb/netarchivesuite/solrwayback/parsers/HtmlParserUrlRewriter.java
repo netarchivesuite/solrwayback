@@ -25,10 +25,15 @@ import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
 public class HtmlParserUrlRewriter {
 
 	private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriter.class);
-
+    
+	
+	//Problem is jsoup text(...) or html(...) encodes & and for the <style> @import... </style> the HTML urls must not be encoded. (blame HTML standard)
+	//So it can not be set using JSOUP and must be replaced after.
+	private static final String AMPERSAND_REPLACE="_STYLE_AMPERSAND_REPLACE_";
+	
 	private static Pattern backgroundUrlPattern = Pattern.compile(".*background:url\\((.*)\\).*");
 	private static final String CSS_IMPORT_PATTERN_STRING = 
-			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([a-zA-Z0-9_.-]*\\.css)['\"]?\\s*[)]?.*";
+			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css)['\"]?\\s*[)]?.*";
 	private static Pattern  CSS_IMPORT_PATTERN = Pattern.compile(CSS_IMPORT_PATTERN_STRING);
 
 
@@ -40,7 +45,7 @@ public class HtmlParserUrlRewriter {
                 "@import url(shadow_frames.css);\n"+
                 "body {";
 
-		 
+		 /*
 
 		//String css= new String(Files.readAllBytes(Paths.get("/home/teg/Desktop/toke.css")));
 
@@ -65,6 +70,7 @@ public class HtmlParserUrlRewriter {
 
 		System.out.println("done");
 		System.exit(1);
+*/
 
 		String html="<?xml version=\"1.1\" encoding=\"iso-8859-1\"?>"+
 				"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"da\">"+
@@ -77,17 +83,24 @@ public class HtmlParserUrlRewriter {
 				"<body>"+
 				" <style type=\"text/css\" media=\"screen\">@import \"//www.dr.dk/drdkGlobal/spot/spotGlobal.css\";</style> "+
 				" <style type=\"text/css\" media=\"screen\">@import \"/design/www/global/css/globalPrint.css\";</style> "+
-
-
+                "<style type=\"text/css\" media=\"screen\">@import url(http://en.statsbiblioteket.dk/portal_css/SB%20Theme/resourceplonetheme.sbtheme.stylesheetsmain-cachekey-7e976fa2b125f18f45a257c2d1882e00.css);</style> "+
                 "<a class=\"toplink\" href=\"test\" class=\"button\" style=\"background:url(img/homeico.png) no-repeat ; width:90px; margin:0px 0px 0px 16px;\">kimse.rovfisk.dk  </a><a class=\"toplink\" href=\"/katte/\">katte / </a><br /><br /><table cellspacing=\"8\"><tr><td></td><td class=\"itemw\"><a href=\"/katte/?browse=DSC00175.JPG\"><img class=\"lo\" src=\"/cache/katte/DSC00175.JPG\" /></a></td>"+
                 "<td></td><td class=\"itemw\"><a href=\"/katte/?browse=DSC00209.JPG\"><img class=\"lo\" src=\"/cache/katte/DSC00209.JPG\" /></a></td>"+
                 "</table><br />  </body>"+
                 "</html>";
 
 		HashSet<String> urlSet = new HashSet<String>();
-		System.out.println(html);
+		
 		Document doc = Jsoup.parse(html,"http:/test.dk"); //TODO baseURI?
-		collectStyleBackgroundRewrite(urlSet,doc, "a", "style", "http:/thomas.dk");
+		
+		collectRewriteUrlsForStyleImport(urlSet,doc);
+	     
+	       
+	       
+		
+	      
+	      System.exit(1);
+		//collectStyleBackgroundRewrite(urlSet,doc, "a", "style", "http:/thomas.dk");
 
 
 		URL baseUrl = new URL("http:www.google.com/someFolder/");
@@ -157,7 +170,8 @@ public class HtmlParserUrlRewriter {
 		collectRewriteUrlsForElement(urlSet,doc, "script", "src");
 		collectRewriteUrlsForElement(urlSet,doc, "td", "background");
 		collectStyleBackgroundRewrite(urlSet,doc, "a", "style",url);
-
+		collectRewriteUrlsForStyleImport(urlSet,doc);
+		
 		log.info("#unique urlset to resolve:"+urlSet.size());
 
 		ArrayList<IndexDoc> docs = SolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
@@ -176,8 +190,11 @@ public class HtmlParserUrlRewriter {
 		replaceUrlForElement(urlReplaceMap,doc, "link", "href", "view");
 		replaceUrlForElement(urlReplaceMap,doc, "script", "src", "downloadRaw");
 		replaceUrlForElement(urlReplaceMap,doc, "td", "background", "downloadRaw");    	 
+        replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw");
 		replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url);
 
+		
+		
 
 		//This are not resolved until clicket
 		rewriteUrlForElement(doc, "a" ,"href",arc.getCrawlDate());
@@ -185,31 +202,12 @@ public class HtmlParserUrlRewriter {
 
 		log.info("Number of resolves:"+urlSet.size() +" total time:"+(System.currentTimeMillis()-start));    	 
 
-		return doc.toString();
+		String html_output= doc.toString();
+		html_output=html_output.replaceAll(AMPERSAND_REPLACE, "&");		
+		return html_output;
 	}
 
-
-	public static void rewriteUrlForElement(Document doc,String element, String attribute , String type, String crawlDate) throws Exception{
-
-		for (Element e : doc.select(element)) {
-			String url = e.attr("abs:"+attribute);
-
-			if (url == null  || url.trim().length()==0){
-				continue;
-			}    		     		 
-			IndexDoc indexDoc = SolrClient.getInstance().findClosestHarvestTimeForUrl(url, crawlDate);   
-			if (indexDoc!=null){     		    		    			
-				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?arcFilePath="+indexDoc.getArc_full() +"&offset="+indexDoc.getOffset();    			 
-				e.attr(attribute,newUrl);    			     		 
-			}
-			else{
-				log.info("No harvest found for:"+url);
-			}
-
-		}
-	}
-
-
+	
 
 	public static void replaceUrlForElement( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type) throws Exception{
 
@@ -310,6 +308,46 @@ public class HtmlParserUrlRewriter {
 	}
 
 
+	//<style type="text/css" media="screen">@import url(http://en.statsbiblioteket.dk/portal_css/SB%20Theme/resourceplonetheme.sbtheme.stylesheetsmain-cachekey-7e976fa2b125f18f45a257c2d1882e00.css);</style> 
+	public static void collectRewriteUrlsForStyleImport(HashSet<String> set, Document doc) throws Exception{
+
+      for (Element e : doc.select("style")) {         
+        String styleTagContent = e.data();          
+        Matcher m = CSS_IMPORT_PATTERN.matcher(styleTagContent);
+        if (m.matches()){
+            String cssUrl= m.group(1);         
+            set.add(cssUrl);
+        }                   
+      }
+  }
+
+
+	
+	public static void replaceUrlsForStyleImport( HashMap<String,IndexDoc>  map, Document doc, String type) throws Exception{
+
+      for (Element e : doc.select("style")) {         
+        String styleTagContent = e.data();          
+        Matcher m = CSS_IMPORT_PATTERN.matcher(styleTagContent);
+        if (m.matches()){
+          String url = m.group(1);
+          IndexDoc indexDoc = map.get(url);   
+          if (indexDoc!=null){                             
+              String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?arcFilePath="+indexDoc.getArc_full() +"_STYLE_AMPERSAND_REPLACE_offset="+indexDoc.getOffset();                 
+              log.info("replaced @import:"+e );
+              log.info("replaced with:"+newUrl );
+              e.html("@import url("+newUrl+");"); //e.text will be encoded                            
+          log.info("new tag (html):"+e);
+          
+          }
+          else{
+              log.info("No harvest found for:"+url);
+          }
+          
+        }                   
+      }
+  }
+
+	
 	/*
 	 * Only rewrite to new service, no need to resolve until clicked
 	 * 

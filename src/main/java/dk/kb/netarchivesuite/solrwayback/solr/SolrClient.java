@@ -300,6 +300,31 @@ public class SolrClient {
     return search(searchString,filterQuery,50);
   }
 
+  
+  public ArrayList<Date> getHarvestTimesForUrl(String url) throws Exception {
+    
+    ArrayList<Date> dates = new ArrayList<Date>();
+    
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery = new SolrQuery("(url:\""+url+"\" OR url_norm:\""+url+"\")");     
+    System.out.println("(url:\""+url+"\" OR url_norm:\""+url+"\")");
+    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+    solrQuery.add("fl","id, crawl_date");    
+    solrQuery.setRows(1000000);
+    
+
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+
+    for (SolrDocument doc : docs) {
+      Date date = (Date) doc.get("crawl_date");    
+      dates.add(date);
+    }           
+    return dates;
+  }
+
+  
+  
   public SearchResult search(String searchString, String filterQuery, int results) throws Exception {
     log.info("search for:" + searchString +" and filter:"+filterQuery);
     SearchResult result = new SearchResult();

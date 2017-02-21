@@ -41,8 +41,9 @@ public class SolrClientTest {
 	        System.out.println(format+"Z");
 	        */  
 	       // testWaybackStats();
-	      	  
-	        testFacetLinks();
+	      	testHarvestTimesForUrl(); 
+	      //  testIngoingLinks();
+	       // testFacetLinks();
 	       // testSolrDate();
 	}
 	
@@ -58,6 +59,19 @@ public class SolrClientTest {
                    
    }
 
+	
+	public static void testHarvestTimesForUrl() throws Exception{
+      
+      SolrClient solr = SolrClient.getInstance();
+      
+      
+       solr.getHarvestTimesForUrl("http://www.thomas-egense.dk/");
+      
+      
+
+      
+                
+}
 	
 	
 	public static void testSolrDate() throws Exception{
@@ -76,7 +90,7 @@ public static void testFacetLinks() throws Exception{
       Date start= new Date(System.currentTimeMillis()-25L*365*86400*1000); //25 years ago
       Date end = new Date();
       
-      List<FacetCount>  fc = solr.getDomainFacets("jp.dk",20, true, start,end);      
+      List<FacetCount>  fc = solr.getDomainFacets("systime.dk",20, true, start,end);      
       
       for (FacetCount f : fc){
         System.out.println(f.getValue() +" : " +f.getCount());
@@ -85,6 +99,23 @@ public static void testFacetLinks() throws Exception{
                 
 }
     
+public static void testIngoingLinks() throws Exception{
+  
+  SolrClient solr = SolrClient.getInstance();
+  
+  Date start= new Date(System.currentTimeMillis()-25L*365*86400*1000); //25 years ago
+  Date end = new Date();
+  
+  List<FacetCount>  fc = solr.getDomainFacetsIngoing("systime.dk",10000, start,end);      
+  
+  for (FacetCount f : fc){
+    System.out.println(f.getValue() +" : " +f.getCount());
+    
+  }
+            
+}
+
+
 	
 	public static void test1() throws Exception{
 	   HttpSolrClient solrServer;

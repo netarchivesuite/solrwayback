@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.facade;
 
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.ProximityHtmlParser;
@@ -72,6 +73,22 @@ public class Facade {
     }
 
 
+    public static   HarvestDates getHarvestTimesForUrl(String url) throws Exception {
+      log.info("getting harvesttimes for url:"+url);
+      HarvestDates datesVO = new HarvestDates();
+      ArrayList<Date> dates = SolrClient.getInstance().getHarvestTimesForUrl(url);
+      
+      ArrayList<Long> crawltimes= new ArrayList<Long>(); // only YYYYMMDD part of day
+      
+      for (Date d : dates ){
+        crawltimes.add(d.getTime());
+        
+      }
+      datesVO.setDates(crawltimes);      
+      datesVO.setNumberOfHarvests(crawltimes.size());
+      return  datesVO;      
+    }
+    
     public static ArrayList<WeightedArcEntryDescriptor> getImagesFromHtmlPage(IndexDoc indexDoc) throws Exception{
         if (!"html".equals(indexDoc.getContentTypeNorm())){
             throw new IllegalArgumentException("Not html doc:"+indexDoc.getContentTypeNorm());

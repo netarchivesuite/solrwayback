@@ -26,6 +26,7 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
+import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.*;
@@ -47,7 +48,7 @@ public class SolrWaybackResource {
 				
 		
 		  Date date = waybackDateFormat.parse(waybackDate);
-		  System.out.println(date);
+
 				
      	DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new        	        
         String solrDate = dateFormat.format(date)+"Z";
@@ -75,6 +76,17 @@ public class SolrWaybackResource {
     public SearchResult search(@QueryParam("searchText") String searchText, @QueryParam("filterQuery") String filterQuery) throws ServiceException {
         try {                    
             return Facade.search(searchText,filterQuery);
+        } catch (Exception e) {           
+            throw handleServiceExceptions(e);
+        }
+    }
+    
+    @GET
+    @Path("/harvestDates")
+    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    public HarvestDates search(@QueryParam("url") String url) throws ServiceException {
+        try {                    
+            return Facade.getHarvestTimesForUrl(url);
         } catch (Exception e) {           
             throw handleServiceExceptions(e);
         }

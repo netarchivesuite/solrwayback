@@ -9,7 +9,7 @@
 <html>
 <head>
     <title>SolrWayback</title>
-    <script type="text/javascript" src="js/jquery-1.8.3.js"></script>
+    <script src="js/jquery-1.10.2.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet" media="screen" />    
     <style>

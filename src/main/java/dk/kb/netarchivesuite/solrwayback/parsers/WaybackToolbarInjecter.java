@@ -120,12 +120,16 @@ public class WaybackToolbarInjecter {
     "            </div>" +
     "            <div class=\"infoLine\">" +
     "               <span class=\"label\">Domain:</span>" +
-    "               <span class=\"dynamicData\">"+generateDomainGraphLink(stats.getDomain()) +"</span>" +
+    "               <span class=\"dynamicData\">"+stats.getDomain() +"</span>" +
     "               <span class=\"inlineLabel\">#Harvested:</span>" +
     "               <span class=\"dynamicData\">"+stats.getNumberHarvestDomain()+"</span>" +
     "               <span class=\"inlineLabel\">#Content length harvested:</span>" +
-    "               <span class=\"dynamicData\">"+stats.getDomainHarvestTotalContentLength()+"</span>" +
+    "               <span class=\"dynamicData\">"+stats.getDomainHarvestTotalContentLength()+"</span>" +    
     "            </div>" +
+    "            <div class=\"infoLine\">" +
+    "               <span class=\"dynamicData\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +    
+    "               <span class=\"dynamicData\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
+    "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
     "                   <span class=\"inlineLabel\">First:</span>"+ generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl_norm(), stats.getFirstHarvestDate()) +
@@ -154,6 +158,7 @@ public class WaybackToolbarInjecter {
     "       #toggleSpinner{margin-left: 1em;}" +
     "       #tegModal.closed #tegContent,#tegModal.closed #closeSpinner{display: none}" +
     "       #tegModal .infoLine{margin-bottom: .5em;}" +
+    "       #tegModal a img {display: inline-block; margin: 2em 3em 2em 0;  -height: 60px; }" +        
     "       #tegModal a {color: #0000cc; font-size: 14px; text-decoration: none}" +
     "       #tegModal a:hover {color: #0000cc; text-decoration: underline}"+    
     "       #tegModal .label{display: inline-block;font-weight: bold; min-width: 110px;}" +
@@ -200,9 +205,16 @@ public class WaybackToolbarInjecter {
     }          
   }
   
-  private static String generateDomainGraphLink(String domain){
-    //TODO property
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"waybacklinkgraph.jsp?domain="+domain+"\" target=\"new\">"+domain+"</a>";
+  private static String generateCalendarImageLink(String image,String url) throws Exception{
+
+    String urlEncoded=URLEncoder.encode(url, "UTF-8");
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"calendar.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+  }
+  
+  
+  private static String generateDomainGraphImageLink(String image,String domain){
+
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"waybacklinkgraph.jsp?domain="+domain+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
   
   
