@@ -55,6 +55,13 @@ function formatDateFull(date){
 }
 
 
+function formatDateHuman(date){
+    var datestring =   date.getFullYear()+ '-'+ ("0"+(date.getMonth()+1)).slice(-2) + '-'+ ("0" + date.getDate()).slice(-2)+' '+("0" + date.getHours()).slice(-2)+':'+("0" + date.getMinutes()).slice(-2)+':'+("0" + date.getSeconds()).slice(-2);
+  return datestring;
+}
+
+
+
 
 var dateSet = new Set();
 var crawltimeSet = new Set();
@@ -73,7 +80,7 @@ for (Long d: dates.getDates()){
 	  var dateInput1 =  formatDate(new Date(item));
 	      if  (dateInput == dateInput1){
 	         console.log(new Date(item));
-	         html = html + '<p><a href="'+solrWaybackUrl+formatDateFull(new Date(item))+'/'+url+ '" target="new">' +formatDateFull(new Date(item))+'</a></p>';
+	         html = html + '<p><a href="'+solrWaybackUrl+formatDateFull(new Date(item))+'/'+url+ '" target="new">' +formatDateHuman(new Date(item))+'</a></p>';
 	      }
 
 	   }
