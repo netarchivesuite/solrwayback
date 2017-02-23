@@ -4,8 +4,12 @@ function groupHarvestDatesByYearAndMonth(harvestDates) {
     const minDate = new Date(_.min(harvestDates));
 
     const yearRangeArray = buildYearRangeArray(minDate, maxDate);
-    const yearAndMonthArray = addMonthsToYearRangeArray(yearRangeArray);
+    let yearAndMonthArray = addMonthsToYearRangeArray(yearRangeArray);
     
+    for(date of harvestDates) {
+        yearAndMonthArray = addDateToYearAndMonthArray(date, yearAndMonthArray);
+    }
+
     console.log(yearAndMonthArray);
 }
 
@@ -33,8 +37,7 @@ function addMonthsToYearRangeArray(yearRangeArray) {
 }
 
 function getArrayWithMonthsAsKey() {
-    const arrayOfMonths = [...Array(12).keys()]
-        .map(n => n + 1)       // [1, 2, 3, ..., 12]
+    const arrayOfMonths = [...Array(12).keys()].map(n => n + 1)       // [1, 2, 3, ..., 12]
     const arrayWithMonthAsKey = [];
 
     for (month of arrayOfMonths) {
@@ -42,6 +45,24 @@ function getArrayWithMonthsAsKey() {
     }
 
     return arrayWithMonthAsKey;
+}
+
+function addDateToYearAndMonthArray(harvestDate, yearAndMonthArray) {
+    const date = new Date(harvestDate);
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    // console.log('yearAndMonthArray', yearAndMonthArray);
+    // console.log(date.getFullYear());
+    // console.log(date.getMonth());
+
+    // console.log(`yearAndMonthArray[${date.getFullYear()}][${date.getMonth()}]`, yearAndMonthArray[date.getFullYear()][date.getMonth()]);
+
+    yearAndMonthArray[year][month] = [...yearAndMonthArray[year][month], date];
+ 
+    // console.log('yearAndMonthArray after', yearAndMonthArray);
+
+    return yearAndMonthArray;
 }
 
 let harvestDateComponent = Vue.component('harvest-date', {
