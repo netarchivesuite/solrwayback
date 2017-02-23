@@ -26,6 +26,7 @@
     <!-- VueJS and Vue Resource. Could be served locally instead. -->
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/vue.resource/1.2.0/vue-resource.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
 
     <meta charset="UTF-8">
 </head>
@@ -40,7 +41,7 @@
     <h2 align="center"><%= url %> (#Harvest:<%=dates.getDates().size()%>)</h2>
 
     <div id="app">
-        {{ message }}
+        <harvest-date></harvest-date>
     </div>
 
     <div id="calendar" data-provide="calendar"></div>
@@ -50,6 +51,7 @@
         // Hand over configuration from JSP to Javascript
         window.solrWaybackConfig = {};
         window.solrWaybackConfig.solrWaybackUrl = "<%= PropertiesLoader.WAYBACK_BASEURL %>wayback?waybackdata=" + "/";
+        // window.solrWaybackConfig.calendarHarvestDatesUrl = "<%= PropertiesLoader.WAYBACK_BASEURL %>wayback?waybackdata=" + "/";
         window.solrWaybackConfig.url = "<%= url %>";
     </script>
 
