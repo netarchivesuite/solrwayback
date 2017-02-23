@@ -15,10 +15,8 @@ docker stop $CONTAINER_NAME
 
 mvn package
 
-mv target/solrwayback-$PROJECT_VERSION.war target/solrwayback.war
-
 docker run -it --rm -p 8888:8080 \
 --volume $(pwd)/solrwayback.properties:/root/solrwayback.properties \
---volume $(pwd)/target/solrwayback.war:/usr/local/tomcat/webapps/solrwayback.war \
+--volume $(pwd)/target/solrwayback-$PROJECT_VERSION:/usr/local/tomcat/webapps/solrwayback \
 --name solrwayback \
 tomcat:8.5-jre8
