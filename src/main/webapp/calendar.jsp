@@ -41,53 +41,19 @@
     <script>
         // Hand over configuration from JSP to Javascript
         window.solrWaybackConfig = {};
-        window.solrWaybackConfig.solrWaybackUrl = "<%=PropertiesLoader.WAYBACK_BASEURL%>wayback?waybackdata="+"/";
-        window.solrWaybackConfig.url = "<% request.getParameter("url"); %>";
-
-        var dateSet = new Set();
-        var crawltimeSet = new Set();
-        <%
-        for (Long d: dates.getDates()){
-          %>
-        dateSet.add(formatDate(new Date(<%=d%>)));
-        crawltimeSet.add(<%=d%>);
-        <%}%>
-
-        function generateCrawlLinks(date){
-            var dateInput= formatDate(date);  //YYYYMMDD
-            var html ='';
-            for (let item of crawltimeSet.values()){
-                var dateInput1 =  formatDate(new Date(item));
-                if  (dateInput == dateInput1){
-                    console.log(new Date(item));
-                    html = html + '<p><a href="'+window.solrWaybackConfig.solrWaybackUrl+formatDateFull(new Date(item))+'/'+url+ '" target="new">' +formatDateHuman(new Date(item))+'</a></p>';
-                }
-            }
-
-            return html;
-        }
-
-
-        $(function() {
-            $('#calendar').calendar({
-                clickDay: function(event) {
-                    $("#modalTitle").html( formatDate(event.date) );
-                    $("#modalBody").html( generateCrawlLinks(event.date));
-                    $("#myModal").modal('show');
-                },
-
-                customDayRenderer: function(element, date) {
-                    if(dateSet.has(formatDate(date))) {
-                        $(element).css('background-color', 'red');
-                        $(element).css('color', 'white');
-                        $(element).css('border-radius', '15px');
-                    }
-                }
-            });
-        });
+        window.solrWaybackConfig.solrWaybackUrl = "<%= PropertiesLoader.WAYBACK_BASEURL %>wayback?waybackdata=" + "/";
+        window.solrWaybackConfig.url = "<%= url %>";
     </script>
 
     <script>
+        var dateSet = new Set();
+        var crawltimeSet = new Set();
+
+        <% for (Long d: dates.getDates()) { %>
+            dateSet.add(formatDate(new Date(<%= d %>)));
+            crawltimeSet.add(<%= d %>);
+        <% } %>
+
         var xdata = Array.from(crawltimeSet);
         var ydata=[];
 
