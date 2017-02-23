@@ -22,42 +22,27 @@
     <script src="js/bootstrap-popover.js"></script>
     <script src="js/plotly-latest.min.js"></script>
 
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="js/calendar.js"></script>
+
     <meta charset="UTF-8">
 </head>
 
 <body>
     <%
-        //String url=java.net.URLDecoder.decode(((String[])request.getParameterMap().get("url"))[0], "UTF-8");
-
         String url = request.getParameter("url");
         HarvestDates dates = Facade.getHarvestTimesForUrl(url);
     %>
 
-    <h2 align="center"><%=url%> (#Harvest:<%=dates.getDates().size()%>)</h2>
+    <h2 align="center"><%= url %> (#Harvest:<%=dates.getDates().size()%>)</h2>
     <div id="calendar" data-provide="calendar"></div>
     <div id="yearplot"></div>
 
     <script>
-        var solrWaybackUrl="<%=PropertiesLoader.WAYBACK_BASEURL%>wayback?waybackdata="+"/";
-        var url="<%=url%>";
-
-        //dateformat YYYYMMDD
-        function formatDate(date){
-            var datestring = date.getFullYear()+ ("0"+(date.getMonth()+1)).slice(-2) + ("0" + date.getDate()).slice(-2);
-            return datestring;
-        }
-
-        function formatDateFull(date){
-            var datestring = date.getFullYear()+ ("0"+(date.getMonth()+1)).slice(-2) + ("0" + date.getDate()).slice(-2)+("0" + date.getHours()).slice(-2)+("0" + date.getMinutes()).slice(-2)+("0" + date.getSeconds()).slice(-2);
-            return datestring;
-        }
-
-
-        function formatDateHuman(date){
-            var datestring = date.getFullYear()+ '-'+ ("0"+(date.getMonth()+1)).slice(-2) + '-'+ ("0" + date.getDate()).slice(-2)+' '+("0" + date.getHours()).slice(-2)+':'+("0" + date.getMinutes()).slice(-2)+':'+("0" + date.getSeconds()).slice(-2);
-            return datestring;
-        }
-
+        // Hand over configuration from JSP to Javascript
+        window.solrWaybackConfig = {};
+        window.solrWaybackConfig.solrWaybackUrl = "<%=PropertiesLoader.WAYBACK_BASEURL%>wayback?waybackdata="+"/";
+        window.solrWaybackConfig.url = "<% request.getParameter("url"); %>";
 
         var dateSet = new Set();
         var crawltimeSet = new Set();
@@ -75,7 +60,7 @@
                 var dateInput1 =  formatDate(new Date(item));
                 if  (dateInput == dateInput1){
                     console.log(new Date(item));
-                    html = html + '<p><a href="'+solrWaybackUrl+formatDateFull(new Date(item))+'/'+url+ '" target="new">' +formatDateHuman(new Date(item))+'</a></p>';
+                    html = html + '<p><a href="'+window.solrWaybackConfig.solrWaybackUrl+formatDateFull(new Date(item))+'/'+url+ '" target="new">' +formatDateHuman(new Date(item))+'</a></p>';
                 }
             }
 
