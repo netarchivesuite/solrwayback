@@ -21,9 +21,11 @@
     <script src="js/bootstrap-year-calendar.min.js"></script>
     <script src="js/bootstrap-popover.js"></script>
     <script src="js/plotly-latest.min.js"></script>
+    <script src="js/calendar-util.js"></script>
 
+    <!-- VueJS and Vue Resource. Could be served locally instead. -->
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
-    <script src="js/calendar.js"></script>
+    <script src="https://cdn.jsdelivr.net/vue.resource/1.2.0/vue-resource.min.js"></script>
 
     <meta charset="UTF-8">
 </head>
@@ -34,7 +36,13 @@
         HarvestDates dates = Facade.getHarvestTimesForUrl(url);
     %>
 
+
     <h2 align="center"><%= url %> (#Harvest:<%=dates.getDates().size()%>)</h2>
+
+    <div id="app">
+        {{ message }}
+    </div>
+
     <div id="calendar" data-provide="calendar"></div>
     <div id="yearplot"></div>
 
@@ -46,6 +54,9 @@
     </script>
 
     <script>
+        // Extract this to a REST call
+        // dateSet is used in the calendar
+        // crawltimeSet is used in the plotly graph.
         var dateSet = new Set();
         var crawltimeSet = new Set();
 
@@ -53,6 +64,8 @@
             dateSet.add(formatDate(new Date(<%= d %>)));
             crawltimeSet.add(<%= d %>);
         <% } %>
+        // </Extract>
+
 
         var xdata = Array.from(crawltimeSet);
         var ydata=[];
@@ -119,5 +132,6 @@
 
         </div>
     </div>
+    <script src="js/calendar-app.js"></script>
 </body>
 </html>
