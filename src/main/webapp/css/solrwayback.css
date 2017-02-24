@@ -1,4 +1,14 @@
 .calendar .month-container{
      height: 220px
 }
+
+table{
+     float: left;
+     margin: 2em;
+}
+
+td, th{
+     border: 1px solid #cccccc;
+     padding: .5em 1em;
+}
  

@@ -115,6 +115,18 @@ let harvestDateComponent = Vue.component('harvest-date', {
     template: `
         <div v-if="harvestData">
             <p>Harvests: {{ harvestData.numberOfHarvests }}</p>
+            <table  v-for="year in harvestData.dates">
+                <thead>
+                    <tr>
+                        <th>{{ year.year }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="month in year.months">
+                        <td>{{ month.monthName }}</td>
+                    </tr>
+                </tbody>
+            </table>
             <ol>
                 <li v-for="year in harvestData.dates">
                     {{ year.year }}
