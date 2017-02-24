@@ -3,60 +3,39 @@ function groupHarvestDatesByYearAndMonth(harvestDates) {
     const maxDate = new Date(_.max(harvestDates));
     const minDate = new Date(_.min(harvestDates));
 
-    const yearRangeArray = buildYearRangeArray(minDate, maxDate);
-    let yearAndMonthArray = addMonthsToYearRangeArray(yearRangeArray);
-    
-    for(date of harvestDates) {
-        yearAndMonthArray = addDateToYearAndMonthArray(date, yearAndMonthArray);
-    }
+    const parsedHarvestDates = harvestDates
+        .map(date => new Date(date)); 
 
-    yearAndMonthArray = [
-        {   
-            'year': 2007,
-            'months': [
-                {
-                    'month': 1,
-                    'monthName': 'January',
-                    'harvestDates': [
-                        [1,2,3,4,5,6,7,8]
-                    ]
-                },
-                {
-                    'month': 2,
-                    'monthName': 'February',
-                    'harvestDates': [
-                        [1,2,3,4,5,6,7,8]
-                    ]
-                }
-            ]
-        },
-        {   
-            'year': 2008,
-            'months': [
-                {
-                    'month': 1,
-                    'monthName': 'January',
-                    'harvestDates': [
-                        [1,2,3,4,5,6,7,8]
-                    ]
-                },
-                {
-                    'month': 2,
-                    'monthName': 'February',
-                    'harvestDates': [
-                        [1,2,3,4,5,6,7,8]
-                    ]
-                }
-            ]
-        }
-    ];
+    const yearRangeObject = buildYearRangeObject(minDate, maxDate);
+    let harvestDataObject = addDataToYearRangeObject(yearRangeObject, parsedHarvestDates);
+    harvestDataObject = addActivityLevelToDataObject(harvestDataObject);
 
     return {
         minDate: minDate,
         maxDate: maxDate,
-        dates: yearAndMonthArray,
+        dates: harvestDataObject,
         numberOfHarvests: harvestDates.length
     }
+}
+
+
+/**
+ * Build an object with keys as the years, e.g.
+ * {
+ *     2007: [],
+ *     2008: [],
+ *     ...
+ * }
+ */
+function buildYearRangeObject(minDate, maxDate) {
+    const yearRangeArray = buildYearRangeArray(minDate, maxDate);
+    const yearRangeObject = {};
+
+    for (year of yearRangeArray) {
+        yearRangeObject[year] = [];
+    }  
+
+    return yearRangeObject;
 }
 
 
@@ -69,40 +48,56 @@ function buildYearRangeArray(minDate, maxDate) {
         .map(year => year + minDate.getFullYear());                                                  // [2007, 2008, 2009, ...]
 }
 
+
 /**
- * Add months to the year range array.
+ * Add months to the year range object.
+ * Output will be:
+ * {
+ *     2007: {
+ *         1: {},
+ *         2: {}
+ *         ...
+ *     },
+ *     ...
+ * }
  */
-function addMonthsToYearRangeArray(yearRangeArray) {
-    const arrayWithYearsAsKey = [];
+function addDataToYearRangeObject(yearRangeObject, parsedHarvestDates) {
 
-    for (year of yearRangeArray) {
-        arrayWithYearsAsKey[year] = getArrayWithMonthsAsKey();
+    const arrayOfMonthValues = [...Array(12).keys()];       // [0,1,2,..,11]
+
+    for (let yearAsString of Object.keys(yearRangeObject)) {
+        const year = parseInt(yearAsString);
+
+        for (month of arrayOfMonthValues) {
+            const allHarvestDatesInMonth = getMonthDataObject(year, month, parsedHarvestDates);
+
+            yearRangeObject[year][month] = {
+                dates: allHarvestDatesInMonth,
+                numberOfHarvests: allHarvestDatesInMonth.length
+            }
+        }
     }
 
-    return arrayWithYearsAsKey;
+    return yearRangeObject;
 }
 
-function getArrayWithMonthsAsKey() {
-    const arrayOfMonths = [...Array(12).keys()].map(n => n + 1)       // [1, 2, 3, ..., 12]
-    const arrayWithMonthAsKey = [];
 
-    for (month of arrayOfMonths) {
-        arrayWithMonthAsKey[month] = [];
-    }
-
-    return arrayWithMonthAsKey;
+/**
+ * Return an array of all the parsedHarvestDates in the given year and month.
+ */
+function getMonthDataObject(year, month, parsedHarvestDates) {
+    return parsedHarvestDates
+        .filter(date => date.getMonth() === month && date.getFullYear() === year)
 }
 
-function addDateToYearAndMonthArray(harvestDate, yearAndMonthArray) {
-    const date = new Date(harvestDate);
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
+/**
+ * 
+ */
+function addActivityLevelToDataObject(harvestDataObject) {
 
-    yearAndMonthArray[year][month] = [...yearAndMonthArray[year][month], date];
-
-    return yearAndMonthArray;
+    // TODO!
+    return harvestDataObject;
 }
-
 
 
 let harvestDateComponent = Vue.component('harvest-date', {
@@ -115,28 +110,18 @@ let harvestDateComponent = Vue.component('harvest-date', {
     template: `
         <div v-if="harvestData">
             <p>Harvests: {{ harvestData.numberOfHarvests }}</p>
-            <table  v-for="year in harvestData.dates">
+            <table  v-for="(months, year) in harvestData.dates">
                 <thead>
                     <tr>
-                        <th>{{ year.year }}</th>
+                        <th>{{ year }}</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="month in year.months">
-                        <td>{{ month.monthName }}</td>
+                    <tr v-for="(data, month) in months">
+                        <td>{{ month }}: {{ data.numberOfHarvests }}</td>
                     </tr>
                 </tbody>
             </table>
-            <ol>
-                <li v-for="year in harvestData.dates">
-                    {{ year.year }}
-                    <ul>
-                        <li v-for="month in year.months">
-                            {{ month.monthName }}
-                        </li>
-                    </ul>
-                </li>
-            </ol>
         </div>
         <div v-else>
             <p>Fetching harvests</p>
