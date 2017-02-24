@@ -10,7 +10,53 @@ function groupHarvestDatesByYearAndMonth(harvestDates) {
         yearAndMonthArray = addDateToYearAndMonthArray(date, yearAndMonthArray);
     }
 
-    console.log(yearAndMonthArray);
+    yearAndMonthArray = [
+        {   
+            'year': 2007,
+            'months': [
+                {
+                    'month': 1,
+                    'monthName': 'January',
+                    'harvestDates': [
+                        [1,2,3,4,5,6,7,8]
+                    ]
+                },
+                {
+                    'month': 2,
+                    'monthName': 'February',
+                    'harvestDates': [
+                        [1,2,3,4,5,6,7,8]
+                    ]
+                }
+            ]
+        },
+        {   
+            'year': 2008,
+            'months': [
+                {
+                    'month': 1,
+                    'monthName': 'January',
+                    'harvestDates': [
+                        [1,2,3,4,5,6,7,8]
+                    ]
+                },
+                {
+                    'month': 2,
+                    'monthName': 'February',
+                    'harvestDates': [
+                        [1,2,3,4,5,6,7,8]
+                    ]
+                }
+            ]
+        }
+    ];
+
+    return {
+        minDate: minDate,
+        maxDate: maxDate,
+        dates: yearAndMonthArray,
+        numberOfHarvests: harvestDates.length
+    }
 }
 
 
@@ -20,7 +66,7 @@ function groupHarvestDatesByYearAndMonth(harvestDates) {
  */
 function buildYearRangeArray(minDate, maxDate) {
     return yearRangeArray = [...Array(maxDate.getFullYear() - minDate.getFullYear() + 1).keys()]     // [0, 1, 2, ...]
-        .map(year => year + minDate.getFullYear());                                                 // [2007, 2008, 2009, ...]
+        .map(year => year + minDate.getFullYear());                                                  // [2007, 2008, 2009, ...]
 }
 
 /**
@@ -52,32 +98,32 @@ function addDateToYearAndMonthArray(harvestDate, yearAndMonthArray) {
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
-    // console.log('yearAndMonthArray', yearAndMonthArray);
-    // console.log(date.getFullYear());
-    // console.log(date.getMonth());
-
-    // console.log(`yearAndMonthArray[${date.getFullYear()}][${date.getMonth()}]`, yearAndMonthArray[date.getFullYear()][date.getMonth()]);
-
     yearAndMonthArray[year][month] = [...yearAndMonthArray[year][month], date];
- 
-    // console.log('yearAndMonthArray after', yearAndMonthArray);
 
     return yearAndMonthArray;
 }
+
+
 
 let harvestDateComponent = Vue.component('harvest-date', {
     props: ['message'],
     data: () => {
         return {
-            harvestDates: null,
-            numberOfHarvests: null
+            harvestData: null,
         }
     },
     template: `
-        <div v-if="harvestDates">
-            <p>Harvests: {{ numberOfHarvests }}</p>
+        <div v-if="harvestData">
+            <p>Harvests: {{ harvestData.numberOfHarvests }}</p>
             <ol>
-                <li v-for="date in harvestDates.dates">{{ date }}</li>
+                <li v-for="year in harvestData.dates">
+                    {{ year.year }}
+                    <ul>
+                        <li v-for="month in year.months">
+                            {{ month.monthName }}
+                        </li>
+                    </ul>
+                </li>
             </ol>
         </div>
         <div v-else>
@@ -87,8 +133,7 @@ let harvestDateComponent = Vue.component('harvest-date', {
     created() {
         this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(window.solrWaybackConfig.url))
         .then(response => {
-            this.numberOfHarvests = response.data.numberOfHarvests;
-            this.harvestDates = groupHarvestDatesByYearAndMonth(response.data.dates);
+            this.harvestData = groupHarvestDatesByYearAndMonth(response.data.dates);
         });
     }
 });
