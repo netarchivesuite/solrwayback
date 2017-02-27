@@ -1,14 +1,24 @@
+/**
+ * Transforms an array of harvest dates as epoch times into a suitable format for rendering a graph with iteration.
+ */
 function groupHarvestDatesByYearAndMonth(harvestDates) {
 
     const maxDate = new Date(_.max(harvestDates));
     const minDate = new Date(_.min(harvestDates));
 
+    // Parse the harvest dates into an array of Date objects.
+    // Validate that the dates are integers.
     const parsedHarvestDates = harvestDates
-        .map(date => new Date(date)); 
+        .filter(date => parseInt(date) !== NaN)
+        .map(date => new Date(date));
 
+    // Build an object with keys as the years.
     const yearRangeObject = buildYearRangeObject(minDate, maxDate);
-    let harvestDataObject = addDataToYearRangeObject(yearRangeObject, parsedHarvestDates);
-    harvestDataObject = addActivityLevelToDataObject(harvestDataObject);
+
+    // Build Harvest Data Object.
+    let harvestDataObject = addActivityLevelToDataObject(
+        buildHarvestDataObject(yearRangeObject, parsedHarvestDates)
+    )
 
     return {
         minDate: minDate,
@@ -40,36 +50,40 @@ function buildYearRangeObject(minDate, maxDate) {
 
 
 /**
- * Build an array of years from the minDate year to the maxDate year. E.g. [2007, 2008, 2009, 2010, 2011, ...]
+ * Build an array of years from the minDate year to the maxDate year. E.g. [2007, 2008, 2009, 2010, 2011, ..., 2017]
  * minDate, maxDate are Date instances
  */
 function buildYearRangeArray(minDate, maxDate) {
-    return yearRangeArray = [...Array(maxDate.getFullYear() - minDate.getFullYear() + 1).keys()]     // [0, 1, 2, ...]
-        .map(year => year + minDate.getFullYear());                                                  // [2007, 2008, 2009, ...]
+    return yearRangeArray = [...Array(maxDate.getFullYear() - minDate.getFullYear() + 1).keys()]     // e.g. [0, 1, 2, ..., 10]
+        .map(year => year + minDate.getFullYear());                                                  // e.g. [2007, 2008, 2009, ..., 2017]
 }
 
 
 /**
  * Add months to the year range object.
- * Output will be:
+ * Output is:
  * {
  *     2007: {
- *         1: {},
- *         2: {}
+ *         1: {
+ *             dates: [ ... ],
+               numberOfHarvests: 5023
+ *         },
  *         ...
  *     },
  *     ...
  * }
  */
-function addDataToYearRangeObject(yearRangeObject, parsedHarvestDates) {
+function buildHarvestDataObject(yearRangeObject, parsedHarvestDates) {
 
-    const arrayOfMonthValues = [...Array(12).keys()];       // [0,1,2,..,11]
+    const arrayOfMonthValues = [...Array(12).keys()];       // [0, 1, 2, ..., 11]
 
+    // Iterate over all years in the yearRangeObject
     for (let yearAsString of Object.keys(yearRangeObject)) {
-        const year = parseInt(yearAsString);
+        const year = parseInt(yearAsString);        // Since Object.keys() returns an array of strings, we need to convert years to a number.
 
+        // Iterate over all months (0-11)
         for (month of arrayOfMonthValues) {
-            const allHarvestDatesInMonth = getMonthDataObject(year, month, parsedHarvestDates);
+            const allHarvestDatesInMonth = getHarvestsForMonth(year, month, parsedHarvestDates);
 
             yearRangeObject[year][month] = {
                 dates: allHarvestDatesInMonth,
@@ -85,7 +99,7 @@ function addDataToYearRangeObject(yearRangeObject, parsedHarvestDates) {
 /**
  * Return an array of all the parsedHarvestDates in the given year and month.
  */
-function getMonthDataObject(year, month, parsedHarvestDates) {
+function getHarvestsForMonth(year, month, parsedHarvestDates) {
     return parsedHarvestDates
         .filter(date => date.getMonth() === month && date.getFullYear() === year)
 }
