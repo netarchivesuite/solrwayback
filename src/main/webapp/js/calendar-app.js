@@ -3,8 +3,8 @@
  */
 function groupHarvestDatesByYearAndMonth(harvestDates) {
 
-    const maxDate = new Date(_.max(harvestDates));
-    const minDate = new Date(_.min(harvestDates));
+    const fromDate = new Date(_.min(harvestDates));
+    const toDate = new Date(_.max(harvestDates));
 
     // Parse the harvest dates into an array of Date objects.
     // Validate that the dates are integers.
@@ -13,16 +13,17 @@ function groupHarvestDatesByYearAndMonth(harvestDates) {
         .map(date => new Date(date));
 
     // Build an object with keys as the years.
-    const yearRangeObject = buildYearRangeObject(minDate, maxDate);
+    const yearRangeObject = buildYearRangeObject(fromDate, toDate);
 
     // Build Harvest Data Object.
-    let harvestDataObject = addActivityLevelToDataObject(
-        buildHarvestDataObject(yearRangeObject, parsedHarvestDates)
-    )
+    let harvestDataObject = buildHarvestDataObject(yearRangeObject, parsedHarvestDates);
+    console.log(harvestDataObject);
+
+    harvestDataObject = addActivityLevelToDataObject(harvestDataObject);
 
     return {
-        minDate: minDate,
-        maxDate: maxDate,
+        fromDate: fromDate,
+        toDate: toDate,
         dates: harvestDataObject,
         numberOfHarvests: harvestDates.length
     }
@@ -37,8 +38,8 @@ function groupHarvestDatesByYearAndMonth(harvestDates) {
  *     ...
  * }
  */
-function buildYearRangeObject(minDate, maxDate) {
-    const yearRangeArray = buildYearRangeArray(minDate, maxDate);
+function buildYearRangeObject(fromDate, toDate) {
+    const yearRangeArray = buildYearRangeArray(fromDate, toDate);
     const yearRangeObject = {};
 
     for (year of yearRangeArray) {
@@ -104,13 +105,44 @@ function getHarvestsForMonth(year, month, parsedHarvestDates) {
         .filter(date => date.getMonth() === month && date.getFullYear() === year)
 }
 
+
 /**
  * 
  */
 function addActivityLevelToDataObject(harvestDataObject) {
 
-    // TODO!
+    let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(harvestDataObject);
+
+
+
     return harvestDataObject;
+}
+
+/**
+ * Loops through the data object, returns an object with 3 values: maximumYear, maximumMonth, maximumHarvests.
+ */
+function getMaximumHarvestCount(harvestDataObject) {
+
+    let maximumYear = null;
+    let maximumMonth = null;
+    let maximumHarvests = 0;
+
+    for (let year of Object.keys(harvestDataObject)) {
+        for (let month of Object.keys(harvestDataObject[year])) {
+            // If this months has the record number of harvests so far...
+            if (harvestDataObject[year][month].numberOfHarvests >= maximumHarvests) {
+                maximumHarvests = harvestDataObject[year][month].numberOfHarvests;
+                maximumYear = year;
+                maximumMonth = month;
+            }
+        }
+    }
+
+    return {
+        maximumYear: maximumYear, 
+        maximumMonth: maximumMonth, 
+        maximumHarvests: maximumHarvests
+    };
 }
 
 
