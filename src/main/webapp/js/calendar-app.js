@@ -1,5 +1,6 @@
 /**
  * Transforms an array of harvest dates as epoch times into a suitable format for rendering a graph with iteration.
+ * This is used to transform the API response into a usable format for VueJS.
  */
 function groupHarvestDatesByYearAndMonth(harvestDates) {
 
@@ -107,16 +108,32 @@ function getHarvestsForMonth(year, month, parsedHarvestDates) {
 
 
 /**
- * 
+ * Calculates and adds an activityLevel property to each month,
+ * this is used to color each table cell.
  */
 function addActivityLevelToDataObject(harvestDataObject) {
 
     let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(harvestDataObject);
 
+    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
+        const harvestsInMonth = harvestDataObject[year][month].numberOfHarvests;
 
+        if (harvestsInMonth > maximumHarvests * 0.75 && harvestsInMonth <= maximumHarvests) {
+            harvestDataObject[year][month].activityLevel = 4;
+        } else if (harvestsInMonth > maximumHarvests * 0.50 && harvestsInMonth <= maximumHarvests * 0.75) {
+            harvestDataObject[year][month].activityLevel = 3;
+        } else if (harvestsInMonth > maximumHarvests * 0.25 && harvestsInMonth <= maximumHarvests * 0.50) {
+            harvestDataObject[year][month].activityLevel = 2;
+        } else if (harvestsInMonth > 0 && harvestsInMonth <= maximumHarvests * 0.25) {
+            harvestDataObject[year][month].activityLevel = 1;
+        } else {
+            harvestDataObject[year][month].activityLevel = 0;
+        }
+    });
 
     return harvestDataObject;
 }
+
 
 /**
  * Loops through the data object, returns an object with 3 values: maximumYear, maximumMonth, maximumHarvests.
@@ -127,22 +144,33 @@ function getMaximumHarvestCount(harvestDataObject) {
     let maximumMonth = null;
     let maximumHarvests = 0;
 
-    for (let year of Object.keys(harvestDataObject)) {
-        for (let month of Object.keys(harvestDataObject[year])) {
-            // If this months has the record number of harvests so far...
-            if (harvestDataObject[year][month].numberOfHarvests >= maximumHarvests) {
-                maximumHarvests = harvestDataObject[year][month].numberOfHarvests;
-                maximumYear = year;
-                maximumMonth = month;
-            }
+    // Loop through each month in the data object, check if it beats the record for numberOfHarvests...
+    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
+        if (harvestDataObject[year][month].numberOfHarvests >= maximumHarvests) {
+            maximumHarvests = harvestDataObject[year][month].numberOfHarvests;
+            maximumYear = year;
+            maximumMonth = month;
         }
-    }
+    });
 
     return {
         maximumYear: maximumYear, 
         maximumMonth: maximumMonth, 
         maximumHarvests: maximumHarvests
     };
+}
+
+
+/**
+ * Higher-order function that loops through the harvestDataObject, calling a callback for each month.
+ */
+function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
+
+    for (let year of Object.keys(harvestDataObject)) {
+        for (let month of Object.keys(harvestDataObject[year])) {
+            actionFunction(year, month);
+        }
+    }
 }
 
 
@@ -164,7 +192,7 @@ let harvestDateComponent = Vue.component('harvest-date', {
                 </thead>
                 <tbody>
                     <tr v-for="(data, month) in months">
-                        <td>{{ month }}: {{ data.numberOfHarvests }}</td>
+                        <td>{{ month }}: {{ data.numberOfHarvests }} ({{ data.activityLevel }})</td>
                     </tr>
                 </tbody>
             </table>
