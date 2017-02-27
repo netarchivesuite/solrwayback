@@ -116,7 +116,7 @@ function addActivityLevelToDataObject(harvestDataObject) {
 
     // Loop through each month and assign the activityLevel
     doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-        harvestDataObject[year][month].activityLevel = calculateLinearActivityLevel(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
+        harvestDataObject[year][month].activityLevel = calculateLogarithmicActivityLevel(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
     });
 
     return harvestDataObject;
@@ -178,6 +178,35 @@ function calculateLinearActivityLevel(harvestsInMonth, maximumHarvests) {
     } 
 
     return 0;
+}
+
+
+/**
+ * Calculate activity level logarithmically.
+ */
+function calculateLogarithmicActivityLevel(harvestsInMonth, maximumHarvests) {
+
+    const logarithmicResult = getBaseLog(maximumHarvests, harvestsInMonth);
+
+    if (logarithmicResult > 0.75 && logarithmicResult <= 1) {
+        return 4;
+    } else if (logarithmicResult > 0.50 && logarithmicResult <= 0.75) {
+        return 3;
+    } else if (logarithmicResult > 0.25 && logarithmicResult <= 0.50) {
+        return 2;
+    } else if (logarithmicResult > 0 && logarithmicResult <= 0.25) {
+        return 1;
+    } 
+
+    return 0;
+}
+
+
+/**
+ * The following function returns the logarithm of y with base x, ie. logx(y):
+ */
+function getBaseLog(x, y) {
+    return Math.log(y) / Math.log(x);
 }
 
 
