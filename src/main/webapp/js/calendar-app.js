@@ -4,8 +4,8 @@
  */
 function groupHarvestDatesByYearAndMonth(harvestDates) {
 
-    const fromDate = new Date(_.min(harvestDates));
-    const toDate = new Date(_.max(harvestDates));
+    const fromDate = new Date(Math.min(...harvestDates));
+    const toDate = new Date(Math.max(...harvestDates));
 
     // Parse the harvest dates into an array of Date objects.
     // Validate that the dates are integers.
