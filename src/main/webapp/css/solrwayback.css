@@ -2,13 +2,26 @@
      height: 220px
 }
 
+.tableContainer{
+     overflow: hidden;
+}
+
 table{
      float: left;
-     margin: 2em;
+     margin: 2em 0;
 }
 
 td, th{
      border: 1px solid #cccccc;
      padding: .5em 1em;
+}
+
+td.many, td.few{
+     background: #006600;
+     color: white;
+}
+
+td.few{
+     opacity: .5;
 }
  

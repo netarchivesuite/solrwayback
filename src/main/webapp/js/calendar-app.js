@@ -181,7 +181,7 @@ let harvestDateComponent = Vue.component('harvest-date', {
         }
     },
     template: `
-        <div v-if="harvestData">
+        <div v-if="harvestData" class="tableContainer">
             <p>Harvests: {{ harvestData.numberOfHarvests }}</p>
             <table  v-for="(months, year) in harvestData.dates">
                 <thead>
@@ -191,7 +191,7 @@ let harvestDateComponent = Vue.component('harvest-date', {
                 </thead>
                 <tbody>
                     <tr v-for="(data, month) in months">
-                        <td>{{ month }}: {{ data.numberOfHarvests }} ({{ data.activityLevel }})</td>
+                        <td :title="'Antal høstninger: ' + data.numberOfHarvests" v-bind:class="{many: data.activityLevel === 4, few: data.activityLevel < 4 && data.activityLevel > 1}">&nbsp;</td>
                     </tr>
                 </tbody>
             </table>
