@@ -17,10 +17,9 @@ function groupHarvestDatesByYearAndMonth(harvestDates) {
     const yearRangeObject = buildYearRangeObject(fromDate, toDate);
 
     // Build Harvest Data Object.
-    let harvestDataObject = buildHarvestDataObject(yearRangeObject, parsedHarvestDates);
-    console.log(harvestDataObject);
-
-    harvestDataObject = addActivityLevelToDataObject(harvestDataObject);
+    const harvestDataObject = addActivityLevelToDataObject(
+        buildHarvestDataObject(yearRangeObject, parsedHarvestDates)
+    );
 
     return {
         fromDate: fromDate,
@@ -34,8 +33,8 @@ function groupHarvestDatesByYearAndMonth(harvestDates) {
 /**
  * Build an object with keys as the years, e.g.
  * {
- *     2007: [],
- *     2008: [],
+ *     2007: {},
+ *     2008: {},
  *     ...
  * }
  */
