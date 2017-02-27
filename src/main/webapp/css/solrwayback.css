@@ -21,7 +21,27 @@ td.many, td.few{
      color: white;
 }
 
-td.few{
-     opacity: .5;
+td.activityLevel1 {
+    background: #006600;
+    color: white;
+    opacity: .25;
+}
+
+td.activityLevel2 {
+    background: #006600;
+    color: white;
+    opacity: .50;
+}
+
+td.activityLevel3 {
+    background: #006600;
+    color: white;
+    opacity: .75;
+}
+
+td.activityLevel4 {
+    background: #006600;
+    color: white;
+    opacity: 1;
 }
  
