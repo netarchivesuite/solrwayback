@@ -2,7 +2,7 @@
  * Transforms an array of harvest dates as epoch times into a suitable format for rendering a graph with iteration.
  * This is used to transform the API response into a usable format for VueJS.
  */
-function groupHarvestDatesByYearAndMonth(harvestDates) {
+export function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunction) {
 
     const fromDate = new Date(Math.min(...harvestDates));
     const toDate = new Date(Math.max(...harvestDates));
@@ -18,7 +18,8 @@ function groupHarvestDatesByYearAndMonth(harvestDates) {
 
     // Build Harvest Data Object.
     const harvestDataObject = addActivityLevelToDataObject(
-        buildHarvestDataObject(yearRangeObject, parsedHarvestDates)
+        buildHarvestDataObject(yearRangeObject, parsedHarvestDates),
+        transformationFunction
     );
 
     return {
@@ -42,7 +43,7 @@ function buildYearRangeObject(fromDate, toDate) {
     const yearRangeArray = buildYearRangeArray(fromDate, toDate);
     const yearRangeObject = {};
 
-    for (year of yearRangeArray) {
+    for (let year of yearRangeArray) {
         yearRangeObject[year] = [];
     }  
 
@@ -55,7 +56,7 @@ function buildYearRangeObject(fromDate, toDate) {
  * minDate, maxDate are Date instances
  */
 function buildYearRangeArray(minDate, maxDate) {
-    return yearRangeArray = [...Array(maxDate.getFullYear() - minDate.getFullYear() + 1).keys()]     // e.g. [0, 1, 2, ..., 10]
+    return [...Array(maxDate.getFullYear() - minDate.getFullYear() + 1).keys()]     // e.g. [0, 1, 2, ..., 10]
         .map(year => year + minDate.getFullYear());                                                  // e.g. [2007, 2008, 2009, ..., 2017]
 }
 
@@ -83,7 +84,7 @@ function buildHarvestDataObject(yearRangeObject, parsedHarvestDates) {
         const year = parseInt(yearAsString);        // Since Object.keys() returns an array of strings, we need to convert years to a number.
 
         // Iterate over all months (0-11)
-        for (month of arrayOfMonthValues) {
+        for (let month of arrayOfMonthValues) {
             const allHarvestDatesInMonth = getHarvestsForMonth(year, month, parsedHarvestDates);
 
             yearRangeObject[year][month] = {
@@ -109,14 +110,17 @@ function getHarvestsForMonth(year, month, parsedHarvestDates) {
 /**
  * Calculates and adds an activityLevel property to each month,
  * this is used to color each table cell.
+ * 
+ * It takes a transformationFunction from activity-level.js. 
+ * This enables easy changing of the transformation types.
  */
-function addActivityLevelToDataObject(harvestDataObject) {
+function addActivityLevelToDataObject(harvestDataObject, transformationFunction) {
 
     let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(harvestDataObject);
 
     // Loop through each month and assign the activityLevel
     doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-        harvestDataObject[year][month].activityLevel = calculateLinearActivityLevel(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
+        harvestDataObject[year][month].activityLevel = transformationFunction(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
     });
 
     return harvestDataObject;
@@ -161,106 +165,3 @@ function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
     }
 }
 
-
-/**
- * Calculate activity level linearly between 0 and 4.
- * 0 is no activity level at all, 4 is the max level.
- */
-function calculateLinearActivityLevel(harvestsInMonth, maximumHarvests) {
-    if (harvestsInMonth > maximumHarvests * 0.75 && harvestsInMonth <= maximumHarvests) {
-        return 4;
-    } else if (harvestsInMonth > maximumHarvests * 0.50 && harvestsInMonth <= maximumHarvests * 0.75) {
-        return 3;
-    } else if (harvestsInMonth > maximumHarvests * 0.25 && harvestsInMonth <= maximumHarvests * 0.50) {
-        return 2;
-    } else if (harvestsInMonth > 0 && harvestsInMonth <= maximumHarvests * 0.25) {
-        return 1;
-    } 
-
-    return 0;
-}
-
-
-/**
- * Calculate activity level logarithmically.
- */
-function calculateLogarithmicActivityLevel(harvestsInMonth, maximumHarvests) {
-
-    const logarithmicResult = getBaseLog(maximumHarvests, harvestsInMonth);
-
-    if (logarithmicResult > 0.75 && logarithmicResult <= 1) {
-        return 4;
-    } else if (logarithmicResult > 0.50 && logarithmicResult <= 0.75) {
-        return 3;
-    } else if (logarithmicResult > 0.25 && logarithmicResult <= 0.50) {
-        return 2;
-    } else if (logarithmicResult > 0 && logarithmicResult <= 0.25) {
-        return 1;
-    } 
-
-    return 0;
-}
-
-
-/**
- * The following function returns the logarithm of y with base x, ie. logx(y):
- */
-function getBaseLog(x, y) {
-    return Math.log(y) / Math.log(x);
-}
-
-
-let harvestDateComponent = Vue.component('harvest-date', {
-    props: ['message'],
-    data: () => {
-        return {
-            harvestData: null,
-        }
-    },
-    template: `
-        <div v-if="harvestData" class="tableContainer">
-            <p>Harvests: {{ harvestData.numberOfHarvests }}</p>
-            <table>
-                <tr><td>&nbsp;</td></tr>
-                <tr><td>Januar</td></tr>
-                <tr><td>Februar</td></tr>
-                <tr><td>Marts</td></tr>
-                <tr><td>April</td></tr>
-                <tr><td>Maj</td></tr>
-                <tr><td>Juni</td></tr>
-                <tr><td>Juli</td></tr>
-                <tr><td>August</td></tr>
-                <tr><td>September</td></tr>
-                <tr><td>Oktober</td></tr>
-                <tr><td>November</td></tr>
-                <tr><td>December</td></tr>
-            </table>
-            <table v-for="(months, year) in harvestData.dates">
-                <thead>
-                    <tr>
-                        <th>{{ year }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(data, month) in months">
-                        <td :title="'Antal høstninger: ' + data.numberOfHarvests" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div v-else>
-            <p>Fetching harvests</p>
-        </div>
-    `,
-    created() {
-        this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(window.solrWaybackConfig.url))
-        .then(response => {
-            this.harvestData = groupHarvestDatesByYearAndMonth(response.data.dates);
-        });
-    }
-});
-
-
-let app = new Vue({
-    el: "#app"
-});

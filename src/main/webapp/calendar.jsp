@@ -133,6 +133,6 @@
 
         </div>
     </div>
-    <script src="js/calendar-app.js"></script>
+    <script src="js/calendar-widget/dist/bundle.js"></script>
 </body>
 </html>
