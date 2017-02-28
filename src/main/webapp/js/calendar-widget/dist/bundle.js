@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 12);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1891,570 +1891,426 @@ return Tether;
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {module.exports =
-/******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
-/******/ 			return installedModules[moduleId].exports;
-/******/
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// identity function for calling harmony imports with the correct context
-/******/ 	__webpack_require__.i = function(value) { return value; };
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+// style-loader: Adds some css to the DOM by adding a <style> tag
 
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tether_tooltip__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tether_tooltip___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_tether_tooltip__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(1);
-/* unused harmony export defaultTetherOptions */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return defaultOptions; });
-
-
-
-
-var positions = ['top-left', 'left-top', 'left-middle', 'left-bottom', 'bottom-left', 'bottom-center', 'bottom-right', 'right-bottom', 'right-middle', 'right-top', 'top-right', 'top-center'];
-
-var defaultTetherOptions = {
-  constraints: [{
-    to: 'window',
-    attachment: 'together',
-    pin: true
-  }]
-};
-
-var defaultOptions = {
-  tetherOptions: defaultTetherOptions,
-  defaultClass: 'vue-tooltip-theme'
-};
-
-function createTooltip(el, value, modifiers) {
-  var position = 'top-center';
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
-
-  try {
-    for (var _iterator = positions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var pos = _step.value;
-
-      if (modifiers[pos]) {
-        position = pos;
-      }
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
-  }
-
-  position = position.replace('-', ' ');
-
-  var content = value.content || value;
-
-  var classes = directive.options.defaultClass;
-  if (value.classes) {
-    classes = value.classes;
-  }
-
-  el._tooltip = new __WEBPACK_IMPORTED_MODULE_0_tether_tooltip___default.a({
-    target: el,
-    position: position,
-    content: content,
-    classes: classes,
-    tetherOptions: directive.options.tetherOptions
-  });
-}
-
-function destroyTooltip(el) {
-  if (el._tooltip) {
-    el._tooltip.destroy();
-    delete el._tooltip;
-  }
-}
-
-var directive = {
-  options: defaultOptions,
-  bind: function bind(el, _ref) {
-    var value = _ref.value,
-        modifiers = _ref.modifiers;
-
-    var content = value && value.content || value;
-    destroyTooltip(el);
-    if (content) {
-      createTooltip(el, value, modifiers);
-    }
-  },
-  update: function update(el, _ref2) {
-    var value = _ref2.value,
-        oldValue = _ref2.oldValue,
-        modifiers = _ref2.modifiers;
-
-    var content = value && value.content || value;
-    if (!content) {
-      destroyTooltip(el);
-    } else if (el._tooltip) {
-      var drop = el._tooltip.drop;
-
-      // Content
-      drop.content.innerHTML = content;
-
-      // CSS classes
-      var oldClasses = oldValue && oldValue.classes;
-      if (value && value.classes) {
-        if (oldClasses) {
-          __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["a" /* replaceClasses */])(drop.drop, value.classes, oldClasses);
-        } else {
-          __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["b" /* addClasses */])(drop.drop, value.classes);
-        }
-      } else if (oldClasses) {
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["c" /* removeClasses */])(drop.drop, oldClasses);
-      }
-    } else {
-      createTooltip(el, value, modifiers);
-    }
-  },
-  unbind: function unbind(el) {
-    destroyTooltip(el);
-  }
-};
-
-/* harmony default export */ __webpack_exports__["b"] = directive;
-
-/***/ }),
-/* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["b"] = addClasses;
-/* harmony export (immutable) */ __webpack_exports__["c"] = removeClasses;
-/* harmony export (immutable) */ __webpack_exports__["a"] = replaceClasses;
-/* unused harmony export mirrorAttachment */
-/* unused harmony export sortAttach */
-/* unused harmony export getTetherAttachments */
-
-function convertToArray(value) {
-  if (typeof value === 'string') {
-    value = value.split(' ');
-  }
-  return value;
-}
-
-function addClasses(el, classes) {
-  classes = convertToArray(classes);
-  classes.forEach(function (c) {
-    el.classList.add(c);
-  });
-}
-
-function removeClasses(el, classes) {
-  classes = convertToArray(classes);
-  classes.forEach(function (c) {
-    el.classList.remove(c);
-  });
-}
-
-function replaceClasses(el, newClasses, oldClasses) {
-  removeClasses(el, oldClasses);
-  addClasses(el, newClasses);
-}
-
-var MIRROR_ATTACH = {
-  left: 'right',
-  right: 'left',
-  top: 'bottom',
-  bottom: 'top',
-  middle: 'middle',
-  center: 'center'
-};
-
-function mirrorAttachment(attachment) {
-  var dropAttach = attachment.split(' ');
-  dropAttach[0] = MIRROR_ATTACH[dropAttach[0]];
-  dropAttach = dropAttach.join(' ');
-  return dropAttach;
-}
-
-function sortAttach(str) {
-  var list = str.split(' ');
-
-  var first = list[0];
-  var second = list[1];
-
-  if (['left', 'right'].indexOf(first) >= 0) {
-    var _ref = [second, first];
-    first = _ref[0];
-    second = _ref[1];
-  }
-  return [first, second].join(' ');
-}
-
-function getTetherAttachments(position) {
-  var dropAttach = mirrorAttachment(position);
-  return {
-    attachment: sortAttach(dropAttach),
-    targetAttachment: sortAttach(position)
-  };
+// load the styles
+var content = __webpack_require__(3);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(5)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../node_modules/css-loader/index.js??ref--0-1!../node_modules/less-loader/index.js!./calendar.less", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js??ref--0-1!../node_modules/less-loader/index.js!./calendar.less");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
 }
 
 /***/ }),
 /* 2 */
-/***/ (function(module, exports) {
-
-module.exports = __webpack_require__(5);
-
-/***/ }),
-/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__v_tooltip__ = __webpack_require__(0);
-/* harmony export (immutable) */ __webpack_exports__["install"] = install;
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VTooltip", function() { return VTooltip; });
-
-
-function install(Vue, options) {
-  if (install.installed) return;
-  install.installed = true;
-
-  options = Object.assign({}, __WEBPACK_IMPORTED_MODULE_0__v_tooltip__["a" /* defaultOptions */], options || {});
-  __WEBPACK_IMPORTED_MODULE_0__v_tooltip__["b" /* default */].options = options;
-  Vue.directive('tooltip', __WEBPACK_IMPORTED_MODULE_0__v_tooltip__["b" /* default */]);
-}
-
-var VTooltip = __WEBPACK_IMPORTED_MODULE_0__v_tooltip__["b" /* default */];
-
-var plugin = {
-  install: install
-};
-
-// Auto-install
-var GlobalVue = null;
-if (typeof window !== 'undefined') {
-  GlobalVue = window.Vue;
-} else if (typeof global !== 'undefined') {
-  GlobalVue = global.Vue;
-}
-if (GlobalVue) {
-  GlobalVue.use(plugin);
-}
-
-/* harmony default export */ __webpack_exports__["default"] = plugin;
-
-/***/ })
-/******/ ]);
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vd2VicGFjay9ib290c3RyYXAgNGNjMWMwMmFkZDJiZTc1Y2JlYzciLCJ3ZWJwYWNrOi8vLy4vc3JjL3YtdG9vbHRpcC5qcyIsIndlYnBhY2s6Ly8vLi9zcmMvdXRpbHMuanMiLCJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwidGV0aGVyLXRvb2x0aXBcIiIsIndlYnBhY2s6Ly8vLi9zcmMvaW5kZXguanMiXSwibmFtZXMiOlsicG9zaXRpb25zIiwiZGVmYXVsdFRldGhlck9wdGlvbnMiLCJjb25zdHJhaW50cyIsInRvIiwiYXR0YWNobWVudCIsInBpbiIsImRlZmF1bHRPcHRpb25zIiwidGV0aGVyT3B0aW9ucyIsImRlZmF1bHRDbGFzcyIsImNyZWF0ZVRvb2x0aXAiLCJlbCIsInZhbHVlIiwibW9kaWZpZXJzIiwicG9zaXRpb24iLCJwb3MiLCJyZXBsYWNlIiwiY29udGVudCIsImNsYXNzZXMiLCJkaXJlY3RpdmUiLCJvcHRpb25zIiwiX3Rvb2x0aXAiLCJ0YXJnZXQiLCJkZXN0cm95VG9vbHRpcCIsImRlc3Ryb3kiLCJiaW5kIiwidXBkYXRlIiwib2xkVmFsdWUiLCJkcm9wIiwiaW5uZXJIVE1MIiwib2xkQ2xhc3NlcyIsInJlcGxhY2VDbGFzc2VzIiwiYWRkQ2xhc3NlcyIsInJlbW92ZUNsYXNzZXMiLCJ1bmJpbmQiLCJjb252ZXJ0VG9BcnJheSIsInNwbGl0IiwiZm9yRWFjaCIsImNsYXNzTGlzdCIsImFkZCIsImMiLCJyZW1vdmUiLCJuZXdDbGFzc2VzIiwiTUlSUk9SX0FUVEFDSCIsImxlZnQiLCJyaWdodCIsInRvcCIsImJvdHRvbSIsIm1pZGRsZSIsImNlbnRlciIsIm1pcnJvckF0dGFjaG1lbnQiLCJkcm9wQXR0YWNoIiwiam9pbiIsInNvcnRBdHRhY2giLCJzdHIiLCJsaXN0IiwiZmlyc3QiLCJzZWNvbmQiLCJpbmRleE9mIiwiX3JlZiIsImdldFRldGhlckF0dGFjaG1lbnRzIiwidGFyZ2V0QXR0YWNobWVudCIsImluc3RhbGwiLCJWdWUiLCJpbnN0YWxsZWQiLCJPYmplY3QiLCJhc3NpZ24iLCJ2dG9vbHRpcCIsIlZUb29sdGlwIiwicGx1Z2luIiwiR2xvYmFsVnVlIiwid2luZG93IiwiZ2xvYmFsIiwidXNlIl0sIm1hcHBpbmdzIjoiOztBQUFBO0FBQ0E7O0FBRUE7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7O0FBRUE7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7OztBQUdBO0FBQ0E7O0FBRUE7QUFDQTs7QUFFQTtBQUNBLG1EQUEyQyxjQUFjOztBQUV6RDtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLGFBQUs7QUFDTDtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBLG1DQUEyQiwwQkFBMEIsRUFBRTtBQUN2RCx5Q0FBaUMsZUFBZTtBQUNoRDtBQUNBO0FBQ0E7O0FBRUE7QUFDQSw4REFBc0QsK0RBQStEOztBQUVySDtBQUNBOztBQUVBO0FBQ0E7Ozs7Ozs7Ozs7Ozs7QUNoRUE7O0FBRUE7O0FBRUEsSUFBTUEsWUFBWSxDQUNoQixVQURnQixFQUVoQixVQUZnQixFQUdoQixhQUhnQixFQUloQixhQUpnQixFQUtoQixhQUxnQixFQU1oQixlQU5nQixFQU9oQixjQVBnQixFQVFoQixjQVJnQixFQVNoQixjQVRnQixFQVVoQixXQVZnQixFQVdoQixXQVhnQixFQVloQixZQVpnQixDQUFsQjs7QUFlTyxJQUFNQyx1QkFBdUI7QUFDbENDLGVBQWEsQ0FDWDtBQUNFQyxRQUFJLFFBRE47QUFFRUMsZ0JBQVksVUFGZDtBQUdFQyxTQUFLO0FBSFAsR0FEVztBQURxQixDQUE3Qjs7QUFVQSxJQUFNQyxpQkFBaUI7QUFDNUJDLGlCQUFlTixvQkFEYTtBQUU1Qk8sZ0JBQWM7QUFGYyxDQUF2Qjs7QUFLUCxTQUFTQyxhQUFULENBQXdCQyxFQUF4QixFQUE0QkMsS0FBNUIsRUFBbUNDLFNBQW5DLEVBQThDO0FBQzVDLE1BQUlDLFdBQVcsWUFBZjtBQUQ0QztBQUFB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QU1pRCxXQUFXLDJEQUFqQjs7QUFFUCxJQUFNQyxTQUFTO0FBQ2JQO0FBRGEsQ0FBZjs7QUFJQTtBQUNBLElBQUlRLFlBQVksSUFBaEI7QUFDQSxJQUFJLE9BQU9DLE1BQVAsS0FBa0IsV0FBdEIsRUFBbUM7QUFDakNELGNBQVlDLE9BQU9SLEdBQW5CO0FBQ0QsQ0FGRCxNQUVPLElBQUksT0FBT1MsTUFBUCxLQUFrQixXQUF0QixFQUFtQztBQUN4Q0YsY0FBWUUsT0FBT1QsR0FBbkI7QUFDRDtBQUNELElBQUlPLFNBQUosRUFBZTtBQUNiQSxZQUFVRyxHQUFWLENBQWNKLE1BQWQ7QUFDRDs7QUFFRCw4REFBZUEsTUFBZixDIiwiZmlsZSI6InYtdG9vbHRpcC5jb21tb24uanMiLCJzb3VyY2VzQ29udGVudCI6WyIgXHQvLyBUaGUgbW9kdWxlIGNhY2hlXG4gXHR2YXIgaW5zdGFsbGVkTW9kdWxlcyA9IHt9O1xuXG4gXHQvLyBUaGUgcmVxdWlyZSBmdW5jdGlvblxuIFx0ZnVuY3Rpb24gX193ZWJwYWNrX3JlcXVpcmVfXyhtb2R1bGVJZCkge1xuXG4gXHRcdC8vIENoZWNrIGlmIG1vZHVsZSBpcyBpbiBjYWNoZVxuIFx0XHRpZihpbnN0YWxsZWRNb2R1bGVzW21vZHVsZUlkXSlcbiBcdFx0XHRyZXR1cm4gaW5zdGFsbGVkTW9kdWxlc1ttb2R1bGVJZF0uZXhwb3J0cztcblxuIFx0XHQvLyBDcmVhdGUgYSBuZXcgbW9kdWxlIChhbmQgcHV0IGl0IGludG8gdGhlIGNhY2hlKVxuIFx0XHR2YXIgbW9kdWxlID0gaW5zdGFsbGVkTW9kdWxlc1ttb2R1bGVJZF0gPSB7XG4gXHRcdFx0aTogbW9kdWxlSWQsXG4gXHRcdFx0bDogZmFsc2UsXG4gXHRcdFx0ZXhwb3J0czoge31cbiBcdFx0fTtcblxuIFx0XHQvLyBFeGVjdXRlIHRoZSBtb2R1bGUgZnVuY3Rpb25cbiBcdFx0bW9kdWxlc1ttb2R1bGVJZF0uY2FsbChtb2R1bGUuZXhwb3J0cywgbW9kdWxlLCBtb2R1bGUuZXhwb3J0cywgX193ZWJwYWNrX3JlcXVpcmVfXyk7XG5cbiBcdFx0Ly8gRmxhZyB0aGUgbW9kdWxlIGFzIGxvYWRlZFxuIFx0XHRtb2R1bGUubCA9IHRydWU7XG5cbiBcdFx0Ly8gUmV0dXJuIHRoZSBleHBvcnRzIG9mIHRoZSBtb2R1bGVcbiBcdFx0cmV0dXJuIG1vZHVsZS5leHBvcnRzO1xuIFx0fVxuXG5cbiBcdC8vIGV4cG9zZSB0aGUgbW9kdWxlcyBvYmplY3QgKF9fd2VicGFja19tb2R1bGVzX18pXG4gXHRfX3dlYnBhY2tfcmVxdWlyZV9fLm0gPSBtb2R1bGVzO1xuXG4gXHQvLyBleHBvc2UgdGhlIG1vZHVsZSBjYWNoZVxuIFx0X193ZWJwYWNrX3JlcXVpcmVfXy5jID0gaW5zdGFsbGVkTW9kdWxlcztcblxuIFx0Ly8gaWRlbnRpdHkgZnVuY3Rpb24gZm9yIGNhbGxpbmcgaGFybW9ueSBpbXBvcnRzIHdpdGggdGhlIGNvcnJlY3QgY29udGV4dFxuIFx0X193ZWJwYWNrX3JlcXVpcmVfXy5pID0gZnVuY3Rpb24odmFsdWUpIHsgcmV0dXJuIHZhbHVlOyB9O1xuXG4gXHQvLyBkZWZpbmUgZ2V0dGVyIGZ1bmN0aW9uIGZvciBoYXJtb255IGV4cG9ydHNcbiBcdF9fd2VicGFja19yZXF1aXJlX18uZCA9IGZ1bmN0aW9uKGV4cG9ydHMsIG5hbWUsIGdldHRlcikge1xuIFx0XHRpZighX193ZWJwYWNrX3JlcXVpcmVfXy5vKGV4cG9ydHMsIG5hbWUpKSB7XG4gXHRcdFx0T2JqZWN0LmRlZmluZVByb3BlcnR5KGV4cG9ydHMsIG5hbWUsIHtcbiBcdFx0XHRcdGNvbmZpZ3VyYWJsZTogZmFsc2UsXG4gXHRcdFx0XHRlbnVtZXJhYmxlOiB0cnVlLFxuIFx0XHRcdFx0Z2V0OiBnZXR0ZXJcbiBcdFx0XHR9KTtcbiBcdFx0fVxuIFx0fTtcblxuIFx0Ly8gZ2V0RGVmYXVsdEV4cG9ydCBmdW5jdGlvbiBmb3IgY29tcGF0aWJpbGl0eSB3aXRoIG5vbi1oYXJtb255IG1vZHVsZXNcbiBcdF9fd2VicGFja19yZXF1aXJlX18ubiA9IGZ1bmN0aW9uKG1vZHVsZSkge1xuIFx0XHR2YXIgZ2V0dGVyID0gbW9kdWxlICYmIG1vZHVsZS5fX2VzTW9kdWxlID9cbiBcdFx0XHRmdW5jdGlvbiBnZXREZWZhdWx0KCkgeyByZXR1cm4gbW9kdWxlWydkZWZhdWx0J107IH0gOlxuIFx0XHRcdGZ1bmN0aW9uIGdldE1vZHVsZUV4cG9ydHMoKSB7IHJldHVybiBtb2R1bGU7IH07XG4gXHRcdF9fd2VicGFja19yZXF1aXJlX18uZChnZXR0ZXIsICdhJywgZ2V0dGVyKTtcbiBcdFx0cmV0dXJuIGdldHRlcjtcbiBcdH07XG5cbiBcdC8vIE9iamVjdC5wcm90b3R5cGUuaGFzT3duUHJvcGVydHkuY2FsbFxuIFx0X193ZWJwYWNrX3JlcXVpcmVfXy5vID0gZnVuY3Rpb24ob2JqZWN0LCBwcm9wZXJ0eSkgeyByZXR1cm4gT2JqZWN0LnByb3RvdHlwZS5oYXNPd25Qcm9wZXJ0eS5jYWxsKG9iamVjdCwgcHJvcGVydHkpOyB9O1xuXG4gXHQvLyBfX3dlYnBhY2tfcHVibGljX3BhdGhfX1xuIFx0X193ZWJwYWNrX3JlcXVpcmVfXy5wID0gXCJcIjtcblxuIFx0Ly8gTG9hZCBlbnRyeSBtb2R1bGUgYW5kIHJldHVybiBleHBvcnRzXG4gXHRyZXR1cm4gX193ZWJwYWNrX3JlcXVpcmVfXyhfX3dlYnBhY2tfcmVxdWlyZV9fLnMgPSAzKTtcblxuXG5cbi8vIFdFQlBBQ0sgRk9PVEVSIC8vXG4vLyB3ZWJwYWNrL2Jvb3RzdHJhcCA0Y2MxYzAyYWRkMmJlNzVjYmVjNyIsImltcG9ydCBUb29sdGlwIGZyb20gJ3RldGhlci10b29sdGlwJ1xuXG5pbXBvcnQgeyBhZGRDbGFzc2VzLCByZW1vdmVDbGFzc2VzLCByZXBsYWNlQ2xhc3NlcyB9IGZyb20gJy4vdXRpbHMnXG5cbmNvbnN0IHBvc2l0aW9ucyA9IFtcbiAgJ3RvcC1sZWZ0JyxcbiAgJ2xlZnQtdG9wJyxcbiAgJ2xlZnQtbWlkZGxlJyxcbiAgJ2xlZnQtYm90dG9tJyxcbiAgJ2JvdHRvbS1sZWZ0JyxcbiAgJ2JvdHRvbS1jZW50ZXInLFxuICAnYm90dG9tLXJpZ2h0JyxcbiAgJ3JpZ2h0LWJvdHRvbScsXG4gICdyaWdodC1taWRkbGUnLFxuICAncmlnaHQtdG9wJyxcbiAgJ3RvcC1yaWdodCcsXG4gICd0b3AtY2VudGVyJyxcbl1cblxuZXhwb3J0IGNvbnN0IGRlZmF1bHRUZXRoZXJPcHRpb25zID0ge1xuICBjb25zdHJhaW50czogW1xuICAgIHtcbiAgICAgIHRvOiAnd2luZG93JyxcbiAgICAgIGF0dGFjaG1lbnQ6ICd0b2dldGhlcicsXG4gICAgICBwaW46IHRydWUsXG4gICAgfSxcbiAgXSxcbn1cblxuZXhwb3J0IGNvbnN0IGRlZmF1bHRPcHRpb25zID0ge1xuICB0ZXRoZXJPcHRpb25zOiBkZWZhdWx0VGV0aGVyT3B0aW9ucyxcbiAgZGVmYXVsdENsYXNzOiAndnVlLXRvb2x0aXAtdGhlbWUnLFxufVxuXG5mdW5jdGlvbiBjcmVhdGVUb29sdGlwIChlbCwgdmFsdWUsIG1vZGlmaWVycykge1xuICBsZXQgcG9zaXRpb24gPSAndG9wLWNlbnRlcidcbiAgZm9yIChjb25zdCBwb3Mgb2YgcG9zaXRpb25zKSB7XG4gICAgaWYgKG1vZGlmaWVyc1twb3NdKSB7XG4gICAgICBwb3NpdGlvbiA9IHBvc1xuICAgIH1cbiAgfVxuICBwb3NpdGlvbiA9IHBvc2l0aW9uLnJlcGxhY2UoJy0nLCAnICcpXG5cbiAgY29uc3QgY29udGVudCA9IHZhbHVlLmNvbnRlbnQgfHwgdmFsdWVcblxuICBsZXQgY2xhc3NlcyA9IGRpcmVjdGl2ZS5vcHRpb25zLmRlZmF1bHRDbGFzc1xuICBpZiAodmFsdWUuY2xhc3Nlcykge1xuICAgIGNsYXNzZXMgPSB2YWx1ZS5jbGFzc2VzXG4gIH1cblxuICBlbC5fdG9vbHRpcCA9IG5ldyBUb29sdGlwKHtcbiAgICB0YXJnZXQ6IGVsLFxuICAgIHBvc2l0aW9uLFxuICAgIGNvbnRlbnQsXG4gICAgY2xhc3NlcyxcbiAgICB0ZXRoZXJPcHRpb25zOiBkaXJlY3RpdmUub3B0aW9ucy50ZXRoZXJPcHRpb25zLFxuICB9KVxufVxuXG5mdW5jdGlvbiBkZXN0cm95VG9vbHRpcCAoZWwpIHtcbiAgaWYgKGVsLl90b29sdGlwKSB7XG4gICAgZWwuX3Rvb2x0aXAuZGVzdHJveSgpXG4gICAgZGVsZXRlIGVsLl90b29sdGlwXG4gIH1cbn1cblxuY29uc3QgZGlyZWN0aXZlID0ge1xuICBvcHRpb25zOiBkZWZhdWx0T3B0aW9ucyxcbiAgYmluZCAoZWwsIHsgdmFsdWUsIG1vZGlmaWVycyB9KSB7XG4gICAgY29uc3QgY29udGVudCA9IHZhbHVlICYmIHZhbHVlLmNvbnRlbnQgfHwgdmFsdWVcbiAgICBkZXN0cm95VG9vbHRpcChlbClcbiAgICBpZiAoY29udGVudCkge1xuICAgICAgY3JlYXRlVG9vbHRpcChlbCwgdmFsdWUsIG1vZGlmaWVycylcbiAgICB9XG4gIH0sXG4gIHVwZGF0ZSAoZWwsIHsgdmFsdWUsIG9sZFZhbHVlLCBtb2RpZmllcnMgfSkge1xuICAgIGNvbnN0IGNvbnRlbnQgPSB2YWx1ZSAmJiB2YWx1ZS5jb250ZW50IHx8IHZhbHVlXG4gICAgaWYgKCFjb250ZW50KSB7XG4gICAgICBkZXN0cm95VG9vbHRpcChlbClcbiAgICB9IGVsc2UgaWYgKGVsLl90b29sdGlwKSB7XG4gICAgICBjb25zdCBkcm9wID0gZWwuX3Rvb2x0aXAuZHJvcFxuXG4gICAgICAvLyBDb250ZW50XG4gICAgICBkcm9wLmNvbnRlbnQuaW5uZXJIVE1MID0gY29udGVudFxuXG4gICAgICAvLyBDU1MgY2xhc3Nlc1xuICAgICAgY29uc3Qgb2xkQ2xhc3NlcyA9IG9sZFZhbHVlICYmIG9sZFZhbHVlLmNsYXNzZXNcbiAgICAgIGlmICh2YWx1ZSAmJiB2YWx1ZS5jbGFzc2VzKSB7XG4gICAgICAgIGlmIChvbGRDbGFzc2VzKSB7XG4gICAgICAgICAgcmVwbGFjZUNsYXNzZXMoZHJvcC5kcm9wLCB2YWx1ZS5jbGFzc2VzLCBvbGRDbGFzc2VzKVxuICAgICAgICB9IGVsc2Uge1xuICAgICAgICAgIGFkZENsYXNzZXMoZHJvcC5kcm9wLCB2YWx1ZS5jbGFzc2VzKVxuICAgICAgICB9XG4gICAgICB9IGVsc2UgaWYgKG9sZENsYXNzZXMpIHtcbiAgICAgICAgcmVtb3ZlQ2xhc3Nlcyhkcm9wLmRyb3AsIG9sZENsYXNzZXMpXG4gICAgICB9XG4gICAgfSBlbHNlIHtcbiAgICAgIGNyZWF0ZVRvb2x0aXAoZWwsIHZhbHVlLCBtb2RpZmllcnMpXG4gICAgfVxuICB9LFxuICB1bmJpbmQgKGVsKSB7XG4gICAgZGVzdHJveVRvb2x0aXAoZWwpXG4gIH0sXG59XG5cbmV4cG9ydCBkZWZhdWx0IGRpcmVjdGl2ZVxuXG5cblxuLy8gV0VCUEFDSyBGT09URVIgLy9cbi8vIC4vc3JjL3YtdG9vbHRpcC5qcyIsIlxuZnVuY3Rpb24gY29udmVydFRvQXJyYXkgKHZhbHVlKSB7XG4gIGlmICh0eXBlb2YgdmFsdWUgPT09ICdzdHJpbmcnKSB7XG4gICAgdmFsdWUgPSB2YWx1ZS5zcGxpdCgnICcpXG4gIH1cbiAgcmV0dXJuIHZhbHVlXG59XG5cbmV4cG9ydCBmdW5jdGlvbiBhZGRDbGFzc2VzIChlbCwgY2xhc3Nlcykge1xuICBjbGFzc2VzID0gY29udmVydFRvQXJyYXkoY2xhc3NlcylcbiAgY2xhc3Nlcy5mb3JFYWNoKGMgPT4ge1xuICAgIGVsLmNsYXNzTGlzdC5hZGQoYylcbiAgfSlcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHJlbW92ZUNsYXNzZXMgKGVsLCBjbGFzc2VzKSB7XG4gIGNsYXNzZXMgPSBjb252ZXJ0VG9BcnJheShjbGFzc2VzKVxuICBjbGFzc2VzLmZvckVhY2goYyA9PiB7XG4gICAgZWwuY2xhc3NMaXN0LnJlbW92ZShjKVxuICB9KVxufVxuXG5leHBvcnQgZnVuY3Rpb24gcmVwbGFjZUNsYXNzZXMgKGVsLCBuZXdDbGFzc2VzLCBvbGRDbGFzc2VzKSB7XG4gIHJlbW92ZUNsYXNzZXMoZWwsIG9sZENsYXNzZXMpXG4gIGFkZENsYXNzZXMoZWwsIG5ld0NsYXNzZXMpXG59XG5cbmNvbnN0IE1JUlJPUl9BVFRBQ0ggPSB7XG4gIGxlZnQ6ICdyaWdodCcsXG4gIHJpZ2h0OiAnbGVmdCcsXG4gIHRvcDogJ2JvdHRvbScsXG4gIGJvdHRvbTogJ3RvcCcsXG4gIG1pZGRsZTogJ21pZGRsZScsXG4gIGNlbnRlcjogJ2NlbnRlcicsXG59XG5cbmV4cG9ydCBmdW5jdGlvbiBtaXJyb3JBdHRhY2htZW50IChhdHRhY2htZW50KSB7XG4gIHZhciBkcm9wQXR0YWNoID0gYXR0YWNobWVudC5zcGxpdCgnICcpXG4gIGRyb3BBdHRhY2hbMF0gPSBNSVJST1JfQVRUQUNIW2Ryb3BBdHRhY2hbMF1dXG4gIGRyb3BBdHRhY2ggPSBkcm9wQXR0YWNoLmpvaW4oJyAnKVxuICByZXR1cm4gZHJvcEF0dGFjaFxufVxuXG5leHBvcnQgZnVuY3Rpb24gc29ydEF0dGFjaCAoc3RyKSB7XG4gIHZhciBsaXN0ID0gc3RyLnNwbGl0KCcgJylcblxuICB2YXIgZmlyc3QgPSBsaXN0WzBdXG4gIHZhciBzZWNvbmQgPSBsaXN0WzFdXG5cbiAgaWYgKFsnbGVmdCcsICdyaWdodCddLmluZGV4T2YoZmlyc3QpID49IDApIHtcbiAgICB2YXIgX3JlZiA9IFtzZWNvbmQsIGZpcnN0XVxuICAgIGZpcnN0ID0gX3JlZlswXVxuICAgIHNlY29uZCA9IF9yZWZbMV1cbiAgfVxuICByZXR1cm4gW2ZpcnN0LCBzZWNvbmRdLmpvaW4oJyAnKVxufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0VGV0aGVyQXR0YWNobWVudHMgKHBvc2l0aW9uKSB7XG4gIGNvbnN0IGRyb3BBdHRhY2ggPSBtaXJyb3JBdHRhY2htZW50KHBvc2l0aW9uKVxuICByZXR1cm4ge1xuICAgIGF0dGFjaG1lbnQ6IHNvcnRBdHRhY2goZHJvcEF0dGFjaCksXG4gICAgdGFyZ2V0QXR0YWNobWVudDogc29ydEF0dGFjaChwb3NpdGlvbiksXG4gIH1cbn1cblxuXG5cbi8vIFdFQlBBQ0sgRk9PVEVSIC8vXG4vLyAuL3NyYy91dGlscy5qcyIsIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcInRldGhlci10b29sdGlwXCIpO1xuXG5cbi8vLy8vLy8vLy8vLy8vLy8vL1xuLy8gV0VCUEFDSyBGT09URVJcbi8vIGV4dGVybmFsIFwidGV0aGVyLXRvb2x0aXBcIlxuLy8gbW9kdWxlIGlkID0gMlxuLy8gbW9kdWxlIGNodW5rcyA9IDAiLCJpbXBvcnQgdnRvb2x0aXAsIHsgZGVmYXVsdE9wdGlvbnMgfSBmcm9tICcuL3YtdG9vbHRpcCdcblxuZXhwb3J0IGZ1bmN0aW9uIGluc3RhbGwgKFZ1ZSwgb3B0aW9ucykge1xuICBpZiAoaW5zdGFsbC5pbnN0YWxsZWQpIHJldHVyblxuICBpbnN0YWxsLmluc3RhbGxlZCA9IHRydWVcblxuICBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7fSwgZGVmYXVsdE9wdGlvbnMsIG9wdGlvbnMgfHwge30pXG4gIHZ0b29sdGlwLm9wdGlvbnMgPSBvcHRpb25zXG4gIFZ1ZS5kaXJlY3RpdmUoJ3Rvb2x0aXAnLCB2dG9vbHRpcClcbn1cblxuZXhwb3J0IGNvbnN0IFZUb29sdGlwID0gdnRvb2x0aXBcblxuY29uc3QgcGx1Z2luID0ge1xuICBpbnN0YWxsLFxufVxuXG4vLyBBdXRvLWluc3RhbGxcbmxldCBHbG9iYWxWdWUgPSBudWxsXG5pZiAodHlwZW9mIHdpbmRvdyAhPT0gJ3VuZGVmaW5lZCcpIHtcbiAgR2xvYmFsVnVlID0gd2luZG93LlZ1ZVxufSBlbHNlIGlmICh0eXBlb2YgZ2xvYmFsICE9PSAndW5kZWZpbmVkJykge1xuICBHbG9iYWxWdWUgPSBnbG9iYWwuVnVlXG59XG5pZiAoR2xvYmFsVnVlKSB7XG4gIEdsb2JhbFZ1ZS51c2UocGx1Z2luKVxufVxuXG5leHBvcnQgZGVmYXVsdCBwbHVnaW5cblxuXG5cbi8vIFdFQlBBQ0sgRk9PVEVSIC8vXG4vLyAuL3NyYy9pbmRleC5qcyJdLCJzb3VyY2VSb290IjoiIn0=
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = calculateLinearActivityLevel;
-/* unused harmony export calculateLogarithmicActivityLevel */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformer__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__activity_level__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_v_tooltip__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_v_tooltip___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_v_tooltip__);
 /**
- * These are functions to calculate the activitylevel for a given month.
+ * This is the main vue component for the graph.
  */
 
 
-/**
- * Calculate activity level linearly between 0 and 4.
- * 0 is no activity level at all, 4 is the max level.
- */
-function calculateLinearActivityLevel(harvestsInMonth, maximumHarvests) {
-    if (harvestsInMonth > maximumHarvests * 0.75 && harvestsInMonth <= maximumHarvests) {
-        return 4;
-    } else if (harvestsInMonth > maximumHarvests * 0.50 && harvestsInMonth <= maximumHarvests * 0.75) {
-        return 3;
-    } else if (harvestsInMonth > maximumHarvests * 0.25 && harvestsInMonth <= maximumHarvests * 0.50) {
-        return 2;
-    } else if (harvestsInMonth > 0 && harvestsInMonth <= maximumHarvests * 0.25) {
-        return 1;
-    } 
-
-    return 0;
-}
 
 
-/**
- * Calculate activity level logarithmically.
- */
-function calculateLogarithmicActivityLevel(harvestsInMonth, maximumHarvests) {
 
-    const logarithmicResult = getBaseLog(maximumHarvests, harvestsInMonth);
+Vue.use(__WEBPACK_IMPORTED_MODULE_2_v_tooltip___default.a);
 
-    if (logarithmicResult > 0.75 && logarithmicResult <= 1) {
-        return 4;
-    } else if (logarithmicResult > 0.50 && logarithmicResult <= 0.75) {
-        return 3;
-    } else if (logarithmicResult > 0.25 && logarithmicResult <= 0.50) {
-        return 2;
-    } else if (logarithmicResult > 0 && logarithmicResult <= 0.25) {
-        return 1;
-    } 
+Vue.component('harvest-date', {
+    data: () => {
+        return {
+            harvestData: null,
+        }
+    },
+    template: `
+        <div v-if="harvestData" class="tableContainer">
+            <p>Harvests: {{ harvestData.numberOfHarvests }}</p>
+            <table>
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>Januar</td></tr>
+                <tr><td>Februar</td></tr>
+                <tr><td>Marts</td></tr>
+                <tr><td>April</td></tr>
+                <tr><td>Maj</td></tr>
+                <tr><td>Juni</td></tr>
+                <tr><td>Juli</td></tr>
+                <tr><td>August</td></tr>
+                <tr><td>September</td></tr>
+                <tr><td>Oktober</td></tr>
+                <tr><td>November</td></tr>
+                <tr><td>December</td></tr>
+            </table>
+            <table v-for="(months, year) in harvestData.dates">
+                <thead>
+                    <tr>
+                        <th>{{ year }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(data, month) in months">
+                        <td v-tooltip.top-center="'Antal høstninger: ' + data.numberOfHarvests" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div v-else>
+            <p>Fetching harvests</p>
+        </div>
+    `,
+    created() {
+        this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(window.solrWaybackConfig.url))
+        .then(response => {
+            this.harvestData = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__transformer__["a" /* groupHarvestDatesByYearAndMonth */])(response.data.dates, __WEBPACK_IMPORTED_MODULE_1__activity_level__["a" /* calculateLinearActivityLevel */]);
+        });
+    }
+});
 
-    return 0;
-}
 
-
-/**
- * The following function returns the logarithm of y with base x, ie. logx(y):
- */
-function getBaseLog(x, y) {
-    return Math.log(y) / Math.log(x);
-}
-
-
+let app = new Vue({
+    el: "#app"
+});
 
 /***/ }),
 /* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = groupHarvestDatesByYearAndMonth;
-/**
- * Transforms an array of harvest dates as epoch times into a suitable format for rendering a graph with iteration.
- * This is used to transform the API response into a usable format for VueJS.
- */
-function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunction) {
-
-    const fromDate = new Date(Math.min(...harvestDates));
-    const toDate = new Date(Math.max(...harvestDates));
-
-    // Parse the harvest dates into an array of Date objects.
-    // Validate that the dates are integers.
-    const parsedHarvestDates = harvestDates
-        .filter(date => parseInt(date) !== NaN)
-        .map(date => new Date(date));
-
-    // Build an object with keys as the years.
-    const yearRangeObject = buildYearRangeObject(fromDate, toDate);
-
-    // Build Harvest Data Object.
-    const harvestDataObject = addActivityLevelToDataObject(
-        buildHarvestDataObject(yearRangeObject, parsedHarvestDates),
-        transformationFunction
-    );
-
-    return {
-        fromDate: fromDate,
-        toDate: toDate,
-        dates: harvestDataObject,
-        numberOfHarvests: harvestDates.length
-    }
-}
+exports = module.exports = __webpack_require__(4)();
+// imports
 
 
-/**
- * Build an object with keys as the years, e.g.
- * {
- *     2007: {},
- *     2008: {},
- *     ...
- * }
- */
-function buildYearRangeObject(fromDate, toDate) {
-    const yearRangeArray = buildYearRangeArray(fromDate, toDate);
-    const yearRangeObject = {};
+// module
+exports.push([module.i, ".tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  margin: 2em 0;\n}\ntd,\nth {\n  border: 1px solid #cccccc;\n  padding: .5em 1em;\n}\ntd.many,\ntd.few {\n  background: #006600;\n  color: white;\n}\ntd.activityLevel1 {\n  background: #006600;\n  color: white;\n  opacity: .25;\n}\ntd.activityLevel2 {\n  background: #006600;\n  color: white;\n  opacity: .50;\n}\ntd.activityLevel3 {\n  background: #006600;\n  color: white;\n  opacity: .75;\n}\ntd.activityLevel4 {\n  background: #006600;\n  color: white;\n  opacity: 1;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
 
-    for (let year of yearRangeArray) {
-        yearRangeObject[year] = [];
-    }  
-
-    return yearRangeObject;
-}
-
-
-/**
- * Build an array of years from the minDate year to the maxDate year. E.g. [2007, 2008, 2009, 2010, 2011, ..., 2017]
- * minDate, maxDate are Date instances
- */
-function buildYearRangeArray(minDate, maxDate) {
-    return [...Array(maxDate.getFullYear() - minDate.getFullYear() + 1).keys()]     // e.g. [0, 1, 2, ..., 10]
-        .map(year => year + minDate.getFullYear());                                                  // e.g. [2007, 2008, 2009, ..., 2017]
-}
-
-
-/**
- * Add months to the year range object.
- * Output is:
- * {
- *     2007: {
- *         1: {
- *             dates: [ ... ],
-               numberOfHarvests: 5023
- *         },
- *         ...
- *     },
- *     ...
- * }
- */
-function buildHarvestDataObject(yearRangeObject, parsedHarvestDates) {
-
-    const arrayOfMonthValues = [...Array(12).keys()];       // [0, 1, 2, ..., 11]
-
-    // Iterate over all years in the yearRangeObject
-    for (let yearAsString of Object.keys(yearRangeObject)) {
-        const year = parseInt(yearAsString);        // Since Object.keys() returns an array of strings, we need to convert years to a number.
-
-        // Iterate over all months (0-11)
-        for (let month of arrayOfMonthValues) {
-            const allHarvestDatesInMonth = getHarvestsForMonth(year, month, parsedHarvestDates);
-
-            yearRangeObject[year][month] = {
-                dates: allHarvestDatesInMonth,
-                numberOfHarvests: allHarvestDatesInMonth.length
-            }
-        }
-    }
-
-    return yearRangeObject;
-}
-
-
-/**
- * Return an array of all the parsedHarvestDates in the given year and month.
- */
-function getHarvestsForMonth(year, month, parsedHarvestDates) {
-    return parsedHarvestDates
-        .filter(date => date.getMonth() === month && date.getFullYear() === year)
-}
-
-
-/**
- * Calculates and adds an activityLevel property to each month,
- * this is used to color each table cell.
- * 
- * It takes a transformationFunction from activity-level.js. 
- * This enables easy changing of the transformation types.
- */
-function addActivityLevelToDataObject(harvestDataObject, transformationFunction) {
-
-    let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(harvestDataObject);
-
-    // Loop through each month and assign the activityLevel
-    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-        harvestDataObject[year][month].activityLevel = transformationFunction(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
-    });
-
-    return harvestDataObject;
-}
-
-
-/**
- * Loops through the data object, returns an object with 3 values: maximumYear, maximumMonth, maximumHarvests.
- */
-function getMaximumHarvestCount(harvestDataObject) {
-
-    let maximumYear = null;
-    let maximumMonth = null;
-    let maximumHarvests = 0;
-
-    // Loop through each month in the data object, check if it beats the record for numberOfHarvests...
-    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-        if (harvestDataObject[year][month].numberOfHarvests >= maximumHarvests) {
-            maximumHarvests = harvestDataObject[year][month].numberOfHarvests;
-            maximumYear = year;
-            maximumMonth = month;
-        }
-    });
-
-    return {
-        maximumYear: maximumYear, 
-        maximumMonth: maximumMonth, 
-        maximumHarvests: maximumHarvests
-    };
-}
-
-
-/**
- * Higher-order function that loops through the harvestDataObject, calling a callback for each month.
- */
-function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
-
-    for (let year of Object.keys(harvestDataObject)) {
-        for (let month of Object.keys(harvestDataObject[year])) {
-            actionFunction(year, month);
-        }
-    }
-}
-
+// exports
 
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function() {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		var result = [];
+		for(var i = 0; i < this.length; i++) {
+			var item = this[i];
+			if(item[2]) {
+				result.push("@media " + item[2] + "{" + item[1] + "}");
+			} else {
+				result.push(item[1]);
+			}
+		}
+		return result.join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+var stylesInDom = {},
+	memoize = function(fn) {
+		var memo;
+		return function () {
+			if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+			return memo;
+		};
+	},
+	isOldIE = memoize(function() {
+		return /msie [6-9]\b/.test(self.navigator.userAgent.toLowerCase());
+	}),
+	getHeadElement = memoize(function () {
+		return document.head || document.getElementsByTagName("head")[0];
+	}),
+	singletonElement = null,
+	singletonCounter = 0,
+	styleElementsInsertedAtTop = [];
+
+module.exports = function(list, options) {
+	if(typeof DEBUG !== "undefined" && DEBUG) {
+		if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+	}
+
+	options = options || {};
+	// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+	// tags it will allow on a page
+	if (typeof options.singleton === "undefined") options.singleton = isOldIE();
+
+	// By default, add <style> tags to the bottom of <head>.
+	if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
+
+	var styles = listToStyles(list);
+	addStylesToDom(styles, options);
+
+	return function update(newList) {
+		var mayRemove = [];
+		for(var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+			domStyle.refs--;
+			mayRemove.push(domStyle);
+		}
+		if(newList) {
+			var newStyles = listToStyles(newList);
+			addStylesToDom(newStyles, options);
+		}
+		for(var i = 0; i < mayRemove.length; i++) {
+			var domStyle = mayRemove[i];
+			if(domStyle.refs === 0) {
+				for(var j = 0; j < domStyle.parts.length; j++)
+					domStyle.parts[j]();
+				delete stylesInDom[domStyle.id];
+			}
+		}
+	};
+}
+
+function addStylesToDom(styles, options) {
+	for(var i = 0; i < styles.length; i++) {
+		var item = styles[i];
+		var domStyle = stylesInDom[item.id];
+		if(domStyle) {
+			domStyle.refs++;
+			for(var j = 0; j < domStyle.parts.length; j++) {
+				domStyle.parts[j](item.parts[j]);
+			}
+			for(; j < item.parts.length; j++) {
+				domStyle.parts.push(addStyle(item.parts[j], options));
+			}
+		} else {
+			var parts = [];
+			for(var j = 0; j < item.parts.length; j++) {
+				parts.push(addStyle(item.parts[j], options));
+			}
+			stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+		}
+	}
+}
+
+function listToStyles(list) {
+	var styles = [];
+	var newStyles = {};
+	for(var i = 0; i < list.length; i++) {
+		var item = list[i];
+		var id = item[0];
+		var css = item[1];
+		var media = item[2];
+		var sourceMap = item[3];
+		var part = {css: css, media: media, sourceMap: sourceMap};
+		if(!newStyles[id])
+			styles.push(newStyles[id] = {id: id, parts: [part]});
+		else
+			newStyles[id].parts.push(part);
+	}
+	return styles;
+}
+
+function insertStyleElement(options, styleElement) {
+	var head = getHeadElement();
+	var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
+	if (options.insertAt === "top") {
+		if(!lastStyleElementInsertedAtTop) {
+			head.insertBefore(styleElement, head.firstChild);
+		} else if(lastStyleElementInsertedAtTop.nextSibling) {
+			head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
+		} else {
+			head.appendChild(styleElement);
+		}
+		styleElementsInsertedAtTop.push(styleElement);
+	} else if (options.insertAt === "bottom") {
+		head.appendChild(styleElement);
+	} else {
+		throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
+	}
+}
+
+function removeStyleElement(styleElement) {
+	styleElement.parentNode.removeChild(styleElement);
+	var idx = styleElementsInsertedAtTop.indexOf(styleElement);
+	if(idx >= 0) {
+		styleElementsInsertedAtTop.splice(idx, 1);
+	}
+}
+
+function createStyleElement(options) {
+	var styleElement = document.createElement("style");
+	styleElement.type = "text/css";
+	insertStyleElement(options, styleElement);
+	return styleElement;
+}
+
+function createLinkElement(options) {
+	var linkElement = document.createElement("link");
+	linkElement.rel = "stylesheet";
+	insertStyleElement(options, linkElement);
+	return linkElement;
+}
+
+function addStyle(obj, options) {
+	var styleElement, update, remove;
+
+	if (options.singleton) {
+		var styleIndex = singletonCounter++;
+		styleElement = singletonElement || (singletonElement = createStyleElement(options));
+		update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
+		remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
+	} else if(obj.sourceMap &&
+		typeof URL === "function" &&
+		typeof URL.createObjectURL === "function" &&
+		typeof URL.revokeObjectURL === "function" &&
+		typeof Blob === "function" &&
+		typeof btoa === "function") {
+		styleElement = createLinkElement(options);
+		update = updateLink.bind(null, styleElement);
+		remove = function() {
+			removeStyleElement(styleElement);
+			if(styleElement.href)
+				URL.revokeObjectURL(styleElement.href);
+		};
+	} else {
+		styleElement = createStyleElement(options);
+		update = applyToTag.bind(null, styleElement);
+		remove = function() {
+			removeStyleElement(styleElement);
+		};
+	}
+
+	update(obj);
+
+	return function updateStyle(newObj) {
+		if(newObj) {
+			if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
+				return;
+			update(obj = newObj);
+		} else {
+			remove();
+		}
+	};
+}
+
+var replaceText = (function () {
+	var textStore = [];
+
+	return function (index, replacement) {
+		textStore[index] = replacement;
+		return textStore.filter(Boolean).join('\n');
+	};
+})();
+
+function applyToSingletonTag(styleElement, index, remove, obj) {
+	var css = remove ? "" : obj.css;
+
+	if (styleElement.styleSheet) {
+		styleElement.styleSheet.cssText = replaceText(index, css);
+	} else {
+		var cssNode = document.createTextNode(css);
+		var childNodes = styleElement.childNodes;
+		if (childNodes[index]) styleElement.removeChild(childNodes[index]);
+		if (childNodes.length) {
+			styleElement.insertBefore(cssNode, childNodes[index]);
+		} else {
+			styleElement.appendChild(cssNode);
+		}
+	}
+}
+
+function applyToTag(styleElement, obj) {
+	var css = obj.css;
+	var media = obj.media;
+
+	if(media) {
+		styleElement.setAttribute("media", media)
+	}
+
+	if(styleElement.styleSheet) {
+		styleElement.styleSheet.cssText = css;
+	} else {
+		while(styleElement.firstChild) {
+			styleElement.removeChild(styleElement.firstChild);
+		}
+		styleElement.appendChild(document.createTextNode(css));
+	}
+}
+
+function updateLink(linkElement, obj) {
+	var css = obj.css;
+	var sourceMap = obj.sourceMap;
+
+	if(sourceMap) {
+		// http://stackoverflow.com/a/26603875
+		css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+	}
+
+	var blob = new Blob([css], { type: "text/css" });
+
+	var oldSrc = linkElement.href;
+
+	linkElement.href = URL.createObjectURL(blob);
+
+	if(oldSrc)
+		URL.revokeObjectURL(oldSrc);
+}
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether-drop 1.4.1 */
@@ -3023,14 +2879,14 @@ return Drop;
 
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether-tooltip 1.1.0 */
 
 (function(root, factory) {
   if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(4),__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(6),__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -3170,7 +3026,337 @@ return Tooltip;
 
 
 /***/ }),
-/* 6 */
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {module.exports =
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+/******/
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// identity function for calling harmony imports with the correct context
+/******/ 	__webpack_require__.i = function(value) { return value; };
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tether_tooltip__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tether_tooltip___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_tether_tooltip__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(1);
+/* unused harmony export defaultTetherOptions */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return defaultOptions; });
+
+
+
+
+var positions = ['top-left', 'left-top', 'left-middle', 'left-bottom', 'bottom-left', 'bottom-center', 'bottom-right', 'right-bottom', 'right-middle', 'right-top', 'top-right', 'top-center'];
+
+var defaultTetherOptions = {
+  constraints: [{
+    to: 'window',
+    attachment: 'together',
+    pin: true
+  }]
+};
+
+var defaultOptions = {
+  tetherOptions: defaultTetherOptions,
+  defaultClass: 'vue-tooltip-theme'
+};
+
+function createTooltip(el, value, modifiers) {
+  var position = 'top-center';
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = positions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var pos = _step.value;
+
+      if (modifiers[pos]) {
+        position = pos;
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  position = position.replace('-', ' ');
+
+  var content = value.content || value;
+
+  var classes = directive.options.defaultClass;
+  if (value.classes) {
+    classes = value.classes;
+  }
+
+  el._tooltip = new __WEBPACK_IMPORTED_MODULE_0_tether_tooltip___default.a({
+    target: el,
+    position: position,
+    content: content,
+    classes: classes,
+    tetherOptions: directive.options.tetherOptions
+  });
+}
+
+function destroyTooltip(el) {
+  if (el._tooltip) {
+    el._tooltip.destroy();
+    delete el._tooltip;
+  }
+}
+
+var directive = {
+  options: defaultOptions,
+  bind: function bind(el, _ref) {
+    var value = _ref.value,
+        modifiers = _ref.modifiers;
+
+    var content = value && value.content || value;
+    destroyTooltip(el);
+    if (content) {
+      createTooltip(el, value, modifiers);
+    }
+  },
+  update: function update(el, _ref2) {
+    var value = _ref2.value,
+        oldValue = _ref2.oldValue,
+        modifiers = _ref2.modifiers;
+
+    var content = value && value.content || value;
+    if (!content) {
+      destroyTooltip(el);
+    } else if (el._tooltip) {
+      var drop = el._tooltip.drop;
+
+      // Content
+      drop.content.innerHTML = content;
+
+      // CSS classes
+      var oldClasses = oldValue && oldValue.classes;
+      if (value && value.classes) {
+        if (oldClasses) {
+          __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["a" /* replaceClasses */])(drop.drop, value.classes, oldClasses);
+        } else {
+          __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["b" /* addClasses */])(drop.drop, value.classes);
+        }
+      } else if (oldClasses) {
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["c" /* removeClasses */])(drop.drop, oldClasses);
+      }
+    } else {
+      createTooltip(el, value, modifiers);
+    }
+  },
+  unbind: function unbind(el) {
+    destroyTooltip(el);
+  }
+};
+
+/* harmony default export */ __webpack_exports__["b"] = directive;
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["b"] = addClasses;
+/* harmony export (immutable) */ __webpack_exports__["c"] = removeClasses;
+/* harmony export (immutable) */ __webpack_exports__["a"] = replaceClasses;
+/* unused harmony export mirrorAttachment */
+/* unused harmony export sortAttach */
+/* unused harmony export getTetherAttachments */
+
+function convertToArray(value) {
+  if (typeof value === 'string') {
+    value = value.split(' ');
+  }
+  return value;
+}
+
+function addClasses(el, classes) {
+  classes = convertToArray(classes);
+  classes.forEach(function (c) {
+    el.classList.add(c);
+  });
+}
+
+function removeClasses(el, classes) {
+  classes = convertToArray(classes);
+  classes.forEach(function (c) {
+    el.classList.remove(c);
+  });
+}
+
+function replaceClasses(el, newClasses, oldClasses) {
+  removeClasses(el, oldClasses);
+  addClasses(el, newClasses);
+}
+
+var MIRROR_ATTACH = {
+  left: 'right',
+  right: 'left',
+  top: 'bottom',
+  bottom: 'top',
+  middle: 'middle',
+  center: 'center'
+};
+
+function mirrorAttachment(attachment) {
+  var dropAttach = attachment.split(' ');
+  dropAttach[0] = MIRROR_ATTACH[dropAttach[0]];
+  dropAttach = dropAttach.join(' ');
+  return dropAttach;
+}
+
+function sortAttach(str) {
+  var list = str.split(' ');
+
+  var first = list[0];
+  var second = list[1];
+
+  if (['left', 'right'].indexOf(first) >= 0) {
+    var _ref = [second, first];
+    first = _ref[0];
+    second = _ref[1];
+  }
+  return [first, second].join(' ');
+}
+
+function getTetherAttachments(position) {
+  var dropAttach = mirrorAttachment(position);
+  return {
+    attachment: sortAttach(dropAttach),
+    targetAttachment: sortAttach(position)
+  };
+}
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = __webpack_require__(7);
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__v_tooltip__ = __webpack_require__(0);
+/* harmony export (immutable) */ __webpack_exports__["install"] = install;
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VTooltip", function() { return VTooltip; });
+
+
+function install(Vue, options) {
+  if (install.installed) return;
+  install.installed = true;
+
+  options = Object.assign({}, __WEBPACK_IMPORTED_MODULE_0__v_tooltip__["a" /* defaultOptions */], options || {});
+  __WEBPACK_IMPORTED_MODULE_0__v_tooltip__["b" /* default */].options = options;
+  Vue.directive('tooltip', __WEBPACK_IMPORTED_MODULE_0__v_tooltip__["b" /* default */]);
+}
+
+var VTooltip = __WEBPACK_IMPORTED_MODULE_0__v_tooltip__["b" /* default */];
+
+var plugin = {
+  install: install
+};
+
+// Auto-install
+var GlobalVue = null;
+if (typeof window !== 'undefined') {
+  GlobalVue = window.Vue;
+} else if (typeof global !== 'undefined') {
+  GlobalVue = global.Vue;
+}
+if (GlobalVue) {
+  GlobalVue.use(plugin);
+}
+
+/* harmony default export */ __webpack_exports__["default"] = plugin;
+
+/***/ })
+/******/ ]);
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vd2VicGFjay9ib290c3RyYXAgNGNjMWMwMmFkZDJiZTc1Y2JlYzciLCJ3ZWJwYWNrOi8vLy4vc3JjL3YtdG9vbHRpcC5qcyIsIndlYnBhY2s6Ly8vLi9zcmMvdXRpbHMuanMiLCJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwidGV0aGVyLXRvb2x0aXBcIiIsIndlYnBhY2s6Ly8vLi9zcmMvaW5kZXguanMiXSwibmFtZXMiOlsicG9zaXRpb25zIiwiZGVmYXVsdFRldGhlck9wdGlvbnMiLCJjb25zdHJhaW50cyIsInRvIiwiYXR0YWNobWVudCIsInBpbiIsImRlZmF1bHRPcHRpb25zIiwidGV0aGVyT3B0aW9ucyIsImRlZmF1bHRDbGFzcyIsImNyZWF0ZVRvb2x0aXAiLCJlbCIsInZhbHVlIiwibW9kaWZpZXJzIiwicG9zaXRpb24iLCJwb3MiLCJyZXBsYWNlIiwiY29udGVudCIsImNsYXNzZXMiLCJkaXJlY3RpdmUiLCJvcHRpb25zIiwiX3Rvb2x0aXAiLCJ0YXJnZXQiLCJkZXN0cm95VG9vbHRpcCIsImRlc3Ryb3kiLCJiaW5kIiwidXBkYXRlIiwib2xkVmFsdWUiLCJkcm9wIiwiaW5uZXJIVE1MIiwib2xkQ2xhc3NlcyIsInJlcGxhY2VDbGFzc2VzIiwiYWRkQ2xhc3NlcyIsInJlbW92ZUNsYXNzZXMiLCJ1bmJpbmQiLCJjb252ZXJ0VG9BcnJheSIsInNwbGl0IiwiZm9yRWFjaCIsImNsYXNzTGlzdCIsImFkZCIsImMiLCJyZW1vdmUiLCJuZXdDbGFzc2VzIiwiTUlSUk9SX0FUVEFDSCIsImxlZnQiLCJyaWdodCIsInRvcCIsImJvdHRvbSIsIm1pZGRsZSIsImNlbnRlciIsIm1pcnJvckF0dGFjaG1lbnQiLCJkcm9wQXR0YWNoIiwiam9pbiIsInNvcnRBdHRhY2giLCJzdHIiLCJsaXN0IiwiZmlyc3QiLCJzZWNvbmQiLCJpbmRleE9mIiwiX3JlZiIsImdldFRldGhlckF0dGFjaG1lbnRzIiwidGFyZ2V0QXR0YWNobWVudCIsImluc3RhbGwiLCJWdWUiLCJpbnN0YWxsZWQiLCJPYmplY3QiLCJhc3NpZ24iLCJ2dG9vbHRpcCIsIlZUb29sdGlwIiwicGx1Z2luIiwiR2xvYmFsVnVlIiwid2luZG93IiwiZ2xvYmFsIiwidXNlIl0sIm1hcHBpbmdzIjoiOztBQUFBO0FBQ0E7O0FBRUE7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7O0FBRUE7QUFDQTs7QUFFQTtBQUNBO0FBQ0E7OztBQUdBO0FBQ0E7O0FBRUE7QUFDQTs7QUFFQTtBQUNBLG1EQUEyQyxjQUFjOztBQUV6RDtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLGFBQUs7QUFDTDtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBLG1DQUEyQiwwQkFBMEIsRUFBRTtBQUN2RCx5Q0FBaUMsZUFBZTtBQUNoRDtBQUNBO0FBQ0E7O0FBRUE7QUFDQSw4REFBc0QsK0RBQStEOztBQUVySDtBQUNBOztBQUVBO0FBQ0E7Ozs7Ozs7Ozs7Ozs7QUNoRUE7O0FBRUE7O0FBRUEsSUFBTUEsWUFBWSxDQUNoQixVQURnQixFQUVoQixVQUZnQixFQUdoQixhQUhnQixFQUloQixhQUpnQixFQUtoQixhQUxnQixFQU1oQixlQU5nQixFQU9oQixjQVBnQixFQVFoQixjQVJnQixFQVNoQixjQVRnQixFQVVoQixXQVZnQixFQVdoQixXQVhnQixFQVloQixZQVpnQixDQUFsQjs7QUFlTyxJQUFNQyx1QkFBdUI7QUFDbENDLGVBQWEsQ0FDWDtBQUNFQyxRQUFJLFFBRE47QUFFRUMsZ0JBQVksVUFGZDtBQUdFQyxTQUFLO0FBSFAsR0FEVztBQURxQixDQUE3Qjs7QUFVQSxJQUFNQyxpQkFBaUI7QUFDNUJDLGlCQUFlTixvQkFEYTtBQUU1Qk8sZ0JBQWM7QUFGYyxDQUF2Qjs7QUFLUCxTQUFTQyxhQUFULENBQXdCQyxFQUF4QixFQUE0QkMsS0FBNUIsRUFBbUNDLFNBQW5DLEVBQThDO0FBQzVDLE1BQUlDLFdBQVcsWUFBZjtBQUQ0QztBQUFB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QU1pRCxXQUFXLDJEQUFqQjs7QUFFUCxJQUFNQyxTQUFTO0FBQ2JQO0FBRGEsQ0FBZjs7QUFJQTtBQUNBLElBQUlRLFlBQVksSUFBaEI7QUFDQSxJQUFJLE9BQU9DLE1BQVAsS0FBa0IsV0FBdEIsRUFBbUM7QUFDakNELGNBQVlDLE9BQU9SLEdBQW5CO0FBQ0QsQ0FGRCxNQUVPLElBQUksT0FBT1MsTUFBUCxLQUFrQixXQUF0QixFQUFtQztBQUN4Q0YsY0FBWUUsT0FBT1QsR0FBbkI7QUFDRDtBQUNELElBQUlPLFNBQUosRUFBZTtBQUNiQSxZQUFVRyxHQUFWLENBQWNKLE1BQWQ7QUFDRDs7QUFFRCw4REFBZUEsTUFBZixDIiwiZmlsZSI6InYtdG9vbHRpcC5jb21tb24uanMiLCJzb3VyY2VzQ29udGVudCI6WyIgXHQvLyBUaGUgbW9kdWxlIGNhY2hlXG4gXHR2YXIgaW5zdGFsbGVkTW9kdWxlcyA9IHt9O1xuXG4gXHQvLyBUaGUgcmVxdWlyZSBmdW5jdGlvblxuIFx0ZnVuY3Rpb24gX193ZWJwYWNrX3JlcXVpcmVfXyhtb2R1bGVJZCkge1xuXG4gXHRcdC8vIENoZWNrIGlmIG1vZHVsZSBpcyBpbiBjYWNoZVxuIFx0XHRpZihpbnN0YWxsZWRNb2R1bGVzW21vZHVsZUlkXSlcbiBcdFx0XHRyZXR1cm4gaW5zdGFsbGVkTW9kdWxlc1ttb2R1bGVJZF0uZXhwb3J0cztcblxuIFx0XHQvLyBDcmVhdGUgYSBuZXcgbW9kdWxlIChhbmQgcHV0IGl0IGludG8gdGhlIGNhY2hlKVxuIFx0XHR2YXIgbW9kdWxlID0gaW5zdGFsbGVkTW9kdWxlc1ttb2R1bGVJZF0gPSB7XG4gXHRcdFx0aTogbW9kdWxlSWQsXG4gXHRcdFx0bDogZmFsc2UsXG4gXHRcdFx0ZXhwb3J0czoge31cbiBcdFx0fTtcblxuIFx0XHQvLyBFeGVjdXRlIHRoZSBtb2R1bGUgZnVuY3Rpb25cbiBcdFx0bW9kdWxlc1ttb2R1bGVJZF0uY2FsbChtb2R1bGUuZXhwb3J0cywgbW9kdWxlLCBtb2R1bGUuZXhwb3J0cywgX193ZWJwYWNrX3JlcXVpcmVfXyk7XG5cbiBcdFx0Ly8gRmxhZyB0aGUgbW9kdWxlIGFzIGxvYWRlZFxuIFx0XHRtb2R1bGUubCA9IHRydWU7XG5cbiBcdFx0Ly8gUmV0dXJuIHRoZSBleHBvcnRzIG9mIHRoZSBtb2R1bGVcbiBcdFx0cmV0dXJuIG1vZHVsZS5leHBvcnRzO1xuIFx0fVxuXG5cbiBcdC8vIGV4cG9zZSB0aGUgbW9kdWxlcyBvYmplY3QgKF9fd2VicGFja19tb2R1bGVzX18pXG4gXHRfX3dlYnBhY2tfcmVxdWlyZV9fLm0gPSBtb2R1bGVzO1xuXG4gXHQvLyBleHBvc2UgdGhlIG1vZHVsZSBjYWNoZVxuIFx0X193ZWJwYWNrX3JlcXVpcmVfXy5jID0gaW5zdGFsbGVkTW9kdWxlcztcblxuIFx0Ly8gaWRlbnRpdHkgZnVuY3Rpb24gZm9yIGNhbGxpbmcgaGFybW9ueSBpbXBvcnRzIHdpdGggdGhlIGNvcnJlY3QgY29udGV4dFxuIFx0X193ZWJwYWNrX3JlcXVpcmVfXy5pID0gZnVuY3Rpb24odmFsdWUpIHsgcmV0dXJuIHZhbHVlOyB9O1xuXG4gXHQvLyBkZWZpbmUgZ2V0dGVyIGZ1bmN0aW9uIGZvciBoYXJtb255IGV4cG9ydHNcbiBcdF9fd2VicGFja19yZXF1aXJlX18uZCA9IGZ1bmN0aW9uKGV4cG9ydHMsIG5hbWUsIGdldHRlcikge1xuIFx0XHRpZighX193ZWJwYWNrX3JlcXVpcmVfXy5vKGV4cG9ydHMsIG5hbWUpKSB7XG4gXHRcdFx0T2JqZWN0LmRlZmluZVByb3BlcnR5KGV4cG9ydHMsIG5hbWUsIHtcbiBcdFx0XHRcdGNvbmZpZ3VyYWJsZTogZmFsc2UsXG4gXHRcdFx0XHRlbnVtZXJhYmxlOiB0cnVlLFxuIFx0XHRcdFx0Z2V0OiBnZXR0ZXJcbiBcdFx0XHR9KTtcbiBcdFx0fVxuIFx0fTtcblxuIFx0Ly8gZ2V0RGVmYXVsdEV4cG9ydCBmdW5jdGlvbiBmb3IgY29tcGF0aWJpbGl0eSB3aXRoIG5vbi1oYXJtb255IG1vZHVsZXNcbiBcdF9fd2VicGFja19yZXF1aXJlX18ubiA9IGZ1bmN0aW9uKG1vZHVsZSkge1xuIFx0XHR2YXIgZ2V0dGVyID0gbW9kdWxlICYmIG1vZHVsZS5fX2VzTW9kdWxlID9cbiBcdFx0XHRmdW5jdGlvbiBnZXREZWZhdWx0KCkgeyByZXR1cm4gbW9kdWxlWydkZWZhdWx0J107IH0gOlxuIFx0XHRcdGZ1bmN0aW9uIGdldE1vZHVsZUV4cG9ydHMoKSB7IHJldHVybiBtb2R1bGU7IH07XG4gXHRcdF9fd2VicGFja19yZXF1aXJlX18uZChnZXR0ZXIsICdhJywgZ2V0dGVyKTtcbiBcdFx0cmV0dXJuIGdldHRlcjtcbiBcdH07XG5cbiBcdC8vIE9iamVjdC5wcm90b3R5cGUuaGFzT3duUHJvcGVydHkuY2FsbFxuIFx0X193ZWJwYWNrX3JlcXVpcmVfXy5vID0gZnVuY3Rpb24ob2JqZWN0LCBwcm9wZXJ0eSkgeyByZXR1cm4gT2JqZWN0LnByb3RvdHlwZS5oYXNPd25Qcm9wZXJ0eS5jYWxsKG9iamVjdCwgcHJvcGVydHkpOyB9O1xuXG4gXHQvLyBfX3dlYnBhY2tfcHVibGljX3BhdGhfX1xuIFx0X193ZWJwYWNrX3JlcXVpcmVfXy5wID0gXCJcIjtcblxuIFx0Ly8gTG9hZCBlbnRyeSBtb2R1bGUgYW5kIHJldHVybiBleHBvcnRzXG4gXHRyZXR1cm4gX193ZWJwYWNrX3JlcXVpcmVfXyhfX3dlYnBhY2tfcmVxdWlyZV9fLnMgPSAzKTtcblxuXG5cbi8vIFdFQlBBQ0sgRk9PVEVSIC8vXG4vLyB3ZWJwYWNrL2Jvb3RzdHJhcCA0Y2MxYzAyYWRkMmJlNzVjYmVjNyIsImltcG9ydCBUb29sdGlwIGZyb20gJ3RldGhlci10b29sdGlwJ1xuXG5pbXBvcnQgeyBhZGRDbGFzc2VzLCByZW1vdmVDbGFzc2VzLCByZXBsYWNlQ2xhc3NlcyB9IGZyb20gJy4vdXRpbHMnXG5cbmNvbnN0IHBvc2l0aW9ucyA9IFtcbiAgJ3RvcC1sZWZ0JyxcbiAgJ2xlZnQtdG9wJyxcbiAgJ2xlZnQtbWlkZGxlJyxcbiAgJ2xlZnQtYm90dG9tJyxcbiAgJ2JvdHRvbS1sZWZ0JyxcbiAgJ2JvdHRvbS1jZW50ZXInLFxuICAnYm90dG9tLXJpZ2h0JyxcbiAgJ3JpZ2h0LWJvdHRvbScsXG4gICdyaWdodC1taWRkbGUnLFxuICAncmlnaHQtdG9wJyxcbiAgJ3RvcC1yaWdodCcsXG4gICd0b3AtY2VudGVyJyxcbl1cblxuZXhwb3J0IGNvbnN0IGRlZmF1bHRUZXRoZXJPcHRpb25zID0ge1xuICBjb25zdHJhaW50czogW1xuICAgIHtcbiAgICAgIHRvOiAnd2luZG93JyxcbiAgICAgIGF0dGFjaG1lbnQ6ICd0b2dldGhlcicsXG4gICAgICBwaW46IHRydWUsXG4gICAgfSxcbiAgXSxcbn1cblxuZXhwb3J0IGNvbnN0IGRlZmF1bHRPcHRpb25zID0ge1xuICB0ZXRoZXJPcHRpb25zOiBkZWZhdWx0VGV0aGVyT3B0aW9ucyxcbiAgZGVmYXVsdENsYXNzOiAndnVlLXRvb2x0aXAtdGhlbWUnLFxufVxuXG5mdW5jdGlvbiBjcmVhdGVUb29sdGlwIChlbCwgdmFsdWUsIG1vZGlmaWVycykge1xuICBsZXQgcG9zaXRpb24gPSAndG9wLWNlbnRlcidcbiAgZm9yIChjb25zdCBwb3Mgb2YgcG9zaXRpb25zKSB7XG4gICAgaWYgKG1vZGlmaWVyc1twb3NdKSB7XG4gICAgICBwb3NpdGlvbiA9IHBvc1xuICAgIH1cbiAgfVxuICBwb3NpdGlvbiA9IHBvc2l0aW9uLnJlcGxhY2UoJy0nLCAnICcpXG5cbiAgY29uc3QgY29udGVudCA9IHZhbHVlLmNvbnRlbnQgfHwgdmFsdWVcblxuICBsZXQgY2xhc3NlcyA9IGRpcmVjdGl2ZS5vcHRpb25zLmRlZmF1bHRDbGFzc1xuICBpZiAodmFsdWUuY2xhc3Nlcykge1xuICAgIGNsYXNzZXMgPSB2YWx1ZS5jbGFzc2VzXG4gIH1cblxuICBlbC5fdG9vbHRpcCA9IG5ldyBUb29sdGlwKHtcbiAgICB0YXJnZXQ6IGVsLFxuICAgIHBvc2l0aW9uLFxuICAgIGNvbnRlbnQsXG4gICAgY2xhc3NlcyxcbiAgICB0ZXRoZXJPcHRpb25zOiBkaXJlY3RpdmUub3B0aW9ucy50ZXRoZXJPcHRpb25zLFxuICB9KVxufVxuXG5mdW5jdGlvbiBkZXN0cm95VG9vbHRpcCAoZWwpIHtcbiAgaWYgKGVsLl90b29sdGlwKSB7XG4gICAgZWwuX3Rvb2x0aXAuZGVzdHJveSgpXG4gICAgZGVsZXRlIGVsLl90b29sdGlwXG4gIH1cbn1cblxuY29uc3QgZGlyZWN0aXZlID0ge1xuICBvcHRpb25zOiBkZWZhdWx0T3B0aW9ucyxcbiAgYmluZCAoZWwsIHsgdmFsdWUsIG1vZGlmaWVycyB9KSB7XG4gICAgY29uc3QgY29udGVudCA9IHZhbHVlICYmIHZhbHVlLmNvbnRlbnQgfHwgdmFsdWVcbiAgICBkZXN0cm95VG9vbHRpcChlbClcbiAgICBpZiAoY29udGVudCkge1xuICAgICAgY3JlYXRlVG9vbHRpcChlbCwgdmFsdWUsIG1vZGlmaWVycylcbiAgICB9XG4gIH0sXG4gIHVwZGF0ZSAoZWwsIHsgdmFsdWUsIG9sZFZhbHVlLCBtb2RpZmllcnMgfSkge1xuICAgIGNvbnN0IGNvbnRlbnQgPSB2YWx1ZSAmJiB2YWx1ZS5jb250ZW50IHx8IHZhbHVlXG4gICAgaWYgKCFjb250ZW50KSB7XG4gICAgICBkZXN0cm95VG9vbHRpcChlbClcbiAgICB9IGVsc2UgaWYgKGVsLl90b29sdGlwKSB7XG4gICAgICBjb25zdCBkcm9wID0gZWwuX3Rvb2x0aXAuZHJvcFxuXG4gICAgICAvLyBDb250ZW50XG4gICAgICBkcm9wLmNvbnRlbnQuaW5uZXJIVE1MID0gY29udGVudFxuXG4gICAgICAvLyBDU1MgY2xhc3Nlc1xuICAgICAgY29uc3Qgb2xkQ2xhc3NlcyA9IG9sZFZhbHVlICYmIG9sZFZhbHVlLmNsYXNzZXNcbiAgICAgIGlmICh2YWx1ZSAmJiB2YWx1ZS5jbGFzc2VzKSB7XG4gICAgICAgIGlmIChvbGRDbGFzc2VzKSB7XG4gICAgICAgICAgcmVwbGFjZUNsYXNzZXMoZHJvcC5kcm9wLCB2YWx1ZS5jbGFzc2VzLCBvbGRDbGFzc2VzKVxuICAgICAgICB9IGVsc2Uge1xuICAgICAgICAgIGFkZENsYXNzZXMoZHJvcC5kcm9wLCB2YWx1ZS5jbGFzc2VzKVxuICAgICAgICB9XG4gICAgICB9IGVsc2UgaWYgKG9sZENsYXNzZXMpIHtcbiAgICAgICAgcmVtb3ZlQ2xhc3Nlcyhkcm9wLmRyb3AsIG9sZENsYXNzZXMpXG4gICAgICB9XG4gICAgfSBlbHNlIHtcbiAgICAgIGNyZWF0ZVRvb2x0aXAoZWwsIHZhbHVlLCBtb2RpZmllcnMpXG4gICAgfVxuICB9LFxuICB1bmJpbmQgKGVsKSB7XG4gICAgZGVzdHJveVRvb2x0aXAoZWwpXG4gIH0sXG59XG5cbmV4cG9ydCBkZWZhdWx0IGRpcmVjdGl2ZVxuXG5cblxuLy8gV0VCUEFDSyBGT09URVIgLy9cbi8vIC4vc3JjL3YtdG9vbHRpcC5qcyIsIlxuZnVuY3Rpb24gY29udmVydFRvQXJyYXkgKHZhbHVlKSB7XG4gIGlmICh0eXBlb2YgdmFsdWUgPT09ICdzdHJpbmcnKSB7XG4gICAgdmFsdWUgPSB2YWx1ZS5zcGxpdCgnICcpXG4gIH1cbiAgcmV0dXJuIHZhbHVlXG59XG5cbmV4cG9ydCBmdW5jdGlvbiBhZGRDbGFzc2VzIChlbCwgY2xhc3Nlcykge1xuICBjbGFzc2VzID0gY29udmVydFRvQXJyYXkoY2xhc3NlcylcbiAgY2xhc3Nlcy5mb3JFYWNoKGMgPT4ge1xuICAgIGVsLmNsYXNzTGlzdC5hZGQoYylcbiAgfSlcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHJlbW92ZUNsYXNzZXMgKGVsLCBjbGFzc2VzKSB7XG4gIGNsYXNzZXMgPSBjb252ZXJ0VG9BcnJheShjbGFzc2VzKVxuICBjbGFzc2VzLmZvckVhY2goYyA9PiB7XG4gICAgZWwuY2xhc3NMaXN0LnJlbW92ZShjKVxuICB9KVxufVxuXG5leHBvcnQgZnVuY3Rpb24gcmVwbGFjZUNsYXNzZXMgKGVsLCBuZXdDbGFzc2VzLCBvbGRDbGFzc2VzKSB7XG4gIHJlbW92ZUNsYXNzZXMoZWwsIG9sZENsYXNzZXMpXG4gIGFkZENsYXNzZXMoZWwsIG5ld0NsYXNzZXMpXG59XG5cbmNvbnN0IE1JUlJPUl9BVFRBQ0ggPSB7XG4gIGxlZnQ6ICdyaWdodCcsXG4gIHJpZ2h0OiAnbGVmdCcsXG4gIHRvcDogJ2JvdHRvbScsXG4gIGJvdHRvbTogJ3RvcCcsXG4gIG1pZGRsZTogJ21pZGRsZScsXG4gIGNlbnRlcjogJ2NlbnRlcicsXG59XG5cbmV4cG9ydCBmdW5jdGlvbiBtaXJyb3JBdHRhY2htZW50IChhdHRhY2htZW50KSB7XG4gIHZhciBkcm9wQXR0YWNoID0gYXR0YWNobWVudC5zcGxpdCgnICcpXG4gIGRyb3BBdHRhY2hbMF0gPSBNSVJST1JfQVRUQUNIW2Ryb3BBdHRhY2hbMF1dXG4gIGRyb3BBdHRhY2ggPSBkcm9wQXR0YWNoLmpvaW4oJyAnKVxuICByZXR1cm4gZHJvcEF0dGFjaFxufVxuXG5leHBvcnQgZnVuY3Rpb24gc29ydEF0dGFjaCAoc3RyKSB7XG4gIHZhciBsaXN0ID0gc3RyLnNwbGl0KCcgJylcblxuICB2YXIgZmlyc3QgPSBsaXN0WzBdXG4gIHZhciBzZWNvbmQgPSBsaXN0WzFdXG5cbiAgaWYgKFsnbGVmdCcsICdyaWdodCddLmluZGV4T2YoZmlyc3QpID49IDApIHtcbiAgICB2YXIgX3JlZiA9IFtzZWNvbmQsIGZpcnN0XVxuICAgIGZpcnN0ID0gX3JlZlswXVxuICAgIHNlY29uZCA9IF9yZWZbMV1cbiAgfVxuICByZXR1cm4gW2ZpcnN0LCBzZWNvbmRdLmpvaW4oJyAnKVxufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0VGV0aGVyQXR0YWNobWVudHMgKHBvc2l0aW9uKSB7XG4gIGNvbnN0IGRyb3BBdHRhY2ggPSBtaXJyb3JBdHRhY2htZW50KHBvc2l0aW9uKVxuICByZXR1cm4ge1xuICAgIGF0dGFjaG1lbnQ6IHNvcnRBdHRhY2goZHJvcEF0dGFjaCksXG4gICAgdGFyZ2V0QXR0YWNobWVudDogc29ydEF0dGFjaChwb3NpdGlvbiksXG4gIH1cbn1cblxuXG5cbi8vIFdFQlBBQ0sgRk9PVEVSIC8vXG4vLyAuL3NyYy91dGlscy5qcyIsIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcInRldGhlci10b29sdGlwXCIpO1xuXG5cbi8vLy8vLy8vLy8vLy8vLy8vL1xuLy8gV0VCUEFDSyBGT09URVJcbi8vIGV4dGVybmFsIFwidGV0aGVyLXRvb2x0aXBcIlxuLy8gbW9kdWxlIGlkID0gMlxuLy8gbW9kdWxlIGNodW5rcyA9IDAiLCJpbXBvcnQgdnRvb2x0aXAsIHsgZGVmYXVsdE9wdGlvbnMgfSBmcm9tICcuL3YtdG9vbHRpcCdcblxuZXhwb3J0IGZ1bmN0aW9uIGluc3RhbGwgKFZ1ZSwgb3B0aW9ucykge1xuICBpZiAoaW5zdGFsbC5pbnN0YWxsZWQpIHJldHVyblxuICBpbnN0YWxsLmluc3RhbGxlZCA9IHRydWVcblxuICBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7fSwgZGVmYXVsdE9wdGlvbnMsIG9wdGlvbnMgfHwge30pXG4gIHZ0b29sdGlwLm9wdGlvbnMgPSBvcHRpb25zXG4gIFZ1ZS5kaXJlY3RpdmUoJ3Rvb2x0aXAnLCB2dG9vbHRpcClcbn1cblxuZXhwb3J0IGNvbnN0IFZUb29sdGlwID0gdnRvb2x0aXBcblxuY29uc3QgcGx1Z2luID0ge1xuICBpbnN0YWxsLFxufVxuXG4vLyBBdXRvLWluc3RhbGxcbmxldCBHbG9iYWxWdWUgPSBudWxsXG5pZiAodHlwZW9mIHdpbmRvdyAhPT0gJ3VuZGVmaW5lZCcpIHtcbiAgR2xvYmFsVnVlID0gd2luZG93LlZ1ZVxufSBlbHNlIGlmICh0eXBlb2YgZ2xvYmFsICE9PSAndW5kZWZpbmVkJykge1xuICBHbG9iYWxWdWUgPSBnbG9iYWwuVnVlXG59XG5pZiAoR2xvYmFsVnVlKSB7XG4gIEdsb2JhbFZ1ZS51c2UocGx1Z2luKVxufVxuXG5leHBvcnQgZGVmYXVsdCBwbHVnaW5cblxuXG5cbi8vIFdFQlBBQ0sgRk9PVEVSIC8vXG4vLyAuL3NyYy9pbmRleC5qcyJdLCJzb3VyY2VSb290IjoiIn0=
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports) {
 
 var g;
@@ -3197,78 +3383,248 @@ module.exports = g;
 
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformer__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__activity_level__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_v_tooltip__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_v_tooltip___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_v_tooltip__);
+/* harmony export (immutable) */ __webpack_exports__["a"] = calculateLinearActivityLevel;
+/* unused harmony export calculateLogarithmicActivityLevel */
 /**
- * This is the main vue component for the graph.
+ * These are functions to calculate the activitylevel for a given month.
  */
 
 
+/**
+ * Calculate activity level linearly between 0 and 4.
+ * 0 is no activity level at all, 4 is the max level.
+ */
+function calculateLinearActivityLevel(harvestsInMonth, maximumHarvests) {
+    if (harvestsInMonth > maximumHarvests * 0.75 && harvestsInMonth <= maximumHarvests) {
+        return 4;
+    } else if (harvestsInMonth > maximumHarvests * 0.50 && harvestsInMonth <= maximumHarvests * 0.75) {
+        return 3;
+    } else if (harvestsInMonth > maximumHarvests * 0.25 && harvestsInMonth <= maximumHarvests * 0.50) {
+        return 2;
+    } else if (harvestsInMonth > 0 && harvestsInMonth <= maximumHarvests * 0.25) {
+        return 1;
+    } 
+
+    return 0;
+}
+
+
+/**
+ * Calculate activity level logarithmically.
+ */
+function calculateLogarithmicActivityLevel(harvestsInMonth, maximumHarvests) {
+
+    const logarithmicResult = getBaseLog(maximumHarvests, harvestsInMonth);
+
+    if (logarithmicResult > 0.75 && logarithmicResult <= 1) {
+        return 4;
+    } else if (logarithmicResult > 0.50 && logarithmicResult <= 0.75) {
+        return 3;
+    } else if (logarithmicResult > 0.25 && logarithmicResult <= 0.50) {
+        return 2;
+    } else if (logarithmicResult > 0 && logarithmicResult <= 0.25) {
+        return 1;
+    } 
+
+    return 0;
+}
+
+
+/**
+ * The following function returns the logarithm of y with base x, ie. logx(y):
+ */
+function getBaseLog(x, y) {
+    return Math.log(y) / Math.log(x);
+}
 
 
 
-Vue.use(__WEBPACK_IMPORTED_MODULE_2_v_tooltip___default.a);
+/***/ }),
+/* 11 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-Vue.component('harvest-date', {
-    data: () => {
-        return {
-            harvestData: null,
-        }
-    },
-    template: `
-        <div v-if="harvestData" class="tableContainer">
-            <p>Harvests: {{ harvestData.numberOfHarvests }}</p>
-            <table>
-                <tr><td>&nbsp;</td></tr>
-                <tr><td>Januar</td></tr>
-                <tr><td>Februar</td></tr>
-                <tr><td>Marts</td></tr>
-                <tr><td>April</td></tr>
-                <tr><td>Maj</td></tr>
-                <tr><td>Juni</td></tr>
-                <tr><td>Juli</td></tr>
-                <tr><td>August</td></tr>
-                <tr><td>September</td></tr>
-                <tr><td>Oktober</td></tr>
-                <tr><td>November</td></tr>
-                <tr><td>December</td></tr>
-            </table>
-            <table v-for="(months, year) in harvestData.dates">
-                <thead>
-                    <tr>
-                        <th>{{ year }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(data, month) in months">
-                        <td v-tooltip.top-center="'Antal høstninger: ' + data.numberOfHarvests" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div v-else>
-            <p>Fetching harvests</p>
-        </div>
-    `,
-    created() {
-        this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(window.solrWaybackConfig.url))
-        .then(response => {
-            this.harvestData = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__transformer__["a" /* groupHarvestDatesByYearAndMonth */])(response.data.dates, __WEBPACK_IMPORTED_MODULE_1__activity_level__["a" /* calculateLinearActivityLevel */]);
-        });
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = groupHarvestDatesByYearAndMonth;
+/**
+ * Transforms an array of harvest dates as epoch times into a suitable format for rendering a graph with iteration.
+ * This is used to transform the API response into a usable format for VueJS.
+ */
+function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunction) {
+
+    const fromDate = new Date(Math.min(...harvestDates));
+    const toDate = new Date(Math.max(...harvestDates));
+
+    // Parse the harvest dates into an array of Date objects.
+    // Validate that the dates are integers.
+    const parsedHarvestDates = harvestDates
+        .filter(date => parseInt(date) !== NaN)
+        .map(date => new Date(date));
+
+    // Build an object with keys as the years.
+    const yearRangeObject = buildYearRangeObject(fromDate, toDate);
+
+    // Build Harvest Data Object.
+    const harvestDataObject = addActivityLevelToDataObject(
+        buildHarvestDataObject(yearRangeObject, parsedHarvestDates),
+        transformationFunction
+    );
+
+    return {
+        fromDate: fromDate,
+        toDate: toDate,
+        dates: harvestDataObject,
+        numberOfHarvests: harvestDates.length
     }
-});
+}
 
 
-let app = new Vue({
-    el: "#app"
-});
+/**
+ * Build an object with keys as the years, e.g.
+ * {
+ *     2007: {},
+ *     2008: {},
+ *     ...
+ * }
+ */
+function buildYearRangeObject(fromDate, toDate) {
+    const yearRangeArray = buildYearRangeArray(fromDate, toDate);
+    const yearRangeObject = {};
+
+    for (let year of yearRangeArray) {
+        yearRangeObject[year] = [];
+    }  
+
+    return yearRangeObject;
+}
+
+
+/**
+ * Build an array of years from the minDate year to the maxDate year. E.g. [2007, 2008, 2009, 2010, 2011, ..., 2017]
+ * minDate, maxDate are Date instances
+ */
+function buildYearRangeArray(minDate, maxDate) {
+    return [...Array(maxDate.getFullYear() - minDate.getFullYear() + 1).keys()]     // e.g. [0, 1, 2, ..., 10]
+        .map(year => year + minDate.getFullYear());                                                  // e.g. [2007, 2008, 2009, ..., 2017]
+}
+
+
+/**
+ * Add months to the year range object.
+ * Output is:
+ * {
+ *     2007: {
+ *         1: {
+ *             dates: [ ... ],
+               numberOfHarvests: 5023
+ *         },
+ *         ...
+ *     },
+ *     ...
+ * }
+ */
+function buildHarvestDataObject(yearRangeObject, parsedHarvestDates) {
+
+    const arrayOfMonthValues = [...Array(12).keys()];       // [0, 1, 2, ..., 11]
+
+    // Iterate over all years in the yearRangeObject
+    for (let yearAsString of Object.keys(yearRangeObject)) {
+        const year = parseInt(yearAsString);        // Since Object.keys() returns an array of strings, we need to convert years to a number.
+
+        // Iterate over all months (0-11)
+        for (let month of arrayOfMonthValues) {
+            const allHarvestDatesInMonth = getHarvestsForMonth(year, month, parsedHarvestDates);
+
+            yearRangeObject[year][month] = {
+                dates: allHarvestDatesInMonth,
+                numberOfHarvests: allHarvestDatesInMonth.length
+            }
+        }
+    }
+
+    return yearRangeObject;
+}
+
+
+/**
+ * Return an array of all the parsedHarvestDates in the given year and month.
+ */
+function getHarvestsForMonth(year, month, parsedHarvestDates) {
+    return parsedHarvestDates
+        .filter(date => date.getMonth() === month && date.getFullYear() === year)
+}
+
+
+/**
+ * Calculates and adds an activityLevel property to each month,
+ * this is used to color each table cell.
+ * 
+ * It takes a transformationFunction from activity-level.js. 
+ * This enables easy changing of the transformation types.
+ */
+function addActivityLevelToDataObject(harvestDataObject, transformationFunction) {
+
+    let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(harvestDataObject);
+
+    // Loop through each month and assign the activityLevel
+    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
+        harvestDataObject[year][month].activityLevel = transformationFunction(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
+    });
+
+    return harvestDataObject;
+}
+
+
+/**
+ * Loops through the data object, returns an object with 3 values: maximumYear, maximumMonth, maximumHarvests.
+ */
+function getMaximumHarvestCount(harvestDataObject) {
+
+    let maximumYear = null;
+    let maximumMonth = null;
+    let maximumHarvests = 0;
+
+    // Loop through each month in the data object, check if it beats the record for numberOfHarvests...
+    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
+        if (harvestDataObject[year][month].numberOfHarvests >= maximumHarvests) {
+            maximumHarvests = harvestDataObject[year][month].numberOfHarvests;
+            maximumYear = year;
+            maximumMonth = month;
+        }
+    });
+
+    return {
+        maximumYear: maximumYear, 
+        maximumMonth: maximumMonth, 
+        maximumHarvests: maximumHarvests
+    };
+}
+
+
+/**
+ * Higher-order function that loops through the harvestDataObject, calling a callback for each month.
+ */
+function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
+
+    for (let year of Object.keys(harvestDataObject)) {
+        for (let month of Object.keys(harvestDataObject[year])) {
+            actionFunction(year, month);
+        }
+    }
+}
+
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(2);
+module.exports = __webpack_require__(1);
+
 
 /***/ })
 /******/ ]);

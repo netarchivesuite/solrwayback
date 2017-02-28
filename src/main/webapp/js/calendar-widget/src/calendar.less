@@ -1,0 +1,70 @@
+.tableContainer{
+     overflow: hidden;
+}
+
+table{
+     float: left;
+     margin: 2em 0;
+}
+
+td, th{
+     border: 1px solid #cccccc;
+     padding: .5em 1em;
+}
+
+td.many, td.few{
+     background: #006600;
+     color: white;
+}
+
+td.activityLevel1 {
+    background: #006600;
+    color: white;
+    opacity: .25;
+}
+
+td.activityLevel2 {
+    background: #006600;
+    color: white;
+    opacity: .50;
+}
+
+td.activityLevel3 {
+    background: #006600;
+    color: white;
+    opacity: .75;
+}
+
+td.activityLevel4 {
+    background: #006600;
+    color: white;
+    opacity: 1;
+}
+ 
+
+// <v-tooltip less>
+// source: https://akryum.github.io/vue-tooltip/
+.tooltip {
+  display: none;
+  opacity: 0;
+  // transition: opacity .15s;
+  pointer-events: none;
+  padding: 4px;
+  z-index: 10000;
+
+  .tooltip-content {
+    background: black;
+    color: white;
+    // border-radius: 16px;
+    padding: 5px 10px 4px;
+  }
+
+  &.tooltip-open-transitionend {
+    display: block;
+  }
+
+  &.tooltip-after-open {
+    opacity: 1;
+  }
+}
+// </v-tooltip less>
