@@ -4,8 +4,6 @@
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
-    "v-tooltip": "^1.1.6",
-    "webpack": "^2.2.1"
   },
   "scripts": {
     "build": "./node_modules/.bin/webpack"
@@ -14,6 +12,10 @@
     "css-loader": "^0.26.2",
     "less": "^2.7.2",
     "less-loader": "^2.2.3",
-    "style-loader": "^0.13.2"
+    "style-loader": "^0.13.2",
+    "v-tooltip": "^1.1.6",
+    "vue": "^2.2.1",
+    "vue-resource": "^1.2.0",
+    "webpack": "^2.2.1"
   }
 }

@@ -2,10 +2,14 @@
  * This is the main vue component for the graph.
  */
 
+import Vue from 'vue'
+import VueResource from 'vue-resource'
+
 import {groupHarvestDatesByYearAndMonth} from './transformer';
 import {calculateLinearActivityLevel, calculateLogarithmicActivityLevel} from './activity-level'
 import VTooltip from 'v-tooltip'
 
+Vue.use(VueResource);
 Vue.use(VTooltip);
 
 Vue.component('harvest-date', {
