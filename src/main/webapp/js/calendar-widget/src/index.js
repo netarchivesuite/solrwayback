@@ -45,12 +45,12 @@ Vue.component('harvest-date', {
     template: `
         <div v-if="harvestData" class="tableContainer">
             <p>
-                First harvest: {{ harvestData.fromDate | human-date }}<br>
-                Latest harvest: {{ harvestData.toDate | human-date }}
+                First harvest: <strong>{{ harvestData.fromDate | human-date }}</strong><br>
+                Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
             </p>
-            <p>Total harvests: {{ harvestData.numberOfHarvests | formatted-number }}</p>
-            <table>
-                <tr><td>&nbsp;</td></tr>
+            <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
+            <table class="monthLabels" labels>
+                <tr><td class="empty">&nbsp;</td></tr>
                 <tr><td>January</td></tr>
                 <tr><td>February</td></tr>
                 <tr><td>March</td></tr>
@@ -76,6 +76,13 @@ Vue.component('harvest-date', {
                     </tr>
                 </tbody>
             </table>
+        <div id="legends">
+            Less <div class="legend legend0"></div>
+            <div class="legend legend1"></div>
+            <div class="legend legend2"></div>
+            <div class="legend legend3"></div>
+            <div class="legend legend4"></div> More
+        </div>    
         </div>
         <div v-else>
             <p>Fetching harvests</p>

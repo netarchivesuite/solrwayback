@@ -8,37 +8,49 @@ table{
 }
 
 td, th{
-     border: 1px solid #cccccc;
-     padding: .5em 1em;
+  background-color: #f0f0f0;
+  border: 1px solid white;
+    border-left: 0;
+     padding: .2em;
 }
 
-td.many, td.few{
-     background: #006600;
-     color: white;
+table.monthLabels td, th{
+  background-color: white;
 }
 
-td.activityLevel1 {
-    background: #006600;
-    color: white;
-    opacity: .25;
+td.empty{
+  border-color: transparent;
 }
 
-td.activityLevel2 {
-    background: #006600;
-    color: white;
-    opacity: .50;
+td.activityLevel1, .legend.legend1 {
+    background: #d6e685;
 }
 
-td.activityLevel3 {
-    background: #006600;
-    color: white;
-    opacity: .75;
+td.activityLevel2, .legend.legend2 {
+    background: #8cc665;
 }
 
-td.activityLevel4 {
-    background: #006600;
-    color: white;
-    opacity: 1;
+td.activityLevel3, .legend.legend3 {
+    background: #44a340;
+}
+
+td.activityLevel4, .legend.legend4 {
+    background: #1e6823;
+}
+
+/* Legends */
+#legends{
+  clear: both;
+  margin: 2em 0;
+}
+
+.legend{
+  background-color: #f0f0f0;
+  display: inline-block;
+  height: 1.5em;
+  margin: 0 .3em;
+  vertical-align: bottom;
+  width: 2.5em;
 }
  
 
