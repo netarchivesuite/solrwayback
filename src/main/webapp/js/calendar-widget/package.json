@@ -8,6 +8,6 @@
     "webpack": "^2.2.1"
   },
   "scripts": {
-    "build": "./node_modules/.bin/webpack src/index.js dist/bundle.js"
+    "build": "./node_modules/.bin/webpack"
   }
 }
