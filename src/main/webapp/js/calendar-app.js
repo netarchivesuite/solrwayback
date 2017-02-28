@@ -116,7 +116,7 @@ function addActivityLevelToDataObject(harvestDataObject) {
 
     // Loop through each month and assign the activityLevel
     doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-        harvestDataObject[year][month].activityLevel = calculateLogarithmicActivityLevel(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
+        harvestDataObject[year][month].activityLevel = calculateLinearActivityLevel(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
     });
 
     return harvestDataObject;
@@ -220,7 +220,22 @@ let harvestDateComponent = Vue.component('harvest-date', {
     template: `
         <div v-if="harvestData" class="tableContainer">
             <p>Harvests: {{ harvestData.numberOfHarvests }}</p>
-            <table  v-for="(months, year) in harvestData.dates">
+            <table>
+                <tr><td>&nbsp;</td></tr>
+                <tr><td>Januar</td></tr>
+                <tr><td>Februar</td></tr>
+                <tr><td>Marts</td></tr>
+                <tr><td>April</td></tr>
+                <tr><td>Maj</td></tr>
+                <tr><td>Juni</td></tr>
+                <tr><td>Juli</td></tr>
+                <tr><td>August</td></tr>
+                <tr><td>September</td></tr>
+                <tr><td>Oktober</td></tr>
+                <tr><td>November</td></tr>
+                <tr><td>December</td></tr>
+            </table>
+            <table v-for="(months, year) in harvestData.dates">
                 <thead>
                     <tr>
                         <th>{{ year }}</th>
