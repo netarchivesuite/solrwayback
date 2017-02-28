@@ -4,6 +4,7 @@
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
+    "v-tooltip": "^1.1.6",
     "webpack": "^2.2.1"
   },
   "scripts": {
