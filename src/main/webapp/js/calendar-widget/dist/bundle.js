@@ -317,8 +317,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
-let harvestDateComponent = Vue.component('harvest-date', {
-    props: ['message'],
+Vue.component('harvest-date', {
     data: () => {
         return {
             harvestData: null,
