@@ -5,8 +5,7 @@
 import {groupHarvestDatesByYearAndMonth} from './transformer';
 import {calculateLinearActivityLevel, calculateLogarithmicActivityLevel} from './activity-level'
 
-let harvestDateComponent = Vue.component('harvest-date', {
-    props: ['message'],
+Vue.component('harvest-date', {
     data: () => {
         return {
             harvestData: null,
