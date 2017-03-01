@@ -43,55 +43,61 @@ Vue.component('harvest-date', {
         }
     },
     template: `
-        <div v-if="harvestData" class="tableContainer">
-            <p>
-                First harvest: <strong>{{ harvestData.fromDate | human-date }}</strong><br>
-                Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
-            </p>
-            <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
-            <table class="monthLabels" labels>
-                <tr><td class="empty">&nbsp;</td></tr>
-                <tr><td>January</td></tr>
-                <tr><td>February</td></tr>
-                <tr><td>March</td></tr>
-                <tr><td>April</td></tr>
-                <tr><td>May</td></tr>
-                <tr><td>June</td></tr>
-                <tr><td>July</td></tr>
-                <tr><td>August</td></tr>
-                <tr><td>September</td></tr>
-                <tr><td>October</td></tr>
-                <tr><td>November</td></tr>
-                <tr><td>December</td></tr>
-            </table>
-            <table v-for="(months, year) in harvestData.dates">
-                <thead>
-                    <tr>
-                        <th>{{ year }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(data, month) in months">
-                        <td v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
-                    </tr>
-                </tbody>
-            </table>
-        <div id="legends">
-            Less <div class="legend legend0"></div>
-            <div class="legend legend1"></div>
-            <div class="legend legend2"></div>
-            <div class="legend legend3"></div>
-            <div class="legend legend4"></div> More
-        </div>    
-        </div>
-        <div v-else>
-            <p>Fetching harvests</p>
+        <div>
+            <div v-if="harvestData" class="tableContainer">
+                <p>
+                    First harvest: <strong>{{ harvestData.fromDate | human-date }}</strong><br>
+                    Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
+                </p>
+                <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
+                <table class="monthLabels" labels>
+                    <tr><td class="empty">&nbsp;</td></tr>
+                    <tr><td>January</td></tr>
+                    <tr><td>February</td></tr>
+                    <tr><td>March</td></tr>
+                    <tr><td>April</td></tr>
+                    <tr><td>May</td></tr>
+                    <tr><td>June</td></tr>
+                    <tr><td>July</td></tr>
+                    <tr><td>August</td></tr>
+                    <tr><td>September</td></tr>
+                    <tr><td>October</td></tr>
+                    <tr><td>November</td></tr>
+                    <tr><td>December</td></tr>
+                </table>
+                <table v-for="(months, year) in harvestData.dates">
+                    <thead>
+                        <tr>
+                            <th>{{ year }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(data, month) in months">
+                            <td v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>
+            <div id="legends">
+                Less <div class="legend legend0"></div>
+                <div class="legend legend1"></div>
+                <div class="legend legend2"></div>
+                <div class="legend legend3"></div>
+                <div class="legend legend4"></div> More
+            </div>    
+            </div>
+            <template v-else>
+                <div id="spinner">
+                    <p class="spinnerText">Fetching harvests</p>
+                </div>
+                <div id="overlay"></div>
+            </template>
         </div>
     `,
     created() {
         this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(this.url))
         .then(response => {
             this.harvestData = groupHarvestDatesByYearAndMonth(response.data.dates, calculateLinearActivityLevel);
+            console.log('this.harvestData', this.harvestData)
         });
     }
 });

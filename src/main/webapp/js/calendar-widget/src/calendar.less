@@ -1,3 +1,7 @@
+h1{
+  margin: 0 0 1em;
+}
+
 .tableContainer{
      overflow: hidden;
 }
@@ -51,6 +55,36 @@ td.activityLevel4, .legend.legend4 {
   margin: 0 .3em;
   vertical-align: bottom;
   width: 2.5em;
+}
+
+/*Spinner*/
+#overlay{
+  background-color: black;
+  opacity: .8;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 50;
+}
+
+#spinner{
+  background-color: white; /*url(../images/loader90.gif) no-repeat*/
+  border: 1px solid #ccc;
+  height: 125px;
+  /*left: calc(50% - 250px);*/
+  padding: 1em;
+  position: fixed;
+  text-indent: 140px;
+  top: 10%;
+  width: 500px;
+  z-index: 500;
+}
+
+.spinnerText{
+  font-size: 18px;
+  margin-top: 50px;
 }
  
 

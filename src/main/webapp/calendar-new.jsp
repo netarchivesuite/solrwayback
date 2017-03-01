@@ -3,8 +3,7 @@
 <head>
     <title>Calendar Graph</title>
     <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css">
+    <link rel="stylesheet" type="text/css" href="css/solrwayback.css">
     <script>
         // Hand over configuration from JSP to Javascript
         window.solrWaybackConfig = {};
@@ -13,7 +12,7 @@
 </head>
 
 <body>
-    <div class="col-md-8 col-md-offset-2">
+    <div id="wrapper">
         <div id="app">
             <harvest-title :url="url"></harvest-title>
             <harvest-date :url="url"></harvest-date>

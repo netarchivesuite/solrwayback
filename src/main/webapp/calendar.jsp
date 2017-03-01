@@ -27,20 +27,22 @@
 </head>
 
 <body>
-    <%
-        String url = request.getParameter("url");
-        HarvestDates dates = Facade.getHarvestTimesForUrl(url);
-    %>
+    <div id="wrapper">
+        <%
+            String url = request.getParameter("url");
+            HarvestDates dates = Facade.getHarvestTimesForUrl(url);
+        %>
 
 
-    <h2 align="center"><%= url %> (#Harvest:<%=dates.getDates().size()%>)</h2>
+        <h2 align="center"><%= url %> (#Harvest:<%=dates.getDates().size()%>)</h2>
 
-    <div id="app">
-        <harvest-date></harvest-date>
+        <div id="app">
+            <harvest-date></harvest-date>
+        </div>
+
+        <div id="calendar" data-provide="calendar"></div>
+        <div id="yearplot"></div>
     </div>
-
-    <div id="calendar" data-provide="calendar"></div>
-    <div id="yearplot"></div>
 
     <script>
         // Hand over configuration from JSP to Javascript
