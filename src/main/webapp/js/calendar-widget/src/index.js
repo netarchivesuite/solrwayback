@@ -30,7 +30,7 @@ Vue.filter('formatted-number', function (value) {
     return value;
 });
 
-Vue.filter('monthName', function (value) {
+Vue.filter('month-name', function (value) {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     return months[value];
 });
@@ -56,7 +56,9 @@ Vue.component('harvest-date', {
                     Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
                 </p>
                 <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
-                <table class="monthLabels" labels>
+                
+                <!--<transition-group name="slide">-->
+                <table class="monthLabels">
                     <tr><td class="empty">&nbsp;</td></tr>
                     <tr><td>January</td></tr>
                     <tr><td>February</td></tr>
@@ -71,27 +73,28 @@ Vue.component('harvest-date', {
                     <tr><td>November</td></tr>
                     <tr><td>December</td></tr>
                 </table>
-                <table v-for="(months, year) in harvestData.dates">
+                <table v-for="(months, year) in harvestData.dates"  v-bind:key="months">
                     <thead>
                         <tr>
                             <th>{{ year }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(data, month) in months">
+                        <tr v-for="(data, month) in months" v-bind:key="data" >
                             <td v-on:click="showDays(year,month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
                         </tr>
                     </tbody>
-                </table>
-                <div v-if="showDetails" id="details">
-                    <div v-on:click="showDetails = false" class="hideDetails">Hide details</div>
-                    <h3>Details for {{ month | monthName }} - {{ year }}</h3>
-                    <ul>
-                        <template v-for="day in harvestData['dates'][year][month]['days']">
-                            <li v-for="harvest in day">{{ harvest }}</li>
-                        </template>
-                    </ul>
-                </div>
+                </table>              
+                <!--</transition-group>-->
+                <!--<transition-group name="slide">-->
+                    <div v-if="showDetails" id="details">
+                        <div v-on:click="showDetails = false" class="hideDetails">Hide details</div>
+                        <h3>Details for {{ month | month-name }} - {{ year }}</h3>
+                        <ul v-for="day in harvestData['dates'][year][month]['days']" v-bind:key="day">
+                            <li v-for="harvest in day" v-bind:key="harvest">{{ harvest }}</li>
+                        </ul>
+                    </div>            
+                <!--</transition-group> -->  
                 <div id="legends">
                     Less <div class="legend legend0"></div>
                     <div class="legend legend1"></div>
@@ -112,7 +115,6 @@ Vue.component('harvest-date', {
         this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(this.url))
         .then(response => {
             this.harvestData = groupHarvestDatesByYearAndMonth(response.data.dates, calculateLinearActivityLevel);
-            console.log('this.harvestData', this.harvestData)
         });
     },methods: {
         showDays: function(year, month){
@@ -120,8 +122,6 @@ Vue.component('harvest-date', {
             this.showDetails = true;
             this.year = year;
             this.month = month;
-            //console.log('this.harvestData["dates"][year][month]) ',this.harvestData['dates'][year][month]['days']);
-            //console.log('year: ',year, ' Month: ', month);
         }
     }
 });

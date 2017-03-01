@@ -1,3 +1,7 @@
+body{
+  font-size: 90%;
+}
+
 h1, h2, h3{
   margin: 0 0 1em;
 }
@@ -9,6 +13,7 @@ h1, h2, h3{
 table{
   float: left;
   margin: 2em 0;
+  opacity: 1;
 }
 
 td, th{
@@ -22,6 +27,7 @@ td, th{
 table.monthLabels td, th{
   background-color: white;
   cursor: default;
+  font-weight: normal;
 }
 
 td.empty{
@@ -64,8 +70,9 @@ td.activityLevel4, .legend.legend4 {
   border: 1px solid #ccc;
   float: left;
   margin-left: 2em;
-  width: 40%;
+  opacity: 1;
   padding: 2em;
+  width: 40%;
 }
 
 .hideDetails{
@@ -101,6 +108,20 @@ td.activityLevel4, .legend.legend4 {
 .spinnerText{
   font-size: 18px;
   margin-top: 50px;
+}
+
+/* Vue transitions */
+.slide-enter-active{
+  transition: opacity 1s;
+}
+
+.slide-leave-active {
+  transition: opacity 1s;
+}
+
+.slide-enter,
+.slide-leave-to{
+  opacity: .5;
 }
 
 

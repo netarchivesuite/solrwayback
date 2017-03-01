@@ -36,9 +36,9 @@
 
         <h2 align="center"><%= url %> (#Harvest:<%=dates.getDates().size()%>)</h2>
 
-        <div id="app">
+        <!--<div id="app">
             <harvest-date></harvest-date>
-        </div>
+        </div>-->
 
         <div id="calendar" data-provide="calendar"></div>
         <div id="yearplot"></div>
