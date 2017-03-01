@@ -30,6 +30,11 @@ Vue.filter('formatted-number', function (value) {
     return value;
 });
 
+Vue.filter('monthName', function (value) {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return months[value];
+});
+
 Vue.component('harvest-title', {
     props: ['url'],
     template: `<h1>Harvests for {{ url }}</h1>`
@@ -40,6 +45,7 @@ Vue.component('harvest-date', {
     data: () => {
         return {
             harvestData: null,
+            showDetails: false,
         }
     },
     template: `
@@ -73,17 +79,26 @@ Vue.component('harvest-date', {
                     </thead>
                     <tbody>
                         <tr v-for="(data, month) in months">
-                            <td v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                            <td v-on:click="showDays(year,month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
                         </tr>
                     </tbody>
                 </table>
-            <div id="legends">
-                Less <div class="legend legend0"></div>
-                <div class="legend legend1"></div>
-                <div class="legend legend2"></div>
-                <div class="legend legend3"></div>
-                <div class="legend legend4"></div> More
-            </div>    
+                <div v-if="showDetails" id="details">
+                    <div v-on:click="showDetails = false" class="hideDetails">Hide details</div>
+                    <h3>Details for {{ month | monthName }} - {{ year }}</h3>
+                    <ul>
+                        <template v-for="day in harvestData['dates'][year][month]['days']">
+                            <li v-for="harvest in day">{{ harvest }}</li>
+                        </template>
+                    </ul>
+                </div>
+                <div id="legends">
+                    Less <div class="legend legend0"></div>
+                    <div class="legend legend1"></div>
+                    <div class="legend legend2"></div>
+                    <div class="legend legend3"></div>
+                    <div class="legend legend4"></div> More
+                </div>    
             </div>
             <template v-else>
                 <div id="spinner">
@@ -99,6 +114,15 @@ Vue.component('harvest-date', {
             this.harvestData = groupHarvestDatesByYearAndMonth(response.data.dates, calculateLinearActivityLevel);
             console.log('this.harvestData', this.harvestData)
         });
+    },methods: {
+        showDays: function(year, month){
+            this.showDetails = false;
+            this.showDetails = true;
+            this.year = year;
+            this.month = month;
+            //console.log('this.harvestData["dates"][year][month]) ',this.harvestData['dates'][year][month]['days']);
+            //console.log('year: ',year, ' Month: ', month);
+        }
     }
 });
 

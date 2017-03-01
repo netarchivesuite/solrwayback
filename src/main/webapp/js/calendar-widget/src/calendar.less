@@ -1,25 +1,27 @@
-h1{
+h1, h2, h3{
   margin: 0 0 1em;
 }
 
 .tableContainer{
-     overflow: hidden;
+  overflow: hidden;
 }
 
 table{
-     float: left;
-     margin: 2em 0;
+  float: left;
+  margin: 2em 0;
 }
 
 td, th{
   background-color: #f0f0f0;
   border: 1px solid white;
-    border-left: 0;
-     padding: .2em;
+  border-left: 0;
+  cursor: pointer;
+  padding: .2em;
 }
 
 table.monthLabels td, th{
   background-color: white;
+  cursor: default;
 }
 
 td.empty{
@@ -27,24 +29,25 @@ td.empty{
 }
 
 td.activityLevel1, .legend.legend1 {
-    background: #d6e685;
+  background: #d6e685;
 }
 
 td.activityLevel2, .legend.legend2 {
-    background: #8cc665;
+  background: #8cc665;
 }
 
 td.activityLevel3, .legend.legend3 {
-    background: #44a340;
+  background: #44a340;
 }
 
 td.activityLevel4, .legend.legend4 {
-    background: #1e6823;
+  background: #1e6823;
 }
 
 /* Legends */
 #legends{
   clear: both;
+  float: left;
   margin: 2em 0;
 }
 
@@ -55,6 +58,19 @@ td.activityLevel4, .legend.legend4 {
   margin: 0 .3em;
   vertical-align: bottom;
   width: 2.5em;
+}
+
+#details{
+  border: 1px solid #ccc;
+  float: left;
+  margin-left: 2em;
+  width: 40%;
+  padding: 2em;
+}
+
+.hideDetails{
+  cursor: pointer;
+  float: right;
 }
 
 /*Spinner*/
@@ -86,7 +102,7 @@ td.activityLevel4, .legend.legend4 {
   font-size: 18px;
   margin-top: 50px;
 }
- 
+
 
 // <v-tooltip less>
 // source: https://akryum.github.io/vue-tooltip/
