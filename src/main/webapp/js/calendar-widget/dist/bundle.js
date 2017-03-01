@@ -1987,9 +1987,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('formatted-number', 
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-title', {
     props: ['url'],
-    template: `
-        <h1>Harvests for {{ url }}</h1>
-    `
+    template: `<h1>Harvests for {{ url }}</h1>`
 });
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
@@ -2002,12 +2000,12 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
     template: `
         <div v-if="harvestData" class="tableContainer">
             <p>
-                First harvest: {{ harvestData.fromDate | human-date }}<br>
-                Latest harvest: {{ harvestData.toDate | human-date }}
+                First harvest: <strong>{{ harvestData.fromDate | human-date }}</strong><br>
+                Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
             </p>
-            <p>Total harvests: {{ harvestData.numberOfHarvests | formatted-number }}</p>
-            <table>
-                <tr><td>&nbsp;</td></tr>
+            <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
+            <table class="monthLabels" labels>
+                <tr><td class="empty">&nbsp;</td></tr>
                 <tr><td>January</td></tr>
                 <tr><td>February</td></tr>
                 <tr><td>March</td></tr>
@@ -2033,6 +2031,13 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
                     </tr>
                 </tbody>
             </table>
+        <div id="legends">
+            Less <div class="legend legend0"></div>
+            <div class="legend legend1"></div>
+            <div class="legend legend2"></div>
+            <div class="legend legend3"></div>
+            <div class="legend legend4"></div> More
+        </div>    
         </div>
         <div v-else>
             <p>Fetching harvests</p>
@@ -2063,7 +2068,7 @@ exports = module.exports = __webpack_require__(5)();
 
 
 // module
-exports.push([module.i, ".tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  margin: 2em 0;\n}\ntd,\nth {\n  border: 1px solid #cccccc;\n  padding: .5em 1em;\n}\ntd.many,\ntd.few {\n  background: #006600;\n  color: white;\n}\ntd.activityLevel1 {\n  background: #006600;\n  color: white;\n  opacity: .25;\n}\ntd.activityLevel2 {\n  background: #006600;\n  color: white;\n  opacity: .50;\n}\ntd.activityLevel3 {\n  background: #006600;\n  color: white;\n  opacity: .75;\n}\ntd.activityLevel4 {\n  background: #006600;\n  color: white;\n  opacity: 1;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
+exports.push([module.i, ".tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  margin: 2em 0;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  padding: .2em;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\n/* Legends */\n#legends {\n  clear: both;\n  margin: 2em 0;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
 
 // exports
 
@@ -14480,7 +14485,7 @@ function buildHarvestDataObject(yearRangeObject, parsedHarvestDates) {
             const allHarvestDatesInMonth = getHarvestsForMonth(year, month, parsedHarvestDates);
 
             yearRangeObject[year][month] = {
-                dates: allHarvestDatesInMonth,
+                days: buildDayObject(allHarvestDatesInMonth),
                 numberOfHarvests: allHarvestDatesInMonth.length
             }
         }
@@ -14495,7 +14500,49 @@ function buildHarvestDataObject(yearRangeObject, parsedHarvestDates) {
  */
 function getHarvestsForMonth(year, month, parsedHarvestDates) {
     return parsedHarvestDates
-        .filter(date => date.getMonth() === month && date.getFullYear() === year)
+        .filter(date => date.getMonth() === month && date.getFullYear() === year);
+}
+
+
+/**
+ * Build an object of harvest dates for each day in the month.
+ */
+function buildDayObject(allHarvestDatesInMonth) {
+    if (allHarvestDatesInMonth.length === 0) {
+        return {};
+    }
+
+    // Sort the harvest date objects by time ascending.
+    allHarvestDatesInMonth.sort((dateA, dateB) => dateA.getTime() - dateB.getTime());
+
+    const daysInMonth = getDaysInMonth(allHarvestDatesInMonth[0]);
+    const arrayOfDays = [...Array(daysInMonth).keys()].map(day => day + 1);     // [1, 2, ..., 31]
+
+    // Initialise the object with days as key:
+    const daysObject = {};
+
+    for (let day of arrayOfDays) {
+        daysObject[day] = [];
+    }
+
+    // Populate the daysObject with the harvestDates:
+    for (let harvest of allHarvestDatesInMonth) {
+        daysObject[harvest.getDate()].push(harvest);          
+    }
+
+    return daysObject;
+}
+
+
+/**
+ * Given a Date object, return the number of days in the month.
+ * Source: http://stackoverflow.com/questions/1184334/get-number-days-in-a-specified-month-using-javascript
+ * 
+ * It takes adds one to the month of the dateObject, but sets the day to 0. 
+ * This gives the last day of the month of the dateObject.
+ */
+function getDaysInMonth(dateObject) {
+    return new Date(dateObject.getFullYear(), dateObject.getMonth() + 1, 0).getDate();
 }
 
 
@@ -14556,6 +14603,7 @@ function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
         }
     }
 }
+
 
 
 
