@@ -1998,55 +1998,61 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
         }
     },
     template: `
-        <div v-if="harvestData" class="tableContainer">
-            <p>
-                First harvest: <strong>{{ harvestData.fromDate | human-date }}</strong><br>
-                Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
-            </p>
-            <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
-            <table class="monthLabels" labels>
-                <tr><td class="empty">&nbsp;</td></tr>
-                <tr><td>January</td></tr>
-                <tr><td>February</td></tr>
-                <tr><td>March</td></tr>
-                <tr><td>April</td></tr>
-                <tr><td>May</td></tr>
-                <tr><td>June</td></tr>
-                <tr><td>July</td></tr>
-                <tr><td>August</td></tr>
-                <tr><td>September</td></tr>
-                <tr><td>October</td></tr>
-                <tr><td>November</td></tr>
-                <tr><td>December</td></tr>
-            </table>
-            <table v-for="(months, year) in harvestData.dates">
-                <thead>
-                    <tr>
-                        <th>{{ year }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(data, month) in months">
-                        <td v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
-                    </tr>
-                </tbody>
-            </table>
-        <div id="legends">
-            Less <div class="legend legend0"></div>
-            <div class="legend legend1"></div>
-            <div class="legend legend2"></div>
-            <div class="legend legend3"></div>
-            <div class="legend legend4"></div> More
-        </div>    
-        </div>
-        <div v-else>
-            <p>Fetching harvests</p>
+        <div>
+            <div v-if="harvestData" class="tableContainer">
+                <p>
+                    First harvest: <strong>{{ harvestData.fromDate | human-date }}</strong><br>
+                    Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
+                </p>
+                <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
+                <table class="monthLabels" labels>
+                    <tr><td class="empty">&nbsp;</td></tr>
+                    <tr><td>January</td></tr>
+                    <tr><td>February</td></tr>
+                    <tr><td>March</td></tr>
+                    <tr><td>April</td></tr>
+                    <tr><td>May</td></tr>
+                    <tr><td>June</td></tr>
+                    <tr><td>July</td></tr>
+                    <tr><td>August</td></tr>
+                    <tr><td>September</td></tr>
+                    <tr><td>October</td></tr>
+                    <tr><td>November</td></tr>
+                    <tr><td>December</td></tr>
+                </table>
+                <table v-for="(months, year) in harvestData.dates">
+                    <thead>
+                        <tr>
+                            <th>{{ year }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(data, month) in months">
+                            <td v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>
+            <div id="legends">
+                Less <div class="legend legend0"></div>
+                <div class="legend legend1"></div>
+                <div class="legend legend2"></div>
+                <div class="legend legend3"></div>
+                <div class="legend legend4"></div> More
+            </div>    
+            </div>
+            <template v-else>
+                <div id="spinner">
+                    <p class="spinnerText">Fetching harvests</p>
+                </div>
+                <div id="overlay"></div>
+            </template>
         </div>
     `,
     created() {
         this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(this.url))
         .then(response => {
             this.harvestData = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__transformer__["a" /* groupHarvestDatesByYearAndMonth */])(response.data.dates, __WEBPACK_IMPORTED_MODULE_3__activity_level__["a" /* calculateLinearActivityLevel */]);
+            console.log('this.harvestData', this.harvestData)
         });
     }
 });
@@ -2068,7 +2074,7 @@ exports = module.exports = __webpack_require__(5)();
 
 
 // module
-exports.push([module.i, ".tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  margin: 2em 0;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  padding: .2em;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\n/* Legends */\n#legends {\n  clear: both;\n  margin: 2em 0;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
+exports.push([module.i, "h1 {\n  margin: 0 0 1em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  margin: 2em 0;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  padding: .2em;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\n/* Legends */\n#legends {\n  clear: both;\n  margin: 2em 0;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
 
 // exports
 
@@ -14413,6 +14419,8 @@ function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunction) {
     // Build an object with keys as the years.
     const yearRangeObject = buildYearRangeObject(fromDate, toDate);
 
+    console.log(yearRangeObject);
+
     // Build Harvest Data Object.
     const harvestDataObject = addActivityLevelToDataObject(
         buildHarvestDataObject(yearRangeObject, parsedHarvestDates),
@@ -14441,7 +14449,7 @@ function buildYearRangeObject(fromDate, toDate) {
     const yearRangeObject = {};
 
     for (let year of yearRangeArray) {
-        yearRangeObject[year] = [];
+        yearRangeObject[year] = {};
     }  
 
     return yearRangeObject;

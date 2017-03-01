@@ -44,7 +44,7 @@ function buildYearRangeObject(fromDate, toDate) {
     const yearRangeObject = {};
 
     for (let year of yearRangeArray) {
-        yearRangeObject[year] = [];
+        yearRangeObject[year] = {};
     }  
 
     return yearRangeObject;
