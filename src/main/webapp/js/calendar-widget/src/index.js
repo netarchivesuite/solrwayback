@@ -6,7 +6,7 @@ import Vue from 'vue'
 import VueResource from 'vue-resource'
 
 import {groupHarvestDatesByYearAndMonth} from './transformer';
-import {calculateLinearActivityLevel, calculateLogarithmicActivityLevel} from './activity-level'
+import {calculateLinearActivityLevel, calculateLogarithmicActivityLevel} from './transformers/plugins/transformation-functions'
 import VTooltip from 'v-tooltip'
 
 Vue.use(VueResource);

@@ -1,5 +1,6 @@
 import {buildMonthObject} from './transformers/month-transformer'
 import {buildWeekObject} from './transformers/week-transformer'
+import {addActivityLevelToMonths} from './transformers/plugins/add-activity-level'
 
 /**
  * Transforms an array of harvest dates as epoch times with ms into a suitable format for rendering a graph with iteration.
@@ -20,7 +21,12 @@ export function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunc
         .map(date => new Date(date));
 
     // Populate the dates from parsedHarvestDates.
-    const datesObject = buildDatesObject(fromDate, toDate, parsedHarvestDates);
+    let datesObject = buildDatesObject(fromDate, toDate, parsedHarvestDates);
+
+    // Add activity level to the dates object.
+    // Add any other plugins here:
+    datesObject = addActivityLevelToMonths(datesObject, transformationFunction);
+
 
     console.log(datesObject);
 
