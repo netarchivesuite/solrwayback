@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 16);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1985,6 +1985,11 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('formatted-number', 
     return value;
 });
 
+__WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('month-name', function (value) {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return months[value];
+});
+
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-title', {
     props: ['url'],
     template: `<h1>Harvests for {{ url }}</h1>`
@@ -1995,6 +2000,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
     data: () => {
         return {
             harvestData: null,
+            showDetails: false,
         }
     },
     template: `
@@ -2005,7 +2011,9 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
                     Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
                 </p>
                 <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
-                <table class="monthLabels" labels>
+                
+                <!--<transition-group name="slide">-->
+                <table class="monthLabels">
                     <tr><td class="empty">&nbsp;</td></tr>
                     <tr><td>January</td></tr>
                     <tr><td>February</td></tr>
@@ -2020,25 +2028,35 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
                     <tr><td>November</td></tr>
                     <tr><td>December</td></tr>
                 </table>
-                <table v-for="(months, year) in harvestData.dates">
+                <table v-for="(months, year) in harvestData.dates"  v-bind:key="months">
                     <thead>
                         <tr>
                             <th>{{ year }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(data, month) in months">
-                            <td v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                        <tr v-for="(data, month) in months" v-bind:key="data" >
+                            <td v-on:click="showDays(year,month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
                         </tr>
                     </tbody>
-                </table>
-            <div id="legends">
-                Less <div class="legend legend0"></div>
-                <div class="legend legend1"></div>
-                <div class="legend legend2"></div>
-                <div class="legend legend3"></div>
-                <div class="legend legend4"></div> More
-            </div>    
+                </table>              
+                <!--</transition-group>-->
+                <!--<transition-group name="slide">-->
+                    <div v-if="showDetails" id="details">
+                        <div v-on:click="showDetails = false" class="hideDetails">Hide details</div>
+                        <h3>Details for {{ month | month-name }} - {{ year }}</h3>
+                        <ul v-for="day in harvestData['dates'][year][month]['days']" v-bind:key="day">
+                            <li v-for="harvest in day" v-bind:key="harvest">{{ harvest }}</li>
+                        </ul>
+                    </div>            
+                <!--</transition-group> -->  
+                <div id="legends">
+                    Less <div class="legend legend0"></div>
+                    <div class="legend legend1"></div>
+                    <div class="legend legend2"></div>
+                    <div class="legend legend3"></div>
+                    <div class="legend legend4"></div> More
+                </div>    
             </div>
             <template v-else>
                 <div id="spinner">
@@ -2052,8 +2070,14 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
         this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(this.url))
         .then(response => {
             this.harvestData = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__transformer__["a" /* groupHarvestDatesByYearAndMonth */])(response.data.dates, __WEBPACK_IMPORTED_MODULE_3__activity_level__["a" /* calculateLinearActivityLevel */]);
-            console.log('this.harvestData', this.harvestData)
         });
+    },methods: {
+        showDays: function(year, month){
+            this.showDetails = false;
+            this.showDetails = true;
+            this.year = year;
+            this.month = month;
+        }
     }
 });
 
@@ -2074,7 +2098,7 @@ exports = module.exports = __webpack_require__(5)();
 
 
 // module
-exports.push([module.i, "h1 {\n  margin: 0 0 1em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  margin: 2em 0;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  padding: .2em;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\n/* Legends */\n#legends {\n  clear: both;\n  margin: 2em 0;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
+exports.push([module.i, "body {\n  font-size: 90%;\n}\nh1,\nh2,\nh3 {\n  margin: 0 0 1em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  margin: 2em 0;\n  opacity: 1;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  cursor: pointer;\n  padding: .2em;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n  cursor: default;\n  font-weight: normal;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\n/* Legends */\n#legends {\n  clear: both;\n  float: left;\n  margin: 2em 0;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n#details {\n  border: 1px solid #ccc;\n  float: left;\n  margin-left: 2em;\n  opacity: 1;\n  padding: 2em;\n  width: 40%;\n}\n.hideDetails {\n  cursor: pointer;\n  float: right;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n/* Vue transitions */\n.slide-enter-active {\n  transition: opacity 1s;\n}\n.slide-leave-active {\n  transition: opacity 1s;\n}\n.slide-enter,\n.slide-leave-to {\n  opacity: .5;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
 
 // exports
 
@@ -4698,7 +4722,7 @@ var xhrClient = function (request) {
 
 var nodeClient = function (request) {
 
-    var client = __webpack_require__(15);
+    var client = __webpack_require__(17);
 
     return new PromiseObj(function (resolve) {
 
@@ -14400,9 +14424,14 @@ function getBaseLog(x, y) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(16);
 /* harmony export (immutable) */ __webpack_exports__["a"] = groupHarvestDatesByYearAndMonth;
+
+
+
 /**
- * Transforms an array of harvest dates as epoch times into a suitable format for rendering a graph with iteration.
+ * Transforms an array of harvest dates as epoch times with ms into a suitable format for rendering a graph with iteration.
  * This is used to transform the API response into a usable format for VueJS.
  */
 function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunction) {
@@ -14410,46 +14439,45 @@ function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunction) {
     const fromDate = new Date(Math.min(...harvestDates));
     const toDate = new Date(Math.max(...harvestDates));
 
+
     // Parse the harvest dates into an array of Date objects.
     // Validate that the dates are integers.
     const parsedHarvestDates = harvestDates
         .filter(date => parseInt(date) !== NaN)
         .map(date => new Date(date));
 
-    // Build an object with keys as the years.
-    const yearRangeObject = buildYearRangeObject(fromDate, toDate);
+    // Populate the dates from parsedHarvestDates.
+    const yearRangeObject = buildDatesObject(fromDate, toDate, parsedHarvestDates);
 
     console.log(yearRangeObject);
-
-    // Build Harvest Data Object.
-    const harvestDataObject = addActivityLevelToDataObject(
-        buildHarvestDataObject(yearRangeObject, parsedHarvestDates),
-        transformationFunction
-    );
 
     return {
         fromDate: fromDate,
         toDate: toDate,
-        dates: harvestDataObject,
+        dates: yearRangeObject,
         numberOfHarvests: harvestDates.length
     }
 }
 
 
 /**
- * Build an object with keys as the years, e.g.
+ * Build an object with keys as the years, and the data within each year.
  * {
- *     2007: {},
- *     2008: {},
+ *     2007: {
+ *         'weeks': {...},
+ *         'months': {...} 
+ *     },
  *     ...
  * }
  */
-function buildYearRangeObject(fromDate, toDate) {
+function buildDatesObject(fromDate, toDate, parsedHarvestDates) {
     const yearRangeArray = buildYearRangeArray(fromDate, toDate);
     const yearRangeObject = {};
 
     for (let year of yearRangeArray) {
         yearRangeObject[year] = {};
+        yearRangeObject[year]['months'] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__["a" /* buildMonthObject */])(year, parsedHarvestDates);
+        yearRangeObject[year]['weeks'] = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__["a" /* buildWeekObject */])(year, parsedHarvestDates);
     }  
 
     return yearRangeObject;
@@ -14460,169 +14488,192 @@ function buildYearRangeObject(fromDate, toDate) {
  * Build an array of years from the minDate year to the maxDate year. E.g. [2007, 2008, 2009, 2010, 2011, ..., 2017]
  * minDate, maxDate are Date instances
  */
-function buildYearRangeArray(minDate, maxDate) {
-    return [...Array(maxDate.getFullYear() - minDate.getFullYear() + 1).keys()]     // e.g. [0, 1, 2, ..., 10]
-        .map(year => year + minDate.getFullYear());                                                  // e.g. [2007, 2008, 2009, ..., 2017]
+function buildYearRangeArray(fromDate, toDate) {
+    return [...Array(toDate.getFullYear() - fromDate.getFullYear() + 1).keys()]             // e.g. [0, 1, 2, ..., 10]
+        .map(year => year + fromDate.getFullYear());                                        // e.g. [2007, 2008, 2009, ..., 2017]
 }
 
 
-/**
- * Add months to the year range object.
- * Output is:
- * {
- *     2007: {
- *         1: {
- *             dates: [ ... ],
-               numberOfHarvests: 5023
- *         },
- *         ...
- *     },
- *     ...
- * }
- */
-function buildHarvestDataObject(yearRangeObject, parsedHarvestDates) {
+/***/ }),
+/* 15 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-    const arrayOfMonthValues = [...Array(12).keys()];       // [0, 1, 2, ..., 11]
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = buildMonthObject;
+function buildMonthObject(year, parsedHarvestDates) {
+    
+    return "Some months here!";
 
-    // Iterate over all years in the yearRangeObject
-    for (let yearAsString of Object.keys(yearRangeObject)) {
-        const year = parseInt(yearAsString);        // Since Object.keys() returns an array of strings, we need to convert years to a number.
-
-        // Iterate over all months (0-11)
-        for (let month of arrayOfMonthValues) {
-            const allHarvestDatesInMonth = getHarvestsForMonth(year, month, parsedHarvestDates);
-
-            yearRangeObject[year][month] = {
-                days: buildDayObject(allHarvestDatesInMonth),
-                numberOfHarvests: allHarvestDatesInMonth.length
-            }
-        }
-    }
-
-    return yearRangeObject;
 }
 
 
-/**
- * Return an array of all the parsedHarvestDates in the given year and month.
- */
-function getHarvestsForMonth(year, month, parsedHarvestDates) {
-    return parsedHarvestDates
-        .filter(date => date.getMonth() === month && date.getFullYear() === year);
-}
+// /**
+//  * Add months to the year range object.
+//  * Output is:
+//  * {
+//  *     2007: {
+//  *         1: {
+//  *             dates: [ ... ],
+//                numberOfHarvests: 5023
+//  *         },
+//  *         ...
+//  *     },
+//  *     ...
+//  * }
+//  */
+// function buildHarvestDataObject(yearRangeObject, parsedHarvestDates) {
+
+//     const arrayOfMonthValues = [...Array(12).keys()];       // [0, 1, 2, ..., 11]
+
+//     // Iterate over all years in the yearRangeObject
+//     for (let yearAsString of Object.keys(yearRangeObject)) {
+//         const year = parseInt(yearAsString);        // Since Object.keys() returns an array of strings, we need to convert years to a number.
+
+//         // Iterate over all months (0-11)
+//         for (let month of arrayOfMonthValues) {
+//             const allHarvestDatesInMonth = getHarvestsForMonth(year, month, parsedHarvestDates);
+
+//             yearRangeObject[year][month] = {
+//                 days: buildDayObject(allHarvestDatesInMonth),
+//                 numberOfHarvests: allHarvestDatesInMonth.length
+//             }
+//         }
+//     }
+
+//     return yearRangeObject;
+// }
 
 
-/**
- * Build an object of harvest dates for each day in the month.
- */
-function buildDayObject(allHarvestDatesInMonth) {
-    if (allHarvestDatesInMonth.length === 0) {
-        return {};
-    }
-
-    // Sort the harvest date objects by time ascending.
-    allHarvestDatesInMonth.sort((dateA, dateB) => dateA.getTime() - dateB.getTime());
-
-    const daysInMonth = getDaysInMonth(allHarvestDatesInMonth[0]);
-    const arrayOfDays = [...Array(daysInMonth).keys()].map(day => day + 1);     // [1, 2, ..., 31]
-
-    // Initialise the object with days as key:
-    const daysObject = {};
-
-    for (let day of arrayOfDays) {
-        daysObject[day] = [];
-    }
-
-    // Populate the daysObject with the harvestDates:
-    for (let harvest of allHarvestDatesInMonth) {
-        daysObject[harvest.getDate()].push(harvest);          
-    }
-
-    return daysObject;
-}
+// /**
+//  * Return an array of all the parsedHarvestDates in the given year and month.
+//  */
+// function getHarvestsForMonth(year, month, parsedHarvestDates) {
+//     return parsedHarvestDates
+//         .filter(date => date.getMonth() === month && date.getFullYear() === year);
+// }
 
 
-/**
- * Given a Date object, return the number of days in the month.
- * Source: http://stackoverflow.com/questions/1184334/get-number-days-in-a-specified-month-using-javascript
- * 
- * It takes adds one to the month of the dateObject, but sets the day to 0. 
- * This gives the last day of the month of the dateObject.
- */
-function getDaysInMonth(dateObject) {
-    return new Date(dateObject.getFullYear(), dateObject.getMonth() + 1, 0).getDate();
-}
+// /**
+//  * Build an object of harvest dates for each day in the month.
+//  */
+// function buildDayObject(allHarvestDatesInMonth) {
+//     if (allHarvestDatesInMonth.length === 0) {
+//         return {};
+//     }
+
+//     // Sort the harvest date objects by time ascending.
+//     allHarvestDatesInMonth.sort((dateA, dateB) => dateA.getTime() - dateB.getTime());
+
+//     const daysInMonth = getDaysInMonth(allHarvestDatesInMonth[0]);
+//     const arrayOfDays = [...Array(daysInMonth).keys()].map(day => day + 1);     // [1, 2, ..., 31]
+
+//     // Initialise the object with days as key:
+//     const daysObject = {};
+
+//     for (let day of arrayOfDays) {
+//         daysObject[day] = [];
+//     }
+
+//     // Populate the daysObject with the harvestDates:
+//     for (let harvest of allHarvestDatesInMonth) {
+//         daysObject[harvest.getDate()].push(harvest);          
+//     }
+
+//     return daysObject;
+// }
 
 
-/**
- * Calculates and adds an activityLevel property to each month,
- * this is used to color each table cell.
- * 
- * It takes a transformationFunction from activity-level.js. 
- * This enables easy changing of the transformation types.
- */
-function addActivityLevelToDataObject(harvestDataObject, transformationFunction) {
-
-    let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(harvestDataObject);
-
-    // Loop through each month and assign the activityLevel
-    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-        harvestDataObject[year][month].activityLevel = transformationFunction(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
-    });
-
-    return harvestDataObject;
-}
+// /**
+//  * Given a Date object, return the number of days in the month.
+//  * Source: http://stackoverflow.com/questions/1184334/get-number-days-in-a-specified-month-using-javascript
+//  * 
+//  * It takes adds one to the month of the dateObject, but sets the day to 0. 
+//  * This gives the last day of the month of the dateObject.
+//  */
+// function getDaysInMonth(dateObject) {
+//     return new Date(dateObject.getFullYear(), dateObject.getMonth() + 1, 0).getDate();
+// }
 
 
-/**
- * Loops through the data object, returns an object with 3 values: maximumYear, maximumMonth, maximumHarvests.
- */
-function getMaximumHarvestCount(harvestDataObject) {
+// /**
+//  * Calculates and adds an activityLevel property to each month,
+//  * this is used to color each table cell.
+//  * 
+//  * It takes a transformationFunction from activity-level.js. 
+//  * This enables easy changing of the transformation types.
+//  */
+// function addActivityLevelToDataObject(harvestDataObject, transformationFunction) {
 
-    let maximumYear = null;
-    let maximumMonth = null;
-    let maximumHarvests = 0;
+//     let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(harvestDataObject);
 
-    // Loop through each month in the data object, check if it beats the record for numberOfHarvests...
-    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-        if (harvestDataObject[year][month].numberOfHarvests >= maximumHarvests) {
-            maximumHarvests = harvestDataObject[year][month].numberOfHarvests;
-            maximumYear = year;
-            maximumMonth = month;
-        }
-    });
+//     // Loop through each month and assign the activityLevel
+//     doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
+//         harvestDataObject[year][month].activityLevel = transformationFunction(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
+//     });
 
-    return {
-        maximumYear: maximumYear, 
-        maximumMonth: maximumMonth, 
-        maximumHarvests: maximumHarvests
-    };
-}
+//     return harvestDataObject;
+// }
 
 
-/**
- * Higher-order function that loops through the harvestDataObject, calling a callback for each month.
- */
-function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
+// /**
+//  * Loops through the data object, returns an object with 3 values: maximumYear, maximumMonth, maximumHarvests.
+//  */
+// function getMaximumHarvestCount(harvestDataObject) {
 
-    for (let year of Object.keys(harvestDataObject)) {
-        for (let month of Object.keys(harvestDataObject[year])) {
-            actionFunction(year, month);
-        }
-    }
-}
+//     let maximumYear = null;
+//     let maximumMonth = null;
+//     let maximumHarvests = 0;
+
+//     // Loop through each month in the data object, check if it beats the record for numberOfHarvests...
+//     doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
+//         if (harvestDataObject[year][month].numberOfHarvests >= maximumHarvests) {
+//             maximumHarvests = harvestDataObject[year][month].numberOfHarvests;
+//             maximumYear = year;
+//             maximumMonth = month;
+//         }
+//     });
+
+//     return {
+//         maximumYear: maximumYear, 
+//         maximumMonth: maximumMonth, 
+//         maximumHarvests: maximumHarvests
+//     };
+// }
+
+
+// /**
+//  * Higher-order function that loops through the harvestDataObject, calling a callback for each month.
+//  */
+// function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
+
+//     for (let year of Object.keys(harvestDataObject)) {
+//         for (let month of Object.keys(harvestDataObject[year])) {
+//             actionFunction(year, month);
+//         }
+//     }
+// }
 
 
 
 
 /***/ }),
-/* 15 */
+/* 16 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = buildWeekObject;
+function buildWeekObject(year, parsedHarvestDates) {
+    return "Some weeks here!";
+} 
+
+/***/ }),
+/* 17 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(3);
