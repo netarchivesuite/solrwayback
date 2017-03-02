@@ -74,14 +74,14 @@ Vue.component('harvest-date', {
                             <tr><td>November</td></tr>
                             <tr><td>December</td></tr>
                         </table>
-                        <table v-for="(months, year) in harvestData.dates">
+                        <table v-for="(yearData, year) in harvestData.dates">
                             <thead>
                                 <tr>
                                     <th>{{ year }}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(data, month) in months">
+                                <tr v-for="(data, month) in yearData.months">
                                     <td v-on:click="showDays(year,month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
                                 </tr>
                             </tbody>
@@ -93,9 +93,9 @@ Vue.component('harvest-date', {
                     <div id="details">
                         <div v-on:click="showDetails = false" class="hideDetails">Hide details</div>
                         <h3>Details for {{ month | month-name }} - {{ year }}</h3>
-                        <ul v-for="day in harvestData['dates'][year][month]['days']">
+                        <!--<ul v-for="day in harvestData['dates'][year][month]['days']">
                             <li v-for="harvest in day">{{ harvest }}</li>
-                        </ul>
+                        </ul>-->
                     </div>
                  </div>               
                 </transition> 
