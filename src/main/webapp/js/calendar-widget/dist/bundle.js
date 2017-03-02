@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 18);
+/******/ 	return __webpack_require__(__webpack_require__.s = 20);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -4722,7 +4722,7 @@ var xhrClient = function (request) {
 
 var nodeClient = function (request) {
 
-    var client = __webpack_require__(17);
+    var client = __webpack_require__(19);
 
     return new PromiseObj(function (resolve) {
 
@@ -14424,8 +14424,8 @@ function getBaseLog(x, y) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(18);
 /* harmony export (immutable) */ __webpack_exports__["a"] = groupHarvestDatesByYearAndMonth;
 
 
@@ -14433,6 +14433,8 @@ function getBaseLog(x, y) {
 /**
  * Transforms an array of harvest dates as epoch times with ms into a suitable format for rendering a graph with iteration.
  * This is used to transform the API response into a usable format for VueJS.
+ * 
+ * TODO: Handle empty response.
  */
 function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunction) {
 
@@ -14447,14 +14449,14 @@ function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunction) {
         .map(date => new Date(date));
 
     // Populate the dates from parsedHarvestDates.
-    const yearRangeObject = buildDatesObject(fromDate, toDate, parsedHarvestDates);
+    const datesObject = buildDatesObject(fromDate, toDate, parsedHarvestDates);
 
-    console.log(yearRangeObject);
+    console.log(datesObject);
 
     return {
         fromDate: fromDate,
         toDate: toDate,
-        dates: yearRangeObject,
+        dates: datesObject,
         numberOfHarvests: harvestDates.length
     }
 }
@@ -14499,100 +14501,117 @@ function buildYearRangeArray(fromDate, toDate) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = buildMonthObject;
-function buildMonthObject(year, parsedHarvestDates) {
-    
-    return "Some months here!";
+/* harmony export (immutable) */ __webpack_exports__["a"] = getArrayOfMonthValues;
+/* harmony export (immutable) */ __webpack_exports__["b"] = getHarvestsForMonth;
+/* harmony export (immutable) */ __webpack_exports__["c"] = getDaysInMonth;
+/**
+ * Returns an array of the months in the year (0-11)
+ */
+function getArrayOfMonthValues() {
+    return [...Array(12).keys()];       // [0, 1, 2, ..., 11]
+};
 
+
+/**
+ * Returns an array of the harvest for a given month and year.
+ * 
+ * @param {number} year 
+ * @param {number} month 
+ * @param {Array<Date>} parsedHarvestDates 
+ */
+function getHarvestsForMonth(year, month, parsedHarvestDates) {
+    return parsedHarvestDates
+        .filter(date => date.getMonth() === month && date.getFullYear() === year);
 }
 
 
-// /**
-//  * Add months to the year range object.
-//  * Output is:
-//  * {
-//  *     2007: {
-//  *         1: {
-//  *             dates: [ ... ],
-//                numberOfHarvests: 5023
-//  *         },
-//  *         ...
-//  *     },
-//  *     ...
-//  * }
-//  */
-// function buildHarvestDataObject(yearRangeObject, parsedHarvestDates) {
-
-//     const arrayOfMonthValues = [...Array(12).keys()];       // [0, 1, 2, ..., 11]
-
-//     // Iterate over all years in the yearRangeObject
-//     for (let yearAsString of Object.keys(yearRangeObject)) {
-//         const year = parseInt(yearAsString);        // Since Object.keys() returns an array of strings, we need to convert years to a number.
-
-//         // Iterate over all months (0-11)
-//         for (let month of arrayOfMonthValues) {
-//             const allHarvestDatesInMonth = getHarvestsForMonth(year, month, parsedHarvestDates);
-
-//             yearRangeObject[year][month] = {
-//                 days: buildDayObject(allHarvestDatesInMonth),
-//                 numberOfHarvests: allHarvestDatesInMonth.length
-//             }
-//         }
-//     }
-
-//     return yearRangeObject;
-// }
+/**
+ * Given a Date object, return the number of days in the month.
+ * Source: http://stackoverflow.com/questions/1184334/get-number-days-in-a-specified-month-using-javascript
+ * 
+ * It takes adds one to the month of the dateObject, but sets the day to 0. 
+ * This gives the last day of the month of the dateObject.
+ * 
+ * @param {Date} dateObject 
+ */
+function getDaysInMonth(dateObject) {
+    return new Date(dateObject.getFullYear(), dateObject.getMonth() + 1, 0).getDate();
+}
 
 
-// /**
-//  * Return an array of all the parsedHarvestDates in the given year and month.
-//  */
-// function getHarvestsForMonth(year, month, parsedHarvestDates) {
-//     return parsedHarvestDates
-//         .filter(date => date.getMonth() === month && date.getFullYear() === year);
-// }
+
+/***/ }),
+/* 16 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__date__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(17);
+/* harmony export (immutable) */ __webpack_exports__["a"] = buildMonthObject;
 
 
-// /**
-//  * Build an object of harvest dates for each day in the month.
-//  */
-// function buildDayObject(allHarvestDatesInMonth) {
-//     if (allHarvestDatesInMonth.length === 0) {
-//         return {};
-//     }
 
-//     // Sort the harvest date objects by time ascending.
-//     allHarvestDatesInMonth.sort((dateA, dateB) => dateA.getTime() - dateB.getTime());
+/**
+ * Generate the monthObject for a given year and parsedHarvestDates.
+ * 
+ * Output is:
+ * {
+ *     1: {
+ *         dates: [ ... ],
+           numberOfHarvests: 5023
+ *     },
+ *     ...
+ * }
+ */
+function buildMonthObject(year, parsedHarvestDates) {
 
-//     const daysInMonth = getDaysInMonth(allHarvestDatesInMonth[0]);
-//     const arrayOfDays = [...Array(daysInMonth).keys()].map(day => day + 1);     // [1, 2, ..., 31]
+    const monthObject = {};
 
-//     // Initialise the object with days as key:
-//     const daysObject = {};
+    for (let month of __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["a" /* getArrayOfMonthValues */])()) {
+        const allHarvestDatesInMonth = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["b" /* getHarvestsForMonth */])(year, month, parsedHarvestDates);
 
-//     for (let day of arrayOfDays) {
-//         daysObject[day] = [];
-//     }
+        monthObject[month] = {
+            days: buildDayObject(allHarvestDatesInMonth),
+            numberOfHarvests: allHarvestDatesInMonth.length
+        }
+    }
 
-//     // Populate the daysObject with the harvestDates:
-//     for (let harvest of allHarvestDatesInMonth) {
-//         daysObject[harvest.getDate()].push(harvest);          
-//     }
-
-//     return daysObject;
-// }
+    return monthObject;
+}
 
 
-// /**
-//  * Given a Date object, return the number of days in the month.
-//  * Source: http://stackoverflow.com/questions/1184334/get-number-days-in-a-specified-month-using-javascript
-//  * 
-//  * It takes adds one to the month of the dateObject, but sets the day to 0. 
-//  * This gives the last day of the month of the dateObject.
-//  */
-// function getDaysInMonth(dateObject) {
-//     return new Date(dateObject.getFullYear(), dateObject.getMonth() + 1, 0).getDate();
-// }
+
+/**
+ * Build an object of harvest dates for each day in the month.
+ */
+function buildDayObject(allHarvestDatesInMonth) {
+    if (allHarvestDatesInMonth.length === 0) {
+        return {};
+    }
+
+    // Sort the harvest date objects by time ascending.
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__util__["a" /* sortDatesDescending */])(allHarvestDatesInMonth);
+
+    const daysInMonth = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["c" /* getDaysInMonth */])(allHarvestDatesInMonth[0]);
+    const arrayOfDays = [...Array(daysInMonth).keys()].map(day => day + 1);     // [1, 2, ..., 31]
+
+    // Initialise the object with days as key:
+    const daysObject = {};
+
+    for (let day of arrayOfDays) {
+        daysObject[day] = [];
+    }
+
+    // Populate the daysObject with the harvestDates:
+    for (let harvest of allHarvestDatesInMonth) {
+        daysObject[harvest.getDate()].push(harvest);          
+    }
+
+    return daysObject;
+}
+
+
+
 
 
 // /**
@@ -14657,7 +14676,25 @@ function buildMonthObject(year, parsedHarvestDates) {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = sortDatesDescending;
+/**
+ * Sort the date array descending (oldest first).
+ * Note: Mutates the input array
+ * 
+ * @param {Date} dateArray 
+ */
+function sortDatesDescending(dateArray) {
+    // Sort the harvest date objects by time ascending.
+    return dateArray.sort((dateA, dateB) => dateA.getTime() - dateB.getTime());
+}
+
+
+/***/ }),
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14667,13 +14704,13 @@ function buildWeekObject(year, parsedHarvestDates) {
 } 
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(3);
