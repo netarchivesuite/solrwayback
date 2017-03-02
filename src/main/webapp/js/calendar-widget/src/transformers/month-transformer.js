@@ -1,4 +1,4 @@
-import {getArrayOfMonthValues, getHarvestsForMonth, getDaysInMonth} from './date'
+import {getArrayOfMonths, getHarvestsForMonth, getDaysInMonth} from './date'
 import {sortDatesDescending} from './util'
 
 /**
@@ -20,7 +20,7 @@ export function buildMonthObject(year, parsedHarvestDates) {
 
     const monthObject = {};
 
-    for (let month of getArrayOfMonthValues()) {
+    for (let month of getArrayOfMonths()) {
         const allHarvestDatesInMonth = getHarvestsForMonth(year, month, parsedHarvestDates);
 
         monthObject[month] = {

@@ -1,8 +1,22 @@
 /**
  * Returns an array of the months in the year (0-11)
  */
-export function getArrayOfMonthValues() {
+export function getArrayOfMonths() {
     return [...Array(12).keys()];       // [0, 1, 2, ..., 11]
+};
+
+/**
+ * Returns an array of the months in the year (0-51)
+ */
+export function getArrayOfWeeks() {
+    return [...Array(52).keys()];       // [0, 1, 2, ..., 51]
+};
+
+/**
+ * Returns an array of the months in the year (0-51)
+ */
+export function getArrayOfWeekDays() {
+    return [...Array(7).keys()];       // [0, 1, 2, ..., 6]
 };
 
 
@@ -14,6 +28,22 @@ export function getArrayOfMonthValues() {
  * @param {Array<Date>} parsedHarvestDates 
  */
 export function getHarvestsForMonth(year, month, parsedHarvestDates) {
+    return parsedHarvestDates
+        .filter(date => date.getMonth() === month && date.getFullYear() === year);
+}
+
+
+/**
+ * Returns an array of the harvest for a given week of the year.
+ * For now it's just a very simple and naive implementation.
+ * 
+ * @param {number} year 
+ * @param {number} month 
+ * @param {Array<Date>} parsedHarvestDates 
+ */
+export function getHarvestsForWeek(year, week, parsedHarvestDates) {
+
+
     return parsedHarvestDates
         .filter(date => date.getMonth() === month && date.getFullYear() === year);
 }
