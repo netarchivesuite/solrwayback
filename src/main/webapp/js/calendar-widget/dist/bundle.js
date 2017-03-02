@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 21);
+/******/ 	return __webpack_require__(__webpack_require__.s = 22);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1950,7 +1950,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_vue_resource__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformer__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_transformation_functions__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_transformation_functions__ = __webpack_require__(18);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_v_tooltip__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_v_tooltip___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_v_tooltip__);
 /**
@@ -4722,7 +4722,7 @@ var xhrClient = function (request) {
 
 var nodeClient = function (request) {
 
-    var client = __webpack_require__(20);
+    var client = __webpack_require__(21);
 
     return new PromiseObj(function (resolve) {
 
@@ -14364,7 +14364,7 @@ Vue$3.compile = compileToFunctions;
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformers_plugins_add_activity_level__ = __webpack_require__(16);
 /* harmony export (immutable) */ __webpack_exports__["a"] = groupHarvestDatesByYearAndMonth;
 
@@ -14491,7 +14491,7 @@ function getDaysInMonth(dateObject) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__date__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(19);
 /* harmony export (immutable) */ __webpack_exports__["a"] = buildMonthObject;
 
 
@@ -14507,6 +14507,9 @@ function getDaysInMonth(dateObject) {
  *     },
  *     ...
  * }
+ * 
+ * @param {number} year 
+ * @param {Array<Date>} parsedHarvestDates 
  */
 function buildMonthObject(year, parsedHarvestDates) {
 
@@ -14528,6 +14531,8 @@ function buildMonthObject(year, parsedHarvestDates) {
 
 /**
  * Build an object of harvest dates for each day in the month.
+ * 
+ * @param {Array<Date>} allHarvestDatesInMonth 
  */
 function buildDayObject(allHarvestDatesInMonth) {
     if (allHarvestDatesInMonth.length === 0) {
@@ -14561,12 +14566,15 @@ function buildDayObject(allHarvestDatesInMonth) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__iterators__ = __webpack_require__(17);
 /* harmony export (immutable) */ __webpack_exports__["a"] = addActivityLevelToMonths;
+
+
 /**
  * Plugin to add the property activityLevel to every month in the data object.
  * Takes a transformation function to choose the way the activity level is calculated.
  * 
- * @param {Object} datesObject The final data object to aggregate.
+ * @param {Object} datesObject The final object of years, months and days to add data to.
  * @param {Function} transformationFunction The function to calculate activity level from transformation-functions.js
  */
 function addActivityLevelToMonths(datesObject, transformationFunction) {
@@ -14574,7 +14582,7 @@ function addActivityLevelToMonths(datesObject, transformationFunction) {
     let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(datesObject);
 
     // Loop through each month and assign the activityLevel
-    doForEachMonthInHarvestDataObject(datesObject, (year, month) => {
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__iterators__["a" /* doForEachMonthInDatesObject */])(datesObject, (year, month) => {
         datesObject[year]['months'][month].activityLevel = transformationFunction(datesObject[year]['months'][month].numberOfHarvests, maximumHarvests);
     });
 
@@ -14584,17 +14592,19 @@ function addActivityLevelToMonths(datesObject, transformationFunction) {
 
 /**
  * Loops through the data object, returns an object with 3 values: maximumYear, maximumMonth, maximumHarvests.
+ * 
+ * @param {Object} datesObject The final object of years, months and days to add data to.
  */
-function getMaximumHarvestCount(harvestDataObject) {
+function getMaximumHarvestCount(datesObject) {
 
     let maximumYear = null;
     let maximumMonth = null;
     let maximumHarvests = 0;
 
     // Loop through each month in the data object, check if it beats the record for numberOfHarvests...
-    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-        if (harvestDataObject[year]['months'][month].numberOfHarvests >= maximumHarvests) {
-            maximumHarvests = harvestDataObject[year]['months'][month].numberOfHarvests;
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__iterators__["a" /* doForEachMonthInDatesObject */])(datesObject, (year, month) => {
+        if (datesObject[year]['months'][month].numberOfHarvests >= maximumHarvests) {
+            maximumHarvests = datesObject[year]['months'][month].numberOfHarvests;
             maximumYear = year;
             maximumMonth = month;
         }
@@ -14608,21 +14618,32 @@ function getMaximumHarvestCount(harvestDataObject) {
 }
 
 
+
+/***/ }),
+/* 17 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = doForEachMonthInDatesObject;
 /**
  * Higher-order function that loops through the harvestDataObject, calling a callback for each month.
+ * 
+ * @param {Object} datesObject The final object of years, months and days to add data to.
+ * @param {Function} actionFunction The callback to execute for every month.
  */
-function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
+function doForEachMonthInDatesObject(datesObject, actionFunction) {
 
-    for (let year of Object.keys(harvestDataObject)) {
-        for (let month of Object.keys(harvestDataObject[year]['months'])) {
+    for (let year of Object.keys(datesObject)) {
+        for (let month of Object.keys(datesObject[year]['months'])) {
             actionFunction(year, month);
         }
     }
 }
 
 
+
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14678,7 +14699,7 @@ function getBaseLog(x, y) {
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14696,7 +14717,7 @@ function sortDatesDescending(dateArray) {
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14706,13 +14727,13 @@ function buildWeekObject(year, parsedHarvestDates) {
 } 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(3);

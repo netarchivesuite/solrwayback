@@ -12,6 +12,9 @@ import {sortDatesDescending} from './util'
  *     },
  *     ...
  * }
+ * 
+ * @param {number} year 
+ * @param {Array<Date>} parsedHarvestDates 
  */
 export function buildMonthObject(year, parsedHarvestDates) {
 
@@ -33,6 +36,8 @@ export function buildMonthObject(year, parsedHarvestDates) {
 
 /**
  * Build an object of harvest dates for each day in the month.
+ * 
+ * @param {Array<Date>} allHarvestDatesInMonth 
  */
 function buildDayObject(allHarvestDatesInMonth) {
     if (allHarvestDatesInMonth.length === 0) {
