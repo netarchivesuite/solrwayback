@@ -1,9 +1,4 @@
 /**
- * These are functions to calculate the activitylevel for a given month.
- */
-
-
-/**
  * Calculate activity level linearly between 0 and 4.
  * 0 is no activity level at all, 4 is the max level.
  */

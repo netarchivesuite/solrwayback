@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 20);
+/******/ 	return __webpack_require__(__webpack_require__.s = 21);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1949,8 +1949,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_vue_resource__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformer__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__activity_level__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformer__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_transformation_functions__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_v_tooltip__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_v_tooltip___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_v_tooltip__);
 /**
@@ -2069,7 +2069,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
     created() {
         this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(this.url))
         .then(response => {
-            this.harvestData = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__transformer__["a" /* groupHarvestDatesByYearAndMonth */])(response.data.dates, __WEBPACK_IMPORTED_MODULE_3__activity_level__["a" /* calculateLinearActivityLevel */]);
+            this.harvestData = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__transformer__["a" /* groupHarvestDatesByYearAndMonth */])(response.data.dates, __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_transformation_functions__["a" /* calculateLinearActivityLevel */]);
         });
     },methods: {
         showDays: function(year, month){
@@ -4722,7 +4722,7 @@ var xhrClient = function (request) {
 
 var nodeClient = function (request) {
 
-    var client = __webpack_require__(19);
+    var client = __webpack_require__(20);
 
     return new PromiseObj(function (resolve) {
 
@@ -14363,70 +14363,11 @@ Vue$3.compile = compileToFunctions;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = calculateLinearActivityLevel;
-/* unused harmony export calculateLogarithmicActivityLevel */
-/**
- * These are functions to calculate the activitylevel for a given month.
- */
-
-
-/**
- * Calculate activity level linearly between 0 and 4.
- * 0 is no activity level at all, 4 is the max level.
- */
-function calculateLinearActivityLevel(harvestsInMonth, maximumHarvests) {
-    if (harvestsInMonth > maximumHarvests * 0.75 && harvestsInMonth <= maximumHarvests) {
-        return 4;
-    } else if (harvestsInMonth > maximumHarvests * 0.50 && harvestsInMonth <= maximumHarvests * 0.75) {
-        return 3;
-    } else if (harvestsInMonth > maximumHarvests * 0.25 && harvestsInMonth <= maximumHarvests * 0.50) {
-        return 2;
-    } else if (harvestsInMonth > 0 && harvestsInMonth <= maximumHarvests * 0.25) {
-        return 1;
-    } 
-
-    return 0;
-}
-
-
-/**
- * Calculate activity level logarithmically.
- */
-function calculateLogarithmicActivityLevel(harvestsInMonth, maximumHarvests) {
-
-    const logarithmicResult = getBaseLog(maximumHarvests, harvestsInMonth);
-
-    if (logarithmicResult > 0.75 && logarithmicResult <= 1) {
-        return 4;
-    } else if (logarithmicResult > 0.50 && logarithmicResult <= 0.75) {
-        return 3;
-    } else if (logarithmicResult > 0.25 && logarithmicResult <= 0.50) {
-        return 2;
-    } else if (logarithmicResult > 0 && logarithmicResult <= 0.25) {
-        return 1;
-    } 
-
-    return 0;
-}
-
-
-/**
- * The following function returns the logarithm of y with base x, ie. logx(y):
- */
-function getBaseLog(x, y) {
-    return Math.log(y) / Math.log(x);
-}
-
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformers_plugins_add_activity_level__ = __webpack_require__(16);
 /* harmony export (immutable) */ __webpack_exports__["a"] = groupHarvestDatesByYearAndMonth;
+
 
 
 
@@ -14449,7 +14390,11 @@ function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunction) {
         .map(date => new Date(date));
 
     // Populate the dates from parsedHarvestDates.
-    const datesObject = buildDatesObject(fromDate, toDate, parsedHarvestDates);
+    let datesObject = buildDatesObject(fromDate, toDate, parsedHarvestDates);
+
+    // Add activity level to the dates object.
+    // Add any other plugins here:
+    datesObject = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__transformers_plugins_add_activity_level__["a" /* addActivityLevelToMonths */])(datesObject, transformationFunction);
 
     console.log(datesObject);
 
@@ -14497,7 +14442,7 @@ function buildYearRangeArray(fromDate, toDate) {
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14541,12 +14486,12 @@ function getDaysInMonth(dateObject) {
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__date__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__date__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(18);
 /* harmony export (immutable) */ __webpack_exports__["a"] = buildMonthObject;
 
 
@@ -14603,80 +14548,137 @@ function buildDayObject(allHarvestDatesInMonth) {
     }
 
     // Populate the daysObject with the harvestDates:
-    for (let harvest of allHarvestDatesInMonth) {
-        daysObject[harvest.getDate()].push(harvest);          
+    for (let harvestDate of allHarvestDatesInMonth) {
+        daysObject[harvestDate.getDate()].push(harvestDate);                    // daysObject[31] = Date()
     }
 
     return daysObject;
 }
 
 
+/***/ }),
+/* 16 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = addActivityLevelToMonths;
+/**
+ * Plugin to add the property activityLevel to every month in the data object.
+ * Takes a transformation function to choose the way the activity level is calculated.
+ * 
+ * @param {Object} datesObject The final data object to aggregate.
+ * @param {Function} transformationFunction The function to calculate activity level from transformation-functions.js
+ */
+function addActivityLevelToMonths(datesObject, transformationFunction) {
+
+    let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(datesObject);
+
+    // Loop through each month and assign the activityLevel
+    doForEachMonthInHarvestDataObject(datesObject, (year, month) => {
+        datesObject[year]['months'][month].activityLevel = transformationFunction(datesObject[year]['months'][month].numberOfHarvests, maximumHarvests);
+    });
+
+    return datesObject;
+}
 
 
+/**
+ * Loops through the data object, returns an object with 3 values: maximumYear, maximumMonth, maximumHarvests.
+ */
+function getMaximumHarvestCount(harvestDataObject) {
 
-// /**
-//  * Calculates and adds an activityLevel property to each month,
-//  * this is used to color each table cell.
-//  * 
-//  * It takes a transformationFunction from activity-level.js. 
-//  * This enables easy changing of the transformation types.
-//  */
-// function addActivityLevelToDataObject(harvestDataObject, transformationFunction) {
+    let maximumYear = null;
+    let maximumMonth = null;
+    let maximumHarvests = 0;
 
-//     let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(harvestDataObject);
+    // Loop through each month in the data object, check if it beats the record for numberOfHarvests...
+    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
+        if (harvestDataObject[year]['months'][month].numberOfHarvests >= maximumHarvests) {
+            maximumHarvests = harvestDataObject[year]['months'][month].numberOfHarvests;
+            maximumYear = year;
+            maximumMonth = month;
+        }
+    });
 
-//     // Loop through each month and assign the activityLevel
-//     doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-//         harvestDataObject[year][month].activityLevel = transformationFunction(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
-//     });
-
-//     return harvestDataObject;
-// }
-
-
-// /**
-//  * Loops through the data object, returns an object with 3 values: maximumYear, maximumMonth, maximumHarvests.
-//  */
-// function getMaximumHarvestCount(harvestDataObject) {
-
-//     let maximumYear = null;
-//     let maximumMonth = null;
-//     let maximumHarvests = 0;
-
-//     // Loop through each month in the data object, check if it beats the record for numberOfHarvests...
-//     doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-//         if (harvestDataObject[year][month].numberOfHarvests >= maximumHarvests) {
-//             maximumHarvests = harvestDataObject[year][month].numberOfHarvests;
-//             maximumYear = year;
-//             maximumMonth = month;
-//         }
-//     });
-
-//     return {
-//         maximumYear: maximumYear, 
-//         maximumMonth: maximumMonth, 
-//         maximumHarvests: maximumHarvests
-//     };
-// }
+    return {
+        maximumYear: maximumYear, 
+        maximumMonth: maximumMonth, 
+        maximumHarvests: maximumHarvests
+    };
+}
 
 
-// /**
-//  * Higher-order function that loops through the harvestDataObject, calling a callback for each month.
-//  */
-// function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
+/**
+ * Higher-order function that loops through the harvestDataObject, calling a callback for each month.
+ */
+function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
 
-//     for (let year of Object.keys(harvestDataObject)) {
-//         for (let month of Object.keys(harvestDataObject[year])) {
-//             actionFunction(year, month);
-//         }
-//     }
-// }
-
-
+    for (let year of Object.keys(harvestDataObject)) {
+        for (let month of Object.keys(harvestDataObject[year]['months'])) {
+            actionFunction(year, month);
+        }
+    }
+}
 
 
 /***/ }),
 /* 17 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = calculateLinearActivityLevel;
+/* unused harmony export calculateLogarithmicActivityLevel */
+/**
+ * Calculate activity level linearly between 0 and 4.
+ * 0 is no activity level at all, 4 is the max level.
+ */
+function calculateLinearActivityLevel(harvestsInMonth, maximumHarvests) {
+    if (harvestsInMonth > maximumHarvests * 0.75 && harvestsInMonth <= maximumHarvests) {
+        return 4;
+    } else if (harvestsInMonth > maximumHarvests * 0.50 && harvestsInMonth <= maximumHarvests * 0.75) {
+        return 3;
+    } else if (harvestsInMonth > maximumHarvests * 0.25 && harvestsInMonth <= maximumHarvests * 0.50) {
+        return 2;
+    } else if (harvestsInMonth > 0 && harvestsInMonth <= maximumHarvests * 0.25) {
+        return 1;
+    } 
+
+    return 0;
+}
+
+
+/**
+ * Calculate activity level logarithmically.
+ */
+function calculateLogarithmicActivityLevel(harvestsInMonth, maximumHarvests) {
+
+    const logarithmicResult = getBaseLog(maximumHarvests, harvestsInMonth);
+
+    if (logarithmicResult > 0.75 && logarithmicResult <= 1) {
+        return 4;
+    } else if (logarithmicResult > 0.50 && logarithmicResult <= 0.75) {
+        return 3;
+    } else if (logarithmicResult > 0.25 && logarithmicResult <= 0.50) {
+        return 2;
+    } else if (logarithmicResult > 0 && logarithmicResult <= 0.25) {
+        return 1;
+    } 
+
+    return 0;
+}
+
+
+/**
+ * The following function returns the logarithm of y with base x, ie. logx(y):
+ */
+function getBaseLog(x, y) {
+    return Math.log(y) / Math.log(x);
+}
+
+
+
+/***/ }),
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14694,7 +14696,7 @@ function sortDatesDescending(dateArray) {
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14704,13 +14706,13 @@ function buildWeekObject(year, parsedHarvestDates) {
 } 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(3);

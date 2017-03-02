@@ -27,7 +27,6 @@ export function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunc
     // Add any other plugins here:
     datesObject = addActivityLevelToMonths(datesObject, transformationFunction);
 
-
     console.log(datesObject);
 
     return {

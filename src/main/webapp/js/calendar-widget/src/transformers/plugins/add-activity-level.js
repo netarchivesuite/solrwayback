@@ -7,14 +7,14 @@
  */
 export function addActivityLevelToMonths(datesObject, transformationFunction) {
 
-    let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(harvestDataObject);
+    let {maximumYear, maximumMonth, maximumHarvests} = getMaximumHarvestCount(datesObject);
 
     // Loop through each month and assign the activityLevel
-    doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-        harvestDataObject[year][month].activityLevel = transformationFunction(harvestDataObject[year][month].numberOfHarvests, maximumHarvests);
+    doForEachMonthInHarvestDataObject(datesObject, (year, month) => {
+        datesObject[year]['months'][month].activityLevel = transformationFunction(datesObject[year]['months'][month].numberOfHarvests, maximumHarvests);
     });
 
-    return harvestDataObject;
+    return datesObject;
 }
 
 
@@ -29,8 +29,8 @@ function getMaximumHarvestCount(harvestDataObject) {
 
     // Loop through each month in the data object, check if it beats the record for numberOfHarvests...
     doForEachMonthInHarvestDataObject(harvestDataObject, (year, month) => {
-        if (harvestDataObject[year][month].numberOfHarvests >= maximumHarvests) {
-            maximumHarvests = harvestDataObject[year][month].numberOfHarvests;
+        if (harvestDataObject[year]['months'][month].numberOfHarvests >= maximumHarvests) {
+            maximumHarvests = harvestDataObject[year]['months'][month].numberOfHarvests;
             maximumYear = year;
             maximumMonth = month;
         }
@@ -50,7 +50,7 @@ function getMaximumHarvestCount(harvestDataObject) {
 function doForEachMonthInHarvestDataObject(harvestDataObject, actionFunction) {
 
     for (let year of Object.keys(harvestDataObject)) {
-        for (let month of Object.keys(harvestDataObject[year])) {
+        for (let month of Object.keys(harvestDataObject[year]['months'])) {
             actionFunction(year, month);
         }
     }
