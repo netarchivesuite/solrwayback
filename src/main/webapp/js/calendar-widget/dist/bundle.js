@@ -1916,15 +1916,92 @@ module.exports = g;
 
 /***/ }),
 /* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["c"] = getArrayOfMonths;
+/* harmony export (immutable) */ __webpack_exports__["a"] = getArrayOfWeeks;
+/* harmony export (immutable) */ __webpack_exports__["b"] = getArrayOfWeekDays;
+/* harmony export (immutable) */ __webpack_exports__["d"] = getHarvestsForMonth;
+/* unused harmony export getHarvestsForWeek */
+/* harmony export (immutable) */ __webpack_exports__["e"] = getDaysInMonth;
+/**
+ * Returns an array of the months in the year (0-11)
+ */
+function getArrayOfMonths() {
+    return [...Array(12).keys()];       // [0, 1, 2, ..., 11]
+};
+
+/**
+ * Returns an array of the months in the year (0-51)
+ */
+function getArrayOfWeeks() {
+    return [...Array(52).keys()];       // [0, 1, 2, ..., 51]
+};
+
+/**
+ * Returns an array of the months in the year (0-51)
+ */
+function getArrayOfWeekDays() {
+    return [...Array(7).keys()];       // [0, 1, 2, ..., 6]
+};
+
+
+/**
+ * Returns an array of the harvest for a given month and year.
+ * 
+ * @param {number} year 
+ * @param {number} month 
+ * @param {Array<Date>} parsedHarvestDates 
+ */
+function getHarvestsForMonth(year, month, parsedHarvestDates) {
+    return parsedHarvestDates
+        .filter(date => date.getMonth() === month && date.getFullYear() === year);
+}
+
+
+/**
+ * Returns an array of the harvest for a given week of the year.
+ * For now it's just a very simple and naive implementation.
+ * 
+ * @param {number} year 
+ * @param {number} month 
+ * @param {Array<Date>} parsedHarvestDates 
+ */
+function getHarvestsForWeek(year, week, parsedHarvestDates) {
+
+
+    return parsedHarvestDates
+        .filter(date => date.getMonth() === month && date.getFullYear() === year);
+}
+
+
+/**
+ * Given a Date object, return the number of days in the month.
+ * Source: http://stackoverflow.com/questions/1184334/get-number-days-in-a-specified-month-using-javascript
+ * 
+ * It takes adds one to the month of the dateObject, but sets the day to 0. 
+ * This gives the last day of the month of the dateObject.
+ * 
+ * @param {Date} dateObject 
+ */
+function getDaysInMonth(dateObject) {
+    return new Date(dateObject.getFullYear(), dateObject.getMonth() + 1, 0).getDate();
+}
+
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(4);
+var content = __webpack_require__(5);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(7)(content, {});
+var update = __webpack_require__(8)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -1941,17 +2018,17 @@ if(false) {
 }
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_vue_resource__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformer__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformer__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_transformation_functions__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_v_tooltip__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_v_tooltip__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_v_tooltip___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_v_tooltip__);
 /**
  * This is the main vue component for the graph.
@@ -2096,10 +2173,10 @@ let app = new __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */]({
 });
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(5)();
+exports = module.exports = __webpack_require__(6)();
 // imports
 
 
@@ -2110,7 +2187,7 @@ exports.push([module.i, "body {\n  font-size: 90%;\n}\nh1,\nh2,\nh3 {\n  margin:
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports) {
 
 /*
@@ -2166,7 +2243,7 @@ module.exports = function() {
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -2352,7 +2429,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 /*
@@ -2604,7 +2681,7 @@ function updateLink(linkElement, obj) {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether-drop 1.4.1 */
@@ -3173,14 +3250,14 @@ return Drop;
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether-tooltip 1.1.0 */
 
 (function(root, factory) {
   if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8),__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9),__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -3320,7 +3397,7 @@ return Tooltip;
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {module.exports =
@@ -3603,7 +3680,7 @@ function getTetherAttachments(position) {
 /* 2 */
 /***/ (function(module, exports) {
 
-module.exports = __webpack_require__(9);
+module.exports = __webpack_require__(10);
 
 /***/ }),
 /* 3 */
@@ -3650,7 +3727,7 @@ if (GlobalVue) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5182,7 +5259,7 @@ module.exports = plugin;
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14362,10 +14439,10 @@ Vue$3.compile = compileToFunctions;
 
 /* harmony default export */ __webpack_exports__["a"] = Vue$3;
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(6), __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(7), __webpack_require__(1)))
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14448,55 +14525,11 @@ function buildYearRangeArray(fromDate, toDate) {
 
 
 /***/ }),
-/* 14 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = getArrayOfMonthValues;
-/* harmony export (immutable) */ __webpack_exports__["b"] = getHarvestsForMonth;
-/* harmony export (immutable) */ __webpack_exports__["c"] = getDaysInMonth;
-/**
- * Returns an array of the months in the year (0-11)
- */
-function getArrayOfMonthValues() {
-    return [...Array(12).keys()];       // [0, 1, 2, ..., 11]
-};
-
-
-/**
- * Returns an array of the harvest for a given month and year.
- * 
- * @param {number} year 
- * @param {number} month 
- * @param {Array<Date>} parsedHarvestDates 
- */
-function getHarvestsForMonth(year, month, parsedHarvestDates) {
-    return parsedHarvestDates
-        .filter(date => date.getMonth() === month && date.getFullYear() === year);
-}
-
-
-/**
- * Given a Date object, return the number of days in the month.
- * Source: http://stackoverflow.com/questions/1184334/get-number-days-in-a-specified-month-using-javascript
- * 
- * It takes adds one to the month of the dateObject, but sets the day to 0. 
- * This gives the last day of the month of the dateObject.
- * 
- * @param {Date} dateObject 
- */
-function getDaysInMonth(dateObject) {
-    return new Date(dateObject.getFullYear(), dateObject.getMonth() + 1, 0).getDate();
-}
-
-
-
-/***/ }),
 /* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__date__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__date__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(19);
 /* harmony export (immutable) */ __webpack_exports__["a"] = buildMonthObject;
 
@@ -14521,8 +14554,8 @@ function buildMonthObject(year, parsedHarvestDates) {
 
     const monthObject = {};
 
-    for (let month of __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["a" /* getArrayOfMonthValues */])()) {
-        const allHarvestDatesInMonth = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["b" /* getHarvestsForMonth */])(year, month, parsedHarvestDates);
+    for (let month of __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["c" /* getArrayOfMonths */])()) {
+        const allHarvestDatesInMonth = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["d" /* getHarvestsForMonth */])(year, month, parsedHarvestDates);
 
         monthObject[month] = {
             days: buildDayObject(allHarvestDatesInMonth),
@@ -14548,7 +14581,7 @@ function buildDayObject(allHarvestDatesInMonth) {
     // Sort the harvest date objects by time ascending.
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__util__["a" /* sortDatesDescending */])(allHarvestDatesInMonth);
 
-    const daysInMonth = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["c" /* getDaysInMonth */])(allHarvestDatesInMonth[0]);
+    const daysInMonth = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["e" /* getDaysInMonth */])(allHarvestDatesInMonth[0]);
     const arrayOfDays = [...Array(daysInMonth).keys()].map(day => day + 1);     // [1, 2, ..., 31]
 
     // Initialise the object with days as key:
@@ -14726,10 +14759,75 @@ function sortDatesDescending(dateArray) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__date__ = __webpack_require__(2);
 /* harmony export (immutable) */ __webpack_exports__["a"] = buildWeekObject;
+
+
+
 function buildWeekObject(year, parsedHarvestDates) {
-    return "Some weeks here!";
-} 
+
+    const weekObject = {};
+
+    for (let week of __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["a" /* getArrayOfWeeks */])()) {
+        const allHarvestDatesInWeek = getHarvestsForWeek(year, week, parsedHarvestDates);
+
+        weekObject[week] = buildWeekDaysObject(allHarvestDatesInWeek);
+    }
+
+    return weekObject;
+}
+
+
+function buildWeekDaysObject(allHarvestDatesInWeek) {
+    
+    const daysObject = {};
+
+    for (let day of __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["b" /* getArrayOfWeekDays */])()) {
+        const harvestsForDay = 
+
+        daysObject[day] = buildDayObject()
+    }
+
+    return daysObject;
+}
+
+
+
+/**
+ * Build an object of harvest dates for each day in the month.
+ * 
+ * @param {Array<Date>} allHarvestDatesInWeek
+ */
+function buildDayObject(allHarvestDatesInWeek) {
+
+    return
+
+
+
+    if (allHarvestDatesInWeek.length === 0) {
+        return {};
+    }
+
+    // Sort the harvest date objects by time ascending.
+    sortDatesDescending(allHarvestDatesInWeek);
+
+    const arrayOfDays = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["b" /* getArrayOfWeekDays */])();
+    
+    // Initialise the object with days as key:
+    const daysObject = {};
+
+    for (let day of arrayOfDays) {
+        daysObject[day] = [];
+    }
+
+    // Populate the daysObject with the harvestDates:
+    for (let harvestDate of allHarvestDatesInWeek) {
+        daysObject[harvestDate.getDate()].push(harvestDate);                    // daysObject[31] = Date()
+    }
+
+    return daysObject;
+}
+
 
 /***/ }),
 /* 21 */
@@ -14741,8 +14839,8 @@ function buildWeekObject(year, parsedHarvestDates) {
 /* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(3);
-module.exports = __webpack_require__(2);
+__webpack_require__(4);
+module.exports = __webpack_require__(3);
 
 
 /***/ })
