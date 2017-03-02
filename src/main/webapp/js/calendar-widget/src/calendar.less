@@ -54,7 +54,7 @@ td.activityLevel4, .legend.legend4 {
 #legends{
   clear: both;
   float: left;
-  margin: 2em 0;
+  margin: 1em 0;
 }
 
 .legend{
@@ -69,7 +69,7 @@ td.activityLevel4, .legend.legend4 {
 #details{
   border: 1px solid #ccc;
   float: left;
-  margin-left: 2em;
+  margin: 2em 0 0;
   opacity: 1;
   padding: 2em;
   width: 40%;
@@ -111,17 +111,34 @@ td.activityLevel4, .legend.legend4 {
 }
 
 /* Vue transitions */
-.slide-enter-active{
-  transition: opacity 1s;
+.yearTables, .detailsContainer, #legends{
+  opacity: 1;
+  position: relative;
+  left: 0px;
 }
 
-.slide-leave-active {
-  transition: opacity 1s;
+.slideLeft-enter-active, .slideRight-enter-active{
+  transition: left .3s, opacity .3s;
 }
 
-.slide-enter,
-.slide-leave-to{
-  opacity: .5;
+.slideLeft-leave-active, .slideRight-leave-active {
+  transition: left .3s, opacity .3s;
+}
+
+.slideRight-enter-active{
+  transition-delay: .1s;
+}
+
+.slideLeft-enter,
+.slideLeft-leave-to{
+  opacity: 0;
+  left: -1500px;
+}
+
+.slideRight-enter,
+.slideRight-leave-to{
+  opacity: 0;
+  left: 1500px;
 }
 
 
