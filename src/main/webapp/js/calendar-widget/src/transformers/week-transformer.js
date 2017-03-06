@@ -49,9 +49,12 @@ export function buildWeekObject(year, parsedHarvestDates) {
             weekObject[week] = {};
         }
 
+        const harvestsForDay = sortDatesDescending(getHarvestsForDay(day, parsedHarvestDates));
+
         weekObject[week][day.getDay()] = {
             date: new Date(day.getTime()),
-            harvests: sortDatesDescending(getHarvestsForDay(day, parsedHarvestDates))
+            harvests: harvestsForDay,
+            numberOfHarvests: harvestsForDay.length
         }
 
         day = addDays(day, 1);
