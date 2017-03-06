@@ -58,35 +58,7 @@ Vue.component('harvest-date', {
                 <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
                 
                 <transition name="slideLeft">
-                    <div v-if="!showDetails" class="yearTables">
-                        <table class="monthLabels">
-                            <tr><td class="empty">&nbsp;</td></tr>
-                            <tr><td>January</td></tr>
-                            <tr><td>February</td></tr>
-                            <tr><td>March</td></tr>
-                            <tr><td>April</td></tr>
-                            <tr><td>May</td></tr>
-                            <tr><td>June</td></tr>
-                            <tr><td>July</td></tr>
-                            <tr><td>August</td></tr>
-                            <tr><td>September</td></tr>
-                            <tr><td>October</td></tr>
-                            <tr><td>November</td></tr>
-                            <tr><td>December</td></tr>
-                        </table>
-                        <table v-for="(yearData, year) in harvestData.dates">
-                            <thead>
-                                <tr>
-                                    <th>{{ year }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(data, month) in yearData.months">
-                                    <td v-on:click="showDays(year, month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>                
+                    <year-month-graph v-if="!showDetails" :harvest-data="harvestData" :show-weeks="showWeeks"></year-month-graph>
                 </transition>        
                 <transition name="slideRight">
                     <week-graph v-if="showDetails" :year="year" :month="month" :harvest-data="harvestData" class="detailsContainer"></week-graph>
@@ -110,13 +82,50 @@ Vue.component('harvest-date', {
         });
     },
     methods: {
-        showDays(year, month) {
+        showWeeks(year, month) {
             this.showDetails = true;
             this.year = year;
             this.month = month;
         }
     }
 });
+
+
+Vue.component('year-month-graph', {
+    props: ['harvestData', 'showWeeks'],    // showWeeks is a callback function.
+    template: `
+        <div class="yearTables">
+            <table class="monthLabels">
+                <tr><td class="empty">&nbsp;</td></tr>
+                <tr><td>January</td></tr>
+                <tr><td>February</td></tr>
+                <tr><td>March</td></tr>
+                <tr><td>April</td></tr>
+                <tr><td>May</td></tr>
+                <tr><td>June</td></tr>
+                <tr><td>July</td></tr>
+                <tr><td>August</td></tr>
+                <tr><td>September</td></tr>
+                <tr><td>October</td></tr>
+                <tr><td>November</td></tr>
+                <tr><td>December</td></tr>
+            </table>
+            <table v-for="(yearData, year) in harvestData.dates">
+                <thead>
+                    <tr>
+                        <th>{{ year }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(data, month) in yearData.months">
+                        <td v-on:click="showWeeks(year, month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>                 
+    `
+})
+
 
 Vue.component('week-graph', {
     props: ['harvestData', 'year', 'month'],
@@ -139,6 +148,7 @@ Vue.component('week-graph', {
     </div>
     `
 });
+
 
 Vue.component('legend', {
     template: `
