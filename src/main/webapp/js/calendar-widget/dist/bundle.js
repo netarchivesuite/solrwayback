@@ -2457,7 +2457,8 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
         return {
             harvestData: null,
             view: 'year-month',
-            year: null
+            year: null,
+            noResults: false
         }
     },
     template: `
@@ -2488,17 +2489,24 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
                     <color-legend></color-legend>
                 </transition>   
             </div>
-            <template v-else>
+            <div v-if="!harvestData && noResults === true">
+                <p>No results.</p>
+            </div>            
+            <div v-if="!harvestData && noResults === false">
                 <div id="spinner">
                     <p class="spinnerText">Fetching harvests</p>
                 </div>
                 <div id="overlay"></div>
-            </template>
+            </div>
         </div>
     `,
     created() {
         this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(this.url))
         .then(response => {
+            if (response.data.dates === undefined || response.data.dates.length === 0) {
+                this.noResults = true;
+            }
+
             this.harvestData = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__transformer__["a" /* groupHarvestDatesByYearAndMonth */])(response.data.dates, __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_transformation_functions__["a" /* calculateLinearActivityLevel */]);
         });
     },

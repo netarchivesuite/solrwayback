@@ -50,7 +50,8 @@ Vue.component('harvest-date', {
         return {
             harvestData: null,
             view: 'year-month',
-            year: null
+            year: null,
+            noResults: false
         }
     },
     template: `
@@ -81,17 +82,24 @@ Vue.component('harvest-date', {
                     <color-legend></color-legend>
                 </transition>   
             </div>
-            <template v-else>
+            <div v-if="!harvestData && noResults === true">
+                <p>No results.</p>
+            </div>            
+            <div v-if="!harvestData && noResults === false">
                 <div id="spinner">
                     <p class="spinnerText">Fetching harvests</p>
                 </div>
                 <div id="overlay"></div>
-            </template>
+            </div>
         </div>
     `,
     created() {
         this.$http.get("/solrwayback/services/harvestDates?url=" + encodeURIComponent(this.url))
         .then(response => {
+            if (response.data.dates === undefined || response.data.dates.length === 0) {
+                this.noResults = true;
+            }
+
             this.harvestData = groupHarvestDatesByYearAndMonth(response.data.dates, calculateLinearActivityLevel);
         });
     },
