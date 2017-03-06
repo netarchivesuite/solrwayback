@@ -2468,7 +2468,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
                     <year-month-graph v-if="!showDetails" :harvest-data="harvestData" :show-weeks="showWeeks"></year-month-graph>
                 </transition>        
                 <transition name="slideRight">
-                    <week-graph v-if="showDetails" :year="year" :month="month" :harvest-data="harvestData" class="detailsContainer"></week-graph>
+                    <week-graph v-if="showDetails" :year="year" :month="month" :harvest-data="harvestData" :hide-weeks="hideWeeks" class="detailsContainer"></week-graph>
                 </transition> 
                 <transition name="slideLeft">  
                     <color-legend></color-legend>
@@ -2493,6 +2493,9 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
             this.showDetails = true;
             this.year = year;
             this.month = month;
+        },
+        hideWeeks() {
+            this.showDetails = false;
         }
     }
 });
@@ -2535,10 +2538,10 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('year-month-graph
 
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('week-graph', {
-    props: ['harvestData', 'year', 'month'],
+    props: ['harvestData', 'year', 'month', 'hideWeeks'],
     template: `
     <div id="details">
-        <div v-on:click="showDetails = false" class="hideDetails">Hide details</div>
+        <div v-on:click="hideWeeks()" class="hideDetails">Hide details</div>
         <h3>Details for {{ year }}</h3>
         <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
             <thead>
@@ -2559,7 +2562,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('week-graph', {
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('color-legend', {
     template: `
-        <div v-if="!showDetails" id="legends">
+        <div id="legends">
             Less <div class="legend legend0"></div>
             <div class="legend legend1"></div>
             <div class="legend legend2"></div>
