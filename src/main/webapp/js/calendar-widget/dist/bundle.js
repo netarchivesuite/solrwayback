@@ -2471,7 +2471,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
                     <week-graph v-if="showDetails" :year="year" :month="month" :harvest-data="harvestData" class="detailsContainer"></week-graph>
                 </transition> 
                 <transition name="slideLeft">  
-                    <legend></legend>
+                    <color-legend></color-legend>
                 </transition>   
             </div>
             <template v-else>
@@ -2499,7 +2499,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
 
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('year-month-graph', {
-    props: ['harvestData', 'showWeeks'],
+    props: ['harvestData', 'showWeeks'],    // showWeeks is a callback function.
     template: `
         <div class="yearTables">
             <table class="monthLabels">
@@ -2557,7 +2557,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('week-graph', {
 });
 
 
-__WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('legend', {
+__WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('color-legend', {
     template: `
         <div v-if="!showDetails" id="legends">
             Less <div class="legend legend0"></div>

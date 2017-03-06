@@ -64,7 +64,7 @@ Vue.component('harvest-date', {
                     <week-graph v-if="showDetails" :year="year" :month="month" :harvest-data="harvestData" class="detailsContainer"></week-graph>
                 </transition> 
                 <transition name="slideLeft">  
-                    <legend></legend>
+                    <color-legend></color-legend>
                 </transition>   
             </div>
             <template v-else>
@@ -150,7 +150,7 @@ Vue.component('week-graph', {
 });
 
 
-Vue.component('legend', {
+Vue.component('color-legend', {
     template: `
         <div v-if="!showDetails" id="legends">
             Less <div class="legend legend0"></div>
