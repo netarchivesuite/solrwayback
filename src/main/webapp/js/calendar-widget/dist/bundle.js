@@ -2419,15 +2419,19 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].use(__WEBPACK_IMPORTED_MODULE_1_vue_resource___default.a);
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].use(__WEBPACK_IMPORTED_MODULE_4_v_tooltip___default.a);
 
-
-function toHumanDate(value) {
+/**
+ * Transform a Javascript Date to a human readable string.
+ * 
+ * @param {Date} date 
+ */
+function toHumanDate(date) {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    if (value instanceof Date) {
-        return `${months[value.getMonth()]} ${value.getDay()}, ${value.getFullYear()}`;
+    if (date instanceof Date) {
+        return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
     } 
     
-    return value;
+    return date;
 }
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('human-date', function (value) {
@@ -2526,12 +2530,25 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('year-month-graph
                 </thead>
                 <tbody>
                     <tr v-for="(data, month) in yearData.months">
-                        <td v-on:click="showYear(year)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                        <td v-on:click="showYear(year)" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)">&nbsp;</td>
                     </tr>
                 </tbody>
             </table>
         </div>                 
-    `
+    `,
+    methods: {
+        formatHarvestDate(data) {
+            return 'Harvests: ' + data.numberOfHarvests.toLocaleString();
+        },
+        mapActivityLevel(data) {
+            return {
+                activityLevel4: data.activityLevel === 4, 
+                activityLevel3: data.activityLevel === 3, 
+                activityLevel2: data.activityLevel === 2, 
+                activityLevel1: data.activityLevel === 1
+            };
+        }
+    }
 })
 
 
@@ -2549,12 +2566,26 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('week-graph', {
             </thead>
             <tbody>
                 <tr v-for="(data, dayNumber) in week">
-                    <td v-tooltip.top-center="data.date.toLocaleString() + '<br>Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                    <td v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)">&nbsp;</td>
                 </tr>
             </tbody>
         </table>
     </div>
-    `
+    `,
+    methods: {
+        formatHarvestDate(data) {
+            return toHumanDate(data.date) + '<br>' +
+                'Harvests: ' + data.numberOfHarvests.toLocaleString()
+        },
+        mapActivityLevel(data) {
+            return {
+                activityLevel4: data.activityLevel === 4, 
+                activityLevel3: data.activityLevel === 3, 
+                activityLevel2: data.activityLevel === 2, 
+                activityLevel1: data.activityLevel === 1
+            };
+        }
+    }
 });
 
 
