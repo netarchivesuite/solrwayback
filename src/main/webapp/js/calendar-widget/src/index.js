@@ -89,16 +89,10 @@ Vue.component('harvest-date', {
                     </div>                
                 </transition>        
                 <transition name="slideRight">
-                <week-graph v-if="showDetails" :year="year" :month="month" :harvest-data="harvestData" class="detailsContainer"></week-graph>
+                    <week-graph v-if="showDetails" :year="year" :month="month" :harvest-data="harvestData" class="detailsContainer"></week-graph>
                 </transition> 
                 <transition name="slideLeft">  
-                    <div v-if="!showDetails" id="legends">
-                        Less <div class="legend legend0"></div>
-                        <div class="legend legend1"></div>
-                        <div class="legend legend2"></div>
-                        <div class="legend legend3"></div>
-                        <div class="legend legend4"></div> More
-                    </div>
+                    <legend></legend>
                 </transition>   
             </div>
             <template v-else>
@@ -144,8 +138,19 @@ Vue.component('week-graph', {
         </table>
     </div>
     `
-})
+});
 
+Vue.component('legend', {
+    template: `
+        <div v-if="!showDetails" id="legends">
+            Less <div class="legend legend0"></div>
+            <div class="legend legend1"></div>
+            <div class="legend legend2"></div>
+            <div class="legend legend3"></div>
+            <div class="legend legend4"></div> More
+        </div>
+    `
+});
 
 let app = new Vue({
     el: "#app",
