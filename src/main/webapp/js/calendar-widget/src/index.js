@@ -181,7 +181,8 @@ Vue.component('week-graph', {
         <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
             <tbody>
                 <tr v-for="(data, dayNumber) in week">
-                    <td class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
+                    <td v-if="data !== null" class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
+                    <td v-if="data === null" class="weekday filler"><!-- non-existing day --></td>
                 </tr>
             </tbody>
         </table>
@@ -215,7 +216,8 @@ Vue.component('all-years-graph', {
             <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
                 <tbody>
                     <tr v-for="(data, dayNumber) in week">
-                        <td class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
+                        <td v-if="data !== null" class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
+                        <td v-if="data === null" class="weekday filler"><!-- non-existing day --></td>
                     </tr>
                 </tbody>
             </table>

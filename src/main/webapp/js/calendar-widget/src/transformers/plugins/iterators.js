@@ -24,7 +24,9 @@ export function doForEachWeekAndDayInDatesObject(datesObject, actionFunction) {
     for (let year of Object.keys(datesObject)) {
         for (let week of Object.keys(datesObject[year]['weeks'])) {
             for (let day of Object.keys(datesObject[year]['weeks'][week])) {
-                actionFunction(year, week, day);
+                if (datesObject[year]['weeks'][week][day] !== null) {
+                    actionFunction(year, week, day);
+                }
             }
         }
     }

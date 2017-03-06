@@ -39,9 +39,7 @@ export function buildWeekObject(year, parsedHarvestDates) {
 
     while (isBefore(day, theLastDayOfYear)) {
 
-        // console.log(day.toLocaleDateString());
-
-        if (day.getDay() === 0) {               // If the day is monday, increment the week.
+        if (day.getDay() === 0) {               // If the day is sunday, increment the week.
             week++;
         }
 
@@ -58,6 +56,18 @@ export function buildWeekObject(year, parsedHarvestDates) {
         }
 
         day = addDays(day, 1);
+    }
+
+    // Take the first week of the year.
+    // Fill it with the missing days (this will help us render it later on).
+    if (weekObject[0]) {
+        let weekDays = [0, 1, 2, 3, 4, 5, 6];
+        
+        for (let weekDay of weekDays) {
+            if(weekObject[0][weekDay] === undefined) {
+                weekObject[0][weekDay] = null;
+            }
+        }
     }
 
     return weekObject;
