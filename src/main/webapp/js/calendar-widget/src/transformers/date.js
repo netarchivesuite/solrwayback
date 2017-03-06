@@ -1,3 +1,8 @@
+import startOfISOWeek from 'date-fns/start_of_iso_week'
+import endOfISOWeek from 'date-fns/end_of_iso_week'
+import isBefore from 'date-fns/is_before'
+import isAfter from 'date-fns/is_after'
+
 /**
  * Returns an array of the months in the year (0-11)
  */
@@ -9,16 +14,8 @@ export function getArrayOfMonths() {
  * Returns an array of the months in the year (0-51)
  */
 export function getArrayOfWeeks() {
-    return [...Array(52).keys()];       // [0, 1, 2, ..., 51]
+    return [...Array(52).keys()].map(n => n + 1);       // [1, 2, ..., 52]
 };
-
-/**
- * Returns an array of the months in the year (0-51)
- */
-export function getArrayOfWeekDays() {
-    return [...Array(7).keys()];       // [0, 1, 2, ..., 6]
-};
-
 
 /**
  * Returns an array of the harvest for a given month and year.
@@ -34,18 +31,20 @@ export function getHarvestsForMonth(year, month, parsedHarvestDates) {
 
 
 /**
- * Returns an array of the harvest for a given week of the year.
- * For now it's just a very simple and naive implementation.
+ * Returns an array of the harvests for a given ISO-week of the year.
  * 
  * @param {number} year 
  * @param {number} month 
  * @param {Array<Date>} parsedHarvestDates 
  */
 export function getHarvestsForWeek(year, week, parsedHarvestDates) {
-
+    const startOfWeek = new Date(year)
+    const endOfWeek = new Date(year, //TODO????)
 
     return parsedHarvestDates
-        .filter(date => date.getMonth() === month && date.getFullYear() === year);
+        .filter(date => date.getFullYear() === year)
+        .filter(date => isBefore(date, endOfISOWeek(date)))
+        .filter(date => isAfter(date, startOfISOWeek(date)));
 }
 
 
