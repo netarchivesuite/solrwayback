@@ -12,7 +12,8 @@ import VTooltip from 'v-tooltip'
 Vue.use(VueResource);
 Vue.use(VTooltip);
 
-Vue.filter('human-date', function (value) {
+
+function toHumanDate(value) {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     if (value instanceof Date) {
@@ -20,6 +21,10 @@ Vue.filter('human-date', function (value) {
     } 
     
     return value;
+}
+
+Vue.filter('human-date', function (value) {
+    return toHumanDate(value);
 });
 
 Vue.filter('formatted-number', function (value) {
@@ -28,11 +33,6 @@ Vue.filter('formatted-number', function (value) {
     }
 
     return value;
-});
-
-Vue.filter('month-name', function (value) {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    return months[value];
 });
 
 Vue.component('harvest-title', {
@@ -82,7 +82,7 @@ Vue.component('harvest-date', {
                             </thead>
                             <tbody>
                                 <tr v-for="(data, month) in yearData.months">
-                                    <td v-on:click="showDays(year,month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                                    <td v-on:click="showDays(year, month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -92,10 +92,19 @@ Vue.component('harvest-date', {
                 <div v-if="showDetails" class="detailsContainer">
                     <div id="details">
                         <div v-on:click="showDetails = false" class="hideDetails">Hide details</div>
-                        <h3>Details for {{ month | month-name }} - {{ year }}</h3>
-                        <!--<ul v-for="day in harvestData['dates'][year][month]['days']">
-                            <li v-for="harvest in day">{{ harvest }}</li>
-                        </ul>-->
+                        <h3>Details for {{ year }}</h3>
+                        <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
+                            <thead>
+                                <tr>
+                                    <th>{{ weekNumber }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(data, dayNumber) in week">
+                                    <td v-tooltip.top-center="data.date.toLocaleString() + '<br>Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                  </div>               
                 </transition> 
@@ -122,9 +131,9 @@ Vue.component('harvest-date', {
         .then(response => {
             this.harvestData = groupHarvestDatesByYearAndMonth(response.data.dates, calculateLinearActivityLevel);
         });
-    },methods: {
-        showDays: function(year, month){
-            this.showDetails = false;
+    },
+    methods: {
+        showDays(year, month) {
             this.showDetails = true;
             this.year = year;
             this.month = month;

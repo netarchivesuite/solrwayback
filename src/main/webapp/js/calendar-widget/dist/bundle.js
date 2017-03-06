@@ -2331,7 +2331,7 @@ function doForEachMonthInDatesObject(datesObject, actionFunction) {
 }
 
 /**
- * Higher-order function that loops through the harvestDataObject, calling a callback for each week.
+ * Higher-order function that loops through the harvestDataObject, calling a callback for each day in the week.
  * 
  * @param {Object} datesObject The final object of years, months and days to add data to.
  * @param {Function} actionFunction The callback to execute for every month.
@@ -2419,7 +2419,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].use(__WEBPACK_IMPORTED_MODULE_1_vue_resource___default.a);
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].use(__WEBPACK_IMPORTED_MODULE_4_v_tooltip___default.a);
 
-__WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('human-date', function (value) {
+
+function toHumanDate(value) {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     if (value instanceof Date) {
@@ -2427,6 +2428,10 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('human-date', functi
     } 
     
     return value;
+}
+
+__WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('human-date', function (value) {
+    return toHumanDate(value);
 });
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('formatted-number', function (value) {
@@ -2435,11 +2440,6 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('formatted-number', 
     }
 
     return value;
-});
-
-__WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('month-name', function (value) {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    return months[value];
 });
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-title', {
@@ -2489,7 +2489,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
                             </thead>
                             <tbody>
                                 <tr v-for="(data, month) in yearData.months">
-                                    <td v-on:click="showDays(year,month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                                    <td v-on:click="showDays(year, month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -2499,10 +2499,19 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
                 <div v-if="showDetails" class="detailsContainer">
                     <div id="details">
                         <div v-on:click="showDetails = false" class="hideDetails">Hide details</div>
-                        <h3>Details for {{ month | month-name }} - {{ year }}</h3>
-                        <!--<ul v-for="day in harvestData['dates'][year][month]['days']">
-                            <li v-for="harvest in day">{{ harvest }}</li>
-                        </ul>-->
+                        <h3>Details for {{ year }}</h3>
+                        <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
+                            <thead>
+                                <tr>
+                                    <th>{{ weekNumber }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(data, dayNumber) in week">
+                                    <td v-tooltip.top-center="data.date.toLocaleString() + '<br>Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                  </div>               
                 </transition> 
@@ -2529,9 +2538,9 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
         .then(response => {
             this.harvestData = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__transformer__["a" /* groupHarvestDatesByYearAndMonth */])(response.data.dates, __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_transformation_functions__["a" /* calculateLinearActivityLevel */]);
         });
-    },methods: {
-        showDays: function(year, month){
-            this.showDetails = false;
+    },
+    methods: {
+        showDays(year, month) {
             this.showDetails = true;
             this.year = year;
             this.month = month;
@@ -2556,7 +2565,7 @@ exports = module.exports = __webpack_require__(9)();
 
 
 // module
-exports.push([module.i, "body {\n  font-size: 90%;\n}\nh1,\nh2,\nh3 {\n  margin: 0 0 1em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  margin: 2em 0;\n  opacity: 1;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  cursor: pointer;\n  padding: .2em;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n  cursor: default;\n  font-weight: normal;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\n/* Legends */\n#legends {\n  clear: both;\n  float: left;\n  margin: 1em 0;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n#details {\n  border: 1px solid #ccc;\n  float: left;\n  margin: 2em 0 0;\n  opacity: 1;\n  padding: 2em;\n  width: 40%;\n}\n.hideDetails {\n  cursor: pointer;\n  float: right;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n/* Vue transitions */\n.yearTables,\n.detailsContainer,\n#legends {\n  opacity: 1;\n  position: relative;\n  left: 0px;\n}\n.slideLeft-enter-active,\n.slideRight-enter-active {\n  transition: left .2s, opacity .5s;\n}\n.slideLeft-leave-active,\n.slideRight-leave-active {\n  transition: left .2s, opacity .2s;\n}\n.slideRight-enter-active {\n  transition-delay: .1s;\n}\n.slideLeft-enter,\n.slideLeft-leave-to {\n  opacity: 0;\n  left: -1500px;\n}\n.slideRight-enter,\n.slideRight-leave-to {\n  opacity: 0;\n  left: 1500px;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
+exports.push([module.i, "body {\n  font-size: 90%;\n}\nh1,\nh2,\nh3 {\n  margin: 0 0 1em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  margin: 2em 0;\n  opacity: 1;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  cursor: pointer;\n  padding: .2em;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n  cursor: default;\n  font-weight: normal;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\n/* Legends */\n#legends {\n  clear: both;\n  float: left;\n  margin: 1em 0;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n#details {\n  border: 1px solid #ccc;\n  float: left;\n  margin: 2em 0 0;\n  opacity: 1;\n  padding: 2em;\n  width: 80%;\n}\n.hideDetails {\n  cursor: pointer;\n  float: right;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n/* Vue transitions */\n.yearTables,\n.detailsContainer,\n#legends {\n  opacity: 1;\n  position: relative;\n  left: 0px;\n}\n.slideLeft-enter-active,\n.slideRight-enter-active {\n  transition: left .2s, opacity .5s;\n}\n.slideLeft-leave-active,\n.slideRight-leave-active {\n  transition: left .2s, opacity .2s;\n}\n.slideRight-enter-active {\n  transition-delay: .1s;\n}\n.slideLeft-enter,\n.slideLeft-leave-to {\n  opacity: 0;\n  left: -1500px;\n}\n.slideRight-enter,\n.slideRight-leave-to {\n  opacity: 0;\n  left: 1500px;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
 
 // exports
 
@@ -15004,7 +15013,7 @@ Vue$3.compile = compileToFunctions;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformers_plugins_add_month_activity_level__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_add_week_activity_level__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_add_weekday_activity_level__ = __webpack_require__(26);
 /* harmony export (immutable) */ __webpack_exports__["a"] = groupHarvestDatesByYearAndMonth;
 
 
@@ -15034,7 +15043,7 @@ function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunction) {
     // Add activity level to the dates object.
     // Add any other plugins here:
     datesObject = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__transformers_plugins_add_month_activity_level__["a" /* addActivityLevelToMonths */])(datesObject, transformationFunction);
-    datesObject = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__transformers_plugins_add_week_activity_level__["a" /* addActivityLevelToWeeks */])(datesObject, transformationFunction);
+    datesObject = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__transformers_plugins_add_weekday_activity_level__["a" /* addActivityLevelToWeeks */])(datesObject, transformationFunction);
 
     console.log(datesObject);
 
