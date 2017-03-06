@@ -2452,7 +2452,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
     data: () => {
         return {
             harvestData: null,
-            showDetails: false,
+            year: null,
         }
     },
     template: `
@@ -2465,10 +2465,10 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
                 <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
                 
                 <transition name="slideLeft">
-                    <year-month-graph v-if="!showDetails" :harvest-data="harvestData" :show-weeks="showWeeks"></year-month-graph>
+                    <year-month-graph v-if="!year" :harvest-data="harvestData" :show-year="showYear"></year-month-graph>
                 </transition>        
                 <transition name="slideRight">
-                    <week-graph v-if="showDetails" :year="year" :month="month" :harvest-data="harvestData" :hide-weeks="hideWeeks" class="detailsContainer"></week-graph>
+                    <week-graph v-if="year" :year="year" :harvest-data="harvestData" :show-all="showAll" class="detailsContainer"></week-graph>
                 </transition> 
                 <transition name="slideLeft">  
                     <color-legend></color-legend>
@@ -2489,20 +2489,18 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
         });
     },
     methods: {
-        showWeeks(year, month) {
-            this.showDetails = true;
+        showYear(year) {
             this.year = year;
-            this.month = month;
         },
-        hideWeeks() {
-            this.showDetails = false;
+        showAll() {
+            this.year = null;
         }
     }
 });
 
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('year-month-graph', {
-    props: ['harvestData', 'showWeeks'],    // showWeeks is a callback function.
+    props: ['harvestData', 'showYear'],    // showWeeks is a callback function.
     template: `
         <div class="yearTables">
             <table class="monthLabels">
@@ -2528,7 +2526,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('year-month-graph
                 </thead>
                 <tbody>
                     <tr v-for="(data, month) in yearData.months">
-                        <td v-on:click="showWeeks(year, month)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                        <td v-on:click="showYear(year)" v-tooltip.top-center="'Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
                     </tr>
                 </tbody>
             </table>
@@ -2538,10 +2536,10 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('year-month-graph
 
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('week-graph', {
-    props: ['harvestData', 'year', 'month', 'hideWeeks'],
+    props: ['harvestData', 'year', 'showAll'],
     template: `
     <div id="details">
-        <div v-on:click="hideWeeks()" class="hideDetails">Hide details</div>
+        <div v-on:click="showAll()" class="hideDetails">Hide details</div>
         <h3>Details for {{ year }}</h3>
         <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
             <thead>
