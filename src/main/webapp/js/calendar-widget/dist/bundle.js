@@ -2556,20 +2556,17 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('week-graph', {
     props: ['harvestData', 'year', 'showAll'],
     template: `
     <div id="details">
-        <div v-on:click="showAll()" class="hideDetails">Hide details</div>
-        <h3>Details for {{ year }}</h3>
-        <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
-            <thead>
-                <tr>
-                    <th>{{ weekNumber }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(data, dayNumber) in week">
-                    <td v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)">&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        <div v-for="(temp, currentYear) in harvestData.dates">
+            <div v-on:click="showAll()" class="hideDetails">Hide details</div>
+            <p>Harvests in {{ currentYear }}</p>
+            <table v-for="(week, weekNumber) in harvestData.dates[currentYear]['weeks']">
+                <tbody>
+                    <tr v-for="(data, dayNumber) in week">
+                        <td class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
     `,
     methods: {
@@ -2617,7 +2614,7 @@ exports = module.exports = __webpack_require__(9)();
 
 
 // module
-exports.push([module.i, "body {\n  font-size: 90%;\n}\nh1,\nh2,\nh3 {\n  margin: 0 0 1em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  margin: 2em 0;\n  opacity: 1;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  cursor: pointer;\n  padding: .2em;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n  cursor: default;\n  font-weight: normal;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\n/* Legends */\n#legends {\n  clear: both;\n  float: left;\n  margin: 1em 0;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n#details {\n  border: 1px solid #ccc;\n  float: left;\n  margin: 2em 0 0;\n  opacity: 1;\n  padding: 2em;\n  width: 80%;\n}\n.hideDetails {\n  cursor: pointer;\n  float: right;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n/* Vue transitions */\n.yearTables,\n.detailsContainer,\n#legends {\n  opacity: 1;\n  position: relative;\n  left: 0px;\n}\n.slideLeft-enter-active,\n.slideRight-enter-active {\n  transition: left .2s, opacity .5s;\n}\n.slideLeft-leave-active,\n.slideRight-leave-active {\n  transition: left .2s, opacity .2s;\n}\n.slideRight-enter-active {\n  transition-delay: .1s;\n}\n.slideLeft-enter,\n.slideLeft-leave-to {\n  opacity: 0;\n  left: -1500px;\n}\n.slideRight-enter,\n.slideRight-leave-to {\n  opacity: 0;\n  left: 1500px;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
+exports.push([module.i, "body {\n  font-size: 90%;\n}\nh1,\nh2,\nh3 {\n  margin: 0 0 1em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  opacity: 1;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  cursor: pointer;\n  padding: .2em;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n  cursor: default;\n  font-weight: normal;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\n/* Legends */\n#legends {\n  clear: both;\n  float: left;\n  margin: 1em 0;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n#details {\n  float: left;\n  opacity: 1;\n  padding-top: 2em;\n}\n.hideDetails {\n  cursor: pointer;\n  float: right;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n/* Vue transitions */\n.yearTables,\n.detailsContainer,\n#legends {\n  opacity: 1;\n  position: relative;\n  left: 0px;\n  padding-top: 2em;\n}\n.slideLeft-enter-active,\n.slideRight-enter-active {\n  transition: left .2s, opacity .5s;\n}\n.slideLeft-leave-active,\n.slideRight-leave-active {\n  transition: left .2s, opacity .2s;\n}\n.slideRight-enter-active {\n  transition-delay: .1s;\n}\n.slideLeft-enter,\n.slideLeft-leave-to {\n  opacity: 0;\n  left: -1500px;\n}\n.slideRight-enter,\n.slideRight-leave-to {\n  opacity: 0;\n  left: 1500px;\n}\n.weekday {\n  width: 10px;\n  height: 10px;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
 
 // exports
 

@@ -150,16 +150,11 @@ Vue.component('week-graph', {
     template: `
     <div id="details">
         <div v-on:click="showAll()" class="hideDetails">Hide details</div>
-        <h3>Details for {{ year }}</h3>
+        <p>Harvests in {{ year }}</p>
         <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
-            <thead>
-                <tr>
-                    <th>{{ weekNumber }}</th>
-                </tr>
-            </thead>
             <tbody>
                 <tr v-for="(data, dayNumber) in week">
-                    <td v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)">&nbsp;</td>
+                    <td class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
                 </tr>
             </tbody>
         </table>
