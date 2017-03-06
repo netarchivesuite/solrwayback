@@ -63,14 +63,14 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 33);
+/******/ 	return __webpack_require__(__webpack_require__.s = 34);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isDate = __webpack_require__(16)
+var isDate = __webpack_require__(15)
 
 var MILLISECONDS_IN_HOUR = 3600000
 var MILLISECONDS_IN_MINUTE = 60000
@@ -396,7 +396,7 @@ module.exports = parse
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var startOfWeek = __webpack_require__(18)
+var startOfWeek = __webpack_require__(19)
 
 /**
  * @category ISO Week Helpers
@@ -2276,24 +2276,10 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_date_fns_start_of_iso_week__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_date_fns_start_of_iso_week___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_date_fns_start_of_iso_week__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_date_fns_end_of_iso_week__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_date_fns_end_of_iso_week___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_date_fns_end_of_iso_week__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_date_fns_is_before__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_date_fns_is_before___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_date_fns_is_before__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_date_fns_is_after__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_date_fns_is_after___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_date_fns_is_after__);
-/* harmony export (immutable) */ __webpack_exports__["c"] = getArrayOfMonths;
-/* harmony export (immutable) */ __webpack_exports__["a"] = getArrayOfWeeks;
-/* harmony export (immutable) */ __webpack_exports__["d"] = getHarvestsForMonth;
-/* harmony export (immutable) */ __webpack_exports__["b"] = getHarvestsForWeek;
-/* harmony export (immutable) */ __webpack_exports__["e"] = getDaysInMonth;
-
-
-
-
-
+/* harmony export (immutable) */ __webpack_exports__["b"] = getArrayOfMonths;
+/* harmony export (immutable) */ __webpack_exports__["c"] = getHarvestsForMonth;
+/* harmony export (immutable) */ __webpack_exports__["a"] = getHarvestsForDay;
+/* harmony export (immutable) */ __webpack_exports__["d"] = getDaysInMonth;
 /**
  * Returns an array of the months in the year (0-11)
  */
@@ -2301,12 +2287,6 @@ function getArrayOfMonths() {
     return [...Array(12).keys()];       // [0, 1, 2, ..., 11]
 };
 
-/**
- * Returns an array of the months in the year (0-51)
- */
-function getArrayOfWeeks() {
-    return [...Array(52).keys()].map(n => n + 1);       // [1, 2, ..., 52]
-};
 
 /**
  * Returns an array of the harvest for a given month and year.
@@ -2322,17 +2302,25 @@ function getHarvestsForMonth(year, month, parsedHarvestDates) {
 
 
 /**
- * Returns an array of the harvests for a given ISO-week of the year.
+ * Returns an array of the harvests for a given date.
  * 
- * @param {number} year 
- * @param {number} month 
+ * @param {Date} day 
  * @param {Array<Date>} parsedHarvestDates 
  */
-function getHarvestsForWeek(year, week, parsedHarvestDates) {
+function getHarvestsForDay(day, parsedHarvestDates) {
     return parsedHarvestDates
-        .filter(date => date.getFullYear() === year)
-        .filter(date => __WEBPACK_IMPORTED_MODULE_2_date_fns_is_before___default()(date, __WEBPACK_IMPORTED_MODULE_1_date_fns_end_of_iso_week___default()(date)))
-        .filter(date => __WEBPACK_IMPORTED_MODULE_3_date_fns_is_after___default()(date, __WEBPACK_IMPORTED_MODULE_0_date_fns_start_of_iso_week___default()(date)));
+        .filter(date => isSameDay(date, day));
+}
+
+
+/**
+ * Helper function for determining of two dates are the same day.
+ * 
+ * @param {*} day1 
+ * @param {*} day2 
+ */
+function isSameDay(day1, day2) {
+    return day1.getFullYear() === day2.getFullYear() && day1.getMonth() === day2.getMonth() && day1.getDate() === day2.getDate();
 }
 
 
@@ -2379,7 +2367,7 @@ function sortDatesDescending(dateArray) {
 var content = __webpack_require__(8);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(20)(content, {});
+var update = __webpack_require__(21)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -2401,12 +2389,12 @@ if(false) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_resource___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_vue_resource__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformer__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_transformation_functions__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_v_tooltip__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformer__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_transformation_functions__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_v_tooltip__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_v_tooltip___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_v_tooltip__);
 /**
  * This is the main vue component for the graph.
@@ -2624,75 +2612,60 @@ module.exports = function() {
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var endOfWeek = __webpack_require__(11)
+var parse = __webpack_require__(0)
 
 /**
- * @category ISO Week Helpers
- * @summary Return the end of an ISO week for the given date.
+ * @category Day Helpers
+ * @summary Add the specified number of days to the given date.
  *
  * @description
- * Return the end of an ISO week for the given date.
- * The result will be in the local timezone.
+ * Add the specified number of days to the given date.
  *
- * ISO week-numbering year: http://en.wikipedia.org/wiki/ISO_week_date
- *
- * @param {Date|String|Number} date - the original date
- * @returns {Date} the end of an ISO week
+ * @param {Date|String|Number} date - the date to be changed
+ * @param {Number} amount - the amount of days to be added
+ * @returns {Date} the new date with the days added
  *
  * @example
- * // The end of an ISO week for 2 September 2014 11:55:00:
- * var result = endOfISOWeek(new Date(2014, 8, 2, 11, 55, 0))
- * //=> Sun Sep 07 2014 23:59:59.999
+ * // Add 10 days to 1 September 2014:
+ * var result = addDays(new Date(2014, 8, 1), 10)
+ * //=> Thu Sep 11 2014 00:00:00
  */
-function endOfISOWeek (dirtyDate) {
-  return endOfWeek(dirtyDate, {weekStartsOn: 1})
+function addDays (dirtyDate, dirtyAmount) {
+  var date = parse(dirtyDate)
+  var amount = Number(dirtyAmount)
+  date.setDate(date.getDate() + amount)
+  return date
 }
 
-module.exports = endOfISOWeek
+module.exports = addDays
 
 
 /***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var parse = __webpack_require__(0)
+var isLeapYear = __webpack_require__(16)
 
 /**
- * @category Week Helpers
- * @summary Return the end of a week for the given date.
+ * @category Year Helpers
+ * @summary Get the number of days in a year of the given date.
  *
  * @description
- * Return the end of a week for the given date.
- * The result will be in the local timezone.
+ * Get the number of days in a year of the given date.
  *
- * @param {Date|String|Number} date - the original date
- * @param {Object} [options] - the object with options
- * @param {Number} [options.weekStartsOn=0] - the index of the first day of the week (0 - Sunday)
- * @returns {Date} the end of a week
+ * @param {Date|String|Number} date - the given date
+ * @returns {Number} the number of days in a year
  *
  * @example
- * // The end of a week for 2 September 2014 11:55:00:
- * var result = endOfWeek(new Date(2014, 8, 2, 11, 55, 0))
- * //=> Sat Sep 06 2014 23:59:59.999
- *
- * @example
- * // If the week starts on Monday, the end of the week for 2 September 2014 11:55:00:
- * var result = endOfWeek(new Date(2014, 8, 2, 11, 55, 0), {weekStartsOn: 1})
- * //=> Sun Sep 07 2014 23:59:59.999
+ * // How many days are in 2012?
+ * var result = getDaysInYear(new Date(2012, 0, 1))
+ * //=> 366
  */
-function endOfWeek (dirtyDate, dirtyOptions) {
-  var weekStartsOn = dirtyOptions ? (Number(dirtyOptions.weekStartsOn) || 0) : 0
-
-  var date = parse(dirtyDate)
-  var day = date.getDay()
-  var diff = (day < weekStartsOn ? -7 : 0) + 6 - (day - weekStartsOn)
-
-  date.setDate(date.getDate() + diff)
-  date.setHours(23, 59, 59, 999)
-  return date
+function getDaysInYear (dirtyDate) {
+  return isLeapYear(dirtyDate) ? 366 : 365
 }
 
-module.exports = endOfWeek
+module.exports = getDaysInYear
 
 
 /***/ }),
@@ -2792,37 +2765,6 @@ var parse = __webpack_require__(0)
 
 /**
  * @category Common Helpers
- * @summary Is the first date after the second one?
- *
- * @description
- * Is the first date after the second one?
- *
- * @param {Date|String|Number} date - the date that should be after the other one to return true
- * @param {Date|String|Number} dateToCompare - the date to compare with
- * @returns {Boolean} the first date is after the second date
- *
- * @example
- * // Is 10 July 1989 after 11 February 1987?
- * var result = isAfter(new Date(1989, 6, 10), new Date(1987, 1, 11))
- * //=> true
- */
-function isAfter (dirtyDate, dirtyDateToCompare) {
-  var date = parse(dirtyDate)
-  var dateToCompare = parse(dirtyDateToCompare)
-  return date.getTime() > dateToCompare.getTime()
-}
-
-module.exports = isAfter
-
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var parse = __webpack_require__(0)
-
-/**
- * @category Common Helpers
  * @summary Is the first date before the second one?
  *
  * @description
@@ -2847,7 +2789,7 @@ module.exports = isBefore
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports) {
 
 /**
@@ -2873,7 +2815,70 @@ module.exports = isDate
 
 
 /***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var parse = __webpack_require__(0)
+
+/**
+ * @category Year Helpers
+ * @summary Is the given date in the leap year?
+ *
+ * @description
+ * Is the given date in the leap year?
+ *
+ * @param {Date|String|Number} date - the date to check
+ * @returns {Boolean} the date is in the leap year
+ *
+ * @example
+ * // Is 1 September 2012 in the leap year?
+ * var result = isLeapYear(new Date(2012, 8, 1))
+ * //=> true
+ */
+function isLeapYear (dirtyDate) {
+  var date = parse(dirtyDate)
+  var year = date.getFullYear()
+  return year % 400 === 0 || year % 4 === 0 && year % 100 !== 0
+}
+
+module.exports = isLeapYear
+
+
+/***/ }),
 /* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var parse = __webpack_require__(0)
+
+/**
+ * @category Year Helpers
+ * @summary Return the last day of a year for the given date.
+ *
+ * @description
+ * Return the last day of a year for the given date.
+ * The result will be in the local timezone.
+ *
+ * @param {Date|String|Number} date - the original date
+ * @returns {Date} the last day of a year
+ *
+ * @example
+ * // The last day of a year for 2 September 2014 11:55:00:
+ * var result = lastDayOfYear(new Date(2014, 8, 2, 11, 55, 00))
+ * //=> Wed Dec 31 2014 00:00:00
+ */
+function lastDayOfYear (dirtyDate) {
+  var date = parse(dirtyDate)
+  var year = date.getFullYear()
+  date.setFullYear(year + 1, 0, 0)
+  date.setHours(0, 0, 0, 0)
+  return date
+}
+
+module.exports = lastDayOfYear
+
+
+/***/ }),
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getISOYear = __webpack_require__(13)
@@ -2911,7 +2916,7 @@ module.exports = startOfISOYear
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var parse = __webpack_require__(0)
@@ -2955,7 +2960,7 @@ module.exports = startOfWeek
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -3141,7 +3146,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports) {
 
 /*
@@ -3393,7 +3398,7 @@ function updateLink(linkElement, obj) {
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether-drop 1.4.1 */
@@ -3962,14 +3967,14 @@ return Drop;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*! tether-tooltip 1.1.0 */
 
 (function(root, factory) {
   if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(21),__webpack_require__(2)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(22),__webpack_require__(2)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -4109,7 +4114,7 @@ return Tooltip;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {module.exports =
@@ -4392,7 +4397,7 @@ function getTetherAttachments(position) {
 /* 2 */
 /***/ (function(module, exports) {
 
-module.exports = __webpack_require__(22);
+module.exports = __webpack_require__(23);
 
 /***/ }),
 /* 3 */
@@ -4439,7 +4444,7 @@ if (GlobalVue) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5517,7 +5522,7 @@ var xhrClient = function (request) {
 
 var nodeClient = function (request) {
 
-    var client = __webpack_require__(32);
+    var client = __webpack_require__(33);
 
     return new PromiseObj(function (resolve) {
 
@@ -5971,7 +5976,7 @@ module.exports = plugin;
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15151,16 +15156,16 @@ Vue$3.compile = compileToFunctions;
 
 /* harmony default export */ __webpack_exports__["a"] = Vue$3;
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(19), __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(20), __webpack_require__(3)))
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformers_plugins_add_activity_level__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformers_plugins_add_activity_level__ = __webpack_require__(29);
 /* harmony export (immutable) */ __webpack_exports__["a"] = groupHarvestDatesByYearAndMonth;
 
 
@@ -15237,7 +15242,7 @@ function buildYearRangeArray(fromDate, toDate) {
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15266,8 +15271,8 @@ function buildMonthObject(year, parsedHarvestDates) {
 
     const monthObject = {};
 
-    for (let month of __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["c" /* getArrayOfMonths */])()) {
-        const allHarvestDatesInMonth = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["d" /* getHarvestsForMonth */])(year, month, parsedHarvestDates);
+    for (let month of __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["b" /* getArrayOfMonths */])()) {
+        const allHarvestDatesInMonth = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["c" /* getHarvestsForMonth */])(year, month, parsedHarvestDates);
 
         monthObject[month] = {
             days: buildDayObject(allHarvestDatesInMonth),
@@ -15293,7 +15298,7 @@ function buildDayObject(allHarvestDatesInMonth) {
     // Sort the harvest date objects by time ascending.
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__util__["a" /* sortDatesDescending */])(allHarvestDatesInMonth);
 
-    const daysInMonth = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["e" /* getDaysInMonth */])(allHarvestDatesInMonth[0]);
+    const daysInMonth = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["d" /* getDaysInMonth */])(allHarvestDatesInMonth[0]);
     const arrayOfDays = [...Array(daysInMonth).keys()].map(day => day + 1);     // [1, 2, ..., 31]
 
     // Initialise the object with days as key:
@@ -15313,11 +15318,11 @@ function buildDayObject(allHarvestDatesInMonth) {
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__iterators__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__iterators__ = __webpack_require__(30);
 /* harmony export (immutable) */ __webpack_exports__["a"] = addActivityLevelToMonths;
 
 
@@ -15370,7 +15375,7 @@ function getMaximumHarvestCount(datesObject) {
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15393,7 +15398,7 @@ function doForEachMonthInDatesObject(datesObject, actionFunction) {
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15449,17 +15454,29 @@ function getBaseLog(x, y) {
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__date__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_date_fns_start_of_iso_year__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_date_fns_start_of_iso_year__ = __webpack_require__(18);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_date_fns_start_of_iso_year___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_date_fns_start_of_iso_year__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_date_fns_get_iso_day__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_date_fns_get_iso_day___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_date_fns_get_iso_day__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_date_fns_get_days_in_year__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_date_fns_get_days_in_year___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_date_fns_get_days_in_year__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_date_fns_is_before__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_date_fns_is_before___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_date_fns_is_before__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_date_fns_last_day_of_year__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_date_fns_last_day_of_year___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_date_fns_last_day_of_year__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_date_fns_add_days__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_date_fns_add_days___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_date_fns_add_days__);
 /* harmony export (immutable) */ __webpack_exports__["a"] = buildWeekObject;
+
+
+
+
 
 
 
@@ -15486,88 +15503,49 @@ function getBaseLog(x, y) {
  * }
  * 
  * @param {*} year 
- * @param {*} parsedHarvestDates 
+ * @param {*} parsedHarvestDates for an entire year.
  */
 function buildWeekObject(year, parsedHarvestDates) {
 
-    const weekObject = {};
+    let day = new Date(year, 0, 1);             // Use the first day of the year.
+    const daysInYear = __WEBPACK_IMPORTED_MODULE_4_date_fns_get_days_in_year___default()(day);
+    const theLastDayOfYear = __WEBPACK_IMPORTED_MODULE_6_date_fns_last_day_of_year___default()(day);
 
-    for (let isoWeek of __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["a" /* getArrayOfWeeks */])()) {    // Loops from 1 to 52
-        const harvestDatesInWeek = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["b" /* getHarvestsForWeek */])(year, isoWeek, parsedHarvestDates);
+    let week = 0;                               // Here we'll use a custom week format, just for bookkeeping.
+    const weekObject = {};                      // The object to build.
 
-        console.log("Harvests for week " + isoWeek + " year " + year);
-        console.log(harvestDatesInWeek);
+    while (__WEBPACK_IMPORTED_MODULE_5_date_fns_is_before___default()(day, theLastDayOfYear)) {
 
-        weekObject[isoWeek] = buildWeekDaysObject(harvestDatesInWeek);
+        // console.log(day.toLocaleDateString());
+
+        if (day.getDay() === 0) {               // If the day is monday, increment the week.
+            week++;
+        }
+
+        if (weekObject[week] === undefined) {
+            weekObject[week] = {};
+        }
+
+        weekObject[week][day.getDay()] = {
+            date: new Date(day.getTime()),
+            harvests: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__util__["a" /* sortDatesDescending */])(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["a" /* getHarvestsForDay */])(day, parsedHarvestDates))
+        }
+
+        day = __WEBPACK_IMPORTED_MODULE_7_date_fns_add_days___default()(day, 1);
     }
 
     return weekObject;
 }
 
 
-/**
- * {
- *     0: {
- *         harvests: [
- *             Date-object,
- *             Date-object,
- *             ...
- *         ],
- *         numberOfHarvests: 123
- *     },
- *     1: {
- *         ...
- *     },
- *     ...
- * }
- * 
- * @param {*} allHarvestDatesInWeek 
- */
-function buildWeekDaysObject(allHarvestDatesInWeek) {
-    
-    const daysObject = {};
-
-    for (let day of [1,2,3,4,5,6,7]) {     // Loops from 1 to 7, note - it's ISO days: From monday to sunday.
-        const harvestsForDay = allHarvestDatesInWeek.filter(date => __WEBPACK_IMPORTED_MODULE_3_date_fns_get_iso_day___default()(date) === day);
-        
-        daysObject[day] = {};
-        daysObject[day]['harvests'] = buildHarvestArray(harvestsForDay)
-
-        // Attach the date to every day. We know the week number, and the year number, but what is there
-        daysObject[day]['date'] = harvestsForDay.length > 0 ? harvestsForDay[0] : "Unknown date"
-    }
-
-    return daysObject;
-}
-
-
-
-/**
- * Build an object of harvest dates for each day in the month.
- * 
- * @param {Array<Date>} allHarvestDatesInWeek
- */
-function buildHarvestArray(harvestsInDay) {
-
-    if (harvestsInDay.length === 0) {
-        return [];
-    }
-
-    // Sort the harvest date objects by time ascending.
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__util__["a" /* sortDatesDescending */])(harvestsInDay);
-
-    return harvestsInDay;
-}
-
-
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(7);

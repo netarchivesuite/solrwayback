@@ -1,8 +1,3 @@
-import startOfISOWeek from 'date-fns/start_of_iso_week'
-import endOfISOWeek from 'date-fns/end_of_iso_week'
-import isBefore from 'date-fns/is_before'
-import isAfter from 'date-fns/is_after'
-
 /**
  * Returns an array of the months in the year (0-11)
  */
@@ -10,12 +5,6 @@ export function getArrayOfMonths() {
     return [...Array(12).keys()];       // [0, 1, 2, ..., 11]
 };
 
-/**
- * Returns an array of the months in the year (0-51)
- */
-export function getArrayOfWeeks() {
-    return [...Array(52).keys()].map(n => n + 1);       // [1, 2, ..., 52]
-};
 
 /**
  * Returns an array of the harvest for a given month and year.
@@ -31,20 +20,25 @@ export function getHarvestsForMonth(year, month, parsedHarvestDates) {
 
 
 /**
- * Returns an array of the harvests for a given ISO-week of the year.
+ * Returns an array of the harvests for a given date.
  * 
- * @param {number} year 
- * @param {number} month 
+ * @param {Date} day 
  * @param {Array<Date>} parsedHarvestDates 
  */
-export function getHarvestsForWeek(year, week, parsedHarvestDates) {
-    const startOfWeek = new Date(year)
-    const endOfWeek = new Date(year, //TODO????)
-
+export function getHarvestsForDay(day, parsedHarvestDates) {
     return parsedHarvestDates
-        .filter(date => date.getFullYear() === year)
-        .filter(date => isBefore(date, endOfISOWeek(date)))
-        .filter(date => isAfter(date, startOfISOWeek(date)));
+        .filter(date => isSameDay(date, day));
+}
+
+
+/**
+ * Helper function for determining of two dates are the same day.
+ * 
+ * @param {*} day1 
+ * @param {*} day2 
+ */
+function isSameDay(day1, day2) {
+    return day1.getFullYear() === day2.getFullYear() && day1.getMonth() === day2.getMonth() && day1.getDate() === day2.getDate();
 }
 
 

@@ -13,7 +13,6 @@ export function groupHarvestDatesByYearAndMonth(harvestDates, transformationFunc
     const fromDate = new Date(Math.min(...harvestDates));
     const toDate = new Date(Math.max(...harvestDates));
 
-
     // Parse the harvest dates into an array of Date objects.
     // Validate that the dates are integers.
     const parsedHarvestDates = harvestDates
