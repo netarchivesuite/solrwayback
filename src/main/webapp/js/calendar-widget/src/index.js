@@ -49,7 +49,8 @@ Vue.component('harvest-date', {
     data: () => {
         return {
             harvestData: null,
-            year: null,
+            view: 'year-month',
+            year: null
         }
     },
     template: `
@@ -62,10 +63,10 @@ Vue.component('harvest-date', {
                 <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
                 
                 <transition name="slideLeft">
-                    <year-month-graph v-if="!year" :harvest-data="harvestData" :show-year="showYear"></year-month-graph>
+                    <year-month-graph v-if="view === 'year-month'" :harvest-data="harvestData" :show-year-details="showYearWeek"></year-month-graph>
                 </transition>        
                 <transition name="slideRight">
-                    <week-graph v-if="year" :year="year" :harvest-data="harvestData" :show-all="showAll" class="detailsContainer"></week-graph>
+                    <week-graph v-if="view === 'year-week'" :year="year" :harvest-data="harvestData" :show-all="showYearMonth" class="detailsContainer"></week-graph>
                 </transition> 
                 <transition name="slideLeft">  
                     <color-legend></color-legend>
@@ -86,18 +87,20 @@ Vue.component('harvest-date', {
         });
     },
     methods: {
-        showYear(year) {
+        showYearWeek(year) {
             this.year = year;
+            this.view = 'year-week';
         },
-        showAll() {
+        showYearMonth() {
             this.year = null;
+            this.view = 'year-month';
         }
     }
 });
 
 
 Vue.component('year-month-graph', {
-    props: ['harvestData', 'showYear'],    // showWeeks is a callback function.
+    props: ['harvestData', 'showYearDetails'],    // showWeeks is a callback function.
     template: `
         <div class="yearTables">
             <table class="monthLabels">
@@ -123,7 +126,7 @@ Vue.component('year-month-graph', {
                 </thead>
                 <tbody>
                     <tr v-for="(data, month) in yearData.months">
-                        <td v-on:click="showYear(year)" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)">&nbsp;</td>
+                        <td v-on:click="showYearDetails(year)" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)">&nbsp;</td>
                     </tr>
                 </tbody>
             </table>
@@ -158,6 +161,42 @@ Vue.component('week-graph', {
                 </tr>
             </tbody>
         </table>
+    </div>
+    `,
+    methods: {
+        formatHarvestDate(data) {
+            return toHumanDate(data.date) + '<br>' +
+                'Harvests: ' + data.numberOfHarvests.toLocaleString()
+        },
+        mapActivityLevel(data) {
+            return {
+                activityLevel4: data.activityLevel === 4, 
+                activityLevel3: data.activityLevel === 3, 
+                activityLevel2: data.activityLevel === 2, 
+                activityLevel1: data.activityLevel === 1
+            };
+        }
+    }
+});
+
+
+
+
+Vue.component('all-years-graph', {
+    props: ['harvestData', 'showAll'],
+    template: `
+    <div id="details">
+        <div v-for="(_, year) in harvestData.dates">
+            <div v-on:click="showAll()" class="hideDetails">Hide details</div>
+            <p>Harvests in {{ year }}</p>
+            <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
+                <tbody>
+                    <tr v-for="(data, dayNumber) in week">
+                        <td class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
     `,
     methods: {
