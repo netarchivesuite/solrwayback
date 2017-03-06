@@ -2496,24 +2496,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
                     </div>                
                 </transition>        
                 <transition name="slideRight">
-                <div v-if="showDetails" class="detailsContainer">
-                    <div id="details">
-                        <div v-on:click="showDetails = false" class="hideDetails">Hide details</div>
-                        <h3>Details for {{ year }}</h3>
-                        <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
-                            <thead>
-                                <tr>
-                                    <th>{{ weekNumber }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(data, dayNumber) in week">
-                                    <td v-tooltip.top-center="data.date.toLocaleString() + '<br>Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                 </div>               
+                <week-graph v-if="showDetails" :year="year" :month="month" :harvest-data="harvestData" class="detailsContainer"></week-graph>
                 </transition> 
                 <transition name="slideLeft">  
                     <div v-if="!showDetails" id="legends">
@@ -2547,6 +2530,28 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
         }
     }
 });
+
+__WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('week-graph', {
+    props: ['harvestData', 'year', 'month'],
+    template: `
+    <div id="details">
+        <div v-on:click="showDetails = false" class="hideDetails">Hide details</div>
+        <h3>Details for {{ year }}</h3>
+        <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
+            <thead>
+                <tr>
+                    <th>{{ weekNumber }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(data, dayNumber) in week">
+                    <td v-tooltip.top-center="data.date.toLocaleString() + '<br>Harvests: ' + data.numberOfHarvests.toLocaleString()" v-bind:class="{activityLevel4: data.activityLevel === 4, activityLevel3: data.activityLevel === 3, activityLevel2: data.activityLevel === 2, activityLevel1: data.activityLevel === 1}">&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    `
+})
 
 
 let app = new __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */]({
