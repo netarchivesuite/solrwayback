@@ -61,12 +61,21 @@ Vue.component('harvest-date', {
                     Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
                 </p>
                 <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
-                
+                <br>
+                <p>
+                    Show: 
+                    <span class="pointer" :class="{active: this.view === 'year-month'}" @click="showYearMonth">Months</span> - 
+                    <span class="pointer" :class="{active: this.view === 'all-years'}" @click="showAllYears">Days</span>
+                </p>
+
                 <transition name="slideLeft">
                     <year-month-graph v-if="view === 'year-month'" :harvest-data="harvestData" :show-year-details="showYearWeek"></year-month-graph>
                 </transition>        
                 <transition name="slideRight">
                     <week-graph v-if="view === 'year-week'" :year="year" :harvest-data="harvestData" :show-all="showYearMonth" class="detailsContainer"></week-graph>
+                </transition> 
+                <transition name="slideRight">
+                    <all-years-graph v-if="view === 'all-years'" :harvest-data="harvestData" class="detailsContainer"></all-years-graph>
                 </transition> 
                 <transition name="slideLeft">  
                     <color-legend></color-legend>
@@ -94,6 +103,10 @@ Vue.component('harvest-date', {
         showYearMonth() {
             this.year = null;
             this.view = 'year-month';
+        },
+        showAllYears() {
+            this.year = null;
+            this.view = 'all-years';
         }
     }
 });
@@ -187,8 +200,7 @@ Vue.component('all-years-graph', {
     template: `
     <div id="details">
         <div v-for="(_, year) in harvestData.dates">
-            <div v-on:click="showAll()" class="hideDetails">Hide details</div>
-            <p>Harvests in {{ year }}</p>
+            <p>{{ year }}</p>
             <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
                 <tbody>
                     <tr v-for="(data, dayNumber) in week">
