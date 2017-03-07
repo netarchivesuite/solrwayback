@@ -32,12 +32,12 @@ export function buildWeekObject(year, parsedHarvestDates) {
 
     let day = new Date(year, 0, 1);             // Use the first day of the year.
     const daysInYear = getDaysInYear(day);
-    const theLastDayOfYear = lastDayOfYear(day);
+    const nextYear = day.getFullYear() + 1;
 
     let week = 0;                               // Here we'll use a custom week format, just for bookkeeping.
     const weekObject = {};                      // The object to build.
 
-    while (isBefore(day, theLastDayOfYear)) {
+    while (day.getFullYear() < nextYear) {
 
         if (day.getDay() === 0) {               // If the day is sunday, increment the week.
             week++;
