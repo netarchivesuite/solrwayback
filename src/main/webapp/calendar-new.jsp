@@ -1,3 +1,4 @@
+<%@ page import="dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader" %>
 <!DOCTYPE html>
 <html>
 <head>

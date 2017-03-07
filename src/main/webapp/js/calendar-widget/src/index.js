@@ -9,6 +9,8 @@ import {groupHarvestDatesByYearAndMonth} from './transformer';
 import {calculateLinearActivityLevel, calculateLogarithmicActivityLevel} from './transformers/plugins/transformation-functions'
 import VTooltip from 'v-tooltip'
 
+import format from 'date-fns/format'
+
 Vue.use(VueResource);
 Vue.use(VTooltip);
 
@@ -283,10 +285,16 @@ Vue.component('harvests-for-day', {
         <div id="harvests-for-day">
             <h3>Harvests for {{ date | human-date }}</h3>
             <ol>
-                <li v-for="harvest in harvests">{{ harvest | human-date-and-time }}</li>
+                <li v-for="harvest in harvests"><a :href="generateLink(harvest)" target="_blank">{{ harvest | human-date-and-time }}</a></li>
             </ol>
         </div>
-    `
+    `,
+    methods: {
+        generateLink(harvest) {
+            console.log(window.solrWaybackConfig)
+            return window.solrWaybackConfig.solrWaybackUrl + format(harvest, "YYYYMMDDHHmmss") + "/" + window.solrWaybackConfig.url;
+        }
+    }
 });
 
 
