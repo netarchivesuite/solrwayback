@@ -3,7 +3,15 @@ body{
 }
 
 h1, h2, h3{
-  margin: 0 0 1em;
+  margin: 0 0 .8em;
+}
+
+h1{
+  font-weight: normal;
+}
+
+ul,ol{
+  padding-left: 1em;
 }
 
 .tableContainer{
@@ -21,6 +29,35 @@ td, th{
   border-left: 0;
   cursor: pointer;
   padding: .2em;
+}
+
+.totalHarvestData{
+  background: #f6f6f6;
+  box-sizing: border-box;
+  float: left;
+  width: 50%;
+  padding: 1em;
+}
+
+.totalHarvestData td{
+  background: #f6f6f6;
+  border: 0;
+}
+
+.totalHarvestData td:first-child{
+  white-space: nowrap;
+  width: 10%;
+}
+
+.totalHarvestData td:last-child{
+  font-weight: bold;
+}
+
+.detailsMenu{
+  clear: both;
+  float: left;
+  margin-top: 2em;
+  width: 100%;
 }
 
 /* A fill cell used for empty days (when f.ex. not all days in the first week exist) */
@@ -48,7 +85,17 @@ th.weekNumber{
 }
 
 #harvests-for-day{
+  background: #f6ffca;
+  box-sizing: border-box;
   clear: both;
+  float: left;
+  margin-top: 2em;
+  min-width: 50%;
+  padding: 2em;
+}
+
+#harvests-for-day li{
+  padding: .2em 0;
 }
 
 .pointer {
@@ -57,6 +104,10 @@ th.weekNumber{
 
 .active {
   font-weight: bold;
+}
+
+.uppercase{
+  text-transform: uppercase;
 }
 
 td.empty{
@@ -79,11 +130,15 @@ td.activityLevel4, .legend.legend4 {
   background: #1e6823;
 }
 
+td.weekday {
+  width: 10px;
+  height: 10px;
+}
+
 /* Legends */
 #legends{
   clear: both;
   float: left;
-  margin: 1em 0;
 }
 
 .legend{
@@ -102,8 +157,6 @@ td.activityLevel4, .legend.legend4 {
 
 .hideDetails{
   cursor: pointer;
-  float: right;
-  margin-top: -1.4em;
 }
 
 /*Spinner*/
@@ -139,8 +192,6 @@ td.activityLevel4, .legend.legend4 {
 /* Vue transitions */
 .yearTables, .detailsContainer, #legends{
   opacity: 1;
-  position: relative;
-  left: 0px;
   padding-top: 2em;
 }
 
@@ -148,35 +199,22 @@ td.activityLevel4, .legend.legend4 {
   padding-top: 0;
 }
 
-.slideLeft-enter-active, .slideRight-enter-active{
-  transition: left .2s, opacity .5s;
+.fadeIn-enter-active{
+  transition: opacity .5s;
 }
 
-.slideLeft-leave-active, .slideRight-leave-active {
-  transition: left .2s, opacity .2s;
+.fadeIn-leave-active{
+  transition: opacity 0s;
 }
 
-.slideRight-enter-active{
-  transition-delay: .1s;
+.fadeIn-enter-active{
+  transition-delay: 0s;
 }
 
-.slideLeft-enter,
-.slideLeft-leave-to{
+.fadeIn-enter,
+.fadeIn-leave-to{
   opacity: 0;
-  left: -1500px;
 }
-
-.slideRight-enter,
-.slideRight-leave-to{
-  opacity: 0;
-  left: 1500px;
-}
-
-.weekday {
-  width: 10px;
-  height: 10px;
-}
-
 
 
 // <v-tooltip less>
@@ -184,7 +222,6 @@ td.activityLevel4, .legend.legend4 {
 .tooltip {
   display: none;
   opacity: 0;
-  // transition: opacity .15s;
   pointer-events: none;
   padding: 4px;
   z-index: 10000;
@@ -192,7 +229,6 @@ td.activityLevel4, .legend.legend4 {
   .tooltip-content {
     background: black;
     color: white;
-    // border-radius: 16px;
     padding: 5px 10px 4px;
   }
 

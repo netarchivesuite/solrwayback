@@ -70,25 +70,37 @@ Vue.component('harvest-date', {
     template: `
         <div>
             <div v-if="harvestData" class="tableContainer">
-                <p>
-                    First harvest: <strong>{{ harvestData.fromDate | human-date }}</strong><br>
-                    Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
-                </p>
-                <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
+            
+                <table class="totalHarvestData">
+                    <tbody>
+                        <tr>
+                            <td>First harvest:</td>
+                            <td>{{ harvestData.fromDate | human-date }}</td>
+                        </tr>
+                        <tr>
+                            <td>Latest harvest:</td>
+                            <td>{{ harvestData.toDate | human-date }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total harvests:</td>
+                            <td>{{ harvestData.numberOfHarvests | formatted-number }}</td>
+                        </tr>
+                    </tbody>
+                </table>
                 <br>
-                <p>
+                <p class="detailsMenu">
                     Show: 
                     <span class="pointer" :class="{active: this.view === 'year-month'}" @click="showYearMonth">Months</span> - 
                     <span class="pointer" :class="{active: this.view === 'all-years'}" @click="showAllYears">Days</span>
                 </p>
 
-                <transition name="slideLeft">
+                <transition name="fadeIn">
                     <year-month-graph v-if="view === 'year-month'" :harvest-data="harvestData" :show-year-details="showYearWeek"></year-month-graph>
                 </transition>        
-                <transition name="slideRight">
+                <transition name="fadeIn">
                     <week-graph v-if="view === 'year-week'" :year="year" :harvest-data="harvestData" :show-all="showYearMonth" class="detailsContainer"></week-graph>
                 </transition> 
-                <transition name="slideRight">
+                <transition name="fadeIn">
                     <all-years-graph v-if="view === 'all-years'" :harvest-data="harvestData" class="detailsContainer"></all-years-graph>
                 </transition> 
             </div>
@@ -190,8 +202,7 @@ Vue.component('week-graph', {
     },
     template: `
     <div id="details">
-        <p class="yearHeader">{{ year }}</p>
-        <div v-on:click="showAll()" class="hideDetails">Hide details</div>
+        <p class="yearHeader">{{ year }} - <span v-on:click="showAll()" class="hideDetails">Hide details</span></p>
         <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']"> 
             <thead v-if="weekNumber%4 === 0 && weekNumber !== '0'">
                <tr>
