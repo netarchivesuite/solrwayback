@@ -89,9 +89,6 @@ Vue.component('harvest-date', {
                 <transition name="slideRight">
                     <all-years-graph v-if="view === 'all-years'" :harvest-data="harvestData" class="detailsContainer"></all-years-graph>
                 </transition> 
-                <transition name="slideLeft">  
-                    <color-legend></color-legend>
-                </transition>   
             </div>
             <div v-if="!harvestData && noResults === true">
                 <p>No results.</p>
@@ -162,6 +159,7 @@ Vue.component('year-month-graph', {
                     </tr>
                 </tbody>
             </table>
+            <color-legend></color-legend>            
         </div>                 
     `,
     methods: {
@@ -190,7 +188,7 @@ Vue.component('week-graph', {
     },
     template: `
     <div id="details">
-        <p class="yearHeader">Harvests in {{ year }}</p>
+        <p class="yearHeader">{{ year }}</p>
         <div v-on:click="showAll()" class="hideDetails">Hide details</div>
         <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']"> 
             <thead v-if="weekNumber%4 === 0 && weekNumber !== '0'">
@@ -210,6 +208,7 @@ Vue.component('week-graph', {
                 </tr>
             </tbody>
         </table>
+        <color-legend></color-legend>        
         <harvests-for-day v-if="harvestsForDay !== null" :harvests="harvestsForDay" :date="showDate"></harvests-for-day>
     </div>
     `,
