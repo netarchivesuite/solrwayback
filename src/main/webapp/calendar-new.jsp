@@ -8,6 +8,7 @@
         // Hand over configuration from JSP to Javascript
         window.solrWaybackConfig = {};
         window.solrWaybackConfig.url = "<%= request.getParameter("url") %>";
+        window.solrWaybackConfig.solrWaybackUrl = "<%= PropertiesLoader.WAYBACK_BASEURL %>wayback?waybackdata=" + "/";
     </script>
 </head>
 

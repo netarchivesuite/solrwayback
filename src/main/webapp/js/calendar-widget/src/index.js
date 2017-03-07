@@ -34,6 +34,14 @@ Vue.filter('human-date', function (value) {
     return toHumanDate(value);
 });
 
+Vue.filter('human-date-and-time', function (date) {
+    if (date instanceof Date) {
+        return toHumanDate(date) + ` ${date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`;
+    }
+
+    return date;
+});
+
 Vue.filter('formatted-number', function (value) {
     if (!isNaN(value)) {
         return value.toLocaleString();
@@ -174,6 +182,12 @@ Vue.component('year-month-graph', {
 
 Vue.component('week-graph', {
     props: ['harvestData', 'year', 'showAll'],
+    data: function() {
+        return {
+            harvestsForDay: null,
+            showDate: null
+        }
+    },
     template: `
     <div id="details">
         <div v-on:click="showAll()" class="hideDetails">Hide details</div>
@@ -181,11 +195,12 @@ Vue.component('week-graph', {
         <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
             <tbody>
                 <tr v-for="(data, dayNumber) in week">
-                    <td v-if="data !== null" class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
+                    <td v-if="data !== null" @click="harvestsForDay = data.harvests; showDate = data.date;" class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
                     <td v-if="data === null" class="weekday filler"><!-- non-existing day --></td>
                 </tr>
             </tbody>
         </table>
+        <harvests-for-day v-if="harvestsForDay !== null" :harvests="harvestsForDay" :date="showDate"></harvests-for-day>
     </div>
     `,
     methods: {
@@ -238,6 +253,21 @@ Vue.component('all-years-graph', {
             };
         }
     }
+});
+
+/**
+ * Url should be e.g. http://belinda:9721/solrwayback/wayback?waybackdata=/20150204183831/http://jp.dk/
+ */
+Vue.component('harvests-for-day', {
+    props: ['harvests', 'date'],
+    template: `
+        <div id="harvests-for-day">
+            <h3>Harvests for {{ date | human-date }}</h3>
+            <ol>
+                <li v-for="harvest in harvests">{{ harvest | human-date-and-time }}</li>
+            </ol>
+        </div>
+    `
 });
 
 
