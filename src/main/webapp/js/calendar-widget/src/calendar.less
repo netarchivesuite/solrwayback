@@ -34,6 +34,23 @@ table.monthLabels td, th{
   font-weight: normal;
 }
 
+th.weekNumber{
+  border: 0;
+  color: #999999;
+  padding: 0;
+}
+
+.yearHeader{
+  clear: both;
+  float: left;
+  margin-top: 2.5em;
+  width: 100%;
+}
+
+#harvests-for-day{
+  clear: both;
+}
+
 .pointer {
   cursor: pointer;
 }
@@ -81,12 +98,12 @@ td.activityLevel4, .legend.legend4 {
 #details{
   float: left;
   opacity: 1;
-  padding-top: 2em;
 }
 
 .hideDetails{
   cursor: pointer;
   float: right;
+  margin-top: -1.4em;
 }
 
 /*Spinner*/
@@ -125,6 +142,10 @@ td.activityLevel4, .legend.legend4 {
   position: relative;
   left: 0px;
   padding-top: 2em;
+}
+
+.detailsContainer{
+  padding-top: 0;
 }
 
 .slideLeft-enter-active, .slideRight-enter-active{
