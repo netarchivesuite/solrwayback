@@ -15511,7 +15511,9 @@ function buildWeekObject(year, parsedHarvestDates) {
 
     while (day.getFullYear() < nextYear) {
 
-        if (day.getDay() === 0) {               // If the day is sunday, increment the week.
+        let dayOfWeek = (day.getDay() + 6) % 7;     // We want monday as the first day of week!
+
+        if (dayOfWeek === 0) {               // If the day is sunday, increment the week.
             week++;
         }
 
@@ -15521,7 +15523,7 @@ function buildWeekObject(year, parsedHarvestDates) {
 
         const harvestsForDay = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__util__["a" /* sortDatesDescending */])(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__date__["a" /* getHarvestsForDay */])(day, parsedHarvestDates));
 
-        weekObject[week][day.getDay()] = {
+        weekObject[week][dayOfWeek] = {
             date: new Date(day.getTime()),
             harvests: harvestsForDay,
             numberOfHarvests: harvestsForDay.length
