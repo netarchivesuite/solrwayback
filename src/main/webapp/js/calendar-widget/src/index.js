@@ -17,12 +17,15 @@ Vue.use(VTooltip);
  * 
  * @param {Date} date 
  */
-function toHumanDate(date) {
+function toHumanDate(date, showWeekday = false) {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     if (date instanceof Date) {
-        return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-    } 
+        let dateString = `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+
+        return showWeekday ? days[date.getDay()] + ', ' + dateString : dateString;
+    }
     
     return date;
 }
@@ -186,7 +189,7 @@ Vue.component('week-graph', {
     `,
     methods: {
         formatHarvestDate(data) {
-            return toHumanDate(data.date) + '<br>' +
+            return toHumanDate(data.date, true) + '<br>' +
                 'Harvests: ' + data.numberOfHarvests.toLocaleString()
         },
         mapActivityLevel(data) {
@@ -221,7 +224,7 @@ Vue.component('all-years-graph', {
     `,
     methods: {
         formatHarvestDate(data) {
-            return toHumanDate(data.date) + '<br>' +
+            return toHumanDate(data.date, true) + '<br>' +
                 'Harvests: ' + data.numberOfHarvests.toLocaleString()
         },
         mapActivityLevel(data) {
