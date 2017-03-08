@@ -38,7 +38,7 @@ Vue.filter('human-date', function (value) {
 
 Vue.filter('human-date-and-time', function (date) {
     if (date instanceof Date) {
-        return toHumanDate(date) + ` ${date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`;
+        return toHumanDate(date) + ` ${date.getHours() < 10 ? '0' + date.getHours() : date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`;
     }
 
     return date;
@@ -93,7 +93,6 @@ Vue.component('harvest-date', {
                     <span class="pointer" :class="{active: this.view === 'year-month'}" @click="showYearMonth">Months</span> - 
                     <span class="pointer" :class="{active: this.view === 'all-years'}" @click="showAllYears">Days</span>
                 </p>
-
                 <transition name="fadeIn">
                     <year-month-graph v-if="view === 'year-month'" :harvest-data="harvestData" :show-year-details="showYearWeek"></year-month-graph>
                 </transition>        
