@@ -202,17 +202,7 @@ Vue.component('week-graph', {
     template: `
     <div id="details">
         <p class="yearHeader">{{ year }} - <span v-on:click="showAll()" class="hideDetails">Hide details</span></p>
-        <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']"> 
-            <thead v-if="weekNumber%4 === 0 && weekNumber !== '0'">
-               <tr>
-                   <th class="weekNumber">{{weekNumber}}</th>
-               </tr>
-            </thead>
-            <thead v-else>
-                <tr>
-                    <th class="weekNumber">&nbsp;</th>
-                 </tr>
-             </thead>
+        <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
             <tbody>
                 <tr v-for="(data, dayNumber) in week">
                     <td v-if="data !== null" @click="harvestsForDay = data.harvests; showDate = data.date;" class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
@@ -241,25 +231,13 @@ Vue.component('week-graph', {
 });
 
 
-
-
 Vue.component('all-years-graph', {
     props: ['harvestData', 'showAll'],
     template: `
-    <div id="details">
+    <div id="details">  
         <div v-for="(_, year) in harvestData.dates">
             <p class="yearHeader">{{ year }}</p>
             <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
-                <thead v-if="weekNumber%4 === 0 && weekNumber !== '0'">
-                    <tr>
-                        <th class="weekNumber">{{weekNumber}}</th>
-                    </tr>
-                </thead>
-                <thead v-else>
-                    <tr>
-                        <th class="weekNumber">&nbsp;</th>
-                    </tr>
-                </thead>
                 <tbody>
                     <tr v-for="(data, dayNumber) in week">
                         <td v-if="data !== null" class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
