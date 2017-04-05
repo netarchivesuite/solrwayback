@@ -56,4 +56,68 @@ public class WarcParserTest {
         }
         return new File(fromURL);
     }
+
+    /*
+      
+     
+     
+    @Test
+    public void testWarcParserJSZipped() throws Exception {
+    
+      
+        File file = getFile("src/test/resources/273422-246-20170326210303322-00000-sb-prod-har-004.statsbiblioteket.dk.warc.gz");
+        
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 71228603); //Image entry
+
+        System.out.println(arcEntry.getContentLength());
+        System.out.println(new String(arcEntry.getBinary()));
+        
+        assertEquals("text/css", arcEntry.getContentType());
+        assertEquals("style.css", arcEntry.getFileName());
+        assertEquals(10952, arcEntry.getWarcEntryContentLength());
+        assertEquals(10443, arcEntry.getContentLength());                  
+        
+        
+        
+    }
+    
+    @Test
+    public void testWarcParserHtmlZipped() throws Exception {
+        
+        File file = getFile("src/test/resources/273422-246-20170326210303322-00000-sb-prod-har-004.statsbiblioteket.dk.warc.gz");
+        
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(),     57516462); //Image entry
+
+        System.out.println(arcEntry.getContentLength());
+        System.out.println(new String(arcEntry.getBinary()));
+        
+        assertEquals("text/css", arcEntry.getContentType());
+        assertEquals("style.css", arcEntry.getFileName());
+        assertEquals(10952, arcEntry.getWarcEntryContentLength());
+        assertEquals(10443, arcEntry.getContentLength());                  
+        
+        
+        
+    }
+    
+
+
+
+    @Test
+    public void testWarcParserImageZipped() throws Exception {
+        
+        File file = getFile("src/test/resources/273422-246-20170326210303322-00000-sb-prod-har-004.statsbiblioteket.dk.warc.gz");
+        
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 57271819); //Image entry
+
+        System.out.println(arcEntry.getContentLength());
+        System.out.println(new String(arcEntry.getBinary()));
+        
+        assertEquals("text/css", arcEntry.getContentType());
+        assertEquals("style.css", arcEntry.getFileName());
+        assertEquals(10952, arcEntry.getWarcEntryContentLength());
+        assertEquals(10443, arcEntry.getContentLength());                  
+        
+    }
+ */
 }
