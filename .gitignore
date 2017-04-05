@@ -2,3 +2,8 @@
 solrwayback.iml
 solrwayback.properties
 target
+/.classpath
+/deployLocalTomcat.sh
+/.settings/
+/.project
+/deployBelindaTomcat.sh
