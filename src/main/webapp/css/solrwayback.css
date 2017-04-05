@@ -1,4 +1,25 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+body{
+     background-color: #f6f6f6;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#wrapper{
+     background-color: white;
+     margin: 0 auto;
+     padding: 2em;
+     width: 1200px;
+}
+
 .calendar .month-container{
      height: 220px
 }
- 
+
+#spinner {
+    background: white url(../images/loader90.gif) no-repeat 2em 2em;
+    left: calc(50% - 250px);
+}

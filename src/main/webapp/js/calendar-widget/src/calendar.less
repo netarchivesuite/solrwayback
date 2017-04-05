@@ -1,0 +1,237 @@
+body{
+  font-size: 90%;
+}
+
+h1, h2, h3{
+  margin: 0 0 .8em;
+}
+
+h1{
+  font-weight: normal;
+}
+
+ul,ol{
+  padding-left: 2em;
+}
+
+.tableContainer{
+  overflow: hidden;
+}
+
+table{
+  border-collapse: separate;
+  float: left;
+  opacity: 1;
+}
+
+td, th{
+  background-color: #f0f0f0;
+  border: 1px solid white;
+  border-left: 0;
+  cursor: pointer;
+  padding: .2em;
+}
+
+.totalHarvestData td{
+  background: white;
+  border: 0;
+}
+
+.totalHarvestData td:first-child{
+  white-space: nowrap;
+  width: 10%;
+}
+
+.totalHarvestData td:last-child{
+  font-weight: bold;
+}
+
+.detailsMenu{
+  clear: both;
+  float: left;
+  margin: 2em 0 1em;
+  width: 100%;
+}
+
+/* A fill cell used for empty days (when f.ex. not all days in the first week exist) */
+td.filler {
+  background-color: white;
+}
+
+table.monthLabels td, th{
+  background-color: white;
+  cursor: default;
+  font-weight: normal;
+}
+
+th.weekNumber{
+  border: 0;
+  color: #999999;
+  padding: 0;
+}
+
+.yearHeader{
+  clear: both;
+  float: left;
+  margin-top: 1.5em;
+  width: 100%;
+}
+
+#harvests-for-day{
+  box-sizing: border-box;
+  clear: both;
+  float: left;
+  margin-top: 2em;
+  min-width: 50%;
+}
+
+#harvests-for-day li{
+  padding: .2em 0;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.active {
+  font-weight: bold;
+}
+
+.uppercase{
+  text-transform: uppercase;
+}
+
+td.empty{
+  border-color: transparent;
+}
+
+td.activityLevel1, .legend.legend1 {
+  background: #d6e685;
+}
+
+td.activityLevel2, .legend.legend2 {
+  background: #8cc665;
+}
+
+td.activityLevel3, .legend.legend3 {
+  background: #44a340;
+}
+
+td.activityLevel4, .legend.legend4 {
+  background: #1e6823;
+}
+
+td.weekday {
+  width: 10px;
+  height: 10px;
+}
+
+
+/* Legends */
+#legends{
+  clear: both;
+  float: left;
+}
+
+.legend{
+  background-color: #f0f0f0;
+  display: inline-block;
+  height: 1.5em;
+  margin: 0 .3em;
+  vertical-align: bottom;
+  width: 2.5em;
+}
+
+#details{
+  float: left;
+  width: 100%;
+}
+
+.hideDetails{
+  color: #666;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/*Spinner*/
+#overlay{
+  background-color: black;
+  opacity: .8;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 50;
+}
+
+#spinner{
+  background-color: white; /*url(../images/loader90.gif) no-repeat*/
+  border: 1px solid #ccc;
+  height: 125px;
+  /*left: calc(50% - 250px);*/
+  padding: 1em;
+  position: fixed;
+  text-indent: 140px;
+  top: 10%;
+  width: 500px;
+  z-index: 500;
+}
+
+.spinnerText{
+  font-size: 18px;
+  margin-top: 50px;
+}
+
+/* Vue transitions */
+.yearTables, .detailsContainer, #legends{
+  opacity: 1;
+  padding-top: 2em;
+}
+
+.detailsContainer{
+  padding-top: 0;
+}
+
+.fadeIn-enter-active{
+  transition: opacity .5s;
+}
+
+.fadeIn-leave-active{
+  transition: opacity 0s;
+}
+
+.fadeIn-enter-active{
+  transition-delay: 0s;
+}
+
+.fadeIn-enter,
+.fadeIn-leave-to{
+  opacity: 0;
+}
+
+
+// <v-tooltip less>
+// source: https://akryum.github.io/vue-tooltip/
+.tooltip {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+  padding: 4px;
+  z-index: 10000;
+
+  .tooltip-content {
+    background: black;
+    color: white;
+    padding: 5px 10px 4px;
+  }
+
+  &.tooltip-open-transitionend {
+    display: block;
+  }
+
+  &.tooltip-after-open {
+    opacity: 1;
+  }
+}
+// </v-tooltip less>
