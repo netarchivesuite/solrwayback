@@ -2557,7 +2557,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('human-date', functi
 
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].filter('human-date-and-time', function (date) {
     if (date instanceof Date) {
-        return toHumanDate(date) + ` ${date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`;
+        return toHumanDate(date) + ` ${date.getHours() < 10 ? '0' + date.getHours() : date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`;
     }
 
     return date;
@@ -2589,25 +2589,36 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('harvest-date', {
     template: `
         <div>
             <div v-if="harvestData" class="tableContainer">
-                <p>
-                    First harvest: <strong>{{ harvestData.fromDate | human-date }}</strong><br>
-                    Latest harvest: <strong>{{ harvestData.toDate | human-date }}</strong>
-                </p>
-                <p>Total harvests: <strong>{{ harvestData.numberOfHarvests | formatted-number }}</strong></p>
+            
+                <table class="totalHarvestData">
+                    <tbody>
+                        <tr>
+                            <td>First harvest:</td>
+                            <td>{{ harvestData.fromDate | human-date }}</td>
+                        </tr>
+                        <tr>
+                            <td>Latest harvest:</td>
+                            <td>{{ harvestData.toDate | human-date }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total harvests:</td>
+                            <td>{{ harvestData.numberOfHarvests | formatted-number }}</td>
+                        </tr>
+                    </tbody>
+                </table>
                 <br>
-                <p>
+                <p class="detailsMenu">
                     Show: 
                     <span class="pointer" :class="{active: this.view === 'year-month'}" @click="showYearMonth">Months</span> - 
                     <span class="pointer" :class="{active: this.view === 'all-years'}" @click="showAllYears">Days</span>
                 </p>
-
-                <transition name="slideLeft">
+                <transition name="fadeIn">
                     <year-month-graph v-if="view === 'year-month'" :harvest-data="harvestData" :show-year-details="showYearWeek"></year-month-graph>
                 </transition>        
-                <transition name="slideRight">
+                <transition name="fadeIn">
                     <week-graph v-if="view === 'year-week'" :year="year" :harvest-data="harvestData" :show-all="showYearMonth" class="detailsContainer"></week-graph>
                 </transition> 
-                <transition name="slideRight">
+                <transition name="fadeIn">
                     <all-years-graph v-if="view === 'all-years'" :harvest-data="harvestData" class="detailsContainer"></all-years-graph>
                 </transition> 
             </div>
@@ -2709,19 +2720,8 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('week-graph', {
     },
     template: `
     <div id="details">
-        <p class="yearHeader">{{ year }}</p>
-        <div v-on:click="showAll()" class="hideDetails">Hide details</div>
-        <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']"> 
-            <thead v-if="weekNumber%4 === 0 && weekNumber !== '0'">
-               <tr>
-                   <th class="weekNumber">{{weekNumber}}</th>
-               </tr>
-            </thead>
-            <thead v-else>
-                <tr>
-                    <th class="weekNumber">&nbsp;</th>
-                 </tr>
-             </thead>
+        <p class="yearHeader">{{ year }} - <span v-on:click="showAll()" class="hideDetails">Hide details</span></p>
+        <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
             <tbody>
                 <tr v-for="(data, dayNumber) in week">
                     <td v-if="data !== null" @click="harvestsForDay = data.harvests; showDate = data.date;" class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
@@ -2750,25 +2750,13 @@ __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('week-graph', {
 });
 
 
-
-
 __WEBPACK_IMPORTED_MODULE_0_vue__["a" /* default */].component('all-years-graph', {
     props: ['harvestData', 'showAll'],
     template: `
-    <div id="details">
+    <div id="details">  
         <div v-for="(_, year) in harvestData.dates">
             <p class="yearHeader">{{ year }}</p>
             <table v-for="(week, weekNumber) in harvestData.dates[year]['weeks']">
-                <thead v-if="weekNumber%4 === 0 && weekNumber !== '0'">
-                    <tr>
-                        <th class="weekNumber">{{weekNumber}}</th>
-                    </tr>
-                </thead>
-                <thead v-else>
-                    <tr>
-                        <th class="weekNumber">&nbsp;</th>
-                    </tr>
-                </thead>
                 <tbody>
                     <tr v-for="(data, dayNumber) in week">
                         <td v-if="data !== null" class="weekday" v-tooltip.top-center="formatHarvestDate(data)" v-bind:class="mapActivityLevel(data)"></td>
@@ -2846,7 +2834,7 @@ exports = module.exports = __webpack_require__(12)();
 
 
 // module
-exports.push([module.i, "body {\n  font-size: 90%;\n}\nh1,\nh2,\nh3 {\n  margin: 0 0 1em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  float: left;\n  opacity: 1;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  cursor: pointer;\n  padding: .2em;\n}\n/* A fill cell used for empty days (when f.ex. not all days in the first week exist) */\ntd.filler {\n  background-color: white;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n  cursor: default;\n  font-weight: normal;\n}\nth.weekNumber {\n  border: 0;\n  color: #999999;\n  padding: 0;\n}\n.yearHeader {\n  clear: both;\n  float: left;\n  margin-top: 2.5em;\n  width: 100%;\n}\n#harvests-for-day {\n  clear: both;\n}\n.pointer {\n  cursor: pointer;\n}\n.active {\n  font-weight: bold;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\n/* Legends */\n#legends {\n  clear: both;\n  float: left;\n  margin: 1em 0;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n#details {\n  float: left;\n  opacity: 1;\n}\n.hideDetails {\n  cursor: pointer;\n  float: right;\n  margin-top: -1.4em;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n/* Vue transitions */\n.yearTables,\n.detailsContainer,\n#legends {\n  opacity: 1;\n  position: relative;\n  left: 0px;\n  padding-top: 2em;\n}\n.detailsContainer {\n  padding-top: 0;\n}\n.slideLeft-enter-active,\n.slideRight-enter-active {\n  transition: left .2s, opacity .5s;\n}\n.slideLeft-leave-active,\n.slideRight-leave-active {\n  transition: left .2s, opacity .2s;\n}\n.slideRight-enter-active {\n  transition-delay: .1s;\n}\n.slideLeft-enter,\n.slideLeft-leave-to {\n  opacity: 0;\n  left: -1500px;\n}\n.slideRight-enter,\n.slideRight-leave-to {\n  opacity: 0;\n  left: 1500px;\n}\n.weekday {\n  width: 10px;\n  height: 10px;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
+exports.push([module.i, "body {\n  font-size: 90%;\n}\nh1,\nh2,\nh3 {\n  margin: 0 0 .8em;\n}\nh1 {\n  font-weight: normal;\n}\nul,\nol {\n  padding-left: 2em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  border-collapse: separate;\n  float: left;\n  opacity: 1;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  cursor: pointer;\n  padding: .2em;\n}\n.totalHarvestData td {\n  background: white;\n  border: 0;\n}\n.totalHarvestData td:first-child {\n  white-space: nowrap;\n  width: 10%;\n}\n.totalHarvestData td:last-child {\n  font-weight: bold;\n}\n.detailsMenu {\n  clear: both;\n  float: left;\n  margin: 2em 0 1em;\n  width: 100%;\n}\n/* A fill cell used for empty days (when f.ex. not all days in the first week exist) */\ntd.filler {\n  background-color: white;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n  cursor: default;\n  font-weight: normal;\n}\nth.weekNumber {\n  border: 0;\n  color: #999999;\n  padding: 0;\n}\n.yearHeader {\n  clear: both;\n  float: left;\n  margin-top: 1.5em;\n  width: 100%;\n}\n#harvests-for-day {\n  box-sizing: border-box;\n  clear: both;\n  float: left;\n  margin-top: 2em;\n  min-width: 50%;\n}\n#harvests-for-day li {\n  padding: .2em 0;\n}\n.pointer {\n  cursor: pointer;\n}\n.active {\n  font-weight: bold;\n}\n.uppercase {\n  text-transform: uppercase;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\ntd.weekday {\n  width: 10px;\n  height: 10px;\n}\n/* Legends */\n#legends {\n  clear: both;\n  float: left;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n#details {\n  float: left;\n  width: 100%;\n}\n.hideDetails {\n  color: #666;\n  cursor: pointer;\n  text-decoration: underline;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n/* Vue transitions */\n.yearTables,\n.detailsContainer,\n#legends {\n  opacity: 1;\n  padding-top: 2em;\n}\n.detailsContainer {\n  padding-top: 0;\n}\n.fadeIn-enter-active {\n  transition: opacity .5s;\n}\n.fadeIn-leave-active {\n  transition: opacity 0s;\n}\n.fadeIn-enter-active {\n  transition-delay: 0s;\n}\n.fadeIn-enter,\n.fadeIn-leave-to {\n  opacity: 0;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
 
 // exports
 
