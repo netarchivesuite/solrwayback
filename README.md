@@ -62,6 +62,11 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
  * Optional: configure the log4j using the files in resources/tomcat
  * For the API and simple frontend demo open: localhost:8080/solrwayback
 
+## Run using Docker
+ * Copy resources/properties/solrwayback.properties to the project root directory and modify it to your needs.
+ * Make sure Docker Engine is installed.
+ * Run ./docker-run.sh from the project root.
+
 ## Contact
 Developed by Thomas Egense (thomas.egense@gmail.com) 
 Feel free to send emails with comments and questions.
