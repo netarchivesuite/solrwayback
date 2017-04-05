@@ -15,9 +15,17 @@ public class FileParserFactory {
         if (arcFilePath.toLowerCase().endsWith(".warc")){
             arcEntry = WarcParser.getWarcEntry(arcFilePath, offset);     
         }
+        else if (arcFilePath.toLowerCase().endsWith(".warc.gz")){ //Same parser
+          arcEntry = WarcParser.getWarcEntry(arcFilePath, offset);     
+        }
+                
         else if (arcFilePath.toLowerCase().endsWith(".arc")){
             arcEntry = ArcParser.getArcEntry(arcFilePath, offset);
         }
+        else if (arcFilePath.toLowerCase().endsWith(".arc.gz")){ //Same parser
+          throw new IllegalArgumentException("Zipped Arc files not supported yet:"+arcFilePath);
+        }       
+        
         else{
             throw new IllegalArgumentException("File not arc or warc:"+arcFilePath);
         }
