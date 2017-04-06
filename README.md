@@ -32,7 +32,7 @@ Interactive domain link graph
 </p>
 
 <p align="center"> 
-   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_crawltimes.png?raw=true" width="600" height="400"/>
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_crawltimes.png?raw=true" width="600" height="600"/>
 </p>
 <p align="center">
 Github like visualization of crawltimes
