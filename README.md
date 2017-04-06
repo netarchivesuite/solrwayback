@@ -79,7 +79,7 @@ the arc/warc file can be loaded again - not through solr but by IO read on the d
 arc/warc file is stored.
 
 ## Additional features
-Single search/image-search frontend included in the solrwayback application. (localhost:8080//solrwayback/)
+Simple search/image-search frontend included in the solrwayback application. (localhost:8080//solrwayback/)
 Interactive domain link-graph from a given domain.
 Github like visualization of different harvest times for a given URL. 
 
