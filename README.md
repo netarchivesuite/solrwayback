@@ -31,6 +31,15 @@ SolrWayback comes with additional features:
 Interactive domain link graph
 </p>
 
+<p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_crawltimes.png?raw=true" width="600" height="400"/>
+</p>
+<p align="center">
+Github like visualization of crawltimes
+</p>
+
+
+
 For image search see the documentation <a href="https://github.com/netarchivesuite/solrwayback/blob/master/doc/imagesearch.txt" >Image search documentation </a>
 
 
@@ -71,17 +80,13 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
 Developed by Thomas Egense (thomas.egense@gmail.com) 
 Feel free to send emails with comments and questions.
 
-##Warc-indexer/Solr 
+## Warc-indexer/Solr 
 All entries from the arc/warc files are indexed as separate documents using the WARC-Indexer and using the lucene schema required by the WARCIndexer.
 A document is Solr can be html, image, video, audio, js etc. (content_type_norm)
 All document contains a field with arcfilename and offset, this is so  the binary from
 the arc/warc file can be loaded again - not through solr but by IO read on the disk where the 
 arc/warc file is stored.
-
-## Additional features
-Simple search/image-search frontend included in the solrwayback application. (localhost:8080//solrwayback/)
-Interactive domain link-graph from a given domain.
-Github like visualization of different harvest times for a given URL. 
+ 
 
 
 
