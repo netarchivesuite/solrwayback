@@ -47,11 +47,11 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
  
  
 ## Requirements
- * JDK 1.7
+ * JDK 1.7+
  * Maven 3 
  * Some Arc/Warc files 
  * Tomcat 7+  or another J2EE server for deploying the WAR-file
- * A Solr server with the index Arc/Warc files using the Warc-Indexer.
+ * A Solr server with the index build from the Arc/Warc files using the Warc-Indexer.
  * The J2EE server must have the Arc/Warc file drive mounted
  
 ## Build and usage
@@ -77,6 +77,13 @@ A document is Solr can be html, image, video, audio, js etc. (content_type_norm)
 All document contains a field with arcfilename and offset, this is so  the binary from
 the arc/warc file can be loaded again - not through solr but by IO read on the disk where the 
 arc/warc file is stored.
+
+## Additional features
+Single search/image-search frontend included in the solrwayback application. (localhost:8080//solrwayback/)
+Interactive domain link-graph from a given domain.
+Github like visualization of different harvest times for a given URL. 
+
+
+
       
-##Future improvements coming your way
-Further work on the link domain graph with date ranges as options also.
+
