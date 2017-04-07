@@ -84,7 +84,9 @@ public class Facade {
         crawltimes.add(d.getTime());
         
       }
-      datesVO.setDates(crawltimes);      
+      datesVO.setDates(crawltimes);    
+      Collections.sort(crawltimes);
+      
       datesVO.setNumberOfHarvests(crawltimes.size());
       return  datesVO;      
     }
