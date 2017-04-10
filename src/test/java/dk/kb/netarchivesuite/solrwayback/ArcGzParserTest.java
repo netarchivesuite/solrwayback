@@ -15,26 +15,38 @@ import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 
-public class WarcParserTest {
+public class ArcGzParserTest {
        
     @Test
-    public void testWarcParser() throws Exception {
+    public void testArcGzParserHtml() throws Exception {
         
-        File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc");
+        File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc.gz");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688); //Image entry
-        assertEquals("image/jpeg", arcEntry.getContentType());
-        assertEquals("hewlett.jpg", arcEntry.getFileName());
-        assertEquals(7812, arcEntry.getWarcEntryContentLength());
-        assertEquals(7510, arcEntry.getContentLength());
-                        
-        BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
-        assertEquals(300,image.getWidth());
-        assertEquals(116,image.getHeight());        
-        assertEquals(" http://www.archive.org/images/hewlett.jpg",arcEntry.getUrl());
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 1306 ); //HTML entry
+        assertEquals("text/html", arcEntry.getContentType());
+        assertEquals("www.archive.org", arcEntry.getFileName());
+        assertEquals(366, arcEntry.getContentLength()); //From header        
+        assertEquals(366,arcEntry.getBinary().length); //Actually loaded in binary
+    
+    System.out.println("*"+new String(arcEntry.getBinary())+"'");
     }
+     
+    
+    @Test
+    public void testArcGzParserImage() throws Exception {
+        
+        File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc.gz");
+        
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 7733 ); //Image entry (or   9699) 
+        assertEquals("image/jpeg", arcEntry.getContentType());
+        assertEquals("logoc.jpg", arcEntry.getFileName());
+        assertEquals(1662, arcEntry.getContentLength()); //From header        
+        assertEquals(1662,arcEntry.getBinary().length); //Actually loaded in binary
+    }
+    
+    
 
-
+    
     /**
      * Multi protocol resource loader. Primary attempt is direct file, secondary is classpath resolved to File.
      *
@@ -56,5 +68,4 @@ public class WarcParserTest {
         }
         return new File(fromURL);
     }
-           
 }

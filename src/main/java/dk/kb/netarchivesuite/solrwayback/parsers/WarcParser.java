@@ -137,7 +137,7 @@ public class WarcParser {
             lc =readLineCount(bis);
             line=lc.getLine();
             byteCount +=lc.getByteCount();                    
-            
+                      
               populateWarcSecondHeader(warcEntry, line);
           
           }

@@ -23,7 +23,7 @@ public class FileParserFactory {
             arcEntry = ArcParser.getArcEntry(arcFilePath, offset);
         }
         else if (arcFilePath.toLowerCase().endsWith(".arc.gz")){ //Same parser
-          throw new IllegalArgumentException("Zipped Arc files not supported yet:"+arcFilePath);
+          arcEntry = ArcParser.getArcEntry(arcFilePath, offset);
         }       
         
         else{
