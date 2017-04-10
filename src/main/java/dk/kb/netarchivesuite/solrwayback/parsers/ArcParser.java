@@ -135,13 +135,13 @@ public class ArcParser {
             byteCount +=lc.getByteCount();                    
             
               populateArcHeader(arcEntry, line);
-              System.out.println("parsing headerline:"+line);
+            //  System.out.println("parsing headerline:"+line);
           }
           
          
           
           int binarySize = totalSize-byteCount;                                                   
-          System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);          
+          //System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);          
           byte[] chars = new byte[binarySize];           
           bis.read(chars);
           
