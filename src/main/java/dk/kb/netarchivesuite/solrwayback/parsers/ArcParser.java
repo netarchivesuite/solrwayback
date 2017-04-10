@@ -19,10 +19,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 public class ArcParser {
 
     private static final Logger log = LoggerFactory.getLogger(ArcParser.class);
-    
-    /*
-    */
-    
+       
     /*
      *Header example:
      *http://www.radionyt.dk/forum/Default.asp?mode=message&Id=10846&ForumId=31 86.58.185.215 20090610094553 text/html 35257
@@ -148,11 +145,6 @@ public class ArcParser {
           raf.close();
           bis.close();
           arcEntry.setBinary(chars); 
-/*
-          System.out.println("-------- binary start");
-          System.out.println(new String(chars));
-          System.out.println("-------- slut");
-*/
 
           return arcEntry;
       }
