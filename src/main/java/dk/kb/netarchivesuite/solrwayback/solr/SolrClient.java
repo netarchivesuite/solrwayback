@@ -407,6 +407,10 @@ public class SolrClient {
   public IndexDoc findClosestHarvestTimeForUrl(String harvestUrl,String timeStamp) throws Exception {
     log.info("search for:" + harvestUrl +" for crawldate:"+timeStamp);
 
+    if (harvestUrl == null || timeStamp == null){
+      throw new IllegalArgumentException("harvestUrl or timeStamp is null"); // Can happen for url-rewrites that are not corrected       
+    }
+    
     String urlQuery="url:\""+harvestUrl+"\" OR url_norm:\""+harvestUrl+"\""; //Seems there is an error with url_norm. WWW is not always removed
 
     SolrQuery solrQuery = new SolrQuery();
