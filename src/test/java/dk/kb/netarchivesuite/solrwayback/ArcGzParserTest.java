@@ -28,7 +28,7 @@ public class ArcGzParserTest extends UnitTestUtils {
         assertEquals(366, arcEntry.getContentLength()); //From header        
         assertEquals(366,arcEntry.getBinary().length); //Actually loaded in binary
     
-    System.out.println("*"+new String(arcEntry.getBinary())+"'");
+       //System.out.println(new String(arcEntry.getBinary())); //from <html> to </html>
     }
      
     
