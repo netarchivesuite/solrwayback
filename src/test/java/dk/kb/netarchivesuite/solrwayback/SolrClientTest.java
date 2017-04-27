@@ -1,8 +1,10 @@
 package dk.kb.netarchivesuite.solrwayback;
 
+import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.solr.client.solrj.SolrQuery;
@@ -13,6 +15,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
@@ -41,7 +44,8 @@ public class SolrClientTest {
 	        System.out.println(format+"Z");
 	        */  
 	       // testWaybackStats();
-	      	testHarvestTimesForUrl(); 
+testGetImages();
+	        //testHarvestTimesForUrl(); 
 	      //  testIngoingLinks();
 	       // testFacetLinks();
 	       // testSolrDate();
@@ -72,6 +76,45 @@ public class SolrClientTest {
       
                 
 }
+	
+	   // AND content_length:[10000 TO *]
+    public static void testGetImages() throws Exception{
+      
+      SolrClient solr = SolrClient.getInstance();
+            
+      
+      HashSet<String> used = new HashSet<String>();
+
+      FileWriter fw = new FileWriter("out.txt");
+      
+      for (int year=2006;year<2017; year++){
+        SearchResult search = solr.search("url_norm:http\\:\\/\\/img.ekstrabladet.dk\\/images\\/* AND content_length:[10000 TO *] AND crawl_year:"+year, 100000);
+        List<IndexDoc> results = search.getResults();
+        
+        for (IndexDoc current : results){
+        if (!used.contains(current.getHash())){
+
+          //http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=/netarkiv/0201/filedir/977-14-20050824040722-00002-sb-prod-har-002.statsbiblioteket.dk.arc&offset=78335287
+         String url = "http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath="+current.getArc_full()+"&offset="+current.getOffset();
+         fw.write(url+"\n");
+        used.add(current.getHash());
+        }
+        else{
+          System.out.println("skipping:"+current.getHash());
+        }
+      }
+        
+        //        
+        
+      }
+      fw.close();
+      
+
+                
+}
+	
+	
+	     
 	
 	
 	public static void testSolrDate() throws Exception{
