@@ -60,7 +60,6 @@ public class SolrClient {
     return instance;
   }
 
-
   
   /*
    * Delegate 
@@ -165,8 +164,12 @@ public class SolrClient {
 
     int results=0;
 
-    SolrQuery solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR url_norm:\""+url_norm+"\") AND crawl_date:{\""+crawlDate+"\" TO *]");            
-    log.info(solrQuery.toString());
+    String urlNormFixed = fixUrlNormQuery(url_norm);
+    String query = "(url:\""+url_norm+"\" OR "+ urlNormFixed +") AND crawl_date:{\""+crawlDate+"\" TO *]";    
+    
+    SolrQuery solrQuery = new SolrQuery(query);            
+    log.info("solrQuery2:"+solrQuery.toQueryString());
+    
     solrQuery.setRows(1);
     solrQuery.setGetFieldStatistics(true);
     solrQuery.setGetFieldStatistics(statsField);
@@ -185,8 +188,9 @@ public class SolrClient {
       }
     }
 
-    solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR url_norm:\""+url_norm+"\") AND crawl_date:[* TO \""+crawlDate+"\"}");            
-    log.info(solrQuery.toString());
+     urlNormFixed = fixUrlNormQuery(url_norm);    
+    solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR "+urlNormFixed +") AND crawl_date:[* TO \""+crawlDate+"\"}");            
+    log.info("solrQuery3:"+solrQuery.toQueryString());
     solrQuery.setRows(1);
     solrQuery.setGetFieldStatistics(true);
     solrQuery.setGetFieldStatistics(statsField);
@@ -210,7 +214,7 @@ public class SolrClient {
 
     if (domain == null){      
       //This can happen if we only have 1 harvest. It will not be include in the {x,*] og [*,x } since x is not included
-      solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR url_norm:\""+url_norm+"\")");            
+      solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR "+urlNormFixed +")");            
       log.info(solrQuery.toString());
       solrQuery.setRows(1);
       solrQuery.setGetFieldStatistics(true);
@@ -304,10 +308,10 @@ public class SolrClient {
   public ArrayList<Date> getHarvestTimesForUrl(String url) throws Exception {
     
     ArrayList<Date> dates = new ArrayList<Date>();
-    
+    String urlNormFixed = fixUrlNormQuery(url);    
     SolrQuery solrQuery = new SolrQuery();
-    solrQuery = new SolrQuery("(url:\""+url+"\" OR url_norm:\""+url+"\")");     
-    System.out.println("(url:\""+url+"\" OR url_norm:\""+url+"\")");
+    solrQuery = new SolrQuery("(url:\""+url+"\" OR "+urlNormFixed+")");     
+    log.info("solrQuery1:"+solrQuery.toQueryString());
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","id, crawl_date");    
     solrQuery.setRows(1000000);
@@ -359,6 +363,9 @@ public class SolrClient {
     return allDocs;			
   }
 
+  /*
+   * Notice here do we not fix url_norm 
+   */
   private ArrayList<IndexDoc> findClosetsHarvestTimeForMultipleUrlsMax1000(HashSet<String> urls, String timeStamp) throws Exception{
 
     if (urls.size() > 1000){
@@ -403,7 +410,9 @@ public class SolrClient {
 
 
 
-
+/*
+ * Notice here do we not fix url_norm 
+ */
   public IndexDoc findClosestHarvestTimeForUrl(String harvestUrl,String timeStamp) throws Exception {
     log.info("search for:" + harvestUrl +" for crawldate:"+timeStamp);
 
@@ -485,4 +494,28 @@ public class SolrClient {
   }
 
 
+  //www,http,https combinations
+  private static String fixUrlNormQuery(String url){
+    int index = url.indexOf("://");
+    String lastPart = url.substring(index+3);
+
+    if (lastPart.startsWith("www.")){
+      lastPart=lastPart.substring(4);
+    }
+    System.out.println(lastPart);    
+    StringBuffer query = new StringBuffer(); 
+           
+      query.append("url_norm:\"http://www."+lastPart +"\"");
+      query.append(" OR");
+      query.append(" url_norm:\"https://www."+lastPart+"\"");
+      query.append(" OR");
+      query.append(" url_norm:\"https://"+lastPart+"\"");
+      query.append(" OR");
+      query.append(" url_norm:\"http://"+lastPart+"\"");      
+    return  query.toString(); 
+  }
+
+
+  
+  
 }
