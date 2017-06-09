@@ -214,6 +214,16 @@ public class SolrWaybackResource {
 }
     
     
+    @GET
+    @Path("/generatepwid")
+    public String generatePid(@QueryParam("arcFilePath") String arcFilePath, @QueryParam("offset") long offset) throws Exception {
+      log.debug("generatepwid:" + arcFilePath + " offset:" + offset);
+      String xml =Facade.generatePid(arcFilePath, offset);
+                                                                  
+      return xml;
+    
+  }
+    
     private Response viewImpl(String arcFilePath, long offset,Boolean showToolbar) throws Exception{    	    	
         log.debug("View from FilePath:" + arcFilePath + " offset:" + offset);
     	ArcEntry arcEntry= Facade.viewHtml(arcFilePath, offset,showToolbar);

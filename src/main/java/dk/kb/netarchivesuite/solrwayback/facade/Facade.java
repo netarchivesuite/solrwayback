@@ -261,6 +261,20 @@ public class Facade {
       return  g;
     }
     
+    
+    public static String generatePid(String arcFilePath, long offset) throws Exception{      
+      ArcEntry arc=FileParserFactory.getArcEntry(arcFilePath, offset);           
+      arc.setContentEncoding(Facade.getEncoding(arcFilePath, ""+offset));
+      StringBuffer parts = new StringBuffer();
+      //the original page
+      parts.append("<part>\n");
+      parts.append("pwid:netarkivet.dk:"+arc.getCrawlDate()+":part:"+arc.getUrl() +"\n");
+      parts.append("</part>\n");      
+      String xmlIncludes = HtmlParserUrlRewriter.generatePwid(arc);//all sub elements            
+      parts.append(xmlIncludes);
+      return  parts.toString();
+    }
+    
     public static ArcEntry viewHtml(String arcFilePath, long offset, Boolean showToolbar) throws Exception{         
     	
     	ArcEntry arc=FileParserFactory.getArcEntry(arcFilePath, offset);    	 

@@ -54,7 +54,7 @@ public class WaybackToolbarInjecter {
     stats.setLastHarvestDate("2015-09-17T17:02:03Z");
     stats.setNumberOfHarvest(101);
      
-    String injectedHtml = injectInHmtl(html,stats);
+    String injectedHtml = injectInHmtl(html,stats, "test",1234L);
     System.out.println(injectedHtml);   
   }
   
@@ -78,20 +78,20 @@ public class WaybackToolbarInjecter {
             
     stats.setHarvestDate(search.getResults().get(0).getCrawlDate());
     
-    String injectedHtml =injectInHmtl(html, stats);
+    String injectedHtml =injectInHmtl(html, stats, arcFilePath,offset);
     return injectedHtml;
    
   }
   
-  public static String injectInHmtl(String orgHtml, WaybackStatistics stats) throws Exception{
+  public static String injectInHmtl(String orgHtml, WaybackStatistics stats,String arcFilePath, long offset) throws Exception{
     Document doc = Jsoup.parse(orgHtml);
         
-    String injectHtml = generateToolbarHtml(stats);
+    String injectHtml = generateToolbarHtml(stats, arcFilePath, offset);
     doc.body().append(injectHtml);                    
     return doc.toString();    
   }
   
-  private static String generateToolbarHtml(WaybackStatistics stats) throws Exception{
+  private static String generateToolbarHtml(WaybackStatistics stats, String arcFilePath, long offset) throws Exception{
     
 
     
@@ -129,6 +129,7 @@ public class WaybackToolbarInjecter {
     "            <div class=\"infoLine\">" +
     "               <span class=\"dynamicData\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +    
     "               <span class=\"dynamicData\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
+    "               <span class=\"dynamicData\">"+generatePwid("xml.png",arcFilePath,offset) +"</span>" +
     "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
@@ -204,6 +205,15 @@ public class WaybackToolbarInjecter {
       return ("none");
     }          
   }
+  
+ 
+  
+  private static String generatePwid(String image, String arcFilePath, long offset) throws Exception{
+
+    String urlEncoded=URLEncoder.encode(arcFilePath, "UTF-8");
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/generatepwid?arcFilePath="+ arcFilePath+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+  }
+  
   
   private static String generateCalendarImageLink(String image,String url) throws Exception{
 
