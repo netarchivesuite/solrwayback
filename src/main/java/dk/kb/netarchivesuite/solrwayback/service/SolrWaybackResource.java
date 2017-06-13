@@ -81,6 +81,19 @@ public class SolrWaybackResource {
         }
     }
     
+    
+    @GET
+    @Path("solr/search")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public String  solrSearch(@QueryParam("query") String query, @QueryParam("fq") String filterQuery , @QueryParam("start") int start) throws ServiceException {
+        try {                    
+            return Facade.solrSearch(query,filterQuery,start);
+        } catch (Exception e) {           
+            throw handleServiceExceptions(e);
+        }
+    }
+    
+    
     @GET
     @Path("/harvestDates")
     @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })

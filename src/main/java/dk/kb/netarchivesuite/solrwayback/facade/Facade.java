@@ -5,15 +5,26 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+
 import dk.kb.netarchivesuite.solrwayback.parsers.ProximityHtmlParser;
 import dk.kb.netarchivesuite.solrwayback.parsers.WaybackToolbarInjecter;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.*;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageFromArcFileExtractorExecutor;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
@@ -29,11 +40,14 @@ public class Facade {
     public static final int MAX_DISTANCE = 2;
 
     public static SearchResult search(String searchText, String filterQuery) throws Exception {
-
         SearchResult result = SolrClient.getInstance().search(searchText, filterQuery);
         return result;
     }
-
+    
+    public static String solrSearch(String query, String filterQuery, int start) throws Exception {
+      return proxySolr(query, filterQuery , start);
+  }
+    
     public static ArrayList<? extends ArcEntryDescriptor> findImages(String searchText) throws Exception {
 
         long start = System.currentTimeMillis();
@@ -308,6 +322,44 @@ public class Facade {
     	return arc; //dont parse
             
     }
+    
+    
+    public static String proxySolr( String query, String fq, Integer start) throws Exception{                    
+      
+      String startStr ="0";
+      if (start != null){
+        startStr=start.toString();
+      }
+
+      log.info("query "+query);
+      String solrUrl =PropertiesLoader.SOLR_SERVER;  
+      ClientConfig config = new DefaultClientConfig();
+      Client client = Client.create(config);
+      WebResource service = client.resource(UriBuilder.fromUri(solrUrl).build());
+      WebResource queryWs= service.path("collection1")
+                                     .path("select")                                    
+                                     .queryParam("rows", "20") //Hardcoded pt.
+                                     .queryParam("start", startStr)
+                                     .queryParam("q", query) 
+                                     .queryParam("wt", "json")
+                                     .queryParam("q.op", "AND")
+                                     .queryParam("indent", "true")                      
+                                     .queryParam("facet", "true")
+                                     .queryParam("facet.field", "domain")
+                                     .queryParam("facet.field", "public_suffix")                           
+                                     .queryParam("facet.field", "content_type_norm");
+               
+      if ( fq != null && fq.length() > 0){
+        queryWs = queryWs.queryParam("fq",fq);                        
+       }
+                 
+      ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+      String responseStr= response.getEntity(String.class);
+
+      return responseStr;
+      
+  }
+    
     
     
 }
