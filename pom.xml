@@ -188,6 +188,30 @@
 			</plugin>
 
 
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>7.6.3.v20120416</version>
+                <configuration>
+                    <scanIntervalSeconds>5</scanIntervalSeconds>
+                    <stopKey>stopjetty</stopKey>
+                    <stopPort>9999</stopPort>
+                    <webApp>
+                        <contextPath>/${project.artifactId}</contextPath>
+                        <descriptor>target/jettyFilteredResources/web.xml</descriptor>
+                        <resourceBases>
+                            <resourceBase>src/main/webapp</resourceBase>
+                        </resourceBases>
+                    </webApp>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>catalina.base</name>
+                            <value>${project.build.directory}</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+
 			<plugin>
 				<!-- Filter resources -->
 				<groupId>org.apache.maven.plugins</groupId>
