@@ -61,6 +61,7 @@ public class SolrWaybackResource {
 			
     private static final Logger log = LoggerFactory.getLogger(SolrWaybackResource.class);
 
+    //TODO slet denne  når NIG er færdig
     @GET
     @Path("/findimages")
     @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
@@ -73,6 +74,34 @@ public class SolrWaybackResource {
         }
     }
     
+    @GET
+    @Path("/images/search")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public  ArrayList<ImageUrl> imagesSearch(@QueryParam("query") String query) throws ServiceException {
+        try {                    
+          ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();   
+          
+          ArrayList<? extends ArcEntryDescriptor> img = Facade.findImages(query);
+           
+          for (ArcEntryDescriptor entry : img){
+            ImageUrl imageUrl = new ImageUrl();
+            String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+            String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+            imageUrl.setImageUrl(imageLink);
+            imageUrl.setDownloadUrl(downloadLink);             
+            imageUrl.setHash(entry.getHash());
+            imageUrls.add(imageUrl);            
+          }
+          
+          return  imageUrls;
+        
+                      
+        } catch (Exception e) {           
+            throw handleServiceExceptions(e);
+        }
+    }
+    
+  //TODO slet denne  når NIG er færdig
     @GET
     @Path("/search")
     @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
@@ -112,6 +141,7 @@ public class SolrWaybackResource {
              String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
              imageUrl.setImageUrl(imageLink);
              imageUrl.setDownloadUrl(downloadLink);             
+             imageUrl.setHash(entry.getHash());
              imageUrls.add(imageUrl);
            }
            return imageUrls;

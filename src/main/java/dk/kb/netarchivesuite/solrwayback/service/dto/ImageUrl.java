@@ -7,6 +7,7 @@ public class ImageUrl {
 
   private String downloadUrl;
   private String imageUrl; 
+  private String hash;
   
   public ImageUrl(){    
   }
@@ -26,6 +27,13 @@ public class ImageUrl {
   public void setImageUrl(String imageUrl) {
     this.imageUrl = imageUrl;
   }
-  
-  
+
+  public String getHash() {
+    return hash;
+  }
+
+  public void setHash(String hash) {
+    this.hash = hash;
+  }
+    
 }
