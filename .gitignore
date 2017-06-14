@@ -7,3 +7,4 @@ target
 /.settings/
 /.project
 /deployBelindaTomcat.sh
+/solrwayback.log
