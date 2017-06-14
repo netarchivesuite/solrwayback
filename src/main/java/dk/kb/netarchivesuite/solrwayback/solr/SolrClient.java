@@ -329,6 +329,28 @@ public class SolrClient {
 
   
   
+  public IndexDoc getArcEntry(String source_file_s) throws Exception {
+   
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+    solrQuery.add("fl","id, score, title, arc_full,url,url_norm,source_file_s,content_type_norm, hash,crawl_date,content_type,content_encoding");
+    solrQuery.setQuery("source_file_s:\""+ source_file_s +"\"") ;
+    solrQuery.setRows(1);
+
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+
+    if (docs.getNumFound() == 0){
+      throw new Exception("Could not find arc entry:"+source_file_s);
+    }
+
+    ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
+   
+    return indexDocs.get(0);
+  }
+
+  
+  
   public SearchResult search(String searchString, String filterQuery, int results) throws Exception {
     log.info("search for:" + searchString +" and filter:"+filterQuery);
     SearchResult result = new SearchResult();
