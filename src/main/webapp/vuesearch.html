@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+        <title>SOLR Wayback Search</title>
+        <link rel="stylesheet" type="text/css" media="all" href="./css/solrwayback.css">
+
+        <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+
+        <script type="text/javascript" src="js/vue.js"></script>
+        <script type="text/javascript" src="js/vue-resource.min.js"></script>
+</head>
+<body>
+    <div class="wrapper" id="app">
+        <h1>SOLR Wayback Search</h1>
+
+        <search-box :do-search="doSearch" :my-query="myQuery" ></search-box>
+
+
+        <selected-facets-box v-if="facetFields.length > 0" :facet-fields="facetFields" :do-search="doSearch"
+                             :my-query="myQuery" :clear-facets="clearFacets"></selected-facets-box>
+
+        <error-box v-if="errorMsg" :error-msg="errorMsg"></error-box>
+
+
+        <facet-box v-if="totalHits > 0 && myQuery && !errorMsg" :my-facets="myFacets" :my-query="myQuery"
+                   :do-search="doSearch"></facet-box>
+
+
+        <zerohits-box v-if="totalHits == 0 && searchResult && myQuery != '' && myQuery" :my-query="myQuery"></zerohits-box>
+
+        <div id="result" v-if="myQuery && !errorMsg">
+
+            <pager-box :do-search="doSearch" :total-hits="totalHits" :start="start"
+                       :disabled-prev="disabledPrev"  :disabled-next="disabledNext"></pager-box>
+
+            <result-box v-if="totalHits > 0" :search-result="searchResult"></result-box>
+
+            <pager-box  v-if="totalHits > 21" :do-search="doSearch" :total-hits="totalHits" :start="start"
+                        :disabled-prev="disabledPrev"  :disabled-next="disabledNext" is-bottom="true"></pager-box>
+
+        </div>
+
+        <div v-if="spinner" id="overlay"></div>
+        <div v-if="spinner" id="spinnerVue">Loading...</div>
+
+    </div>
+<!-- This include must be at bottom -->
+<script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+</body>
+</html>

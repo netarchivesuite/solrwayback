@@ -1,19 +1,3 @@
-*{
-    margin: 0;
-    padding: 0;
-}
-
-body{
-     background-color: #f6f6f6;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-#wrapper{
-     background-color: white;
-     margin: 0 auto;
-     padding: 2em;
-     width: 1200px;
-}
 
 .calendar .month-container{
      height: 220px
@@ -22,4 +6,285 @@ body{
 #spinner {
     background: white url(../images/loader90.gif) no-repeat 2em 2em;
     left: calc(50% - 250px);
+}
+
+/* Vue search ccs from here: */
+
+/* Reset */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+body {
+    background-color: #000000;
+    color: #333333;
+    font: 80%/1.5em Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0 12px 12px;
+}
+
+.wrapper {
+    background-color: white;
+    height: auto;
+    margin: 0 auto;
+    max-width: 1376px;
+    min-height: 600px;
+    overflow: hidden;
+    padding: 0 2em 0;
+}
+
+h1, h2, h3{
+    font-weight: bold;
+    margin: 1em 0 .5em;
+}
+
+h1{
+    font-size: 28px;
+}
+
+h2{
+    font-size: 24px;
+}
+
+h3{
+    font-size: 16px;
+}
+
+a{
+    color: #006699;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+a:hover{
+    color: #003366;
+    text-decoration: underline;
+}
+
+.bold, strong{
+    font-weight: bold;
+}
+
+/* SEARCH BOX */
+#searchbox{
+    background-color: #666666;
+    margin: 2em 0 3em;
+    overflow: hidden;
+    padding: 2em 1em 2em;
+}
+
+#searchbox input, #searchbox button{
+    border: 1px solid #333;
+    border-radius: 3px;
+    font-size: 18px;
+    padding:.2em .5em;
+}
+
+#searchbox #queryInput{
+    margin-right: 1em;
+    width: 70%;
+}
+
+#searchbox button{
+    background: #333;
+    border: 0;
+    color: white;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+#searchbox a{
+    clear: both;
+    color: white;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: .1em;
+    padding: .5em 0;
+}
+
+.box{
+    border: 1px solid #999999;
+    font-size: 16px;
+    margin: 2em 0;
+    overflow: hidden;
+    padding: 1em;
+}
+
+#querybox{
+    display: none;
+}
+
+#errorbox{
+    background: #ffffcc;
+}
+
+#selectedFacetsbox ul{
+    display: inline-block;
+    margin-left: .2em;
+}
+
+#selectedFacetsbox ul li{
+    border: 1px solid #999;
+    border-radius: 3px;
+    display: inline-block;
+    margin-right: .5em;
+}
+
+#selectedFacetsbox ul li:hover{
+    background-color: #eeeeee;
+}
+
+#selectedFacetsbox ul li .selectedFacetName{
+    cursor: pointer;
+    display: block;
+    padding: .2em .6em;
+}
+
+#selectedFacetsbox .deleteIcon{
+    background: transparent url(../images/solrWaybackSprite.png) 5px 5px no-repeat;
+    display: inline-block;
+    height: 15px;
+    margin-left: 0.5em;
+    width: 15px;
+}
+
+/* FACETS */
+#facets{
+    box-sizing: border-box;
+    float: left;
+    padding-right: 2em;
+    width: 25%;
+}
+
+.facet{
+    margin-bottom: 2em;
+}
+
+#facets h2{
+    margin: 0;
+}
+
+#facets h3{
+    margin: 1em 0 .3em;
+    text-transform: capitalize;
+}
+
+#facets li{
+    list-style-type: none;
+}
+
+/* SEARCH RESULTS */
+#result{
+    border-left: 1px solid #ddd;
+    float: left;
+    padding-left: 1.5%;
+    width: 73%;
+}
+
+.searchResults{
+    border-top: 1px solid #cccccc;
+    clear: both;
+}
+
+.searchResultItem{
+    border-bottom: 1px solid #cccccc;
+    padding: 1em 0;
+}
+
+.searchResultItem .item {
+    margin-bottom: .2em;
+}
+
+.searchResultItem .label {
+    float: left;
+    font-weight: bold;
+    width: 9em;
+}
+
+.searchResultItem .text {
+    margin-left: 9.5em;
+}
+
+
+/* PAGERS */
+.resultCount{
+    float: left;
+    padding-bottom: 1.3em;
+}
+
+.resultCount h3{
+    margin: 0.2em 1.5em 0em 0;
+}
+
+.bottom .resultCount h3{
+    margin-top: .2em;
+}
+
+.bottom .pagerBox{
+    margin-top: 1em;
+}
+
+.pagerBox button{
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 120%;
+    margin-right: .3em;
+    padding: .2em 1em;
+}
+
+.pagerBox button:hover{
+    background: #eeeeee;
+}
+
+.pagerBox button:disabled, #pagerBox button:disabled:hover{
+    background: white;
+    cursor: default;
+    opacity: .5;
+}
+
+
+/* SPINNERS */
+#overlay{
+    background-color: black;
+    bottom: 0;
+    left: 0;
+    opacity: .8;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 200;
+}
+
+#spinnerVue{
+    background: white url(../images/loader90.gif) no-repeat 2em 2em;
+    border: 1px solid #333;
+    border-radius: 3px;
+    font-size: 18px;
+    height: 75px;
+    left: calc(50% - 150px);
+    padding: 70px 1em 1em;
+    position: fixed;
+    text-indent: 140px;
+    top: 10%;
+    width: 300px;
+    z-index: 400;
 }
