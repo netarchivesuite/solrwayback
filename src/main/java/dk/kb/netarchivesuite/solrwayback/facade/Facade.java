@@ -16,7 +16,6 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +50,7 @@ public class Facade {
     public static ArrayList<? extends ArcEntryDescriptor> findImages(String searchText) throws Exception {
 
         long start = System.currentTimeMillis();
-        SearchResult result = SolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types
+        SearchResult result = SolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 100); //only search these two types
         
         //multithreaded load arc/warc files and parse html
         ArrayList<? extends ArcEntryDescriptor> extractImages =
@@ -87,7 +86,7 @@ public class Facade {
     }
 
 
-    public static   HarvestDates getHarvestTimesForUrl(String url) throws Exception {
+    public static HarvestDates getHarvestTimesForUrl(String url) throws Exception {
       log.info("getting harvesttimes for url:"+url);
       HarvestDates datesVO = new HarvestDates();
       ArrayList<Date> dates = SolrClient.getInstance().getHarvestTimesForUrl(url);
