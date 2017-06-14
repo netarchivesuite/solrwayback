@@ -132,7 +132,7 @@ Vue.component('result-box', {
     methods:{
         getImage: function(source) {
             console.log('doc.source_file_s: ', source);
-            var imageInfoUrl = "http://localhost:8080/services/images/htmlpage?source_file_s=" + source;
+            var imageInfoUrl = "http://localhost:8080/solrwayback/services/images/htmlpage?source_file_s=" + source;
             this.$http.get(imageInfoUrl).then((response) => {
                 console.log('getImage response: ', response);
             }, (response) => {
