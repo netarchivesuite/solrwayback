@@ -24,11 +24,14 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
+import dk.kb.netarchivesuite.solrwayback.service.dto.WeightedArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.*;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -93,7 +96,31 @@ public class SolrWaybackResource {
         }
     }
     
-    
+    @GET
+    @Path("images/htmlpage")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public ArrayList<ImageUrl> imagesForPage(@QueryParam("source_file_s") String source_file_s) throws ServiceException {
+        try {                    
+          IndexDoc doc = SolrClient.getInstance().getArcEntry(source_file_s);
+                                
+           ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();           
+           ArrayList<WeightedArcEntryDescriptor> imagesFromHtmlPage = Facade.getImagesFromHtmlPage(doc);
+           
+           for (WeightedArcEntryDescriptor entry : imagesFromHtmlPage){                          
+             ImageUrl imageUrl = new ImageUrl();
+             String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+             String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+             imageUrl.setImageUrl(imageLink);
+             imageUrl.setDownloadUrl(downloadLink);             
+             imageUrls.add(imageUrl);
+           }
+           return imageUrls;
+                      
+        } catch (Exception e) {           
+            throw handleServiceExceptions(e);
+        }
+    }
+            
     @GET
     @Path("/harvestDates")
     @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
