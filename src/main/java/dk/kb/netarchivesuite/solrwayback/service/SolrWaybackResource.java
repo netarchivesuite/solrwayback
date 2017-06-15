@@ -128,8 +128,13 @@ public class SolrWaybackResource {
     @GET
     @Path("images/htmlpage")
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public ArrayList<ImageUrl> imagesForPage(@QueryParam("source_file_s") String source_file_s) throws ServiceException {
-        try {                    
+    public ArrayList<ImageUrl> imagesForPage(@QueryParam("source_file_s") String source_file_s , @QueryParam("test") boolean test) throws ServiceException {
+     
+      if (test){
+        return imagesForPageTest();
+      }
+      
+      try {                    
           IndexDoc doc = SolrClient.getInstance().getArcEntry(source_file_s);
                                 
            ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();           
@@ -352,6 +357,29 @@ public class SolrWaybackResource {
     }
     
     
+    public ArrayList<ImageUrl> imagesForPageTest(){
+      ArrayList<ImageUrl> tests = new ArrayList<ImageUrl>();
+      
+      ImageUrl im1 = new ImageUrl();
+      im1.setDownloadUrl("http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=/netarkiv/0123/filedir/181110-186-20130604210516-00084-sb-prod-har-001.statsbiblioteket.dk.warc&offset=96865967");
+      im1.setImageUrl("http://belinda:9721/solrwayback/services/image?arcFilePath=/netarkiv/0123/filedir/181110-186-20130604210516-00084-sb-prod-har-001.statsbiblioteket.dk.warc&offset=96865967");      
+      im1.setHash("sha1:OH6RZFQRZWC2AF6U474C4JRC7SLGKWVX");
+      tests.add(im1);
+      
+      ImageUrl im2 = new ImageUrl();
+      im2.setDownloadUrl("http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=/netarkiv/0105/filedir/252063-244-20160219075443-00026-sb-prod-har-003.statsbiblioteket.dk.warc&offset=715018159");
+      im2.setImageUrl("http://belinda:9721/solrwayback/services/image?arcFilePath=/netarkiv/0105/filedir/252063-244-20160219075443-00026-sb-prod-har-003.statsbiblioteket.dk.warc&offset=715018159");      
+      im2.setHash("sha1:GN6XGABFJ7VULSXDTBURGK6YHIY7NGO6");
+      tests.add(im2);
+   
+      ImageUrl im3 = new ImageUrl();
+      im3.setDownloadUrl("http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=/netarkiv/0228/filedir/167339-178-20121204215446-00211-kb-prod-har-004.kb.dk.arc&offset=95722660");
+      im3.setImageUrl("http://belinda:9721/solrwayback/services/image?arcFilePath=/netarkiv/0228/filedir/167339-178-20121204215446-00211-kb-prod-har-004.kb.dk.arc&offset=95722660");      
+      im3.setHash("sha1:CVNVM6MUZE54KKU3SOXG6SVDT632SD2E");
+      tests.add(im3);
+      
+      return tests;
+    }
     
         
     private ServiceException handleServiceExceptions(Exception e) {

@@ -50,9 +50,7 @@ public class ImageFromArcFileExtractorExecutor {
                    }
                    else{
                        return new ArrayList<>(); //Empty, but the callable must return it
-                   }
-                       
-                                             
+                   }                                                                   
            }
        });      
             
