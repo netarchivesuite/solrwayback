@@ -131,15 +131,20 @@ Vue.component('result-box', {
     `,
     methods:{
         getImage: function(source) {
-            console.log('doc.source_file_s: ', source);
-            var imageInfoUrl = "http://localhost:8080/solrwayback/services/images/htmlpage?source_file_s=" + source;
+            this.imageUrl = "";
+            var imageInfoUrl = "http://localhost:8080/solrwayback/services/images/htmlpage?source_file_s=" + source + '&test=true';
+            //var imageInfoUrl = "http://localhost:8080/solrwayback/services/images/htmlpage?source_file_s=" + source;
             this.$http.get(imageInfoUrl).then((response) => {
-                console.log('getImage response: ', response);
+                this.imageUrl = response.body[0].imageUrl;
+                //this.getImageHtml();
             }, (response) => {
                 console.log('error: ', response);
             });
-            return '<img src="http://belinda:9721/solrwayback/services/image?arcFilePath=/netarkiv/0201/filedir/389-17-20050728035614-00113-kb-prod-har-002.kb.dk.arc&offset=34519784&width=100&height=100">';
-        }
+            return '<img src="' + this.imageUrl + '&width=100&height=100">';
+        }/*,
+        getImageHtml: function(source) {
+            return '<img src="' + this.imageUrl + '&width=100&height=100">';
+        }*/
 
     }
 })
