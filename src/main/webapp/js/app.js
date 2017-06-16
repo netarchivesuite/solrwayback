@@ -162,8 +162,8 @@ Vue.component('result-box', {
     methods:{
         getImage: function(source) {
             this.imageUrl = "";
-            var imageInfoUrl = "http://localhost:8080/solrwayback/services/images/htmlpage?source_file_s=" + source + '&test=true';
-            //var imageInfoUrl = "http://localhost:8080/solrwayback/services/images/htmlpage?source_file_s=" + source;
+            var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + source + '&test=true';
+            //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + source;
             this.$http.get(imageInfoUrl).then((response) => {
                 this.imageUrl = response.body[0].imageUrl;
                 return '<img src="' + this.imageUrl + '&width=100&height=100">';
@@ -187,7 +187,7 @@ Vue.component('result-box-images', {
     <div class="searchResults images">
         <div v-for="doc in searchResult" class="searchResultItem">
              <div class="thumb"><a v-bind:href="doc.downloadUrl"><img v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
-             <div v-on:click="doSearch('search', 'hash:' + doc.hash)">Search for image</div>
+             <div class="link" v-on:click="doSearch('search', 'hash:' + doc.hash)">Search for image</div>
         </div>
     </div>    
     `
@@ -212,7 +212,7 @@ var app = new Vue({
         filters: '',
         totalHits: 0,
         start: 0,
-        imageSearch: true,
+        imageSearch: false,
         disabledPrev: false,
         disabledNext: false,
         spinner: false,
@@ -269,10 +269,10 @@ var app = new Vue({
             }
 
             if(!this.imageSearch){
-                var searchUrl = 'http://localhost:8080/solrwayback/services/solr/search?query=' + this.myQuery +
+                var searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
                     '&start=' + this.start + '&fq=' + this.filters;
             }else{
-                var searchUrl = 'http://localhost:8080/solrwayback/services/images/search?query=' + this.myQuery +
+                var searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
                    '&start=' + this.start + '&fq=' + this.filters;
             }
 
