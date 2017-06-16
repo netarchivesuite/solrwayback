@@ -37,7 +37,7 @@ body {
     color: #333333;
     font: 80%/1.5em Arial, Helvetica, sans-serif;
     margin: 0;
-    padding: 0 12px 12px;
+    padding: 0 1em 0;
 }
 
 .wrapper {
@@ -47,7 +47,7 @@ body {
     max-width: 1376px;
     min-height: 600px;
     overflow: hidden;
-    padding: 0 2em 0;
+    padding: 0 2em 2em;
 }
 
 h1, h2, h3{
@@ -84,14 +84,14 @@ a:hover{
 
 /* SEARCH BOX */
 #searchbox{
-    background-color: #666666;
+    background-color: #444;
     margin: 2em 0 3em;
     overflow: hidden;
     padding: 2em 1em 2em;
 }
 
 #searchbox input, #searchbox button{
-    border: 1px solid #333;
+    border: 1px solid #000;
     border-radius: 3px;
     font-size: 18px;
     padding:.2em .5em;
@@ -103,11 +103,14 @@ a:hover{
 }
 
 #searchbox button{
-    background: #333;
-    border: 0;
+    background: #888;
     color: white;
     cursor: pointer;
     text-transform: uppercase;
+}
+
+#searchbox button:hover{
+    background: #666;
 }
 
 #searchbox a{
@@ -220,6 +223,24 @@ a:hover{
 
 .searchResultItem .text {
     margin-left: 9.5em;
+}
+
+.searchResultItem .long.clickable {
+    color: #006699;
+    cursor: pointer;
+    overflow: hidden;
+    min-height: 22px;
+    height: 22px;
+    line-height: 1.7em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: calc(100% - 9.5em);
+}
+
+.searchResultItem .long.clickable.active {
+    color: #000000;
+    height: auto;
+    white-space: normal;
 }
 
 

@@ -107,19 +107,29 @@ Vue.component('result-box', {
             </div>
             <div v-if="doc.domain" class="item">
                 <div class="label">Domain:</div>
-                <div class="text">{{ doc.domain }}</div>
+                <div class="text"><a v-bind:href="'http://' + doc.domain"  target="_blank">{{ doc.domain }}</a></div>
             </div>
             <div v-if="doc.url" class="item">
                 <div class="label">Url:</div>
-                <div class="text">{{ doc.url }}</div>
+                <div class="text"><a v-bind:href="doc.url" target="_blank">{{ doc.url }}</a></div>
             </div> 
             <div v-if="doc.arc_harvesttime" class="item">
                 <div class="label">Harvest time:</div>
                 <div class="text">{{ doc.arc_harvesttime }}</div>
+            </div>  
+            <div v-if="doc.last_modified" class="item">
+                <div class="label">Last modified:</div>
+                <div class="text">{{ doc.last_modified }}</div>
             </div> 
             <div v-if="doc.content_type" class="item">
                 <div class="label">Content type:</div>
                 <div class="text">{{ doc.content_type[0] }}</div>
+            </div>  
+            <div v-if="doc.content[0]" class="item">
+                <div class="label">Content:</div>
+                <div class="text"></div>
+                <div v-if="doc.content[0].length > 130" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content[0] }}</div>
+                <div v-else class="text long"> {{ doc.content[0] }}</div>
             </div>  
             <div v-if="doc.content_type[0] == 'text/html'" class="item">
                 <div class="label">Thumbnail:</div>
