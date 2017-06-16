@@ -8,20 +8,25 @@ Vue.filter('facetName', function(value) {
 })
 
 Vue.component('search-box', {
-    props: ['doSearch','myQuery'],
+    props: ['doSearch','myQuery','imageSearch'],
     template: `
     <div id="searchbox">
         <div>
-            <input  id="queryInput"  v-on:keyup.enter="doSearch('search',queryModel)" 
+            <input  id="queryInput"  v-on:keyup.enter="doSearch('search',queryModel, imageSearchModel)" 
             v-model='queryModel' type="text" placeholder="search" autofocus />
             <button class="btn" 
-            v-on:click="doSearch('search', queryModel)">Search</button><br>
+            v-on:click="doSearch('search', queryModel, imageSearchModel)">Search</button><br>
+            <label>
+                <input class="imageSearchCheck" v-model="imageSearchModel" type="checkbox"
+                v-on:change="doSearch('search',queryModel, imageSearchModel)"> Image search
+            </label>
         </div>
     </div>
     `,
     data: function() {
         return {
             queryModel: this.myQuery,
+            imageSearchModel: this.imageSearch,
         };
     }
 })
@@ -120,21 +125,36 @@ Vue.component('result-box', {
             <div v-if="doc.last_modified" class="item">
                 <div class="label">Last modified:</div>
                 <div class="text">{{ doc.last_modified }}</div>
-            </div> 
+            </div>
             <div v-if="doc.content_type" class="item">
                 <div class="label">Content type:</div>
                 <div class="text">{{ doc.content_type[0] }}</div>
-            </div>  
-            <div v-if="doc.content[0]" class="item">
+            </div>
+            <div v-if="doc.content" class="item">
                 <div class="label">Content:</div>
                 <div class="text"></div>
                 <div v-if="doc.content[0].length > 130" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content[0] }}</div>
                 <div v-else class="text long"> {{ doc.content[0] }}</div>
+            </div>
+              
+            <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
+                <div class="image">
+                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]">
+                       Download
+                    </a>
+                </div>  
+            </div>   
+            <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
+                <div class="image">
+                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]">
+                        <img v-bind:src="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"/>
+                    </a>
+                </div>  
             </div>  
-            <div v-if="doc.content_type[0] == 'text/html'" class="item">
+            <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
                 <div class="label">Thumbnail:</div>
-                <div class="text">{{ doc.source_file_s }}</div>
-                <div class="thumb" v-html="getImage(doc.source_file_s)"></div>
+                <div class="text">Thumbnail ID: {{ doc.source_file_s }}</div>
+                <!--<div class="thumb" v-html="getImage(doc.source_file_s)"></div>-->   
             </div> 
         </div>
     </div>    
@@ -146,6 +166,7 @@ Vue.component('result-box', {
             //var imageInfoUrl = "http://localhost:8080/solrwayback/services/images/htmlpage?source_file_s=" + source;
             this.$http.get(imageInfoUrl).then((response) => {
                 this.imageUrl = response.body[0].imageUrl;
+                return '<img src="' + this.imageUrl + '&width=100&height=100">';
                 //this.getImageHtml();
             }, (response) => {
                 console.log('error: ', response);
@@ -157,6 +178,19 @@ Vue.component('result-box', {
         }*/
 
     }
+})
+
+
+Vue.component('result-box-images', {
+    props: ['searchResult','doSearch'],
+    template: `
+    <div class="searchResults images">
+        <div v-for="doc in searchResult" class="searchResultItem">
+             <div class="thumb"><a v-bind:href="doc.downloadUrl"><img v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
+             <div v-on:click="doSearch('search', 'hash:' + doc.hash)">Search for image</div>
+        </div>
+    </div>    
+    `
 })
 
 Vue.component('zerohits-box', {
@@ -178,6 +212,7 @@ var app = new Vue({
         filters: '',
         totalHits: 0,
         start: 0,
+        imageSearch: true,
         disabledPrev: false,
         disabledNext: false,
         spinner: false,
@@ -191,6 +226,13 @@ var app = new Vue({
                 this.searchType = type;
                 this.myQuery = query;
                 this.start = 0;
+                if(param3){
+                    this.imageSearch = param3
+                    console.log('this.imageSearch:', this.imageSearch)
+                }else{
+                    this.imageSearch = false
+                    console.log('this.imageSearch:', this.imageSearch)
+                }
             }
             if(type == "paging"){
                 if(param3 === "prev"){
@@ -225,9 +267,16 @@ var app = new Vue({
                 }
                 this.start = 0; //resetting pager
             }
-            var searchUrl = 'http://localhost:8080/solrwayback/services/solr/search?query=' + this.myQuery +
-                '&start=' + this.start + '&fq=' + this.filters;
-            //console.log('searchUrl: ', searchUrl);
+
+            if(!this.imageSearch){
+                var searchUrl = 'http://localhost:8080/solrwayback/services/solr/search?query=' + this.myQuery +
+                    '&start=' + this.start + '&fq=' + this.filters;
+            }else{
+                var searchUrl = 'http://localhost:8080/solrwayback/services/images/search?query=' + this.myQuery +
+                   '&start=' + this.start + '&fq=' + this.filters;
+            }
+
+            console.log('searchUrl: ', searchUrl);
 
 
 
@@ -243,11 +292,14 @@ var app = new Vue({
                         this.hideSpinner();
                         return;
                     }*/
-                    this.searchResult = response.body.response.docs ;
-
+                    if(!this.imageSearch){
+                        this.searchResult = response.body.response.docs;
+                        this.myFacets=response.body.facet_counts.facet_fields;
+                        this.totalHits = response.body.response.numFound;
+                    }else{
+                        this.searchResult = response.body;
+                    }
                     console.log(' this.searchResult: ',  this.searchResult);
-                    this.myFacets=response.body.facet_counts.facet_fields;
-                    this.totalHits = response.body.response.numFound;
                     this.disabledPrev = false; // resetting paging buttons
                     this.disabledNext = false;
                     if(this.start + 20 > this.totalHits){

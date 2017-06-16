@@ -15,30 +15,36 @@
     <div class="wrapper" id="app">
         <h1>SOLR Wayback Search</h1>
 
-        <search-box :do-search="doSearch" :my-query="myQuery" ></search-box>
+        <search-box :do-search="doSearch" :my-query="myQuery" :image-search="imageSearch"></search-box>
 
 
-        <selected-facets-box v-if="facetFields.length > 0" :facet-fields="facetFields" :do-search="doSearch"
+        <selected-facets-box v-if="facetFields.length > 0 && !imageSearch" :facet-fields="facetFields" :do-search="doSearch"
                              :my-query="myQuery" :clear-facets="clearFacets"></selected-facets-box>
 
         <error-box v-if="errorMsg" :error-msg="errorMsg"></error-box>
 
 
-        <facet-box v-if="totalHits > 0 && myQuery && !errorMsg" :my-facets="myFacets" :my-query="myQuery"
+        <facet-box v-if="totalHits > 0 && myQuery && !errorMsg && !imageSearch" :my-facets="myFacets" :my-query="myQuery"
                    :do-search="doSearch"></facet-box>
 
 
-        <zerohits-box v-if="totalHits == 0 && searchResult && myQuery != '' && myQuery" :my-query="myQuery"></zerohits-box>
+        <zerohits-box v-if="totalHits == 0 && searchResult && myQuery != '' && myQuery && !imageSearch" :my-query="myQuery"></zerohits-box>
 
-        <div id="result" v-if="myQuery && !errorMsg">
+        <div class="result" v-if="myQuery && !errorMsg && !imageSearch">
 
-            <pager-box :do-search="doSearch" :total-hits="totalHits" :start="start"
+            <pager-box v-if="totalHits > 21" :do-search="doSearch" :total-hits="totalHits" :start="start"
                        :disabled-prev="disabledPrev"  :disabled-next="disabledNext"></pager-box>
 
             <result-box v-if="totalHits > 0" :search-result="searchResult"></result-box>
 
+
             <pager-box  v-if="totalHits > 21" :do-search="doSearch" :total-hits="totalHits" :start="start"
                         :disabled-prev="disabledPrev"  :disabled-next="disabledNext" is-bottom="true"></pager-box>
+        </div>
+
+        <div class="result images" v-if="myQuery && !errorMsg && imageSearch">
+
+            <result-box-images :search-result="searchResult" :do-search="doSearch"></result-box-images>
 
         </div>
 

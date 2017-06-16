@@ -85,9 +85,10 @@ a:hover{
 /* SEARCH BOX */
 #searchbox{
     background-color: #444;
+    color: white;
     margin: 2em 0 3em;
     overflow: hidden;
-    padding: 2em 1em 2em;
+    padding: 2em 1em 0em;
 }
 
 #searchbox input, #searchbox button{
@@ -113,13 +114,9 @@ a:hover{
     background: #666;
 }
 
-#searchbox a{
-    clear: both;
-    color: white;
-    cursor: pointer;
-    display: inline-block;
-    margin-top: .1em;
-    padding: .5em 0;
+input.imageSearchCheck{
+    margin: .8em .2em 1em 0;
+    vertical-align: middle;
 }
 
 .box{
@@ -194,11 +191,17 @@ a:hover{
 }
 
 /* SEARCH RESULTS */
-#result{
+.result{
     border-left: 1px solid #ddd;
     float: left;
     padding-left: 1.5%;
     width: 73%;
+}
+
+.result.images{
+    border-left: 0;
+    padding-left: 0;
+    width: 100%;
 }
 
 .searchResults{
@@ -211,6 +214,12 @@ a:hover{
     padding: 1em 0;
 }
 
+.result.images .searchResultItem{
+    float: left;
+    height: 250px;
+    padding: 1.5em 0;
+}
+
 .searchResultItem .item {
     margin-bottom: .2em;
 }
@@ -219,6 +228,17 @@ a:hover{
     float: left;
     font-weight: bold;
     width: 9em;
+}
+
+.item .image img{
+    border: 1px solid black;
+    max-height: 200px;
+    max-width: 400px;
+}
+
+.searchResultItem .thumb img{
+    border: 1px solid black;
+    margin-right: 1.5em;
 }
 
 .searchResultItem .text {
