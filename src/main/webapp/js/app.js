@@ -306,6 +306,25 @@ var app = new Vue({
                     }*/
                     if(!this.imageSearch){
                         this.searchResult = response.body.response.docs;
+                        console.log('this.searchResult: ', this.searchResult);
+                        /* Eksperiment med at berige objektet med imagae URL'er ved content type HTML */
+                        for(var i=0; i<this.searchResult.length;i++){
+                            if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
+                                this.imageUrl = "";
+                                var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + this.searchResult[i].source_file_s + '&test=true';
+                                //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + source;
+                                this.$http.get(imageInfoUrl).then((response) => {
+                                    for(var j=0;j<response.body.length;j++){
+                                        this.imageUrl = response.body[j].imageUrl;
+                                        var minImageUrl = '<img src="' + this.imageUrl + '&width=100&height=100">'
+                                        console.log(minImageUrl);
+                                    }
+
+                                }, (response) => {
+                                    console.log('error: ', response);
+                                });
+                            }
+                        }
                         this.myFacets=response.body.facet_counts.facet_fields;
                         this.totalHits = response.body.response.numFound;
                     }else{
