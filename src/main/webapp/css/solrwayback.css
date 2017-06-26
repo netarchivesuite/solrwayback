@@ -208,12 +208,12 @@ input.imageSearchCheck{
 }
 
 .searchResults{
-    border-top: 1px solid #cccccc;
+    border-top: 1px solid #999999;
     clear: both;
 }
 
 .searchResultItem{
-    border-bottom: 1px solid #cccccc;
+    border-bottom: 1px solid #999999;
     padding: 1em 0;
 }
 
@@ -231,6 +231,10 @@ input.imageSearchCheck{
     float: left;
     font-weight: bold;
     width: 9em;
+}
+
+.item .image{
+    margin-top: 1em;
 }
 
 .item .image img{

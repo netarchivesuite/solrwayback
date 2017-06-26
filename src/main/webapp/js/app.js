@@ -28,7 +28,15 @@ Vue.component('search-box', {
             queryModel: this.myQuery,
             imageSearchModel: this.imageSearch,
         };
-    }
+    },
+    watch: { // updating v-model when vars are updated
+        imageSearch: function () {
+            this.imageSearchModel = this.imageSearch;
+        },
+        myQuery: function () {
+            this.queryModel = this.myQuery;
+        }
+    },
 })
 
 Vue.component('selected-facets-box', {
@@ -198,7 +206,7 @@ Vue.component('result-box-images', {
     template: `
     <div class="searchResults images">
         <div v-for="doc in searchResult" class="searchResultItem">
-             <div class="thumb"><a v-bind:href="doc.downloadUrl" target="_blank"><img v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
+             <div class="thumb"><a v-bind:href="doc.downloadUrl" target="_blank"><img v-if="doc.imageUrl" v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
              <div class="link" v-on:click="doSearch('search', 'hash:' + doc.hash)">Search for image</div>
         </div>
     </div>    
@@ -233,17 +241,14 @@ var app = new Vue({
     methods: {
 
         doSearch: function(type, query, param3, param4){
-            console.log('search', type, query);
             if(type == "search") {
                 this.searchType = type;
                 this.myQuery = query;
                 this.start = 0;
                 if(param3){
-                    this.imageSearch = param3
-                    console.log('this.imageSearch:', this.imageSearch)
+                    this.imageSearch = param3;
                 }else{
-                    this.imageSearch = false
-                    console.log('this.imageSearch:', this.imageSearch)
+                    this.imageSearch = false;
                 }
             }
             if(type == "paging"){
@@ -260,7 +265,6 @@ var app = new Vue({
                     this.start = 0;
                     this.disabledPrev = true;
                 }
-
             }
             if(type == "facet"){
                 this.searchType = type;
@@ -288,10 +292,6 @@ var app = new Vue({
                    '&start=' + this.start + '&fq=' + this.filters;
             }
 
-            console.log('searchUrl: ', searchUrl);
-
-
-
             /* Starting search if there's a query*/
             if(this.myQuery && this.myQuery.trim() != ''){
                 this.showSpinner();
@@ -311,7 +311,6 @@ var app = new Vue({
                     }else{
                         this.searchResult = response.body;
                     }
-                    console.log(' this.searchResult: ',  this.searchResult);
                     this.disabledPrev = false; // resetting paging buttons
                     this.disabledNext = false;
                     if(this.start + 20 > this.totalHits){
