@@ -118,6 +118,18 @@ Vue.component('result-box', {
                 <div class="label">Url:</div>
                 <div class="text"><a v-bind:href="doc.url" target="_blank">{{ doc.url }}</a></div>
             </div> 
+            
+            <div v-if="doc.content_type_norm && doc.content_type_norm === 'html'" class="item">
+                <div class="label">SOLR Wayback:</div> 
+                <div class="text">
+                    <a v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"  
+                    target="_blank">See Page in SOLR Wayback</a>
+                    <!--   + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"  -->
+                </div>
+                
+            </div> 
+            
+            
             <div v-if="doc.arc_harvesttime" class="item">
                 <div class="label">Harvest time:</div>
                 <div class="text">{{ doc.arc_harvesttime }}</div>
@@ -139,14 +151,14 @@ Vue.component('result-box', {
               
             <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
                 <div class="image">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]">
+                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"  target="_blank">
                        Download
                     </a>
                 </div>  
             </div>   
             <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
                 <div class="image">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]">
+                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
                         <img v-bind:src="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"/>
                     </a>
                 </div>  
@@ -186,7 +198,7 @@ Vue.component('result-box-images', {
     template: `
     <div class="searchResults images">
         <div v-for="doc in searchResult" class="searchResultItem">
-             <div class="thumb"><a v-bind:href="doc.downloadUrl"><img v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
+             <div class="thumb"><a v-bind:href="doc.downloadUrl" target="_blank"><img v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
              <div class="link" v-on:click="doSearch('search', 'hash:' + doc.hash)">Search for image</div>
         </div>
     </div>    

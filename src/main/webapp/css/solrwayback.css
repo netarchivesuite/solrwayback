@@ -1,4 +1,3 @@
-
 .calendar .month-container{
      height: 220px
 }
@@ -40,7 +39,7 @@ body {
     padding: 0 1em 0;
 }
 
-.wrapper {
+.wrapper, #wrapper{
     background-color: white;
     height: auto;
     margin: 0 auto;
@@ -48,6 +47,10 @@ body {
     min-height: 600px;
     overflow: hidden;
     padding: 0 2em 2em;
+}
+
+#wrapper{ /* For calendar and SOLR Wayback view*/
+    padding-top: 2em;
 }
 
 h1, h2, h3{
