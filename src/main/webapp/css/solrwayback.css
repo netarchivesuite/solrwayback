@@ -224,13 +224,14 @@ input.imageSearchCheck{
 }
 
 .searchResultItem .item {
+    clear: both;
     margin-bottom: .2em;
 }
 
 .searchResultItem .label {
     float: left;
     font-weight: bold;
-    width: 9em;
+    width: 15em;
 }
 
 .item .image{
@@ -249,7 +250,7 @@ input.imageSearchCheck{
 }
 
 .searchResultItem .text {
-    margin-left: 9.5em;
+    margin-left: 15.5em;
 }
 
 .searchResultItem .long.clickable {
@@ -261,13 +262,38 @@ input.imageSearchCheck{
     line-height: 1.7em;
     text-overflow: ellipsis;
     white-space: nowrap;
-    width: calc(100% - 9.5em);
+    width: calc(100% - 15.5em);
 }
 
 .searchResultItem .long.clickable.active {
     color: #000000;
     height: auto;
     white-space: normal;
+}
+
+.download a{
+    background: #999999;
+    border-radius: 2px;
+    color: white;
+    display: inline-block;
+    margin: .5em 0;
+    padding: 0em .5em;
+}
+
+/* FULLPOST  */
+.link.fullPost:before{
+    content: 'Show';
+}
+
+.active > .link.fullPost:before{
+    content: 'Hide';
+}
+
+.fullpost{
+    background: #f3f3f6;
+    display: none;
+    margin-top: 1em;
+    padding: 1em .5em;
 }
 
 

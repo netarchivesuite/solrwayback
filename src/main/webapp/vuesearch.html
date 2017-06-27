@@ -35,7 +35,7 @@
             <pager-box v-if="totalHits > 21" :do-search="doSearch" :total-hits="totalHits" :start="start"
                        :disabled-prev="disabledPrev"  :disabled-next="disabledNext"></pager-box>
 
-            <result-box v-if="totalHits > 0" :search-result="searchResult"></result-box>
+            <result-box v-if="totalHits > 0" :search-result="searchResult" :image-objects="imageObjects"></result-box>
 
 
             <pager-box  v-if="totalHits > 21" :do-search="doSearch" :total-hits="totalHits" :start="start"

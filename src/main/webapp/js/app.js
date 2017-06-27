@@ -109,15 +109,15 @@ Vue.component('pager-box', {
 })
 
 Vue.component('result-box', {
-    props: ['searchResult'],
+    props: ['searchResult','imageObjects'],
     template: `
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
-            <div class="item"><h3><a>{{ doc.id }}</a></h3></div>
-            <div v-if="doc.title" class="item">
-                <div class="label">Title:</div>
-                <div class="text">{{ doc.title }}</div>
-            </div>
+            <div class="item">
+                <h3><a v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
+                    <span v-if="doc.title">{{ doc.title }}</span>
+                    <span v-else>No title available</span>
+                </a></h3></div>
             <div v-if="doc.domain" class="item">
                 <div class="label">Domain:</div>
                 <div class="text"><a v-bind:href="'http://' + doc.domain"  target="_blank">{{ doc.domain }}</a></div>
@@ -132,12 +132,8 @@ Vue.component('result-box', {
                 <div class="text">
                     <a v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"  
                     target="_blank">See Page in SOLR Wayback</a>
-                    <!--   + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"  -->
-                </div>
-                
-            </div> 
-            
-            
+                </div>     
+            </div>
             <div v-if="doc.arc_harvesttime" class="item">
                 <div class="label">Harvest time:</div>
                 <div class="text">{{ doc.arc_harvesttime }}</div>
@@ -150,48 +146,87 @@ Vue.component('result-box', {
                 <div class="label">Content type:</div>
                 <div class="text">{{ doc.content_type[0] }}</div>
             </div>
+            <div v-if="doc.score" class="item">
+                <div class="label">Score:</div>
+                <div class="text">{{ doc.score }}</div>
+            </div>
             <div v-if="doc.content" class="item">
                 <div class="label">Content:</div>
                 <div class="text"></div>
-                <div v-if="doc.content[0].length > 130" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content[0] }}</div>
+                <div v-if="doc.content[0].length > 120" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content[0] }}</div>
                 <div v-else class="text long"> {{ doc.content[0] }}</div>
             </div>
               
             <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
-                <div class="image">
+                <div class="download">
                     <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"  target="_blank">
                        Download
                     </a>
                 </div>  
             </div>   
             <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
-                <div class="image">
+                <div class="download">
                     <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
                         <img v-bind:src="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"/>
                     </a>
                 </div>  
-            </div>  
+            </div>
+              
+             <!-- Pics in HTML pages -->  
             <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
                 <div class="label">Thumbnail:</div>
-                <div class="text">Thumbnail ID: {{ doc.source_file_s }}</div>
-                <!--<div class="thumb" v-html="getImage(doc.source_file_s)"></div>-->   
-            </div> 
+                <div class="text">Thumbnail ID: {{ doc.source_file_s }}</div> 
+                <div class="thumb" v-html="getImage(doc.source_file_s,doc.id)"></div>   
+                <!--<div class="thumb"><img :src="getImage(doc.source_file_s)"></div> -->  
+            </div>
+            
+            <!-- Full post stuff -->
+            <div class="item" onclick="$(this).next().toggle();$(this).toggleClass('active')">
+                <div class="link fullPost" > full post</div>
+            </div>
+            <div class="fullpost">
+                <div v-for="(value, key) in doc" class="item">
+                    <template v-if="key !== 'content'">
+                        <div class="label">{{ key | facetName }}</div>
+                        <div class="text">{{ value }}</div>
+                    </template>    
+                </div>
+            </div>  
         </div>
     </div>    
     `,
     methods:{
-        getImage: function(source) {
+        getImage: function(source,id) {
+
             this.imageUrl = "";
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + source + '&test=true';
             //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + source;
+            for(var i=0;i<this.imageObjects.length;i++){
+                if(this.imageObjects[i].imageID === id){
+                    console.log('her stemmer det:', i , id, this.imageObjects[i].imageID);
+                    var imageString = '';
+                    for(var j=0; j<this.imageObjects[i].imageUrls.length;j++){
+                        imageString = imageString + this.imageObjects[i].imageUrls[j];
+                    }
+                    return imageString
+                    //return this.imageObjects[i].imageUrls[0];
+                }
+
+            }
+            console.log(this.imageObjects);
+
+            //return '<span>Source: ' + source + '; ID: ' +id + '</span>';
+            //return '<span>Source: ' + source + '; ID: ' +id + '</span>';
+
+            /*
             this.$http.get(imageInfoUrl).then((response) => {
                 this.imageUrl = response.body[0].imageUrl;
-                return '<img src="' + this.imageUrl + '&width=100&height=100">';
+                return this.imageUrl + '&width=100&height=100';
                 //this.getImageHtml();
             }, (response) => {
                 console.log('error: ', response);
-            });
-            return '<img src="' + this.imageUrl + '&width=100&height=100">';
+            });*/
+            //return this.imageUrl + '&width=100&height=100';
         }/*,
         getImageHtml: function(source) {
             return '<img src="' + this.imageUrl + '&width=100&height=100">';
@@ -237,6 +272,7 @@ var app = new Vue({
         disabledNext: false,
         spinner: false,
         errorMsg: '',
+        imageObjects: [],
     },
     methods: {
 
@@ -310,19 +346,29 @@ var app = new Vue({
                         /* Eksperiment med at berige objektet med imagae URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
-                                this.imageUrl = "";
-                                var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + this.searchResult[i].source_file_s + '&test=true';
-                                //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + source;
-                                this.$http.get(imageInfoUrl).then((response) => {
-                                    for(var j=0;j<response.body.length;j++){
-                                        this.imageUrl = response.body[j].imageUrl;
-                                        var minImageUrl = '<img src="' + this.imageUrl + '&width=100&height=100">'
-                                        console.log(minImageUrl);
-                                    }
+                                this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_s, i);
 
-                                }, (response) => {
-                                    console.log('error: ', response);
-                                });
+                                /*
+                                * var imageUrl = "";
+                                 var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + this.searchResult[i].source_file_s + '&test=true';
+                                 //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + this.searchResult[i].source_file_s;
+                                 this.$http.get(imageInfoUrl).then((response) => {
+                                 var imageUrlArray = [];
+                                 for(var j=0;j<response.body.length;j++){
+                                 imageUrl = response.body[j].imageUrl;
+                                 var minImageUrl = '<img src="' + imageUrl + '&width=100&height=100">'
+                                 imageUrlArray.push(minImageUrl);
+                                 console.log('response.body[j]', response.body[j]);
+                                 }
+                                 console.log('this.searchResult[0]', this.searchResult);
+                                 console.log('i', i);
+                                 this.searchResult[0].imageUrls = imageUrlArray;
+                                 console.log(imageUrlArray);
+                                 }, (response) => {
+                                 console.log('error: ', response);
+                                 });
+                                 console.log('After merge - this.searchResult: ',this.searchResult);
+                                 */
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
@@ -350,6 +396,27 @@ var app = new Vue({
             this.facetFields = [];
             this.filters = "";
             this.doSearch('search',this.myQuery);
+        },
+
+        getImages: function(id,sourcefiles, counter){
+            console.log(id,sourcefiles, counter)
+            var imageUrl = "";
+            var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=true';
+            //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles;
+            this.$http.get(imageInfoUrl).then((response) => {
+                var imageUrlArray = [];
+                for(var j=0;j<response.body.length;j++){
+                    imageUrl = response.body[j].imageUrl;
+                    var minImageUrl = '<img src="' + imageUrl + '&width=100&height=100">'
+                    imageUrlArray.push(minImageUrl);
+                }
+                this.imageObjects.push({imageID: id, imageUrls: imageUrlArray});
+                //console.log('imageUrlArray: ',imageUrlArray);
+                //console.log('imageObjects: ',this.imageObjects);
+            }, (response) => {
+                console.log('error: ', response);
+            });
+            //console.log('After merge - this.searchResult: ',this.searchResult);
         },
 
         showSpinner: function(){
