@@ -384,8 +384,8 @@ var app = new Vue({
 
         getImages: function(id,sourcefiles, counter){
             console.log('Inside getImages(): ', id,sourcefiles, counter)
-            var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=true';
-            //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles;
+            //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=true';
+            var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles;
             this.$http.get(imageInfoUrl).then((response) => {
                 console.log('getImages response: ', response);
                 var imageUrl = "";
