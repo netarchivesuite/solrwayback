@@ -176,8 +176,13 @@ Vue.component('result-box', {
             <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
                 <div class="label">Thumbnail:</div>
                 <div class="text">Thumbnail ID: {{ doc.source_file_s }}</div> 
-                <div class="thumb" v-html="getImage(doc.source_file_s,doc.id)"></div>   
-                <!--<div class="thumb"><img :src="getImage(doc.source_file_s)"></div> -->  
+                <!--<div class="thumb" v-html="getImageHtml(doc.source_file_s,doc.id)"></div>-->   
+                <div class="thumb">
+                    <span v-for="image in imageObjects" v-if="doc.id == image.imageID">
+                        <span v-for="imageHTML in image.imageUrls" v-html="imageHTML">                          
+                        </span>
+                    </span>
+                </div>   
             </div>
             
             <!-- Full post stuff -->
@@ -196,43 +201,29 @@ Vue.component('result-box', {
     </div>    
     `,
     methods:{
-        getImage: function(source,id) {
+        getImageHtml: function(source,id) {
 
-            this.imageUrl = "";
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + source + '&test=true';
             //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + source;
             for(var i=0;i<this.imageObjects.length;i++){
                 if(this.imageObjects[i].imageID === id){
-                    console.log('her stemmer det:', i , id, this.imageObjects[i].imageID);
+                    console.log('Her er ens ID\'er:', i , id, this.imageObjects[i].imageID);
                     var imageString = '';
                     for(var j=0; j<this.imageObjects[i].imageUrls.length;j++){
                         imageString = imageString + this.imageObjects[i].imageUrls[j];
+                        console.log('Inside imageurls. i + j', i, j);
                     }
-                    return imageString
-                    //return this.imageObjects[i].imageUrls[0];
+                    return imageString;
                 }
 
             }
-            console.log(this.imageObjects);
+            console.log('Component getImageHtml: ',this.imageObjects);
+        }
 
-            //return '<span>Source: ' + source + '; ID: ' +id + '</span>';
-            //return '<span>Source: ' + source + '; ID: ' +id + '</span>';
-
-            /*
-            this.$http.get(imageInfoUrl).then((response) => {
-                this.imageUrl = response.body[0].imageUrl;
-                return this.imageUrl + '&width=100&height=100';
-                //this.getImageHtml();
-            }, (response) => {
-                console.log('error: ', response);
-            });*/
-            //return this.imageUrl + '&width=100&height=100';
-        }/*,
-        getImageHtml: function(source) {
-            return '<img src="' + this.imageUrl + '&width=100&height=100">';
-        }*/
-
-    }
+    },
+    updated() {
+        console.log('DOM UPDATED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    },
 })
 
 
@@ -277,6 +268,7 @@ var app = new Vue({
     methods: {
 
         doSearch: function(type, query, param3, param4){
+            console.log('DO search called');
             if(type == "search") {
                 this.searchType = type;
                 this.myQuery = query;
@@ -343,32 +335,15 @@ var app = new Vue({
                     if(!this.imageSearch){
                         this.searchResult = response.body.response.docs;
                         console.log('this.searchResult: ', this.searchResult);
-                        /* Eksperiment med at berige objektet med imagae URL'er ved content type HTML */
+                        /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
+
+
+                                console.log('calling getImages');
                                 this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_s, i);
 
-                                /*
-                                * var imageUrl = "";
-                                 var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + this.searchResult[i].source_file_s + '&test=true';
-                                 //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + this.searchResult[i].source_file_s;
-                                 this.$http.get(imageInfoUrl).then((response) => {
-                                 var imageUrlArray = [];
-                                 for(var j=0;j<response.body.length;j++){
-                                 imageUrl = response.body[j].imageUrl;
-                                 var minImageUrl = '<img src="' + imageUrl + '&width=100&height=100">'
-                                 imageUrlArray.push(minImageUrl);
-                                 console.log('response.body[j]', response.body[j]);
-                                 }
-                                 console.log('this.searchResult[0]', this.searchResult);
-                                 console.log('i', i);
-                                 this.searchResult[0].imageUrls = imageUrlArray;
-                                 console.log(imageUrlArray);
-                                 }, (response) => {
-                                 console.log('error: ', response);
-                                 });
-                                 console.log('After merge - this.searchResult: ',this.searchResult);
-                                 */
+
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
@@ -399,24 +374,30 @@ var app = new Vue({
         },
 
         getImages: function(id,sourcefiles, counter){
-            console.log(id,sourcefiles, counter)
-            var imageUrl = "";
+            console.log('Inside getImages(): ', id,sourcefiles, counter)
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=true';
             //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles;
             this.$http.get(imageInfoUrl).then((response) => {
+                console.log('getImages response: ', response);
+                var imageUrl = "";
+                var downloadUrl = "";
+                var hash = "";
                 var imageUrlArray = [];
+                var downloadArray = [];
+                var hashArray = [];
                 for(var j=0;j<response.body.length;j++){
                     imageUrl = response.body[j].imageUrl;
-                    var minImageUrl = '<img src="' + imageUrl + '&width=100&height=100">'
-                    imageUrlArray.push(minImageUrl);
+                    downloadUrl = response.body[j].downloadUrl;
+                    hash = response.body[j].hash;
+                    var imageHTML = '<img src="' + imageUrl + '&width=100&height=100">'
+                    imageUrlArray.push(imageHTML);
+                    downloadArray.push(downloadUrl);
+                    hashArray.push(hash);
                 }
-                this.imageObjects.push({imageID: id, imageUrls: imageUrlArray});
-                //console.log('imageUrlArray: ',imageUrlArray);
-                //console.log('imageObjects: ',this.imageObjects);
+                this.imageObjects.push({imageID: id, imageUrls: imageUrlArray, downloadUrls: downloadArray, hashes: hashArray});
             }, (response) => {
                 console.log('error: ', response);
             });
-            //console.log('After merge - this.searchResult: ',this.searchResult);
         },
 
         showSpinner: function(){
