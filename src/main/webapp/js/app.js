@@ -165,35 +165,14 @@ Vue.component('result-box', {
                 </div>  
             </div>   
             <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
-                <div class="download">
+                <div class="image">
                     <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
                         <img v-bind:src="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"/>
                     </a>
                 </div>  
             </div>
-              
-             <!-- Pics in HTML pages -->  
-            <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
-                <div class="label">Thumbnail:</div>
-                <div class="text">Thumbnail ID: {{ doc.source_file_s }}</div> 
-                <!--<div class="thumb" v-html="getImageHtml(doc.source_file_s,doc.id)"></div>-->   
-                <div class="thumb">
-                    <span v-for="image in imageObjects" v-if="doc.id == image.imageID">
-                        <!--
-                        <span v-for="(imageHTML, index) in image.imageUrls" v-html="imageHTML">                          
-                        </span>
-                        -->
-                        <a v-for="(download, index) in image.downloadUrls" :href="download" target="_blank">
-                            <span v-html="image.imageUrls[index]">                          
-                            </span>                   
-                        </a>
-                        <span class="link" v-for="hash in image.hashes" v-on:click="doSearch('search', 'hash:' + hash);clearFacets()">Search for image
-                        </span>
-                    </span>
-                </div>   
-            </div>
             
-            <!-- Full post stuff -->
+            <!-- Full post -->
             <div class="item" onclick="$(this).next().toggle();$(this).toggleClass('active')">
                 <div class="link fullPost" > full post</div>
             </div>
@@ -205,43 +184,36 @@ Vue.component('result-box', {
                     </template>    
                 </div>
             </div>  
+              
+             <!-- Pics in HTML pages -->  
+            <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
+                <div class="thumbs">
+                    <template v-for="image in imageObjects" v-if="doc.id == image.imageID">
+                        <div class="thumb" v-for="(download, index) in image.downloadUrls">
+                            <a :href="download" target="_blank">
+                                <span v-html="image.imageUrls[index]">                          
+                                </span>                  
+                            </a>
+                            <br/>  
+                            <span class="link" v-on:click="doSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span>
+                        </div>
+                    </template>
+                </div>   
+            </div>
+            
         </div>
     </div>    
     `,
-    methods:{
-        getImageHtml: function(source,id) {
-
-            var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + source + '&test=true';
-            //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + source;
-            for(var i=0;i<this.imageObjects.length;i++){
-                if(this.imageObjects[i].imageID === id){
-                    console.log('Her er ens ID\'er:', i , id, this.imageObjects[i].imageID);
-                    var imageString = '';
-                    for(var j=0; j<this.imageObjects[i].imageUrls.length;j++){
-                        imageString = imageString + this.imageObjects[i].imageUrls[j];
-                        console.log('Inside imageurls. i + j', i, j);
-                    }
-                    return imageString;
-                }
-
-            }
-            console.log('Component getImageHtml: ',this.imageObjects);
-        }
-
-    },
-    updated() {
-        console.log('DOM UPDATED!!!!!!!!  this.imageObjects: ',this.imageObjects)
-    },
 })
 
 
 Vue.component('result-box-images', {
-    props: ['searchResult','doSearch'],
+    props: ['searchResult','doSearch','clearFacets'],
     template: `
     <div class="searchResults images">
         <div v-for="doc in searchResult" class="searchResultItem">
              <div class="thumb"><a v-bind:href="doc.downloadUrl" target="_blank"><img v-if="doc.imageUrl" v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
-             <div class="link" v-on:click="doSearch('search', 'hash:' + doc.hash)">Search for image</div>
+             <div class="link" v-on:click="doSearch('search', 'hash:&quot;' + doc.hash + '&quot;');clearFacets()">Search for image</div>
         </div>
     </div>    
     `
@@ -276,7 +248,6 @@ var app = new Vue({
     methods: {
 
         doSearch: function(type, query, param3, param4){
-            console.log('DO search called');
             this.imageObjects = []; //resetting imageObjecs on new search
             if(type == "search") {
                 this.searchType = type;
@@ -334,7 +305,7 @@ var app = new Vue({
                 this.showSpinner();
                 this.$http.get(searchUrl).then((response) => {
                     this.errorMsg = "";
-                    console.log('response: ', response);
+                    //console.log('response: ', response);
                     /*
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
@@ -343,16 +314,11 @@ var app = new Vue({
                     }*/
                     if(!this.imageSearch){
                         this.searchResult = response.body.response.docs;
-                        console.log('this.searchResult: ', this.searchResult);
+                        //console.log('this.searchResult: ', this.searchResult);
                         /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
-
-
-                                console.log('calling getImages');
                                 this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_s, i);
-
-
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
@@ -383,11 +349,9 @@ var app = new Vue({
         },
 
         getImages: function(id,sourcefiles, counter){
-            console.log('Inside getImages(): ', id,sourcefiles, counter)
-            //var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=true';
+            // var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=true';
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles;
             this.$http.get(imageInfoUrl).then((response) => {
-                console.log('getImages response: ', response);
                 var imageUrl = "";
                 var downloadUrl = "";
                 var hash = "";

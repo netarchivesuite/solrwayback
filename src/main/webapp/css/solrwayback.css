@@ -244,9 +244,20 @@ input.imageSearchCheck{
     max-width: 400px;
 }
 
-.searchResultItem .thumb img{
-    border: 1px solid black;
+.thumbs{
+    overflow: hidden;
+    padding-top: 1em;
+}
+
+
+.thumb{
+    float: left;
     margin-right: 1.5em;
+    min-width: 150px;
+}
+
+.thumb img{
+    border: 1px solid black;
 }
 
 .searchResultItem .text {
@@ -281,12 +292,16 @@ input.imageSearchCheck{
 }
 
 /* FULLPOST  */
+.link.fullPost{
+    margin-top: .8em;
+}
+
 .link.fullPost:before{
-    content: 'Show';
+    content: 'Open';
 }
 
 .active > .link.fullPost:before{
-    content: 'Hide';
+    content: 'Close';
 }
 
 .fullpost{
