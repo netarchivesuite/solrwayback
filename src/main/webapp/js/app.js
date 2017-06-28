@@ -109,7 +109,7 @@ Vue.component('pager-box', {
 })
 
 Vue.component('result-box', {
-    props: ['searchResult','imageObjects'],
+    props: ['searchResult','imageObjects','doSearch','clearFacets'],
     template: `
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
@@ -179,7 +179,15 @@ Vue.component('result-box', {
                 <!--<div class="thumb" v-html="getImageHtml(doc.source_file_s,doc.id)"></div>-->   
                 <div class="thumb">
                     <span v-for="image in imageObjects" v-if="doc.id == image.imageID">
-                        <span v-for="imageHTML in image.imageUrls" v-html="imageHTML">                          
+                        <!--
+                        <span v-for="(imageHTML, index) in image.imageUrls" v-html="imageHTML">                          
+                        </span>
+                        -->
+                        <a v-for="(download, index) in image.downloadUrls" :href="download" target="_blank">
+                            <span v-html="image.imageUrls[index]">                          
+                            </span>                   
+                        </a>
+                        <span class="link" v-for="hash in image.hashes" v-on:click="doSearch('search', 'hash:' + hash);clearFacets()">Search for image
                         </span>
                     </span>
                 </div>   
@@ -222,7 +230,7 @@ Vue.component('result-box', {
 
     },
     updated() {
-        console.log('DOM UPDATED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        console.log('DOM UPDATED!!!!!!!!  this.imageObjects: ',this.imageObjects)
     },
 })
 
@@ -269,6 +277,7 @@ var app = new Vue({
 
         doSearch: function(type, query, param3, param4){
             console.log('DO search called');
+            this.imageObjects = []; //resetting imageObjecs on new search
             if(type == "search") {
                 this.searchType = type;
                 this.myQuery = query;
