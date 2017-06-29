@@ -1,8 +1,6 @@
 
 Vue.filter('facetName', function(value) {
     if (!value) return '';
-    //var valueArr = value.toString().split('_');
-    //var newValue = valueArr[valueArr.length-1];
     var newValue = value.split('_').join(' ')
     return newValue;
 })
@@ -115,10 +113,11 @@ Vue.component('result-box', {
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
-                <h3><a v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
+                <h3><a v-if="doc.source_file_s" v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
-                </a></h3></div>
+                </a></h3>
+            </div>
             <div v-if="doc.domain" class="item">
                 <div class="label">Domain:</div>
                 <div class="text"><a v-bind:href="'http://' + doc.domain"  target="_blank">{{ doc.domain }}</a></div>
@@ -127,14 +126,6 @@ Vue.component('result-box', {
                 <div class="label">Url:</div>
                 <div class="text"><a v-bind:href="doc.url" target="_blank">{{ doc.url }}</a></div>
             </div> 
-            
-            <div v-if="doc.content_type_norm && doc.content_type_norm === 'html'" class="item">
-                <div class="label">SOLR Wayback:</div> 
-                <div class="text">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"  
-                    target="_blank">See Page in SOLR Wayback</a>
-                </div>     
-            </div>
             <div v-if="doc.arc_harvesttime" class="item">
                 <div class="label">Harvest time:</div>
                 <div class="text">{{ doc.arc_harvesttime }}</div>
@@ -193,10 +184,9 @@ Vue.component('result-box', {
             <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
                 <div class="thumbs">
                     <template v-for="image in imageObjects" v-if="doc.id == image.imageID">
-                        <div class="thumb" v-for="(download, index) in image.downloadUrls">
-                            <a :href="download" target="_blank">
-                                <span v-html="image.imageUrls[index]">                          
-                                </span>                  
+                        <div class="thumb" v-for="(imageUrl, index) in image.imageUrls">
+                            <a :href="image.downloadUrls[index]" target="_blank">
+                                <span v-html="imageUrl"></span>                  
                             </a>
                             <br/>  
                             <span class="link" v-on:click="doSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span>
