@@ -134,6 +134,13 @@ input.imageSearchCheck{
     display: none;
 }
 
+.clearSearchLink, .clearSearchLink:hover{
+    color: white;
+    display: inline-block;
+    margin-left: 1.5em;
+    padding: 0.5em 0;
+}
+
 #errorbox{
     background: #ffffcc;
 }

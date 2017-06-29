@@ -8,7 +8,7 @@ Vue.filter('facetName', function(value) {
 })
 
 Vue.component('search-box', {
-    props: ['doSearch','myQuery','imageSearch'],
+    props: ['doSearch','myQuery','imageSearch','clearSearch'],
     template: `
     <div id="searchbox">
         <div>
@@ -20,6 +20,7 @@ Vue.component('search-box', {
                 <input class="imageSearchCheck" v-model="imageSearchModel" type="checkbox"
                 v-on:change="doSearch('search',queryModel, imageSearchModel)"> Image search
             </label>
+            <span class="link clearSearchLink"  v-on:click="clearSearch()">Clear search</span>
         </div>
     </div>
     `,
@@ -155,22 +156,7 @@ Vue.component('result-box', {
                 <div class="text"></div>
                 <div v-if="doc.content[0].length > 120" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content[0] }}</div>
                 <div v-else class="text long"> {{ doc.content[0] }}</div>
-            </div>
-              
-            <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
-                <div class="download">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"  target="_blank">
-                       Download
-                    </a>
-                </div>  
-            </div>   
-            <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
-                <div class="image">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
-                        <img v-bind:src="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"/>
-                    </a>
-                </div>  
-            </div>
+            </div>              
             
             <!-- Full post -->
             <div class="item" onclick="$(this).next().toggle();$(this).toggleClass('active')">
@@ -183,9 +169,27 @@ Vue.component('result-box', {
                         <div class="text">{{ value }}</div>
                     </template>    
                 </div>
-            </div>  
+            </div> 
+            
+            <!-- Download PDF's, Word docs etc. -->
+            <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
+                <div class="download">
+                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"  target="_blank">
+                       Download {{ doc.content_type_norm }}
+                    </a>
+                </div>  
+            </div>
+             
+            <!-- Images -->    
+            <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
+                <div class="image">
+                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
+                        <img v-bind:src="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"/>
+                    </a>
+                </div>  
+            </div>
               
-             <!-- Pics in HTML pages -->  
+             <!-- Images in HTML pages -->  
             <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
                 <div class="thumbs">
                     <template v-for="image in imageObjects" v-if="doc.id == image.imageID">
@@ -348,9 +352,22 @@ var app = new Vue({
             this.doSearch('search',this.myQuery);
         },
 
+        clearSearch: function(){
+            this.facetFields = [];
+            this.filters = "";
+            this.myQuery = "";
+            this.searchResult = "";
+            //this.doSearch('search',this.myQuery);
+        },
+
         getImages: function(id,sourcefiles, counter){
-            // var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=true';
+            console.log('location.host', location.host)
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles;
+
+            /* ImageInfoUrl for local developement*/
+            if(location.host==='localhost:8080'){
+                imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=true';
+            }
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = "";
                 var downloadUrl = "";
