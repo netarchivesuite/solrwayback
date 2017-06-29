@@ -207,7 +207,7 @@ Vue.component('result-box-images', {
     <div class="searchResults images">
         <div v-for="doc in searchResult" class="searchResultItem">
              <div class="thumb"><a v-bind:href="doc.downloadUrl" target="_blank"><img v-if="doc.imageUrl" v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
-             <div class="link" v-on:click="doSearch('search', 'hash:&quot;' + doc.hash + '&quot;');clearFacets()">Search for image</div>
+             <div class="link" v-if="doc.imageUrl" v-on:click="doSearch('search', 'hash:&quot;' + doc.hash + '&quot;');clearFacets()">Search for image</div>
         </div>
     </div>    
     `

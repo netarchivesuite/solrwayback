@@ -32,7 +32,7 @@ time, mark, audio, video {
 }
 
 body {
-    background-color: #000000;
+    background-color: #000911;
     color: #333333;
     font: 80%/1.5em Arial, Helvetica, sans-serif;
     margin: 0;
@@ -87,7 +87,7 @@ a:hover, .link:hover{
 
 /* SEARCH BOX */
 #searchbox{
-    background-color: #444;
+    background-color: #333944;
     color: white;
     margin: 2em 0 3em;
     overflow: hidden;
@@ -107,14 +107,14 @@ a:hover, .link:hover{
 }
 
 #searchbox button{
-    background: #888;
+    background: #009999;
     color: white;
     cursor: pointer;
     text-transform: uppercase;
 }
 
 #searchbox button:hover{
-    background: #666;
+    background: #006666;
 }
 
 input.imageSearchCheck{
@@ -290,7 +290,7 @@ input.imageSearchCheck{
 }
 
 .download a{
-    background: #999999;
+    background: #667799;
     border-radius: 2px;
     color: white;
     display: inline-block;
@@ -312,7 +312,7 @@ input.imageSearchCheck{
 }
 
 .fullpost{
-    background: #f3f3f6;
+    background: #f3f6f9;
     display: none;
     margin-top: 1em;
     padding: 1em .5em;
