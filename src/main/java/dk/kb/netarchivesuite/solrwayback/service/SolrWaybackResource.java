@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.service;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -30,6 +32,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.service.dto.WeightedArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.*;
@@ -159,10 +162,38 @@ public class SolrWaybackResource {
     @GET
     @Path("/harvestDates")
     @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-    public HarvestDates search(@QueryParam("url") String url) throws ServiceException {
+    public HarvestDates harvestDates(@QueryParam("url") String url) throws ServiceException {
         try {                    
             return Facade.getHarvestTimesForUrl(url);
         } catch (Exception e) {           
+            throw handleServiceExceptions(e);
+        }
+    }
+    
+    @GET
+    @Path("/pagepreviews")
+    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    public ArrayList<PagePreview> search(@QueryParam("url") String url) throws ServiceException {
+        try {                    
+            return Facade.getPagePreviewsForUrl(url);
+        } catch (Exception e) {           
+            throw handleServiceExceptions(e);
+        }
+    }
+        
+    
+    @GET
+    @Path("/image/pagepreview")
+    @Produces("image/png")
+    public Response getHtmlPagePreview(@QueryParam("arcFilePath") String arcFilePath, @QueryParam("offset") long offset)
+            throws ServiceException {
+        try {
+            log.debug("Getting thumbnail html image from ArcfilePath:" + arcFilePath + " offset:" + offset);
+            BufferedImage image = Facade.getHtmlPagePreview(arcFilePath, offset);          
+            return Response.ok(image).build();                       
+        } catch (Exception e) {
+            log.error("error thumbnail html image:"+arcFilePath +" offset:"+offset);  
+            e.printStackTrace();
             throw handleServiceExceptions(e);
         }
     }

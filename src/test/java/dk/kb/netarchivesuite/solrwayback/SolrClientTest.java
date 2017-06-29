@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback;
 import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -44,11 +45,12 @@ public class SolrClientTest {
 	        System.out.println(format+"Z");
 	        */  
 	       // testWaybackStats();
-testGetImages();
+             //testGetImages();
 	        //testHarvestTimesForUrl(); 
 	      //  testIngoingLinks();
 	       // testFacetLinks();
 	       // testSolrDate();
+	       testHarvestPreviewsForUrl();
 	}
 	
 	public static void testWaybackStats() throws Exception{
@@ -66,16 +68,24 @@ testGetImages();
 	
 	public static void testHarvestTimesForUrl() throws Exception{
       
+      SolrClient solr = SolrClient.getInstance();           
+      ArrayList<Date> harvestTimesForUrl = solr.getHarvestTimesForUrl("http://jp.dk/");
+
+      System.out.println(harvestTimesForUrl.size());
+      
+    }
+	
+      public static void testHarvestPreviewsForUrl() throws Exception{
+      
       SolrClient solr = SolrClient.getInstance();
       
       
-       solr.getHarvestTimesForUrl("http://www.thomas-egense.dk/");
-      
-      
+       ArrayList<IndexDoc> indexDocs = solr.getHarvestPreviewsForUrl("http://jp.dk/");                 
 
-      
-                
+       System.out.println(indexDocs.size());
 }
+	
+	
 	
 	   // AND content_length:[10000 TO *]
     public static void testGetImages() throws Exception{

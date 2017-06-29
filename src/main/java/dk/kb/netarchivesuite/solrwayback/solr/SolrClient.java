@@ -306,7 +306,7 @@ public class SolrClient {
 
   
   public ArrayList<Date> getHarvestTimesForUrl(String url) throws Exception {
-    
+    System.out.println("harvesttimes for url:"+url);
     ArrayList<Date> dates = new ArrayList<Date>();
     String urlNormFixed = fixUrlNormQuery(url);    
     SolrQuery solrQuery = new SolrQuery();
@@ -325,6 +325,25 @@ public class SolrClient {
       dates.add(date);
     }           
     return dates;
+  }
+
+
+  public ArrayList<IndexDoc> getHarvestPreviewsForUrl(String url) throws Exception {
+       
+    String urlNormFixed = fixUrlNormQuery(url);    
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery = new SolrQuery("(url:\""+url+"\" OR "+urlNormFixed+")");     
+    log.info("solrQuery1:"+solrQuery.toQueryString());
+    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+    solrQuery.add("fl","id, crawl_date,arc_full,source_file_s,score");    
+    solrQuery.add("sort","crawl_date asc");
+    solrQuery.setRows(1000000);
+       
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+       
+    ArrayList<IndexDoc> indexDocs  = solrDocList2IndexDoc(docs);                   
+    return indexDocs;
   }
 
   
@@ -488,9 +507,12 @@ public class SolrClient {
     indexDoc.setContentEncoding((String) doc.get("content_encoding"));
 
     ArrayList<String> hashList =  (ArrayList<String>) doc.get("hash");
-    indexDoc.setHash(hashList.get(0));     
-
+    if (hashList != null){
+      indexDoc.setHash(hashList.get(0));     
+    }
+    
     Date date = (Date) doc.get("crawl_date");        
+    indexDoc.setCrawlDateLong(date.getTime());
     indexDoc.setCrawlDate(getSolrTimeStamp(date));  //HACK! demo must be ready for lunch
 
     ArrayList<String> mimeTypes =  (ArrayList<String>) doc.get("content_type");
@@ -523,8 +545,7 @@ public class SolrClient {
 
     if (lastPart.startsWith("www.")){
       lastPart=lastPart.substring(4);
-    }
-    System.out.println(lastPart);    
+    }    
     StringBuffer query = new StringBuffer(); 
            
       query.append("url_norm:\"http://www."+lastPart +"\"");

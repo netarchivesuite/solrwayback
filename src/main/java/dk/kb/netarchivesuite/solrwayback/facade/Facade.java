@@ -1,10 +1,14 @@
 package dk.kb.netarchivesuite.solrwayback.facade;
 
 
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import javax.imageio.ImageIO;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
@@ -84,11 +88,31 @@ public class Facade {
     */
     
     }
+    
+    
+    public static BufferedImage getHtmlPagePreview(String arcFilePath, long offset) throws Exception {
+      
+      //TODO solr server String url = PropertiesLoader.WAYBACK_BASEURL+"/services/view?arcFilePath="+arcFilePath +"&offset="+offset+"&showToolbar=false";            
+      String url = "http://belinda:9721/solrwayback/services/view?arcFilePath="+arcFilePath +"&offset="+offset+"&showToolbar=false"; 
+      String filename = PropertiesLoader.PHANTOMJS_TEMP_IMAGEDIR+"/"+arcFilePath+"@"+offset+".png";
+      String scriptFile = PropertiesLoader.PHANTOMJS_RASTERIZE_FILE;
+      
+      log.info("generate temp preview file:"+filename);
+     ProcessBuilder pb =
+         new ProcessBuilder("phantomjs", scriptFile, url,filename,"1280px*1024px");
+     
+     Process start = pb.start();
+     start.waitFor(); //Wait until completed. 5 seconds timeout in script
+         
+     BufferedImage image =  ImageIO.read(new File(filename));
+     return image;
+    }
 
 
     public static HarvestDates getHarvestTimesForUrl(String url) throws Exception {
       log.info("getting harvesttimes for url:"+url);
       HarvestDates datesVO = new HarvestDates();
+      datesVO.setUrl(url);
       ArrayList<Date> dates = SolrClient.getInstance().getHarvestTimesForUrl(url);
       
       ArrayList<Long> crawltimes= new ArrayList<Long>(); // only YYYYMMDD part of day
@@ -103,6 +127,33 @@ public class Facade {
       datesVO.setNumberOfHarvests(crawltimes.size());
       return  datesVO;      
     }
+    
+    public static ArrayList<PagePreview> getPagePreviewsForUrl(String url) throws Exception {
+      log.info("getting pagePreviews for url:"+url);
+  
+       ArrayList<IndexDoc> indexDocs = SolrClient.getInstance().getHarvestPreviewsForUrl(url); // Only contains the required fields for this method
+       //Convert to PagePreview      
+       ArrayList<PagePreview> previews =  new ArrayList<PagePreview>();
+       
+       for (IndexDoc doc : indexDocs){
+         PagePreview pp = new PagePreview();
+         pp.setCrawlDate(doc.getCrawlDateLong());
+         String arcFilePath=doc.getArc_full();
+         long offset = doc.getOffset();
+         
+         //TODO property
+         String previewUrl = "http://localhost:8080/solrwayback/services/image/pagepreview?arcFilePath="+arcFilePath +"&offset="+offset+"&showToolbar=false"; 
+         String solrWaybackUrl = "http://belinda:9721/solrwayback/services/view?arcFilePath="+arcFilePath +"&offset="+offset;
+         pp.setPagePreviewUrl(previewUrl);
+         pp.setSolrWaybackUrl(solrWaybackUrl);                
+         previews.add(pp);
+       }
+              
+       return previews;
+            
+    }
+    
+    
     
     public static ArrayList<WeightedArcEntryDescriptor> getImagesFromHtmlPage(IndexDoc indexDoc) throws Exception{
         if (!"html".equals(indexDoc.getContentTypeNorm())){

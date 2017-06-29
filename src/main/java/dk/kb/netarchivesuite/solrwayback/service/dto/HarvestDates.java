@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class HarvestDates {
 
+    private String url;
     private long numberOfHarvests=0;    
     private List<Long>  dates = new ArrayList<Long>();
     public long getNumberOfHarvests() {
@@ -23,8 +24,12 @@ public class HarvestDates {
     public void setDates(List<Long> dates) {
       this.dates = dates;
     }
-    
-    
+    public String getUrl() {
+      return url;
+    }
+    public void setUrl(String url) {
+      this.url = url;
+    }
     
     
 }
