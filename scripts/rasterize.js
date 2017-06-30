@@ -3,7 +3,7 @@ var page = require('webpage').create(),
     system = require('system'),
     address, output, size, pageWidth, pageHeight;
 
-    page.settings.resourceTimeout = 5000; // 5 seconds
+    page.settings.resourceTimeout = 20000; // 20 seconds
     page.onResourceTimeout = function(e) {
     console.log(e.errorCode);   // it'll probably be 408 
     console.log(e.errorString); // it'll probably be 'Network timeout on resource'

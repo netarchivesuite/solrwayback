@@ -2,7 +2,11 @@ package dk.kb.netarchivesuite.solrwayback.facade;
 
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -92,22 +96,26 @@ public class Facade {
     
     public static BufferedImage getHtmlPagePreview(String arcFilePath, long offset) throws Exception {
       
-      //TODO solr server String url = PropertiesLoader.WAYBACK_BASEURL+"/services/view?arcFilePath="+arcFilePath +"&offset="+offset+"&showToolbar=false";            
-      String url = "http://belinda:9721/solrwayback/services/view?arcFilePath="+arcFilePath +"&offset="+offset+"&showToolbar=false"; 
-      String filename = PropertiesLoader.PHANTOMJS_TEMP_IMAGEDIR+"/"+arcFilePath+"@"+offset+".png";
+      String url = PropertiesLoader.WAYBACK_BASEURL+"services/view?arcFilePath="+arcFilePath +"&offset="+offset+"&showToolbar=false";            
+      String filename = PropertiesLoader.PHANTOMJS_TEMP_IMAGEDIR+arcFilePath+"@"+offset+".png";
       String scriptFile = PropertiesLoader.PHANTOMJS_RASTERIZE_FILE;
       
       log.info("generate temp preview file:"+filename);
      ProcessBuilder pb =
-         new ProcessBuilder("phantomjs", scriptFile, url,filename,"1280px*1024px");
+         new ProcessBuilder("phantomjs", scriptFile,url,filename,"1280px*1024px");
+         log.info("phantomjs"+" "+scriptFile +" "+"\""+url+"\""+" "+filename +"\"1280px*1024px\"");
      
+    
      Process start = pb.start();
-     start.waitFor(); //Wait until completed. 5 seconds timeout in script
-         
+      InputStream is = start.getInputStream();
+      String conlog= getStringFromInputStream(is);
+      log.info("conlog:"+conlog);
+      start.waitFor(); //Wait until completed. 5 seconds timeout in script
+   
+      
      BufferedImage image =  ImageIO.read(new File(filename));
      return image;
     }
-
 
     public static HarvestDates getHarvestTimesForUrl(String url) throws Exception {
       log.info("getting harvesttimes for url:"+url);
@@ -141,9 +149,8 @@ public class Facade {
          String arcFilePath=doc.getArc_full();
          long offset = doc.getOffset();
          
-         //TODO property
-         String previewUrl = "http://localhost:8080/solrwayback/services/image/pagepreview?arcFilePath="+arcFilePath +"&offset="+offset+"&showToolbar=false"; 
-         String solrWaybackUrl = "http://belinda:9721/solrwayback/services/view?arcFilePath="+arcFilePath +"&offset="+offset;
+         String previewUrl = PropertiesLoader.WAYBACK_BASEURL+"services/image/pagepreview?arcFilePath="+arcFilePath +"&offset="+offset+"&showToolbar=false"; 
+         String solrWaybackUrl = PropertiesLoader.WAYBACK_BASEURL+"services/view?arcFilePath="+arcFilePath +"&offset="+offset;
          pp.setPagePreviewUrl(previewUrl);
          pp.setSolrWaybackUrl(solrWaybackUrl);                
          previews.add(pp);
@@ -410,6 +417,34 @@ public class Facade {
       
   }
     
-    
+ // convert InputStream to String
+    private static String getStringFromInputStream(InputStream is) {
+
+        BufferedReader br = null;
+        StringBuilder sb = new StringBuilder();
+
+        String line;
+        try {
+
+            br = new BufferedReader(new InputStreamReader(is));
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return sb.toString();
+
+    }
     
 }
