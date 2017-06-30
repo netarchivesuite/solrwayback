@@ -130,6 +130,7 @@ public class WaybackToolbarInjecter {
     "               <span class=\"dynamicData\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +    
     "               <span class=\"dynamicData\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
     "               <span class=\"dynamicData\">"+generatePwid("xml.png",arcFilePath,offset) +"</span>" +
+    "               <span class=\"dynamicData\">"+generatePagePreviews("pagepreviews.jpeg",stats.getUrl_norm()) +"</span>" +
     "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
@@ -210,7 +211,6 @@ public class WaybackToolbarInjecter {
   
   private static String generatePwid(String image, String arcFilePath, long offset) throws Exception{
 
-    String urlEncoded=URLEncoder.encode(arcFilePath, "UTF-8");
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/generatepwid?arcFilePath="+ arcFilePath+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
   
@@ -221,9 +221,15 @@ public class WaybackToolbarInjecter {
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"calendar.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
   
+  private static String generatePagePreviews(String image,String url) throws Exception{
+
+    String urlEncoded=URLEncoder.encode(url, "UTF-8");
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pagepreviews_temp.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+  }
+  
+  
   
   private static String generateDomainGraphImageLink(String image,String domain){
-
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"waybacklinkgraph.jsp?domain="+domain+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
   
