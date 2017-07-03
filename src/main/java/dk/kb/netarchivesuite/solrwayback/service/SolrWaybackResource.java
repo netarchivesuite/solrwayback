@@ -12,7 +12,9 @@ import java.util.Date;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -24,6 +26,10 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
+
+import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
@@ -275,7 +281,7 @@ public class SolrWaybackResource {
     
     @GET
     @Path("/wayback/")
-    public Response wayback(@QueryParam("waybackdata") String data) throws ServiceException {
+    public Response wayback(@QueryParam("waybackdata") String data,@QueryParam("showToolbar") boolean showToolbar) throws ServiceException {
     
     	// data is in format : 19990914144635/http://209.130.118.14/novelle/novelle.asp?id=478&grp=3
     	//First is time, second is url
@@ -298,7 +304,7 @@ public class SolrWaybackResource {
         	throw new IllegalArgumentException("Url has never been harvested:"+url);
         }
         //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
-        return view(doc.getArc_full() , doc.getOffset(),true);        
+        return view(doc.getArc_full() , doc.getOffset(),showToolbar);        
         	
     } catch (Exception e) {
         e.printStackTrace();
@@ -360,7 +366,27 @@ public class SolrWaybackResource {
         }
 
     }
-     
+    
+    
+    @POST
+    @Path("/upload/gethash")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String uploadPdf(@FormDataParam("file") InputStream uploadedInputStream ,
+            @FormDataParam("file") FormDataContentDisposition fileDetail
+            ) throws  ServiceException { 
+
+        try {                  
+          log.info("upload called for file:"+fileDetail.getFileName());          
+          String sha1 = Sha1Hash.createSha1(uploadedInputStream);
+          log.info("uploaded file has sha1:"+sha1);
+          return sha1;
+          
+        } catch (Exception e) {         
+            throw handleServiceExceptions(e);
+        }      
+    }
+          
     
     @GET
     @Path("/waybacklinkgraph")
