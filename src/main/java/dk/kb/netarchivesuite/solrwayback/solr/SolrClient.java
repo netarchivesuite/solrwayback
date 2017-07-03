@@ -454,17 +454,18 @@ public class SolrClient {
 /*
  * Notice here do we not fix url_norm 
  */
-  public IndexDoc findClosestHarvestTimeForUrl(String harvestUrl,String timeStamp) throws Exception {
-    log.info("search for:" + harvestUrl +" for crawldate:"+timeStamp);
+  public IndexDoc findClosestHarvestTimeForUrl(String url,String timeStamp) throws Exception {
+    log.info("search for:" + url +" for crawldate:"+timeStamp);
 
-    if (harvestUrl == null || timeStamp == null){
+    if (url == null || timeStamp == null){
       throw new IllegalArgumentException("harvestUrl or timeStamp is null"); // Can happen for url-rewrites that are not corrected       
     }
     
-    String urlQuery="url:\""+harvestUrl+"\" OR url_norm:\""+harvestUrl+"\""; //Seems there is an error with url_norm. WWW is not always removed
-
+    String urlNormFixed = fixUrlNormQuery(url);
+    String query = "(url:\""+url+"\" OR "+ urlNormFixed +")";//Seems there is an error with url_norm. WWW is not always removed    
+               
     SolrQuery solrQuery = new SolrQuery();
-    solrQuery.setQuery(urlQuery);
+    solrQuery.setQuery(query);
 
     solrQuery.setRows(1); //get 50 images...
 
@@ -558,7 +559,7 @@ public class SolrClient {
     return  query.toString(); 
   }
 
-
+  
   
   
 }
