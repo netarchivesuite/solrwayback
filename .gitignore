@@ -8,3 +8,4 @@ target
 /.project
 /deployBelindaTomcat.sh
 /solrwayback.log
+/temp/
