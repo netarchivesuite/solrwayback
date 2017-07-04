@@ -8,24 +8,33 @@ Vue.filter('facetName', function(value) {
 Vue.component('search-box', {
     props: ['doSearch','myQuery','imageSearch','clearSearch'],
     template: `
-    <div id="searchbox">
-        <div>
-            <input  id="queryInput"  v-on:keyup.enter="doSearch('search',queryModel, imageSearchModel)" 
-            v-model='queryModel' type="text" placeholder="search" autofocus />
-            <button class="btn" 
-            v-on:click="doSearch('search', queryModel, imageSearchModel)">Search</button><br>
-            <label>
-                <input class="imageSearchCheck" v-model="imageSearchModel" type="checkbox"
-                v-on:change="doSearch('search',queryModel, imageSearchModel)"> Image search
-            </label>
-            <span class="link clearSearchLink"  v-on:click="clearSearch()">Clear search</span>
+    <div>
+        <div id="searchbox">
+            <div>
+                <input  id="queryInput"  v-on:keyup.enter="doSearch('search',queryModel, imageSearchModel);imageSearchByImage = false" 
+                v-model='queryModel' type="text" placeholder="search" autofocus />
+                <button class="btn" 
+                v-on:click="doSearch('search', queryModel, imageSearchModel);imageSearchByImage = false">Search</button>
+                <span class="link clearSearchLink"  v-on:click="clearSearch();imageSearchByImage = false">Clear search</span>
+                <br>
+                <label>
+                    <input class="imageSearchCheck" v-model="imageSearchModel" type="checkbox"
+                    v-on:change="doSearch('search',queryModel, imageSearchModel);imageSearchByImage = false"> Image search
+                </label>
+                <span class="link clearSearchLink"  v-on:click="imageSearchByImage = true">Search with uploaded image</span>               
+            </div>
         </div>
-    </div>
+        <div v-if="imageSearchByImage" id="uploadfilesContainer" class="box">
+             <label>Upload file: <input  v-on:change="upload($event)" type="file" id="uploadfiles"  name="uploadfiles"  
+             accept="image/jpeg,image/gif,image/png" /></label>
+        </div>
+    </div>    
     `,
     data: function() {
         return {
             queryModel: this.myQuery,
             imageSearchModel: this.imageSearch,
+            imageSearchByImage: false,
         };
     },
     watch: { // updating v-model when vars are updated
@@ -36,6 +45,25 @@ Vue.component('search-box', {
             this.queryModel = this.myQuery;
         }
     },
+    methods:{
+        upload: function(event){
+            var file = event.target.files[0];
+            this.getHash(file);
+        },
+
+        getHash: function(file){
+            var url = "services/upload/gethash";
+            var sha1;
+            var data = new FormData();
+            data.append('file', file);
+            this.$http.post(url,data).then((response) => {
+                sha1 = response.body;
+                this.doSearch('search', 'hash:"' + sha1 + '"');
+            }, (response) => {
+                console.log('error: ', response);
+            });
+        }
+    }
 })
 
 Vue.component('selected-facets-box', {
@@ -50,7 +78,7 @@ Vue.component('selected-facets-box', {
                 </span>
             </li>
         </ul>
-        <a v-if="facetFields.length > 1" v-on:click="clearFacets()">Clear all</a> 
+        <a v-if="facetFields.length > 1" v-on:click="clearFacets()">Clear all</a>
     </div>
     `,
     methods:{
@@ -60,6 +88,7 @@ Vue.component('selected-facets-box', {
                     this.facetFields.splice(i, 1);
                 }
             }
+            this.clearFacets();
             this.doSearch('facet',this.myQuery);
         }
     }
@@ -308,7 +337,6 @@ var app = new Vue({
                     }*/
                     if(!this.imageSearch){
                         this.searchResult = response.body.response.docs;
-                        //console.log('this.searchResult: ', this.searchResult);
                         /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
@@ -347,11 +375,9 @@ var app = new Vue({
             this.filters = "";
             this.myQuery = "";
             this.searchResult = "";
-            //this.doSearch('search',this.myQuery);
         },
 
         getImages: function(id,sourcefiles, counter){
-            console.log('location.host', location.host)
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles;
 
             /* ImageInfoUrl for local developement*/

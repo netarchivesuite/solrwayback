@@ -122,6 +122,10 @@ input.imageSearchCheck{
     vertical-align: middle;
 }
 
+#uploadfilesContainer input{
+    margin: 0 .5em;
+}
+
 .box{
     border: 1px solid #999999;
     font-size: 16px;
