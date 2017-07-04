@@ -263,6 +263,38 @@ public class SolrWaybackResource {
         }
 
     }
+    /*
+    @GET
+    @Path("/export/brief")
+    public Response exportBrief(@QueryParam("q") String q, @QueryParam("fq") String fq) throws ServiceException {
+        try {
+               
+            log.debug("Export brief. query:"+q +" filterquery:"+fq);
+            
+            
+            ArcEntry arcEntry= Facade.getArcEntry(arcFilePath, offset);
+                                    
+            InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
+    
+            
+            ResponseBuilder response = Response.ok((Object) in).type(arcEntry.getContentType());
+            if (arcEntry.getFileName() != null){
+              response.header("Content-Disposition", "filename=\"" + "test.csv" +"\"");
+            }
+            
+            log.debug("Export completed");
+            return response.build();
+
+        } catch (Exception e) {
+            log.error("Error in exportbrief",e);
+            e.printStackTrace();
+            throw handleServiceExceptions(e);
+        }
+
+    }
+    
+    
+    */
     
     @GET
     @Path("/getContentType")
