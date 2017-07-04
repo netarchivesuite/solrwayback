@@ -15,7 +15,7 @@
     <div class="wrapper" id="app">
         <h1>SOLR Wayback Search</h1>
 
-        <search-box :do-search="doSearch" :my-query="myQuery" :image-search="imageSearch" :clear-search="clearSearch"></search-box>
+        <search-box :do-search="doSearch" :my-query="myQuery" :image-search="imageSearch" :clear-search="clearSearch" :clear-facets="clearFacets"></search-box>
 
 
         <selected-facets-box v-if="facetFields.length > 0 && !imageSearch" :facet-fields="facetFields" :do-search="doSearch"

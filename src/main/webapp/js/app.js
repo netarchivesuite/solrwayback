@@ -6,27 +6,26 @@ Vue.filter('facetName', function(value) {
 })
 
 Vue.component('search-box', {
-    props: ['doSearch','myQuery','imageSearch','clearSearch'],
+    props: ['doSearch','myQuery','imageSearch','clearSearch','clearFacets'],
     template: `
     <div>
         <div id="searchbox">
             <div>
-                <input  id="queryInput"  v-on:keyup.enter="doSearch('search',queryModel, imageSearchModel);imageSearchByImage = false" 
+                <input  id="queryInput"  v-on:keyup.enter="doSearch('search',queryModel, imageSearchModel);searchByFile = false" 
                 v-model='queryModel' type="text" placeholder="search" autofocus />
                 <button class="btn" 
-                v-on:click="doSearch('search', queryModel, imageSearchModel);imageSearchByImage = false">Search</button>
-                <span class="link clearSearchLink"  v-on:click="clearSearch();imageSearchByImage = false">Clear search</span>
+                v-on:click="doSearch('search', queryModel, imageSearchModel);searchByFile = false">Search</button>
+                <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = false">Clear search</span>
                 <br>
                 <label>
                     <input class="imageSearchCheck" v-model="imageSearchModel" type="checkbox"
-                    v-on:change="doSearch('search',queryModel, imageSearchModel);imageSearchByImage = false"> Image search
+                    v-on:change="doSearch('search',queryModel, imageSearchModel);searchByFile = false"> Image search
                 </label>
-                <span class="link clearSearchLink"  v-on:click="imageSearchByImage = true">Search with uploaded image</span>               
+                <span class="link clearSearchLink"  v-on:click="searchByFile = !searchByFile">Search with uploaded file</span>               
             </div>
         </div>
-        <div v-if="imageSearchByImage" id="uploadfilesContainer" class="box">
-             <label>Upload file: <input  v-on:change="upload($event)" type="file" id="uploadfiles"  name="uploadfiles"  
-             accept="image/jpeg,image/gif,image/png" /></label>
+        <div v-if="searchByFile" id="uploadfilesContainer" class="box">
+             <label>Upload file: <input  v-on:change="clearFacets();upload($event)" type="file" id="uploadfiles"  name="uploadfiles"/></label>
         </div>
     </div>    
     `,
@@ -34,7 +33,7 @@ Vue.component('search-box', {
         return {
             queryModel: this.myQuery,
             imageSearchModel: this.imageSearch,
-            imageSearchByImage: false,
+            searchByFile: false,
         };
     },
     watch: { // updating v-model when vars are updated
