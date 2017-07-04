@@ -266,7 +266,7 @@ public class SolrWaybackResource {
 
     @GET
     @Path("/export/brief")    
-    public Response exportBrief(@QueryParam("q") String q, @QueryParam("fq") String fq) throws ServiceException {
+    public Response exportBrief(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
         try {
                
             log.debug("Export brief. query:"+q +" filterquery:"+fq);
@@ -290,7 +290,7 @@ public class SolrWaybackResource {
     
     @GET
     @Path("/export/full")    
-    public Response exportFull(@QueryParam("q") String q, @QueryParam("fq") String fq) throws ServiceException {
+    public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
         try {
                
             log.debug("Export brief. query:"+q +" filterquery:"+fq);
