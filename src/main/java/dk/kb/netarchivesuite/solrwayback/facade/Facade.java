@@ -244,6 +244,17 @@ public class Facade {
     
     
     
+    public static String exportBrief(String q, String fg) throws Exception{         
+      return SolrClient.getInstance().exportBrief(q, fg, 100000);         
+    }
+  
+    
+    public static String exportFull(String q, String fg) throws Exception{         
+      return SolrClient.getInstance().exportFull(q, fg, 1000000);         
+    }
+    
+    
+    
     public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing , String dateStart, String dateEnd) throws Exception{
       
       //Default dates

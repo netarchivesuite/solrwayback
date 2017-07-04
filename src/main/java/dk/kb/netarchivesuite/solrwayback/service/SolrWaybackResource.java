@@ -263,25 +263,19 @@ public class SolrWaybackResource {
         }
 
     }
-    /*
+
     @GET
-    @Path("/export/brief")
+    @Path("/export/brief")    
     public Response exportBrief(@QueryParam("q") String q, @QueryParam("fq") String fq) throws ServiceException {
         try {
                
             log.debug("Export brief. query:"+q +" filterquery:"+fq);
+            DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                  
             
-            
-            ArcEntry arcEntry= Facade.getArcEntry(arcFilePath, offset);
-                                    
-            InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
-    
-            
-            ResponseBuilder response = Response.ok((Object) in).type(arcEntry.getContentType());
-            if (arcEntry.getFileName() != null){
-              response.header("Content-Disposition", "filename=\"" + "test.csv" +"\"");
-            }
-            
+            String dateStr = formatOut.format(new Date());
+            ResponseBuilder response = Response.ok(Facade.exportBrief(q, fq)).type(MediaType.TEXT_PLAIN);
+            response.header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"");
+                        
             log.debug("Export completed");
             return response.build();
 
@@ -294,7 +288,30 @@ public class SolrWaybackResource {
     }
     
     
-    */
+    @GET
+    @Path("/export/full")    
+    public Response exportFull(@QueryParam("q") String q, @QueryParam("fq") String fq) throws ServiceException {
+        try {
+               
+            log.debug("Export brief. query:"+q +" filterquery:"+fq);
+            DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                  
+            
+            String dateStr = formatOut.format(new Date());
+            ResponseBuilder response = Response.ok(Facade.exportFull(q, fq)).type(MediaType.TEXT_PLAIN);
+            response.header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"");
+                        
+            log.debug("Export completed");
+            return response.build();
+
+        } catch (Exception e) {
+            log.error("Error in exportbrief",e);
+            e.printStackTrace();
+            throw handleServiceExceptions(e);
+        }
+
+    }
+    
+
     
     @GET
     @Path("/getContentType")

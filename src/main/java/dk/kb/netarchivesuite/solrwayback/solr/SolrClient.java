@@ -491,7 +491,7 @@ public class SolrClient {
   */
 
   public String exportBrief(String query, String filterQuery, int results) throws Exception {
-    log.info("search for:" + query +" and filter:"+filterQuery);
+    log.info("export brief:" + query +" and filter:"+filterQuery);
     
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
@@ -512,8 +512,39 @@ public class SolrClient {
     long numFound = docs.getNumFound();    
     for ( SolrDocument doc : docs){
      GenerateCSV.generateLineBrief(export, doc);
+     doc = null;// For garbage collection 
     }    
     
+    return export.toString();
+  }
+  
+  
+  
+  public String exportFull(String query, String filterQuery, int results) throws Exception {
+    log.info("export full:" + query +" and filter:"+filterQuery);
+    
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+    solrQuery.add("fl","title, host, public_suffix, crawl_year, content_type, content_language url, arc_full,url,source_file_s,crawl_date,wayback_date");
+    solrQuery.setQuery(query); // only search images
+    solrQuery.setRows(results);
+    if (filterQuery != null){
+      solrQuery.setFilterQueries(filterQuery);
+    }
+
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+    StringBuffer export = new StringBuffer();
+    GenerateCSV.generateFirstLineHeader(export);    
+    GenerateCSV.generateSecondLineHeader(export, query, filterQuery);
+    GenerateCSV.addHeadlineFull(export);
+            
+    long numFound = docs.getNumFound();    
+    for ( SolrDocument doc : docs){
+     GenerateCSV.generateLineFull(export, doc);
+     doc = null;// For garbage collection
+    }    
+            
     return export.toString();
   }
   
