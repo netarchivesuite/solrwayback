@@ -396,3 +396,11 @@ input.imageSearchCheck{
     width: 300px;
     z-index: 400;
 }
+
+/* PAGE PREVIEWS */
+.webPageThumb{
+    border: 1px solid black;
+    float: left;
+    margin: 0 0 1em 1em;
+    padding: .5em;
+}
