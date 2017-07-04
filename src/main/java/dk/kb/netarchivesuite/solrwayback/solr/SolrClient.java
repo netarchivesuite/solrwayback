@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
 
+import dk.kb.netarchivesuite.solrwayback.export.GenerateCSV;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
@@ -484,6 +485,38 @@ public class SolrClient {
     return indexDocs.get(0);     
   }
 
+ /* We dont want to return the solr docs outside this class and making VO for them will double memory imprint,.
+  * That is why we do all the CSV generation in the client class. For huge result sets there will also be deep paging.
+  *  
+  */
+
+  public String exportBrief(String query, String filterQuery, int results) throws Exception {
+    log.info("search for:" + query +" and filter:"+filterQuery);
+    
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+    solrQuery.add("fl","title, arc_full,url,source_file_s,crawl_date,wayback_date");
+    solrQuery.setQuery(query); // only search images
+    solrQuery.setRows(results);
+    if (filterQuery != null){
+      solrQuery.setFilterQueries(filterQuery);
+    }
+
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+    StringBuffer export = new StringBuffer();
+    GenerateCSV.generateFirstLineHeader(export);    
+    GenerateCSV.generateSecondLineHeader(export, query, filterQuery);
+    GenerateCSV.addHeadlineBrief(export);
+            
+    long numFound = docs.getNumFound();    
+    for ( SolrDocument doc : docs){
+     GenerateCSV.generateLineBrief(export, doc);
+    }    
+    
+    return export.toString();
+  }
+  
 
   private static ArrayList<IndexDoc> solrDocList2IndexDoc(SolrDocumentList docs) {
     ArrayList<IndexDoc> earchives = new ArrayList<IndexDoc>();
