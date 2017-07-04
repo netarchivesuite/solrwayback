@@ -6,7 +6,7 @@ Vue.filter('facetName', function(value) {
 })
 
 Vue.component('search-box', {
-    props: ['doSearch','myQuery','imageSearch','clearSearch','clearFacets'],
+    props: ['doSearch','myQuery','imageSearch','clearSearch'],
     template: `
     <div>
         <div id="searchbox">
@@ -21,11 +21,11 @@ Vue.component('search-box', {
                     <input class="imageSearchCheck" v-model="imageSearchModel" type="checkbox"
                     v-on:change="doSearch('search',queryModel, imageSearchModel);searchByFile = false"> Image search
                 </label>
-                <span class="link clearSearchLink"  v-on:click="searchByFile = !searchByFile">Search with uploaded file</span>               
+                <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span>               
             </div>
         </div>
         <div v-if="searchByFile" id="uploadfilesContainer" class="box">
-             <label>Upload file: <input  v-on:change="clearFacets();upload($event)" type="file" id="uploadfiles"  name="uploadfiles"/></label>
+             <label>Upload file: <input  v-on:change="upload($event)" type="file" id="uploadfiles"  name="uploadfiles"/></label>
         </div>
     </div>    
     `,
