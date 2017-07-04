@@ -149,6 +149,11 @@ input.imageSearchCheck{
     background: #ffffcc;
 }
 
+.counterBox{
+    border-bottom: 1px solid #999;
+    padding-bottom: 1em;
+}
+
 #selectedFacetsbox ul{
     display: inline-block;
     margin-left: .2em;
@@ -219,7 +224,7 @@ input.imageSearchCheck{
 }
 
 .searchResults{
-    border-top: 1px solid #999999;
+    border-bottom: 1px solid #999999;
     clear: both;
 }
 
@@ -245,6 +250,9 @@ input.imageSearchCheck{
     width: 15em;
 }
 
+.searchResultItem h3 {
+    margin: 0 0 .5em;
+}
 .item .image{
     margin-top: 1em;
 }

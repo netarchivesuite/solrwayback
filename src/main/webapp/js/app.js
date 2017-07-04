@@ -121,7 +121,7 @@ Vue.component('facet-box', {
 Vue.component('pager-box', {
     props: ['doSearch', 'totalHits', 'start','disabledPrev','disabledNext','isBottom'],
     template: `
-    <div :class="{bottom : isBottom}">
+    <div class="counterBox" :class="{bottom : isBottom}">
         <div v-if="totalHits > 0" class="resultCount">
             <h3 v-if="start + 20 < totalHits" >Showing  {{ start + 1 }}-{{ start + 20 }} of {{ totalHits }} hits</h3>
             <h3  v-else>Showing {{ start + 1 }}-{{ totalHits }} of {{ totalHits }} hits</h3>
