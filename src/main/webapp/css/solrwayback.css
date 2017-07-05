@@ -331,7 +331,7 @@ input.imageSearchCheck{
 }
 
 
-/* PAGERS */
+/* PAGERS and DOWNLOADS */
 .resultCount{
     float: left;
     padding-bottom: 1.3em;
@@ -344,6 +344,10 @@ input.imageSearchCheck{
 .counterBox .selectDownload{
     float: right;
     margin-top: .3em;
+}
+
+.result.images .selectDownload{
+    padding-bottom: 1em;
 }
 
 .selectDownload select{

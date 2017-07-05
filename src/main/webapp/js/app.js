@@ -114,7 +114,7 @@ Vue.component('facet-box', {
 })
 
 Vue.component('pager-box', {
-    props: ['doSearch', 'totalHits', 'start','disabledPrev','disabledNext','isBottom','myQuery','filters','showSpinner','hideSpinner'],
+    props: ['doSearch', 'totalHits', 'start','disabledPrev','disabledNext','isBottom','myQuery','filters','showSpinner','hideSpinner','imageSearch'],
     template: `
     <div class="counterBox" :class="{bottom : isBottom}">
         <div class="selectDownload" v-if="!isBottom">
@@ -127,12 +127,12 @@ Vue.component('pager-box', {
             </label>
         </div>      
 
-        <div v-if="totalHits > 0" class="resultCount">
+        <div v-if="totalHits > 0 && !imageSearch" class="resultCount">
             <h3 v-if="start + 20 < totalHits" >Showing  {{ start + 1 }}-{{ start + 20 }} of {{ totalHits }} hits</h3>
             <h3  v-else>Showing {{ start + 1 }}-{{ totalHits }} of {{ totalHits }} hits</h3>
         </div>
 
-        <div class="pagerBox" v-if="totalHits > 21">
+        <div class="pagerBox" v-if="totalHits > 21 && !imageSearch">
             <button :disabled="disabledPrev" class="pager prev" v-on:click="doSearch('paging','','prev')">Previous</button>
             <button :disabled="disabledNext" class="pager next" v-on:click="doSearch('paging','','next')">Next</button>
         </div>
