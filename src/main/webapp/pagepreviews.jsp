@@ -15,12 +15,11 @@ ArrayList<PagePreview> allPreviews= Facade.getPagePreviewsForUrl(url);
 
 ArrayList<PagePreview> show10Previews = new ArrayList<PagePreview>();
 
-for (int i =0;i<10;i++){
+for (int i =0;i<4;i++){
   show10Previews.add(allPreviews.get((int) (Math.random()*allPreviews.size())));  
 }
 
 %>
-
 
 
 <html>
@@ -28,6 +27,12 @@ for (int i =0;i<10;i++){
     <meta charset="UTF-8">
     <title>Page previews</title>
     <link rel="stylesheet" type="text/css" media="all" href="./css/solrwayback.css">
+    <script type="text/javascript">
+        var show10Previews= "<%=show10Previews %>";
+        console.log("show10Previews: ", show10Previews);
+        var allPreviews = "<%=allPreviews %>";
+        console.log("allPreviews: ", allPreviews);
+    </script>
 </head>
 
 <body>

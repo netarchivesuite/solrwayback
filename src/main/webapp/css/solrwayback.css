@@ -151,7 +151,8 @@ input.imageSearchCheck{
 
 .counterBox{
     border-bottom: 1px solid #999;
-    padding-bottom: 1em;
+    overflow: hidden;
+    padding-top: 1em;
 }
 
 #selectedFacetsbox ul{
@@ -224,7 +225,6 @@ input.imageSearchCheck{
 }
 
 .searchResults{
-    border-bottom: 1px solid #999999;
     clear: both;
 }
 
@@ -341,12 +341,14 @@ input.imageSearchCheck{
     margin: 0.2em 1.5em 0em 0;
 }
 
-.bottom .resultCount h3{
-    margin-top: .2em;
+.counterBox .selectDownload{
+    float: right;
+    margin-top: .3em;
 }
 
-.bottom .pagerBox{
-    margin-top: 1em;
+.selectDownload select{
+    margin-left: .5em;
+    padding: .2em;
 }
 
 .pagerBox button{

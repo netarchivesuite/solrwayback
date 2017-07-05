@@ -25,7 +25,7 @@ Vue.component('search-box', {
             </div>
         </div>
         <div v-if="searchByFile" id="uploadfilesContainer" class="box">
-             <label>Upload file: <input  v-on:change="upload($event)" type="file" id="uploadfiles"  name="uploadfiles"/></label>
+             <label>Upload file: <input  v-on:change="searchHash($event)" type="file" id="uploadfiles"  name="uploadfiles"/></label>
         </div>
     </div>    
     `,
@@ -34,6 +34,7 @@ Vue.component('search-box', {
             queryModel: this.myQuery,
             imageSearchModel: this.imageSearch,
             searchByFile: false,
+            downloadModel: '',
         };
     },
     watch: { // updating v-model when vars are updated
@@ -45,23 +46,18 @@ Vue.component('search-box', {
         }
     },
     methods:{
-        upload: function(event){
+        searchHash: function(event){
             var file = event.target.files[0];
-            this.getHash(file);
-        },
-
-        getHash: function(file){
-            var url = "services/upload/gethash";
-            var sha1;
+            var url = "http://" + location.host + "/solrwayback/services/upload/gethash";
             var data = new FormData();
             data.append('file', file);
             this.$http.post(url,data).then((response) => {
-                sha1 = response.body;
+                var sha1 = response.body;
                 this.doSearch('search', 'hash:"' + sha1 + '"');
             }, (response) => {
                 console.log('error: ', response);
             });
-        }
+        },
     }
 })
 
@@ -87,7 +83,6 @@ Vue.component('selected-facets-box', {
                     this.facetFields.splice(i, 1);
                 }
             }
-            this.clearFacets();
             this.doSearch('facet',this.myQuery);
         }
     }
@@ -119,9 +114,19 @@ Vue.component('facet-box', {
 })
 
 Vue.component('pager-box', {
-    props: ['doSearch', 'totalHits', 'start','disabledPrev','disabledNext','isBottom'],
+    props: ['doSearch', 'totalHits', 'start','disabledPrev','disabledNext','isBottom','myQuery','filters','showSpinner','hideSpinner'],
     template: `
     <div class="counterBox" :class="{bottom : isBottom}">
+        <div class="selectDownload" v-if="!isBottom">
+            <label>Download result as CSV
+                <select v-on:change="exportResult(downloadModel)" v-model="downloadModel"> 
+                    <option value="" disabled >Choose download type</option>            
+                    <option value="brief">Short result</option>
+                    <option value="full">Full result</option>
+                </select>
+            </label>
+        </div>      
+
         <div v-if="totalHits > 0" class="resultCount">
             <h3 v-if="start + 20 < totalHits" >Showing  {{ start + 1 }}-{{ start + 20 }} of {{ totalHits }} hits</h3>
             <h3  v-else>Showing {{ start + 1 }}-{{ totalHits }} of {{ totalHits }} hits</h3>
@@ -132,7 +137,28 @@ Vue.component('pager-box', {
             <button :disabled="disabledNext" class="pager next" v-on:click="doSearch('paging','','next')">Next</button>
         </div>
     </div>
-    `
+    `,
+    data: function() {
+        return {
+            downloadModel: '',
+        };
+    },
+    methods:{
+        exportResult: function(downloadType){
+            this.showSpinner();
+            var url = 'http://' + location.host + '/solrwayback/services/export/' + downloadType + '?query=' + this.myQuery + '&fq=' + this.filters;
+            this.$http.get(url).then((response) => {
+                var result = response.body;
+                var csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += result;
+                window.open( encodeURI(csvContent) );
+                this.downloadModel = '';
+                this.hideSpinner();
+            }, (response) => {
+                console.log('error: ', response);
+            });
+        }
+    },
 })
 
 Vue.component('result-box', {

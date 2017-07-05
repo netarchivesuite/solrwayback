@@ -32,8 +32,8 @@
 
         <div class="result" v-if="myQuery && !errorMsg && !imageSearch">
 
-            <pager-box v-if="totalHits > 21" :do-search="doSearch" :total-hits="totalHits" :start="start"
-                       :disabled-prev="disabledPrev"  :disabled-next="disabledNext"></pager-box>
+            <pager-box v-if="searchResult" :do-search="doSearch" :total-hits="totalHits" :start="start" :my-query="myQuery" :filters="filters"
+                       :disabled-prev="disabledPrev"  :disabled-next="disabledNext" :show-spinner="showSpinner" :hide-spinner="hideSpinner"></pager-box>
 
             <result-box v-if="totalHits > 0" :search-result="searchResult" :image-objects="imageObjects"
                         :do-search="doSearch" :clear-facets="clearFacets"></result-box>
