@@ -95,6 +95,7 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
 ## Contact
 Developed by:
 Thomas Egense (thomas.egense@gmail.com) 
+
 Niels Gamborg (nig@kb.dk) 
 
 Feel free to send emails with comments and questions.
