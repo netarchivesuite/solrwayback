@@ -19,6 +19,14 @@ Arc/Warc files.
 </p>
 
 <p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/image_search.png?raw=true" width="600" height="400"/>
+</p>
+<p align="center">
+  Google like image search in the web-archive
+</p>
+
+
+<p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_demo.png?raw=true" width="600" height="400"/>
 </p>
 <p align="center">
