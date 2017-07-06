@@ -19,6 +19,14 @@ Arc/Warc files.
 </p>
 
 <p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/image_search.png?raw=true" width="600" height="400"/>
+</p>
+<p align="center">
+  Google like image search in the web-archive
+</p>
+
+
+<p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_demo.png?raw=true" width="600" height="400"/>
 </p>
 <p align="center">
@@ -69,6 +77,7 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
  * Tomcat 7+  or another J2EE server for deploying the WAR-file
  * A Solr server with the index build from the Arc/Warc files using the Warc-Indexer.
  * The J2EE server must have the Arc/Warc file drive mounted
+ * (Optional) phanomjs native installed to generate webpage previews.
  
 ## Build and usage
  * Build the application with: mvn package
@@ -84,7 +93,9 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
  * Run ./docker-run.sh from the project root.
 
 ## Contact
-Developed by Thomas Egense (thomas.egense@gmail.com) 
+* Thomas Egense (thomas.egense@gmail.com) 
+* Niels Gamborg (nig@kb.dk) 
+
 Feel free to send emails with comments and questions.
 
 ## Warc-indexer/Solr 
