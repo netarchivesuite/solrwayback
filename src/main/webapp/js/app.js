@@ -34,7 +34,6 @@ Vue.component('search-box', {
             queryModel: this.myQuery,
             imageSearchModel: this.imageSearch,
             searchByFile: false,
-            downloadModel: '',
         };
     },
     watch: { // updating v-model when vars are updated
@@ -118,13 +117,14 @@ Vue.component('pager-box', {
     template: `
     <div class="counterBox" :class="{bottom : isBottom}">
         <div class="selectDownload" v-if="!isBottom">
-            <label>Download result as CSV
-                <select v-on:change="exportResult(downloadModel)" v-model="downloadModel"> 
-                    <option value="" disabled >Choose download type</option>            
-                    <option value="brief">Short result</option>
-                    <option value="full">Full result</option>
-                </select>
-            </label>
+            <span onclick="$('#downloadMenu,.downloadArrow').toggle()" class="downloadMenuLink">Download result as CSV 
+                <span class="downloadArrow">&#9660;</span>
+                <span class="downloadArrow" style="display:none;">&#9650;</span>
+            </span>
+            <ul id="downloadMenu">
+                <li><a :href="exportResult('brief')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download brief result</a></li>
+                <li><a :href="exportResult('full')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download full result</a></li>
+            </ul>           
         </div>      
 
         <div v-if="totalHits > 0 && !imageSearch" class="resultCount">
@@ -140,23 +140,12 @@ Vue.component('pager-box', {
     `,
     data: function() {
         return {
-            downloadModel: '',
+            downloadBriefUrl: '',
         };
     },
     methods:{
         exportResult: function(downloadType){
-            this.showSpinner();
-            var url = 'http://' + location.host + '/solrwayback/services/export/' + downloadType + '?query=' + this.myQuery + '&fq=' + this.filters;
-            this.$http.get(url).then((response) => {
-                var result = response.body;
-                var csvContent = "data:text/csv;charset=utf-8,";
-                csvContent += result;
-                window.open( encodeURI(csvContent) );
-                this.downloadModel = '';
-                this.hideSpinner();
-            }, (response) => {
-                console.log('error: ', response);
-            });
+            return 'http://' + location.host + '/solrwayback/services/export/' + downloadType + '?query=' + this.myQuery + '&fq=' + this.filters;
         }
     },
 })
