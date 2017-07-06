@@ -77,6 +77,7 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
  * Tomcat 7+  or another J2EE server for deploying the WAR-file
  * A Solr server with the index build from the Arc/Warc files using the Warc-Indexer.
  * The J2EE server must have the Arc/Warc file drive mounted
+ * (Optional) phanomjs native installed to generate webpage previews.
  
 ## Build and usage
  * Build the application with: mvn package
