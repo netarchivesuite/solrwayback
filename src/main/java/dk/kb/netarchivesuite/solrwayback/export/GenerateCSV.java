@@ -83,7 +83,9 @@ public class GenerateCSV {
            ArrayList<String> contentTypes = (ArrayList<String>) doc.get("content_type");
            String content_type=contentTypes.get(0);
            buffer.append(formatCsvEntry((String) doc.get("title")));
-           buffer.append(SEPARATOR);                                             
+           buffer.append(SEPARATOR);          
+           buffer.append(formatCsvEntry((String) doc.get("host")));
+           buffer.append(SEPARATOR);           
            buffer.append(formatCsvEntry((String) doc.get("public_suffix")));
            buffer.append(SEPARATOR);
            buffer.append(formatCsvEntry((String) doc.get("crawl_year")));
