@@ -19,9 +19,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -328,17 +330,30 @@ public class SolrWaybackResource {
     }
     
     
-    @GET
-    @Path("/wayback/")
-    public Response wayback(@QueryParam("waybackdata") String data,@QueryParam("showToolbar") boolean showToolbar) throws ServiceException {
+    /*
+     * Example call:
+     * wayback?waybackdata=19990914144635/http://209.130.118.14/novelle/novelle.asp?id=478&grp=3
+     * Since the URL part is not url encoded we can not use a jersey queryparam for the string
+     * The part after 'waybackdata=' is same syntax as the (archive.org) wayback machine.  
+     */
     
-    	// data is in format : 19990914144635/http://209.130.118.14/novelle/novelle.asp?id=478&grp=3
-    	//First is time, second is url
-    	try {    		
-        log.info("Wayback emulator called with:"+data);
-        int indexFirstSlash = data.indexOf("/");
-        String waybackDate = data.substring(0,indexFirstSlash);
-        String url = data.substring(indexFirstSlash+1);
+    @GET
+    @Path("/wayback")
+    public Response wayback(@Context UriInfo uriInfo) throws ServiceException {      
+        //Get the full request url and find the waybackdata object
+        try {    		
+        String fullUrl = uriInfo.getRequestUri().toString();
+        int dataStart=fullUrl.indexOf("/wayback?waybackdata=");
+        if (dataStart <0){
+          throw new InvalidArgumentServiceException("no waybackdata parameter in call. Syntax is: wayback?waybackdata={time}/{url}");
+        }
+        
+        String waybackDataObject = fullUrl.substring(dataStart+21);
+        log.info("Waybackdata object:"+waybackDataObject);
+        
+        int indexFirstSlash = waybackDataObject.indexOf("/");
+        String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
+        String url = waybackDataObject.substring(indexFirstSlash+1);
 
 	    SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");	    	
 	    Date date = waybackDateFormat.parse(waybackDate);
@@ -353,7 +368,7 @@ public class SolrWaybackResource {
         	throw new IllegalArgumentException("Url has never been harvested:"+url);
         }
         //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
-        return view(doc.getArc_full() , doc.getOffset(),showToolbar);        
+        return view(doc.getArc_full() , doc.getOffset(),true);        
         	
     } catch (Exception e) {
         e.printStackTrace();
