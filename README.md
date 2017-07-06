@@ -25,13 +25,22 @@ Arc/Warc files.
   Google like image search in the web-archive
 </p>
 
-
 <p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_demo.png?raw=true" width="600" height="400"/>
 </p>
 <p align="center">
 Solrwayback showing an archived webpage with an overlay statistics and further navigation options.
 </p>
+
+
+<p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/image_search.png?raw=true" width="600" height="400"/>
+</p>
+<p align="center">
+Page preview for different harvest times of a given url. Images are generated real-time and not pre-generated.
+</p>
+
+
 
 SolrWayback comes with additional features:
 * Image search similar to google images
