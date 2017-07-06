@@ -9,7 +9,14 @@ Arc/Warc files.
 
  Warc-indexer: https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer<br>
  Netsearch(Archon/Arctika): https://github.com/netarchivesuite/netsearch<br>
- 
+
+
+<p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" width="600" height="400"/>
+</p>
+<p align="center">
+  Search example showing hits. Images are shown in search-result.
+</p>
 
 <p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_demo.png?raw=true" width="600" height="400"/>
