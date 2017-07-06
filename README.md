@@ -93,7 +93,10 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
  * Run ./docker-run.sh from the project root.
 
 ## Contact
-Developed by Thomas Egense (thomas.egense@gmail.com) 
+Developed by:
+Thomas Egense (thomas.egense@gmail.com) 
+Niels Gamborg (nig@kb.dk) 
+
 Feel free to send emails with comments and questions.
 
 ## Warc-indexer/Solr 
