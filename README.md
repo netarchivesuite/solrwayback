@@ -94,7 +94,7 @@ The SolrWayback web application comes with a simple front-end for testing Solr-s
  * Copy resources/properties/solrwayback.properties to user/home/ folder for the J2EE server
  * Modify the 2 properties in solrwayback.properties
  * Optional: configure the log4j using the files in resources/tomcat
- * For the API and simple frontend demo open: localhost:8080/solrwayback
+ * Search url: localhost:8080/solrwayback
 
 ## Run using Docker
  * Copy resources/properties/solrwayback.properties to the project root directory and modify it to your needs.
