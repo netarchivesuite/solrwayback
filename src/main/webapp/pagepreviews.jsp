@@ -26,40 +26,58 @@ for (int i =0;i<4;i++){
 <head>
     <meta charset="UTF-8">
     <title>Page previews</title>
+
+    <link rel="stylesheet" type="text/css" media="all" href="./css/jquery-ui.min.css">
     <link rel="stylesheet" type="text/css" media="all" href="./css/solrwayback.css">
+
+    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/vue-resource.min.js"></script>
+
     <script type="text/javascript">
-        var show10Previews= "<%=show10Previews %>";
-        console.log("show10Previews: ", show10Previews);
-        var allPreviews = "<%=allPreviews %>";
-        console.log("allPreviews: ", allPreviews);
+        var url = "<%=url %>";
     </script>
 </head>
 
 <body>
 
-<div class="wrapper">
-    <h1>Url:<%=url%></h1>
-        <h1>#Harvest:<%=allPreviews.size()%></h1>
+<div class="wrapper" id="app">
 
+    <header-container :harvest-data="harvestData" :url="url"></header-container>
 
+    <harvests :harvest-data="harvestData"></harvests>
 
-    <div>
-    <%
-    for (PagePreview current: show10Previews){
-    Date d = new Date(current.getCrawlDate());
-    %>
-
-
-    <div class="webPageThumb">
-     <img src="<%=current.getPagePreviewUrl()%>" alt="<%=d%>" height="512" width="640"><br>
-     <a href="<%=current.getSolrWaybackUrl()%>" target="_new"><%=d%></a>
-    </div>
-
-    <%}%>
-
-    </div>
 </div>
+<!-- This include must be at bottom -->
+<script type="text/javascript" charset="utf-8" src="js/app-preview.js"></script>
 
+<script type="text/javascript">
+    /* Datepicker */
+    $('.datepicker').datepicker({
+        inline: true,
+        showOtherMonths: true,
+        dayNamesMin: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        firstDay: 1,
+        changeYear: true,
+        yearRange: "c-50:c",
+        changeMonth: true,
+        dateFormat: "dd-mm-yy",
+    });
+</script>
+<script type="text/javascript">
+    $( function() {
+        $( ".slider" ).slider({
+            value: 2005,
+            min: 2005,
+            max: 2017,
+            slide: function( event, ui ) {
+                $( "#year" ).val(ui.value );
+            }
+        });
+        $( "#year" ).val( $( ".slider" ).slider( "value" ) );
+    } );
+</script>
 
 </body>
 </html>
