@@ -98,8 +98,10 @@
        <role-name>appuser</role-name>
     </auth-constraint>
   </security-constraint>
-  
+-->
   <!-- exluded from login -->
+  
+<!-- 
   <security-constraint>
     <web-resource-collection>
         <url-pattern>/services</url-pattern>
