@@ -14,6 +14,13 @@
       <listener-class>dk.kb.netarchivesuite.solrwayback.listeners.InitializationContextListener</listener-class>
    </listener>
   
+    <servlet>
+   <servlet-name>AdminContent</servlet-name>
+   <display-name>AdminContent</display-name>
+   <description></description>
+   <servlet-class>basicauth.AdminContent</servlet-class>
+  </servlet>
+  
   <servlet>
     <servlet-name>SolrWayback Service</servlet-name>
     <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
@@ -77,6 +84,41 @@
      <url-pattern>/Commonsfileuploadservlet</url-pattern>
    </servlet-mapping>
 
+<!-- Just enable basic form auth. users defined in tomcat-users.xml
+  <servlet-mapping>
+   <servlet-name>AdminContent</servlet-name>
+   <url-pattern>/AdminContent</url-pattern>
+  </servlet-mapping>
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>ApplicationContent</web-resource-name>
+      <url-pattern>/vuesearch.html</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+       <role-name>appuser</role-name>
+    </auth-constraint>
+  </security-constraint>
+-->
+  <!-- exluded from login -->
+  
+<!-- 
+  <security-constraint>
+    <web-resource-collection>
+        <url-pattern>/services</url-pattern>
+    </web-resource-collection>
+</security-constraint>
+  
+   <security-role>
+    <description>
+      The role that is required to access the application
+    </description>
+    <role-name>appuser</role-name>
+  </security-role>
+   <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>SecuredApp</realm-name>
+  </login-config>
+ -->
 
   <welcome-file-list>
     <welcome-file>vuesearch.html</welcome-file>

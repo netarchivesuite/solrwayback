@@ -334,7 +334,8 @@ public class SolrWaybackResource {
      * Example call:
      * wayback?waybackdata=19990914144635/http://209.130.118.14/novelle/novelle.asp?id=478&grp=3
      * Since the URL part is not url encoded we can not use a jersey queryparam for the string
-     * The part after 'waybackdata=' is same syntax as the (archive.org) wayback machine.  
+     * The part after 'waybackdata=' is same syntax as the (archive.org) wayback machine. (not url encoded).
+     * Also supports URL encoding of the parameters as fallback if above syntax does not validate   
      */
     
     @GET
@@ -351,7 +352,14 @@ public class SolrWaybackResource {
         String waybackDataObject = fullUrl.substring(dataStart+21);
         log.info("Waybackdata object:"+waybackDataObject);
         
-        int indexFirstSlash = waybackDataObject.indexOf("/");
+        int indexFirstSlash = waybackDataObject.indexOf("/");  
+        if (indexFirstSlash == -1){ //Fallback, try URL decode
+          waybackDataObject = java.net.URLDecoder.decode(waybackDataObject, "UTF-8");
+          log.info("urldecoded wayback dataobject:"+waybackDataObject);
+          indexFirstSlash = waybackDataObject.indexOf("/");          
+        }
+        
+        
         String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
         String url = waybackDataObject.substring(indexFirstSlash+1);
 
