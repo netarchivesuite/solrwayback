@@ -70,6 +70,10 @@ h3{
     font-size: 16px;
 }
 
+p,ul,ol{
+    margin: .5em 0 1em;
+}
+
 a, .link{
     color: #006699;
     cursor: pointer;
@@ -83,6 +87,10 @@ a:hover, .link:hover{
 
 .bold, strong{
     font-weight: bold;
+}
+
+.discrete{
+    color: #999999;
 }
 
 /* SEARCH BOX */
@@ -432,15 +440,53 @@ input.imageSearchCheck{
     margin: 1em 0 2em;
 }
 
+.harvestInfo{
+    background-color: #f3f3f6;
+    border: 1px solid #ddd;
+    float: left;
+    padding: 1em;
+}
+
+.column{
+    box-sizing: border-box;
+    float: left;
+    margin-right: 2%;
+    width: 23%
+}
+
 .container{
+    clear: both;
     margin: 2em 0;
 }
 
+.slider{
+    magrin-left: 5px;
+}
+
+#harvestList{
+    background: white;
+    border: 1px solid #cccccc;
+    padding: 1em;
+    position: absolute;
+}
+
 .previews li{
+    border: 1px solid #cccccc;
+    box-sizing: border-box;
     display: inline-block;
     list-style-type: none;
-    margin: 0 2% 2em 0;
-    max-width: 23%;
+    margin: 0 1% 1em 0;
+    padding: .5em 1em;
+    max-width: 24%;
+}
+
+#harvestList{
+    display: none;
+    margin-top: 1em;
+}
+
+#harvestList li{
+    list-style-type: none;
 }
 
 .webPageThumb{

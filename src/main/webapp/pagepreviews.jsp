@@ -9,16 +9,6 @@
 
 <%
 String url = (String) request.getParameter("url");
-
-ArrayList<PagePreview> allPreviews= Facade.getPagePreviewsForUrl(url);
-
-
-ArrayList<PagePreview> show10Previews = new ArrayList<PagePreview>();
-
-for (int i =0;i<4;i++){
-  show10Previews.add(allPreviews.get((int) (Math.random()*allPreviews.size())));  
-}
-
 %>
 
 
@@ -41,43 +31,31 @@ for (int i =0;i<4;i++){
 </head>
 
 <body>
+    <div class="wrapper" id="app">
 
-<div class="wrapper" id="app">
+        <header-container :harvest-data="harvestData" :url="url"></header-container>
 
-    <header-container :harvest-data="harvestData" :url="url"></header-container>
+        <div id="columns">
+            <div class="column">
+                <harvestinfo-container :harvest-data="harvestData"></harvestinfo-container>
+            </div>
+            <div class="column">
+                <slider-container :harvest-data="harvestData" :show-preview="showPreview"></slider-container>
+            </div>
+            <div class="column">
+                <datepicker-container :harvest-data="harvestData" :show-preview="showPreview"></datepicker-container>
+            </div>
+            <div class="column">
+                <harvests-container :harvest-data="harvestData" :show-preview="showPreview" ></harvests-container>
+            </div>
+        </div>
 
-    <harvests :harvest-data="harvestData"></harvests>
+        <preview-container :preview-data="previewData"></preview-container>
 
-</div>
+    </div>
+
 <!-- This include must be at bottom -->
 <script type="text/javascript" charset="utf-8" src="js/app-preview.js"></script>
-
-<script type="text/javascript">
-    /* Datepicker */
-    $('.datepicker').datepicker({
-        inline: true,
-        showOtherMonths: true,
-        dayNamesMin: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-        firstDay: 1,
-        changeYear: true,
-        yearRange: "c-50:c",
-        changeMonth: true,
-        dateFormat: "dd-mm-yy",
-    });
-</script>
-<script type="text/javascript">
-    $( function() {
-        $( ".slider" ).slider({
-            value: 2005,
-            min: 2005,
-            max: 2017,
-            slide: function( event, ui ) {
-                $( "#year" ).val(ui.value );
-            }
-        });
-        $( "#year" ).val( $( ".slider" ).slider( "value" ) );
-    } );
-</script>
 
 </body>
 </html>
