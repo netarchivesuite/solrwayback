@@ -224,7 +224,7 @@ public class WaybackToolbarInjecter {
   private static String generatePagePreviews(String image,String url) throws Exception{
 
     String urlEncoded=URLEncoder.encode(url, "UTF-8");
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pagepreviews_temp.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pagepreviews.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
   
   
