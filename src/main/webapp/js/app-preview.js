@@ -137,7 +137,7 @@ Vue.component('preview-container', {
             <li v-for="item in previewData" >
                 <span>{{ item.previewDate | toLocaleTime}}</span><br>
                 <a :href="item.previewurl" target="_blank"><img :src="item.previewurl" :key="item.previewurl" class="webPageThumb"/></a><br>
-                <a :href="item.solrwaybackurl" target="_blank">Go to harvested page</a> 
+                <a :href="item.solrwaybackurl" target="_blank">Go to harvested page</a> | 
                 <a :href="item.previewurl" target="_blank">Go to preview image</a>
             </li>
         </ul>
