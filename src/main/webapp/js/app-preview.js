@@ -81,14 +81,17 @@ Vue.component('datepicker-container', {
     watch: { // updating when harvestData are updated
         harvestData: function () {
             /* setting up Datepicker when harvest data is loaded */
+            var min = this.harvestData[0].crawlDate;
+            var max = this.harvestData[this.harvestData.length - 1].crawlDate;
             var vm = this; // making var to point to 'this' inside anonymous function
             $('.datepicker').datepicker({
+                minDate: new Date(min),
+                maxDate: new Date(max),
                 inline: true,
                 showOtherMonths: true,
                 dayNamesMin: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
                 firstDay: 1,
                 changeYear: true,
-                yearRange: "c-50:c",
                 changeMonth: true,
                 dateFormat: "yy-mm-dd",
                 onSelect: function(dateText) {
@@ -155,7 +158,6 @@ var app = new Vue({
                         previewDate: this.harvestData[i].crawlDate,
                     };
                     this.previewData.push(tempObject);
-                    console.log(this.previewData);
                     j++;
                 }
             }
@@ -167,7 +169,6 @@ var app = new Vue({
 
         hideSpinner: function(){
             this.spinner = false;
-            console.log('spinner',this.spinner)
         },
     },
     created: function() {
