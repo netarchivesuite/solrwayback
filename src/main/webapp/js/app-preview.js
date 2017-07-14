@@ -165,7 +165,7 @@ var app = new Vue({
         },
     },
     created: function() {
-        var serviceUrl = "http://localhost:8080/solrwayback/services/pagepreviews?url=" + url;
+        var serviceUrl = 'http://' + location.host + '/solrwayback/services/pagepreviews?url=' + url;
         this.url = url;
         this.$http.get(serviceUrl).then((response) => {
             this.harvestData = response.body;
