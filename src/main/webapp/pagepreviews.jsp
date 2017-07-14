@@ -36,23 +36,26 @@ String url = (String) request.getParameter("url");
         <header-container :harvest-data="harvestData" :url="url"></header-container>
 
         <div id="columns">
-            <div class="column">
-                <harvestinfo-container :harvest-data="harvestData"></harvestinfo-container>
+            <div class="column info">
+                <harvestinfo-container :harvest-data="harvestData" :selected-date="selectedDate"></harvestinfo-container>
             </div>
             <div class="column">
-                <slider-container :harvest-data="harvestData" :show-preview="showPreview"></slider-container>
+                <slider-container :harvest-data="harvestData" :show-preview="showPreview" :hide-spinner="hideSpinner"></slider-container>
             </div>
-            <div class="column">
+            <div class="column otherMethods">
                 <datepicker-container :harvest-data="harvestData" :show-preview="showPreview"></datepicker-container>
-            </div>
-            <div class="column">
                 <harvests-container :harvest-data="harvestData" :show-preview="showPreview" ></harvests-container>
             </div>
         </div>
 
-        <preview-container :preview-data="previewData"></preview-container>
+        <preview-container  v-if="harvestData.length > 0" :preview-data="previewData"  :selected-date="selectedDate"></preview-container>
+
+
+        <div v-if="spinner" id="overlay"></div>
+        <div v-if="spinner" id="spinnerVue">Loading...</div>
 
     </div>
+
 
 <!-- This include must be at bottom -->
 <script type="text/javascript" charset="utf-8" src="js/app-preview.js"></script>

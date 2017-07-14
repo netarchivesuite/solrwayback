@@ -447,16 +447,37 @@ input.imageSearchCheck{
     padding: 1em;
 }
 
+.harvestInfo .label {
+    float: left;
+    font-weight: bold;
+    margin-right: 1em;
+    width: 10em;
+}
+
+#columns{
+    margin-bottom: .2em;
+    overflow: hidden;
+}
+
 .column{
     box-sizing: border-box;
     float: left;
     margin-right: 2%;
-    width: 23%
+    width: 45%
+}
+
+.column.info{
+    width: 28%
+}
+
+.column.otherMethods{
+    margin-left: 2%;
+    margin-right: 0%;
+    width: 21%;
 }
 
 .container{
     clear: both;
-    margin: 2em 0;
 }
 
 .slider{
@@ -468,6 +489,10 @@ input.imageSearchCheck{
     border: 1px solid #cccccc;
     padding: 1em;
     position: absolute;
+}
+
+#previewContainer{
+    margin-top: 2em;
 }
 
 .previews li{

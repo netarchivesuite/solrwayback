@@ -17,12 +17,14 @@ Vue.component('header-container', {
 })
 
 Vue.component('harvestinfo-container', {
-    props: ['harvestData'],
+    props: ['harvestData','selectedDate'],
     template: `
     <div id="harvestinfoContainer">
-        <p v-if="harvestData.length > 0 " class="harvestInfo"> Number of harvests: {{ this.harvestData.length }}.<br>
-        <span >First harvest: {{ this.harvestData[0].crawlDate | toLocaleTime}}<br>
-        Last harvest: {{ this.harvestData[this.harvestData.length - 1].crawlDate | toLocaleTime}}.
+        <p v-if="harvestData.length > 0 " class="harvestInfo">
+        <span class="label">Number of harvests:</span> {{ this.harvestData.length }}<br>
+        <span class="label">First harvest:</span> {{ this.harvestData[0].crawlDate | toLocaleTime}}<br>
+        <span class="label">Last harvest:</span> {{ this.harvestData[this.harvestData.length - 1].crawlDate | toLocaleTime}}<br>
+        <span class="label">Preview date:</span> <strong>{{ this.selectedDate | toLocaleTime }}</strong>
         </span>
         </p>
     </div>    
@@ -30,22 +32,22 @@ Vue.component('harvestinfo-container', {
 })
 
 Vue.component('slider-container', {
-    props: ['harvestData','showPreview'],
+    props: ['harvestData','showPreview','hideSpinner'],
     template: `
     <div id="sliderContainer" class="container" v-if="harvestData">
+        <h3>Use slider to choose previews</h3>
         <p>Date: {{ this.sliderValue | toLocaleTime }}</p>
         <div class="slider"></div>
-        <p>Selected date:  {{ this.selectedValue | toLocaleTime }}</p>
     </div>  
     `,
     data: function() {
         return {
-            selectedValue: '',
             sliderValue: '',
         };
     },
     watch: { // updating when harvestData are updated
         harvestData: function () {
+            this.hideSpinner();
             /* Setting up jQueryUI slider when harvest data is loaded */
             var min = this.harvestData[0].crawlDate;
             var max = this.harvestData[this.harvestData.length - 1].crawlDate;
@@ -59,7 +61,6 @@ Vue.component('slider-container', {
                     vm.sliderValue = ui.value;
                 },
                 change: function( event, ui ) {
-                    vm.selectedValue =  ui.value;
                     vm.showPreview(ui.value)
                 }
             });
@@ -73,7 +74,8 @@ Vue.component('datepicker-container', {
     template: `
     <div id="calendarContainer" class="container">
         <a href="#" onclick="$('.datepicker').datepicker('show');return false">Choose preview from calendar</a>
-        <input class="datepicker" type="text" readonly style="border:0; color:white">
+        <input class="datepicker" type="hidden" readonly>
+        <div></div>
     </div>
     `,
     watch: { // updating when harvestData are updated
@@ -115,9 +117,10 @@ Vue.component('harvests-container', {
 })
 
 Vue.component('preview-container', {
-    props: ['previewData'],
+    props: ['previewData','selectedDate'],
     template: `
     <div id="previewContainer" class="container">
+        <h3>Selected date for previews: {{ this.selectedDate | toLocaleTime }}</h3>
         <ul class="previews">
             <li v-for="item in previewData" >
                 <span>{{ item.previewDate | toLocaleTime}}</span><br>
@@ -136,11 +139,13 @@ var app = new Vue({
     data: {
         harvestData:[],
         previewData:[],
+        spinner: false,
+        selectedDate: '',
     },
     methods: {
         showPreview: function(time){
             this.previewData = []; //resetting previewdata
-            console.log('time', time);
+            this.selectedDate = time;
             var j = 0
             for (var i = 0; i < this.harvestData.length; i++) {
                 if(time <= this.harvestData[i].crawlDate && j < 4){
@@ -162,9 +167,11 @@ var app = new Vue({
 
         hideSpinner: function(){
             this.spinner = false;
+            console.log('spinner',this.spinner)
         },
     },
     created: function() {
+        this.spinner = true;
         var serviceUrl = 'http://' + location.host + '/solrwayback/services/pagepreviews?url=' + url;
         this.url = url;
         this.$http.get(serviceUrl).then((response) => {
