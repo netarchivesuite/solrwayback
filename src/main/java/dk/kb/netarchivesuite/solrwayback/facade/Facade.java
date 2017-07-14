@@ -414,8 +414,9 @@ public class Facade {
                                      .queryParam("indent", "true")                      
                                      .queryParam("facet", "true")
                                      .queryParam("facet.field", "domain")
-                                     .queryParam("facet.field", "public_suffix")                           
-                                     .queryParam("facet.field", "content_type_norm");
+                                     .queryParam("facet.field", "content_type_norm")
+                                     .queryParam("facet.field", "crawl_year")                           
+                                     .queryParam("facet.field", "public_suffix");
                
       if ( fq != null && fq.length() > 0){
         queryWs = queryWs.queryParam("fq",fq);                        
