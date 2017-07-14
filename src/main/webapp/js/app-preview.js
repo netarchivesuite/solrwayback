@@ -73,11 +73,20 @@ Vue.component('datepicker-container', {
     props: ['harvestData','showPreview'],
     template: `
     <div id="calendarContainer" class="container">
-        <a href="#" onclick="$('.datepicker').datepicker('show');return false">Choose preview from calendar</a>
+        <a href="#" v-on:click="toggleDatepicker()">Choose preview from calendar</a>
         <input class="datepicker" type="hidden" readonly>
         <div></div>
     </div>
     `,
+    methods: {
+        toggleDatepicker: function(){
+            if($('.datepicker').datepicker( "widget" ).is(":visible")){
+                $('.datepicker').datepicker('hide');
+            }else{
+                $('.datepicker').datepicker('show');
+            }
+        }
+    },
     watch: { // updating when harvestData are updated
         harvestData: function () {
             /* setting up Datepicker when harvest data is loaded */
@@ -112,7 +121,7 @@ Vue.component('harvests-container', {
             <a href="#" onclick="$('#harvestList').toggle();return false">Choose preview from list of harvests</a>
             <ul id="harvestList">
                 <li v-for="(item, index) in harvestData" class="link" onclick="$('#harvestList').toggle()"
-                v-on:click="showPreview(item.crawlDate)">{{ index }} - {{item.crawlDate | toLocaleTime }}</li>
+                v-on:click="showPreview(item.crawlDate)">{{ index +1 }} - {{item.crawlDate | toLocaleTime }}</li>
             </ul>
         </div>
     </div>    
@@ -127,8 +136,9 @@ Vue.component('preview-container', {
         <ul class="previews">
             <li v-for="item in previewData" >
                 <span>{{ item.previewDate | toLocaleTime}}</span><br>
-                <a :href="item.previewurl" target="_blank"><img :src="item.previewurl" class="webPageThumb"/></a><br>
-                <a :href="item.solrwaybackurl" target="_blank">Go to harvested page</a>
+                <a :href="item.previewurl" target="_blank"><img :src="item.previewurl" :key="item.previewurl" class="webPageThumb"/></a><br>
+                <a :href="item.solrwaybackurl" target="_blank">Go to harvested page</a> 
+                <a :href="item.previewurl" target="_blank">Go to preview image</a>
             </li>
         </ul>
     </div>    
@@ -181,6 +191,6 @@ var app = new Vue({
         }, (response) => {
             console.log('error: ', response);
         });
-    },
+    }
 })
 
