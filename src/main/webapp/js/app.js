@@ -161,14 +161,6 @@ Vue.component('result-box', {
                     <span v-else>No title available</span>
                 </a></h3>
             </div>
-            <div v-if="doc.domain" class="item">
-                <div class="label">Domain:</div>
-                <div class="text"><a v-bind:href="'http://' + doc.domain"  target="_blank">{{ doc.domain }}</a></div>
-            </div>
-            <div v-if="doc.url" class="item">
-                <div class="label">Url:</div>
-                <div class="text"><a v-bind:href="doc.url" target="_blank">{{ doc.url }}</a></div>
-            </div> 
             <div v-if="doc.arc_harvesttime" class="item">
                 <div class="label">Harvest time:</div>
                 <div class="text">{{ doc.arc_harvesttime }}</div>
@@ -181,10 +173,18 @@ Vue.component('result-box', {
                 <div class="label">Content type:</div>
                 <div class="text">{{ doc.content_type[0] }}</div>
             </div>
+            <div v-if="doc.domain" class="item">
+                <div class="label">Domain:</div>
+                <div class="text"><a v-bind:href="'http://' + doc.domain"  target="_blank">{{ doc.domain }}</a></div>
+            </div>
+            <div v-if="doc.url" class="item">
+                <div class="label">Url:</div>
+                <div class="text"><a v-bind:href="doc.url" target="_blank">{{ doc.url }}</a></div>
+            </div>
             <div v-if="doc.score" class="item">
                 <div class="label">Score:</div>
                 <div class="text">{{ doc.score }}</div>
-            </div>
+            </div> 
             <div v-if="doc.content" class="item">
                 <div class="label">Content:</div>
                 <div class="text"></div>
