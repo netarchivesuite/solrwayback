@@ -164,7 +164,7 @@ public class HtmlParserUrlRewriter {
 		HashSet<String> urlSet = new HashSet<String>();
 
 
-		collectRewriteUrlsForElement(urlSet,doc, "area", "href");
+		
 		collectRewriteUrlsForElement(urlSet, doc, "img", "src");
 		collectRewriteUrlsForElement(urlSet,doc, "body", "background");
 		collectRewriteUrlsForElement(urlSet,doc, "link", "href");
@@ -183,9 +183,6 @@ public class HtmlParserUrlRewriter {
 			urlReplaceMap.put(indexDoc.getUrl(),indexDoc);     		     		 
 		}
 
-
-
-		replaceUrlForElement(urlReplaceMap,doc, "area", "href", "view");
 		replaceUrlForElement(urlReplaceMap,doc, "img", "src", "downloadRaw");
 		replaceUrlForElement(urlReplaceMap,doc, "body", "background", "downloadRaw");             	     	 
 		replaceUrlForElement(urlReplaceMap,doc, "link", "href", "view");
@@ -199,6 +196,8 @@ public class HtmlParserUrlRewriter {
 
 		//This are not resolved until clicket
 		rewriteUrlForElement(doc, "a" ,"href",arc.getCrawlDate());
+		rewriteUrlForElement(doc, "area" ,"href",arc.getCrawlDate());
+		
 		rewriteUrlForElement(doc, "form" ,"action",arc.getCrawlDate());
 
 		log.info("Number of resolves:"+urlSet.size() +" total time:"+(System.currentTimeMillis()-start));    	 

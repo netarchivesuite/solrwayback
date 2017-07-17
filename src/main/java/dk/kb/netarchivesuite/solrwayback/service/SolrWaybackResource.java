@@ -424,6 +424,14 @@ public class SolrWaybackResource {
     public Response viewhref(@QueryParam("url") String url, @QueryParam("crawlDate") String crawlDate,  @QueryParam("showToolbar") Boolean showToolbar  ) throws ServiceException {
         try {
                
+          // We have to remove anchor # from URL. Not part of the harvested url
+          //Notice it is not set again on URL, so anchor  autoscroll down will not work. 
+          int anchorIndex =url.lastIndexOf("#");
+           if (anchorIndex > 0){
+             log.info("Anchor will be removed from url:"+url);
+             url = url.substring(0,anchorIndex);            
+           }
+                    
         	IndexDoc indexDoc = SolrClient.getInstance().findClosestHarvestTimeForUrl(url, crawlDate);
         	if (indexDoc == null){
         		throw new NotFoundServiceException("Url has never been harvested:"+url);
