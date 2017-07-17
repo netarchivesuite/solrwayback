@@ -190,6 +190,70 @@ public class SolrWaybackResource {
     }
         
     
+    
+    /*
+     *    
+     * Example call:
+     * image/pagepreviewurl?waybackdata=19990914144635/http://209.130.118.14/novelle/novelle.asp?id=478&grp=3
+     * Since the URL part is not url encoded we can not use a jersey queryparam for the string
+     * The part after 'waybackdata=' is same syntax as the (archive.org) wayback machine. (not url encoded).
+     * Also supports URL encoding of the parameters as fallback if above syntax does not validate   
+     */
+    @GET
+    @Path("/image/pagepreviewurl")
+    @Produces("image/png")    
+    public Response getHtmlPagePreviewForCrawltime (@Context UriInfo uriInfo) throws ServiceException {      
+      //Get the full request url and find the waybackdata object
+      
+      //Duplicate code below, refactor!
+      try {           
+      String fullUrl = uriInfo.getRequestUri().toString();
+      int dataStart=fullUrl.indexOf("/pagepreviewurl?waybackdata=");
+      if (dataStart <0){
+        throw new InvalidArgumentServiceException("no waybackdata parameter in call. Syntax is: /image/pagepreviewurl?waybackdata={time}/{url}");
+      }
+      
+      String waybackDataObject = fullUrl.substring(dataStart+28);
+      log.info("Waybackdata object:"+waybackDataObject);
+      
+      int indexFirstSlash = waybackDataObject.indexOf("/");  
+      if (indexFirstSlash == -1){ //Fallback, try URL decode
+        waybackDataObject = java.net.URLDecoder.decode(waybackDataObject, "UTF-8");
+        log.info("urldecoded wayback dataobject:"+waybackDataObject);
+        indexFirstSlash = waybackDataObject.indexOf("/");          
+      }
+      
+      
+      String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
+      String url = waybackDataObject.substring(indexFirstSlash+1);
+
+      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");            
+      Date date = waybackDateFormat.parse(waybackDate);
+                  
+      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new                 
+      String solrDate = dateFormat.format(date)+"Z";
+    
+      //log.info("solrDate="+solrDate +" , url="+url);
+      IndexDoc doc = SolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
+      if (doc == null){
+       log.info("Url has never been harvested:"+url);
+          throw new IllegalArgumentException("Url has never been harvested:"+url);
+      }
+      
+      String arcFilePath = doc.getArc_full();
+      long offset = doc.getOffset();
+      
+      BufferedImage image = Facade.getHtmlPagePreview(arcFilePath, offset);
+      return Response.ok(image).build();   
+        } catch (Exception e) {
+            log.error("error thumbnail html image:" +uriInfo.getRequestUri().toString());  
+            e.printStackTrace();
+            throw handleServiceExceptions(e);
+        }
+    }
+    
+    
+    
     @GET
     @Path("/image/pagepreview")
     @Produces("image/png")
