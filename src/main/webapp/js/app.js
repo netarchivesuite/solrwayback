@@ -115,7 +115,7 @@ Vue.component('facet-box', {
 Vue.component('pager-box', {
     props: ['doSearch', 'totalHits', 'start','disabledPrev','disabledNext','isBottom','myQuery','filters','showSpinner','hideSpinner','imageSearch'],
     template: `
-    <div class="counterBox" :class="{bottom : isBottom}">
+    <div class="counterBox" :class="{bottom : isBottom}" v-if="totalHits > 0">
         <div class="selectDownload" v-if="!isBottom">
             <span onclick="$('#downloadMenu,.downloadArrow').toggle()" class="downloadMenuLink">Download result as CSV 
                 <span class="downloadArrow">&#9660;</span>
