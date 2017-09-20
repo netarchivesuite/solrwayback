@@ -156,10 +156,16 @@ Vue.component('result-box', {
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
-                <h3><a v-if="doc.source_file_s" v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
+                <h3>
+                <a v-if="doc.source_file_s" v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
-                </a></h3>
+                </a>
+                <a v-else v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_offset)" target="_blank">
+                    <span v-if="doc.title">{{ doc.title }}</span>
+                    <span v-else>No title available</span>
+                </a>
+                </h3>
             </div>
             <div v-if="doc.arc_harvesttime" class="item">
                 <div class="label">Harvest time:</div>
@@ -342,13 +348,12 @@ var app = new Vue({
                 this.showSpinner();
                 this.$http.get(searchUrl).then((response) => {
                     this.errorMsg = "";
-                    //console.log('response: ', response);
-                    /*
+                    console.log('response: ', response);
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         this.hideSpinner();
                         return;
-                    }*/
+                    }
                     if(!this.imageSearch){
                         this.searchResult = response.body.response.docs;
                         /* Nyt objektet med image URL'er ved content type HTML */
