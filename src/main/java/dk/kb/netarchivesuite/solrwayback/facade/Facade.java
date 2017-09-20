@@ -404,8 +404,7 @@ public class Facade {
       ClientConfig config = new DefaultClientConfig();
       Client client = Client.create(config);
       WebResource service = client.resource(UriBuilder.fromUri(solrUrl).build());
-      WebResource queryWs= service.path("collection1")
-                                     .path("select")                                    
+      WebResource queryWs= service   .path("select")                                    
                                      .queryParam("rows", "20") //Hardcoded pt.
                                      .queryParam("start", startStr)
                                      .queryParam("q", query) 
