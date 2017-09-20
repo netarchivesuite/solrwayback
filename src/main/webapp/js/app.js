@@ -157,11 +157,7 @@ Vue.component('result-box', {
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
                 <h3>
-                <a v-if="doc.source_file_s" v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
-                    <span v-if="doc.title">{{ doc.title }}</span>
-                    <span v-else>No title available</span>
-                </a>
-                <a v-else v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_offset)" target="_blank">
+                <a v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
                 </a>
@@ -214,7 +210,7 @@ Vue.component('result-box', {
             <!-- Download PDF's, Word docs etc. -->
             <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
                 <div class="download">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"  target="_blank">
+                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"  target="_blank">
                        Download {{ doc.content_type_norm }}
                     </a>
                 </div>  
@@ -223,8 +219,8 @@ Vue.component('result-box', {
             <!-- Images -->    
             <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
                 <div class="image">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]" target="_blank">
-                        <img v-bind:src="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + (doc.source_file_s).split('@')[1]"/>
+                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
+                        <img v-bind:src="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"/>
                     </a>
                 </div>  
             </div>
@@ -247,6 +243,15 @@ Vue.component('result-box', {
         </div>
     </div>    
     `,
+    methods: {
+        getOffset: function(doc){
+            if(doc.source_file_offset){
+                return doc.source_file_offset
+            }else{
+                return doc.source_file_s.split('@')[1]
+            }
+        }
+    }
 })
 
 
