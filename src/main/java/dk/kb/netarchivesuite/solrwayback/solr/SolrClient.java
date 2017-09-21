@@ -252,8 +252,7 @@ public class SolrClient {
 
 
   public ArrayList<WeightedArcEntryDescriptor> findImageForTimestamp(
-      String searchString, String timeStamp) throws Exception {
-    log.info("findImageForTimestamp:" + searchString +" and timeStamp:"+timeStamp);
+      String searchString, String timeStamp) throws Exception {    
     ArrayList<WeightedArcEntryDescriptor> images= new ArrayList<>();
 
     SolrQuery solrQuery = new SolrQuery();
@@ -264,7 +263,7 @@ public class SolrClient {
     solrQuery.add("group","true");       
     solrQuery.add("group.field","url_norm");
     solrQuery.add("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-    solrQuery.add("fl","id,score,title,arc_full,url,url_norm,source_file_s,content_type_norm,hash,crawl_date,content_type,content_encoding"); //only request fields used
+    solrQuery.add("fl","id,score,title,arc_full,url,url_norm,source_file_s,source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type,content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
 
@@ -273,12 +272,10 @@ public class SolrClient {
       return images;
     }
 
-
     List<Group> values = rsp.getGroupResponse().getValues().get(0).getValues();
     for (Group current:values){
       SolrDocumentList docs = current.getResult();
       ArrayList<IndexDoc> groupDocs = solrDocList2IndexDoc(docs);
-
       String arcFull = groupDocs.get(0).getArc_full();
       WeightedArcEntryDescriptor desc= new WeightedArcEntryDescriptor();
       desc.setUrl(groupDocs.get(0).getUrl());
@@ -353,7 +350,9 @@ public class SolrClient {
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","id, score, title, arc_full,url,url_norm,source_file_s, source_file, source_file_offset ,content_type_norm, hash,crawl_date,content_type,content_encoding");   
     //Both v.2 and v.3 logic. 
-    String query = "source_file_s:\""+ source_file_s +"\" OR (arc_full:\""+arc_full+"\" AND offset:"+offset+"\" )"  ;
+    //SPLIT logik på version...
+    
+    String query = "source_file_s:\""+ source_file_s +"\" OR (arc_full:\""+arc_full+"\" AND source_file_offset:"+offset+" )"  ;
     log.info("getArcEntry query:"+ query);    
     solrQuery.setQuery(query) ;
     solrQuery.setRows(1);
@@ -521,7 +520,10 @@ public class SolrClient {
   }
   
   
-  
+  /*
+   * TODO v.3.0 suppport
+   * 
+   */
   public String exportFull(String query, String filterQuery, int results) throws Exception {
     log.info("export full:" + query +" and filter:"+filterQuery);
     
