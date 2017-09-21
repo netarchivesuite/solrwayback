@@ -27,7 +27,7 @@ public class PropertiesLoader {
 	public static void initProperties()  throws Exception{
 	    try {
 	    
-	    log.info("Initializing webarchiveminetypeservlet-properties");
+	    log.info("Initializing solrwayback-properties");
 	    
 		String user_home=System.getProperty("user.home");
 		log.info("Load properties: Using user.home folder:" + user_home);
