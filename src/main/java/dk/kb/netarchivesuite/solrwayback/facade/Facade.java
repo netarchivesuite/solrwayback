@@ -19,6 +19,7 @@ import javax.ws.rs.core.UriBuilder;
 import dk.kb.netarchivesuite.solrwayback.parsers.ProximityHtmlParser;
 import dk.kb.netarchivesuite.solrwayback.parsers.WaybackToolbarInjecter;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.*;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
@@ -390,6 +391,14 @@ public class Facade {
     	return arc; //dont parse
             
     }
+    
+    //For fronted
+    public static HashMap<String,String> getPropertiesWeb() throws Exception{         
+        HashMap<String,String> props = new HashMap<String,String>();
+        props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.WAYBACK_SERVER);
+        return props;
+    }
+    
     
     
     public static String proxySolr( String query, String fq, Integer start) throws Exception{                    

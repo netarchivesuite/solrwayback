@@ -9,8 +9,7 @@ public class IndexDoc {
     private long offset;
     private String arc_full;       
     private String title;
-    private String id;
-    private String source_file_s;
+    private String id;    
     private String url;
     private String url_norm;
     private String mimeType;
@@ -42,12 +41,7 @@ public class IndexDoc {
     public void setId(String id) {
         this.id = id;
     }
-    public String getSource_file_s() {
-        return source_file_s;
-    }
-    public void setSource_file_s(String source_file_s) {
-        this.source_file_s = source_file_s;
-    }
+ 
     public String getUrl() {
         return url;
     }

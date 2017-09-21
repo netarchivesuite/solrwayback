@@ -279,14 +279,12 @@ public class SolrClient {
       SolrDocumentList docs = current.getResult();
       ArrayList<IndexDoc> groupDocs = solrDocList2IndexDoc(docs);
 
-      String source_file_s = groupDocs.get(0).getSource_file_s();//always only 1 due to group
       String arcFull = groupDocs.get(0).getArc_full();
       WeightedArcEntryDescriptor desc= new WeightedArcEntryDescriptor();
       desc.setUrl(groupDocs.get(0).getUrl());
       desc.setArcFull(arcFull);
-      desc.setSource_file_s(source_file_s);
       desc.setHash(groupDocs.get(0).getHash());
-      desc.setOffset(getOffset(source_file_s));
+      desc.setOffset(groupDocs.get(0).getOffset());
       desc.setContent_type(groupDocs.get(0).getMimeType());
 
       images.add(desc);
@@ -349,19 +347,22 @@ public class SolrClient {
 
   
   
-  public IndexDoc getArcEntry(String source_file_s) throws Exception {
-   
+  public IndexDoc getArcEntry(String arc_full, long offset) throws Exception {
+   String source_file_s="test";
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","id, score, title, arc_full,url,url_norm,source_file_s,content_type_norm, hash,crawl_date,content_type,content_encoding");
-    solrQuery.setQuery("source_file_s:\""+ source_file_s +"\"") ;
+    solrQuery.add("fl","id, score, title, arc_full,url,url_norm,source_file_s, source_file, source_file_offset ,content_type_norm, hash,crawl_date,content_type,content_encoding");   
+    //Both v.2 and v.3 logic. 
+    String query = "source_file_s:\""+ source_file_s +"\" OR (arc_full:\""+arc_full+"\" AND offset:"+offset+"\" )"  ;
+    log.info("getArcEntry query:"+ query);    
+    solrQuery.setQuery(query) ;
     solrQuery.setRows(1);
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
     SolrDocumentList docs = rsp.getResults();
 
     if (docs.getNumFound() == 0){
-      throw new Exception("Could not find arc entry:"+source_file_s);
+      throw new Exception("Could not find arc entry:"+arc_full +" offset:"+offset);
     }
 
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
@@ -376,7 +377,7 @@ public class SolrClient {
     SearchResult result = new SearchResult();
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","id, score, title, arc_full,url,url_norm,source_file_s,content_type_norm, hash,crawl_date,content_type,content_encoding");
+    solrQuery.add("fl","id, score, title, arc_full,url,url_norm,source_file_s, source_file, source_file_offset, content_type_norm, hash,crawl_date,content_type,content_encoding");
     solrQuery.setQuery(searchString); // only search images
     solrQuery.setRows(results);
     if (filterQuery != null){
@@ -386,6 +387,7 @@ public class SolrClient {
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
     SolrDocumentList docs = rsp.getResults();
 
+    
     result.setNumberOfResults(docs.getNumFound());
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
     result.setResults(indexDocs);
@@ -434,7 +436,7 @@ public class SolrClient {
     solrQuery.add("group.field","url");
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,source_file_s,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,source_file_s, source_file, source_file_offset, content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
 
@@ -472,7 +474,7 @@ public class SolrClient {
 
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-    solrQuery.add("fl","id,score,title,arc_full,url,url_norm,source_file_s,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl","id,score,title,arc_full,url,url_norm,source_file_s,source_file, source_file_offset, content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     solrQuery.setRows(1);
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
@@ -567,15 +569,20 @@ public class SolrClient {
     indexDoc.setArc_full(arc_full);
     indexDoc.setUrl((String) doc.get("url"));
     indexDoc.setUrl_norm((String) doc.get("url_norm"));
-    indexDoc.setSource_file_s(source_file_s);
+    indexDoc.setOffset(getOffset(doc));
     indexDoc.setContentTypeNorm((String) doc.get("content_type_norm"));
     indexDoc.setContentEncoding((String) doc.get("content_encoding"));
 
-    ArrayList<String> hashList =  (ArrayList<String>) doc.get("hash");
-    if (hashList != null){
-      indexDoc.setHash(hashList.get(0));     
+    Object hash = doc.get("hash"); // in 2.0 it was arraylist. in 3.0 it is a string
+    if (hash instanceof String) {
+      indexDoc.setHash((String) hash);      
+    }else{
+      ArrayList<String> hashList =  (ArrayList<String>) hash;
+      if (hashList != null){
+        indexDoc.setHash(hashList.get(0));     
+      }      
     }
-    
+        
     Date date = (Date) doc.get("crawl_date");        
     indexDoc.setCrawlDateLong(date.getTime());
     indexDoc.setCrawlDate(getSolrTimeStamp(date));  //HACK! demo must be ready for lunch
@@ -584,16 +591,34 @@ public class SolrClient {
     if (mimeTypes != null && mimeTypes.size() >0){
       indexDoc.setMimeType(mimeTypes.get(0));        
     }
-    indexDoc.setOffset(getOffset(source_file_s));
+    indexDoc.setOffset(getOffset(doc));
 
     return indexDoc;
   }
 
+  /* 2.0
+  
   public static long getOffset(String source_file_s){
     String[] split = source_file_s.split("@");
     String offset=split[1];
     return Long.valueOf(offset);
   }
+  */
+  
+  //both 2.0 and 3.0 
+  public static long getOffset(SolrDocument doc){
+    String source_file_s= (String) doc.get("source_file_s");
+    if (source_file_s != null){ //2.0    
+      String[] split = source_file_s.split("@");
+      String offset=split[1];
+      return Long.valueOf(offset);            
+    }
+    else{ //3.0
+      return  (Long) doc.get("source_file_offset");
+    }
+    
+  }
+  
 
   private static String getSolrTimeStamp(Date date){
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new         

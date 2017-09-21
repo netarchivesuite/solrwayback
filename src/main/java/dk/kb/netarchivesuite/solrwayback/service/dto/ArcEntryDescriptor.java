@@ -5,7 +5,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class ArcEntryDescriptor {
 
-    private String source_file_s;
     private String arcFull;
     private String url;
     private String hash;
@@ -21,14 +20,6 @@ public class ArcEntryDescriptor {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public String getSource_file_s() {
-        return source_file_s;
-    }
-
-    public void setSource_file_s(String source_file_s) {
-        this.source_file_s = source_file_s;
     }
 
     public String getArcFull() {

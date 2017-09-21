@@ -36,13 +36,12 @@ public class ImageFromArcFileExtractorExecutor {
                        return Facade.getImagesFromHtmlPage(current);
                    }
                    else if ("image".equals(current.getContentTypeNorm())){ 
-                       String source_file_s = current.getSource_file_s();//always only 1 due to group
+                       
                        String arcFull = current.getArc_full();
                        WeightedArcEntryDescriptor desc= new WeightedArcEntryDescriptor();
                        desc.setArcFull(arcFull);
-                       desc.setSource_file_s(source_file_s);
                        desc.setHash(current.getHash());
-                       desc.setOffset(SolrClient.getOffset(source_file_s));
+                       desc.setOffset(current.getOffset());
                        desc.setWeight(current.getScore()); // We just use the score directly here
                        ArrayList<WeightedArcEntryDescriptor> single = new ArrayList<> ();
                        single.add(desc);

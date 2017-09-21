@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.archive.wayback.util.url.AggressiveUrlCanonicalizer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -397,13 +398,25 @@ public class HtmlParserUrlRewriter {
 	 * 
 	 */
 	public static void rewriteUrlForElement(Document doc, String element, String attribute,  String crawlDate) throws Exception{
-
+      AggressiveUrlCanonicalizer urlNormaliser = new AggressiveUrlCanonicalizer();
 		for (Element e : doc.select(element)) {
 			String url = e.attr("abs:"+attribute);
 			if (url == null  || url.trim().length()==0){
 				continue;
-			}    		     		     	     		    		 
-			String urlEncoded=URLEncoder.encode(url, "UTF-8");
+			}    		   
+            //This is magic
+			//Dont try understand all the 4 encoding/decoding steps. 
+			//see https://github.com/ukwa/webarchive-discovery/issues/115
+			log.info("before url encode:"+url);
+            String unEscapedHex = SolrWaybackEncodingUtil.unEscapeHex(url);
+            log.info("unescaped hex encode:"+url);
+			String urlEscaped = SolrWaybackEncodingUtil.escapeNonAscii(unEscapedHex);
+			log.info("url escaped:"+urlEscaped);//
+			String urlNorm  = urlNormaliser.canonicalize(urlEscaped);
+            log.info("url urlNorm:"+urlNorm);// 
+            String urlEncoded=URLEncoder.encode(urlNorm, "UTF-8");
+			log.info("after encode1:"+urlEncoded);
+            
 			String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+"viewhref?url="+urlEncoded+"&crawlDate="+crawlDate;    			
 			e.attr("href",newUrl);    			     		 
 		}   		  		
@@ -412,18 +425,10 @@ public class HtmlParserUrlRewriter {
 
 
 	public static HashMap<String,String> test(String html,String url) throws Exception{
-
 		HashMap<String,String> imagesSet = new HashMap<String,String>();  // To remove duplicates
-
 		Document doc = Jsoup.parse(html,url); //TODO baseURI?
-
 		//System.out.println(doc);
-
 		return imagesSet;
 	}
-
-
-
-
 
 }

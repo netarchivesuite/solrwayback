@@ -157,7 +157,7 @@ Vue.component('result-box', {
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
                 <h3>
-                <a v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
+                <a v-bind:href="'http://localhost:8080/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
                 </a>
@@ -210,7 +210,7 @@ Vue.component('result-box', {
             <!-- Download PDF's, Word docs etc. -->
             <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
                 <div class="download">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"  target="_blank">
+                    <a v-bind:href="'http://localhost:8080/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"  target="_blank">
                        Download {{ doc.content_type_norm }}
                     </a>
                 </div>  
@@ -219,8 +219,8 @@ Vue.component('result-box', {
             <!-- Images -->    
             <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
                 <div class="image">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
-                        <img v-bind:src="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"/>
+                    <a v-bind:href="'http://localhost:8080/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
+                        <img v-bind:src="'localhost:8080/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"/>
                     </a>
                 </div>  
             </div>
@@ -406,7 +406,7 @@ var app = new Vue({
 
             /* ImageInfoUrl for local developement*/
             if(location.host==='localhost:8080'){
-                imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=true';
+                imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=false';
             }
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = "";

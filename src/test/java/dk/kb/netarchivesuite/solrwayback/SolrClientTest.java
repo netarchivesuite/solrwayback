@@ -44,13 +44,13 @@ public class SolrClientTest {
 	        String format = dateFormat.format(date);
 	        System.out.println(format+"Z");
 	        */  
-	       // testWaybackStats();
+	        testWaybackStats();
              //testGetImages();
 	        //testHarvestTimesForUrl(); 
 	      //  testIngoingLinks();
 	       // testFacetLinks();
 	       // testSolrDate();
-	       testHarvestPreviewsForUrl();
+	       //testHarvestPreviewsForUrl();
 	}
 	
 	public static void testWaybackStats() throws Exception{
@@ -58,7 +58,7 @@ public class SolrClientTest {
          SolrClient solr = SolrClient.getInstance();
          
          
-         WaybackStatistics stats = solr.getWayBackStatistics(" http://jpexplorer.jp.dk/explorer/500dage/500dage_logbog/index.html", "2008-12-04T18:52:50Z"); //vi
+         WaybackStatistics stats = solr.getWayBackStatistics("http://denstoredanske.dk/", "2008-12-04T18:52:50Z"); //vi
          
          System.out.println(stats);
          
@@ -80,7 +80,7 @@ public class SolrClientTest {
       SolrClient solr = SolrClient.getInstance();
       
       
-       ArrayList<IndexDoc> indexDocs = solr.getHarvestPreviewsForUrl("http://jp.dk/");                 
+       ArrayList<IndexDoc> indexDocs = solr.getHarvestPreviewsForUrl("http://denstoredanske.dk/");                 
 
        System.out.println(indexDocs.size());
 }

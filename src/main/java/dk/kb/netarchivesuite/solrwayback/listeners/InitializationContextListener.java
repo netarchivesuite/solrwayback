@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -24,7 +25,8 @@ public class InitializationContextListener implements ServletContextListener {
             props.load(InitializationContextListener.class.getResourceAsStream("/build.properties"));
 
             version = props.getProperty("APPLICATION.VERSION");
-            PropertiesLoader.initProperties();
+            PropertiesLoader.initProperties(); //backend
+            PropertiesLoaderWeb.initProperties(); //frontend
             
             log.info("solrwayback version " + version + " started successfully");
 
