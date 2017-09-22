@@ -161,6 +161,10 @@ public class SolrWaybackResource {
       if (test){
         return imagesForPageTest();
       }
+     if (arc_full == null || offset == 0){
+       log.error("arc_full and offset queryparams missing");
+       throw new InvalidArgumentServiceException("arc_full and offset queryparams missing");
+     }
       
       try {                    
           IndexDoc doc = SolrClient.getInstance().getArcEntry(arc_full, offset);

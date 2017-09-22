@@ -19,6 +19,9 @@ import org.apache.solr.client.solrj.response.Group;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.util.SimpleOrderedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
@@ -34,7 +37,10 @@ public class SolrClient {
   private static final Logger log = LoggerFactory.getLogger(SolrClient.class);
   private static HttpSolrClient solrServer;
   private static SolrClient instance = null;
-
+  private static boolean  warcIndexVersion2 = false;
+  private static boolean  warcIndexVersion3 = false;
+  //Field list both has 2.0 and 3.0 and this is not a problem since they are not used as fields for query terms. Non existing fields will just be empty in solr document result list
+  private static String indexDocFieldList = "id,score,title,arc_full,url,url_norm,source_file_s,source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type,content_encoding";
   static {
     SolrClient.initialize(PropertiesLoader.SOLR_SERVER);
   }
@@ -49,7 +55,37 @@ public class SolrClient {
     solrServer = new HttpSolrClient(solrServerUrl);
     solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http error code 413/414, due to monster URI. (and it is faster)
 
-
+try{
+    SolrQuery query = new SolrQuery();
+    query.add(CommonParams.QT, "/schema/fields");
+    QueryResponse response = solrServer.query(query);
+    NamedList responseHeader = response.getResponseHeader();
+    ArrayList<SimpleOrderedMap> fields = (ArrayList<SimpleOrderedMap>) response.getResponse().get("fields");
+    for (SimpleOrderedMap field : fields) {
+      String fieldName = (String) field.get("name");   
+      
+      if (fieldName.equals("source_file")){ //in 3.0 source_file_s is split into source_file and source_file_offset
+        warcIndexVersion3=true;
+      }
+      else if (fieldName.equals("source_file_s")){
+        warcIndexVersion2=true;
+      }        
+    }
+   }
+  catch(Exception e){
+    log.error("error initializing solr client",e);
+   }
+   
+   if (warcIndexVersion2){
+     log.info("warc-indexer version 2 solr schema detected");
+   }
+   else if (warcIndexVersion3){
+     log.info("warc-indexer version 3 solr schema detected");
+    }
+   else {
+     log.error("unable to detemine warc-indexer solr schema version");
+   }   
+  
     instance = new SolrClient();
     log.info("SolrClient initialized with solr server url:" + solrServerUrl);
   }
@@ -94,7 +130,7 @@ public class SolrClient {
     solrQuery.add("facet.limit",""+facetLimit);
     solrQuery.addFilterQuery("crawl_date:["+dateStart+ " TO "+dateEnd+"]");
     
-    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,source_file_s,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);      
     List<FacetCount> facetList = new ArrayList<FacetCount>();
@@ -125,7 +161,7 @@ public class SolrClient {
     solrQuery.add("facet.field","links_domains");
     solrQuery.add("facet.limit",""+(facetLimit+1)); //+1 because itself will be removed and is almost certain of resultset if self-linking
     solrQuery.addFilterQuery("crawl_date:["+dateStart+ " TO "+dateEnd+"]");
-    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,source_file_s,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);      
     List<FacetCount> facetList = new ArrayList<FacetCount>();
@@ -169,7 +205,6 @@ public class SolrClient {
     String query = "(url:\""+url_norm+"\" OR "+ urlNormFixed +") AND crawl_date:{\""+crawlDate+"\" TO *]";    
     
     SolrQuery solrQuery = new SolrQuery(query);            
-    log.info("solrQuery2:"+solrQuery.toQueryString());
     
     solrQuery.setRows(1);
     solrQuery.setGetFieldStatistics(true);
@@ -263,7 +298,7 @@ public class SolrClient {
     solrQuery.add("group","true");       
     solrQuery.add("group.field","url_norm");
     solrQuery.add("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-    solrQuery.add("fl","id,score,title,arc_full,url,url_norm,source_file_s,source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type,content_encoding"); //only request fields used
+    solrQuery.add("fl", indexDocFieldList);
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
 
@@ -331,7 +366,7 @@ public class SolrClient {
     solrQuery = new SolrQuery("(url:\""+url+"\" OR "+urlNormFixed+")");     
     log.info("solrQuery1:"+solrQuery.toQueryString());
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","id, crawl_date,arc_full,source_file_s,score");    
+    solrQuery.add("fl","id, crawl_date,arc_full,source_file_s, source_file, source_file_offset, score");    
     solrQuery.add("sort","crawl_date asc");
     solrQuery.setRows(1000000);
        
@@ -348,7 +383,7 @@ public class SolrClient {
    String source_file_s="test";
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","id, score, title, arc_full,url,url_norm,source_file_s, source_file, source_file_offset ,content_type_norm, hash,crawl_date,content_type,content_encoding");   
+    solrQuery.add("fl", indexDocFieldList);   
     //Both v.2 and v.3 logic. 
     //SPLIT logik på version...
     
@@ -376,7 +411,7 @@ public class SolrClient {
     SearchResult result = new SearchResult();
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","id, score, title, arc_full,url,url_norm,source_file_s, source_file, source_file_offset, content_type_norm, hash,crawl_date,content_type,content_encoding");
+    solrQuery.add("fl", indexDocFieldList);
     solrQuery.setQuery(searchString); // only search images
     solrQuery.setRows(results);
     if (filterQuery != null){
@@ -435,7 +470,7 @@ public class SolrClient {
     solrQuery.add("group.field","url");
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,source_file_s, source_file, source_file_offset, content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl", indexDocFieldList);
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
 
@@ -473,7 +508,7 @@ public class SolrClient {
 
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-    solrQuery.add("fl","id,score,title,arc_full,url,url_norm,source_file_s,source_file, source_file_offset, content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl", indexDocFieldList);
 
     solrQuery.setRows(1);
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
@@ -529,7 +564,7 @@ public class SolrClient {
     
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","title, host, public_suffix, crawl_year, content_type, content_language url, arc_full,url,source_file_s,crawl_date,wayback_date");
+    solrQuery.add("fl","title, host, public_suffix, crawl_year, content_type, content_language url, arc_full,url,source_file_s,crawl_date,wayback_date");    
     solrQuery.setQuery(query); // only search images
     solrQuery.setRows(results);
     if (filterQuery != null){
@@ -597,20 +632,11 @@ public class SolrClient {
 
     return indexDoc;
   }
-
-  /* 2.0
-  
-  public static long getOffset(String source_file_s){
-    String[] split = source_file_s.split("@");
-    String offset=split[1];
-    return Long.valueOf(offset);
-  }
-  */
-  
+ 
   //both 2.0 and 3.0 
   public static long getOffset(SolrDocument doc){
-    String source_file_s= (String) doc.get("source_file_s");
-    if (source_file_s != null){ //2.0    
+    if (warcIndexVersion2){ //2.0    
+      String source_file_s= (String) doc.get("source_file_s");
       String[] split = source_file_s.split("@");
       String offset=split[1];
       return Long.valueOf(offset);            

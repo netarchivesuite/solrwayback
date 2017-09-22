@@ -60,27 +60,22 @@ public class WaybackToolbarInjecter {
   
   
   
-  public static String injectWaybacktoolBar(String arcFilePath, long offset, String html) throws Exception{       
-    //Inject tooolbar
-    String paths[] = arcFilePath.split("/");
-    String fileName = paths[paths.length - 1];
-                
-    SearchResult search = SolrClient.getInstance().search("source_file_s:"+ fileName+"@"+offset, 1); //TODO refactor, multiple uses
+  public static String injectWaybacktoolBar(String arc_full, long offset, String html) throws Exception{       
+   try{                
+    IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(arc_full, offset);
     
-    if (search.getNumberOfResults() == 0){
-      log.error("No harvest found for :"+arcFilePath + " offset:"+offset);
-      return html;// Dont inject atm
-   }
-    
-    IndexDoc indexDoc = search.getResults().get(0);
-    
-    WaybackStatistics stats = SolrClient.getInstance().getWayBackStatistics(indexDoc.getUrl_norm(), indexDoc.getCrawlDate());
+    WaybackStatistics stats = SolrClient.getInstance().getWayBackStatistics(arcEntry .getUrl_norm(), arcEntry.getCrawlDate());
             
-    stats.setHarvestDate(search.getResults().get(0).getCrawlDate());
+    stats.setHarvestDate(arcEntry.getCrawlDate());
     
-    String injectedHtml =injectInHmtl(html, stats, arcFilePath,offset);
+    String injectedHtml =injectInHmtl(html, stats, arc_full,offset);
     return injectedHtml;
-   
+   }catch (Exception e){
+     log.error("error injecting waybacktoolbar", e);
+    return html;// no injection 
+   }
+
+    
   }
   
   public static String injectInHmtl(String orgHtml, WaybackStatistics stats,String arcFilePath, long offset) throws Exception{
