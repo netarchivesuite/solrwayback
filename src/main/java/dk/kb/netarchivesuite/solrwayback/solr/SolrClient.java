@@ -57,37 +57,38 @@ public class SolrClient {
     solrServer = new HttpSolrClient(solrServerUrl);
     solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http error code 413/414, due to monster URI. (and it is faster)
 
-try{
-    SolrQuery query = new SolrQuery();
-    query.add(CommonParams.QT, "/schema/fields");
-    QueryResponse response = solrServer.query(query);
-    NamedList responseHeader = response.getResponseHeader();
-    ArrayList<SimpleOrderedMap> fields = (ArrayList<SimpleOrderedMap>) response.getResponse().get("fields");
-    for (SimpleOrderedMap field : fields) {
-      String fieldName = (String) field.get("name");   
-      
-      if (fieldName.equals("source_file")){ //in 3.0 source_file_s is split into source_file and source_file_offset
-        warcIndexVersion3=true;
+    //Detect warc-indexer version 2.0 og 3.0 since the solr queries will be different due to source_file_s (2.0) is split into 2 fields in 3.0
+    try{
+      SolrQuery query = new SolrQuery();
+      query.add(CommonParams.QT, "/schema/fields");
+      QueryResponse response = solrServer.query(query);
+      NamedList responseHeader = response.getResponseHeader();
+      ArrayList<SimpleOrderedMap> fields = (ArrayList<SimpleOrderedMap>) response.getResponse().get("fields");
+      for (SimpleOrderedMap field : fields) {
+        String fieldName = (String) field.get("name");   
+
+        if (fieldName.equals("source_file")){ //in 3.0 source_file_s is split into source_file and source_file_offset
+          warcIndexVersion3=true;
+        }
+        else if (fieldName.equals("source_file_s")){
+          warcIndexVersion2=true;
+        }        
       }
-      else if (fieldName.equals("source_file_s")){
-        warcIndexVersion2=true;
-      }        
     }
-   }
-  catch(Exception e){
-    log.error("error initializing solr client",e);
-   }
-   
-   if (warcIndexVersion2){
-     log.info("warc-indexer version 2 solr schema detected");
-   }
-   else if (warcIndexVersion3){
-     log.info("warc-indexer version 3 solr schema detected");
+    catch(Exception e){
+      log.error("error initializing solr client",e);
     }
-   else {
-     log.error("unable to detemine warc-indexer solr schema version");
-   }   
-  
+
+    if (warcIndexVersion2){
+      log.info("warc-indexer version 2 solr schema detected");
+    }
+    else if (warcIndexVersion3){
+      log.info("warc-indexer version 3 solr schema detected");
+    }
+    else {
+      log.error("unable to detemine warc-indexer solr schema version");
+    }   
+
     instance = new SolrClient();
     log.info("SolrClient initialized with solr server url:" + solrServerUrl);
   }
@@ -99,12 +100,12 @@ try{
     return instance;
   }
 
-  
+
   /*
    * Delegate 
    */
   public  List<FacetCount> getDomainFacets(String domain, int facetLimit, boolean ingoing, Date crawlDateStart, Date crawlDateEnd) throws Exception{
-    
+
     if (ingoing){
       return getDomainFacetsIngoing(domain, facetLimit, crawlDateStart,crawlDateEnd);
     }
@@ -112,18 +113,18 @@ try{
       return getDomainFacetsOutgoing(domain, facetLimit, crawlDateStart,crawlDateEnd);
     }       
   }
-  
+
   /*
    * Get other domains linking to this domain
    * 
    */
   public  List<FacetCount> getDomainFacetsIngoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception{
 
-    
+
     String dateStart= getSolrTimeStamp(crawlDateStart);
     String dateEnd = getSolrTimeStamp(crawlDateEnd);
-    
-    
+
+
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery("links_domains:\""+domain+"\" AND -domain:\""+domain+"\"");
     solrQuery.setRows(0);
@@ -131,7 +132,7 @@ try{
     solrQuery.add("facet.field","domain");
     solrQuery.add("facet.limit",""+facetLimit);
     solrQuery.addFilterQuery("crawl_date:["+dateStart+ " TO "+dateEnd+"]");
-    
+
     solrQuery.add("fl","id,score,title,arc_full,url, url_norm,,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);      
@@ -154,7 +155,7 @@ try{
 
     String dateStart= getSolrTimeStamp(crawlDateStart);
     String dateEnd = getSolrTimeStamp(crawlDateEnd);
-            
+
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery("domain:\""+domain+"\"");  
 
@@ -205,9 +206,9 @@ try{
 
     String urlNormFixed = fixUrlNormQuery(url_norm);
     String query = "(url:\""+url_norm+"\" OR "+ urlNormFixed +") AND crawl_date:{\""+crawlDate+"\" TO *]";    
-    
+
     SolrQuery solrQuery = new SolrQuery(query);            
-    
+
     solrQuery.setRows(1);
     solrQuery.setGetFieldStatistics(true);
     solrQuery.setGetFieldStatistics(statsField);
@@ -226,7 +227,7 @@ try{
       }
     }
 
-     urlNormFixed = fixUrlNormQuery(url_norm);    
+    urlNormFixed = fixUrlNormQuery(url_norm);    
     solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR "+urlNormFixed +") AND crawl_date:[* TO \""+crawlDate+"\"}");            
     log.info("solrQuery3:"+solrQuery.toQueryString());
     solrQuery.setRows(1);
@@ -260,9 +261,9 @@ try{
 
       rsp = solrServer.query(solrQuery,METHOD.POST);
       if (rsp.getResults().size() == 0){        
-       return stats; //url never found. 
+        return stats; //url never found. 
       }
-       domain=(String) rsp.getResults().get(0).getFieldValue("domain");    
+      domain=(String) rsp.getResults().get(0).getFieldValue("domain");    
     }    
     stats.setDomain(domain);
     solrQuery = new SolrQuery("domain:\""+domain+"\"");            
@@ -337,7 +338,7 @@ try{
     return search(searchString,filterQuery,50);
   }
 
-  
+
   public ArrayList<Date> getHarvestTimesForUrl(String url) throws Exception {
     System.out.println("harvesttimes for url:"+url);
     ArrayList<Date> dates = new ArrayList<Date>();
@@ -348,7 +349,7 @@ try{
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","id, crawl_date");    
     solrQuery.setRows(1000000);
-    
+
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
     SolrDocumentList docs = rsp.getResults();
@@ -362,7 +363,7 @@ try{
 
 
   public ArrayList<IndexDoc> getHarvestPreviewsForUrl(String url) throws Exception {
-       
+
     String urlNormFixed = fixUrlNormQuery(url);    
     SolrQuery solrQuery = new SolrQuery();
     solrQuery = new SolrQuery("(url:\""+url+"\" OR "+urlNormFixed+")");     
@@ -371,16 +372,16 @@ try{
     solrQuery.add("fl","id, crawl_date,arc_full,source_file_s, source_file, source_file_offset, score");    
     solrQuery.add("sort","crawl_date asc");
     solrQuery.setRows(1000000);
-       
+
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
     SolrDocumentList docs = rsp.getResults();
-       
+
     ArrayList<IndexDoc> indexDocs  = solrDocList2IndexDoc(docs);                   
     return indexDocs;
   }
 
-  
-  
+
+
   public IndexDoc getArcEntry(String arc_full, long offset) throws Exception {
 
     SolrQuery solrQuery = new SolrQuery();
@@ -388,7 +389,7 @@ try{
     solrQuery.add("fl", indexDocFieldList);   
     //Both v.2 and v.3 logic. 
     //SPLIT logik på version...
-    
+
     String query = null;
     if (warcIndexVersion2){
       Path p = Paths.get(arc_full); //Get filename from absolute path
@@ -409,12 +410,12 @@ try{
     }
 
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
-   
+
     return indexDocs.get(0);
   }
 
-  
-  
+
+
   public SearchResult search(String searchString, String filterQuery, int results) throws Exception {
     log.info("search for:" + searchString +" and filter:"+filterQuery);
     SearchResult result = new SearchResult();
@@ -430,7 +431,7 @@ try{
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
     SolrDocumentList docs = rsp.getResults();
 
-    
+
     result.setNumberOfResults(docs.getNumFound());
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
     result.setResults(indexDocs);
@@ -497,19 +498,19 @@ try{
 
 
 
-/*
- * Notice here do we not fix url_norm 
- */
+  /*
+   * Notice here do we not fix url_norm 
+   */
   public IndexDoc findClosestHarvestTimeForUrl(String url,String timeStamp) throws Exception {
     log.info("search for:" + url +" for crawldate:"+timeStamp);
 
     if (url == null || timeStamp == null){
       throw new IllegalArgumentException("harvestUrl or timeStamp is null"); // Can happen for url-rewrites that are not corrected       
     }
-    
+
     String urlNormFixed = fixUrlNormQuery(url);
     String query = "(url:\""+url+"\" OR "+ urlNormFixed +")";//Seems there is an error with url_norm. WWW is not always removed    
-               
+
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
 
@@ -530,14 +531,14 @@ try{
     return indexDocs.get(0);     
   }
 
- /* We dont want to return the solr docs outside this class and making VO for them will double memory imprint,.
-  * That is why we do all the CSV generation in the client class. For huge result sets there will also be deep paging.
-  *  
-  */
+  /* We dont want to return the solr docs outside this class and making VO for them will double memory imprint,.
+   * That is why we do all the CSV generation in the client class. For huge result sets there will also be deep paging.
+   *  
+   */
 
   public String exportBrief(String query, String filterQuery, int results) throws Exception {
     log.info("export brief:" + query +" and filter:"+filterQuery);
-    
+
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","title, arc_full,url,source_file_s,crawl_date,wayback_date");
@@ -553,24 +554,24 @@ try{
     GenerateCSV.generateFirstLineHeader(export);    
     GenerateCSV.generateSecondLineHeader(export, query, filterQuery);
     GenerateCSV.addHeadlineBrief(export);
-            
+
     long numFound = docs.getNumFound();    
     for ( SolrDocument doc : docs){
-     GenerateCSV.generateLineBrief(export, doc);
-     doc = null;// For garbage collection 
+      GenerateCSV.generateLineBrief(export, doc);
+      doc = null;// For garbage collection 
     }    
-    
+
     return export.toString();
   }
-  
-  
+
+
   /*
    * TODO v.3.0 suppport
    * 
    */
   public String exportFull(String query, String filterQuery, int results) throws Exception {
     log.info("export full:" + query +" and filter:"+filterQuery);
-    
+
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","title, host, public_suffix, crawl_year, content_type, content_language url, arc_full,url,source_file_s,crawl_date,wayback_date");    
@@ -586,16 +587,16 @@ try{
     GenerateCSV.generateFirstLineHeader(export);    
     GenerateCSV.generateSecondLineHeader(export, query, filterQuery);
     GenerateCSV.addHeadlineFull(export);
-            
+
     long numFound = docs.getNumFound();    
     for ( SolrDocument doc : docs){
-     GenerateCSV.generateLineFull(export, doc);
-     doc = null;// For garbage collection
+      GenerateCSV.generateLineFull(export, doc);
+      doc = null;// For garbage collection
     }    
-            
+
     return export.toString();
   }
-  
+
 
   private static ArrayList<IndexDoc> solrDocList2IndexDoc(SolrDocumentList docs) {
     ArrayList<IndexDoc> earchives = new ArrayList<IndexDoc>();
@@ -628,7 +629,7 @@ try{
         indexDoc.setHash(hashList.get(0));     
       }      
     }
-        
+
     Date date = (Date) doc.get("crawl_date");        
     indexDoc.setCrawlDateLong(date.getTime());
     indexDoc.setCrawlDate(getSolrTimeStamp(date));  //HACK! demo must be ready for lunch
@@ -641,7 +642,7 @@ try{
 
     return indexDoc;
   }
- 
+
   //both 2.0 and 3.0 
   public static long getOffset(SolrDocument doc){
     if (warcIndexVersion2){ //2.0    
@@ -653,9 +654,9 @@ try{
     else{ //3.0
       return  (Long) doc.get("source_file_offset");
     }
-    
+
   }
-  
+
 
   private static String getSolrTimeStamp(Date date){
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new         
@@ -674,18 +675,18 @@ try{
       lastPart=lastPart.substring(4);
     }    
     StringBuffer query = new StringBuffer(); 
-           
-      query.append("url_norm:\"http://www."+lastPart +"\"");
-      query.append(" OR");
-      query.append(" url_norm:\"https://www."+lastPart+"\"");
-      query.append(" OR");
-      query.append(" url_norm:\"https://"+lastPart+"\"");
-      query.append(" OR");
-      query.append(" url_norm:\"http://"+lastPart+"\"");      
+
+    query.append("url_norm:\"http://www."+lastPart +"\"");
+    query.append(" OR");
+    query.append(" url_norm:\"https://www."+lastPart+"\"");
+    query.append(" OR");
+    query.append(" url_norm:\"https://"+lastPart+"\"");
+    query.append(" OR");
+    query.append(" url_norm:\"http://"+lastPart+"\"");      
     return  query.toString(); 
   }
 
-  
-  
-  
+
+
+
 }
