@@ -1,5 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -380,14 +382,21 @@ try{
   
   
   public IndexDoc getArcEntry(String arc_full, long offset) throws Exception {
-   String source_file_s="test";
+
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl", indexDocFieldList);   
     //Both v.2 and v.3 logic. 
     //SPLIT logik på version...
     
-    String query = "source_file_s:\""+ source_file_s +"\" OR (arc_full:\""+arc_full+"\" AND source_file_offset:"+offset+" )"  ;
+    String query = null;
+    if (warcIndexVersion2){
+      Path p = Paths.get(arc_full); //Get filename from absolute path
+      String fileName = p.getFileName().toString();                  
+      query = "source_file_s:\""+ fileName +"@"+offset +"\"";
+    }else if (warcIndexVersion3){
+      query = "arc_full:\""+arc_full+"\" AND source_file_offset:"+offset ;
+    }      
     log.info("getArcEntry query:"+ query);    
     solrQuery.setQuery(query) ;
     solrQuery.setRows(1);
