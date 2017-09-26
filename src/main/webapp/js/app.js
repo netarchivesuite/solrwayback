@@ -364,7 +364,18 @@ var app = new Vue({
                         /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
-                                this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_s, i);
+                              
+                            	//NIG, her kunne jeg ike finde ud af at kalde getOffset metoden. Nok noget med 
+                            	//Forskellige komponenter, så den har jeg bare kopieret her. Kan du rydde op ?
+                                //koden bør bare være : var offset = getOffset(this.searchResult[i]);
+                            	var offset;
+                                if(this.searchResult[i].source_file_offset){
+                                     offset= this.searchResult[i].source_file_offset
+                                 }
+                                else{
+                                  offset= this.searchResult[i].source_file_s.split('@')[1]
+                                }                                                            
+                            	this.getImages(this.searchResult[i].id,this.searchResult[i].arc_full,offset, i);
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
@@ -401,12 +412,12 @@ var app = new Vue({
             this.searchResult = "";
         },
 
-        getImages: function(id,sourcefiles, counter){
-            var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles;
+        getImages: function(id,arc_full, offset, counter){
+            var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset;
 
             /* ImageInfoUrl for local developement*/
-            if(location.host==='localhost:8080'){
-                imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_s=" + sourcefiles + '&test=true';
+            if(location.host==='localhost:8080'){            
+            	var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset+'&test=false';
             }
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = "";
