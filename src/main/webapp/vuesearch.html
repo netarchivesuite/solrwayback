@@ -15,42 +15,42 @@
     <div class="wrapper" id="app">
         <h1>SOLR Wayback Search</h1>
 
-        <search-box :do-search="doSearch" :my-query="myQuery" :image-search="imageSearch" :clear-search="clearSearch"></search-box>
+        <search-box :setup-search="setupSearch" :my-query="myQuery" :image-search="imageSearch" :clear-search="clearSearch"></search-box>
 
 
-        <selected-facets-box v-if="facetFields.length > 0 && !imageSearch" :facet-fields="facetFields" :do-search="doSearch"
+        <selected-facets-box v-if="facetFields.length > 0 && !imageSearch" :facet-fields="facetFields" :setup-search="setupSearch"
                              :my-query="myQuery" :clear-facets="clearFacets"></selected-facets-box>
 
         <error-box v-if="errorMsg" :error-msg="errorMsg"></error-box>
 
 
         <facet-box v-if="totalHits > 0 && myQuery && !errorMsg && !imageSearch" :my-facets="myFacets" :my-query="myQuery"
-                   :do-search="doSearch"></facet-box>
+                   :setup-search="setupSearch"></facet-box>
 
 
         <zerohits-box v-if="totalHits == 0 && searchResult && myQuery != '' && myQuery && !imageSearch" :my-query="myQuery"></zerohits-box>
 
         <div class="result" v-if="myQuery && !errorMsg && !imageSearch">
 
-            <pager-box v-if="searchResult" :do-search="doSearch" :total-hits="totalHits" :start="start" :my-query="myQuery"
+            <pager-box v-if="searchResult" :setup-search="setupSearch" :total-hits="totalHits" :start="start" :my-query="myQuery"
                        :filters="filters" :disabled-prev="disabledPrev"  :disabled-next="disabledNext" :show-spinner="showSpinner"
                        :hide-spinner="hideSpinner" :image-search="imageSearch"></pager-box>
 
             <result-box v-if="totalHits > 0" :search-result="searchResult" :image-objects="imageObjects"
-                        :do-search="doSearch" :clear-facets="clearFacets"></result-box>
+                        :setup-search="setupSearch" :clear-facets="clearFacets"></result-box>
 
 
-            <pager-box  v-if="totalHits > 21" :do-search="doSearch" :total-hits="totalHits" :start="start"
+            <pager-box  v-if="totalHits > 21" :setup-search="setupSearch" :total-hits="totalHits" :start="start"
                         :disabled-prev="disabledPrev"  :disabled-next="disabledNext" is-bottom="true"></pager-box>
         </div>
 
         <div class="result images" v-if="myQuery && !errorMsg && imageSearch">
 
-            <pager-box v-if="searchResult" :do-search="doSearch" :total-hits="totalHits" :start="start" :my-query="myQuery"
+            <pager-box v-if="searchResult" :setup-search="setupSearch" :total-hits="totalHits" :start="start" :my-query="myQuery"
                        :filters="filters" :disabled-prev="disabledPrev"  :disabled-next="disabledNext" :show-spinner="showSpinner"
                        :hide-spinner="hideSpinner" :image-search="imageSearch"></pager-box>
 
-            <result-box-images :search-result="searchResult" :do-search="doSearch" :clear-facets="clearFacets"></result-box-images>
+            <result-box-images :search-result="searchResult" :setup-search="setupSearch" :clear-facets="clearFacets"></result-box-images>
 
         </div>
 

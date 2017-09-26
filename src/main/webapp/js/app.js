@@ -6,20 +6,20 @@ Vue.filter('facetName', function(value) {
 })
 
 Vue.component('search-box', {
-    props: ['doSearch','myQuery','imageSearch','clearSearch'],
+    props: ['setupSearch','myQuery','imageSearch','clearSearch'],
     template: `
     <div>
         <div id="searchbox">
             <div>
-                <input  id="queryInput"  v-on:keyup.enter="doSearch('search',queryModel, imageSearchModel);searchByFile = false" 
+                <input  id="queryInput"  v-on:keyup.enter="setupSearch('search',queryModel, imageSearchModel);searchByFile = false" 
                 v-model='queryModel' type="text" placeholder="search" autofocus />
                 <button class="btn" 
-                v-on:click="doSearch('search', queryModel, imageSearchModel);searchByFile = false">Search</button>
+                v-on:click="setupSearch('search', queryModel, imageSearchModel);searchByFile = false">Search</button>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = false">Clear search</span>
                 <br>
                 <label>
                     <input class="imageSearchCheck" v-model="imageSearchModel" type="checkbox"
-                    v-on:change="doSearch('search',queryModel, imageSearchModel);searchByFile = false"> Image search
+                    v-on:change="setupSearch('search',queryModel, imageSearchModel);searchByFile = false"> Image search
                 </label>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span>               
             </div>
@@ -52,7 +52,7 @@ Vue.component('search-box', {
             data.append('file', file);
             this.$http.post(url,data).then((response) => {
                 var sha1 = response.body;
-                this.doSearch('search', 'hash:"' + sha1 + '"');
+                this.setupSearch('search', 'hash:"' + sha1 + '"');
             }, (response) => {
                 console.log('error: ', response);
             });
@@ -61,7 +61,7 @@ Vue.component('search-box', {
 })
 
 Vue.component('selected-facets-box', {
-    props: ['doSearch','facetFields','myQuery','clearFacets'],
+    props: ['setupSearch','facetFields','myQuery','clearFacets'],
     template: `
     <div id="selectedFacetsbox" class="box">
         <span>Selected facets:</span>
@@ -82,13 +82,13 @@ Vue.component('selected-facets-box', {
                     this.facetFields.splice(i, 1);
                 }
             }
-            this.doSearch('facet',this.myQuery);
+            this.setupSearch('facet',this.myQuery);
         }
     }
 })
 
 Vue.component('facet-box', {
-    props: ['doSearch','myQuery','myFacets'],
+    props: ['setupSearch','myQuery','myFacets'],
     template: `
     <div>
         <div id="facets">
@@ -107,13 +107,13 @@ Vue.component('facet-box', {
     methods:{
         facetClicked: function(facetField,index){
             var facetTerm = this.myFacets[facetField][2*(index)];
-            this.doSearch('facet',this.mySearch,facetField,facetTerm);
+            this.setupSearch('facet',this.mySearch,facetField,facetTerm);
         }
     }
 })
 
 Vue.component('pager-box', {
-    props: ['doSearch', 'totalHits', 'start','disabledPrev','disabledNext','isBottom','myQuery','filters','showSpinner','hideSpinner','imageSearch'],
+    props: ['setupSearch', 'totalHits', 'start','disabledPrev','disabledNext','isBottom','myQuery','filters','showSpinner','hideSpinner','imageSearch'],
     template: `
     <div class="counterBox" :class="{bottom : isBottom}" v-if="totalHits > 0">
         <div class="selectDownload" v-if="!isBottom">
@@ -133,8 +133,8 @@ Vue.component('pager-box', {
         </div>
 
         <div class="pagerBox" v-if="totalHits > 21 && !imageSearch">
-            <button :disabled="disabledPrev" class="pager prev" v-on:click="doSearch('paging','','prev')">Previous</button>
-            <button :disabled="disabledNext" class="pager next" v-on:click="doSearch('paging','','next')">Next</button>
+            <button :disabled="disabledPrev" class="pager prev" v-on:click="setupSearch('paging','','prev')">Previous</button>
+            <button :disabled="disabledNext" class="pager next" v-on:click="setupSearch('paging','','next')">Next</button>
         </div>
     </div>
     `,
@@ -151,7 +151,7 @@ Vue.component('pager-box', {
 })
 
 Vue.component('result-box', {
-    props: ['searchResult','imageObjects','doSearch','clearFacets'],
+    props: ['searchResult','imageObjects','setupSearch','clearFacets'],
     template: `
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
@@ -234,7 +234,7 @@ Vue.component('result-box', {
                                 <span v-html="imageUrl"></span>                  
                             </a>
                             <br/>  
-                            <span class="link" v-on:click="doSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span>
+                            <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span>
                         </div>
                     </template>
                 </div>   
@@ -256,12 +256,12 @@ Vue.component('result-box', {
 
 
 Vue.component('result-box-images', {
-    props: ['searchResult','doSearch','clearFacets'],
+    props: ['searchResult','setupSearch','clearFacets'],
     template: `
     <div class="searchResults images">
         <div v-for="doc in searchResult" class="searchResultItem">
              <div class="thumb"><a v-bind:href="doc.downloadUrl" target="_blank"><img v-if="doc.imageUrl" v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
-             <div class="link" v-if="doc.imageUrl" v-on:click="doSearch('search', 'hash:&quot;' + doc.hash + '&quot;');clearFacets()">Search for image</div>
+             <div class="link" v-if="doc.imageUrl" v-on:click="setupSearch('search', 'hash:&quot;' + doc.hash + '&quot;');clearFacets()">Search for image</div>
         </div>
     </div>    
     `
@@ -295,42 +295,42 @@ var app = new Vue({
     },
     methods: {
 
-        doSearch: function(type, query, param3, param4){
+        setupSearch: function(type, query, param3, param4) {
             this.imageObjects = []; //resetting imageObjecs on new search
-            if(type == "search") {
+            if (type == "search") {
                 this.searchType = type;
                 this.myQuery = query;
                 this.start = 0;
-                if(param3){
+                if (param3) {
                     this.imageSearch = param3;
-                }else{
+                } else {
                     this.imageSearch = false;
                 }
             }
-            if(type == "paging"){
-                if(param3 === "prev"){
-                    if(this.start >= 20){
+            if (type == "paging") {
+                if (param3 === "prev") {
+                    if (this.start >= 20) {
                         this.start = this.start - 20;
                     }
-                }else if(param3 === "next"){
-                    if(this.start + 20 < this.totalHits){
+                } else if (param3 === "next") {
+                    if (this.start + 20 < this.totalHits) {
                         this.start = this.start + 20;
                     }
                 }
-                else{
+                else {
                     this.start = 0;
                     this.disabledPrev = true;
                 }
             }
-            if(type == "facet"){
+            if (type == "facet") {
                 this.searchType = type;
-                if(param3){
-                    var tempObj = {[param3] : param4}; //Facet field and facet term saved in object and pushed to array
+                if (param3) {
+                    var tempObj = {[param3]: param4}; //Facet field and facet term saved in object and pushed to array
                     this.facetFields.push(tempObj);
                 }
                 this.filters = ''; //Setting up filters string for search URL
-                for(var i=0; i < this.facetFields.length; i++){
-                    if(i > 0){
+                for (var i = 0; i < this.facetFields.length; i++) {
+                    if (i > 0) {
                         this.filters = this.filters + '%20AND%20'
                     }
                     for (var key in this.facetFields[i]) {
@@ -340,18 +340,21 @@ var app = new Vue({
                 this.start = 0; //resetting pager
             }
 
-            if(!this.imageSearch){
-                var searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
+            if (!this.imageSearch) {
+                this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
                     '&start=' + this.start + '&fq=' + this.filters;
-            }else{
-                var searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
-                   '&start=' + this.start + '&fq=' + this.filters;
+            } else {
+                this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
+                    '&start=' + this.start + '&fq=' + this.filters;
             }
+            this.doSearch();
+        },
 
+        doSearch: function(){
             /* Starting search if there's a query*/
             if(this.myQuery && this.myQuery.trim() != ''){
                 this.showSpinner();
-                this.$http.get(searchUrl).then((response) => {
+                this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
                     console.log('response: ', response);
                     if(response.body.error){
@@ -402,7 +405,7 @@ var app = new Vue({
         clearFacets: function(){
             this.facetFields = [];
             this.filters = "";
-            this.doSearch('search',this.myQuery);
+            this.setupSearch('search',this.myQuery);
         },
 
         clearSearch: function(){
@@ -417,7 +420,7 @@ var app = new Vue({
 
             /* ImageInfoUrl for local developement*/
             if(location.host==='localhost:8080'){            
-            	var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset+'&test=false';
+            	var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset+'&test=true';
             }
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = "";
