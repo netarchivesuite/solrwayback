@@ -151,13 +151,13 @@ Vue.component('pager-box', {
 })
 
 Vue.component('result-box', {
-    props: ['searchResult','imageObjects','setupSearch','getOffset','clearFacets'],
+    props: ['searchResult','imageObjects','setupSearch','getOffset','clearFacets','baseUrl'],
     template: `
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
                 <h3>
-                <a v-bind:href="'http://belinda:9721/solrwayback/services/view?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
+                <a v-bind:href=" baseUrl + 'services/view?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
                 </a>
@@ -210,7 +210,7 @@ Vue.component('result-box', {
             <!-- Download PDF's, Word docs etc. -->
             <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
                 <div class="download">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"  target="_blank">
+                    <a v-bind:href=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"  target="_blank">
                        Download {{ doc.content_type_norm }}
                     </a>
                 </div>  
@@ -219,8 +219,8 @@ Vue.component('result-box', {
             <!-- Images -->    
             <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
                 <div class="image">
-                    <a v-bind:href="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
-                        <img v-bind:src="'http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"/>
+                    <a v-bind:href=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
+                        <img v-bind:src=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"/>
                     </a>
                 </div>  
             </div>
@@ -242,7 +242,10 @@ Vue.component('result-box', {
             
         </div>
     </div>    
-    `
+    `,
+    created: function(){
+        console.log('this.baseUrl in searhresult',this.baseUrl)
+    }
 })
 
 
@@ -283,6 +286,14 @@ var app = new Vue({
         spinner: false,
         errorMsg: '',
         imageObjects: [],
+        baseUrl: '',
+    },
+    created() { //getting base url from properties file
+        this.$http.get( "http://" + location.host +  "/solrwayback/services/properties/solrwaybackweb").then((response) => {
+            this.baseUrl = response.body['wayback.baseurl'];
+        }, (response) => {
+            console.log('error: ', response);
+        });
     },
     methods: {
 
@@ -347,7 +358,7 @@ var app = new Vue({
                 this.showSpinner();
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
-                    console.log('response.body: ', response.body);
+                    //console.log('response.body: ', response.body);
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         this.hideSpinner();
