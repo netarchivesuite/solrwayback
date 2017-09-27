@@ -270,6 +270,15 @@ Vue.component('zerohits-box', {
     `
 })
 
+Vue.component('error-box', {
+    props: ['errorMsg', 'myQuery'],
+    template: `
+    <div class="box">
+        <p>Your search for <span class="bold">{{ myQuery }}</span> gave following error: <span class="bold">{{errorMsg}}</span></p>
+    </div>
+    `
+})
+
 var app = new Vue({
     el: '#app',
     data: {
@@ -358,7 +367,7 @@ var app = new Vue({
                 this.showSpinner();
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
-                    //console.log('response.body: ', response.body);
+                    console.log('response.body: ', response.body);
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         this.hideSpinner();

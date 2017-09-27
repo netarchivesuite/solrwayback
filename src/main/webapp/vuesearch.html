@@ -21,7 +21,7 @@
         <selected-facets-box v-if="facetFields.length > 0 && !imageSearch" :facet-fields="facetFields" :setup-search="setupSearch"
                              :my-query="myQuery" :clear-facets="clearFacets"></selected-facets-box>
 
-        <error-box v-if="errorMsg" :error-msg="errorMsg"></error-box>
+        <error-box v-if="errorMsg" :error-msg="errorMsg" :my-query="myQuery"></error-box>
 
 
         <facet-box v-if="totalHits > 0 && myQuery && !errorMsg && !imageSearch" :my-facets="myFacets" :my-query="myQuery"
