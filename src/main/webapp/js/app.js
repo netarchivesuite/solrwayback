@@ -151,7 +151,7 @@ Vue.component('pager-box', {
 })
 
 Vue.component('result-box', {
-    props: ['searchResult','imageObjects','setupSearch','clearFacets'],
+    props: ['searchResult','imageObjects','setupSearch','getOffset','clearFacets'],
     template: `
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
@@ -242,16 +242,7 @@ Vue.component('result-box', {
             
         </div>
     </div>    
-    `,
-    methods: {
-        getOffset: function(doc){
-            if(doc.source_file_offset){
-                return doc.source_file_offset
-            }else{
-                return doc.source_file_s.split('@')[1]
-            }
-        }
-    }
+    `
 })
 
 
@@ -279,7 +270,7 @@ Vue.component('zerohits-box', {
 var app = new Vue({
     el: '#app',
     data: {
-        searchResult: '',
+        searchResult: null,
         myFacets: '',
         myQuery: '',
         facetFields: [],
@@ -356,7 +347,7 @@ var app = new Vue({
                 this.showSpinner();
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
-                    console.log('response: ', response);
+                    console.log('response.body: ', response.body);
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         this.hideSpinner();
@@ -367,18 +358,7 @@ var app = new Vue({
                         /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
-                              
-                            	//NIG, her kunne jeg ike finde ud af at kalde getOffset metoden. Nok noget med 
-                            	//Forskellige komponenter, så den har jeg bare kopieret her. Kan du rydde op ?
-                                //koden bør bare være : var offset = getOffset(this.searchResult[i]);
-                            	var offset;
-                                if(this.searchResult[i].source_file_offset){
-                                     offset= this.searchResult[i].source_file_offset
-                                 }
-                                else{
-                                  offset= this.searchResult[i].source_file_s.split('@')[1]
-                                }                                                            
-                            	this.getImages(this.searchResult[i].id,this.searchResult[i].arc_full,offset, i);
+                            	this.getImages(this.searchResult[i].id,this.searchResult[i].arc_full,this.getOffset(this.searchResult[i]));
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
@@ -415,12 +395,12 @@ var app = new Vue({
             this.searchResult = "";
         },
 
-        getImages: function(id,arc_full, offset, counter){
+        getImages: function(id,arc_full, offset){
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset;
 
             /* ImageInfoUrl for local developement*/
             if(location.host==='localhost:8080'){            
-            	var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset+'&test=true';
+            	var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset+'&test=true'
             }
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = "";
@@ -442,6 +422,14 @@ var app = new Vue({
             }, (response) => {
                 console.log('error: ', response);
             });
+        },
+
+        getOffset: function(doc) {
+            if (doc.source_file_offset) {
+                return doc.source_file_offset
+            } else {
+                return doc.source_file_s.split('@')[1]
+            }
         },
 
         showSpinner: function(){

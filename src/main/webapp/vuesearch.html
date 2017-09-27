@@ -37,7 +37,7 @@
                        :hide-spinner="hideSpinner" :image-search="imageSearch"></pager-box>
 
             <result-box v-if="totalHits > 0" :search-result="searchResult" :image-objects="imageObjects"
-                        :setup-search="setupSearch" :clear-facets="clearFacets"></result-box>
+                        :setup-search="setupSearch" :get-offset="getOffset" :clear-facets="clearFacets"></result-box>
 
 
             <pager-box  v-if="totalHits > 21" :setup-search="setupSearch" :total-hits="totalHits" :start="start"
