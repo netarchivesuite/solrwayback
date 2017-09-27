@@ -52,8 +52,8 @@ public class Facade {
         return result;
     }
     
-    public static String solrSearch(String query, String filterQuery, int start) throws Exception {
-      return proxySolr(query, filterQuery , start);
+    public static String solrSearch(String query, String filterQuery,boolean revisits, int start) throws Exception {
+      return proxySolr(query, filterQuery , revisits, start);
   }
     
     public static ArrayList<? extends ArcEntryDescriptor> findImages(String searchText) throws Exception {
@@ -401,7 +401,7 @@ public class Facade {
     
     
     
-    public static String proxySolr( String query, String fq, Integer start) throws Exception{                    
+    public static String proxySolr( String query, String fq, boolean revisits, Integer start) throws Exception{                    
       
       String startStr ="0";
       if (start != null){
@@ -430,6 +430,9 @@ public class Facade {
       if ( fq != null && fq.length() > 0){
         queryWs = queryWs.queryParam("fq",fq);                        
        }
+      if (!revisits){
+        queryWs = queryWs.queryParam("fq", "record_type:response");
+      }
                  
       ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
       String responseStr= response.getEntity(String.class);

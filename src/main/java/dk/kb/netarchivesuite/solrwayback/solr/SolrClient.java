@@ -301,6 +301,7 @@ public class SolrClient {
     solrQuery.add("group","true");       
     solrQuery.add("group.field","url_norm");
     solrQuery.add("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
+    solrQuery.setFilterQueries("record_type:response"); //No binary for revists. 
     solrQuery.add("fl", indexDocFieldList);
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
@@ -515,7 +516,7 @@ public class SolrClient {
     solrQuery.setQuery(query);
 
     solrQuery.setRows(1); //get 50 images...
-
+    solrQuery.setFilterQueries("record_type:response"); //No binary for revists. 
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
     solrQuery.add("fl", indexDocFieldList);

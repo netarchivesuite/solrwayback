@@ -72,20 +72,7 @@ public class SolrWaybackResource {
 	}
 			
     private static final Logger log = LoggerFactory.getLogger(SolrWaybackResource.class);
-
-    //TODO slet denne  når NIG er færdig
-    @GET
-    @Path("/findimages")
-    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-    public ArrayList<ArcEntryDescriptor> findImages(@QueryParam("searchText") String searchText) throws ServiceException {
-        try {                    
-            ArrayList<? extends ArcEntryDescriptor> img = Facade.findImages(searchText);
-            return  (ArrayList<ArcEntryDescriptor>) img; 
-        } catch (Exception e) {           
-            throw handleServiceExceptions(e);
-        }
-    }
-    
+   
     @GET
     @Path("/images/search")
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
@@ -112,27 +99,13 @@ public class SolrWaybackResource {
             throw handleServiceExceptions(e);
         }
     }
-    
-  //TODO slet denne  når NIG er færdig
-    @GET
-    @Path("/search")
-    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-    public SearchResult search(@QueryParam("searchText") String searchText, @QueryParam("filterQuery") String filterQuery) throws ServiceException {
-        try {                    
-            return Facade.search(searchText,filterQuery);
-        } catch (Exception e) {
-          log.error("error for search:"+searchText, e);
-            throw handleServiceExceptions(e);
-        }
-    }
-    
-    
+       
     @GET
     @Path("solr/search")
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public String  solrSearch(@QueryParam("query") String query, @QueryParam("fq") String filterQuery , @QueryParam("start") int start) throws ServiceException {
+    public String  solrSearch(@QueryParam("query") String query, @QueryParam("fq") String filterQuery ,  @QueryParam("revisits") boolean revisits , @QueryParam("start") int start) throws ServiceException {
         try {                    
-          String res = Facade.solrSearch(query,filterQuery,start);          
+          String res = Facade.solrSearch(query,filterQuery, revisits, start);          
           return res;
         } catch (Exception e) {
           log.error("error for search:"+query, e);
@@ -157,7 +130,8 @@ public class SolrWaybackResource {
     @Path("images/htmlpage")
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
     public ArrayList<ImageUrl> imagesForPage(@QueryParam("arc_full") String arc_full, @QueryParam("offset") long offset  , @QueryParam("test") boolean test) throws ServiceException {
-     
+     log.info("arc_full:"+arc_full);
+     log.info("offset:"+offset);
       if (test){
         return imagesForPageTest();
       }
