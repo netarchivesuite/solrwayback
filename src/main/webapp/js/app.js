@@ -128,8 +128,8 @@ Vue.component('pager-box', {
         </div>      
 
         <div v-if="totalHits > 0 && !imageSearch" class="resultCount">
-            <h3 v-if="start + 20 < totalHits" >Showing  {{ start + 1 }}-{{ start + 20 }} of {{ totalHits }} hits</h3>
-            <h3  v-else>Showing {{ start + 1 }}-{{ totalHits }} of {{ totalHits }} hits</h3>
+            <h3 v-if="start + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits }} hits</h3>
+            <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits }} hits</h3>
         </div>
 
         <div class="pagerBox" v-if="totalHits > 21 && !imageSearch">
@@ -242,10 +242,7 @@ Vue.component('result-box', {
             
         </div>
     </div>    
-    `,
-    created: function(){
-        console.log('this.baseUrl in searhresult',this.baseUrl)
-    }
+    `
 })
 
 
@@ -279,7 +276,13 @@ Vue.component('error-box', {
     `
 })
 
+var router = new VueRouter({
+    mode: 'history',
+    routes: []
+});
+
 var app = new Vue({
+    router,
     el: '#app',
     data: {
         searchResult: null,
@@ -304,12 +307,25 @@ var app = new Vue({
             console.log('error: ', response);
         });
     },
+    watch: { //updating when route is changing
+        '$route' () {
+            this.myQuery = this.$route.query.query;
+            this.start= this.$route.query.start;
+            this.filters = this.$route.query.filter;
+            this.doSearch();
+        }
+    },
+    created: function() {
+        this.myQuery = this.$route.query.query;
+        this.start= this.$route.query.start;
+        this.filters = this.$route.query.filter;
+        this.doSearch();
+    },
     methods: {
 
         setupSearch: function(type, query, param3, param4) {
             this.imageObjects = []; //resetting imageObjecs on new search
             if (type == "search") {
-                this.searchType = type;
                 this.myQuery = query;
                 this.start = 0;
                 if (param3) {
@@ -334,7 +350,6 @@ var app = new Vue({
                 }
             }
             if (type == "facet") {
-                this.searchType = type;
                 if (param3) {
                     var tempObj = {[param3]: param4}; //Facet field and facet term saved in object and pushed to array
                     this.facetFields.push(tempObj);
@@ -351,6 +366,16 @@ var app = new Vue({
                 this.start = 0; //resetting pager
             }
 
+            router.push({
+                query: {
+                    query: this.myQuery,
+                    start: this.start,
+                    filter: this.filters
+                }
+            });
+        },
+
+        doSearch: function(){
             if (!this.imageSearch) {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
                     '&start=' + this.start + '&fq=' + this.filters;
@@ -358,16 +383,22 @@ var app = new Vue({
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
                     '&start=' + this.start + '&fq=' + this.filters;
             }
-            this.doSearch();
-        },
-
-        doSearch: function(){
+            this.facetFields = []; //resetting facet fields before building them from query params
+            if(this.filters){
+                var facetPairs = this.filters.split('%20AND%20');
+                facetFieldsTemp = [];
+                for( var i = 0; i < facetPairs.length; i++ ){
+                    facetFieldsTemp = facetPairs[i].split('%3A');
+                    var tempObj = {[facetFieldsTemp[0]]: facetFieldsTemp[1]}; //Facet field and facet term saved in object and pushed to array
+                    this.facetFields.push(tempObj);
+                }
+            }
             /* Starting search if there's a query*/
             if(this.myQuery && this.myQuery.trim() != ''){
                 this.showSpinner();
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
-                    console.log('response.body: ', response.body);
+                    //console.log('response.body: ', response.body);
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         this.hideSpinner();
