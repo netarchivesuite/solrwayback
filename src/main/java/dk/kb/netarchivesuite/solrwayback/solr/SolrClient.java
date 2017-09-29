@@ -481,6 +481,11 @@ public class SolrClient {
     solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
     solrQuery.add("fl", indexDocFieldList);
 
+    solrQuery.setRows(1000);
+    if (warcIndexVersion3){
+      solrQuery.setFilterQueries("record_type:response"); //No binary for revists. 
+    }
+    
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
 
     ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
