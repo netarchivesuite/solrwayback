@@ -300,13 +300,6 @@ var app = new Vue({
         imageObjects: [],
         baseUrl: '',
     },
-    created() { //getting base url from properties file
-        this.$http.get( "http://" + location.host +  "/solrwayback/services/properties/solrwaybackweb").then((response) => {
-            this.baseUrl = response.body['wayback.baseurl'];
-        }, (response) => {
-            console.log('error: ', response);
-        });
-    },
     watch: { //updating when route is changing
         '$route' () {
            this.getQueryparams();
@@ -314,13 +307,17 @@ var app = new Vue({
         }
     },
     created: function() {
+        this.$http.get( "http://" + location.host +  "/solrwayback/services/properties/solrwaybackweb").then((response) => {
+            this.baseUrl = response.body['wayback.baseurl'];
+        }, (response) => {
+            console.log('error: ', response);
+        });
         this.getQueryparams();
         this.doSearch();
     },
     methods: {
         setupSearch: function(type, query, param3, param4) {
             this.imageObjects = []; //resetting imageObjecs on new search
-            //this.start = 50; //Preparing url params
             this.filters = ''; //Preparing url params
             if (type == "search") {
                 this.myQuery = query;
@@ -437,25 +434,12 @@ var app = new Vue({
             }
         },
 
-        clearFacets: function(){
-            this.facetFields = [];
-            this.filters = "";
-            this.setupSearch('search',this.myQuery);
-        },
-
-        clearSearch: function(){
-            this.facetFields = [];
-            this.filters = "";
-            this.myQuery = "";
-            this.searchResult = "";
-        },
-
         getImages: function(id,arc_full, offset){
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset;
 
             /* ImageInfoUrl for local developement*/
-            if(location.host==='localhost:8080'){            
-            	var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset+'&test=true'
+            if(location.host==='localhost:8080'){
+                var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset+'&test=true'
             }
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = "";
@@ -492,6 +476,19 @@ var app = new Vue({
             this.start= this.$route.query.start;
             this.filters = this.$route.query.filter;
             this.imageSearch = this.$route.query.imgsearch;
+        },
+
+        clearFacets: function(){
+            this.facetFields = [];
+            this.filters = "";
+            this.setupSearch('search',this.myQuery);
+        },
+
+        clearSearch: function(){
+            this.facetFields = [];
+            this.filters = "";
+            this.myQuery = "";
+            this.searchResult = "";
         },
 
         showSpinner: function(){
