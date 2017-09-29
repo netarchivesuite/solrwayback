@@ -408,7 +408,7 @@ public class Facade {
         startStr=start.toString();
       }
 
-      log.info("query "+query);
+      log.info("query "+query +" revisits:"+revisits);
       String solrUrl =PropertiesLoader.SOLR_SERVER;  
       ClientConfig config = new DefaultClientConfig();
       Client client = Client.create(config);
@@ -437,6 +437,9 @@ public class Facade {
       ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
       String responseStr= response.getEntity(String.class);
 
+      log.info(responseStr.substring(0, Math.min(500, responseStr.length()-1)));
+      
+      
       return responseStr;
       
   }

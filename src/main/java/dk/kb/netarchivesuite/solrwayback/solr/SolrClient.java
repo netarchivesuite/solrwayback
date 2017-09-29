@@ -228,8 +228,7 @@ public class SolrClient {
     }
 
     urlNormFixed = fixUrlNormQuery(url_norm);    
-    solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR "+urlNormFixed +") AND crawl_date:[* TO \""+crawlDate+"\"}");            
-    log.info("solrQuery3:"+solrQuery.toQueryString());
+    solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR "+urlNormFixed +") AND crawl_date:[* TO \""+crawlDate+"\"}");                
     solrQuery.setRows(1);
     solrQuery.setGetFieldStatistics(true);
     solrQuery.setGetFieldStatistics(statsField);
@@ -254,7 +253,6 @@ public class SolrClient {
     if (domain == null){      
       //This can happen if we only have 1 harvest. It will not be include in the {x,*] og [*,x } since x is not included
       solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR "+urlNormFixed +")");            
-      log.info(solrQuery.toString());
       solrQuery.setRows(1);
       solrQuery.setGetFieldStatistics(true);
       solrQuery.setGetFieldStatistics(statsField);
@@ -267,7 +265,6 @@ public class SolrClient {
     }    
     stats.setDomain(domain);
     solrQuery = new SolrQuery("domain:\""+domain+"\"");            
-    log.info(solrQuery.toString());
     solrQuery.setRows(1);
     solrQuery.setGetFieldStatistics(true);
     solrQuery.setGetFieldStatistics("content_length");
@@ -304,6 +301,7 @@ public class SolrClient {
     if (warcIndexVersion3){
       solrQuery.setFilterQueries("record_type:response"); //No binary for revists. 
     }
+    // solrQuery.setFilterQueries("image_size:[2000 TO *]"); //ignore very small images. Only in 3.0  
     solrQuery.add("fl", indexDocFieldList);
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
@@ -348,7 +346,6 @@ public class SolrClient {
     String urlNormFixed = fixUrlNormQuery(url);    
     SolrQuery solrQuery = new SolrQuery();
     solrQuery = new SolrQuery("(url:\""+url+"\" OR "+urlNormFixed+")");     
-    log.info("solrQuery1:"+solrQuery.toQueryString());
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","id, crawl_date");    
     solrQuery.setRows(1000000);
@@ -370,7 +367,6 @@ public class SolrClient {
     String urlNormFixed = fixUrlNormQuery(url);    
     SolrQuery solrQuery = new SolrQuery();
     solrQuery = new SolrQuery("(url:\""+url+"\" OR "+urlNormFixed+")");     
-    log.info("solrQuery1:"+solrQuery.toQueryString());
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","id, crawl_date,arc_full,source_file_s, source_file, source_file_offset, score");    
     solrQuery.add("sort","crawl_date asc");
