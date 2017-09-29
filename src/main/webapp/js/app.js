@@ -128,7 +128,7 @@ Vue.component('pager-box', {
         </div>      
 
         <div v-if="totalHits > 0 && !imageSearch" class="resultCount">
-            <h3 v-if="start + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits }} hits</h3>
+            <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits }} hits</h3>
             <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits }} hits</h3>
         </div>
 
@@ -289,7 +289,7 @@ var app = new Vue({
         myFacets: '',
         myQuery: '',
         facetFields: [],
-        filters: '',
+        filters: 'test',
         totalHits: 0,
         start: 0,
         imageSearch: false,
@@ -309,22 +309,19 @@ var app = new Vue({
     },
     watch: { //updating when route is changing
         '$route' () {
-            this.myQuery = this.$route.query.query;
-            this.start= this.$route.query.start;
-            this.filters = this.$route.query.filter;
-            this.doSearch();
+           this.getQueryparams();
+           this.doSearch();
         }
     },
     created: function() {
-        this.myQuery = this.$route.query.query;
-        this.start= this.$route.query.start;
-        this.filters = this.$route.query.filter;
+        this.getQueryparams();
         this.doSearch();
     },
     methods: {
-
         setupSearch: function(type, query, param3, param4) {
             this.imageObjects = []; //resetting imageObjecs on new search
+            //this.start = 50; //Preparing url params
+            this.filters = ''; //Preparing url params
             if (type == "search") {
                 this.myQuery = query;
                 this.start = 0;
@@ -369,20 +366,27 @@ var app = new Vue({
             router.push({
                 query: {
                     query: this.myQuery,
-                    start: this.start,
-                    filter: this.filters
+                    start: parseInt(this.start),
+                    filter: this.filters,
+                    imgsearch: this.imageSearch
                 }
             });
         },
 
         doSearch: function(){
+            if(!this.imageSearch || this.imageSearch == 'false' ){ //converting possible string value from query param to boolean
+                this.imageSearch = false
+            }else{
+                this.imageSearch = true
+            }
             if (!this.imageSearch) {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
-                    '&start=' + this.start + '&fq=' + this.filters;
+                    '&start=' + parseInt(this.start) + '&fq=' + this.filters;
             } else {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
                     '&start=' + this.start + '&fq=' + this.filters;
             }
+            //console.log('this.searchUrl',this.searchUrl);
             this.facetFields = []; //resetting facet fields before building them from query params
             if(this.filters){
                 var facetPairs = this.filters.split('%20AND%20');
@@ -419,7 +423,7 @@ var app = new Vue({
                     }
                     this.disabledPrev = false; // resetting paging buttons
                     this.disabledNext = false;
-                    if(this.start + 20 > this.totalHits){
+                    if(parseInt(this.start) + 20 > this.totalHits){
                         this.disabledNext = true;
                     }
                     if(this.start == 0){
@@ -481,6 +485,13 @@ var app = new Vue({
             } else {
                 return doc.source_file_s.split('@')[1]
             }
+        },
+
+        getQueryparams:function(){
+            this.myQuery = this.$route.query.query;
+            this.start= this.$route.query.start;
+            this.filters = this.$route.query.filter;
+            this.imageSearch = this.$route.query.imgsearch;
         },
 
         showSpinner: function(){
