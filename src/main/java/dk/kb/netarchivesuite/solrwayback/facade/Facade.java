@@ -413,19 +413,19 @@ public class Facade {
       ClientConfig config = new DefaultClientConfig();
       Client client = Client.create(config);
       WebResource service = client.resource(UriBuilder.fromUri(solrUrl).build());
-      WebResource queryWs= service   .path("select")                                    
-                                     .queryParam("rows", "20") //Hardcoded pt.
-                                     .queryParam("start", startStr)
-                                     .queryParam("q", query) 
-                                     .queryParam("wt", "json")
-                                     .queryParam("q.op", "AND")
-                                     .queryParam("indent", "true")                      
-                                     .queryParam("facet", "true")
-                                     .queryParam("facet.field", "domain")
-                                     .queryParam("facet.field", "content_type_norm")
-                                     .queryParam("facet.field", "crawl_year")                           
-                                     .queryParam("f.crawl_year.facet.sort","index")
-                                     .queryParam("facet.field", "public_suffix");
+      WebResource queryWs= service.path("select")                                    
+                                  .queryParam("rows", "20") //Hardcoded pt.
+                                  .queryParam("start", startStr)
+                                  .queryParam("q", query) 
+                                  .queryParam("wt", "json")
+                                  .queryParam("q.op", "AND")
+                                  .queryParam("indent", "true")                      
+                                  .queryParam("facet", "true")
+                                  .queryParam("facet.field", "domain")
+                                  .queryParam("facet.field", "content_type_norm")
+                                  .queryParam("facet.field", "crawl_year")                           
+                                  .queryParam("f.crawl_year.facet.sort","index")
+                                  .queryParam("facet.field", "public_suffix");
                
       if ( fq != null && fq.length() > 0){
         queryWs = queryWs.queryParam("fq",fq);                        

@@ -39,10 +39,8 @@ public class SolrClient {
   private static final Logger log = LoggerFactory.getLogger(SolrClient.class);
   private static HttpSolrClient solrServer;
   private static SolrClient instance = null;
-  private static boolean  warcIndexVersion2 = false;
-  private static boolean  warcIndexVersion3 = false;
-  //Field list both has 2.0 and 3.0 and this is not a problem since they are not used as fields for query terms. Non existing fields will just be empty in solr document result list
-  private static String indexDocFieldList = "id,score,title,arc_full,url,url_norm,source_file_s,source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type,content_encoding";
+  //TODO remove arc_full
+  private static String indexDocFieldList = "id,score,title,arc_full,url,url_norm,source_file_path,source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type,content_encoding";
   static {
     SolrClient.initialize(PropertiesLoader.SOLR_SERVER);
   }
@@ -56,38 +54,6 @@ public class SolrClient {
   public static void initialize(String solrServerUrl) {
     solrServer = new HttpSolrClient(solrServerUrl);
     solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http error code 413/414, due to monster URI. (and it is faster)
-
-    //Detect warc-indexer version 2.0 og 3.0 since the solr queries will be different due to source_file_s (2.0) is split into 2 fields in 3.0
-    try{
-      SolrQuery query = new SolrQuery();
-      query.add(CommonParams.QT, "/schema/fields");
-      QueryResponse response = solrServer.query(query);
-      NamedList responseHeader = response.getResponseHeader();
-      ArrayList<SimpleOrderedMap> fields = (ArrayList<SimpleOrderedMap>) response.getResponse().get("fields");
-      for (SimpleOrderedMap field : fields) {
-        String fieldName = (String) field.get("name");   
-
-        if (fieldName.equals("source_file")){ //in 3.0 source_file_s is split into source_file and source_file_offset
-          warcIndexVersion3=true;
-        }
-        else if (fieldName.equals("source_file_s")){
-          warcIndexVersion2=true;
-        }        
-      }
-    }
-    catch(Exception e){
-      log.error("error initializing solr client",e);
-    }
-
-    if (warcIndexVersion2){
-      log.info("warc-indexer version 2 solr schema detected");
-    }
-    else if (warcIndexVersion3){
-      log.info("warc-indexer version 3 solr schema detected");
-    }
-    else {
-      log.error("unable to detemine warc-indexer solr schema version");
-    }   
 
     instance = new SolrClient();
     log.info("SolrClient initialized with solr server url:" + solrServerUrl);
@@ -286,8 +252,7 @@ public class SolrClient {
   }
 
 
-  public ArrayList<WeightedArcEntryDescriptor> findImageForTimestamp(
-      String searchString, String timeStamp) throws Exception {    
+  public ArrayList<WeightedArcEntryDescriptor> findImageForTimestamp(String searchString, String timeStamp) throws Exception {    
     ArrayList<WeightedArcEntryDescriptor> images= new ArrayList<>();
 
     SolrQuery solrQuery = new SolrQuery();
@@ -298,10 +263,8 @@ public class SolrClient {
     solrQuery.add("group","true");       
     solrQuery.add("group.field","url_norm");
     solrQuery.add("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-    if (warcIndexVersion3){
-      solrQuery.setFilterQueries("record_type:response"); //No binary for revists. 
-    }
-    // solrQuery.setFilterQueries("image_size:[2000 TO *]"); //ignore very small images. Only in 3.0  
+    solrQuery.setFilterQueries("record_type:response"); //No binary for revists. 
+    solrQuery.setFilterQueries("image_size:[2000 TO *]"); //No small images. (fillers etc.) 
     solrQuery.add("fl", indexDocFieldList);
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
@@ -368,7 +331,7 @@ public class SolrClient {
     SolrQuery solrQuery = new SolrQuery();
     solrQuery = new SolrQuery("(url:\""+url+"\" OR "+urlNormFixed+")");     
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","id, crawl_date,arc_full,source_file_s, source_file, source_file_offset, score");    
+    solrQuery.add("fl","id, crawl_date,arc_full,source_file_path, source_file, source_file_offset, score");    
     solrQuery.add("sort","crawl_date asc");
     solrQuery.setRows(1000000);
 
@@ -386,17 +349,10 @@ public class SolrClient {
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl", indexDocFieldList);   
-    //Both v.2 and v.3 logic. 
-    //SPLIT logik på version...
 
     String query = null;
-    if (warcIndexVersion2){
-      Path p = Paths.get(arc_full); //Get filename from absolute path
-      String fileName = p.getFileName().toString();                  
-      query = "source_file_s:\""+ fileName +"@"+offset +"\"";
-    }else if (warcIndexVersion3){
-      query = "arc_full:\""+arc_full+"\" AND source_file_offset:"+offset ;
-    }      
+        
+    query = "arc_full:\""+arc_full+"\" AND source_file_offset:"+offset ;         
     log.info("getArcEntry query:"+ query);    
     solrQuery.setQuery(query) ;
     solrQuery.setRows(1);
@@ -412,8 +368,41 @@ public class SolrClient {
 
     return indexDocs.get(0);
   }
+  
 
+  public ArrayList<String> getImageLinks(String source_file, long offset) throws Exception {
 
+    ArrayList<String> images = new  ArrayList<String>();
+    
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+    solrQuery.add("fl", "links_images");   
+        
+    String query = "source_file_path:\""+source_file+"\" AND source_file_offset:"+offset ;         
+    log.info("getArcEntry query:"+ query);    
+    solrQuery.setQuery(query) ;
+    solrQuery.setRows(1);
+
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+
+    if (docs.getNumFound() == 0){
+      throw new Exception("Could not find arc entry:"+source_file +" offset:"+offset);
+    }
+    
+    SolrDocument doc = docs.get(0); //Always only 0 or 1 result.
+
+     Object o =  doc.getFieldValue("links_images");
+   if (o == null){
+     return images;
+   }
+     
+    images =  (ArrayList<String>) o;
+    return images;    
+  }
+
+  
+  
 
   public SearchResult search(String searchString, String filterQuery, int results) throws Exception {
     log.info("search for:" + searchString +" and filter:"+filterQuery);
@@ -482,9 +471,8 @@ public class SolrClient {
     solrQuery.add("fl", indexDocFieldList);
 
     solrQuery.setRows(1000);
-    if (warcIndexVersion3){
-      solrQuery.setFilterQueries("record_type:response"); //No binary for revists. 
-    }
+    solrQuery.setFilterQueries("record_type:response"); //No binary for revists. 
+
     
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
 
@@ -519,9 +507,8 @@ public class SolrClient {
     solrQuery.setQuery(query);
 
     solrQuery.setRows(1); //get 50 images...
-    if (warcIndexVersion3){
     solrQuery.setFilterQueries("record_type:response"); //No binary for revists. 
-    }
+
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
     solrQuery.add("fl", indexDocFieldList);
@@ -547,7 +534,7 @@ public class SolrClient {
 
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","title, arc_full,url,source_file_s,crawl_date,wayback_date");
+    solrQuery.add("fl","title, arc_full,url,source_file_path,crawl_date,wayback_date");
     solrQuery.setQuery(query); // only search images
     solrQuery.setRows(results);
     if (filterQuery != null){
@@ -580,7 +567,7 @@ public class SolrClient {
 
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","title, host, public_suffix, crawl_year, content_type, content_language url, arc_full,url,source_file_s,crawl_date,wayback_date");    
+    solrQuery.add("fl","title, host, public_suffix, crawl_year, content_type, content_language url, arc_full,url,source_file_path,crawl_date,wayback_date");    
     solrQuery.setQuery(query); // only search images
     solrQuery.setRows(results);
     if (filterQuery != null){
@@ -615,7 +602,6 @@ public class SolrClient {
   private static IndexDoc solrDocument2IndexDoc(SolrDocument doc) {
     IndexDoc indexDoc = new IndexDoc();
     String arc_full =(String) doc.get("arc_full");
-    String source_file_s= (String) doc.get("source_file_s");
     indexDoc.setScore(Double.valueOf((float) doc.getFieldValue("score")));
     indexDoc.setId((String) doc.get("id"));
     indexDoc.setTitle((String) doc.get("title"));
@@ -626,16 +612,9 @@ public class SolrClient {
     indexDoc.setContentTypeNorm((String) doc.get("content_type_norm"));
     indexDoc.setContentEncoding((String) doc.get("content_encoding"));
 
-    Object hash = doc.get("hash"); // in 2.0 it was arraylist. in 3.0 it is a string
-    if (hash instanceof String) {
-      indexDoc.setHash((String) hash);      
-    }else{
-      ArrayList<String> hashList =  (ArrayList<String>) hash;
-      if (hashList != null){
-        indexDoc.setHash(hashList.get(0));     
-      }      
-    }
-
+    String hash = (String) doc.get("hash");
+    indexDoc.setHash((String) hash);      
+    
     Date date = (Date) doc.get("crawl_date");        
     indexDoc.setCrawlDateLong(date.getTime());
     indexDoc.setCrawlDate(getSolrTimeStamp(date));  //HACK! demo must be ready for lunch
@@ -649,17 +628,9 @@ public class SolrClient {
     return indexDoc;
   }
 
-  //both 2.0 and 3.0 
+  //TO, remove method and inline 
   public static long getOffset(SolrDocument doc){
-    if (warcIndexVersion2){ //2.0    
-      String source_file_s= (String) doc.get("source_file_s");
-      String[] split = source_file_s.split("@");
-      String offset=split[1];
-      return Long.valueOf(offset);            
-    }
-    else{ //3.0
       return  (Long) doc.get("source_file_offset");
-    }
 
   }
 
