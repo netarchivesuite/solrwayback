@@ -260,7 +260,7 @@ input.imageSearchCheck{
 }
 
 .item .image img{
-    border: 1px solid black;
+    border: 2px solid black;
     max-height: 200px;
     max-width: 400px;
 }
@@ -279,7 +279,7 @@ input.imageSearchCheck{
 }
 
 .thumb img{
-    border: 1px solid black;
+    border: 2px solid black;
     max-height: 100px;
     max-width: 100px;
 }
