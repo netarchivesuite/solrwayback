@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class IndexDoc {
     
     private long offset;
-    private String arc_full;       
+    private String arc_full; //TODO replace with source_file-s       
     private String title;
     private String id;    
     private String url;
