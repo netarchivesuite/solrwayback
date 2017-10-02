@@ -34,7 +34,7 @@
         <div class="result" v-if="myQuery && !errorMsg && !imageSearch">
 
             <pager-box v-if="searchResult" :setup-search="setupSearch" :total-hits="totalHits" :start="start" :my-query="myQuery"
-                       :filters="filters" :disabled-prev="disabledPrev"  :disabled-next="disabledNext" :show-spinner="showSpinner"
+                       :filters="filters" :show-spinner="showSpinner"
                        :hide-spinner="hideSpinner" :image-search="imageSearch"></pager-box>
 
             <result-box v-if="totalHits > 0" :search-result="searchResult" :image-objects="imageObjects" :base-url="baseUrl"
@@ -42,13 +42,13 @@
 
 
             <pager-box  v-if="totalHits > 21" :setup-search="setupSearch" :total-hits="totalHits" :start="start"
-                        :disabled-prev="disabledPrev"  :disabled-next="disabledNext" is-bottom="true"></pager-box>
+                        is-bottom="true"></pager-box>
         </div>
 
         <div class="result images" v-if="myQuery && !errorMsg && imageSearch">
 
             <pager-box v-if="searchResult" :setup-search="setupSearch" :total-hits="totalHits" :start="start" :my-query="myQuery"
-                       :filters="filters" :disabled-prev="disabledPrev"  :disabled-next="disabledNext" :show-spinner="showSpinner"
+                       :filters="filters" :show-spinner="showSpinner"
                        :hide-spinner="hideSpinner" :image-search="imageSearch"></pager-box>
 
             <result-box-images :search-result="searchResult" :setup-search="setupSearch" :clear-facets="clearFacets"></result-box-images>

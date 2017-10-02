@@ -113,7 +113,7 @@ Vue.component('facet-box', {
 })
 
 Vue.component('pager-box', {
-    props: ['setupSearch', 'totalHits', 'start','disabledPrev','disabledNext','isBottom','myQuery','filters','showSpinner','hideSpinner','imageSearch'],
+    props: ['setupSearch', 'totalHits', 'start','isBottom','myQuery','filters','showSpinner','hideSpinner','imageSearch'],
     template: `
     <div class="counterBox" :class="{bottom : isBottom}" v-if="totalHits > 0">
         <div class="selectDownload" v-if="!isBottom">
@@ -133,8 +133,8 @@ Vue.component('pager-box', {
         </div>
 
         <div class="pagerBox" v-if="totalHits > 21 && !imageSearch">
-            <button :disabled="disabledPrev" class="pager prev" v-on:click="setupSearch('paging','','prev')">Previous</button>
-            <button :disabled="disabledNext" class="pager next" v-on:click="setupSearch('paging','','next')">Next</button>
+            <button :disabled="start == 0" class="pager prev" v-on:click="setupSearch('paging','','prev')">Previous</button>
+            <button :disabled="parseInt(start) + 20 > this.totalHits" class="pager next" v-on:click="setupSearch('paging','','next')">Next</button>       
         </div>
     </div>
     `,
@@ -289,12 +289,10 @@ var app = new Vue({
         myFacets: '',
         myQuery: '',
         facetFields: [],
-        filters: 'test',
+        filters: '',
         totalHits: 0,
         start: 0,
         imageSearch: false,
-        disabledPrev: false,
-        disabledNext: false,
         spinner: false,
         errorMsg: '',
         imageObjects: [],
@@ -318,8 +316,8 @@ var app = new Vue({
     methods: {
         setupSearch: function(type, query, param3, param4) {
             this.imageObjects = []; //resetting imageObjecs on new search
-            this.filters = ''; //Preparing url params
             if (type == "search") {
+                this.filters = ''; ////resetting filters on new search
                 this.myQuery = query;
                 this.start = 0;
                 if (param3) {
@@ -340,10 +338,10 @@ var app = new Vue({
                 }
                 else {
                     this.start = 0;
-                    this.disabledPrev = true;
                 }
             }
             if (type == "facet") {
+                this.filters = ''; //resetting filters
                 if (param3) {
                     var tempObj = {[param3]: param4}; //Facet field and facet term saved in object and pushed to array
                     this.facetFields.push(tempObj);
@@ -418,14 +416,6 @@ var app = new Vue({
                         this.totalHits = response.body.response.numFound;
                     }else{
                         this.searchResult = response.body;
-                    }
-                    this.disabledPrev = false; // resetting paging buttons
-                    this.disabledNext = false;
-                    if(parseInt(this.start) + 20 > this.totalHits){
-                        this.disabledNext = true;
-                    }
-                    if(this.start == 0){
-                        this.disabledPrev = true;
                     }
                     $("html, body").animate({ scrollTop: 0 }, "fast");
                     this.hideSpinner();
