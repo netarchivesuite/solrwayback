@@ -275,10 +275,13 @@ input.imageSearchCheck{
     float: left;
     margin-right: 1.5em;
     min-width: 150px;
+    height: 130px;
 }
 
 .thumb img{
     border: 1px solid black;
+    max-height: 100px;
+    max-width: 100px;
 }
 
 .searchResultItem .text {

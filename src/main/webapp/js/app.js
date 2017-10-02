@@ -457,7 +457,7 @@ var app = new Vue({
         getOffset: function(doc) {
             if (doc.source_file_offset) {
                 return doc.source_file_offset
-            } else {
+            } else if(doc.source_file_s){
                 return doc.source_file_s.split('@')[1]
             }
         },
