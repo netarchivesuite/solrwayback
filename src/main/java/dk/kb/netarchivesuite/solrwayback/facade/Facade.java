@@ -430,11 +430,11 @@ public class Facade {
       if ( fq != null && fq.length() > 0){
         queryWs = queryWs.queryParam("fq",fq);                        
        }
-      /* only for 3.0
+      
       if (!revisits){
         queryWs = queryWs.queryParam("fq", "record_type:response");
       }
-      */           
+                 
       ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
       String responseStr= response.getEntity(String.class);
 
