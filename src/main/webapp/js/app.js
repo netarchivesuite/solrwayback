@@ -151,13 +151,13 @@ Vue.component('pager-box', {
 })
 
 Vue.component('result-box', {
-    props: ['searchResult','imageObjects','setupSearch','getOffset','clearFacets','baseUrl'],
+    props: ['searchResult','imageObjects','setupSearch','clearFacets','baseUrl'],
     template: `
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
                 <h3>
-                <a v-bind:href=" baseUrl + 'services/view?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
+                <a v-bind:href=" baseUrl + 'services/view?arcFilePath=' + doc.arc_full + '&offset=' + doc.source_file_offset" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
                 </a>
@@ -210,7 +210,7 @@ Vue.component('result-box', {
             <!-- Download PDF's, Word docs etc. -->
             <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
                 <div class="download">
-                    <a v-bind:href=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"  target="_blank">
+                    <a v-bind:href=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + doc.source_file_offset"  target="_blank">
                        Download {{ doc.content_type_norm }}
                     </a>
                 </div>  
@@ -219,8 +219,8 @@ Vue.component('result-box', {
             <!-- Images -->    
             <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
                 <div class="image">
-                    <a v-bind:href=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)" target="_blank">
-                        <img v-bind:src=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + getOffset(doc)"/>
+                    <a v-bind:href=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + doc.source_file_offset" target="_blank">
+                        <img v-bind:src=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + doc.source_file_offset"/>
                     </a>
                 </div>  
             </div>
@@ -408,7 +408,7 @@ var app = new Vue({
                         /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
-                            	this.getImages(this.searchResult[i].id,this.searchResult[i].arc_full,this.getOffset(this.searchResult[i]));
+                            	this.getImages(this.searchResult[i].id,this.searchResult[i].arc_full, this.searchResult[i].source_file_offset);
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
@@ -452,14 +452,6 @@ var app = new Vue({
             }, (response) => {
                 console.log('error: ', response);
             });
-        },
-
-        getOffset: function(doc) {
-            if (doc.source_file_offset) {
-                return doc.source_file_offset
-            } else if(doc.source_file_s){
-                return doc.source_file_s.split('@')[1]
-            }
         },
 
         getQueryparams:function(){
