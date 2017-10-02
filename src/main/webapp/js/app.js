@@ -369,7 +369,6 @@ var app = new Vue({
         },
 
         doSearch: function(){
-            this.totalHits = 0; //resetting total hits before search
             if(!this.imageSearch || this.imageSearch == 'false' ){ //converting possible string value from query param to boolean
                 this.imageSearch = false
             }else{
@@ -398,7 +397,7 @@ var app = new Vue({
                 this.showSpinner();
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
-                    //console.log('response.body: ', response.body);
+                    console.log('response.body: ', response.body);
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         this.hideSpinner();
@@ -416,6 +415,7 @@ var app = new Vue({
                         this.totalHits = response.body.response.numFound;
                     }else{
                         this.searchResult = response.body;
+                        this.totalHits = this.searchResult.length;
                     }
                     $("html, body").animate({ scrollTop: 0 }, "fast");
                     this.hideSpinner();
