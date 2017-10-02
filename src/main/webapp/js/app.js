@@ -259,10 +259,10 @@ Vue.component('result-box-images', {
 })
 
 Vue.component('zerohits-box', {
-    props: ['myQuery'],
+    props: ['myQuery','imageSearch'],
     template: `
     <div class="box">
-        <p>Your search for <span class="bold">{{ myQuery }}</span> gave 0 results.</p>
+        <p>Your <span v-if="imageSearch">image </span> search for <span class="bold">{{ myQuery }}</span> gave 0 results.</p>
     </div>
     `
 })
@@ -371,6 +371,7 @@ var app = new Vue({
         },
 
         doSearch: function(){
+            this.totalHits = 0; //resetting total hits before search
             if(!this.imageSearch || this.imageSearch == 'false' ){ //converting possible string value from query param to boolean
                 this.imageSearch = false
             }else{
