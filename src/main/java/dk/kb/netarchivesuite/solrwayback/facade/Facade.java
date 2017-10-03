@@ -57,8 +57,7 @@ public class Facade {
         SearchResult result = SolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types
         
         //multithreaded load arc/warc files and parse html
-        ArrayList<? extends ArcEntryDescriptor> extractImages =
-                ImageFromArcFileExtractorExecutor.extractImages(result.getResults());
+        ArrayList<ArcEntryDescriptor> extractImages =ImageFromArcFileExtractorExecutor.extractImages(result.getResults());
 
         return extractImages;      
     }

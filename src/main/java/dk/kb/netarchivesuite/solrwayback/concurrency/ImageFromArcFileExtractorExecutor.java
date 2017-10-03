@@ -11,17 +11,15 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
-import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
 
 public class ImageFromArcFileExtractorExecutor {
     
-    static ExecutorService executorService = Executors.newFixedThreadPool(20); // just hardcoded for now. increasing to 50 does not help
+    static ExecutorService executorService = Executors.newFixedThreadPool(20); // 20 solr calls at a time 
    
     private static final Logger log = LoggerFactory.getLogger(ImageFromArcFileExtractorExecutor.class);
     
-    public static  ArrayList<? extends ArcEntryDescriptor> extractImages(List<IndexDoc> docs)  throws Exception{
+    public static  ArrayList<ArcEntryDescriptor> extractImages(List<IndexDoc> docs)  throws Exception{
    
        
        Set<Callable<ArrayList<ArcEntryDescriptor>>> callables = new HashSet<>();
