@@ -16,7 +16,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import dk.kb.netarchivesuite.solrwayback.parsers.ProximityHtmlParser;
 import dk.kb.netarchivesuite.solrwayback.parsers.WaybackToolbarInjecter;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
@@ -228,56 +227,7 @@ public class Facade {
        return imagesFromHtmlPage;                
     }
     
-    
-    public static ArrayList<ArcEntryDescriptor> getImagesFromHtmlPage(IndexDoc indexDoc) throws Exception{
-        if (!"html".equals(indexDoc.getContentTypeNorm())){
-            throw new IllegalArgumentException("Not html doc:"+indexDoc.getContentTypeNorm());
-        }
-        
-        String arc_full = indexDoc.getArc_full();
-        String crawlDate=indexDoc.getCrawlDate();
-        String url = indexDoc.getUrl();               
-        ArcEntry arcEntry = getArcEntry(arc_full, indexDoc.getOffset());
-        String html = new String(arcEntry.getBinary());
-        
-        //ArrayList<String> imageUrls = HtmlParser.getImageUrls( url, html);
-        // TODO: Extract terms from query
-        Set<String> queryTerms = Collections.emptySet();
-        List<ProximityHtmlParser.WeightedImage> imageUrls =
-                ProximityHtmlParser.getImageUrls(new URL(url), indexDoc.getScore(), html, queryTerms, MAX_DISTANCE);
-
-        log.info("image urls:"+imageUrls);
-        if (imageUrls.size() == 0){
-            return new ArrayList<>();
-        }
-
-        //TODO maybe images will have width/size in index in a future version
-        //only check first 10
-
-        StringBuilder query = new StringBuilder();
-        //query.append("content_type_norm:image AND content_length:[2000 TO *] AND ("); //was just a test to find large images. No problems with 20MB images
-        query.append("content_type_norm:image  AND (");
-        for (int i=0;i<10 && i <imageUrls.size();i++ ){
-            String orgUrl=imageUrls.get(i).getImageURL().toExternalForm();
-            String fixedUrl= orgUrl.replaceAll("[\\\\]", "/");            
-            query.append(" url:\""+fixedUrl+"\" OR");
-          
-        }
-        query.append(" url:none)"); //just close last OR
-        String queryStr= query.toString();
-        log.info("image query:"+queryStr);
-        ArrayList<ArcEntryDescriptor> resolved = null;
-        try{
-         resolved = SolrClient.getInstance().findImageForTimestamp(queryStr, crawlDate);
-        }
-        catch(Exception e){
-        	log.error("Solr error for query:"+queryStr); 
-        }
-               
-        return resolved;
-    }
-    
-    
+         
     public static String getEncoding(String arcFilePath,String offset) throws Exception{
     	
         String paths[] = arcFilePath.split("/");
