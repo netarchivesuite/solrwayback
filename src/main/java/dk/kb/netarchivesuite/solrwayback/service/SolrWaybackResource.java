@@ -125,43 +125,7 @@ public class SolrWaybackResource {
         }
     }
     
-    
-    @GET
-    @Path("images/htmlpage2")
-    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public ArrayList<ImageUrl> imagesForPage2(@QueryParam("arc_full") String arc_full, @QueryParam("offset") long offset  , @QueryParam("test") boolean test) throws ServiceException {
-     log.info("arc_full:"+arc_full);
-     log.info("offset:"+offset);
-      if (test){
-        return imagesForPageTest();
-      }
-     if (arc_full == null || offset == 0){
-       log.error("arc_full and offset queryparams missing");
-       throw new InvalidArgumentServiceException("arc_full and offset queryparams missing");
-     }
-      
-      try {                    
-          IndexDoc doc = SolrClient.getInstance().getArcEntry(arc_full, offset);
-                                
-           ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();           
-           ArrayList<WeightedArcEntryDescriptor> imagesFromHtmlPage = Facade.getImagesFromHtmlPage(doc);
-           
-           for (WeightedArcEntryDescriptor entry : imagesFromHtmlPage){                          
-             ImageUrl imageUrl = new ImageUrl();
-             String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
-             String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
-             imageUrl.setImageUrl(imageLink);
-             imageUrl.setDownloadUrl(downloadLink);             
-             imageUrl.setHash(entry.getHash());
-             imageUrls.add(imageUrl);
-           }
-           return imageUrls;
-                      
-        } catch (Exception e) {           
-            throw handleServiceExceptions(e);
-        }
-    }    
-    
+             
     @GET
     @Path("images/htmlpage")
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
@@ -171,46 +135,13 @@ public class SolrWaybackResource {
        log.error("arc_full and offset queryparams missing");
        throw new InvalidArgumentServiceException("arc_full and offset queryparams missing");
      }
-      
-     ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();  
-     
-      try {                    
-          ArrayList<String> imageLinks = SolrClient.getInstance().getImageLinks(arc_full, offset);
-          if (imageLinks.size() == 0){
-            return  imageUrls;
-          }
-          //TODO make this and above 1 call
-          String crawlDate = SolrClient.getInstance().getArcEntry(arc_full, offset).getCrawlDate();
-          
-          StringBuilder query = new StringBuilder();
-          query.append("content_type_norm:image  AND (");
-          for (String imageUrl : imageLinks ){         
-            //fix https!
-            String fixedUrl = imageUrl;
-            if (imageUrl.startsWith("https:")){
-              fixedUrl = "http:"+imageUrl.substring(6); // because image_links are not normlized as url_norm
-            }                       
-            query.append(" url_norm:\""+fixedUrl+"\" OR");            
-          }
-          query.append(" url_norm:none)"); //just close last OR
-          String queryStr= query.toString();
-          ArrayList<WeightedArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImageForTimestamp(queryStr, crawlDate);
-           
-           
-           for (WeightedArcEntryDescriptor entry : imagesFromHtmlPage){                          
-             ImageUrl imageUrl = new ImageUrl();
-             String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
-             String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
-             imageUrl.setImageUrl(imageLink);
-             imageUrl.setDownloadUrl(downloadLink);             
-             imageUrl.setHash(entry.getHash());
-             imageUrls.add(imageUrl);
-           }
-           return imageUrls;
-                      
-        } catch (Exception e) {           
+                  
+     try {                    
+          return Facade.getImagesForHtmlPageNew(arc_full, offset);  
+     }
+     catch (Exception e) {           
             throw handleServiceExceptions(e);
-        }
+      }
     }
             
     @GET

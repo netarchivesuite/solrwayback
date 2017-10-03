@@ -160,8 +160,46 @@ public class Facade {
        return previews;
             
     }
+    /*
+     * Find images on a HTML page.
+     * 1) Find the doc in solr from source_file_path and offset.
+     * 2) Get image links field
+     * 3) For each images try to find that url_norm in solr with harvest time closest to the harvesttime for the HTML page. 
+     */
     
-    
+    public static ArrayList<ImageUrl> getImagesForHtmlPageNew(String source_file_path,long offset) throws Exception {
+            
+      ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();  
+      IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(source_file_path, offset);
+      ArrayList<String> imageLinks = arcEntry.getImageUrls();          
+      if (imageLinks.size() == 0){
+        return  imageUrls;
+      }
+      StringBuilder query = new StringBuilder();
+      query.append("content_type_norm:image  AND (");
+      for (String imageUrl : imageLinks ){         
+        //fix https!
+        String fixedUrl = imageUrl;
+        if (imageUrl.startsWith("https:")){
+          fixedUrl = "http:"+imageUrl.substring(6); // because image_links are not normlized as url_norm
+        }                       
+        query.append(" url_norm:\""+fixedUrl+"\" OR");            
+      }
+      query.append(" url_norm:none)"); //just close last OR
+      String queryStr= query.toString();
+      ArrayList<WeightedArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImageForTimestamp(queryStr, arcEntry.getCrawlDate());
+                  
+       for (WeightedArcEntryDescriptor entry : imagesFromHtmlPage){                          
+         ImageUrl imageUrl = new ImageUrl();
+         String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+         String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+         imageUrl.setImageUrl(imageLink);
+         imageUrl.setDownloadUrl(downloadLink);             
+         imageUrl.setHash(entry.getHash());
+         imageUrls.add(imageUrl);
+       }
+       return imageUrls;                
+    }
     
     public static ArrayList<WeightedArcEntryDescriptor> getImagesFromHtmlPage(IndexDoc indexDoc) throws Exception{
         if (!"html".equals(indexDoc.getContentTypeNorm())){

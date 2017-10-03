@@ -40,7 +40,7 @@ public class SolrClient {
   private static HttpSolrClient solrServer;
   private static SolrClient instance = null;
   //TODO remove arc_full
-  private static String indexDocFieldList = "id,score,title,arc_full,url,url_norm,source_file_path,source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type,content_encoding";
+  private static String indexDocFieldList = "id,score,title,arc_full,url,url_norm,links_images,source_file_path,source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type,content_encoding";
   static {
     SolrClient.initialize(PropertiesLoader.SOLR_SERVER);
   }
@@ -99,7 +99,7 @@ public class SolrClient {
     solrQuery.add("facet.limit",""+facetLimit);
     solrQuery.addFilterQuery("crawl_date:["+dateStart+ " TO "+dateEnd+"]");
 
-    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);      
     List<FacetCount> facetList = new ArrayList<FacetCount>();
@@ -369,39 +369,7 @@ public class SolrClient {
     return indexDocs.get(0);
   }
   
-
-  public ArrayList<String> getImageLinks(String source_file, long offset) throws Exception {
-
-    ArrayList<String> images = new  ArrayList<String>();
-    
-    SolrQuery solrQuery = new SolrQuery();
-    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl", "links_images");   
-        
-    String query = "source_file_path:\""+source_file+"\" AND source_file_offset:"+offset ;         
-    log.info("getArcEntry query:"+ query);    
-    solrQuery.setQuery(query) ;
-    solrQuery.setRows(1);
-
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
-    SolrDocumentList docs = rsp.getResults();
-
-    if (docs.getNumFound() == 0){
-      throw new Exception("Could not find arc entry:"+source_file +" offset:"+offset);
-    }
-    
-    SolrDocument doc = docs.get(0); //Always only 0 or 1 result.
-
-     Object o =  doc.getFieldValue("links_images");
-   if (o == null){
-     return images;
-   }
-     
-    images =  (ArrayList<String>) o;
-    return images;    
-  }
-
-  
+ 
   
 
   public SearchResult search(String searchString, String filterQuery, int results) throws Exception {
@@ -625,6 +593,11 @@ public class SolrClient {
     }
     indexDoc.setOffset(getOffset(doc));
 
+    Object o =  doc.getFieldValue("links_images");
+    if (o != null){
+     indexDoc.setImageUrls((ArrayList<String>) o);
+    }
+               
     return indexDoc;
   }
 

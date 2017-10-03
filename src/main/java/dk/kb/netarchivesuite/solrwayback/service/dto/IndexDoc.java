@@ -1,5 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.service.dto;
 
+import java.util.ArrayList;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 
@@ -19,6 +21,7 @@ public class IndexDoc {
     private String hash;
     private double score;
     private String contentEncoding;
+    private ArrayList<String> imageUrls = new ArrayList<String>(); //This field is not normally set.
     
     public IndexDoc(){        
     }
@@ -108,6 +111,14 @@ public class IndexDoc {
 
   public void setCrawlDateLong(long crawlDateLong) {
     this.crawlDateLong = crawlDateLong;
+  }
+
+  public ArrayList<String> getImageUrls() {
+    return imageUrls;
+  }
+
+  public void setImageUrls(ArrayList<String> imageUrls) {
+    this.imageUrls = imageUrls;
   }  
 
        
