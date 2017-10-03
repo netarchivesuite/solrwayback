@@ -445,8 +445,6 @@ var app = new Vue({
                     hashArray.push(hash);
                 }
                 this.imageObjects.push({imageID: id, imageUrls: imageUrlArray, downloadUrls: downloadArray, hashes: hashArray});
-                console.log('imageInfoUrl', imageInfoUrl)
-                console.log('this.imageObjects', this.imageObjects)
             }, (response) => {
                 console.log('error: ', response);
             });
