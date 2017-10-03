@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.WeightedArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
@@ -33,10 +34,11 @@ public class ImageFromArcFileExtractorExecutor {
            public ArrayList<WeightedArcEntryDescriptor> call() throws Exception {
                              
                    if ("html".equals(current.getContentTypeNorm())){                           
-                       return Facade.getImagesFromHtmlPage(current);
+                   log.info("getting images from:"+current.getUrl_norm());
+                     ArrayList<WeightedArcEntryDescriptor> images = Facade.getImagesForHtmlPageNewThreaded(current.getArc_full(),current.getOffset());
+                       return images;                       
                    }
-                   else if ("image".equals(current.getContentTypeNorm())){ 
-                       
+                   else if ("image".equals(current.getContentTypeNorm())){                        
                        String arcFull = current.getArc_full();
                        WeightedArcEntryDescriptor desc= new WeightedArcEntryDescriptor();
                        desc.setArcFull(arcFull);

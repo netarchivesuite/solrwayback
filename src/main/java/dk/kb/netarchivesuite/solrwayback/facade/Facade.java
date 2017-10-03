@@ -59,7 +59,7 @@ public class Facade {
     public static ArrayList<? extends ArcEntryDescriptor> findImages(String searchText) throws Exception {
 
         long start = System.currentTimeMillis();
-        SearchResult result = SolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 100); //only search these two types
+        SearchResult result = SolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types
         
         //multithreaded load arc/warc files and parse html
         ArrayList<? extends ArcEntryDescriptor> extractImages =
@@ -162,7 +162,7 @@ public class Facade {
     }
     /*
      * Find images on a HTML page.
-     * 1) Find the doc in solr from source_file_path and offset.
+     * 1) Find the doc in solr from source_file_path and offset. (fast)
      * 2) Get image links field
      * 3) For each images try to find that url_norm in solr with harvest time closest to the harvesttime for the HTML page. 
      */
@@ -200,6 +200,34 @@ public class Facade {
        }
        return imageUrls;                
     }
+    
+    
+    //TODO refactor and delete
+    public static ArrayList<WeightedArcEntryDescriptor>  getImagesForHtmlPageNewThreaded(String source_file_path,long offset) throws Exception {
+      
+  
+      IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(source_file_path, offset);
+      ArrayList<String> imageLinks = arcEntry.getImageUrls();          
+      if (imageLinks.size() == 0){
+        return  new ArrayList<WeightedArcEntryDescriptor> ();
+      }
+      StringBuilder query = new StringBuilder();
+      query.append("content_type_norm:image  AND (");
+      for (String imageUrl : imageLinks ){         
+        //fix https!
+        String fixedUrl = imageUrl;
+        if (imageUrl.startsWith("https:")){
+          fixedUrl = "http:"+imageUrl.substring(6); // because image_links are not normlized as url_norm
+        }                       
+        query.append(" url_norm:\""+fixedUrl+"\" OR");            
+      }
+      query.append(" url_norm:none)"); //just close last OR
+      String queryStr= query.toString();
+      ArrayList<WeightedArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImageForTimestamp(queryStr, arcEntry.getCrawlDate());
+                      
+       return imagesFromHtmlPage;                
+    }
+    
     
     public static ArrayList<WeightedArcEntryDescriptor> getImagesFromHtmlPage(IndexDoc indexDoc) throws Exception{
         if (!"html".equals(indexDoc.getContentTypeNorm())){
