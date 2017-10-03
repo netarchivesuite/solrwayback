@@ -42,10 +42,6 @@ import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
 
-    // Maximum distance, measured in images on the page, from matching terms
-    // Only relevant if there are matching terms
-    public static final int MAX_DISTANCE = 2;
-
     public static SearchResult search(String searchText, String filterQuery) throws Exception {
         SearchResult result = SolrClient.getInstance().search(searchText, filterQuery);
         return result;
