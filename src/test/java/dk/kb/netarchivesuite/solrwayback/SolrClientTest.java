@@ -210,7 +210,7 @@ public static void testIngoingLinks() throws Exception{
 
           solrQuery2.set("facet", "false");
           solrQuery2.add("sort","abs(sub(ms(2014-01-03T11:56:58Z), crawl_date)) asc");
-          solrQuery2.add("fl","id,score,title,arc_full,url,source_file_s,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+          solrQuery2.add("fl","id,score,title,arc_full,url,source_file_path,source_file_offset,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
        
           solrQuery2.setRows(1000);
           long start=System.currentTimeMillis();
