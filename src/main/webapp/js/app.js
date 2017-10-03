@@ -315,7 +315,6 @@ var app = new Vue({
     },
     methods: {
         setupSearch: function(type, query, param3, param4) {
-            this.imageObjects = []; //resetting imageObjecs on new search
             if (type == "search") {
                 this.filters = ''; ////resetting filters on new search
                 this.myQuery = query;
@@ -369,6 +368,7 @@ var app = new Vue({
         },
 
         doSearch: function(){
+            this.imageObjects = []; //resetting imageObjecs on new search
             if(!this.imageSearch || this.imageSearch == 'false' ){ //converting possible string value from query param to boolean
                 this.imageSearch = false
             }else{
@@ -428,10 +428,6 @@ var app = new Vue({
         getImages: function(id,arc_full, offset){
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset;
 
-            /* ImageInfoUrl for local developement*/
-            if(location.host==='localhost:8080'){
-                var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset+'&test=true'
-            }
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = "";
                 var downloadUrl = "";
