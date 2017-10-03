@@ -229,7 +229,7 @@ Vue.component('result-box', {
             <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
                 <div class="thumbs">
                     <template v-for="image in imageObjects" v-if="doc.id == image.imageID">
-                        <div class="thumb" v-for="(imageUrl, index) in image.imageUrls">
+                        <div class="thumb thumbSearch" v-for="(imageUrl, index) in image.imageUrls">
                             <a :href="image.downloadUrls[index]" target="_blank">
                                 <span v-html="imageUrl"></span>                  
                             </a>
@@ -251,7 +251,7 @@ Vue.component('result-box-images', {
     template: `
     <div class="searchResults images">
         <div v-for="doc in searchResult" class="searchResultItem">
-             <div class="thumb"><a v-bind:href="doc.downloadUrl" target="_blank"><img v-if="doc.imageUrl" v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
+             <div class="thumb thumbImageSearch"><a v-bind:href="doc.downloadUrl" target="_blank"><img v-if="doc.imageUrl" v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
              <div class="link" v-if="doc.imageUrl" v-on:click="setupSearch('search', 'hash:&quot;' + doc.hash + '&quot;');clearFacets()">Search for image</div>
         </div>
     </div>    
