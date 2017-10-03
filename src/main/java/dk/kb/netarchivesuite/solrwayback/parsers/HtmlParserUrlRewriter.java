@@ -125,16 +125,13 @@ public class HtmlParserUrlRewriter {
 		String css = new String(arc.getBinary(),arc.getContentEncoding());
 		String url=arc.getUrl();
 
-
 		String[] result = css.split("\n", 100); //Doubt there will be more than 100 of these.
 		//Get the lines starting with @import until you find one that does not. 
 		int index = 0;
 				
 		while (index <result.length && result[index].startsWith("@import ") ){    		
-	      log.info("index:"+index);
 		  String importLine = result[index++];
-		  importLine = importLine.substring(0, Math.min(200, importLine.length()-1)); //Import is start of line, it can be long 
-		  log.info("importline:"+importLine);
+		  importLine = importLine.substring(0, Math.min(200, importLine.length()-1)); //Import is in the start of line, it can be very long (minimized) 		  
 			Matcher m = CSS_IMPORT_PATTERN.matcher(importLine); // 
 			if (m.matches()){
 				String cssUrl= m.group(1);		   
