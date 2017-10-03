@@ -51,14 +51,13 @@ public class Facade {
       return proxySolr(query, filterQuery , revisits, start);
   }
     
-    public static ArrayList<? extends ArcEntryDescriptor> findImages(String searchText) throws Exception {
 
+    public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {
         long start = System.currentTimeMillis();
         SearchResult result = SolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types
         
         //multithreaded load arc/warc files and parse html
         ArrayList<ArcEntryDescriptor> extractImages =ImageFromArcFileExtractorExecutor.extractImages(result.getResults());
-
         return extractImages;      
     }
     
@@ -128,49 +127,21 @@ public class Facade {
        return previews;
             
     }
+    
+    
+    public static ArrayList<ImageUrl> getImagesForHtmlPageNew(String source_file_path,long offset) throws Exception {            
+      ArrayList<ArcEntryDescriptor> arcs = getImagesForHtmlPageNewThreaded(source_file_path,offset);       
+      return arcEntrys2Images(arcs);
+      
+    }
+    
+
     /*
      * Find images on a HTML page.
      * 1) Find the doc in solr from source_file_path and offset. (fast)
      * 2) Get image links field
      * 3) For each images try to find that url_norm in solr with harvest time closest to the harvesttime for the HTML page. 
      */
-    
-    public static ArrayList<ImageUrl> getImagesForHtmlPageNew(String source_file_path,long offset) throws Exception {
-            
-      ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();  
-      IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(source_file_path, offset);
-      ArrayList<String> imageLinks = arcEntry.getImageUrls();          
-      if (imageLinks.size() == 0){
-        return  imageUrls;
-      }
-      StringBuilder query = new StringBuilder();
-      query.append("content_type_norm:image  AND (");
-      for (String imageUrl : imageLinks ){         
-        //fix https!
-        String fixedUrl = imageUrl;
-        if (imageUrl.startsWith("https:")){
-          fixedUrl = "http:"+imageUrl.substring(6); // because image_links are not normlized as url_norm
-        }                       
-        query.append(" url_norm:\""+fixedUrl+"\" OR");            
-      }
-      query.append(" url_norm:none)"); //just close last OR
-      String queryStr= query.toString();
-      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImageForTimestamp(queryStr, arcEntry.getCrawlDate());
-                  
-       for (ArcEntryDescriptor entry : imagesFromHtmlPage){                          
-         ImageUrl imageUrl = new ImageUrl();
-         String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
-         String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
-         imageUrl.setImageUrl(imageLink);
-         imageUrl.setDownloadUrl(downloadLink);             
-         imageUrl.setHash(entry.getHash());
-         imageUrls.add(imageUrl);
-       }
-       return imageUrls;                
-    }
-    
-    
-    //TODO refactor and delete
     public static ArrayList<ArcEntryDescriptor>  getImagesForHtmlPageNewThreaded(String source_file_path,long offset) throws Exception {
       
   
@@ -191,7 +162,7 @@ public class Facade {
       }
       query.append(" url_norm:none)"); //just close last OR
       String queryStr= query.toString();
-      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImageForTimestamp(queryStr, arcEntry.getCrawlDate());
+      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImagesForTimestamp(queryStr, arcEntry.getCrawlDate());
                       
        return imagesFromHtmlPage;                
     }
@@ -202,12 +173,14 @@ public class Facade {
         String paths[] = arcFilePath.split("/");
         String fileName = paths[paths.length - 1];
             	    
-    	SearchResult search = SolrClient.getInstance().search("source_file_s:"+ fileName+"@"+offset, 1);
+    	SearchResult search = SolrClient.getInstance().search("source_file_path:\""+arcFilePath +"\" AND source_file_offset:"+offset, 1);
         if (search.getNumberOfResults() ==0){
-        	return "UTF-8";
+          log.warn("No content encoding found for:"+arcFilePath +" and offset:"+offset);
+          return "UTF-8";         
         }
         else{
-        	return search.getResults().get(0).getContentEncoding();
+          String encoding = search.getResults().get(0).getContentEncoding();                    
+          return search.getResults().get(0).getContentEncoding(); //Can still be null. 
         }
     }
     
@@ -333,7 +306,8 @@ public class Facade {
     public static ArcEntry viewHtml(String arcFilePath, long offset, Boolean showToolbar) throws Exception{         
     	
     	ArcEntry arc=FileParserFactory.getArcEntry(arcFilePath, offset);    	 
-        arc.setContentEncoding(Facade.getEncoding(arcFilePath, ""+offset));
+
+    	arc.setContentEncoding(Facade.getEncoding(arcFilePath, ""+offset));
     	if (("text/html".equals(arc.getContentType()))){
     		long start = System.currentTimeMillis();
         	log.debug(" Generate webpage from FilePath:" + arcFilePath + " offset:" + offset);
@@ -445,6 +419,22 @@ public class Facade {
 
         return sb.toString();
 
+    }
+    
+    private static  ArrayList<ImageUrl> arcEntrys2Images(ArrayList<ArcEntryDescriptor> arcs){
+      ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();
+      for (ArcEntryDescriptor entry : arcs){                          
+        ImageUrl imageUrl = new ImageUrl();
+        String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+        String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+        //String solrwayBackLink = PropertiesLoader.WAYBACK_BASEURL+"services/view?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+        imageUrl.setImageUrl(imageLink);
+        imageUrl.setDownloadUrl(downloadLink);             
+        imageUrl.setHash(entry.getHash());
+        imageUrls.add(imageUrl);         
+      }
+      return imageUrls;                 
+      
     }
     
 }

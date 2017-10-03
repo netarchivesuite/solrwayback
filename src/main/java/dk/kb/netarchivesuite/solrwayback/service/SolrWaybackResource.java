@@ -79,7 +79,7 @@ public class SolrWaybackResource {
         try {                    
           ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();   
           
-          ArrayList<? extends ArcEntryDescriptor> img = Facade.findImages(query);
+          ArrayList<ArcEntryDescriptor> img = Facade.findImages(query);
            
           for (ArcEntryDescriptor entry : img){
             ImageUrl imageUrl = new ImageUrl();

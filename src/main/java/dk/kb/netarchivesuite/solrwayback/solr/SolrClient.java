@@ -252,7 +252,7 @@ public class SolrClient {
   }
 
 
-  public ArrayList<ArcEntryDescriptor> findImageForTimestamp(String searchString, String timeStamp) throws Exception {    
+  public ArrayList<ArcEntryDescriptor> findImagesForTimestamp(String searchString, String timeStamp) throws Exception {    
     ArrayList<ArcEntryDescriptor> images= new ArrayList<>();
 
     SolrQuery solrQuery = new SolrQuery();
