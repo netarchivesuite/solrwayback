@@ -64,33 +64,7 @@ public class Facade {
         ArrayList<? extends ArcEntryDescriptor> extractImages =
                 ImageFromArcFileExtractorExecutor.extractImages(result.getResults());
 
-        return extractImages;
-        
-        /* This is the old non multithreaded html read and parsing.
-        HashSet<ArcEntryDescriptor> imagesHash = new HashSet<ArcEntryDescriptor>(); 
-        
-        for (IndexDoc current : result.getResults()){
-            if ("html".equals(current.getContentTypeNorm())){                           
-                ArrayList<ArcEntryDescriptor> images = getImagesFromHtmlPage(current);                                
-                imagesHash.addAll(images);                          
-            }
-            else if ("image".equals(current.getContentTypeNorm())){ 
-                String source_file_s = current.getSource_file_s();//always only 1 due to group
-                String arcFull = current.getArc_full();
-                ArcEntryDescriptor desc= new ArcEntryDescriptor();
-                desc.setArcFull(arcFull);
-                desc.setSource_file_s(source_file_s);
-                desc.setHash(current.getHash());
-                desc.setOffset(SolrClient.getOffset(source_file_s));
-                imagesHash.add(desc);
-            }
-
-        }        
-        System.out.println("image search for:"+searchText +" milis:"+(System.currentTimeMillis()-start));
-
-        return new ArrayList<ArcEntryDescriptor>(imagesHash);
-    */
-    
+        return extractImages;      
     }
     
     
