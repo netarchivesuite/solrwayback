@@ -407,15 +407,15 @@ public class HtmlParserUrlRewriter {
             //This is magic
 			//Dont try understand all the 4 encoding/decoding steps. 
 			//see https://github.com/ukwa/webarchive-discovery/issues/115
-			log.info("before url encode:"+url);
+			//log.info("before url encode:"+url);
             String unEscapedHex = SolrWaybackEncodingUtil.unEscapeHex(url);
-            log.info("unescaped hex encode:"+url);
+            //log.info("unescaped hex encode:"+url);
 			String urlEscaped = SolrWaybackEncodingUtil.escapeNonAscii(unEscapedHex);
-			log.info("url escaped:"+urlEscaped);//
+			//log.info("url escaped:"+urlEscaped);//
 			String urlNorm  = urlNormaliser.canonicalize(urlEscaped);
-            log.info("url urlNorm:"+urlNorm);// 
+            //log.info("url urlNorm:"+urlNorm);// 
             String urlEncoded=URLEncoder.encode(urlNorm, "UTF-8");
-			log.info("after encode1:"+urlEncoded);
+			//log.info("after encode1:"+urlEncoded);
             
 			String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+"viewhref?url="+urlEncoded+"&crawlDate="+crawlDate;    			
 			e.attr("href",newUrl);    			     		 
