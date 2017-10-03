@@ -30,9 +30,9 @@ import com.google.common.collect.Iterables;
 
 import dk.kb.netarchivesuite.solrwayback.export.GenerateCSV;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
-import dk.kb.netarchivesuite.solrwayback.service.dto.WeightedArcEntryDescriptor;
 
 public class SolrClient {
 
@@ -252,8 +252,8 @@ public class SolrClient {
   }
 
 
-  public ArrayList<WeightedArcEntryDescriptor> findImageForTimestamp(String searchString, String timeStamp) throws Exception {    
-    ArrayList<WeightedArcEntryDescriptor> images= new ArrayList<>();
+  public ArrayList<ArcEntryDescriptor> findImageForTimestamp(String searchString, String timeStamp) throws Exception {    
+    ArrayList<ArcEntryDescriptor> images= new ArrayList<>();
 
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(searchString); // only search images
@@ -279,7 +279,7 @@ public class SolrClient {
       SolrDocumentList docs = current.getResult();
       ArrayList<IndexDoc> groupDocs = solrDocList2IndexDoc(docs);
       String arcFull = groupDocs.get(0).getArc_full();
-      WeightedArcEntryDescriptor desc= new WeightedArcEntryDescriptor();
+      ArcEntryDescriptor desc= new ArcEntryDescriptor();
       desc.setUrl(groupDocs.get(0).getUrl());
       desc.setArcFull(arcFull);
       desc.setHash(groupDocs.get(0).getHash());

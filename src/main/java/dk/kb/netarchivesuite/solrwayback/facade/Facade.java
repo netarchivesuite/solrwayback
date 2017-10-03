@@ -187,9 +187,9 @@ public class Facade {
       }
       query.append(" url_norm:none)"); //just close last OR
       String queryStr= query.toString();
-      ArrayList<WeightedArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImageForTimestamp(queryStr, arcEntry.getCrawlDate());
+      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImageForTimestamp(queryStr, arcEntry.getCrawlDate());
                   
-       for (WeightedArcEntryDescriptor entry : imagesFromHtmlPage){                          
+       for (ArcEntryDescriptor entry : imagesFromHtmlPage){                          
          ImageUrl imageUrl = new ImageUrl();
          String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
          String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
@@ -203,13 +203,13 @@ public class Facade {
     
     
     //TODO refactor and delete
-    public static ArrayList<WeightedArcEntryDescriptor>  getImagesForHtmlPageNewThreaded(String source_file_path,long offset) throws Exception {
+    public static ArrayList<ArcEntryDescriptor>  getImagesForHtmlPageNewThreaded(String source_file_path,long offset) throws Exception {
       
   
       IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(source_file_path, offset);
       ArrayList<String> imageLinks = arcEntry.getImageUrls();          
       if (imageLinks.size() == 0){
-        return  new ArrayList<WeightedArcEntryDescriptor> ();
+        return  new ArrayList<ArcEntryDescriptor> ();
       }
       StringBuilder query = new StringBuilder();
       query.append("content_type_norm:image  AND (");
@@ -223,13 +223,13 @@ public class Facade {
       }
       query.append(" url_norm:none)"); //just close last OR
       String queryStr= query.toString();
-      ArrayList<WeightedArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImageForTimestamp(queryStr, arcEntry.getCrawlDate());
+      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImageForTimestamp(queryStr, arcEntry.getCrawlDate());
                       
        return imagesFromHtmlPage;                
     }
     
     
-    public static ArrayList<WeightedArcEntryDescriptor> getImagesFromHtmlPage(IndexDoc indexDoc) throws Exception{
+    public static ArrayList<ArcEntryDescriptor> getImagesFromHtmlPage(IndexDoc indexDoc) throws Exception{
         if (!"html".equals(indexDoc.getContentTypeNorm())){
             throw new IllegalArgumentException("Not html doc:"+indexDoc.getContentTypeNorm());
         }
@@ -266,27 +266,14 @@ public class Facade {
         query.append(" url:none)"); //just close last OR
         String queryStr= query.toString();
         log.info("image query:"+queryStr);
-        ArrayList<WeightedArcEntryDescriptor> resolved = null;
+        ArrayList<ArcEntryDescriptor> resolved = null;
         try{
          resolved = SolrClient.getInstance().findImageForTimestamp(queryStr, crawlDate);
         }
         catch(Exception e){
         	log.error("Solr error for query:"+queryStr); 
         }
-        
-        // Enrich with the right weights
-        Map<String, ProximityHtmlParser.WeightedImage> imageMap = new HashMap<>(imageUrls.size());
-        for (ProximityHtmlParser.WeightedImage image: imageUrls) {
-            imageMap.put(image.getImageURL().toExternalForm(), image);
-        }
-        ProximityHtmlParser.WeightedImage image;
-        for (WeightedArcEntryDescriptor descriptor: resolved) {
-            if ((image = imageMap.get(descriptor.getUrl())) != null) {
-                descriptor.setWeight(image.getWeight());
-            } else {
-                log.debug("Unable to match ArcEntryDescriptor url '" + descriptor.getUrl() + "' to weighted image");
-            }
-        }
+               
         return resolved;
     }
     

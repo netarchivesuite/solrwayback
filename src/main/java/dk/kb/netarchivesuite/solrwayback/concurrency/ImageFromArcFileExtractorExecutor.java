@@ -13,7 +13,6 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
-import dk.kb.netarchivesuite.solrwayback.service.dto.WeightedArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
 
 public class ImageFromArcFileExtractorExecutor {
@@ -25,27 +24,26 @@ public class ImageFromArcFileExtractorExecutor {
     public static  ArrayList<? extends ArcEntryDescriptor> extractImages(List<IndexDoc> docs)  throws Exception{
    
        
-       Set<Callable<ArrayList<WeightedArcEntryDescriptor>>> callables = new HashSet<>();
+       Set<Callable<ArrayList<ArcEntryDescriptor>>> callables = new HashSet<>();
               
        for (final IndexDoc current : docs){
        
-           callables.add(new Callable<ArrayList<WeightedArcEntryDescriptor>>() {
+           callables.add(new Callable<ArrayList<ArcEntryDescriptor>>() {
            @Override
-           public ArrayList<WeightedArcEntryDescriptor> call() throws Exception {
+           public ArrayList<ArcEntryDescriptor> call() throws Exception {
                              
                    if ("html".equals(current.getContentTypeNorm())){                           
                    log.info("getting images from:"+current.getUrl_norm());
-                     ArrayList<WeightedArcEntryDescriptor> images = Facade.getImagesForHtmlPageNewThreaded(current.getArc_full(),current.getOffset());
+                     ArrayList<ArcEntryDescriptor> images = Facade.getImagesForHtmlPageNewThreaded(current.getArc_full(),current.getOffset());
                        return images;                       
                    }
                    else if ("image".equals(current.getContentTypeNorm())){                        
                        String arcFull = current.getArc_full();
-                       WeightedArcEntryDescriptor desc= new WeightedArcEntryDescriptor();
+                       ArcEntryDescriptor desc= new ArcEntryDescriptor();
                        desc.setArcFull(arcFull);
                        desc.setHash(current.getHash());
-                       desc.setOffset(current.getOffset());
-                       desc.setWeight(current.getScore()); // We just use the score directly here
-                       ArrayList<WeightedArcEntryDescriptor> single = new ArrayList<> ();
+                       desc.setOffset(current.getOffset());                       
+                       ArrayList<ArcEntryDescriptor> single = new ArrayList<> ();
                        single.add(desc);
                        return single;
                    }
@@ -58,13 +56,13 @@ public class ImageFromArcFileExtractorExecutor {
        }
        
        //start all the executes.
-       List<Future<ArrayList<WeightedArcEntryDescriptor>>> futures = executorService.invokeAll(callables);
+       List<Future<ArrayList<ArcEntryDescriptor>>> futures = executorService.invokeAll(callables);
 
        // Extract all results and sort then by weight
-       List<WeightedArcEntryDescriptor> allList = new ArrayList<>();
-       for(Future<ArrayList<WeightedArcEntryDescriptor>> future : futures) {
+       List<ArcEntryDescriptor> allList = new ArrayList<>();
+       for(Future<ArrayList<ArcEntryDescriptor>> future : futures) {
         try{
-           ArrayList<WeightedArcEntryDescriptor> hits = future.get();
+           ArrayList<ArcEntryDescriptor> hits = future.get();
            if (hits != null){
              allList.addAll(hits);
            }
@@ -77,11 +75,10 @@ public class ImageFromArcFileExtractorExecutor {
         }
            
        }
-       Collections.sort(allList);
 
        // Remove duplicates
        //Add all the ArcEntryDescriptor to a single list, and only once for each hash. So we add them to a hashset
-       HashSet<? extends ArcEntryDescriptor> allAddedSet = new LinkedHashSet<>(allList);
+       HashSet<ArcEntryDescriptor> allAddedSet = new LinkedHashSet<>(allList);
 
        // Convert back to list for delivery
        return new ArrayList<>(allAddedSet);

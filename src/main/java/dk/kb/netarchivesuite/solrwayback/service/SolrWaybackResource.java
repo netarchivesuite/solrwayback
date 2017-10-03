@@ -43,7 +43,6 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
-import dk.kb.netarchivesuite.solrwayback.service.dto.WeightedArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.*;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
