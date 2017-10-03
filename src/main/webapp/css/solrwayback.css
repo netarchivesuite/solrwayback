@@ -270,11 +270,13 @@ input.imageSearchCheck{
     padding-top: 1em;
 }
 
-
 .thumb{
     float: left;
     margin-right: 1.5em;
     min-width: 150px;
+}
+
+.thumbSearch{
     height: 130px;
 }
 
@@ -282,6 +284,11 @@ input.imageSearchCheck{
     border: 2px solid black;
     max-height: 100px;
     max-width: 100px;
+}
+
+.thumbImageSearch img{
+    max-height: 200px;
+    max-width: 200px;
 }
 
 .searchResultItem .text {
