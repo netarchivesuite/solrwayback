@@ -64,10 +64,10 @@ public class Facade {
     }
     
     
-    public static BufferedImage getHtmlPagePreview(String arcFilePath, long offset) throws Exception {
+    public static BufferedImage getHtmlPagePreview(String source_file_path, long offset) throws Exception {
       
-      String url = PropertiesLoader.WAYBACK_BASEURL+"services/view?arcFilePath="+arcFilePath +"&offset="+offset+"&showToolbar=false";            
-      String filename = PropertiesLoader.PHANTOMJS_TEMP_IMAGEDIR+arcFilePath+"@"+offset+".png";
+      String url = PropertiesLoader.WAYBACK_BASEURL+"services/view?source_file_path="+source_file_path +"&offset="+offset+"&showToolbar=false";            
+      String filename = PropertiesLoader.PHANTOMJS_TEMP_IMAGEDIR+source_file_path+"@"+offset+".png";
       String scriptFile = PropertiesLoader.PHANTOMJS_RASTERIZE_FILE;
       
       log.info("generate temp preview file:"+filename);
@@ -288,9 +288,9 @@ public class Facade {
     }
     
     
-    public static String generatePid(String arcFilePath, long offset) throws Exception{      
-      ArcEntry arc=FileParserFactory.getArcEntry(arcFilePath, offset);           
-      arc.setContentEncoding(Facade.getEncoding(arcFilePath, ""+offset));
+    public static String generatePid(String source_file_path, long offset) throws Exception{      
+      ArcEntry arc=FileParserFactory.getArcEntry(source_file_path, offset);           
+      arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
       StringBuffer parts = new StringBuffer();
       //the original page
       parts.append("<part>\n");
@@ -301,19 +301,19 @@ public class Facade {
       return  parts.toString();
     }
     
-    public static ArcEntry viewHtml(String arcFilePath, long offset, Boolean showToolbar) throws Exception{         
+    public static ArcEntry viewHtml(String source_file_s, long offset, Boolean showToolbar) throws Exception{         
     	
-    	ArcEntry arc=FileParserFactory.getArcEntry(arcFilePath, offset);    	 
+    	ArcEntry arc=FileParserFactory.getArcEntry(source_file_s, offset);    	 
 
-    	arc.setContentEncoding(Facade.getEncoding(arcFilePath, ""+offset));
+    	arc.setContentEncoding(Facade.getEncoding(source_file_s, ""+offset));
     	if (("text/html".equals(arc.getContentType()))){
     		long start = System.currentTimeMillis();
-        	log.debug(" Generate webpage from FilePath:" + arcFilePath + " offset:" + offset);
+        	log.debug(" Generate webpage from FilePath:" + source_file_s + " offset:" + offset);
         	String textReplaced = HtmlParserUrlRewriter.replaceLinks(arc);    	 
         	
         	//Inject tooolbar
         	if (showToolbar!=Boolean.FALSE ){ //If true or null. 
-        	  textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(arcFilePath,offset,textReplaced);
+        	  textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_s,offset,textReplaced);
         	}
         	
         	arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));    	
@@ -322,7 +322,7 @@ public class Facade {
     		 
         }else if (("text/css".equals(arc.getContentType()))){ 
     		long start = System.currentTimeMillis();
-        	log.debug(" Generate css from FilePath:" + arcFilePath + " offset:" + offset);
+        	log.debug(" Generate css from FilePath:" + source_file_s + " offset:" + offset);
         	String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc)    	 ;        
         	
         	arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));    	
@@ -423,9 +423,8 @@ public class Facade {
       ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();
       for (ArcEntryDescriptor entry : arcs){                          
         ImageUrl imageUrl = new ImageUrl();
-        String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?source_file_path="+entry.getArcFull()+"&offset="+entry.getOffset();
-        String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+entry.getArcFull()+"&offset="+entry.getOffset();
-        //String solrwayBackLink = PropertiesLoader.WAYBACK_BASEURL+"services/view?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+        String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?source_file_path="+entry.getSource_file_path()+"&offset="+entry.getOffset();
+        String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+entry.getSource_file_path()+"&offset="+entry.getOffset();
         imageUrl.setImageUrl(imageLink);
         imageUrl.setDownloadUrl(downloadLink);             
         imageUrl.setHash(entry.getHash());

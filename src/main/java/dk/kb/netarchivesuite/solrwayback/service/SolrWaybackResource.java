@@ -84,8 +84,8 @@ public class SolrWaybackResource {
           //TODO call method on FACADE!
           for (ArcEntryDescriptor entry : img){
             ImageUrl imageUrl = new ImageUrl();
-            String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?source_file_path="+entry.getArcFull()+"&offset="+entry.getOffset();
-            String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+entry.getArcFull()+"&offset="+entry.getOffset();
+            String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?source_file_path="+entry.getSource_file_path()+"&offset="+entry.getOffset();
+            String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+entry.getSource_file_path()+"&offset="+entry.getOffset();
             imageUrl.setImageUrl(imageLink);
             imageUrl.setDownloadUrl(downloadLink);             
             imageUrl.setHash(entry.getHash());

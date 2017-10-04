@@ -36,9 +36,9 @@ public class ImageFromArcFileExtractorExecutor {
                        return images;                       
                    }
                    else if ("image".equals(current.getContentTypeNorm())){                        
-                       String arcFull = current.getSource_file_path();
+                       String source_file_path = current.getSource_file_path();
                        ArcEntryDescriptor desc= new ArcEntryDescriptor();
-                       desc.setArcFull(arcFull);
+                       desc.setSource_file_path(source_file_path);
                        desc.setHash(current.getHash());
                        desc.setOffset(current.getOffset());                       
                        desc.setUrl_norm(current.getUrl_norm());

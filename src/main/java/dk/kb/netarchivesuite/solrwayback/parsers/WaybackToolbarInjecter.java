@@ -78,15 +78,15 @@ public class WaybackToolbarInjecter {
     
   }
   
-  public static String injectInHmtl(String orgHtml, WaybackStatistics stats,String arcFilePath, long offset) throws Exception{
+  public static String injectInHmtl(String orgHtml, WaybackStatistics stats,String source_file_path, long offset) throws Exception{
     Document doc = Jsoup.parse(orgHtml);
         
-    String injectHtml = generateToolbarHtml(stats, arcFilePath, offset);
+    String injectHtml = generateToolbarHtml(stats, source_file_path, offset);
     doc.body().append(injectHtml);                    
     return doc.toString();    
   }
   
-  private static String generateToolbarHtml(WaybackStatistics stats, String arcFilePath, long offset) throws Exception{
+  private static String generateToolbarHtml(WaybackStatistics stats, String source_file_path, long offset) throws Exception{
     
 
     
@@ -124,7 +124,7 @@ public class WaybackToolbarInjecter {
     "            <div class=\"infoLine\">" +
     "               <span class=\"dynamicData\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +    
     "               <span class=\"dynamicData\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
-    "               <span class=\"dynamicData\">"+generatePwid("xml.png",arcFilePath,offset) +"</span>" +
+    "               <span class=\"dynamicData\">"+generatePwid("xml.png",source_file_path,offset) +"</span>" +
     "               <span class=\"dynamicData\">"+generatePagePreviews("pagepreviews.jpeg",stats.getUrl_norm()) +"</span>" +
     "            </div>" +    
     "           <div class=\"paging\">" +
@@ -205,9 +205,9 @@ public class WaybackToolbarInjecter {
   
  
   
-  private static String generatePwid(String image, String arcFilePath, long offset) throws Exception{
+  private static String generatePwid(String image, String source_file_path, long offset) throws Exception{
 
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/generatepwid?arcFilePath="+ arcFilePath+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/generatepwid?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
   
   

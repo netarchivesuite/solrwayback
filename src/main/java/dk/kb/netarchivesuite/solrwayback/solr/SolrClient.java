@@ -280,11 +280,11 @@ public class SolrClient {
     for (Group current:values){
       SolrDocumentList docs = current.getResult();
       ArrayList<IndexDoc> groupDocs = solrDocList2IndexDoc(docs);
-      String arcFull = groupDocs.get(0).getSource_file_path();
+      String source_file_path= groupDocs.get(0).getSource_file_path();
       ArcEntryDescriptor desc= new ArcEntryDescriptor();
       desc.setUrl(groupDocs.get(0).getUrl());
       desc.setUrl_norm(groupDocs.get(0).getUrl_norm());
-      desc.setArcFull(arcFull);
+      desc.setSource_file_path(source_file_path);
       desc.setHash(groupDocs.get(0).getHash());
       desc.setOffset(groupDocs.get(0).getOffset());
       desc.setContent_type(groupDocs.get(0).getMimeType());
