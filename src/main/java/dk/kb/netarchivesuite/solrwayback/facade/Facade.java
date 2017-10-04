@@ -170,10 +170,7 @@ public class Facade {
     
          
     public static String getEncoding(String arcFilePath,String offset) throws Exception{
-    	
-        String paths[] = arcFilePath.split("/");
-        String fileName = paths[paths.length - 1];
-            	    
+    	            	    
     	SearchResult search = SolrClient.getInstance().search("source_file_path:\""+arcFilePath +"\" AND source_file_offset:"+offset, 1);
         if (search.getNumberOfResults() ==0){
           log.warn("No content encoding found for:"+arcFilePath +" and offset:"+offset);
@@ -181,7 +178,7 @@ public class Facade {
         }
         else{
           String encoding = search.getResults().get(0).getContentEncoding();                    
-          return search.getResults().get(0).getContentEncoding(); //Can still be null. 
+          return encoding; //Can still be null. 
         }
     }
     

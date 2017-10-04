@@ -107,7 +107,7 @@ public class WarcParser {
             raf = new RandomAccessFile(new File(warcFilePath), "r");
             raf.seek(warcEntryPosition);
           
-            log.info("file is zipped:"+warcFilePath);
+          //  log.info("file is zipped:"+warcFilePath);
             InputStream is = Channels.newInputStream(raf.getChannel());                           
             GZIPInputStream stream = new GZIPInputStream(is);             
            

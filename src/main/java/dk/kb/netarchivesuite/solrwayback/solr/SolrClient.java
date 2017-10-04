@@ -272,7 +272,7 @@ public class SolrClient {
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
 
     if (rsp.getGroupResponse()== null){
-      log.info("no images found for search:"+searchString);
+     // log.info("no images found for search:"+searchString);
       return images;
     }
 
@@ -291,7 +291,7 @@ public class SolrClient {
       images.add(desc);
     }                              
 
-    log.info("resolve images:" + searchString + " found:" + images.size());
+//    log.info("resolve images:" + searchString + " found:" + images.size());
     return images;
   }
 
