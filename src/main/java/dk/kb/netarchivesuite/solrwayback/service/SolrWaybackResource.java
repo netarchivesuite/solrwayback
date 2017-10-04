@@ -76,23 +76,9 @@ public class SolrWaybackResource {
     @Path("/images/search")
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
     public  ArrayList<ImageUrl> imagesSearch(@QueryParam("query") String query) throws ServiceException {
-        try {                    
-          ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();             
+        try {                                          
           ArrayList<ArcEntryDescriptor> img = Facade.findImages(query);
-           
-          
-          //TODO call method on FACADE!
-          for (ArcEntryDescriptor entry : img){
-            ImageUrl imageUrl = new ImageUrl();
-            String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?source_file_path="+entry.getSource_file_path()+"&offset="+entry.getOffset();
-            String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+entry.getSource_file_path()+"&offset="+entry.getOffset();
-            imageUrl.setImageUrl(imageLink);
-            imageUrl.setDownloadUrl(downloadLink);             
-            imageUrl.setHash(entry.getHash());
-            imageUrl.setUrlNorm(entry.getUrl_norm());
-            imageUrls.add(imageUrl);            
-          }          
-          return  imageUrls;                              
+          return Facade.arcEntrys2Images(img);                                                            
         } catch (Exception e) {           
             throw handleServiceExceptions(e);
         }

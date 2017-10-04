@@ -419,7 +419,7 @@ public class Facade {
 
     }
     
-    private static  ArrayList<ImageUrl> arcEntrys2Images(ArrayList<ArcEntryDescriptor> arcs){
+   public static  ArrayList<ImageUrl> arcEntrys2Images(ArrayList<ArcEntryDescriptor> arcs){
       ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();
       for (ArcEntryDescriptor entry : arcs){                          
         ImageUrl imageUrl = new ImageUrl();
@@ -428,6 +428,7 @@ public class Facade {
         imageUrl.setImageUrl(imageLink);
         imageUrl.setDownloadUrl(downloadLink);             
         imageUrl.setHash(entry.getHash());
+        imageUrl.setUrlNorm(entry.getUrl_norm());
         imageUrls.add(imageUrl);         
       }
       return imageUrls;                 
