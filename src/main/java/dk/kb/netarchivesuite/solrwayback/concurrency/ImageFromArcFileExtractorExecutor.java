@@ -74,7 +74,7 @@ public class ImageFromArcFileExtractorExecutor {
            
        }
 
-       // Remove duplicates
+       // Remove duplicates (there will be many)
        //Add all the ArcEntryDescriptor to a single list, and only once for each hash. So we add them to a hashset
        HashSet<ArcEntryDescriptor> allAddedSet = new LinkedHashSet<>(allList);
 

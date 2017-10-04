@@ -56,8 +56,9 @@ public class Facade {
         long start = System.currentTimeMillis();
         SearchResult result = SolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types
         
-        //multithreaded load arc/warc files and parse html
-        ArrayList<ArcEntryDescriptor> extractImages =ImageFromArcFileExtractorExecutor.extractImages(result.getResults());
+                
+        //multithreaded call solr to find arc file and offset
+        ArrayList<ArcEntryDescriptor> extractImages = ImageFromArcFileExtractorExecutor.extractImages(result.getResults());
         return extractImages;      
     }
     
@@ -151,7 +152,7 @@ public class Facade {
         return  new ArrayList<ArcEntryDescriptor> ();
       }
       StringBuilder query = new StringBuilder();
-      query.append("content_type_norm:image  AND (");
+      query.append("(");
       for (String imageUrl : imageLinks ){         
         //fix https!
         String fixedUrl = imageUrl;

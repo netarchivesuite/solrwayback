@@ -263,7 +263,9 @@ public class SolrClient {
     solrQuery.add("group","true");       
     solrQuery.add("group.field","url_norm");
     solrQuery.add("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-    solrQuery.setFilterQueries("record_type:response"); //No binary for revists. 
+    solrQuery.setFilterQueries("content_type_norm:image"); //only images
+    solrQuery.setFilterQueries("record_type:response"); //No binary for revists.     
+    
     solrQuery.setFilterQueries("image_size:[2000 TO *]"); //No small images. (fillers etc.) 
     solrQuery.add("fl", indexDocFieldList);
 
@@ -408,7 +410,7 @@ public class SolrClient {
   }
 
   /*
-   * Notice here do we not fix url_norm 
+   * Notice this is searcing in the url field for excact match 
    */
   private ArrayList<IndexDoc> findClosetsHarvestTimeForMultipleUrlsMax1000(HashSet<String> urls, String timeStamp) throws Exception{
 
