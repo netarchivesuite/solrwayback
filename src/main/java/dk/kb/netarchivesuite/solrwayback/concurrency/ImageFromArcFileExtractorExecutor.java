@@ -41,6 +41,7 @@ public class ImageFromArcFileExtractorExecutor {
                        desc.setArcFull(arcFull);
                        desc.setHash(current.getHash());
                        desc.setOffset(current.getOffset());                       
+                       desc.setUrl_norm(current.getUrl_norm());
                        ArrayList<ArcEntryDescriptor> single = new ArrayList<> ();
                        single.add(desc);
                        return single;

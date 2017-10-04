@@ -8,6 +8,7 @@ public class ImageUrl {
   private String downloadUrl;
   private String imageUrl; 
   private String hash;
+  private String urlNorm;
   
   public ImageUrl(){    
   }
@@ -35,5 +36,14 @@ public class ImageUrl {
   public void setHash(String hash) {
     this.hash = hash;
   }
-    
+
+  public String getUrlNorm() {
+    return urlNorm;
+  }
+
+  public void setUrlNorm(String urlNorm) {
+    this.urlNorm = urlNorm;
+  }
+     
+  
 }

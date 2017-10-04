@@ -7,6 +7,7 @@ public class ArcEntryDescriptor {
 
     private String arcFull;
     private String url;
+    private String url_norm;
     private String hash;
     private long offset;
     private String content_type;    
@@ -53,7 +54,14 @@ public class ArcEntryDescriptor {
     public void setContent_type(String content_type) {
         this.content_type = content_type;
     }
- 
+    
+    public String getUrl_norm() {
+      return url_norm;
+    }
+
+    public void setUrl_norm(String url_norm) {
+      this.url_norm = url_norm;
+    }
 
     @Override
     public int hashCode() {

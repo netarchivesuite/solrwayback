@@ -283,6 +283,7 @@ public class SolrClient {
       String arcFull = groupDocs.get(0).getArc_full();
       ArcEntryDescriptor desc= new ArcEntryDescriptor();
       desc.setUrl(groupDocs.get(0).getUrl());
+      desc.setUrl_norm(groupDocs.get(0).getUrl_norm());
       desc.setArcFull(arcFull);
       desc.setHash(groupDocs.get(0).getHash());
       desc.setOffset(groupDocs.get(0).getOffset());
@@ -354,7 +355,7 @@ public class SolrClient {
 
     String query = null;
         
-    query = "arc_full:\""+arc_full+"\" AND source_file_offset:"+offset ;         
+    query = "source_file_path:\""+arc_full+"\" AND source_file_offset:"+offset ;         
     log.info("getArcEntry query:"+ query);    
     solrQuery.setQuery(query) ;
     solrQuery.setRows(1);

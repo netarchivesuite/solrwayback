@@ -77,8 +77,7 @@ public class SolrWaybackResource {
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
     public  ArrayList<ImageUrl> imagesSearch(@QueryParam("query") String query) throws ServiceException {
         try {                    
-          ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();   
-          
+          ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();             
           ArrayList<ArcEntryDescriptor> img = Facade.findImages(query);
            
           for (ArcEntryDescriptor entry : img){
@@ -88,12 +87,10 @@ public class SolrWaybackResource {
             imageUrl.setImageUrl(imageLink);
             imageUrl.setDownloadUrl(downloadLink);             
             imageUrl.setHash(entry.getHash());
+            imageUrl.setUrlNorm(entry.getUrl_norm());
             imageUrls.add(imageUrl);            
-          }
-          
-          return  imageUrls;
-        
-                      
+          }          
+          return  imageUrls;                              
         } catch (Exception e) {           
             throw handleServiceExceptions(e);
         }
@@ -123,7 +120,7 @@ public class SolrWaybackResource {
             throw handleServiceExceptions(e);
         }
     }
-    
+          
              
     @GET
     @Path("images/htmlpage")
