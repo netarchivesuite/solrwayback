@@ -32,11 +32,11 @@ public class ImageFromArcFileExtractorExecutor {
                              
                    if ("html".equals(current.getContentTypeNorm())){                           
                    log.info("getting images from:"+current.getUrl_norm());
-                     ArrayList<ArcEntryDescriptor> images = Facade.getImagesForHtmlPageNewThreaded(current.getArc_full(),current.getOffset());
+                     ArrayList<ArcEntryDescriptor> images = Facade.getImagesForHtmlPageNewThreaded(current.getSource_file_path(),current.getOffset());
                        return images;                       
                    }
                    else if ("image".equals(current.getContentTypeNorm())){                        
-                       String arcFull = current.getArc_full();
+                       String arcFull = current.getSource_file_path();
                        ArcEntryDescriptor desc= new ArcEntryDescriptor();
                        desc.setArcFull(arcFull);
                        desc.setHash(current.getHash());

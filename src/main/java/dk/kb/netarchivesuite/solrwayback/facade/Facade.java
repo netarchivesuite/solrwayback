@@ -116,11 +116,10 @@ public class Facade {
        for (IndexDoc doc : indexDocs){
          PagePreview pp = new PagePreview();
          pp.setCrawlDate(doc.getCrawlDateLong());
-         String arcFilePath=doc.getArc_full();
-         long offset = doc.getOffset();
-         
-         String previewUrl = PropertiesLoader.WAYBACK_BASEURL+"services/image/pagepreview?arcFilePath="+arcFilePath +"&offset="+offset+"&showToolbar=false"; 
-         String solrWaybackUrl = PropertiesLoader.WAYBACK_BASEURL+"services/view?arcFilePath="+arcFilePath +"&offset="+offset;
+         String source_file_path=doc.getSource_file_path();
+         long offset = doc.getOffset();         
+         String previewUrl = PropertiesLoader.WAYBACK_BASEURL+"services/image/pagepreview?source_file_path="+source_file_path +"&offset="+offset+"&showToolbar=false"; 
+         String solrWaybackUrl = PropertiesLoader.WAYBACK_BASEURL+"services/view?source_file_path="+source_file_path +"&offset="+offset;
          pp.setPagePreviewUrl(previewUrl);
          pp.setSolrWaybackUrl(solrWaybackUrl);                
          previews.add(pp);
@@ -170,11 +169,11 @@ public class Facade {
     }
     
          
-    public static String getEncoding(String arcFilePath,String offset) throws Exception{
+    public static String getEncoding(String source_file_path,String offset) throws Exception{
     	            	    
-    	SearchResult search = SolrClient.getInstance().search("source_file_path:\""+arcFilePath +"\" AND source_file_offset:"+offset, 1);
+    	SearchResult search = SolrClient.getInstance().search("source_file_path:\""+source_file_path +"\" AND source_file_offset:"+offset, 1);
         if (search.getNumberOfResults() ==0){
-          log.warn("No content encoding found for:"+arcFilePath +" and offset:"+offset);
+          log.warn("No content encoding found for:"+source_file_path +" and offset:"+offset);
           return "UTF-8";         
         }
         else{
@@ -183,8 +182,8 @@ public class Facade {
         }
     }
     
-    public static ArcEntry getArcEntry(String arcFilePath, long offset) throws Exception{         
-        return FileParserFactory.getArcEntry(arcFilePath, offset);        
+    public static ArcEntry getArcEntry(String source_file_path, long offset) throws Exception{         
+        return FileParserFactory.getArcEntry(source_file_path, offset);        
     }
     
     
@@ -424,8 +423,8 @@ public class Facade {
       ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();
       for (ArcEntryDescriptor entry : arcs){                          
         ImageUrl imageUrl = new ImageUrl();
-        String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
-        String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+        String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?source_file_path="+entry.getArcFull()+"&offset="+entry.getOffset();
+        String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+entry.getArcFull()+"&offset="+entry.getOffset();
         //String solrwayBackLink = PropertiesLoader.WAYBACK_BASEURL+"services/view?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
         imageUrl.setImageUrl(imageLink);
         imageUrl.setDownloadUrl(downloadLink);             

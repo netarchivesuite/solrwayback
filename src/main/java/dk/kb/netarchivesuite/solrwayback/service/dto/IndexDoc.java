@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class IndexDoc {
     
     private long offset;
-    private String arc_full; //TODO replace with source_file-s       
+    private String source_file_path;
     private String title;
     private String id;    
     private String url;
@@ -32,12 +32,7 @@ public class IndexDoc {
     public void setTitle(String title) {
         this.title = title;
     }
-    public String getArc_full() {
-        return arc_full;
-    }
-    public void setArc_full(String arc_full) {
-        this.arc_full = arc_full;
-    }
+   
     public String getId() {
         return id;
     }
@@ -119,6 +114,14 @@ public class IndexDoc {
 
   public void setImageUrls(ArrayList<String> imageUrls) {
     this.imageUrls = imageUrls;
+  }
+
+  public String getSource_file_path() {
+    return source_file_path;
+  }
+
+  public void setSource_file_path(String source_file_path) {
+    this.source_file_path = source_file_path;
   }  
 
        

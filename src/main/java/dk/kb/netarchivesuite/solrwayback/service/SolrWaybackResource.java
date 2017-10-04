@@ -80,10 +80,12 @@ public class SolrWaybackResource {
           ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();             
           ArrayList<ArcEntryDescriptor> img = Facade.findImages(query);
            
+          
+          //TODO call method on FACADE!
           for (ArcEntryDescriptor entry : img){
             ImageUrl imageUrl = new ImageUrl();
-            String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
-            String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?arcFilePath="+entry.getArcFull()+"&offset="+entry.getOffset();
+            String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?source_file_path="+entry.getArcFull()+"&offset="+entry.getOffset();
+            String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+entry.getArcFull()+"&offset="+entry.getOffset();
             imageUrl.setImageUrl(imageLink);
             imageUrl.setDownloadUrl(downloadLink);             
             imageUrl.setHash(entry.getHash());
@@ -125,15 +127,15 @@ public class SolrWaybackResource {
     @GET
     @Path("images/htmlpage")
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public ArrayList<ImageUrl> imagesForPage(@QueryParam("arc_full") String arc_full, @QueryParam("offset") long offset ) throws ServiceException {
+    public ArrayList<ImageUrl> imagesForPage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset ) throws ServiceException {
     
-     if (arc_full == null || offset == 0){
+     if (source_file_path == null || offset == 0){
        log.error("arc_full and offset queryparams missing");
        throw new InvalidArgumentServiceException("arc_full and offset queryparams missing");
      }
                   
      try {                    
-          return Facade.getImagesForHtmlPageNew(arc_full, offset);  
+          return Facade.getImagesForHtmlPageNew(source_file_path, offset);  
      }
      catch (Exception e) {           
             throw handleServiceExceptions(e);
@@ -213,10 +215,10 @@ public class SolrWaybackResource {
           throw new IllegalArgumentException("Url has never been harvested:"+url);
       }
       
-      String arcFilePath = doc.getArc_full();
+      String source_file_path = doc.getSource_file_path();
       long offset = doc.getOffset();
       
-      BufferedImage image = Facade.getHtmlPagePreview(arcFilePath, offset);
+      BufferedImage image = Facade.getHtmlPagePreview(source_file_path, offset);
       return Response.ok(image).build();   
         } catch (Exception e) {
             log.error("error thumbnail html image:" +uriInfo.getRequestUri().toString());  
@@ -230,14 +232,14 @@ public class SolrWaybackResource {
     @GET
     @Path("/image/pagepreview")
     @Produces("image/png")
-    public Response getHtmlPagePreview(@QueryParam("arcFilePath") String arcFilePath, @QueryParam("offset") long offset)
+    public Response getHtmlPagePreview(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset)
             throws ServiceException {
         try {
-            log.debug("Getting thumbnail html image from ArcfilePath:" + arcFilePath + " offset:" + offset);
-            BufferedImage image = Facade.getHtmlPagePreview(arcFilePath, offset);          
+            log.debug("Getting thumbnail html image from source_file_path:" + source_file_path + " offset:" + offset);
+            BufferedImage image = Facade.getHtmlPagePreview(source_file_path, offset);          
             return Response.ok(image).build();                       
         } catch (Exception e) {
-            log.error("error thumbnail html image:"+arcFilePath +" offset:"+offset);  
+            log.error("error thumbnail html image:"+source_file_path +" offset:"+offset);  
             e.printStackTrace();
             throw handleServiceExceptions(e);
         }
@@ -246,18 +248,18 @@ public class SolrWaybackResource {
     @GET
     @Path("/image")
     @Produces("image/jpeg")
-    public Response getImage(@QueryParam("arcFilePath") String arcFilePath, @QueryParam("offset") long offset, @QueryParam("height") int height, @QueryParam("width") int width)
+    public Response getImage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("height") int height, @QueryParam("width") int width)
             throws ServiceException {
         try {
-            log.debug("Getting image from ArcfilePath:" + arcFilePath + " offset:" + offset + " targetWidth:" + width + " targetHeight:" + height);
+            log.debug("Getting image from source_file_path:" + source_file_path + " offset:" + offset + " targetWidth:" + width + " targetHeight:" + height);
                      
-            ArcEntry arcEntry= Facade.getArcEntry(arcFilePath, offset);
+            ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
             
             BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
             
             if (image== null){
-                log.error("image is null, arc:"+arcFilePath +" offset:"+offset);
-                throw new IllegalArgumentException("image is null, arc:"+arcFilePath +" offset:"+offset);                
+                log.error("image is null, source_file_path:"+source_file_path +" offset:"+offset);
+                throw new IllegalArgumentException("image is null, source_file_path:"+source_file_path +" offset:"+offset);                
             }
             
             int sourceWidth = image.getWidth();
@@ -272,7 +274,7 @@ public class SolrWaybackResource {
                 return response.build();
             }
         } catch (Exception e) {
-            log.error("error getImage:"+arcFilePath +" offset:"+offset +" height:"+height +" width:"+width); //Java can not read all images. 
+            log.error("error getImage:"+source_file_path +" offset:"+offset +" height:"+height +" width:"+width); //Java can not read all images. 
             e.printStackTrace();
             throw handleServiceExceptions(e);
         }
@@ -280,11 +282,11 @@ public class SolrWaybackResource {
 
     @GET
     @Path("/downloadRaw")
-    public Response downloadRaw(@QueryParam("arcFilePath") String arcFilePath, @QueryParam("offset") long offset) throws ServiceException {
+    public Response downloadRaw(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws ServiceException {
         try {
                
-            log.debug("Download from FilePath:" + arcFilePath + " offset:" + offset);
-            ArcEntry arcEntry= Facade.getArcEntry(arcFilePath, offset);
+            log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
+            ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
                                     
             InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
             ResponseBuilder response = Response.ok((Object) in).type(arcEntry.getContentType());
@@ -292,11 +294,11 @@ public class SolrWaybackResource {
               response.header("Content-Disposition", "filename=\"" + arcEntry.getFileName() +"\"");
             }
             
-            log.debug("Download from ArcfilePath:" + arcFilePath + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());
+            log.debug("Download from source_file_path:" + source_file_path + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());
             return response.build();
 
         } catch (Exception e) {
-            log.error("Error download from arcfile:"+ arcFilePath + " offset:" + offset,e);
+            log.error("Error download from source_file_path:"+ source_file_path + " offset:" + offset,e);
         	e.printStackTrace();
             throw handleServiceExceptions(e);
         }
@@ -354,10 +356,10 @@ public class SolrWaybackResource {
     
     @GET
     @Path("/getContentType")
-    public String getContentType(@QueryParam("arcFilePath") String arcFilePath, @QueryParam("offset") long offset) throws ServiceException {
+    public String getContentType(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws ServiceException {
         try {
                
-            return Facade.getEncoding(arcFilePath, ""+offset);       
+            return Facade.getEncoding(source_file_path, ""+offset);       
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -413,7 +415,7 @@ public class SolrWaybackResource {
         	throw new IllegalArgumentException("Url has never been harvested:"+url);
         }
         //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
-        return view(doc.getArc_full() , doc.getOffset(),true);        
+        return view(doc.getSource_file_path() , doc.getOffset(),true);        
         	
     } catch (Exception e) {
         e.printStackTrace();
@@ -423,10 +425,10 @@ public class SolrWaybackResource {
     
     @GET
     @Path("/view")
-    public Response view(@QueryParam("arcFilePath") String arcFilePath, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws ServiceException {
+    public Response view(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws ServiceException {
         try {
                
-         return viewImpl(arcFilePath, offset,showToolbar);
+         return viewImpl(source_file_path, offset,showToolbar);
     
     } catch (Exception e) {
         e.printStackTrace();
@@ -437,17 +439,17 @@ public class SolrWaybackResource {
     
     @GET
     @Path("/generatepwid")
-    public String generatePid(@QueryParam("arcFilePath") String arcFilePath, @QueryParam("offset") long offset) throws Exception {
-      log.debug("generatepwid:" + arcFilePath + " offset:" + offset);
-      String xml =Facade.generatePid(arcFilePath, offset);
+    public String generatePid(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
+      log.debug("generatepwid:" + source_file_path + " offset:" + offset);
+      String xml =Facade.generatePid(source_file_path, offset);
                                                                   
       return xml;
     
   }
     
-    private Response viewImpl(String arcFilePath, long offset,Boolean showToolbar) throws Exception{    	    	
-        log.debug("View from FilePath:" + arcFilePath + " offset:" + offset);
-    	ArcEntry arcEntry= Facade.viewHtml(arcFilePath, offset,showToolbar);
+    private Response viewImpl(String source_file_path, long offset,Boolean showToolbar) throws Exception{    	    	
+        log.debug("View from FilePath:" + source_file_path + " offset:" + offset);
+    	ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset,showToolbar);
                                 
         InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
         ResponseBuilder response = Response.ok((Object) in).type(arcEntry.getContentType());                 
@@ -475,7 +477,7 @@ public class SolrWaybackResource {
         	}
         	
         	log.info("Closest harvest to: " +crawlDate +" is "+indexDoc.getCrawlDate());
-        	return view(indexDoc.getArc_full(),indexDoc.getOffset(),showToolbar);
+        	return view(indexDoc.getSource_file_path(),indexDoc.getOffset(),showToolbar);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -529,33 +531,7 @@ public class SolrWaybackResource {
         }
 
     }
-    
-    
-    public ArrayList<ImageUrl> imagesForPageTest(){
-      ArrayList<ImageUrl> tests = new ArrayList<ImageUrl>();
       
-      ImageUrl im1 = new ImageUrl();
-      im1.setDownloadUrl("http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=/netarkiv/0123/filedir/181110-186-20130604210516-00084-sb-prod-har-001.statsbiblioteket.dk.warc&offset=96865967");
-      im1.setImageUrl("http://belinda:9721/solrwayback/services/image?arcFilePath=/netarkiv/0123/filedir/181110-186-20130604210516-00084-sb-prod-har-001.statsbiblioteket.dk.warc&offset=96865967");      
-      im1.setHash("sha1:OH6RZFQRZWC2AF6U474C4JRC7SLGKWVX");
-      tests.add(im1);
-      
-      ImageUrl im2 = new ImageUrl();
-      im2.setDownloadUrl("http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=/netarkiv/0105/filedir/252063-244-20160219075443-00026-sb-prod-har-003.statsbiblioteket.dk.warc&offset=715018159");
-      im2.setImageUrl("http://belinda:9721/solrwayback/services/image?arcFilePath=/netarkiv/0105/filedir/252063-244-20160219075443-00026-sb-prod-har-003.statsbiblioteket.dk.warc&offset=715018159");      
-      im2.setHash("sha1:GN6XGABFJ7VULSXDTBURGK6YHIY7NGO6");
-      tests.add(im2);
-   
-      ImageUrl im3 = new ImageUrl();
-      im3.setDownloadUrl("http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=/netarkiv/0228/filedir/167339-178-20121204215446-00211-kb-prod-har-004.kb.dk.arc&offset=95722660");
-      im3.setImageUrl("http://belinda:9721/solrwayback/services/image?arcFilePath=/netarkiv/0228/filedir/167339-178-20121204215446-00211-kb-prod-har-004.kb.dk.arc&offset=95722660");      
-      im3.setHash("sha1:CVNVM6MUZE54KKU3SOXG6SVDT632SD2E");
-      tests.add(im3);
-      
-      return tests;
-    }
-    
-        
     private ServiceException handleServiceExceptions(Exception e) {
         if (e instanceof ServiceException) {
             log.info("Handling serviceException:" + e.getMessage());

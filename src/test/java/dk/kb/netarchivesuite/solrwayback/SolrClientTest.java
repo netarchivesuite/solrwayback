@@ -105,7 +105,7 @@ public class SolrClientTest {
         if (!used.contains(current.getHash())){
 
           //http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath=/netarkiv/0201/filedir/977-14-20050824040722-00002-sb-prod-har-002.statsbiblioteket.dk.arc&offset=78335287
-         String url = "http://belinda:9721/solrwayback/services/downloadRaw?arcFilePath="+current.getArc_full()+"&offset="+current.getOffset();
+         String url = "http://belinda:9721/solrwayback/services/downloadRaw?source_file_path="+current.getSource_file_path()+"&offset="+current.getOffset();
          fw.write(url+"\n");
         used.add(current.getHash());
         }

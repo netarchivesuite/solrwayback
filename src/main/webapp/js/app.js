@@ -157,7 +157,7 @@ Vue.component('result-box', {
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
                 <h3>
-                <a v-bind:href=" baseUrl + 'services/view?arcFilePath=' + doc.arc_full + '&offset=' + doc.source_file_offset" target="_blank">
+                <a v-bind:href=" baseUrl + 'services/view?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
                 </a>
@@ -210,7 +210,7 @@ Vue.component('result-box', {
             <!-- Download PDF's, Word docs etc. -->
             <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
                 <div class="download">
-                    <a v-bind:href=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + doc.source_file_offset"  target="_blank">
+                    <a v-bind:href=" baseUrl + 'services/downloadRaw?source_file_path' + doc.source_file_path + '&offset=' + doc.source_file_offset"  target="_blank">
                        Download {{ doc.content_type_norm }}
                     </a>
                 </div>  
@@ -219,8 +219,8 @@ Vue.component('result-box', {
             <!-- Images -->    
             <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
                 <div class="image">
-                    <a v-bind:href=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + doc.source_file_offset" target="_blank">
-                        <img v-bind:src=" baseUrl + 'services/downloadRaw?arcFilePath=' + doc.arc_full + '&offset=' + doc.source_file_offset"/>
+                    <a v-bind:href=" baseUrl + 'services/downloadRaw?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
+                        <img v-bind:src=" baseUrl + 'services/downloadRaw?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset"/>
                     </a>
                 </div>  
             </div>
@@ -408,7 +408,7 @@ var app = new Vue({
                         /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
-                            	this.getImages(this.searchResult[i].id,this.searchResult[i].arc_full, this.searchResult[i].source_file_offset);
+                            	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
@@ -425,8 +425,8 @@ var app = new Vue({
             }
         },
 
-        getImages: function(id,arc_full, offset){
-            var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?arc_full=" + arc_full +"&offset="+offset;
+        getImages: function(id,source_file_path, offset){
+            var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_path=" + source_file_path +"&offset="+offset;
 
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = "";

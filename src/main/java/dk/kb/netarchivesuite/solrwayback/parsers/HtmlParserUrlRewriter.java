@@ -141,7 +141,7 @@ public class HtmlParserUrlRewriter {
 
 				IndexDoc indexDoc = SolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getCrawlDate());		         
 				if (indexDoc!=null){    		    			 
-					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?arcFilePath="+indexDoc.getArc_full() +"&offset="+indexDoc.getOffset(); 
+					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset(); 
 					css=css.replaceFirst(cssUrl, newUrl);
 				}else{
 					log.info("CSS @import url not harvested:"+cssUrl);
@@ -259,7 +259,7 @@ public class HtmlParserUrlRewriter {
 			}    		     		 
 			IndexDoc indexDoc = map.get(url);   
 			if (indexDoc!=null){    		    			 
-				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?arcFilePath="+indexDoc.getArc_full() +"&offset="+indexDoc.getOffset();    			 
+				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset();    			 
 				e.attr(attribute,newUrl);    			     		 
 			}
 			else{
@@ -286,7 +286,7 @@ public class HtmlParserUrlRewriter {
 				String resolvedUrl = new URL( base ,urlUnresolved).toString();			
 				IndexDoc indexDoc = map.get(resolvedUrl);   
 				if (indexDoc!=null){    		    			 
-					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?arcFilePath="+indexDoc.getArc_full() +"&offset="+indexDoc.getOffset();    			     		
+					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();    			     		
 					String styleFixed=style.replaceAll(urlUnresolved,newUrl);    			     
 					e.attr(attribute,styleFixed); 
 				}
@@ -376,7 +376,7 @@ public class HtmlParserUrlRewriter {
           URL resolvedUrl = new URL( base , url);            
           IndexDoc indexDoc = map.get(resolvedUrl.toString());   
           if (indexDoc!=null){                             
-              String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?arcFilePath="+indexDoc.getArc_full() +"_STYLE_AMPERSAND_REPLACE_offset="+indexDoc.getOffset();                 
+              String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"_STYLE_AMPERSAND_REPLACE_offset="+indexDoc.getOffset();                 
               log.info("replaced @import:"+e );
               log.info("replaced with:"+newUrl );
               e.html("@import url("+newUrl+");"); //e.text will be encoded                            

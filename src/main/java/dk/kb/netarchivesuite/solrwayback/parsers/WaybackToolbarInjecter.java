@@ -60,15 +60,15 @@ public class WaybackToolbarInjecter {
   
   
   
-  public static String injectWaybacktoolBar(String arc_full, long offset, String html) throws Exception{       
+  public static String injectWaybacktoolBar(String source_file_path, long offset, String html) throws Exception{       
    try{                
-    IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(arc_full, offset);
+    IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(source_file_path, offset);
     
     WaybackStatistics stats = SolrClient.getInstance().getWayBackStatistics(arcEntry .getUrl_norm(), arcEntry.getCrawlDate());
             
     stats.setHarvestDate(arcEntry.getCrawlDate());
     
-    String injectedHtml =injectInHmtl(html, stats, arc_full,offset);
+    String injectedHtml =injectInHmtl(html, stats, source_file_path,offset);
     return injectedHtml;
    }catch (Exception e){
      log.error("error injecting waybacktoolbar", e);
