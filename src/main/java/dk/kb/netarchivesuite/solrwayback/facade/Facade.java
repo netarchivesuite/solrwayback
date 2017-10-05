@@ -34,7 +34,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 
-import dk.kb.netarchivesuite.solrwayback.concurrency.ImageFromArcFileExtractorExecutor;
+import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.FileParserFactory;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
@@ -59,7 +59,7 @@ public class Facade {
         
                 
         //multithreaded call solr to find arc file and offset
-        ArrayList<ArcEntryDescriptor> extractImages = ImageFromArcFileExtractorExecutor.extractImages(result.getResults());
+        ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(result.getResults());
         return extractImages;      
     }
     

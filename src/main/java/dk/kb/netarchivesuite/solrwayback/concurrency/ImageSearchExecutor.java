@@ -13,11 +13,12 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 
-public class ImageFromArcFileExtractorExecutor {
+
+public class ImageSearchExecutor {
     
     static ExecutorService executorService = Executors.newFixedThreadPool(20); // 20 solr calls at a time 
    
-    private static final Logger log = LoggerFactory.getLogger(ImageFromArcFileExtractorExecutor.class);
+    private static final Logger log = LoggerFactory.getLogger(ImageSearchExecutor.class);
     
     public static  ArrayList<ArcEntryDescriptor> extractImages(List<IndexDoc> docs)  throws Exception{
    
