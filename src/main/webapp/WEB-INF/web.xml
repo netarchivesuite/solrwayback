@@ -16,7 +16,7 @@
   
     <servlet>
    <servlet-name>AdminContent</servlet-name>
-   <display-name>AdminContent</display-name>
+     <display-name>AdminContent</display-name>
    <description></description>
    <servlet-class>basicauth.AdminContent</servlet-class>
   </servlet>
@@ -53,36 +53,7 @@
         </servlet-mapping> 
 
 
- <servlet>
-    <servlet-name>searchServlet</servlet-name>
-    <servlet-class>dk.kb.netarchivesuite.solrwayback.servlets.SearchServlet</servlet-class>
-  </servlet>
 
-  <servlet-mapping>
-    <servlet-name>searchServlet</servlet-name>
-    <url-pattern>/searchServlet</url-pattern>
-  </servlet-mapping>
-
-
- <servlet>
-    <servlet-name>findimagesServlet</servlet-name>
-    <servlet-class>dk.kb.netarchivesuite.solrwayback.servlets.FindImagesServlet</servlet-class>
-  </servlet>
-
-  <servlet-mapping>
-    <servlet-name>findimagesServlet</servlet-name>
-    <url-pattern>/findimagesServlet</url-pattern>
-  </servlet-mapping>
-
- <servlet>
-     <servlet-name>CommonsFileUploadServlet</servlet-name>
-     <servlet-class>dk.kb.netarchivesuite.solrwayback.servlets.CommonsFileUploadServlet</servlet-class>
-   </servlet>
-   
-   <servlet-mapping>
-     <servlet-name>CommonsFileUploadServlet</servlet-name>
-     <url-pattern>/Commonsfileuploadservlet</url-pattern>
-   </servlet-mapping>
 
 <!-- Just enable basic form auth. users defined in tomcat-users.xml
   <servlet-mapping>

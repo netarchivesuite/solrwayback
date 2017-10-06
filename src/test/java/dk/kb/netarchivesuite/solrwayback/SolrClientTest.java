@@ -44,7 +44,8 @@ public class SolrClientTest {
 	        String format = dateFormat.format(date);
 	        System.out.println(format+"Z");
 	        */  
-	        testWaybackStats();
+	        //testWaybackStats();
+	        testexif();
              //testGetImages();
 	        //testHarvestTimesForUrl(); 
 	      //  testIngoingLinks();
@@ -85,7 +86,21 @@ public class SolrClientTest {
        System.out.println(indexDocs.size());
 }
 	
-	
+      
+      public static void testexif() throws Exception{
+        
+        SolrClient solr = SolrClient.getInstance();
+        
+        
+         List<IndexDoc> indexDocs = solr.search("exif_location_0_coordinate:*",6000).getResults();                 
+
+         
+         
+         
+         
+         System.out.println(indexDocs.size());
+  }
+   
 	
 	   // AND content_length:[10000 TO *]
     public static void testGetImages() throws Exception{

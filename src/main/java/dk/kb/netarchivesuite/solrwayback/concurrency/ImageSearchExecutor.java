@@ -20,9 +20,9 @@ public class ImageSearchExecutor {
    
     private static final Logger log = LoggerFactory.getLogger(ImageSearchExecutor.class);
     
-    public static  ArrayList<ArcEntryDescriptor> extractImages(List<IndexDoc> docs)  throws Exception{
+    public static  ArrayList<ArcEntryDescriptor> extractImages(List<IndexDoc> docs, boolean mustHaveExifLocation)  throws Exception{
    
-       
+       final boolean exif=mustHaveExifLocation;
        Set<Callable<ArrayList<ArcEntryDescriptor>>> callables = new HashSet<>();
               
        for (final IndexDoc current : docs){
@@ -32,9 +32,16 @@ public class ImageSearchExecutor {
            public ArrayList<ArcEntryDescriptor> call() throws Exception {
                              
                    if ("html".equals(current.getContentTypeNorm())){                           
-                   log.info("getting images from:"+current.getUrl_norm());
-                     ArrayList<ArcEntryDescriptor> images = Facade.getImagesForHtmlPageNewThreaded(current.getSource_file_path(),current.getOffset());
-                       return images;                       
+                     log.info("getting images from:"+current.getUrl_norm());
+                     if (! exif){   
+                       ArrayList<ArcEntryDescriptor> images = Facade.getImagesForHtmlPageNewThreaded(current.getSource_file_path(),current.getOffset());
+                       return images; 
+                     }
+                     else{
+                       ArrayList<ArcEntryDescriptor> images = Facade.getImagesWithExifLocationForHtmlPageNewThreaded(current.getSource_file_path(),current.getOffset());
+                     log.info("images with exif from thread:"+images.size());
+                       return images;                     
+                     }                      
                    }
                    else if ("image".equals(current.getContentTypeNorm())){                        
                        String source_file_path = current.getSource_file_path();

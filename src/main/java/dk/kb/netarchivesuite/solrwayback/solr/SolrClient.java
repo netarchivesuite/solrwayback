@@ -372,8 +372,31 @@ public class SolrClient {
     return indexDocs.get(0);
   }
   
- 
-  
+ /*
+
+  public SearchResult imageLocationSearch(String searchString, int results) throws Exception {
+    log.info("imageLocationsearch for:" + searchString);
+    SearchResult result = new SearchResult();
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+    solrQuery.add("fl", indexDocFieldList);
+    solrQuery.setQuery(searchString); // only search images
+    solrQuery.setRows(results);    
+    solrQuery.setFilterQueries( +" and filter:"+filterQuery););
+    
+
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+
+
+    result.setNumberOfResults(docs.getNumFound());
+    ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
+    result.setResults(indexDocs);
+    log.info("search for:" + searchString + " found:" + result.getNumberOfResults());
+    return result;
+  }
+
+  */
 
   public SearchResult search(String searchString, String filterQuery, int results) throws Exception {
     log.info("search for:" + searchString +" and filter:"+filterQuery);
@@ -572,7 +595,6 @@ public class SolrClient {
 
   private static IndexDoc solrDocument2IndexDoc(SolrDocument doc) {
     IndexDoc indexDoc = new IndexDoc();
-    
     indexDoc.setScore(Double.valueOf((float) doc.getFieldValue("score")));
     indexDoc.setId((String) doc.get("id"));
     indexDoc.setTitle((String) doc.get("title"));

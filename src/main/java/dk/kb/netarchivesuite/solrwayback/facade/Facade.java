@@ -53,15 +53,23 @@ public class Facade {
   }
     
 
-    public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {
-        long start = System.currentTimeMillis();
+    public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {        
         SearchResult result = SolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types
         
                 
         //multithreaded call solr to find arc file and offset
-        ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(result.getResults());
+        ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(result.getResults(), false);
         return extractImages;      
     }
+    
+    //TODO virker ikke. Skal være graph query    
+    public static ArrayList<ArcEntryDescriptor> findImagesWithLocation(String searchText) throws Exception {
+      SearchResult result = SolrClient.getInstance().search(searchText, "(content_type_norm:image AND exif_location_0_coordinate:*) OR content_type_norm:html", 50000); //only search these two types      
+                   log.info("images location, res:"+result.getNumberOfResults());
+      //multithreaded call solr to find arc file and offset
+      ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(result.getResults(), true);
+      return extractImages;      
+  }
     
     
     public static BufferedImage getHtmlPagePreview(String source_file_path, long offset) throws Exception {
@@ -168,7 +176,38 @@ public class Facade {
        return imagesFromHtmlPage;                
     }
     
-         
+    
+    /*
+     * Find images on a HTML page.
+     * 1) Find the doc in solr from source_file_path and offset. (fast)
+     * 2) Get image links field
+     * 3) For each images see if we have the image in index and it has exif location data 
+     */
+    public static ArrayList<ArcEntryDescriptor> getImagesWithExifLocationForHtmlPageNewThreaded(String source_file_path,long offset) throws Exception {
+        
+      IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(source_file_path, offset);
+      ArrayList<String> imageLinks = arcEntry.getImageUrls();          
+      if (imageLinks.size() == 0){
+        return  new ArrayList<ArcEntryDescriptor> ();
+      }
+      StringBuilder query = new StringBuilder();
+      query.append("(");
+      for (String imageUrl : imageLinks ){         
+        //fix https!
+        String fixedUrl = imageUrl;
+        if (imageUrl.startsWith("https:")){
+          fixedUrl = "http:"+imageUrl.substring(6); // because image_links are not normlized as url_norm
+        }                       
+        query.append(" url_norm:\""+fixedUrl+"\" OR");            
+      }
+      query.append(" url_norm:none) AND exif_location_0_coordinate:*"); //just close last OR, and must have gps data
+      String queryStr= query.toString();
+      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImagesForTimestamp(queryStr, arcEntry.getCrawlDate());
+                      
+       return imagesFromHtmlPage;                
+    }
+    
+    
     public static String getEncoding(String source_file_path,String offset) throws Exception{
     	            	    
     	SearchResult search = SolrClient.getInstance().search("source_file_path:\""+source_file_path +"\" AND source_file_offset:"+offset, 1);
