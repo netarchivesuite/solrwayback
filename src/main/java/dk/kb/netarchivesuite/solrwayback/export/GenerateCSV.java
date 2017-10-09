@@ -63,7 +63,7 @@ public class GenerateCSV {
     public  static void generateLineBrief(StringBuffer buffer,SolrDocument doc) throws Exception{
            DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
            Date crawlDate = (Date) doc.get("crawl_date");            
-           String waybackDate = (String) doc.get("wayback_date");
+           String waybackDate = ""+(Long) doc.get("wayback_date");
            String url = (String) doc.get("url"); 
            
            buffer.append(formatCsvEntry((String) doc.get("title")));
@@ -78,7 +78,7 @@ public class GenerateCSV {
     public static void generateLineFull(StringBuffer buffer,SolrDocument doc) throws Exception{
            DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
            Date crawlDate = (Date) doc.get("crawl_date");            
-           String waybackDate = (String) doc.get("wayback_date");
+           String waybackDate = ""+ (Long) doc.get("wayback_date");
            String url = (String) doc.get("url");                       
            ArrayList<String> contentTypes = (ArrayList<String>) doc.get("content_type");
            String content_type=contentTypes.get(0);
@@ -88,7 +88,7 @@ public class GenerateCSV {
            buffer.append(SEPARATOR);           
            buffer.append(formatCsvEntry((String) doc.get("public_suffix")));
            buffer.append(SEPARATOR);
-           buffer.append(formatCsvEntry((String) doc.get("crawl_year")));
+           buffer.append(formatCsvEntry(""+(Integer) doc.get("crawl_year")));
            buffer.append(SEPARATOR);
            buffer.append(formatCsvEntry(content_type));
            buffer.append(SEPARATOR);
