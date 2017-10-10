@@ -352,14 +352,23 @@ public class SolrWaybackResource {
     }
     
 
+    /*
+     *  This will be called from solrwayback page views, when resources can not be resolved (not harvested)  
+     */    
+    @GET
+    @Path("/notfound")    
+    public Response notfound() throws ServiceException {                      
+          log.info("not found called");
+          throw new NotFoundServiceException("");                  
+    }
+    
+    
     
     @GET
     @Path("/getContentType")
     public String getContentType(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws ServiceException {
-        try {
-               
+        try {               
             return Facade.getEncoding(source_file_path, ""+offset);       
-
         } catch (Exception e) {
             e.printStackTrace();
             throw handleServiceExceptions(e);

@@ -37,7 +37,9 @@ public class HtmlParserUrlRewriter {
 			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css)['\"]?\\s*[)]?.*";
 	private static Pattern  CSS_IMPORT_PATTERN = Pattern.compile(CSS_IMPORT_PATTERN_STRING);
 
-
+	//replacing urls that points into the world outside solrwayback because they are never harvested
+    private static final String NOT_FOUND_LINK=PropertiesLoader.WAYBACK_BASEURL+"services/notfound/";
+	
 	public static void main(String[] args) throws Exception{
 
 
@@ -144,6 +146,7 @@ public class HtmlParserUrlRewriter {
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset(); 
 					css=css.replaceFirst(cssUrl, newUrl);
 				}else{
+				    css=css.replaceFirst(cssUrl, NOT_FOUND_LINK);				
 					log.info("CSS @import url not harvested:"+cssUrl);
 				}	    		 	    		 
 			}
@@ -263,6 +266,7 @@ public class HtmlParserUrlRewriter {
 				e.attr(attribute,newUrl);    			     		 
 			}
 			else{
+			     e.attr(attribute,NOT_FOUND_LINK);
 				log.info("No harvest found for:"+url);
 			}
 
@@ -291,7 +295,9 @@ public class HtmlParserUrlRewriter {
 					e.attr(attribute,styleFixed); 
 				}
 				else{
-					log.info("No harvest found for:"+resolvedUrl);
+				  String styleFixed=style.replaceAll(urlUnresolved,NOT_FOUND_LINK);                    
+                  e.attr(attribute,styleFixed); 				  
+			      log.info("No harvest found for:"+resolvedUrl);
 				}
 
 
@@ -384,6 +390,7 @@ public class HtmlParserUrlRewriter {
           
           }
           else{
+            e.html("@import url("+NOT_FOUND_LINK+");"); //e.text will be encoded
               log.info("No harvest found for:"+resolvedUrl );
           }
           
