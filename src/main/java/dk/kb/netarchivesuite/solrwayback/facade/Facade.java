@@ -180,10 +180,12 @@ public class Facade {
     
     
     /*
-     * Find images on a HTML page.
+     * Find images on a HTML page. 
+     * THIS IS NOT WORKING REALLY. To many searches before enough images with exif loc is found. TODO: Use graph search
      * 1) Find the doc in solr from source_file_path and offset. (fast)
      * 2) Get image links field
      * 3) For each images see if we have the image in index and it has exif location data 
+     * 
      */
     public static ArrayList<ArcEntryDescriptor> getImagesWithExifLocationForHtmlPageNewThreaded(String source_file_path,long offset) throws Exception {
         
