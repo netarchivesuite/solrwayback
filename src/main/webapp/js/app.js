@@ -400,7 +400,7 @@ var app = new Vue({
                 this.showSpinner();
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
-                    console.log('response.body: ', response.body);
+                    //console.log('response.body: ', response.body);
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         this.hideSpinner();
@@ -450,8 +450,6 @@ var app = new Vue({
                     downloadArray.push(downloadUrl);
                     hashArray.push(hash);
                     urlNormArray.push(urlNorm);
-                    //console.log('response.body[j]:', response.body[j]);
-                    //console.log('urlNormArray:', urlNormArray);
                 }
                 this.imageObjects.push({
                     imageID: id,
