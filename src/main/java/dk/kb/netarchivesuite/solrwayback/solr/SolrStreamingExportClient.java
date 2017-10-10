@@ -39,7 +39,7 @@ public class SolrStreamingExportClient {
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","title, url,source_file_path,crawl_date,wayback_date");
-    solrQuery.add("sort","id asc");
+    solrQuery.add("sort","score desc, id asc");
     solrQuery.setQuery(query); // only search images
     solrQuery.setRows(pageSize);            
     solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark );
@@ -77,7 +77,7 @@ public class SolrStreamingExportClient {
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","title, host, public_suffix, crawl_year, content_type, content_language url, source_file_path,url,source_file_path,crawl_date,wayback_date");    
-    solrQuery.add("sort","id asc");
+    solrQuery.add("sort","score desc, id asc");
     solrQuery.setQuery(query); 
     solrQuery.setRows(pageSize);            
     solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark );
