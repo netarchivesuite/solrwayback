@@ -1,7 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,9 +19,6 @@ import org.apache.solr.client.solrj.response.Group;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.params.CommonParams;
-import org.apache.solr.common.util.NamedList;
-import org.apache.solr.common.util.SimpleOrderedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
@@ -39,8 +34,9 @@ public class SolrClient {
   private static final Logger log = LoggerFactory.getLogger(SolrClient.class);
   private static HttpSolrClient solrServer;
   private static SolrClient instance = null;
-  //TODO remove arc_full
-  private static String indexDocFieldList = "id,score,title,arc_full,url,url_norm,links_images,source_file_path,source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type,content_encoding";
+
+  
+  private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type,content_encoding";
   static {
     SolrClient.initialize(PropertiesLoader.SOLR_SERVER);
   }
@@ -518,72 +514,7 @@ public class SolrClient {
     return indexDocs.get(0);     
   }
 
-  /* We dont want to return the solr docs outside this class and making VO for them will double memory imprint,.
-   * That is why we do all the CSV generation in the client class. For huge result sets there will also be deep paging.
-   *  
-   */
-
-  public String exportBrief(String query, String filterQuery, int results) throws Exception {
-    log.info("export brief:" + query +" and filter:"+filterQuery);
-
-    SolrQuery solrQuery = new SolrQuery();
-    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","title, arc_full,url,source_file_path,crawl_date,wayback_date");
-    solrQuery.setQuery(query); // only search images
-    solrQuery.setRows(results);
-    if (filterQuery != null){
-      solrQuery.setFilterQueries(filterQuery);
-    }
-
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
-    SolrDocumentList docs = rsp.getResults();
-    StringBuffer export = new StringBuffer();
-    GenerateCSV.generateFirstLineHeader(export);    
-    GenerateCSV.generateSecondLineHeader(export, query, filterQuery);
-    GenerateCSV.addHeadlineBrief(export);
-
-    long numFound = docs.getNumFound();    
-    for ( SolrDocument doc : docs){
-      GenerateCSV.generateLineBrief(export, doc);
-      doc = null;// For garbage collection 
-    }    
-
-    return export.toString();
-  }
-
-
-  /*
-   * TODO v.3.0 suppport
-   * 
-   */
-  public String exportFull(String query, String filterQuery, int results) throws Exception {
-    log.info("export full:" + query +" and filter:"+filterQuery);
-
-    SolrQuery solrQuery = new SolrQuery();
-    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","title, host, public_suffix, crawl_year, content_type, content_language url, arc_full,url,source_file_path,crawl_date,wayback_date");    
-    solrQuery.setQuery(query); // only search images
-    solrQuery.setRows(results);
-    if (filterQuery != null){
-      solrQuery.setFilterQueries(filterQuery);
-    }
-
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
-    SolrDocumentList docs = rsp.getResults();
-    StringBuffer export = new StringBuffer();
-    GenerateCSV.generateFirstLineHeader(export);    
-    GenerateCSV.generateSecondLineHeader(export, query, filterQuery);
-    GenerateCSV.addHeadlineFull(export);
-
-    long numFound = docs.getNumFound();    
-    for ( SolrDocument doc : docs){
-      GenerateCSV.generateLineFull(export, doc);
-      doc = null;// For garbage collection
-    }    
-
-    return export.toString();
-  }
-
+  
 
   private static ArrayList<IndexDoc> solrDocList2IndexDoc(SolrDocumentList docs) {
     ArrayList<IndexDoc> earchives = new ArrayList<IndexDoc>();
@@ -661,7 +592,6 @@ public class SolrClient {
     return  query.toString(); 
   }
 
-
-
+ 
 
 }

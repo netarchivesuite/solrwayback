@@ -33,11 +33,11 @@ public class GenerateCSV {
 
     
    public  static void addHeadlineBrief(StringBuffer buffer) throws Exception{
-      buffer.append("Title,Date,WaybackURL");
+      buffer.append("#Title,Date,WaybackURL");
       buffer.append(NEWLINE);
       }
    public  static void addHeadlineFull(StringBuffer buffer) throws Exception{
-     buffer.append("Title, Host, Public Suffix, Crawl Year, Content Type, Content Language, Crawl Date, URL, Wayback Date, WaybackURL");
+     buffer.append("#Title, Host, Public Suffix, Crawl Year, Content Type, Content Language, Crawl Date, URL, Wayback Date, WaybackURL");
      buffer.append(NEWLINE);
      }
    
@@ -49,12 +49,12 @@ public class GenerateCSV {
    
    public static void generateFirstLineHeader(StringBuffer buffer){
      DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-     buffer.append("Results from The Royal Library (Denmark) Solrwayback interface, on "+formatOut.format(new Date()));
+     buffer.append("#Results from The Royal Library (Denmark) Solrwayback interface, on "+formatOut.format(new Date()));
      buffer.append(NEWLINE);          
    }
     
    public static void generateSecondLineHeader(StringBuffer buffer, String query, String filterQuery){
-     buffer.append("Query:"+query +"     Filter query:"+filterQuery);
+     buffer.append("#Query:"+query +"     Filter query:"+filterQuery);
      buffer.append(NEWLINE);          
    }
 
@@ -62,8 +62,9 @@ public class GenerateCSV {
    
     public  static void generateLineBrief(StringBuffer buffer,SolrDocument doc) throws Exception{
            DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-           Date crawlDate = (Date) doc.get("crawl_date");            
-           String waybackDate = ""+(Long) doc.get("wayback_date");
+           
+           Date crawlDate = (Date) doc.get("crawl_date");                       
+           String waybackDate = ""+(Long) doc.get("wayback_date");           
            String url = (String) doc.get("url"); 
            
            buffer.append(formatCsvEntry((String) doc.get("title")));
@@ -79,7 +80,8 @@ public class GenerateCSV {
            DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
            Date crawlDate = (Date) doc.get("crawl_date");            
            String waybackDate = ""+ (Long) doc.get("wayback_date");
-           String url = (String) doc.get("url");                       
+           String url = (String) doc.get("url");          
+           
            ArrayList<String> contentTypes = (ArrayList<String>) doc.get("content_type");
            String content_type=contentTypes.get(0);
            buffer.append(formatCsvEntry((String) doc.get("title")));

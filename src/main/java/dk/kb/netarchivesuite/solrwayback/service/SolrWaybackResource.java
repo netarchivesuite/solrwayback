@@ -2,9 +2,14 @@ package dk.kb.netarchivesuite.solrwayback.service;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -20,10 +25,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
@@ -305,47 +312,39 @@ public class SolrWaybackResource {
 
     }
 
+  
+    
     @GET
     @Path("/export/brief")    
+    @Produces(MediaType.TEXT_PLAIN)
     public Response exportBrief(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
-        try {
-               
+        try {              
             log.debug("Export brief. query:"+q +" filterquery:"+fq);
-            DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                  
-            
-            String dateStr = formatOut.format(new Date());
-            ResponseBuilder response = Response.ok(Facade.exportBrief(q, fq)).type(MediaType.TEXT_PLAIN);
-            response.header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"");
-                        
-            log.debug("Export completed");
-            return response.build();
+            DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                              
+            String dateStr = formatOut.format(new Date());                        
+            InputStream is = Facade.exportBriefStreaming(q, fq);
+            return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
 
         } catch (Exception e) {
-            log.error("Error in exportbrief",e);
+            log.error("Error in export brief",e);
             e.printStackTrace();
             throw handleServiceExceptions(e);
         }
-
     }
-    
+        
     
     @GET
     @Path("/export/full")    
     public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
-        try {
-               
-            log.debug("Export brief. query:"+q +" filterquery:"+fq);
-            DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                  
+        try {               
+            log.debug("Export full. query:"+q +" filterquery:"+fq);
+            DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                                                                                                         
+            String dateStr = formatOut.format(new Date());                        
+            InputStream is = Facade.exportFullStreaming(q, fq);
+            return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
             
-            String dateStr = formatOut.format(new Date());
-            ResponseBuilder response = Response.ok(Facade.exportFull(q, fq)).type(MediaType.TEXT_PLAIN);
-            response.header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"");
-                        
-            log.debug("Export completed");
-            return response.build();
-
         } catch (Exception e) {
-            log.error("Error in exportbrief",e);
+            log.error("Error in export full",e);
             e.printStackTrace();
             throw handleServiceExceptions(e);
         }

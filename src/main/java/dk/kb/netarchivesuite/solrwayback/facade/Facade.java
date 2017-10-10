@@ -35,10 +35,12 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
+import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.FileParserFactory;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
@@ -225,15 +227,17 @@ public class Facade {
         return FileParserFactory.getArcEntry(source_file_path, offset);        
     }
     
-    
-    
-    public static String exportBrief(String q, String fg) throws Exception{         
-      return SolrClient.getInstance().exportBrief(q, fg, 100000);         
+      
+    public static InputStream exportBriefStreaming(String q, String fq) throws Exception{                           
+      SolrStreamingExportClient solr = new SolrStreamingExportClient(PropertiesLoader.SOLR_SERVER);      
+      StreamingSolrExportBufferedInputStream is = new StreamingSolrExportBufferedInputStream(solr, q, fq, 50000, false, 1000000);            
+      return is;         
     }
-  
-    
-    public static String exportFull(String q, String fg) throws Exception{         
-      return SolrClient.getInstance().exportFull(q, fg, 1000000);         
+        
+    public static InputStream exportFullStreaming(String q, String fq) throws Exception{                           
+      SolrStreamingExportClient solr = new SolrStreamingExportClient(PropertiesLoader.SOLR_SERVER);      
+      StreamingSolrExportBufferedInputStream is = new StreamingSolrExportBufferedInputStream(solr, q, fq, 50000, true, 1000000);            
+      return is;         
     }
     
     
