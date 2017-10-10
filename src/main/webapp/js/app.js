@@ -317,6 +317,8 @@ var app = new Vue({
             this.baseUrl = response.body['wayback.baseurl'];
         }, (response) => {
             console.log('error: ', response);
+            this.errorMsg = response.statusText;
+            this.hideSpinner();
         });
         this.getQueryparams();
         this.doSearch();
@@ -429,6 +431,8 @@ var app = new Vue({
                     this.hideSpinner();
                 }, (response) => {
                     console.log('error: ', response);
+                    this.errorMsg = response.statusText;
+                    this.hideSpinner();
                 });
             }
         },
@@ -465,6 +469,8 @@ var app = new Vue({
                 });
             }, (response) => {
                 console.log('error: ', response);
+                this.errorMsg = response.statusText;
+                this.hideSpinner();
             });
         },
 
