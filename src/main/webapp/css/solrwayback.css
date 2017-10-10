@@ -336,10 +336,15 @@ input.imageSearchCheck{
 }
 
 .fullpost{
-    background: #f3f6f9;
+    background: #ecf3f6;
     display: none;
     margin-top: 1em;
     padding: 1em .5em;
+}
+
+.fullpost .item{
+    border-bottom: 1px solid white;
+    padding: 0.2em 0
 }
 
 

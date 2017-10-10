@@ -199,12 +199,17 @@ Vue.component('result-box', {
                 <div class="link fullPost" > full post</div>
             </div>
             <div class="fullpost">
-                <div v-for="(value, key) in doc" class="item">
-                    <template v-if="key !== 'content'">
+                <h3>Click value to perform a field search</h3>
+                <template v-for="(value, key) in doc" v-if="key !== 'content'">
+                    <div class="item">
                         <div class="label">{{ key | facetName }}</div>
-                        <div class="text">{{ value }}</div>
-                    </template>    
-                </div>
+                        <div v-if="value.constructor !== Array" class="text link" v-on:click="setupSearch('search', key + ':&quot;' + value + '&quot;');clearFacets()" >{{ value }}</div>
+                        <div v-else >
+                            <div v-for="item in value" v-on:click="setupSearch('search', key + ':&quot;' + item + '&quot;');clearFacets()" class="text link">{{item}}</div>
+                        </div>
+                    </div>
+                </template>    
+               
             </div> 
             
             <!-- Download PDF's, Word docs etc. -->
@@ -400,7 +405,7 @@ var app = new Vue({
                 this.showSpinner();
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
-                    //console.log('response.body: ', response.body);
+                    console.log('response.body: ', response.body);
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         this.hideSpinner();
