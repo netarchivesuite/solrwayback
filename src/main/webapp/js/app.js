@@ -222,7 +222,8 @@ Vue.component('result-box', {
                     <a v-bind:href=" baseUrl + 'services/downloadRaw?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
                         <img v-bind:src=" baseUrl + 'services/downloadRaw?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset"/>
                     </a>
-                </div>  
+                </div> 
+                <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + doc.url_norm + '&quot;');clearFacets()">Pages linking to image</span>
             </div>
               
              <!-- Images in HTML pages -->  
@@ -234,7 +235,8 @@ Vue.component('result-box', {
                                 <span v-html="imageUrl"></span>                  
                             </a>
                             <br/>  
-                            <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span>
+                            <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
+                            <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
                         </div>
                     </template>
                 </div>   
@@ -253,6 +255,7 @@ Vue.component('result-box-images', {
         <div v-for="doc in searchResult" class="searchResultItem">
              <div class="thumb thumbImageSearch"><a v-bind:href="doc.downloadUrl" target="_blank"><img v-if="doc.imageUrl" v-bind:src="doc.imageUrl + '&height=200&width=200'"/></a></div>
              <div class="link" v-if="doc.imageUrl" v-on:click="setupSearch('search', 'hash:&quot;' + doc.hash + '&quot;');clearFacets()">Search for image</div>
+             <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + doc.urlNorm + '&quot;');clearFacets()">Pages linking to image</span>        
         </div>
     </div>    
     `
@@ -397,7 +400,7 @@ var app = new Vue({
                 this.showSpinner();
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
-                    //console.log('response.body: ', response.body);
+                    console.log('response.body: ', response.body);
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         this.hideSpinner();
@@ -429,22 +432,34 @@ var app = new Vue({
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_path=" + source_file_path +"&offset="+offset;
 
             this.$http.get(imageInfoUrl).then((response) => {
-                var imageUrl = "";
-                var downloadUrl = "";
+                var imageUrl = ""; // Url in the netarchive
+                var downloadUrl = ""; // Url in the netarchive
                 var hash = "";
+                var urlNorm = ""; // // Url in real life
                 var imageUrlArray = [];
                 var downloadArray = [];
                 var hashArray = [];
+                var urlNormArray = [];
                 for(var j=0;j<response.body.length;j++){
                     imageUrl = response.body[j].imageUrl;
                     downloadUrl = response.body[j].downloadUrl;
                     hash = response.body[j].hash;
+                    urlNorm = response.body[j].urlNorm;
                     var imageHTML = '<img src="' + imageUrl + '&width=100&height=100">'
                     imageUrlArray.push(imageHTML);
                     downloadArray.push(downloadUrl);
                     hashArray.push(hash);
+                    urlNormArray.push(urlNorm);
+                    //console.log('response.body[j]:', response.body[j]);
+                    //console.log('urlNormArray:', urlNormArray);
                 }
-                this.imageObjects.push({imageID: id, imageUrls: imageUrlArray, downloadUrls: downloadArray, hashes: hashArray});
+                this.imageObjects.push({
+                    imageID: id,
+                    imageUrls: imageUrlArray,
+                    downloadUrls: downloadArray,
+                    hashes: hashArray,
+                    urlNorm: urlNormArray,
+                });
             }, (response) => {
                 console.log('error: ', response);
             });
