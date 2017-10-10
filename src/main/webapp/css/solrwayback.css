@@ -155,6 +155,7 @@ input.imageSearchCheck{
 
 #errorbox{
     background: #ffffcc;
+    line-height: 1.7em;
 }
 
 #selectedFacetsbox ul{

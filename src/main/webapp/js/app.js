@@ -278,8 +278,9 @@ Vue.component('zerohits-box', {
 Vue.component('error-box', {
     props: ['errorMsg', 'myQuery'],
     template: `
-    <div class="box">
-        <p>Your search for <span class="bold">{{ myQuery }}</span> gave following error: <span class="bold">{{errorMsg}}</span></p>
+    <div id="errorbox" class="box">
+        <p>Your search for:<br> <span class="bold">{{ myQuery }}</span><br> 
+        Gave following error: <br><span class="bold">{{errorMsg}}</span></p>
     </div>
     `
 })
