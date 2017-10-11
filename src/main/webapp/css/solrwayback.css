@@ -253,6 +253,10 @@ input.imageSearchCheck{
     width: 15em;
 }
 
+.searchResultItem .text {
+    margin-left: 15em;
+}
+
 .searchResultItem h3 {
     margin: 0 0 .5em;
 }
@@ -267,23 +271,29 @@ input.imageSearchCheck{
 }
 
 .thumbs{
+    background-color: #F3F3F3;
+    margin-top: 1em;
     overflow: hidden;
-    padding-top: 1em;
+    padding: 1em;
 }
 
 .thumb{
     float: left;
     margin-right: 1.5em;
-    min-width: 150px;
+    min-width: 160px;
 }
 
 .thumbSearch{
-    height: 130px;
+    height: 145px;
+}
+
+.thumbSearch.hide{
+    display: none;
 }
 
 .thumb img{
     border: 2px solid black;
-    max-height: 100px;
+    max-height: 80px;
     max-width: 100px;
 }
 
@@ -292,7 +302,22 @@ input.imageSearchCheck{
     max-width: 200px;
 }
 
-.searchResultItem .text {
+.link.moreThumbs{
+    clear: both;
+    font-size: 110%;
+    font-weight: bold;
+    margin-bottom: 1em;
+}
+
+.link.moreThumbs:before{
+    content: 'More';
+}
+
+.active.link.moreThumbs:before{
+    content: 'Fewer';
+}
+
+.searchResultItem.text {
     margin-left: 15.5em;
 }
 
@@ -340,12 +365,16 @@ input.imageSearchCheck{
     background: #ecf3f6;
     display: none;
     margin-top: 1em;
-    padding: 1em .5em;
+    padding: 1em 0;
+}
+
+.fullpost h3{
+    padding: 0 0 .5em 10px;
 }
 
 .fullpost .item{
     border-bottom: 1px solid white;
-    padding: 0.2em 0
+    padding: 0.2em .5em .2em 10px;
 }
 
 

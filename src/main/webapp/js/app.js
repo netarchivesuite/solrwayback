@@ -233,18 +233,23 @@ Vue.component('result-box', {
               
              <!-- Images in HTML pages -->  
             <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
-                <div class="thumbs">
-                    <template v-for="image in imageObjects" v-if="doc.id == image.imageID">
-                        <div class="thumb thumbSearch" v-for="(imageUrl, index) in image.imageUrls">
-                            <a :href="image.downloadUrls[index]" target="_blank">
-                                <span v-html="imageUrl"></span>                  
-                            </a>
-                            <br/>  
-                            <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
-                            <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
-                        </div>
+                
+                    <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
+                        <div class="thumbs" v-if="imageObjects[index].imageUrls.length>0">
+                        <template  v-for="(imageUrl, index) in image.imageUrls" >
+                            <div class="thumb thumbSearch"v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
+                                <a :href="image.downloadUrls[index]" target="_blank">
+                                    <span v-html="imageUrl"></span> 
+                                </a>
+                                <br/>  
+                                <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
+                                <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
+                            </div>
+                            <div class="link moreThumbs" v-if="index == 9 && imageObjects.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
+                        </template>
+ </div> 
                     </template>
-                </div>   
+                 
             </div>
             
         </div>
@@ -440,7 +445,6 @@ var app = new Vue({
 
         getImages: function(id,source_file_path, offset){
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_path=" + source_file_path +"&offset="+offset;
-
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = ""; // Url in the netarchive
                 var downloadUrl = ""; // Url in the netarchive
@@ -466,7 +470,7 @@ var app = new Vue({
                     imageUrls: imageUrlArray,
                     downloadUrls: downloadArray,
                     hashes: hashArray,
-                    urlNorm: urlNormArray,
+                    urlNorm: urlNormArray
                 });
             }, (response) => {
                 console.log('error: ', response);
