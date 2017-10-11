@@ -235,7 +235,7 @@ Vue.component('result-box', {
             <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
                 
                     <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
-                        <div class="thumbs" v-if="imageObjects[index].imageUrls.length>0">
+                        <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
                         <template  v-for="(imageUrl, index) in image.imageUrls" >
                             <div class="thumb thumbSearch"v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
                                 <a :href="image.downloadUrls[index]" target="_blank">
@@ -245,7 +245,7 @@ Vue.component('result-box', {
                                 <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
                                 <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
                             </div>
-                            <div class="link moreThumbs" v-if="index == 9 && imageObjects.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
+                            <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
                         </template>
  </div> 
                     </template>
