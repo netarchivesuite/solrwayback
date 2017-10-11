@@ -350,6 +350,7 @@ input.imageSearchCheck{
 
 /* FULLPOST  */
 .link.fullPost{
+    font-weight: bold;
     margin-top: .8em;
 }
 
