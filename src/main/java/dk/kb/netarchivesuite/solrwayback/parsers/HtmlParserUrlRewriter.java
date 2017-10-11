@@ -222,23 +222,22 @@ public class HtmlParserUrlRewriter {
 
               //List<String> urlList = new ArrayList<String>();
       HashSet<String> urlSet = new HashSet<String>();
-
+      HashSet<String> unResolvedUrlSet = new HashSet<String>();
 
       collectRewriteUrlsForElement(urlSet,doc, "area", "href");
       collectRewriteUrlsForElement(urlSet, doc, "img", "src");
       collectRewriteUrlsForElement(urlSet,doc, "body", "background");
-      collectRewriteUrlsForElement(urlSet,doc, "link", "href");
-      collectRewriteUrlsForElement(urlSet,doc, "script", "src");
-      collectRewriteUrlsForElement(urlSet,doc, "td", "background");
-      collectStyleBackgroundRewrite(urlSet,doc, "a", "style",url);
-      collectRewriteUrlsForStyleImport(urlSet,doc,url);
+      collectRewriteUrlsForElement(urlSet, doc, "link", "href");
+      collectRewriteUrlsForElement(urlSet , doc, "script", "src");
+      collectRewriteUrlsForElement(urlSet, doc, "td", "background");
+      collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
+      collectRewriteUrlsForStyleImport(urlSet, doc,url);
       
       log.info("#unique urlset to resolve:"+urlSet.size());
 
       ArrayList<IndexDoc> docs = SolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
 
       StringBuffer buf = new StringBuffer();
-      HashMap<String,IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
       for (IndexDoc indexDoc: docs){
           buf.append("<part>\n");        
           buf.append("pwid:netarkivet.dk:"+indexDoc.getCrawlDate()+":part:"+indexDoc.getUrl() +"\n");
@@ -250,6 +249,30 @@ public class HtmlParserUrlRewriter {
 	}
 
   
+	public static HashSet<String> getResourcLinksForHtmlFromArc(ArcEntry arc) throws Exception{
+
+      long start = System.currentTimeMillis();
+      String html = new String(arc.getBinary(),arc.getContentEncoding());
+      String url=arc.getUrl();
+
+
+      Document doc = Jsoup.parse(html,url); //TODO baseURI?
+
+              //List<String> urlList = new ArrayList<String>();
+      HashSet<String> urlSet = new HashSet<String>();      
+
+      collectRewriteUrlsForElement(urlSet,doc, "area", "href");
+      collectRewriteUrlsForElement(urlSet, doc, "img", "src");
+      collectRewriteUrlsForElement(urlSet,doc, "body", "background");
+      collectRewriteUrlsForElement(urlSet, doc, "link", "href");
+      collectRewriteUrlsForElement(urlSet , doc, "script", "src");
+      collectRewriteUrlsForElement(urlSet, doc, "td", "background");
+      collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
+      collectRewriteUrlsForStyleImport(urlSet, doc,url);
+            
+     return urlSet;
+    }
+	
 	
 
 	public static void replaceUrlForElement( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type) throws Exception{
@@ -341,7 +364,7 @@ public class HtmlParserUrlRewriter {
 		return null;    	
 	}
 
-	public static void collectRewriteUrlsForElement(HashSet<String> set, Document doc,String element, String attribute ) throws Exception{
+	public static void collectRewriteUrlsForElement(HashSet<String> set,Document doc,String element, String attribute ) throws Exception{
 
 		for (Element e : doc.select(element)) {
 			String url = e.attr("abs:"+attribute);

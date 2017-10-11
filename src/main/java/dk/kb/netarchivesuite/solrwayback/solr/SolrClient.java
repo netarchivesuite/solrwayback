@@ -94,7 +94,7 @@ public class SolrClient {
     solrQuery.add("facet.limit",""+facetLimit);
     solrQuery.addFilterQuery("crawl_date:["+dateStart+ " TO "+dateEnd+"]");
 
-    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl","id,score,title,source_file,source_file_offset,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);      
     List<FacetCount> facetList = new ArrayList<FacetCount>();
@@ -125,7 +125,7 @@ public class SolrClient {
     solrQuery.add("facet.field","links_domains");
     solrQuery.add("facet.limit",""+(facetLimit+1)); //+1 because itself will be removed and is almost certain of resultset if self-linking
     solrQuery.addFilterQuery("crawl_date:["+dateStart+ " TO "+dateEnd+"]");
-    solrQuery.add("fl","id,score,title,arc_full,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl","id,score,title,source_file,source_file_offset,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);      
     List<FacetCount> facetList = new ArrayList<FacetCount>();
@@ -342,7 +342,7 @@ public class SolrClient {
 
 
 
-  public IndexDoc getArcEntry(String arc_full, long offset) throws Exception {
+  public IndexDoc getArcEntry(String source_file_path, long offset) throws Exception {
 
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
@@ -350,7 +350,7 @@ public class SolrClient {
 
     String query = null;
         
-    query = "source_file_path:\""+arc_full+"\" AND source_file_offset:"+offset ;         
+    query = "source_file_path:\""+source_file_path+"\" AND source_file_offset:"+offset ;         
     log.info("getArcEntry query:"+ query);    
     solrQuery.setQuery(query) ;
     solrQuery.setRows(1);
@@ -359,7 +359,7 @@ public class SolrClient {
     SolrDocumentList docs = rsp.getResults();
 
     if (docs.getNumFound() == 0){
-      throw new Exception("Could not find arc entry:"+arc_full +" offset:"+offset);
+      throw new Exception("Could not find arc entry:"+source_file_path +" offset:"+offset);
     }
 
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);

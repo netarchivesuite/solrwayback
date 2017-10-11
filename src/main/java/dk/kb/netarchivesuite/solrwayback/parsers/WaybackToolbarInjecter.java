@@ -126,6 +126,7 @@ public class WaybackToolbarInjecter {
     "               <span class=\"dynamicData\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
     "               <span class=\"dynamicData\">"+generatePwid("xml.png",source_file_path,offset) +"</span>" +
     "               <span class=\"dynamicData\">"+generatePagePreviews("pagepreviews.jpeg",stats.getUrl_norm()) +"</span>" +
+    "               <span class=\"dynamicData\">"+generatePageResources("magnify_glass.png",source_file_path,offset) +"</span>" +
     "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
@@ -223,7 +224,9 @@ public class WaybackToolbarInjecter {
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pagepreviews.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
   
-  
+  private static String generatePageResources(String image, String source_file_path, long offset) throws Exception{
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pageresources.jsp?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+  }
   
   private static String generateDomainGraphImageLink(String image,String domain){
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"waybacklinkgraph.jsp?domain="+domain+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";

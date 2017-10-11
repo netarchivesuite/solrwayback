@@ -50,6 +50,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
+import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.*;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -451,9 +452,19 @@ public class SolrWaybackResource {
       log.debug("generatepwid:" + source_file_path + " offset:" + offset);
       String xml =Facade.generatePid(source_file_path, offset);
                                                                   
-      return xml;
+      return xml;   
+  }
+    
+    
+    @GET
+    @Path("/timestampsforpage")
+    public TimestampsForPage timestamps(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
+      log.debug("timestamps:" + source_file_path + " offset:" + offset);
+      TimestampsForPage ts = Facade.timestampsForPage(source_file_path, offset);                                                                
+      return ts;
     
   }
+    
     
     private Response viewImpl(String source_file_path, long offset,Boolean showToolbar) throws Exception{    	    	
         log.debug("View from FilePath:" + source_file_path + " offset:" + offset);

@@ -346,19 +346,74 @@ public class Facade {
       return  parts.toString();
     }
     
-    public static ArcEntry viewHtml(String source_file_s, long offset, Boolean showToolbar) throws Exception{         
+    
+    /*
+     * This method does something similar to the new feature from archive.org. See: http://blog.archive.org/2017/10/05/wayback-machine-playback-now-with-timestamps/
+     * 
+     * Returns information about the harvested HTML page.
+     * List all resources on the page and when they were harvested.    
+     * Calcuate time difference between html page and each resource.
+     * Preview link to html page.
+     * 
+     */
+    
+    public static TimestampsForPage timestampsForPage(String source_file_path, long offset) throws Exception{      
+      TimestampsForPage ts= new TimestampsForPage();
+      ArrayList<PageResource> pageResources = new ArrayList<PageResource>();
+      ts.setResources(pageResources);
+            
+      ArcEntry arc=FileParserFactory.getArcEntry(source_file_path, offset);
+      arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
+      
+      IndexDoc docPage = SolrClient.getInstance().getArcEntry(source_file_path, offset);
+            
+      Date pageCrawlDate =new Date(docPage.getCrawlDateLong()); 
+      ts.setPageCrawlDate(pageCrawlDate);
+      ts.setPageUrl(arc.getUrl());
+      
+      String previewUrl = PropertiesLoader.WAYBACK_BASEURL+"services/image/pagepreview?source_file_path="+source_file_path +"&offset="+offset+"&showToolbar=false";
+      ts.setPagePreviewUrl(previewUrl);      
+      
+      //the original page REMEMBER      
+      HashSet<String> resources = HtmlParserUrlRewriter.getResourcLinksForHtmlFromArc(arc);      
+      ArrayList<IndexDoc> docs = SolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(resources,arc.getCrawlDate());
+      for(IndexDoc doc : docs){ //These are the resources found        
+        String docUrl = doc.getUrl();                  
+        PageResource pageResource = new PageResource();  
+        
+        Date resourceDate = new Date(doc.getCrawlDateLong());
+        pageResource.setCrawlTime(resourceDate);
+        pageResource.setUrl(doc.getUrl());
+        pageResource.setContentType(doc.getContentTypeNorm());        
+        String downloadUrl = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+doc.getSource_file_path() +"&offset="+doc.getOffset();
+        pageResource.setDownloadUrl(downloadUrl);
+        long timeDif = pageCrawlDate.getTime()-resourceDate.getTime();
+        String timeHuman = String.format(" %d sec", ((timeDif%(1000*60*60))%(1000*60))/1000);         
+        pageResource.setTimeDifference(timeHuman);
+        
+        pageResources.add(pageResource);                       
+        resources.remove(docUrl);                 
+      }
+        log.info("Url not matched:"+resources);
+        ts.setNotHarvested(new ArrayList(resources));
+      
+      return ts;
+    }
+    
+    
+    public static ArcEntry viewHtml(String source_file_path, long offset, Boolean showToolbar) throws Exception{         
     	
-    	ArcEntry arc=FileParserFactory.getArcEntry(source_file_s, offset);    	 
+    	ArcEntry arc=FileParserFactory.getArcEntry(source_file_path, offset);    	 
 
-    	arc.setContentEncoding(Facade.getEncoding(source_file_s, ""+offset));
+    	arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
     	if (("text/html".equals(arc.getContentType()))){
     		long start = System.currentTimeMillis();
-        	log.debug(" Generate webpage from FilePath:" + source_file_s + " offset:" + offset);
+        	log.debug(" Generate webpage from FilePath:" + source_file_path + " offset:" + offset);
         	String textReplaced = HtmlParserUrlRewriter.replaceLinks(arc);    	 
         	
         	//Inject tooolbar
         	if (showToolbar!=Boolean.FALSE ){ //If true or null. 
-        	  textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_s,offset,textReplaced);
+        	  textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,textReplaced);
         	}
         	
         	arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));    	
@@ -367,8 +422,8 @@ public class Facade {
     		 
         }else if (("text/css".equals(arc.getContentType()))){ 
     		long start = System.currentTimeMillis();
-        	log.debug(" Generate css from FilePath:" + source_file_s + " offset:" + offset);
-        	String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc)    	 ;        
+        	log.debug(" Generate css from FilePath:" + source_file_path + " offset:" + offset);
+        	String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);        
         	
         	arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));    	
             log.info("Generating css total processing:"+(System.currentTimeMillis()-start));
