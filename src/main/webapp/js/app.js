@@ -209,7 +209,6 @@ Vue.component('result-box', {
                         </div>
                     </div>
                 </template>    
-               
             </div> 
             
             <!-- Download PDF's, Word docs etc. -->

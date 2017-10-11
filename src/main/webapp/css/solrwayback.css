@@ -355,11 +355,11 @@ input.imageSearchCheck{
 }
 
 .link.fullPost:before{
-    content: 'Open';
+    content: 'Show';
 }
 
 .active > .link.fullPost:before{
-    content: 'Close';
+    content: 'Hide';
 }
 
 .fullpost{
