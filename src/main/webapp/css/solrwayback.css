@@ -566,12 +566,9 @@ input.imageSearchCheck{
 }
 
 /* PAGE RESOURCES */
-img.preview{
-    max-width: 500px;
-}
-
 table#resourcesTable{
     border-collapse: collapse;
+    float: left;
     margin: 2em 0;
 }
 
@@ -595,5 +592,18 @@ table#resourcesTable{
 #resourcesTable img{
     max-height: 100px;
     max-width: 100px;
+}
+
+.previewContainer{
+    float: left;
+    margin: 2em 0 0 2em;
+}
+
+.previewContainer h3{
+    margin: .5em 0 .5em;
+}
+
+img.preview{
+    max-width: 500px;
 }
 

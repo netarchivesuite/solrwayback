@@ -15,8 +15,6 @@
 <body>
 <div class="wrapper" id="app">
 
-    <header-container></header-container>
-
     <page-resources :resource-obj="resourceObj"></page-resources>
 
 

@@ -1,21 +1,20 @@
-Vue.component('header-container', {
-    props: [],
-    template: `
-    <div id="header">
-        <h2>SOLR Wayback page resources</h2>
-    </div>    
-    `,
+Vue.filter('toLocaleTime', function(value) {
+    if (!value) return '';
+    var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+    var date = new Date(value);
+    var newValue = days[date.getDay()] + ', ' + date.getDate() + '-' + (date.getMonth() + 1) + '-' + date.getFullYear() +
+        ', ' + date.getHours() + ':' + ('0' + (date.getMinutes().toString())).slice(-2);
+    return newValue;
 })
 
 Vue.component('page-resources', {
     props: ["resourceObj"],
     template: `
     <div id="pageResources">
-        <h3>{{resourceObj.pageUrl}}</h3>
-        <img class="preview" :src="resourceObj.pagePreviewUrl" alt="webpage preview">
+        <h3>URL: {{resourceObj.pageUrl}}</h3>
+        <h3>Crawl date: {{resourceObj.pageCrawlDate | toLocaleTime }}</h3>
         <div class="pageinfo">
-            <div class="label">Crawl date</div>
-            <div class="text">{{resourceObj.pageCrawlDate}}</div>
+            <h3></h3>
             <table id="resourcesTable">
                 <thead>
                     <tr>
@@ -30,11 +29,16 @@ Vue.component('page-resources', {
                         <td><a :href="resource.url">{{resource.url}}</a></td>
                         <td>{{resource.contentType}}</td>
                         <td>{{resource.timeDifference}}</td>
-                        <td v-if="resource.contentType==='image'"><img :src="resource.downloadUrl"></td> 
+                        <td v-if="resource.contentType==='image'"><a :href="resource.downloadUrl"><img :src="resource.downloadUrl"></a></td> 
                         <td v-else><a :href="resource.downloadUrl">Download</a></td> 
                     </tr>
                 </tbody>
             </table>
+            <div class="previewContainer" >
+                <h3>Page preview</h3>
+                <img class="preview" :src="resourceObj.pagePreviewUrl" alt="webpage preview">
+            </div>
+            
         </div>
     </div>    
     `
