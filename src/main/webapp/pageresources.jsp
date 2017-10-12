@@ -14,9 +14,10 @@
 </head>
 <body>
 <div class="wrapper" id="app">
-    <h1>SOLR Wayback page resources</h1>
 
     <header-container></header-container>
+
+    <page-resources :resource-obj="resourceObj"></page-resources>
 
 
 </div>

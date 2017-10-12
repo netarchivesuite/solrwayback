@@ -7,6 +7,23 @@ Vue.component('header-container', {
     `,
 })
 
+Vue.component('page-resources', {
+    props: ["resourceObj"],
+    template: `
+    <div id="pageResources">
+        <h3>{{resourceObj.pageUrl}}</h3>
+        <img class="preview" :src="resourceObj.pagePreviewUrl" alt="webpage preview">
+        <div class="pageinfo">
+            <div class="label">Crawl date</div>
+            <div class="text">{{resourceObj.pageCrawlDate}}</div>
+            <ul v-for="resource in resourceObj.resources">
+                <li>{{resource.url}} - {{resource.contentType}} - {{resource.timeDifference}}</li>          
+            </ul>
+        </div>
+    </div>    
+    `
+})
+
 var router = new VueRouter({
     mode: 'history',
     routes: []
@@ -16,7 +33,9 @@ var app = new Vue({
     router,
     el: '#app',
     data: {
+        resourceObj : {},
         source_file_path: "",
+        offset: ""
     },
     methods: {
         getQueryparams:function(){
@@ -27,8 +46,12 @@ var app = new Vue({
             console.log('this.offset', this.offset);
         },
         getTimestamps: function(){
-            this.$http.get("http://localhost:8080/solrwayback/services/frontend/timestampsforpage?source_file_path=/media/teg/1200GB_SSD/netarkiv/0105/filedir/272018-267-20170310091550256-00008-kb-prod-har-003.kb.dk.warc.gz&offset=70062443").then((response) => {
+            this.resourceUrl = "http://localhost:8080/solrwayback/services/frontend/timestampsforpage?source_file_path=" + this.source_file_path + '&offset=' + this.offset;
+
+            this.$http.get(this.resourceUrl).then((response) => {
+                this.resourceObj = response.body;
                 console.log('response.body: ', response.body);
+                console.log('this.resourceObj: ', this.resourceObj);
                 //this.hideSpinner();
             }, (response) => {
                 console.log('error: ', response);

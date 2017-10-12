@@ -565,3 +565,8 @@ input.imageSearchCheck{
     max-width: 100%;
 }
 
+/* PAGE RESOURCES */
+img.preview{
+    max-width: 500px;
+}
+
