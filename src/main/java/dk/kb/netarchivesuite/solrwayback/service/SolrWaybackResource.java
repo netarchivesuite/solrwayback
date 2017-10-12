@@ -2,35 +2,23 @@ package dk.kb.netarchivesuite.solrwayback.service;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-
-import javax.imageio.ImageIO;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
@@ -42,15 +30,12 @@ import com.sun.jersey.multipart.FormDataParam;
 import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
-import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.*;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
@@ -468,8 +453,7 @@ public class SolrWaybackResource {
     @GET
     @Path("frontend/timestampsforpage")
     @Produces(MediaType.APPLICATION_JSON)
-    public String timestampsFrontEnd(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
-    
+    public String timestampsFrontEnd(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {    
       return Facade.proxyBackendResources(source_file_path, ""+offset, "timestampsforpage");      
     
   }
@@ -550,7 +534,7 @@ public class SolrWaybackResource {
              in=ingoing.booleanValue();
            }
                               
-        //TODO use invoing, facetlimit. with defaults
+        //TODO use ingoing, facetlimit. with defaults
           return Facade.waybackgraph(domain, fLimit,in,dateStart,dateEnd);        
                                      
         } catch (Exception e) {
