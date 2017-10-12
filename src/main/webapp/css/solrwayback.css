@@ -570,3 +570,30 @@ img.preview{
     max-width: 500px;
 }
 
+table#resourcesTable{
+    border-collapse: collapse;
+    margin: 2em 0;
+}
+
+#resourcesTable tr:nth-child(even){
+    background: #F3F3F3;
+}
+
+#resourcesTable td, #resourcesTable th{
+    padding: .5em 1em;
+}
+
+#resourcesTable th{
+    border-bottom: 1px solid black;
+    font-size: 110%;
+    font-weight: bold;
+}
+#resourcesTable td{
+    vertical-align: middle;
+}
+
+#resourcesTable img{
+    max-height: 100px;
+    max-width: 100px;
+}
+

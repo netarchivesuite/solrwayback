@@ -16,9 +16,25 @@ Vue.component('page-resources', {
         <div class="pageinfo">
             <div class="label">Crawl date</div>
             <div class="text">{{resourceObj.pageCrawlDate}}</div>
-            <ul v-for="resource in resourceObj.resources">
-                <li>{{resource.url}} - {{resource.contentType}} - {{resource.timeDifference}}</li>          
-            </ul>
+            <table id="resourcesTable">
+                <thead>
+                    <tr>
+                        <th>Resource URL</th>
+                        <th>Content type</th>
+                        <th>Time diff.</th>
+                        <th>See/download</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="resource in resourceObj.resources">
+                        <td><a :href="resource.url">{{resource.url}}</a></td>
+                        <td>{{resource.contentType}}</td>
+                        <td>{{resource.timeDifference}}</td>
+                        <td v-if="resource.contentType==='image'"><img :src="resource.downloadUrl"></td> 
+                        <td v-else><a :href="resource.downloadUrl">Download</a></td> 
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>    
     `
