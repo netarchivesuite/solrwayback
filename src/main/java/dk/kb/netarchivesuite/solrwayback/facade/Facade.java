@@ -489,6 +489,38 @@ public class Facade {
       
   }
     
+    
+    
+    /*
+     * Temp solution, make generic query properties
+     * 
+     */
+public static String proxyBackendResources(String source_file_path, String offset, String serviceName) throws Exception{                    
+      
+
+      String backendServer= PropertiesLoaderWeb.WAYBACK_SERVER;
+  
+        
+      ClientConfig config = new DefaultClientConfig();
+      Client client = Client.create(config);
+      WebResource service = client.resource(UriBuilder.fromUri(backendServer).build());
+      WebResource queryWs= service.path("services")
+                                  .path(serviceName)                                  
+                                  .queryParam("source_file_path", source_file_path)                           
+                                  .queryParam("offset", offset);
+               
+                 
+      ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+      String responseStr= response.getEntity(String.class);
+
+      return responseStr;
+                  
+      
+      
+  }
+    
+    
+    
  // convert InputStream to String
     private static String getStringFromInputStream(InputStream is) {
 

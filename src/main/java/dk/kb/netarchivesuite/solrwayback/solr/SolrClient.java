@@ -94,7 +94,7 @@ public class SolrClient {
     solrQuery.add("facet.limit",""+facetLimit);
     solrQuery.addFilterQuery("crawl_date:["+dateStart+ " TO "+dateEnd+"]");
 
-    solrQuery.add("fl","id,score,title,source_file,source_file_offset,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl","id,score,title,source_file, source_file_path,source_file_offset,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);      
     List<FacetCount> facetList = new ArrayList<FacetCount>();
@@ -125,7 +125,7 @@ public class SolrClient {
     solrQuery.add("facet.field","links_domains");
     solrQuery.add("facet.limit",""+(facetLimit+1)); //+1 because itself will be removed and is almost certain of resultset if self-linking
     solrQuery.addFilterQuery("crawl_date:["+dateStart+ " TO "+dateEnd+"]");
-    solrQuery.add("fl","id,score,title,source_file,source_file_offset,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+    solrQuery.add("fl","id,score,title,source_file,source_file_path,source_file_offset,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);      
     List<FacetCount> facetList = new ArrayList<FacetCount>();

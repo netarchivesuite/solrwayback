@@ -43,6 +43,7 @@ import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
@@ -462,6 +463,14 @@ public class SolrWaybackResource {
       log.debug("timestamps:" + source_file_path + " offset:" + offset);
       TimestampsForPage ts = Facade.timestampsForPage(source_file_path, offset);                                                                
       return ts;
+  }
+    
+    @GET
+    @Path("frontend/timestampsforpage")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String timestampsFrontEnd(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
+    
+      return Facade.proxyBackendResources(source_file_path, ""+offset, "timestampsforpage");      
     
   }
     
