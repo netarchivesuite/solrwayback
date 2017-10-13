@@ -11,10 +11,23 @@ Vue.component('page-resources', {
     props: ["resourceObj"],
     template: `
     <div id="pageResources">
-        <h3>URL: {{resourceObj.pageUrl}}</h3>
-        <h3>Crawl date: {{resourceObj.pageCrawlDate | toLocaleTime }}</h3>
-        <div class="pageinfo">
-            <h3></h3>
+        <h2>{{resourceObj.pageUrl}} - {{resourceObj.pageCrawlDate | toLocaleTime }}</h2>
+        <div class="previewContainer" >
+            <div class="previewImg">              
+                <h3>Preview</h3>
+                <a :href="resourceObj.pagePreviewUrl">           
+                     <img class="preview" :src="resourceObj.pagePreviewUrl" alt="webpage preview">
+                </a>
+            </div>    
+            <div class="notHarvested" v-if="resourceObj.notHarvested.length > 0">
+                 <h3>Not harvested resources</h3>
+                 <ol class="notHarvested">
+                    <li v-for="item in resourceObj.notHarvested">{{ item }}</li>
+                 </ol>
+            </div>
+        </div>
+        <div class="tableContainer">
+            <h3>Harvested resources</h3>
             <table id="resourcesTable">
                 <thead>
                     <tr>
@@ -33,16 +46,7 @@ Vue.component('page-resources', {
                         <td v-else><a :href="resource.downloadUrl">Download</a></td> 
                     </tr>
                 </tbody>
-            </table>
-            <div class="previewContainer" >
-                <h3>Page preview</h3>
-                <img class="preview" :src="resourceObj.pagePreviewUrl" alt="webpage preview">
-                <h3>Not harvested resources</h3>
-                <ol class="notHarvested">
-                    <li v-for="item in resourceObj.notHarvested">{{ item }}</li>
-                </ol>
-            </div>
-            
+            </table> 
         </div>
     </div>    
     `
