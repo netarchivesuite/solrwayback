@@ -26,7 +26,7 @@ Vue.component('page-resources', {
                 </thead>
                 <tbody>
                     <tr v-for="resource in resourceObj.resources">
-                        <td><a :href="resource.url">{{resource.url}}</a></td>
+                        <td>{{resource.url}}</td>
                         <td>{{resource.contentType}}</td>
                         <td>{{resource.timeDifference}}</td>
                         <td v-if="resource.contentType==='image'"><a :href="resource.downloadUrl"><img :src="resource.downloadUrl"></a></td> 
@@ -62,16 +62,13 @@ var app = new Vue({
             this.source_file_path = this.$route.query.source_file_path;
             this.offset = this.$route.query.offset;
             this.getTimestamps();
-            console.log('this.source_file_path', this.source_file_path);
-            console.log('this.offset', this.offset);
         },
         getTimestamps: function(){
-            this.resourceUrl = "http://localhost:8080/solrwayback/services/frontend/timestampsforpage?source_file_path=" + this.source_file_path + '&offset=' + this.offset;
-
+            this.resourceUrl = "http://" + location.host + "/solrwayback/services/frontend/timestampsforpage?source_file_path=" + this.source_file_path + '&offset=' + this.offset;
+            console.log('this.resourceUrl',this.resourceUrl)
             this.$http.get(this.resourceUrl).then((response) => {
                 this.resourceObj = response.body;
                 console.log('response.body: ', response.body);
-                console.log('this.resourceObj: ', this.resourceObj);
                 //this.hideSpinner();
             }, (response) => {
                 console.log('error: ', response);
