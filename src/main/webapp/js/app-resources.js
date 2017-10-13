@@ -37,6 +37,10 @@ Vue.component('page-resources', {
             <div class="previewContainer" >
                 <h3>Page preview</h3>
                 <img class="preview" :src="resourceObj.pagePreviewUrl" alt="webpage preview">
+                <h3>Not harvested resources</h3>
+                <ol class="notHarvested">
+                    <li v-for="item in resourceObj.notHarvested">{{ item }}</li>
+                </ol>
             </div>
             
         </div>
@@ -64,22 +68,23 @@ var app = new Vue({
             this.getTimestamps();
         },
         getTimestamps: function(){
+            this.showSpinner();
             this.resourceUrl = "http://" + location.host + "/solrwayback/services/frontend/timestampsforpage?source_file_path=" + this.source_file_path + '&offset=' + this.offset;
-            console.log('this.resourceUrl',this.resourceUrl)
             this.$http.get(this.resourceUrl).then((response) => {
                 this.resourceObj = response.body;
                 console.log('response.body: ', response.body);
-                //this.hideSpinner();
+                this.hideSpinner();
             }, (response) => {
                 console.log('error: ', response);
+                this.hideSpinner();
             });
-        }
-        /*showSpinner: function(){
+        },
+        showSpinner: function(){
             this.spinner = true;
         },
         hideSpinner: function(){
             this.spinner = false;
-        },*/
+        },
     },
     created: function() {
         this.getQueryparams()

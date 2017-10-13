@@ -570,6 +570,7 @@ table#resourcesTable{
     border-collapse: collapse;
     float: left;
     margin: 2em 0;
+    width: 50%;
 }
 
 #resourcesTable tr:nth-child(even){
@@ -584,6 +585,7 @@ table#resourcesTable{
     border-bottom: 1px solid black;
     font-size: 110%;
     font-weight: bold;
+    text-align: left;
 }
 #resourcesTable td{
     vertical-align: middle;
@@ -596,7 +598,8 @@ table#resourcesTable{
 
 .previewContainer{
     float: left;
-    margin: 2em 0 0 2em;
+    margin:2em 0 0 5%;
+    width: 35%;
 }
 
 .previewContainer h3{
@@ -604,6 +607,17 @@ table#resourcesTable{
 }
 
 img.preview{
-    max-width: 500px;
+    margin-bottom: 2em;
+    max-width: 100%;
+}
+
+ol.notHarvested{
+    color: #cc0000;
+    padding-left: 1em;
+}
+
+ol.notHarvested li{
+    padding: .2em 0;
+    word-wrap: break-word;
 }
 

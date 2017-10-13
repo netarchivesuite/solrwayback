@@ -17,6 +17,8 @@
 
     <page-resources :resource-obj="resourceObj"></page-resources>
 
+    <div v-if="spinner" id="overlay"></div>
+    <div v-if="spinner" id="spinnerVue">Loading...</div>
 
 </div>
 <!-- This include must be at bottom -->
