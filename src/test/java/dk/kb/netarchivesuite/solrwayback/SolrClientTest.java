@@ -45,8 +45,9 @@ public class SolrClientTest {
 	        System.out.println(format+"Z");
 	        */  
 	        //testWaybackStats();
-	        testexif();
-             //testGetImages();
+	       // testexif();
+            testImagesLocationSearch();
+	        //testGetImages();
 	        //testHarvestTimesForUrl(); 
 	      //  testIngoingLinks();
 	       // testFacetLinks();
@@ -142,13 +143,24 @@ public class SolrClientTest {
 	     
 	
 	
-	public static void testSolrDate() throws Exception{
+	public static void testImagesLocationSearch() throws Exception{
+      
+      SolrClient solr = SolrClient.getInstance();//pt=56.431,9.431&d=500
+      ArrayList<IndexDoc> docs = solr.imagesLocationSearch("*:*",null,500, 56.4319d,9.431d , 100);      
+      System.out.println(docs.size());
+                
+}
+	
+	
+	   
+    public static void testSolrDate() throws Exception{
       
       SolrClient solr = SolrClient.getInstance();
       SearchResult search = solr.search("crawl_date:\"2015-09-17T17:02:03Z\"", 10);      
       System.out.println(search.getResults().get(0).getCrawlDate());
                 
 }
+    
 	
 	
 public static void testFacetLinks() throws Exception{

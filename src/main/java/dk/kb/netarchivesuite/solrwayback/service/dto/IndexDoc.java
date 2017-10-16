@@ -10,6 +10,7 @@ public class IndexDoc {
     
     private long offset;
     private String source_file_path;
+    private String resourceName;
     private String title;
     private String id;    
     private String url;
@@ -22,6 +23,7 @@ public class IndexDoc {
     private double score;
     private String contentEncoding;
     private ArrayList<String> imageUrls = new ArrayList<String>(); //This field is not normally set.
+    private String exifLocation;
     
     public IndexDoc(){        
     }
@@ -122,6 +124,22 @@ public class IndexDoc {
 
   public void setSource_file_path(String source_file_path) {
     this.source_file_path = source_file_path;
+  }
+
+  public String getExifLocation() {
+    return exifLocation;
+  }
+
+  public void setExifLocation(String exifLocation) {
+    this.exifLocation = exifLocation;
+  }
+
+  public String getResourceName() {
+    return resourceName;
+  }
+
+  public void setResourceName(String resourceName) {
+    this.resourceName = resourceName;
   }  
 
        

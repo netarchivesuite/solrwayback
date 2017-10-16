@@ -9,6 +9,9 @@ public class ImageUrl {
   private String imageUrl; 
   private String hash;
   private String urlNorm;
+  private Double latitude;
+  private Double longitude;
+  private String resourceName;
   
   public ImageUrl(){    
   }
@@ -44,6 +47,29 @@ public class ImageUrl {
   public void setUrlNorm(String urlNorm) {
     this.urlNorm = urlNorm;
   }
-     
-  
+
+  public Double getLatitude() {
+    return latitude;
+  }
+
+  public void setLatitude(Double latitude) {
+    this.latitude = latitude;
+  }
+
+  public Double getLongitude() {
+    return longitude;
+  }
+
+  public void setLongitude(Double longitude) {
+    this.longitude = longitude;
+  }
+
+  public String getResourceName() {
+    return resourceName;
+  }
+
+  public void setResourceName(String resourceName) {
+    this.resourceName = resourceName;
+  }     
+    
 }

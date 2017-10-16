@@ -64,6 +64,7 @@ public class Facade {
         return extractImages;      
     }
     
+    /*
     //TODO virker ikke. Skal være graph query    
     public static ArrayList<ArcEntryDescriptor> findImagesWithLocation(String searchText) throws Exception {
       SearchResult result = SolrClient.getInstance().search(searchText, "(content_type_norm:image AND exif_location_0_coordinate:*) OR content_type_norm:html", 50000); //only search these two types      
@@ -72,6 +73,18 @@ public class Facade {
       ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(result.getResults(), true);
       return extractImages;      
   }
+    */
+    
+        
+    public static  ArrayList<ImageUrl> imagesLocationSearch(String searchText,String filter, String results, double latitude, double longitude, int radius) throws Exception {
+      int resultInt=500;
+      if (results != null){
+        resultInt=Integer.parseInt(results);        
+      }
+      ArrayList<IndexDoc> docs = SolrClient.getInstance().imagesLocationSearch(searchText,filter, resultInt, latitude, longitude, radius); //only search these two types            
+      return indexDoc2Images(docs);            
+    }
+    
     
     
     public static BufferedImage getHtmlPagePreview(String source_file_path, long offset) throws Exception {
@@ -549,6 +562,30 @@ public static String proxyBackendResources(String source_file_path, String offse
 
         return sb.toString();
 
+    }
+    
+    public static  ArrayList<ImageUrl> indexDoc2Images(ArrayList<IndexDoc> docs){
+      ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();
+      for (IndexDoc entry : docs){                          
+        ImageUrl imageUrl = new ImageUrl();
+        String imageLink = PropertiesLoader.WAYBACK_BASEURL+"services/image?source_file_path="+entry.getSource_file_path()+"&offset="+entry.getOffset();
+        String downloadLink = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+entry.getSource_file_path()+"&offset="+entry.getOffset();
+        imageUrl.setImageUrl(imageLink);
+        imageUrl.setDownloadUrl(downloadLink);             
+        imageUrl.setHash(entry.getHash());
+        imageUrl.setUrlNorm(entry.getUrl_norm());
+        String exifLocation = entry.getExifLocation();
+        if (exifLocation != null){
+          String[] split = exifLocation.split(",");
+          double lat = Double.parseDouble(split[0]);          
+          imageUrl.setLatitude(lat);        
+          double lon = Double.parseDouble(split[1]);          
+          imageUrl.setLongitude(lon);
+          imageUrl.setResourceName(entry.getResourceName());  
+        }                                
+        imageUrls.add(imageUrl);
+      }
+      return imageUrls;                       
     }
     
    public static  ArrayList<ImageUrl> arcEntrys2Images(ArrayList<ArcEntryDescriptor> arcs){

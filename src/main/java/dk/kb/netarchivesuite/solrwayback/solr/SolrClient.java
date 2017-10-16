@@ -35,7 +35,7 @@ public class SolrClient {
   private static SolrClient instance = null;
 
   
-  private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type,content_encoding";
+  private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type_norm,hash,crawl_date,content_type,content_encoding,exif_location";
   static {
     SolrClient.initialize(PropertiesLoader.SOLR_SERVER);
   }
@@ -393,6 +393,34 @@ public class SolrClient {
 
   */
 
+  
+  
+ 
+  public ArrayList<IndexDoc> imagesLocationSearch(String searchText, String filterQuery,int results,double latitude, double longitude, int radius) throws Exception {
+    log.info("imagesLocationSearch:" + searchText +" coordinates:"+latitude+","+longitude +" radius:"+radius);
+    
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+    solrQuery.add("fl", indexDocFieldList);
+    solrQuery.setRows(results);
+    //The 3 lines defines geospatial search. The ( ) are required if you want to AND with another query
+    solrQuery.setQuery("({!geofilt sfield=exif_location}) AND "+searchText);       
+    solrQuery.setParam("pt", latitude+","+longitude);
+    solrQuery.setParam("d", ""+radius);
+    
+    if (filterQuery != null){
+      solrQuery.setFilterQueries(filterQuery);
+    }
+    
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+    
+    ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
+              
+    return indexDocs;
+  }
+
+  
   public SearchResult search(String searchString, String filterQuery, int results) throws Exception {
     log.info("search for:" + searchString +" and filter:"+filterQuery);
     SearchResult result = new SearchResult();
@@ -529,12 +557,22 @@ public class SolrClient {
     indexDoc.setId((String) doc.get("id"));
     indexDoc.setTitle((String) doc.get("title"));
     indexDoc.setSource_file_path((String) doc.get("source_file_path"));
+
+    
+
+
+    //Why is this multi valued ? 
+    ArrayList<String> resourceNames=  (ArrayList<String>) doc.get("resourcename");
+    if (resourceNames != null &&resourceNames.size() >0){
+      indexDoc.setResourceName(resourceNames.get(0));        
+    }
     indexDoc.setUrl((String) doc.get("url"));
     indexDoc.setUrl_norm((String) doc.get("url_norm"));
     indexDoc.setOffset(getOffset(doc));
     indexDoc.setContentTypeNorm((String) doc.get("content_type_norm"));
     indexDoc.setContentEncoding((String) doc.get("content_encoding"));
-
+    indexDoc.setExifLocation((String) doc.get("exif_location"));
+     
     String hash = (String) doc.get("hash");
     indexDoc.setHash((String) hash);      
     
