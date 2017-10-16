@@ -197,7 +197,7 @@ public class HtmlParserUrlRewriter {
 		
 		
 
-		//This are not resolved until clicket
+		//This are not resolved until clicked
 		rewriteUrlForElement(doc, "a" ,"href",arc.getCrawlDate());
 		rewriteUrlForElement(doc, "area" ,"href",arc.getCrawlDate());
 		
@@ -222,7 +222,6 @@ public class HtmlParserUrlRewriter {
 
               //List<String> urlList = new ArrayList<String>();
       HashSet<String> urlSet = new HashSet<String>();
-      HashSet<String> unResolvedUrlSet = new HashSet<String>();
 
       collectRewriteUrlsForElement(urlSet,doc, "area", "href");
       collectRewriteUrlsForElement(urlSet, doc, "img", "src");
@@ -282,8 +281,9 @@ public class HtmlParserUrlRewriter {
 
 			if (url == null  || url.trim().length()==0){
 				continue;
-			}    		     		 
-			IndexDoc indexDoc = map.get(url);   
+			}
+			String urlFixed = url.replace(" ", "%20");
+			IndexDoc indexDoc = map.get(urlFixed);   
 			if (indexDoc!=null){    		    			 
 				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset();    			 
 				e.attr(attribute,newUrl);    			     		 
@@ -311,7 +311,8 @@ public class HtmlParserUrlRewriter {
 			if ( urlUnresolved != null){
 				URL base = new URL(baseUrl);
 				String resolvedUrl = new URL( base ,urlUnresolved).toString();			
-				IndexDoc indexDoc = map.get(resolvedUrl);   
+				String resolvedUrlfixed = resolvedUrl.replaceAll(" ", "%20");
+				IndexDoc indexDoc = map.get(resolvedUrlfixed);   
 				if (indexDoc!=null){    		    			 
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();    			     		
 					String styleFixed=style.replaceAll(urlUnresolved,newUrl);    			     
@@ -346,7 +347,8 @@ public class HtmlParserUrlRewriter {
 			if (unResolvedUrl != null){
 				URL base = new URL(baseUrl);
 				URL resolvedUrl = new URL( base , unResolvedUrl);			
-				set.add(resolvedUrl.toString());
+				String resolvedUrlFixed = resolvedUrl.toString().replace(" ", "%20");
+				set.add(resolvedUrlFixed);
 			}
 
 		}
@@ -371,8 +373,9 @@ public class HtmlParserUrlRewriter {
 
 			if (url == null  || url.trim().length()==0){
 				continue;
-			}    		     	
-			set.add(url);   		    		 		
+			}    		     		
+			String urlFixed = url.replace(" ","%20");
+			set.add(urlFixed);   		    		 		
 		}
 	}
 
@@ -387,7 +390,9 @@ public class HtmlParserUrlRewriter {
             String cssUrl= m.group(1);         
               URL base = new URL(baseUrl);
               URL resolvedUrl = new URL( base , cssUrl);           
-              set.add(resolvedUrl.toString());
+              
+              String resolvedUrlFixed = resolvedUrl.toString().replaceAll(" ","%20");
+              set.add(resolvedUrlFixed);
         }                   
       }
   }
@@ -403,7 +408,9 @@ public class HtmlParserUrlRewriter {
           String url = m.group(1);
           URL base = new URL(baseUrl);
           URL resolvedUrl = new URL( base , url);            
-          IndexDoc indexDoc = map.get(resolvedUrl.toString());   
+          
+          String resolvedUrlFixed = resolvedUrl.toString().replace(" ","%20");
+          IndexDoc indexDoc = map.get(resolvedUrlFixed);   
           if (indexDoc!=null){                             
               String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"_STYLE_AMPERSAND_REPLACE_offset="+indexDoc.getOffset();                 
               log.info("replaced @import:"+e );
@@ -426,32 +433,35 @@ public class HtmlParserUrlRewriter {
 	 * Only rewrite to new service, no need to resolve until clicked
 	 * 
 	 */
-	public static void rewriteUrlForElement(Document doc, String element, String attribute,  String crawlDate) throws Exception{
-      AggressiveUrlCanonicalizer urlNormaliser = new AggressiveUrlCanonicalizer();
+	public static void rewriteUrlForElement(Document doc, String element, String attribute,  String crawlDate) throws Exception{      
 		for (Element e : doc.select(element)) {
 			String url = e.attr("abs:"+attribute);
 			if (url == null  || url.trim().length()==0){
 				continue;
-			}    		   
-            //This is magic
-			//Dont try understand all the 4 encoding/decoding steps. 
-			//see https://github.com/ukwa/webarchive-discovery/issues/115
-			//log.info("before url encode:"+url);
-            String unEscapedHex = SolrWaybackEncodingUtil.unEscapeHex(url);
-            //log.info("unescaped hex encode:"+url);
-			String urlEscaped = SolrWaybackEncodingUtil.escapeNonAscii(unEscapedHex);
-			//log.info("url escaped:"+urlEscaped);//
-			String urlNorm  = urlNormaliser.canonicalize(urlEscaped);
-            //log.info("url urlNorm:"+urlNorm);// 
-            String urlEncoded=URLEncoder.encode(urlNorm, "UTF-8");
-			//log.info("after encode1:"+urlEncoded);
-            
+			}    		               
+            String urlEncoded=canonicalizeUrl(url);            
 			String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+"viewhref?url="+urlEncoded+"&crawlDate="+crawlDate;    			
 			e.attr("href",newUrl);    			     		 
 		}   		  		
 	}
 
-
+public static String canonicalizeUrl(String url) throws Exception{
+  AggressiveUrlCanonicalizer urlNormaliser = new AggressiveUrlCanonicalizer();
+  //This is magic
+  //Dont try understand all the 4 encoding/decoding steps. 
+  //see https://github.com/ukwa/webarchive-discovery/issues/115
+  //log.info("before url encode:"+url);
+  String unEscapedHex = SolrWaybackEncodingUtil.unEscapeHex(url);
+  //log.info("unescaped hex encode:"+url);
+  String urlEscaped = SolrWaybackEncodingUtil.escapeNonAscii(unEscapedHex);
+  //log.info("url escaped:"+urlEscaped);//
+  String urlNorm  = urlNormaliser.canonicalize(urlEscaped);
+  //log.info("url urlNorm:"+urlNorm);// 
+  String urlEncoded=URLEncoder.encode(urlNorm, "UTF-8");
+  //log.info("after encode1:"+urlEncoded);
+  return urlEncoded;
+}
+	
 
 	public static HashMap<String,String> test(String html,String url) throws Exception{
 		HashMap<String,String> imagesSet = new HashMap<String,String>();  // To remove duplicates
