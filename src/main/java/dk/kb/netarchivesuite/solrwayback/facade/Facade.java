@@ -408,7 +408,7 @@ public class Facade {
         resources.remove(docUrl);                 
       }
         log.info("Url not matched:"+resources);
-        ts.setNotHarvested(new ArrayList(resources));
+        ts.setNotHarvested(new ArrayList<String>(resources));
       
       return ts;
     }
