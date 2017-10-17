@@ -44,15 +44,15 @@ public class SolrClientTest {
 	        String format = dateFormat.format(date);
 	        System.out.println(format+"Z");
 	        */  
-	        //testWaybackStats();
-	       // testexif();
+	        testWaybackStats();
+	        testexif();
             testImagesLocationSearch();
-	        //testGetImages();
-	        //testHarvestTimesForUrl(); 
-	      //  testIngoingLinks();
-	       // testFacetLinks();
-	       // testSolrDate();
-	       //testHarvestPreviewsForUrl();
+	        testGetImages();
+	        testHarvestTimesForUrl(); 
+	        testIngoingLinks();
+	        testFacetLinks();
+	        testSolrDate();
+	       testHarvestPreviewsForUrl();
 	}
 	
 	public static void testWaybackStats() throws Exception{
@@ -157,7 +157,7 @@ public class SolrClientTest {
       
       SolrClient solr = SolrClient.getInstance();
       SearchResult search = solr.search("crawl_date:\"2015-09-17T17:02:03Z\"", 10);      
-      System.out.println(search.getResults().get(0).getCrawlDate());
+ //     System.out.println(search.getResults().get(0).getCrawlDate());
                 
 }
     
@@ -170,7 +170,7 @@ public static void testFacetLinks() throws Exception{
       Date start= new Date(System.currentTimeMillis()-25L*365*86400*1000); //25 years ago
       Date end = new Date();
       
-      List<FacetCount>  fc = solr.getDomainFacets("systime.dk",20, true, start,end);      
+      List<FacetCount>  fc = solr.getDomainFacets("denstoredanske.dk",20, true, start,end);      
       
       for (FacetCount f : fc){
         System.out.println(f.getValue() +" : " +f.getCount());
@@ -186,7 +186,7 @@ public static void testIngoingLinks() throws Exception{
   Date start= new Date(System.currentTimeMillis()-25L*365*86400*1000); //25 years ago
   Date end = new Date();
   
-  List<FacetCount>  fc = solr.getDomainFacetsIngoing("systime.dk",10000, start,end);      
+  List<FacetCount>  fc = solr.getDomainFacetsIngoing("denstoredanske.dk",10000, start,end);      
   
   for (FacetCount f : fc){
     System.out.println(f.getValue() +" : " +f.getCount());
@@ -237,7 +237,7 @@ public static void testIngoingLinks() throws Exception{
 
           solrQuery2.set("facet", "false");
           solrQuery2.add("sort","abs(sub(ms(2014-01-03T11:56:58Z), crawl_date)) asc");
-          solrQuery2.add("fl","id,score,title,arc_full,url,source_file_path,source_file_offset,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
+          solrQuery2.add("fl","id,score,title,url,source_file_path, source_file,source_file_offset,content_type_norm,hash,crawl_date,content_type, content_encoding"); //only request fields used
        
           solrQuery2.setRows(1000);
           long start=System.currentTimeMillis();

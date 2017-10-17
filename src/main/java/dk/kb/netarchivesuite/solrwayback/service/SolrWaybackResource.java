@@ -141,8 +141,8 @@ public class SolrWaybackResource {
   public ArrayList<ImageUrl> imagesForPage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset ) throws ServiceException {
 
     if (source_file_path == null || offset == 0){
-      log.error("arc_full and offset queryparams missing");
-      throw new InvalidArgumentServiceException("arc_full and offset queryparams missing");
+      log.error("source_file_path and offset queryparams missing");
+      throw new InvalidArgumentServiceException("source_file_path and offset queryparams missing");
     }
 
     try {                    

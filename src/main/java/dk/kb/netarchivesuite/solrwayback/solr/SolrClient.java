@@ -329,7 +329,7 @@ public class SolrClient {
     SolrQuery solrQuery = new SolrQuery();
     solrQuery = new SolrQuery("(url:\""+url+"\" OR "+urlNormFixed+")");     
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","id, crawl_date,arc_full,source_file_path, source_file, source_file_offset, score");    
+    solrQuery.add("fl","id, crawl_date,source_file_path, source_file, source_file_offset, score");    
     solrQuery.add("sort","crawl_date asc");
     solrQuery.setRows(1000000);
 
