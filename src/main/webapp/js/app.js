@@ -76,8 +76,8 @@ Vue.component('map-box', {
         <h3>Choose a position</h3>
         <div id="map"></div>
         <div id="info">
-        Latitude: <input type="text" v-model="latModel">
-        Longitude: <input type="text" v-model="lngModel">
+        Latitude: <input type="text" v-model="latModel" readonly>
+        Longitude: <input type="text" v-model="lngModel" readonly>
         </div>
     </div>    
     `,
@@ -439,7 +439,7 @@ var app = new Vue({
                     start: parseInt(this.start),
                     filter: this.filters,
                     imgsearch: this.imageSearch,
-                    //imggeosearch: this.imageGeoSearch,
+                    imggeosearch: this.imageGeoSearch,
                 }
             });
         },
@@ -455,6 +455,9 @@ var app = new Vue({
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
                     '&start=' + parseInt(this.start) + '&fq=' + this.filters;
             }else if (this.imageGeoSearch) {
+                if( !this.latitude || !this.longitude ){
+                    return //leaving search if latítude or longitude isn't set
+                }
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search/location?query=' + this.myQuery +
                     '&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=200';
             }else {
@@ -549,7 +552,7 @@ var app = new Vue({
             this.start= this.$route.query.start;
             this.filters = this.$route.query.filter;
             this.imageSearch = this.$route.query.imgsearch;
-            //this.imageGeoSearch = this.$route.query.imggeosearch;
+            this.imageGeoSearch = this.$route.query.imggeosearch;
         },
 
         clearFacets: function(){
