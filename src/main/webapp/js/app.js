@@ -6,7 +6,7 @@ Vue.filter('facetName', function(value) {
 })
 
 Vue.component('search-box', {
-    props: ['setupSearch','myQuery','imageSearch','clearSearch'],
+    props: ['setupSearch','myQuery','imageSearch','imageGeoSearch','clearSearch'],
     template: `
     <div>
         <div id="searchbox">
@@ -21,6 +21,10 @@ Vue.component('search-box', {
                     <input class="imageSearchCheck" v-model="imageSearchModel" type="checkbox"
                     v-on:change="setupSearch('search',queryModel, imageSearchModel);searchByFile = false"> Image search
                 </label>
+                <label v-if="imageSearch">
+                    <input class="imageSearchCheck" v-model="imageGeoSearchModel" type="checkbox"
+                     v-on:change="setupSearch('search',queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false"> Geo search
+                </label>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span>               
             </div>
         </div>
@@ -33,12 +37,16 @@ Vue.component('search-box', {
         return {
             queryModel: this.myQuery,
             imageSearchModel: this.imageSearch,
+            imageGeoSearchModel: this.imageGeoSearch,
             searchByFile: false,
         };
     },
     watch: { // updating v-model when vars are updated
         imageSearch: function () {
             this.imageSearchModel = this.imageSearch;
+        },
+        imageGeoSearch: function () {
+            this.imageGeoSearchModel = this.imageGeoSearch;
         },
         myQuery: function () {
             this.queryModel = this.myQuery;
@@ -59,6 +67,40 @@ Vue.component('search-box', {
         },
     }
 })
+
+
+Vue.component('map-box', {
+    props: ['markerPosition','initMap'],
+    template: `
+    <div id="googlemapBox">
+        <h3>Choose a position</h3>
+        <div id="map"></div>
+        <div id="info">
+        Latitude: <input type="text" v-model="latModel">
+        Longitude: <input type="text" v-model="lngModel">
+        </div>
+    </div>    
+    `,
+    data: function() {
+        return {
+            lngModel: this.markerPosition.lng,
+            latModel: this.markerPosition.lat,
+        };
+    },
+    watch: { // updating v-model when vars are updated
+        markerPosition: function () {
+            this.lngModel = this.markerPosition.lng;
+            this.latModel = this.markerPosition.lat;
+        }
+    },
+    mounted: function(){
+        this.initMap();
+    }
+})
+
+
+
+
 
 Vue.component('selected-facets-box', {
     props: ['setupSearch','facetFields','myQuery','clearFacets'],
@@ -235,22 +277,20 @@ Vue.component('result-box', {
                 
                     <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
                         <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
-                        <template  v-for="(imageUrl, index) in image.imageUrls" >
-                            <div class="thumb thumbSearch"v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
-                                <a :href="image.downloadUrls[index]" target="_blank">
-                                    <span v-html="imageUrl"></span> 
-                                </a>
-                                <br/>  
-                                <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
-                                <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
-                            </div>
-                            <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
-                        </template>
- </div> 
+                            <template  v-for="(imageUrl, index) in image.imageUrls" >
+                                <div class="thumb thumbSearch"v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
+                                    <a :href="image.downloadUrls[index]" target="_blank">
+                                        <span v-html="imageUrl"></span> 
+                                    </a>
+                                    <br/>  
+                                    <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
+                                    <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
+                                </div>
+                                <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
+                            </template>
+                        </div> 
                     </template>
-                 
-            </div>
-            
+            </div>         
         </div>
     </div>    
     `
@@ -306,10 +346,12 @@ var app = new Vue({
         totalHits: 0,
         start: 0,
         imageSearch: false,
+        imageGeoSearch: false,
         spinner: false,
         errorMsg: '',
         imageObjects: [],
         baseUrl: '',
+        markerPosition: {lat: "", lng: ""}
     },
     watch: { //updating when route is changing
         '$route' () {
@@ -327,7 +369,20 @@ var app = new Vue({
         });
         this.getQueryparams();
         this.doSearch();
-    },
+    }/*,
+    mounted: function () {
+        var markers = [];
+        var center = {lat: 55, lng: 10};
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 4,
+            center: center,
+            streetViewControl: false,
+        });
+        var _this = this;
+        map.addListener('click', function(e) {
+            _this.placeMarker(e.latLng, map, markers);
+        });
+    }*/,
     methods: {
         setupSearch: function(type, query, param3, param4) {
             if (type == "search") {
@@ -336,8 +391,14 @@ var app = new Vue({
                 this.start = 0;
                 if (param3) {
                     this.imageSearch = param3;
+                    if (param4) {
+                        this.imageGeoSearch = param4;
+                    } else {
+                        this.imageGeoSearch = false;
+                    }
                 } else {
                     this.imageSearch = false;
+                    this.imageGeoSearch = false;
                 }
             }
             if (type == "paging") {
@@ -377,7 +438,8 @@ var app = new Vue({
                     query: this.myQuery,
                     start: parseInt(this.start),
                     filter: this.filters,
-                    imgsearch: this.imageSearch
+                    imgsearch: this.imageSearch,
+                    //imggeosearch: this.imageGeoSearch,
                 }
             });
         },
@@ -392,11 +454,15 @@ var app = new Vue({
             if (!this.imageSearch) {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
                     '&start=' + parseInt(this.start) + '&fq=' + this.filters;
-            } else {
+            }else if (this.imageGeoSearch) {
+                this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search/location?query=' + this.myQuery +
+                    '&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=200';
+            }else {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
                     '&start=' + this.start + '&fq=' + this.filters;
             }
-            //console.log('this.searchUrl',this.searchUrl);
+
+            console.log('this.searchUrl',this.searchUrl);
             this.facetFields = []; //resetting facet fields before building them from query params
             if(this.filters){
                 var facetPairs = this.filters.split('%20AND%20');
@@ -412,7 +478,7 @@ var app = new Vue({
                 this.showSpinner();
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
-                    //console.log('response.body: ', response.body);
+                    console.log('response.body: ', response.body);
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         this.hideSpinner();
@@ -483,6 +549,7 @@ var app = new Vue({
             this.start= this.$route.query.start;
             this.filters = this.$route.query.filter;
             this.imageSearch = this.$route.query.imgsearch;
+            //this.imageGeoSearch = this.$route.query.imggeosearch;
         },
 
         clearFacets: function(){
@@ -505,6 +572,40 @@ var app = new Vue({
         hideSpinner: function(){
             this.spinner = false;
         },
+        initMap: function(){
+            var markers = [];
+            var center = {lat: 55, lng: 10};
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 4,
+                center: center,
+                streetViewControl: false,
+            });
+            var _this = this;
+            map.addListener('click', function(e) {
+                _this.placeMarker(e.latLng, map, markers);
+            });
+        },
+        /* Google Maps function to place and erase markers*/
+        placeMarker: function(position, map, markers){
+            var position;
+            for (var i = 0; i < markers.length; i++) { //deleting previous markers
+                markers[i].setMap(null);
+            }
+            var marker = new google.maps.Marker({
+                position: position,
+                map: map,
+            });
+            markers.push(marker)
+            this.latitude = marker.getPosition().lat();
+            this.longitude = marker.getPosition().lng();
+            this.markerPosition = {
+                lat: marker.getPosition().lat(),
+                lng: marker.getPosition().lng(),
+            }
+            console.log('this.latitude',this.latitude);
+            map.panTo(position);
+            this.doSearch()
+        }
     }
 })
 

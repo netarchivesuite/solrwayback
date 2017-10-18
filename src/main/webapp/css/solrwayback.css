@@ -125,6 +125,10 @@ a:hover, .link:hover{
     background: #006666;
 }
 
+#searchbox label{
+    margin-right: 1em;
+}
+
 input.imageSearchCheck{
     margin: .8em .2em 1em 0;
     vertical-align: middle;
@@ -453,6 +457,18 @@ input.imageSearchCheck{
     opacity: .5;
 }
 
+/* IMAGE GEO SEARCH */
+#googlemapBox{
+    overflow: hidden;
+ }
+
+#googlemapBox #map {
+    background-color: grey;
+    float: left;
+    height: 400px;
+    margin-right: 2em;
+    width: 800px;
+}
 
 /* SPINNERS */
 #overlay{

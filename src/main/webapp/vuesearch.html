@@ -11,12 +11,22 @@
         <script type="text/javascript" src="js/vue.js"></script>
         <script type="text/javascript" src="js/vue-resource.min.js"></script>
         <script type="text/javascript" src="js/vue-router.js"></script>
+
+    <script
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvDPa9HT46xFx4Z8Ue9csRruo_CiM9zWw">
+    </script>
+
+
+
 </head>
 <body>
     <div class="wrapper" id="app">
         <h1>SOLR Wayback Search</h1>
 
-        <search-box :setup-search="setupSearch" :my-query="myQuery" :image-search="imageSearch" :clear-search="clearSearch"></search-box>
+        <search-box :setup-search="setupSearch" :my-query="myQuery" :image-search="imageSearch"  :image-geo-search="imageGeoSearch"
+                    :clear-search="clearSearch"></search-box>
+
+        <map-box v-if="imageGeoSearch" :marker-position="markerPosition" :init-map="initMap"></map-box>
 
 
         <selected-facets-box v-if="facetFields.length > 0 && !imageSearch" :facet-fields="facetFields" :setup-search="setupSearch"
@@ -60,6 +70,6 @@
 
     </div>
 <!-- This include must be at bottom -->
-<script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
 </body>
 </html>
