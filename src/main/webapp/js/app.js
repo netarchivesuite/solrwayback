@@ -371,7 +371,8 @@ var app = new Vue({
         errorMsg: '',
         imageObjects: [],
         baseUrl: '',
-        markerPosition: {radius: 50000, lat: "", lng: ""}
+        markerPosition: {radius: 100000, lat: "", lng: ""},
+        imageCoordinates : []
     },
     watch: { //updating when route is changing
         '$route' () {
@@ -505,8 +506,17 @@ var app = new Vue({
                         this.myFacets=response.body.facet_counts.facet_fields;
                         this.totalHits = response.body.response.numFound;
                     }else{
+                        this.imageCoordinates = []; // Resetting image positions array
                         this.searchResult = response.body;
                         this.totalHits = this.searchResult.length;
+                        if(this.imageGeoSearch){
+                            var _this = this
+                            this.searchResult.forEach(function(item, index) {
+                                var coordinates = {latitude: item.latitude, longitude: item.longitude};
+                                _this.imageCoordinates.push(coordinates);
+                            });
+                            console.log('imageGeoSearch, this.imageCoordinates',this.imageCoordinates);
+                        }
                     }
                     $("html, body").animate({ scrollTop: 0 }, "fast");
                     this.hideSpinner();
