@@ -368,7 +368,7 @@ var app = new Vue({
         baseUrl: '',
         markerPosition: {radius: 100000, lat: "", lng: ""},
         imageCoordinates : [],
-        markers: [],
+        resultMarkers: [],
         map:{}
     },
     watch: { //updating when route is changing
@@ -598,7 +598,7 @@ var app = new Vue({
                 alert('Choose position to perfom search');
                 return;
             }
-            var position;
+            var position = position;
             for (var i = 0; i < markers.length; i++) { //deleting previous markers and circles
                 markers[i].setMap(null);
                 markerCircles[i].setMap(null);
@@ -606,7 +606,7 @@ var app = new Vue({
             var marker = new google.maps.Marker({
                 position: position,
                 map: map,
-                icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
             });
             /* Draving circle on map */
             var markerCircle = new google.maps.Circle({
@@ -619,27 +619,16 @@ var app = new Vue({
                 center: position,
                 radius: radius * 1000
             });
+            //adding click event to circles to get new position clicking circle overlay
+            var _this = this;
+            markerCircle.addListener('click', function(e) {
+                console.log('Location marker clicked');
+                var newPosition = e.latLng;
+                _this.placeMarker(newPosition, map, markers, markerCircles, radius)
+                return;
+            });
             markers.push(marker);
             markerCircles.push( markerCircle);
-            /* Showing search results */
-
-            if(this.imageCoordinates.length > 0){
-            /*
-
-                for (var i = 0; i < this.imageCoordinates.length; i++) {
-                    var tempCoords = this.imageCoordinates[i]
-                    var latLng = new google.maps.LatLng(tempCoords[0],tempCoords[1]);
-                    console.log('tempCoords',tempCoords)
-                    console.log('latLng',latLng)
-                    var marker = new google.maps.Marker({
-                        position: latLng,
-                        map: map
-                    });
-                }
-*/
-            }
-
-
             /* Building object */
             this.latitude = marker.getPosition().lat();
             this.longitude = marker.getPosition().lng();
@@ -654,10 +643,10 @@ var app = new Vue({
 
         setResultMarkers: function(){
             console.log('setResultMarkers, this.imageCoordinates', this.imageCoordinates)
-            for (var i = 0; i < this.markers.length; i++) { //deleting previous markers and circles
-                this.markers[i].setMap(null);
+            for (var i = 0; i < this.resultMarkers.length; i++) { //deleting previous markers and circles
+                this.resultMarkers[i].setMap(null);
             }
-            this.markers = [];
+            this.resultMarkers = [];
             for (var i = 0; i < this.imageCoordinates.length; i++) {
                 var tempCoords = this.imageCoordinates[i]
                 var latLng = new google.maps.LatLng(tempCoords[0],tempCoords[1]);
@@ -668,7 +657,7 @@ var app = new Vue({
                     position: latLng,
                     map: _this.map
                 });
-                this.markers.push(marker);
+                this.resultMarkers.push(marker);
             }
         }
     }
