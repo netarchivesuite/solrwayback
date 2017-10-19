@@ -87,7 +87,7 @@ Vue.component('map-box', {
         <h3>Choose a position</h3>
         <div id="map"></div>
         <div id="info">
-        Diameter: <input type="text" v-model="radiusModel" v-on:keyup.enter="placeMarker(position, map, markers, markerCircles, radiusModel)"> km<br><br>
+        Radius: <input type="text" v-model="radiusModel" v-on:keyup.enter="placeMarker(position, map, markers, markerCircles, radiusModel)"> km<br><br>
         Latitude: <input type="text" v-model="latModel" readonly><br><br>
         Longitude: <input type="text" v-model="lngModel" readonly><br><br>
         </div>
@@ -585,6 +585,11 @@ var app = new Vue({
 
         /* Google Maps function to place and erase markers*/
         placeMarker: function(position, map, markers, markerCircles, radius){
+            console.log('position',position)
+            if(!position){
+                alert('Choose position to perfom search');
+                return;
+            }
             var position;
             for (var i = 0; i < markers.length; i++) { //deleting previous markers and circles
                 markers[i].setMap(null);
