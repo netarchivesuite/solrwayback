@@ -110,17 +110,12 @@ Vue.component('map-box', {
             mapTypeId: 'terrain'
         });
         var _this = this;
-        console.log('MOUNTED: this.map', this.map)
         this.map.addListener('click', function(e) {
             _this.position = e.latLng;
             _this.placeMarker(_this.position, _this.map, _this.markers, _this.markerCircles, _this.radiusModel);
         });
     }
 })
-
-
-
-
 
 Vue.component('selected-facets-box', {
     props: ['setupSearch','facetFields','myQuery','clearFacets'],
@@ -372,7 +367,9 @@ var app = new Vue({
         imageObjects: [],
         baseUrl: '',
         markerPosition: {radius: 100000, lat: "", lng: ""},
-        imageCoordinates : []
+        imageCoordinates : [],
+        markers: [],
+        map:{}
     },
     watch: { //updating when route is changing
         '$route' () {
@@ -473,7 +470,7 @@ var app = new Vue({
                     '&start=' + this.start + '&fq=' + this.filters;
             }
 
-            console.log('this.searchUrl',this.searchUrl);
+            //console.log('this.searchUrl',this.searchUrl);
             this.facetFields = []; //resetting facet fields before building them from query params
             if(this.filters){
                 var facetPairs = this.filters.split('%20AND%20');
@@ -512,10 +509,11 @@ var app = new Vue({
                         if(this.imageGeoSearch){
                             var _this = this
                             this.searchResult.forEach(function(item, index) {
-                                var coordinates = {latitude: item.latitude, longitude: item.longitude};
+                                var coordinates = [item.latitude, item.longitude];
                                 _this.imageCoordinates.push(coordinates);
                             });
                             console.log('imageGeoSearch, this.imageCoordinates',this.imageCoordinates);
+                            this.setResultMarkers();
                         }
                     }
                     $("html, body").animate({ scrollTop: 0 }, "fast");
@@ -595,7 +593,7 @@ var app = new Vue({
 
         /* Google Maps function to place and erase markers*/
         placeMarker: function(position, map, markers, markerCircles, radius){
-            console.log('position',position)
+            this.map = map;
             if(!position){
                 alert('Choose position to perfom search');
                 return;
@@ -623,6 +621,24 @@ var app = new Vue({
             });
             markers.push(marker);
             markerCircles.push( markerCircle);
+            /* Showing search results */
+
+            if(this.imageCoordinates.length > 0){
+            /*
+
+                for (var i = 0; i < this.imageCoordinates.length; i++) {
+                    var tempCoords = this.imageCoordinates[i]
+                    var latLng = new google.maps.LatLng(tempCoords[0],tempCoords[1]);
+                    console.log('tempCoords',tempCoords)
+                    console.log('latLng',latLng)
+                    var marker = new google.maps.Marker({
+                        position: latLng,
+                        map: map
+                    });
+                }
+*/
+            }
+
 
             /* Building object */
             this.latitude = marker.getPosition().lat();
@@ -631,10 +647,29 @@ var app = new Vue({
                 radius: radius*1000,
                 lat: marker.getPosition().lat(),
                 lng: marker.getPosition().lng(),
-            }
-            console.log('this.latitude',this.latitude);
+            };
             map.panTo(position);
-            this.doSearch()
+            this.doSearch();
+        },
+
+        setResultMarkers: function(){
+            console.log('setResultMarkers, this.imageCoordinates', this.imageCoordinates)
+            for (var i = 0; i < this.markers.length; i++) { //deleting previous markers and circles
+                this.markers[i].setMap(null);
+            }
+            this.markers = [];
+            for (var i = 0; i < this.imageCoordinates.length; i++) {
+                var tempCoords = this.imageCoordinates[i]
+                var latLng = new google.maps.LatLng(tempCoords[0],tempCoords[1]);
+                console.log('tempCoords',tempCoords)
+                console.log('latLng',latLng);
+                var _this = this;
+                var marker = new google.maps.Marker({
+                    position: latLng,
+                    map: _this.map
+                });
+                this.markers.push(marker);
+            }
         }
     }
 })
