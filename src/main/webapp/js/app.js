@@ -70,31 +70,51 @@ Vue.component('search-box', {
 
 
 Vue.component('map-box', {
-    props: ['markerPosition','initMap'],
+    props: ['markerPosition',"placeMarker","doSearch"],
+    data: function() {
+        return {
+            markers: [],
+            markerCircles: [],
+            position: false,
+            map: false,
+            radiusModel: this.markerPosition.radius/1000,
+            lngModel: this.markerPosition.lng,
+            latModel: this.markerPosition.lat,
+        };
+    },
     template: `
     <div id="googlemapBox">
         <h3>Choose a position</h3>
         <div id="map"></div>
         <div id="info">
-        Latitude: <input type="text" v-model="latModel" readonly>
-        Longitude: <input type="text" v-model="lngModel" readonly>
+        Diameter: <input type="text" v-model="radiusModel" v-on:keyup.enter="placeMarker(position, map, markers, markerCircles, radiusModel)"> km<br><br>
+        Latitude: <input type="text" v-model="latModel" readonly><br><br>
+        Longitude: <input type="text" v-model="lngModel" readonly><br><br>
         </div>
     </div>    
     `,
-    data: function() {
-        return {
-            lngModel: this.markerPosition.lng,
-            latModel: this.markerPosition.lat,
-        };
-    },
     watch: { // updating v-model when vars are updated
         markerPosition: function () {
+            this.radiusModel = this.markerPosition.radius/1000;
             this.lngModel = this.markerPosition.lng;
             this.latModel = this.markerPosition.lat;
         }
     },
     mounted: function(){
-        this.initMap();
+        /* Initialising map */
+        var center = {lat: 56.17, lng: 10.20};
+        this.map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 5,
+            center: center,
+            streetViewControl: false,
+            mapTypeId: 'terrain'
+        });
+        var _this = this;
+        console.log('MOUNTED: this.map', this.map)
+        this.map.addListener('click', function(e) {
+            _this.position = e.latLng;
+            _this.placeMarker(_this.position, _this.map, _this.markers, _this.markerCircles, _this.radiusModel);
+        });
     }
 })
 
@@ -351,7 +371,7 @@ var app = new Vue({
         errorMsg: '',
         imageObjects: [],
         baseUrl: '',
-        markerPosition: {lat: "", lng: ""}
+        markerPosition: {radius: 50000, lat: "", lng: ""}
     },
     watch: { //updating when route is changing
         '$route' () {
@@ -369,20 +389,7 @@ var app = new Vue({
         });
         this.getQueryparams();
         this.doSearch();
-    }/*,
-    mounted: function () {
-        var markers = [];
-        var center = {lat: 55, lng: 10};
-        var map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 4,
-            center: center,
-            streetViewControl: false,
-        });
-        var _this = this;
-        map.addListener('click', function(e) {
-            _this.placeMarker(e.latLng, map, markers);
-        });
-    }*/,
+    },
     methods: {
         setupSearch: function(type, query, param3, param4) {
             if (type == "search") {
@@ -459,7 +466,7 @@ var app = new Vue({
                     return //leaving search if latítude or longitude isn't set
                 }
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search/location?query=' + this.myQuery +
-                    '&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=200';
+                    '&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=' + this.markerPosition.radius/1000;
             }else {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
                     '&start=' + this.start + '&fq=' + this.filters;
@@ -575,33 +582,38 @@ var app = new Vue({
         hideSpinner: function(){
             this.spinner = false;
         },
-        initMap: function(){
-            var markers = [];
-            var center = {lat: 55, lng: 10};
-            var map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 4,
-                center: center,
-                streetViewControl: false,
-            });
-            var _this = this;
-            map.addListener('click', function(e) {
-                _this.placeMarker(e.latLng, map, markers);
-            });
-        },
+
         /* Google Maps function to place and erase markers*/
-        placeMarker: function(position, map, markers){
+        placeMarker: function(position, map, markers, markerCircles, radius){
             var position;
-            for (var i = 0; i < markers.length; i++) { //deleting previous markers
+            for (var i = 0; i < markers.length; i++) { //deleting previous markers and circles
                 markers[i].setMap(null);
+                markerCircles[i].setMap(null);
             }
             var marker = new google.maps.Marker({
                 position: position,
                 map: map,
+                icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
             });
-            markers.push(marker)
+            /* Draving circle on map */
+            var markerCircle = new google.maps.Circle({
+                strokeColor: '#00cc00',
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: '#00cc00',
+                fillOpacity: 0.35,
+                map: map,
+                center: position,
+                radius: radius * 1000
+            });
+            markers.push(marker);
+            markerCircles.push( markerCircle);
+
+            /* Building object */
             this.latitude = marker.getPosition().lat();
             this.longitude = marker.getPosition().lng();
             this.markerPosition = {
+                radius: radius*1000,
                 lat: marker.getPosition().lat(),
                 lng: marker.getPosition().lng(),
             }
