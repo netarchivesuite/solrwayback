@@ -11,10 +11,10 @@ Vue.component('search-box', {
     <div>
         <div id="searchbox">
             <div>
-                <input  id="queryInput"  v-on:keyup.enter="setupSearch('search',queryModel, imageSearchModel);searchByFile = false" 
+                <input  id="queryInput"  v-on:keyup.enter="setupSearch('search',queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false" 
                 v-model='queryModel' type="text" placeholder="search" autofocus />
                 <button class="btn" 
-                v-on:click="setupSearch('search', queryModel, imageSearchModel);searchByFile = false">Search</button>
+                v-on:click="setupSearch('search', queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false">Search</button>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = false">Clear search</span>
                 <br>
                 <label>
