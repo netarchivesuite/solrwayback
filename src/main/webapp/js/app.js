@@ -70,7 +70,7 @@ Vue.component('search-box', {
 
 
 Vue.component('map-box', {
-    props: ['markerPosition',"placeMarker","doSearch"],
+    props: ['markerPosition',"placeMarker","doSearch","totalHits"],
     data: function() {
         return {
             markers: [],
@@ -84,15 +84,20 @@ Vue.component('map-box', {
     <div id="googlemapBox">
         <div id="map"></div>
         <div id="infoGeoSearch">
-            <div class="setRadius">
+            <div class="infoContainer">
                 <h3>Adjust radius</h3> 
                 <p>
                 Radius in km: <input type="text" v-model="radiusModel" v-on:keyup.enter="placeMarker(position, map, markers, markerCircles, radiusModel)">
                 </p>
             </div>
-        <h3>Center for this search</h3> 
-        <p>Latitude: {{ Math.round(markerPosition.lat * 10000) / 10000  }}</p>
-        <p>Longitude: {{ Math.round(markerPosition.lng * 10000) / 10000  }}</p>
+            <div class="infoContainer">
+                <h3>Center for this search</h3> 
+                <p>Latitude: {{ Math.round(markerPosition.lat * 10000) / 10000  }}</p>
+                <p>Longitude: {{ Math.round(markerPosition.lng * 10000) / 10000  }}</p>
+            </div>           
+            <div class="infoContainer">
+                <h3 v-if="totalHits > 0">Number of hits: {{this.totalHits}}</h3>
+            </div>      
         </div>
     </div>    
     `,
@@ -449,6 +454,7 @@ var app = new Vue({
 
         doSearch: function(){
             this.imageObjects = []; //resetting imageObjecs on new search
+            this.searchResult = []; //resetting search result on new search
             if(!this.imageSearch || this.imageSearch == 'false' ){ //converting possible string value from query param to boolean
                 this.imageSearch = false
             }else{

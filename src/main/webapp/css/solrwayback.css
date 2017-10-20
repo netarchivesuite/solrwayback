@@ -470,11 +470,11 @@ input.imageSearchCheck{
     width: 1000px;
 }
 
-#infoGeoSearch .setRadius{
+#infoGeoSearch .infoContainer{
     margin-bottom: 3em;
 }
 
-#infoGeoSearch .setRadius input{
+#infoGeoSearch .infoContainer input{
     width: 100px;
 }
 

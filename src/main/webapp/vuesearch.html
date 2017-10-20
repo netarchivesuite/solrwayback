@@ -26,7 +26,8 @@
         <search-box :setup-search="setupSearch" :my-query="myQuery" :image-search="imageSearch"  :image-geo-search="imageGeoSearch"
                     :clear-search="clearSearch"></search-box>
 
-        <map-box v-if="imageGeoSearch" :marker-position="markerPosition" :place-marker="placeMarker" :do-search="doSearch"></map-box>
+        <map-box v-if="imageGeoSearch" :marker-position="markerPosition" :place-marker="placeMarker" :do-search="doSearch"
+                 :total-hits="totalHits"></map-box>
 
 
         <selected-facets-box v-if="facetFields.length > 0 && !imageSearch" :facet-fields="facetFields" :setup-search="setupSearch"
