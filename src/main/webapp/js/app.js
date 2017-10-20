@@ -110,6 +110,8 @@ Vue.component('map-box', {
             mapTypeId: 'terrain'
         });
         var _this = this;
+        this.position = new google.maps.LatLng(center);
+        this.placeMarker(this.position, this.map, this.markers, this.markerCircles, this.radiusModel)
         this.map.addListener('click', function(e) {
             _this.position = e.latLng;
             _this.placeMarker(_this.position, _this.map, _this.markers, _this.markerCircles, _this.radiusModel);
@@ -652,13 +654,13 @@ var app = new Vue({
                     position: latLng,
                     map: _this.map,
                     url: tempCoords[2],
-                    info:  "<img class='mapsHoverImage' src='" + tempCoords[2] + "'>"
+                    info:  "<a href='"+ tempCoords[2] + "' target='_blank'><img class='mapsHoverImage' src='" + tempCoords[2] + "'></a>"
                 });
 
                 var infowindow = new google.maps.InfoWindow();
                 /* "this." refers to the marker params and not Vue in the event listeners below */
                 marker.addListener('click', function() {
-                    window.open(this.url, 'blank');
+                    window.open(this.url, '_blank');
                 });
                 marker.addListener('mouseover', function(info) {
                     infowindow.setContent(this.info);
