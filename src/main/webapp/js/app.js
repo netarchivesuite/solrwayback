@@ -78,8 +78,6 @@ Vue.component('map-box', {
             position: false,
             map: false,
             radiusModel: this.markerPosition.radius/1000,
-            lngCenter: this.markerPosition.lng,
-            latCenter: this.markerPosition.lat,
         };
     },
     template: `
@@ -93,18 +91,11 @@ Vue.component('map-box', {
                 </p>
             </div>
         <h3>Center for this search</h3> 
-        <p>Latitude: {{ Math.round(latCenter * 10000) / 10000  }}</p>
-        <p>Longitude: {{ Math.round(lngCenter * 10000) / 10000  }}</p>
+        <p>Latitude: {{ Math.round(markerPosition.lat * 10000) / 10000  }}</p>
+        <p>Longitude: {{ Math.round(markerPosition.lng * 10000) / 10000  }}</p>
         </div>
     </div>    
     `,
-    watch: { // updating v-model when vars are updated
-        markerPosition: function () {
-            this.radiusModel = this.markerPosition.radius/1000;
-            this.lngCenter = this.markerPosition.lng;
-            this.latCenter = this.markerPosition.lat;
-        }
-    },
     mounted: function(){
         /* Initialising map when component is mounted, not when app is mounted */
         var center = {lat: 56.17, lng: 10.20};
