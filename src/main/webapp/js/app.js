@@ -364,7 +364,7 @@ var app = new Vue({
         errorMsg: '',
         imageObjects: [],
         baseUrl: '',
-        markerPosition: {radius: 100000, lat: "", lng: ""},
+        markerPosition: {radius: 200000, lat: "", lng: ""},
         geoImageInfo : [],
         resultMarkers: [],
         map:{}
