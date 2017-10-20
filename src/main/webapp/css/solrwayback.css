@@ -470,6 +470,11 @@ input.imageSearchCheck{
     width: 800px;
 }
 
+.mapsHoverImage{
+    max-height: 100px;
+    max-width: 100px;
+}
+
 /* SPINNERS */
 #overlay{
     background-color: black;

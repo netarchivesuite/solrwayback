@@ -23,7 +23,7 @@ Vue.component('search-box', {
                 </label>
                 <label v-if="imageSearch">
                     <input class="imageSearchCheck" v-model="imageGeoSearchModel" type="checkbox"
-                     v-on:change="setupSearch('search',queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false"> Geo search
+                     v-on:change="setupSearch('search',queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false"> Geo search (BETA!)
                 </label>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span>               
             </div>
@@ -101,7 +101,7 @@ Vue.component('map-box', {
         }
     },
     mounted: function(){
-        /* Initialising map */
+        /* Initialising map when component is mounted, not when app is mounted */
         var center = {lat: 56.17, lng: 10.20};
         this.map = new google.maps.Map(document.getElementById('map'), {
             zoom: 5,
@@ -367,7 +367,7 @@ var app = new Vue({
         imageObjects: [],
         baseUrl: '',
         markerPosition: {radius: 100000, lat: "", lng: ""},
-        imageCoordinates : [],
+        geoImageInfo : [],
         resultMarkers: [],
         map:{}
     },
@@ -503,16 +503,15 @@ var app = new Vue({
                         this.myFacets=response.body.facet_counts.facet_fields;
                         this.totalHits = response.body.response.numFound;
                     }else{
-                        this.imageCoordinates = []; // Resetting image positions array
+                        this.geoImageInfo = []; // Resetting image positions array
                         this.searchResult = response.body;
                         this.totalHits = this.searchResult.length;
                         if(this.imageGeoSearch){
                             var _this = this
                             this.searchResult.forEach(function(item, index) {
-                                var coordinates = [item.latitude, item.longitude];
-                                _this.imageCoordinates.push(coordinates);
+                                var imageInfo = [item.latitude, item.longitude, item.downloadUrl];
+                                _this.geoImageInfo.push(imageInfo);
                             });
-                            console.log('imageGeoSearch, this.imageCoordinates',this.imageCoordinates);
                             this.setResultMarkers();
                         }
                     }
@@ -622,7 +621,6 @@ var app = new Vue({
             //adding click event to circles to get new position clicking circle overlay
             var _this = this;
             markerCircle.addListener('click', function(e) {
-                console.log('Location marker clicked');
                 var newPosition = e.latLng;
                 _this.placeMarker(newPosition, map, markers, markerCircles, radius)
                 return;
@@ -642,23 +640,36 @@ var app = new Vue({
         },
 
         setResultMarkers: function(){
-            console.log('setResultMarkers, this.imageCoordinates', this.imageCoordinates)
             for (var i = 0; i < this.resultMarkers.length; i++) { //deleting previous markers and circles
                 this.resultMarkers[i].setMap(null);
             }
             this.resultMarkers = [];
-            for (var i = 0; i < this.imageCoordinates.length; i++) {
-                var tempCoords = this.imageCoordinates[i]
+            for (var i = 0; i < this.geoImageInfo.length; i++) {
+                var tempCoords = this.geoImageInfo[i]
                 var latLng = new google.maps.LatLng(tempCoords[0],tempCoords[1]);
-                console.log('tempCoords',tempCoords)
-                console.log('latLng',latLng);
                 var _this = this;
                 var marker = new google.maps.Marker({
                     position: latLng,
-                    map: _this.map
+                    map: _this.map,
+                    url: tempCoords[2],
+                    info:  "<img class='mapsHoverImage' src='" + tempCoords[2] + "'>"
                 });
+
+                var infowindow = new google.maps.InfoWindow();
+                /* "this." refers to the marker params and not Vue in the event listeners below */
+                marker.addListener('click', function() {
+                    window.open(this.url, 'blank');
+                });
+                marker.addListener('mouseover', function(info) {
+                    infowindow.setContent(this.info);
+                    infowindow.open(_this.map, this);
+                });
+                /*marker.addListener('mouseout', function() {
+                    infowindow.close();
+                });*/
                 this.resultMarkers.push(marker);
             }
+
         }
     }
 })
