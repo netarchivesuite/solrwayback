@@ -78,26 +78,31 @@ Vue.component('map-box', {
             position: false,
             map: false,
             radiusModel: this.markerPosition.radius/1000,
-            lngModel: this.markerPosition.lng,
-            latModel: this.markerPosition.lat,
+            lngCenter: this.markerPosition.lng,
+            latCenter: this.markerPosition.lat,
         };
     },
     template: `
     <div id="googlemapBox">
-        <h3>Choose a position</h3>
         <div id="map"></div>
-        <div id="info">
-        Radius: <input type="text" v-model="radiusModel" v-on:keyup.enter="placeMarker(position, map, markers, markerCircles, radiusModel)"> km<br><br>
-        Latitude: <input type="text" v-model="latModel" readonly><br><br>
-        Longitude: <input type="text" v-model="lngModel" readonly><br><br>
+        <div id="infoGeoSearch">
+            <div class="setRadius">
+                <h3>Adjust radius</h3> 
+                <p>
+                Radius in km: <input type="text" v-model="radiusModel" v-on:keyup.enter="placeMarker(position, map, markers, markerCircles, radiusModel)">
+                </p>
+            </div>
+        <h3>Center for this search</h3> 
+        <p>Latitude: {{ Math.round(latCenter * 10000) / 10000  }}</p>
+        <p>Longitude: {{ Math.round(lngCenter * 10000) / 10000  }}</p>
         </div>
     </div>    
     `,
     watch: { // updating v-model when vars are updated
         markerPosition: function () {
             this.radiusModel = this.markerPosition.radius/1000;
-            this.lngModel = this.markerPosition.lng;
-            this.latModel = this.markerPosition.lat;
+            this.lngCenter = this.markerPosition.lng;
+            this.latCenter = this.markerPosition.lat;
         }
     },
     mounted: function(){

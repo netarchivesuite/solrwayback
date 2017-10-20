@@ -465,9 +465,25 @@ input.imageSearchCheck{
 #googlemapBox #map {
     background-color: grey;
     float: left;
-    height: 400px;
+    height: 500px;
     margin-right: 2em;
-    width: 800px;
+    width: 1000px;
+}
+
+#infoGeoSearch .setRadius{
+    margin-bottom: 3em;
+}
+
+#infoGeoSearch .setRadius input{
+    width: 100px;
+}
+
+#infoGeoSearch h3{
+    margin-top: 0;
+}
+
+#infoGeoSearch p{
+    margin: 0;
 }
 
 .mapsHoverImage{
