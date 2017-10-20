@@ -507,7 +507,7 @@ var app = new Vue({
                         if(this.imageGeoSearch){
                             var _this = this
                             this.searchResult.forEach(function(item, index) {
-                                var imageInfo = [item.latitude, item.longitude, item.downloadUrl];
+                                var imageInfo = {lat: item.latitude, lng: item.longitude, downloadUrl: item.downloadUrl};
                                 _this.geoImageInfo.push(imageInfo);
                             });
                             this.setResultMarkers();
@@ -591,10 +591,6 @@ var app = new Vue({
         /* Google Maps function to place and erase markers*/
         placeMarker: function(position, map, markers, markerCircles, radius){
             this.map = map;
-            if(!position){
-                alert('Choose position to perfom search');
-                return;
-            }
             var position = position;
             for (var i = 0; i < markers.length; i++) { //deleting previous markers and circles
                 markers[i].setMap(null);
@@ -644,13 +640,13 @@ var app = new Vue({
             this.resultMarkers = [];
             for (var i = 0; i < this.geoImageInfo.length; i++) {
                 var tempCoords = this.geoImageInfo[i]
-                var latLng = new google.maps.LatLng(tempCoords[0],tempCoords[1]);
+                var latLng = new google.maps.LatLng(tempCoords.lat,tempCoords.lng);
                 var _this = this;
                 var marker = new google.maps.Marker({
                     position: latLng,
                     map: _this.map,
-                    url: tempCoords[2],
-                    info:  "<a href='"+ tempCoords[2] + "' target='_blank'><img class='mapsHoverImage' src='" + tempCoords[2] + "'></a>"
+                    url: tempCoords.downloadUrl,
+                    info:  "<a href='"+ tempCoords.downloadUrl + "' target='_blank'><img class='mapsHoverImage' src='" + tempCoords.downloadUrl + "'></a>"
                 });
 
                 var infowindow = new google.maps.InfoWindow();
