@@ -23,7 +23,7 @@ Vue.component('search-box', {
                 </label>
                 <label v-if="imageSearch">
                     <input class="imageSearchCheck" v-model="imageGeoSearchModel" type="checkbox"
-                     v-on:change="setupSearch('search',queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false"> Geo search (BETA!)
+                     v-on:change="setupSearch('search',queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false"> Geo search
                 </label>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span>               
             </div>
@@ -507,7 +507,12 @@ var app = new Vue({
                         if(this.imageGeoSearch){
                             var _this = this
                             this.searchResult.forEach(function(item, index) {
-                                var imageInfo = {lat: item.latitude, lng: item.longitude, downloadUrl: item.downloadUrl};
+                                var imageInfo = {
+                                    lat: item.latitude,
+                                    lng: item.longitude,
+                                    downloadUrl: item.downloadUrl,
+                                    resourceName: item.resourceName
+                                };
                                 _this.geoImageInfo.push(imageInfo);
                             });
                             this.setResultMarkers();
@@ -599,6 +604,7 @@ var app = new Vue({
             var marker = new google.maps.Marker({
                 position: position,
                 map: map,
+                title: "Center of your search",
                 icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
             });
             /* Draving circle on map */
@@ -639,14 +645,17 @@ var app = new Vue({
             }
             this.resultMarkers = [];
             for (var i = 0; i < this.geoImageInfo.length; i++) {
-                var tempCoords = this.geoImageInfo[i]
-                var latLng = new google.maps.LatLng(tempCoords.lat,tempCoords.lng);
+                var item = this.geoImageInfo[i]
+                var latLng = new google.maps.LatLng(item.lat,item.lng);
                 var _this = this;
                 var marker = new google.maps.Marker({
                     position: latLng,
                     map: _this.map,
-                    url: tempCoords.downloadUrl,
-                    info:  "<a href='"+ tempCoords.downloadUrl + "' target='_blank'><img class='mapsHoverImage' src='" + tempCoords.downloadUrl + "'></a>"
+                    title: item.resourceName,
+                    info:   "<p class='imageNameHover' title='" + item.resourceName + "'>" + item.resourceName + "</p>" +
+                            "<a href='"+ item.downloadUrl + "' target='_blank'>" +
+                                "<img class='mapsHoverImage' src='" + item.downloadUrl + "'>" +
+                            "</a>"
                 });
 
                 var infowindow = new google.maps.InfoWindow();

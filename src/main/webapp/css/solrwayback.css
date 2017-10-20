@@ -487,8 +487,15 @@ input.imageSearchCheck{
 }
 
 .mapsHoverImage{
-    max-height: 100px;
-    max-width: 100px;
+    max-height: 120px;
+    max-width: 120px !important;
+}
+
+.imageNameHover{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 120px;
 }
 
 /* SPINNERS */
