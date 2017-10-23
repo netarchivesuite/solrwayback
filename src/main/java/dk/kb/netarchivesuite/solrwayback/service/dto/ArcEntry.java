@@ -7,6 +7,7 @@ package dk.kb.netarchivesuite.solrwayback.service.dto;
 public class ArcEntry {
 
     private byte[] binary;
+    private String header;//Both headers for WARC.
     
     private String url;
     private long contentLength;
@@ -70,6 +71,14 @@ public class ArcEntry {
 	}
 	public void setContentTypeExt(String contentTypeExt) {
 		this.contentTypeExt = contentTypeExt;
-	}	
+	}
+    
+	public String getHeader() {
+      return header;
+     }
+     
+	public void setHeader(String header) {
+      this.header = header;
+    }	
    
 }

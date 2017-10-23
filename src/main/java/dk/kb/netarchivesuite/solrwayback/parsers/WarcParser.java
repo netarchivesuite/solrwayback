@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.File;
 import java.io.InputStream;
@@ -9,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
+import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 
 import org.slf4j.Logger;
@@ -19,7 +21,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 public class WarcParser {
 
     private static final Logger log = LoggerFactory.getLogger(WarcParser.class);
-    
+    private static final String newLineChar ="\r\n";
     
     /*
      *Header example(notice the two different parts):
@@ -53,25 +55,30 @@ public class WarcParser {
           }
          
           ArcEntry warcEntry = new ArcEntry();
+          StringBuffer headerLinesBuffer = new StringBuffer();
             raf = new RandomAccessFile(new File(warcFilePath), "r");
             raf.seek(warcEntryPosition);
                         
             String line = raf.readLine(); // First line
-
+            headerLinesBuffer.append(line+newLineChar);
+            
             if  (!(line.startsWith("WARC/"))) //No version check yet
             {            
                 throw new IllegalArgumentException("WARC header is not WARC/'version', instead it is : "+line);
             }            
             
-            while (!"".equals(line)) { // End of warc first header block is an empty line
-                line = raf.readLine();
+            while (!"".equals(line)) { // End of warc first header block is an empty line                
+                line = raf.readLine();                
+                headerLinesBuffer.append(line+newLineChar);
                 populateWarcFirstHeader(warcEntry, line);                
             }
             
             long afterFirst = raf.getFilePointer(); //Now we are past the WARC header and back to the ARC standard 
-            line = raf.readLine();            
+            line = raf.readLine();     
+            headerLinesBuffer.append(line+newLineChar);
             while (!"".equals(line)) { // End of warc second header block is an empty line
-                line = raf.readLine();                
+                line = raf.readLine();  
+                headerLinesBuffer.append(line+"\r\n\r\n");
                 populateWarcSecondHeader(warcEntry, line);
             }
 
@@ -87,6 +94,7 @@ public class WarcParser {
             raf.read(bytes);
             raf.close();
             warcEntry.setBinary(bytes);
+            warcEntry.setHeader(headerLinesBuffer.toString());
             return warcEntry;
         }
         catch(Exception e){
@@ -103,6 +111,7 @@ public class WarcParser {
     public static ArcEntry getWarcEntryZipped(String warcFilePath, long warcEntryPosition) throws Exception {
       RandomAccessFile raf=null;
       try{
+           StringBuffer headerLinesBuffer = new StringBuffer();
             ArcEntry warcEntry = new ArcEntry();
             raf = new RandomAccessFile(new File(warcFilePath), "r");
             raf.seek(warcEntryPosition);
@@ -114,6 +123,7 @@ public class WarcParser {
             BufferedInputStream  bis= new BufferedInputStream(stream);
    
           String line = readLine(bis); // First line
+          headerLinesBuffer.append(line+newLineChar);
           
           if  (!(line.startsWith("WARC/"))) //No version check yet
           {            
@@ -121,8 +131,9 @@ public class WarcParser {
           }            
           
           while (!"".equals(line)) { // End of warc first header block is an empty line
-              line = readLine(bis);  
-              populateWarcFirstHeader(warcEntry, line);              
+              line = readLine(bis);                
+              headerLinesBuffer.append(line+newLineChar);
+              populateWarcFirstHeader(warcEntry, line);             
               
           }
 
@@ -130,12 +141,14 @@ public class WarcParser {
           
           LineAndByteCount lc =readLineCount(bis);
           line=lc.getLine();
+          headerLinesBuffer.append(line+newLineChar);
           byteCount +=lc.getByteCount();                    
 
           while (!"".equals(line)) { // End of warc second header block is an empty line
               
             lc =readLineCount(bis);
             line=lc.getLine();
+            headerLinesBuffer.append(line+newLineChar);
             byteCount +=lc.getByteCount();                    
                       
               populateWarcSecondHeader(warcEntry, line);
@@ -154,7 +167,8 @@ public class WarcParser {
           raf.close();
           bis.close();
           warcEntry.setBinary(chars); 
-/*
+          warcEntry.setHeader(headerLinesBuffer.toString());
+          /*
           System.out.println("-------- binary start");
           System.out.println(new String(chars));
           System.out.println("-------- slut");
@@ -220,10 +234,23 @@ public class WarcParser {
      private static void populateWarcSecondHeader(ArcEntry warcEntry, String headerLine) {
         //  log.debug("parsing warc headerline(part 2):"+headerLine);                
           //Content-Type: image/jpeg
+         // or Content-Type: text/html; charset=windows-1252
+
           if (headerLine.startsWith("Content-Type:")) {
                String[] part1 = headerLine.split(":");
                String[] part2= part1[1].split(";");                        
                warcEntry.setContentType(part2[0].trim());          
+               if (part2.length == 2){
+                 String charset = part2[1].trim();
+                 if (charset.startsWith("charset=")){
+                   String headerEncoding=charset.substring(8);
+                   warcEntry.setContentEncoding(headerEncoding);
+                 }
+                  
+                 
+               }
+               
+               
           }  //Content-Length: 31131
           else if (headerLine.startsWith("Content-Length:")) {
               String[] contentLine = headerLine.split(" ");
@@ -233,38 +260,37 @@ public class WarcParser {
       }
      
      public static String readLine(BufferedInputStream  bis) throws Exception{
-       StringBuffer buf = new StringBuffer();
+       ByteArrayOutputStream baos = new ByteArrayOutputStream();
        int current = 0; // CRLN || LN
        while ((current = bis.read()) != '\r' && current != '\n') {             
-         buf.append((char) current);
+         baos.write((char) current);  
        }
        if (current == '\r') {
         bis.read(); // line ends with 10 13        
        }
-       
-       
-       return buf.toString();
-       
+              
+       return baos.toString("UTF-8");
      }
      
      public static LineAndByteCount readLineCount(BufferedInputStream  bis) throws Exception{
        int count = 0;
-       StringBuffer buf = new StringBuffer();
+       ByteArrayOutputStream baos = new ByteArrayOutputStream();
+              
        int current = 0; // CRLN || LN
        
        count++; //Also count linefeed
        while ((current = bis.read()) != '\r' && current != '\n') {             
-         buf.append((char) current);
-        count++;
+         baos.write((char) current);       
+         count++;
        }
        if (current == '\r') {
         bis.read(); // line ends with 10 13
         count++;
        }       
        LineAndByteCount lc = new LineAndByteCount();
-       lc.setLine(buf.toString());
+       lc.setLine(baos.toString("UTF-8"));
        lc.setByteCount(count);
-       
+
        return lc;
        
      }
