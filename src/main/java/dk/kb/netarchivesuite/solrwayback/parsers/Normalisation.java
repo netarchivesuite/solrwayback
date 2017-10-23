@@ -21,6 +21,7 @@ public class Normalisation {
 
     private static Charset UTF8_CHARSET = Charset.forName("UTF-8");
     private static AggressiveUrlCanonicalizer canon = new AggressiveUrlCanonicalizer();
+
     
 
     /**
@@ -50,6 +51,7 @@ public class Normalisation {
      *                          e.g. http://example.com/%2A.html → http://example.com/*.html
      *                          If false, valid %-escapes are kept as-is.
      */
+   
     public static String canonicaliseURL(String url, boolean allowHighOrder, boolean createUnambiguous) {
         // Basic normalisation, as shared with Heritrix, Wayback et al
         url = canon.canonicalize(url);
@@ -114,11 +116,17 @@ public class Normalisation {
     private static String escapeUTF8(final byte[] utf8, boolean escapeHighOrder, boolean normaliseLowOrder) {
         ByteArrayOutputStream sb = new ByteArrayOutputStream(utf8.length*2);
         int i = 0;
+        boolean paramSection = false; // Affects handling of space and plus
         while (i < utf8.length) {
             int c = 0xFF & utf8[i];
-            if (c == '%') {
+            paramSection |= c == '?';
+            if (paramSection && c == ' ') { // In parameters, space becomes plus
+                sb.write(0xFF & '+');
+            } else if (c == '%') {
                 int codePoint = Integer.parseInt("" + (char) utf8[i + 1] + (char) utf8[i + 2], 16);
-                if (mustEscape(codePoint) || !normaliseLowOrder) { // Pass on unmodified
+                if (paramSection && codePoint == ' ') { // In parameters, space becomes plus
+                    sb.write(0xFF & '+');
+                } else if (mustEscape(codePoint) || keepEscape(codePoint) || !normaliseLowOrder) { // Pass on unmodified
                     hexEscape(codePoint, sb);
                 } else { // Normalise to ASCII
                     sb.write(0xFF & codePoint);
@@ -133,7 +141,7 @@ public class Normalisation {
             } else if ((0b11000000 & c) == 0b10000000) { // Non-first UTF-8 byte as first byte
                 hexEscape(c, sb);
             } else if ((0b11100000 & c) == 0b11000000) { // 2 byte UTF-8
-                if (i >= utf8.length-1 || (0b11000000 & utf8[i+1]) != 0b10000000) { // No or wrong byte follows
+                if (i >= utf8.length-1 || (0b11000000 & utf8[i+1]) != 0b10000000) { // No byte or wrong byte follows
                     hexEscape(c, sb);
                 } else if (escapeHighOrder) {
                     hexEscape(0xff & utf8[i++], sb);
@@ -186,6 +194,11 @@ public class Normalisation {
     // Some low-order characters must always be escaped
     private static boolean mustEscape(int codePoint) {
         return codePoint == ' ' || codePoint == '%';
+    }
+
+    // If the codePoint is already escaped, keep the escaping
+    private static boolean keepEscape(int codePoint) {
+        return codePoint == '#';
     }
 
     private static boolean isHex(byte b) {
