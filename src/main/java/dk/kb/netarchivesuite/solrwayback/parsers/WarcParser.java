@@ -22,6 +22,7 @@ public class WarcParser {
 
     private static final Logger log = LoggerFactory.getLogger(WarcParser.class);
     private static final String newLineChar ="\r\n";
+    public static String WARC_HEADER_ENCODING ="ISO-8859-1";
     
     /*
      *Header example(notice the two different parts):
@@ -263,13 +264,13 @@ public class WarcParser {
        ByteArrayOutputStream baos = new ByteArrayOutputStream();
        int current = 0; // CRLN || LN
        while ((current = bis.read()) != '\r' && current != '\n') {             
-         baos.write((char) current);  
+         baos.write((byte) current);  
        }
        if (current == '\r') {
         bis.read(); // line ends with 10 13        
        }
               
-       return baos.toString("UTF-8");
+       return baos.toString(WARC_HEADER_ENCODING);
      }
      
      public static LineAndByteCount readLineCount(BufferedInputStream  bis) throws Exception{
@@ -280,7 +281,7 @@ public class WarcParser {
        
        count++; //Also count linefeed
        while ((current = bis.read()) != '\r' && current != '\n') {             
-         baos.write((char) current);       
+         baos.write((byte)current);       
          count++;
        }
        if (current == '\r') {
@@ -288,7 +289,7 @@ public class WarcParser {
         count++;
        }       
        LineAndByteCount lc = new LineAndByteCount();
-       lc.setLine(baos.toString("UTF-8"));
+       lc.setLine(baos.toString(WARC_HEADER_ENCODING));
        lc.setByteCount(count);
 
        return lc;

@@ -19,10 +19,11 @@ public class TestExportWarc {
   public static void main (String[] args) throws Exception{
 
     PropertiesLoader.initProperties();
-    SearchResult search = SolrClient.getInstance().search("hash:\"sha1:73EZKVXHJ6E3GR37K43ZDMCBHDR4C3Z7\"", 10000);
+    //SearchResult search = SolrClient.getInstance().search("hash:\"sha1:73EZKVXHJ6E3GR37K43ZDMCBHDR4C3Z7\"", 10000);
+    SearchResult search = SolrClient.getInstance().search("source_file:\"272360-267-20170315113101876-00003-kb-prod-har-002.kb.dk.warc.gz\"", 60000);
     List<IndexDoc> docs = search.getResults();
 
-    Path exportPath = Paths.get("export2.warc");
+    Path exportPath = Paths.get("export3_error.warc");
     
     try{
     Files.delete(exportPath);
@@ -44,7 +45,7 @@ public class TestExportWarc {
       //System.out.println(offset);
       ArcEntry warcEntry = WarcParser.getWarcEntry(source_file_path,offset);
       String warc2HeaderEncoding = warcEntry.getContentEncoding();
-      Charset charset = Charset.forName("UTF-8"); //Default if none define or illegal charset
+      Charset charset = Charset.forName(WarcParser.WARC_HEADER_ENCODING); //Default if none define or illegal charset
  
       if (warc2HeaderEncoding != null){
         try{
@@ -56,11 +57,9 @@ public class TestExportWarc {
       }
       
       Files.write(exportPath, warcEntry.getHeader().getBytes(charset), StandardOpenOption.APPEND);
-      System.out.println(charset);
-      System.out.println(new String(warcEntry.getHeader().getBytes(charset)));
       
       Files.write(exportPath, warcEntry.getBinary(), StandardOpenOption.APPEND);
-      Files.write(exportPath, "\r\n\r\n".getBytes("UTF-8"), StandardOpenOption.APPEND); // separator
+      Files.write(exportPath, "\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING), StandardOpenOption.APPEND); // separator
       
     }
   

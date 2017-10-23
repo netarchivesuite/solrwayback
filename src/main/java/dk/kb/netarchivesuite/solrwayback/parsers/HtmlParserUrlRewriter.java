@@ -446,17 +446,7 @@ public class HtmlParserUrlRewriter {
 	}
 
 public static String canonicalizeUrl(String url) throws Exception{
-  AggressiveUrlCanonicalizer urlNormaliser = new AggressiveUrlCanonicalizer();
-  //This is magic
-  //Dont try understand all the 4 encoding/decoding steps. 
-  //see https://github.com/ukwa/webarchive-discovery/issues/115
-  //log.info("before url encode:"+url);
-  String unEscapedHex = SolrWaybackEncodingUtil.unEscapeHex(url);
-  //log.info("unescaped hex encode:"+url);
-  String urlEscaped = SolrWaybackEncodingUtil.escapeNonAscii(unEscapedHex);
-  //log.info("url escaped:"+urlEscaped);//
-  String urlNorm  = urlNormaliser.canonicalize(urlEscaped);
-  //log.info("url urlNorm:"+urlNorm);// 
+  String urlNorm=Normalisation.canonicaliseURL(url); 
   String urlEncoded=URLEncoder.encode(urlNorm, "UTF-8");
   //log.info("after encode1:"+urlEncoded);
   return urlEncoded;
