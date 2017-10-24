@@ -78,8 +78,8 @@ public class WarcParser {
             line = raf.readLine();     
             headerLinesBuffer.append(line+newLineChar);
             while (!"".equals(line)) { // End of warc second header block is an empty line
-                line = raf.readLine();  
-                headerLinesBuffer.append(line+"\r\n\r\n");
+                line = raf.readLine();                  
+                headerLinesBuffer.append(line+"\r\n");
                 populateWarcSecondHeader(warcEntry, line);
             }
 
