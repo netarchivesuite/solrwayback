@@ -122,11 +122,11 @@ public class WaybackToolbarInjecter {
     "               <span class=\"dynamicData\">"+stats.getDomainHarvestTotalContentLength()+"</span>" +    
     "            </div>" +
     "            <div class=\"infoLine\">" +
-    "               <span class=\"dynamicData\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +    
-    "               <span class=\"dynamicData\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
-    "               <span class=\"dynamicData\">"+generatePwid("xml.png",source_file_path,offset) +"</span>" +
-    "               <span class=\"dynamicData\">"+generatePagePreviews("preview.png",stats.getUrl_norm()) +"</span>" +
-    "               <span class=\"dynamicData\">"+generatePageResources("watch.png",source_file_path,offset) +"</span>" +
+    "               <span title=\"View in- and out-going links\"class=\"dynamicData icon\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +
+    "               <span title=\"View dates for harvest\" class=\"dynamicData icon\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
+    "               <span title=\"View XML\" class=\"dynamicData icon\">"+generatePwid("xml.png",source_file_path,offset) +"</span>" +
+    "               <span title=\"View website previews\" class=\"dynamicData icon\">"+generatePagePreviews("preview.png",stats.getUrl_norm()) +"</span>" +
+    "               <span title=\"View harvest time for page resources\" class=\"dynamicData icon\">"+generatePageResources("watch.png",source_file_path,offset) +"</span>" +
     "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
@@ -165,6 +165,7 @@ public class WaybackToolbarInjecter {
     "       #tegModal .paging .inlineLabel{margin: 0 .5em 0 .1em;}" +
     "       #tegModal .paging{border-top: 1px solid #ccc; margin-top: 1em; padding-top: 0.8em;}" +
     "       #tegModal .pagingBlock{display: inline-block; margin-right: .8em}" +
+    "       #tegModal .dynamicData.icon{display: inline-block}" +
     "       </style>" +
     "       <script type=\"text/javascript\">" +
     "           function toggleModal(){" +
