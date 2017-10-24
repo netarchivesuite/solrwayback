@@ -460,6 +460,11 @@ var app = new Vue({
             }else{
                 this.imageSearch = true
             }
+            if(!this.imageGeoSearch || this.imageGeoSearch == 'false' ){ //converting possible string value from query param to boolean
+                this.imageGeoSearch = false
+            }else{
+                this.imageGeoSearch = true
+            }
             if (!this.imageSearch) {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
                     '&start=' + parseInt(this.start) + '&fq=' + this.filters;
