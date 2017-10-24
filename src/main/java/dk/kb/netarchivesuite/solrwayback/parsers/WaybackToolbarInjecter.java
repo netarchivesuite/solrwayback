@@ -125,8 +125,8 @@ public class WaybackToolbarInjecter {
     "               <span class=\"dynamicData\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +    
     "               <span class=\"dynamicData\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
     "               <span class=\"dynamicData\">"+generatePwid("xml.png",source_file_path,offset) +"</span>" +
-    "               <span class=\"dynamicData\">"+generatePagePreviews("pagepreviews.jpeg",stats.getUrl_norm()) +"</span>" +
-    "               <span class=\"dynamicData\">"+generatePageResources("magnify_glass.png",source_file_path,offset) +"</span>" +
+    "               <span class=\"dynamicData\">"+generatePagePreviews("preview.png",stats.getUrl_norm()) +"</span>" +
+    "               <span class=\"dynamicData\">"+generatePageResources("watch.png",source_file_path,offset) +"</span>" +
     "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
