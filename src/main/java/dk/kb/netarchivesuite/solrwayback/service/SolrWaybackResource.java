@@ -93,6 +93,8 @@ public class SolrWaybackResource {
     }
    */
 
+  
+  // TODO https://wiki.apache.org/solr/SpatialSearch#How_to_boost_closest_results
   @GET
   @Path("/images/search/location")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
