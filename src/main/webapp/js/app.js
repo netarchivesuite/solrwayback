@@ -455,16 +455,6 @@ var app = new Vue({
         doSearch: function(){
             this.imageObjects = []; //resetting imageObjecs on new search
             this.searchResult = []; //resetting search result on new search
-            if(!this.imageSearch || this.imageSearch == 'false' ){ //converting possible string value from query param to boolean
-                this.imageSearch = false
-            }else{
-                this.imageSearch = true
-            }
-            if(!this.imageGeoSearch || this.imageGeoSearch == 'false' ){ //converting possible string value from query param to boolean
-                this.imageGeoSearch = false
-            }else{
-                this.imageGeoSearch = true
-            }
             if (!this.imageSearch) {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
                     '&start=' + parseInt(this.start) + '&fq=' + this.filters;
@@ -581,6 +571,17 @@ var app = new Vue({
             this.filters = this.$route.query.filter;
             this.imageSearch = this.$route.query.imgsearch;
             this.imageGeoSearch = this.$route.query.imggeosearch;
+            //converting possible string value from query param to boolean
+            if(!this.imageSearch || this.imageSearch == 'false' ){
+                this.imageSearch = false
+            }else{
+                this.imageSearch = true
+            }
+            if(!this.imageGeoSearch || this.imageGeoSearch == 'false' ){
+                this.imageGeoSearch = false
+            }else{
+                this.imageGeoSearch = true
+            }
         },
 
         clearFacets: function(){
