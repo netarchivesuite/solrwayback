@@ -59,7 +59,7 @@ Vue.component('page-resources', {
                     <tr v-for="resource in sortedData">
                         <td>{{resource.url}}</td>
                         <td>{{resource.contentType}}</td>
-                        <td>{{resource.timeDifference}}</td>
+                        <td>{{resource.timeDifference}} - {{resource.crawlTime}}</td>
                         <td v-if="resource.contentType==='image'"><a :href="resource.downloadUrl"><img :src="resource.downloadUrl"></a></td> 
                         <td v-else><a :href="resource.downloadUrl">Download</a></td> 
                     </tr>
