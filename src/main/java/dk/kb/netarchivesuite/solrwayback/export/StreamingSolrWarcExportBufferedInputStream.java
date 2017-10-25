@@ -71,14 +71,14 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   }
 
   private void loadMore() {
-    try {      
+    try {            
        SolrDocumentList docs = solrClient.exportWarcBuffered(query, filterQuery, solrPagingBufferSize);    
        inputBuffer = new ArrayList<byte[]>();
        for  (SolrDocument doc : docs){               
          String source_file_path = (String) doc.getFieldValue("source_file_path");
          long offset = (Long) doc.getFieldValue("source_file_offset");
          if (source_file_path.toLowerCase().endsWith(".arc")  || source_file_path.toLowerCase().endsWith(".arc.gz")){
-           log.info("skipping arc record:"+source_file_path);
+           log.info("skipping Arc record:"+source_file_path);
            docsArcSkipped++;
            continue;
          }

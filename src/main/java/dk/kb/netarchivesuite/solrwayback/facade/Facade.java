@@ -248,7 +248,7 @@ public class Facade {
     public static InputStream exportWarcStreaming(String q, String fq) throws Exception{                           
       SolrStreamingWarcExportClient solr = new SolrStreamingWarcExportClient(PropertiesLoader.SOLR_SERVER);            
       //Buffer size 100 only since the binary can be big
-      StreamingSolrWarcExportBufferedInputStream is = new StreamingSolrWarcExportBufferedInputStream(solr, q, fq, 100,  30000);             
+      StreamingSolrWarcExportBufferedInputStream is = new StreamingSolrWarcExportBufferedInputStream(solr, q, fq, 10,  30000);             
       return is;         
     }
 
@@ -501,13 +501,13 @@ public class Facade {
        }
       
       if (!revisits){
-        queryWs = queryWs.queryParam("fq", "record_type:response");
+        queryWs = queryWs.queryParam("fq", "record_type:response OR record_type:arc"); //Not very smart to have arc as a value here... Maybe Toke can fix
       }
                  
       ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
       String responseStr= response.getEntity(String.class);
 
-      log.info(responseStr.substring(0, Math.min(500, responseStr.length()-1)));
+      log.info(responseStr.substring(0, Math.min(800, responseStr.length()-1)));
       
       
       return responseStr;
