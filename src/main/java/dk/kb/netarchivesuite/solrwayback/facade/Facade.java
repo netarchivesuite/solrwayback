@@ -36,11 +36,13 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
+import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.FileParserFactory;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingWarcExportClient;
 
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
@@ -242,13 +244,22 @@ public class Facade {
         return FileParserFactory.getArcEntry(source_file_path, offset);        
     }
     
-      
+
+    public static InputStream exportWarcStreaming(String q, String fq) throws Exception{                           
+      SolrStreamingWarcExportClient solr = new SolrStreamingWarcExportClient(PropertiesLoader.SOLR_SERVER);            
+      StreamingSolrWarcExportBufferedInputStream is = new StreamingSolrWarcExportBufferedInputStream(solr, q, fq, 50,  10000);            
+      return is;         
+    }
+
+    
     public static InputStream exportBriefStreaming(String q, String fq) throws Exception{                           
       SolrStreamingExportClient solr = new SolrStreamingExportClient(PropertiesLoader.SOLR_SERVER);      
       StreamingSolrExportBufferedInputStream is = new StreamingSolrExportBufferedInputStream(solr, q, fq, 50000, false, 1000000);            
       return is;         
     }
-        
+     
+    
+    
     public static InputStream exportFullStreaming(String q, String fq) throws Exception{                           
       SolrStreamingExportClient solr = new SolrStreamingExportClient(PropertiesLoader.SOLR_SERVER);      
       StreamingSolrExportBufferedInputStream is = new StreamingSolrExportBufferedInputStream(solr, q, fq, 50000, true, 1000000);            

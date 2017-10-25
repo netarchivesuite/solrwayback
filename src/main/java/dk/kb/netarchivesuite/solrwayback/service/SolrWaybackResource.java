@@ -321,6 +321,25 @@ public class SolrWaybackResource {
 
 
   @GET
+  @Path("/export/warc")    
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)    
+  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+    try {              
+      log.debug("Export warc. query:"+q +" filterquery:"+fq);
+      DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                              
+      String dateStr = formatOut.format(new Date());                        
+      InputStream is = Facade.exportWarcStreaming(q, fq);
+      return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".warc\"").build();
+
+    } catch (Exception e) {
+      log.error("Error in export brief",e);
+      e.printStackTrace();
+      throw handleServiceExceptions(e);
+    }
+  }
+
+  
+  @GET
   @Path("/export/brief")    
   @Produces(MediaType.TEXT_PLAIN)
   public Response exportBrief(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
