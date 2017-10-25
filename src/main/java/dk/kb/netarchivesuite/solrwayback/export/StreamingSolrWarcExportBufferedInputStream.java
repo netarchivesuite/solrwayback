@@ -27,7 +27,8 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   private String query;
   private String filterQuery;
   private int solrPagingBufferSize;
-
+ 
+  
   @Override
   public int read(){
     if (docsWarcRead > maxRecords) {
@@ -78,13 +79,20 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
          String source_file_path = (String) doc.getFieldValue("source_file_path");
          long offset = (Long) doc.getFieldValue("source_file_offset");
          if (source_file_path.toLowerCase().endsWith(".arc")  || source_file_path.toLowerCase().endsWith(".arc.gz")){
-           log.info("skipping Arc record:"+source_file_path);
+           //log.info("skipping Arc record:"+source_file_path);
            docsArcSkipped++;
            continue;
          }
          docsWarcRead++;
+         ArcEntry warcEntry= null;
+         try{
+          warcEntry = WarcParser.getWarcEntry(source_file_path,offset);
+         }
+         catch(Exception e){ //This will only happen if warc file is not found etc. Should not happen for real-
+            log.warn("Error loading warc:"+source_file_path);
+           continue;
+         }
          
-         ArcEntry warcEntry = WarcParser.getWarcEntry(source_file_path,offset);
          String warc2HeaderEncoding = warcEntry.getContentEncoding();
          Charset charset = Charset.forName(WarcParser.WARC_HEADER_ENCODING); //Default if none define or illegal charset
     
@@ -102,7 +110,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
          inputBuffer.add(warcEntry.getHeader().getBytes(charset));                           
          inputBuffer.add(warcEntry.getBinary());         
          inputBuffer.add("\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING) );              
-                
+         
        }      
     } catch (Exception e) {
       e.printStackTrace();
