@@ -247,7 +247,8 @@ public class Facade {
 
     public static InputStream exportWarcStreaming(String q, String fq) throws Exception{                           
       SolrStreamingWarcExportClient solr = new SolrStreamingWarcExportClient(PropertiesLoader.SOLR_SERVER);            
-      StreamingSolrWarcExportBufferedInputStream is = new StreamingSolrWarcExportBufferedInputStream(solr, q, fq, 50,  10000);            
+      //Buffer size 100 only since the binary can be big
+      StreamingSolrWarcExportBufferedInputStream is = new StreamingSolrWarcExportBufferedInputStream(solr, q, fq, 100,  30000);             
       return is;         
     }
 

@@ -1,14 +1,14 @@
 package dk.kb.netarchivesuite.solrwayback.export;
 
-import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
@@ -16,6 +16,8 @@ import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingWarcExportClient;
 
 public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
+  private static final Logger log = LoggerFactory.getLogger(StreamingSolrWarcExportBufferedInputStream.class);
+  
   private int index;
   private List<byte[]> inputBuffer = new ArrayList<>();
   private int maxRecords;
@@ -28,7 +30,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   @Override
   public int read(){
     if (linesRead > maxRecords) {
-     System.out.println("warcExpport max reached");
+      log.info("warcExpport max reached");
       return -1;
     }
     if (inputBuffer.size() == 0) {
@@ -36,7 +38,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
     }
 
     if (inputBuffer.isEmpty()) {
-      System.out.println("warc export empty reached");
+      log.info("warcExpport max reached");
       return -1;
     }
 
@@ -69,14 +71,14 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
   private void loadMore() {
     try {
-      System.out.println("load more");
+      log.info("loading more results");
        SolrDocumentList docs = solrClient.exportWarcBuffered(query, filterQuery, solrPagingBufferSize);    
        inputBuffer = new ArrayList<byte[]>();
        for  (SolrDocument doc : docs){      
          String source_file_path = (String) doc.getFieldValue("source_file_path");
          long offset = (Long) doc.getFieldValue("source_file_offset");
          if (source_file_path.toLowerCase().endsWith(".arc")  || source_file_path.toLowerCase().endsWith(".arc.gz")){
-           System.out.println("skipping arc record:"+source_file_path);
+           log.info("skipping arc record:"+source_file_path);
            continue;
          }
          
@@ -90,7 +92,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
            }
            catch (Exception e){
              if (!"binary".equals(warc2HeaderEncoding)){ //This is not a real encoding
-                System.out.println("unknown charset:"+warc2HeaderEncoding);
+                 log.warn("unknown charset:"+warc2HeaderEncoding);
               }
              }
          }         
