@@ -19,7 +19,7 @@ Vue.component('page-resources', {
                      <img class="preview" :src="resourceObj.pagePreviewUrl" alt="webpage preview">
                 </a>
             </div>    
-            <div class="notHarvested" v-if="resourceObj.notHarvested.length > 0">
+            <div class="notHarvested" v-if="resourceObj.notHarvested && resourceObj.notHarvested.length > 0">
                  <h3>Not harvested resources</h3>
                  <ol class="notHarvested">
                     <li v-for="item in resourceObj.notHarvested">{{ item }}</li>
