@@ -56,7 +56,6 @@ Vue.component('page-resources', {
                     </tr>
                 </thead>
                 <tbody>
-                    <!--<tr v-for="resource in resourceObj.resources">-->
                     <tr v-for="resource in sortedData">
                         <td>{{resource.url}}</td>
                         <td>{{resource.contentType}}</td>
@@ -66,8 +65,6 @@ Vue.component('page-resources', {
                     </tr>
                 </tbody>
             </table> 
-            
-            <p>{{sortedData}}</p>
         </div>
     </div>    
     `

@@ -93,6 +93,10 @@ a:hover, .link:hover{
     color: #999999;
 }
 
+.clickable{
+    cursor: pointer;
+}
+
 /* SEARCH BOX */
 #searchbox{
     background-color: #333944;
@@ -425,11 +429,12 @@ input.imageSearchCheck{
 }
 
 #downloadMenu li{
+    border-bottom: 1px solid #999;
     list-style-type: none;
 }
 
-#downloadMenu li:first-child{
-    border-bottom: 1px solid #999;
+#downloadMenu li:last-child{
+    border-bottom: 0;
 }
 
 #downloadMenu li a{
