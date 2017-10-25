@@ -7,8 +7,26 @@ Vue.filter('toLocaleTime', function(value) {
     return newValue;
 })
 
+
+
 Vue.component('page-resources', {
     props: ["resourceObj"],
+    data: function(){
+        return{
+            sortParam: "",
+            sortOrder: false,
+        }
+    },
+    computed: {
+        sortedData: function(){
+            if(this.sortOrder){
+                return _.orderBy(this.resourceObj.resources,this.sortParam).reverse();
+            }else{
+                return _.orderBy(this.resourceObj.resources,this.sortParam);
+            }
+
+        }
+    },
     template: `
     <div id="pageResources">
         <h2>{{resourceObj.pageUrl}} - {{resourceObj.pageCrawlDate | toLocaleTime }}</h2>
@@ -31,14 +49,15 @@ Vue.component('page-resources', {
             <table id="resourcesTable">
                 <thead>
                     <tr>
-                        <th>Resource URL</th>
-                        <th>Content type</th>
-                        <th>Time diff.</th>
+                        <th v-on:click="sortParam = 'url';sortOrder =! sortOrder" class="clickable">Resource URL</th>
+                        <th v-on:click="sortParam = 'contentType';sortOrder =! sortOrder" class="clickable">Content type</th>
+                        <th v-on:click="sortParam = 'timeDifference';sortOrder =! sortOrder" class="clickable">Time diff.</th>
                         <th>See/download</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="resource in resourceObj.resources">
+                    <!--<tr v-for="resource in resourceObj.resources">-->
+                    <tr v-for="resource in sortedData">
                         <td>{{resource.url}}</td>
                         <td>{{resource.contentType}}</td>
                         <td>{{resource.timeDifference}}</td>
@@ -47,6 +66,8 @@ Vue.component('page-resources', {
                     </tr>
                 </tbody>
             </table> 
+            
+            <p>{{sortedData}}</p>
         </div>
     </div>    
     `

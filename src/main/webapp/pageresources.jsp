@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" media="all" href="./css/solrwayback.css">
 
     <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="js/lodash-4.17.4-min.js"></script>
 
     <script type="text/javascript" src="js/vue.js"></script>
     <script type="text/javascript" src="js/vue-resource.min.js"></script>
