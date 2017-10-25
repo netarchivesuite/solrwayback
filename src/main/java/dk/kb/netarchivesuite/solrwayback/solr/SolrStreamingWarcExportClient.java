@@ -27,13 +27,13 @@ public class SolrStreamingWarcExportClient {
   }
    
   
-  public SolrDocumentList exportWarcBuffered(String query, String filterQuery, int pageSize) throws Exception {
-    
+  //
+  public SolrDocumentList exportWarcBuffered(String query, String filterQuery, int pageSize) throws Exception {   
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","source_file_path,source_file_offset");
     solrQuery.add("sort","score desc, id asc");
-    solrQuery.setQuery(query); 
+    solrQuery.setQuery(query);  
     solrQuery.setRows(pageSize);            
     solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark );
     

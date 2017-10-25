@@ -31,17 +31,13 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   
   @Override
   public int read(){
-    if (docsWarcRead > maxRecords) {
-      log.info("warcExpport max reached");
-      log.info("Warcs read:"+docsWarcRead +" arcs skipped:"+docsArcSkipped);
-      return -1;
-    }
+    
     if (inputBuffer.size() == 0) {
       loadMore();
     }
 
     if (inputBuffer.isEmpty()) {
-      log.info("warcExpport max reached");
+      log.info("warcExport buffer empty");
       log.info("Warcs read:"+docsWarcRead +" arcs skipped:"+docsArcSkipped);
       return -1;
     }
@@ -72,7 +68,13 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   }
 
   private void loadMore() {
-    try {            
+    try {
+      if (docsWarcRead > maxRecords) { //Stop loading more
+         inputBuffer = new ArrayList<byte[]>();
+         log.info("Max documents reached. Stopping loading more documents");
+         return;
+      }
+            
        SolrDocumentList docs = solrClient.exportWarcBuffered(query, filterQuery, solrPagingBufferSize);    
        inputBuffer = new ArrayList<byte[]>();
        for  (SolrDocument doc : docs){               
