@@ -28,7 +28,7 @@ public class SolrStreamingWarcExportClient {
    
   
   public SolrDocumentList exportWarcBuffered(String query, String filterQuery, int pageSize) throws Exception {
-    log.info("export warcf:" + query +" and filter:"+filterQuery);
+    log.info("export to warc:" + query +" and filter:"+filterQuery);
     
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
