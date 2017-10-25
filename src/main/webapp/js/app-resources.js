@@ -51,7 +51,7 @@ Vue.component('page-resources', {
                     <tr>
                         <th v-on:click="sortParam = 'url';sortOrder =! sortOrder" class="clickable">Resource URL</th>
                         <th v-on:click="sortParam = 'contentType';sortOrder =! sortOrder" class="clickable">Content type</th>
-                        <th v-on:click="sortParam = 'timeDifference';sortOrder =! sortOrder" class="clickable">Time diff.</th>
+                        <th v-on:click="sortParam = 'crawlTime';sortOrder =! sortOrder" class="clickable">Time diff.</th>
                         <th>See/download</th>
                     </tr>
                 </thead>
