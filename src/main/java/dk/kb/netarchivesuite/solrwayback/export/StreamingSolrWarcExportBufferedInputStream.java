@@ -21,7 +21,8 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   private int index;
   private List<byte[]> inputBuffer = new ArrayList<>();
   private int maxRecords;
-  private int linesRead;
+  private int docsWarcRead;
+  private int docsArcSkipped;
   private SolrStreamingWarcExportClient solrClient;
   private String query;
   private String filterQuery;
@@ -29,8 +30,9 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
   @Override
   public int read(){
-    if (linesRead > maxRecords) {
+    if (docsWarcRead > maxRecords) {
       log.info("warcExpport max reached");
+      log.info("Warcs read:"+docsWarcRead +" arcs skipped:"+docsArcSkipped);
       return -1;
     }
     if (inputBuffer.size() == 0) {
@@ -39,12 +41,12 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
     if (inputBuffer.isEmpty()) {
       log.info("warcExpport max reached");
+      log.info("Warcs read:"+docsWarcRead +" arcs skipped:"+docsArcSkipped);
       return -1;
     }
 
     // Get first element of the List
     byte[] bytes = inputBuffer.get(0);
-    System.out.println("new bytes buffer:"+bytes.length);
     // Get the byte corresponding to the index and post increment the current
     // index
     byte result = bytes[index++];
@@ -53,8 +55,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
       // and reset the current index
       inputBuffer.remove(0);
       index = 0;
-      linesRead = linesRead + solrPagingBufferSize;
-      
+          
     }
     
     return 0xff & result; //We are not in ascii anymore.
@@ -70,17 +71,18 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   }
 
   private void loadMore() {
-    try {
-      log.info("loading more results");
+    try {      
        SolrDocumentList docs = solrClient.exportWarcBuffered(query, filterQuery, solrPagingBufferSize);    
        inputBuffer = new ArrayList<byte[]>();
-       for  (SolrDocument doc : docs){      
+       for  (SolrDocument doc : docs){               
          String source_file_path = (String) doc.getFieldValue("source_file_path");
          long offset = (Long) doc.getFieldValue("source_file_offset");
          if (source_file_path.toLowerCase().endsWith(".arc")  || source_file_path.toLowerCase().endsWith(".arc.gz")){
            log.info("skipping arc record:"+source_file_path);
+           docsArcSkipped++;
            continue;
          }
+         docsWarcRead++;
          
          ArcEntry warcEntry = WarcParser.getWarcEntry(source_file_path,offset);
          String warc2HeaderEncoding = warcEntry.getContentEncoding();
