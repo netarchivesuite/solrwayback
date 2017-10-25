@@ -412,8 +412,9 @@ public class Facade {
         pageResource.setContentType(doc.getContentTypeNorm());        
         String downloadUrl = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+doc.getSource_file_path() +"&offset="+doc.getOffset();
         pageResource.setDownloadUrl(downloadUrl);
-        long timeDif = pageCrawlDate.getTime()-resourceDate.getTime();
-        String timeHuman = String.format(" %d sec", ((timeDif%(1000*60*60))%(1000*60))/1000);         
+        long timeDif = resourceDate.getTime()-pageCrawlDate.getTime();
+        
+        String timeHuman = String.format( ((long)timeDif/1000) + " sec");         
         pageResource.setTimeDifference(timeHuman);
         
         pageResources.add(pageResource);                       
