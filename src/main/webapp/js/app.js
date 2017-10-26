@@ -189,8 +189,7 @@ Vue.component('pager-box', {
             <ul id="downloadMenu">
                 <li><a :href="exportResult('brief')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download brief result</a></li>
                 <li><a :href="exportResult('full')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download full result</a></li>
-                <li><a :href="exportResult('warc')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc</a></li>
-                <li><a :href="exportResult('arc')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as arc</a></li>
+                <li><a :href="exportResult('warc')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc</a></li>                
             </ul>           
         </div>      
 
