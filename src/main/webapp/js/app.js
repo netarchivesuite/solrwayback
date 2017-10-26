@@ -1,7 +1,12 @@
-
 Vue.filter('facetName', function(value) {
     if (!value) return '';
     var newValue = value.split('_').join(' ')
+    return newValue;
+})
+
+Vue.filter('thousandsSeperator', function(value) {
+    if (!value) return '';
+    var newValue = value.toLocaleString();
     return newValue;
 })
 
@@ -96,7 +101,7 @@ Vue.component('map-box', {
                 <p>Longitude: {{ Math.round(markerPosition.lng * 10000) / 10000  }}</p>
             </div>           
             <div class="infoContainer">
-                <h3 v-if="totalHits > 0">Number of hits: {{this.totalHits}}</h3>
+                <h3 v-if="totalHits > 0">Number of hits: {{this.totalHits | thousandsSeperator }}</h3>
             </div>      
         </div>
     </div>    
@@ -190,8 +195,8 @@ Vue.component('pager-box', {
         </div>      
 
         <div v-if="totalHits > 0 && !imageSearch" class="resultCount">
-            <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits }} hits</h3>
-            <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits }} hits</h3>
+            <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits | thousandsSeperator }} hits</h3>
+            <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits | thousandsSeperator }} hits</h3>
         </div>
 
         <div class="pagerBox" v-if="totalHits > 21 && !imageSearch">

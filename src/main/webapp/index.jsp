@@ -9,11 +9,11 @@
 <html>
 <head>
     <title>SolrWayback</title>
-    <script src="js/jquery-1.10.2.min.js"></script>
+    <script src="js/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet" media="screen" />    
     <style>
-    body{ padding 1 em;
+    body{ padding: 1em;
     }
     div.up{
     border-bottom: 2px solid #999;
