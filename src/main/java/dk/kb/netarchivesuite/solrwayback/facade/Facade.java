@@ -7,12 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import javax.imageio.ImageIO;
-import javax.ws.rs.QueryParam;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
@@ -23,7 +21,6 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.*;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
-import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,14 +32,12 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
-import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrArcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.FileParserFactory;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingArcExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingWarcExportClient;
 
