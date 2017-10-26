@@ -332,12 +332,13 @@ public class SolrWaybackResource {
       return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".warc\"").build();
 
     } catch (Exception e) {
-      log.error("Error in export brief",e);
+      log.error("Error in export warc",e);
       e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
 
+  
   
   @GET
   @Path("/export/brief")    

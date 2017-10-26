@@ -24,6 +24,7 @@ public class WarcParser {
     private static final String newLineChar ="\r\n";
     public static String WARC_HEADER_ENCODING ="ISO-8859-1";
     
+
     /*
      *Header example(notice the two different parts):
      *WARC/1.0

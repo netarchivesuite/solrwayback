@@ -19,7 +19,8 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 public class ArcParser {
 
     private static final Logger log = LoggerFactory.getLogger(ArcParser.class);
-       
+    public static final String newLineChar ="\n"; 
+    public static String ARC_HEADER_ENCODING ="ISO-8859-1";
     /*
      *Header example:
      *http://www.radionyt.dk/forum/Default.asp?mode=message&Id=10846&ForumId=31 86.58.185.215 20090610094553 text/html 35257
@@ -41,12 +42,13 @@ public class ArcParser {
             return getArcEntryZipped(arcFilePath, arcEntryPosition);                       
          }
             ArcEntry arcEntry = new ArcEntry();
-
+            StringBuffer headerLinesBuffer = new StringBuffer();
+            
             raf = new RandomAccessFile(new File(arcFilePath), "r");
             raf.seek(arcEntryPosition);
 
             String line = raf.readLine(); // First line
-        
+            headerLinesBuffer.append(line+newLineChar);
 
             if  (!(line.startsWith("http"))) //No version check yet
             {            
@@ -56,6 +58,7 @@ public class ArcParser {
             arcEntry.setFileName(getArcLastUrlPart(line));            
             arcEntry.setCrawlDate(getCrawlDate(line));
             arcEntry.setUrl(getArcUrl(line));
+            arcEntry.setIp(getIp(line));
             
             long afterFirst = raf.getFilePointer();
 
@@ -63,6 +66,7 @@ public class ArcParser {
             int totalSize = Integer.parseInt(split[split.length - 1]);
             while (!"".equals(line)) { // End of header block is an empty line
                 line = raf.readLine();
+                headerLinesBuffer.append(line+newLineChar);
                 populateArcHeader(arcEntry, line);
             }
             // Load the binary blog. We are now right after the header. Rest will be the binary
@@ -74,6 +78,7 @@ public class ArcParser {
             raf.read(bytes);
 
             arcEntry.setBinary(bytes);
+            arcEntry.setHeader(headerLinesBuffer.toString());
             return arcEntry;
         }
         catch(Exception e){
@@ -89,12 +94,13 @@ public class ArcParser {
     
     public static ArcEntry getArcEntryZipped(String arcFilePath, long arcEntryPosition) throws Exception {
       RandomAccessFile raf=null;
+      StringBuffer headerLinesBuffer = new StringBuffer();
       try{
             ArcEntry arcEntry = new ArcEntry();
             raf = new RandomAccessFile(new File(arcFilePath), "r");
-            raf.seek(arcEntryPosition);
-          
-            log.info("file is zipped:"+arcFilePath);
+            raf.seek(arcEntryPosition);          
+
+            // log.info("file is zipped:"+arcFilePath);
             InputStream is = Channels.newInputStream(raf.getChannel());                           
            
      
@@ -103,6 +109,7 @@ public class ArcParser {
             BufferedInputStream  bis= new BufferedInputStream(stream);
    
           String line = readLine(bis); // First line
+          headerLinesBuffer.append(line+newLineChar);
           
           if  (!(line.startsWith("http"))) //No version check yet
           {            
@@ -112,10 +119,8 @@ public class ArcParser {
           arcEntry.setFileName(getArcLastUrlPart(line));            
           arcEntry.setCrawlDate(getCrawlDate(line));
           arcEntry.setUrl(getArcUrl(line));
-                    
-        
-          
-          
+          arcEntry.setIp(getIp(line));
+                      
           String[] split = line.split(" ");
           int totalSize = Integer.parseInt(split[split.length - 1]);
           
@@ -123,20 +128,19 @@ public class ArcParser {
           
           LineAndByteCount lc =readLineCount(bis);
           line=lc.getLine();
+          headerLinesBuffer.append(line+newLineChar);
           byteCount +=lc.getByteCount();                    
 
-          while (!"".equals(line)) { // End of warc second header block is an empty line
-              
+          while (!"".equals(line)) { // End of warc second header block is an empty line              
             lc =readLineCount(bis);
             line=lc.getLine();
+            headerLinesBuffer.append(line+newLineChar);
             byteCount +=lc.getByteCount();                    
             
               populateArcHeader(arcEntry, line);
             //  System.out.println("parsing headerline:"+line);
           }
-          
-         
-          
+                             
           int binarySize = totalSize-byteCount;                                                   
           //System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);          
           byte[] chars = new byte[binarySize];           
@@ -144,8 +148,8 @@ public class ArcParser {
           
           raf.close();
           bis.close();
-          arcEntry.setBinary(chars); 
-
+          arcEntry.setBinary(chars);
+          arcEntry.setHeader(headerLinesBuffer.toString());
           return arcEntry;
       }
       catch(Exception e){
@@ -213,6 +217,13 @@ public class ArcParser {
         String[] split = arcHeaderLine.split(" ");
         String fullUrl = split[0];
         return fullUrl;
+    }
+
+    
+
+    private static String getIp(String arcHeaderLine) {
+      String[] split = arcHeaderLine.split(" ");
+      return split[1];
     }
 
     

@@ -35,12 +35,14 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
+import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrArcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.FileParserFactory;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingArcExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingWarcExportClient;
 
@@ -247,11 +249,11 @@ public class Facade {
 
     public static InputStream exportWarcStreaming(String q, String fq) throws Exception{                           
       SolrStreamingWarcExportClient solr = new SolrStreamingWarcExportClient(PropertiesLoader.SOLR_SERVER);            
-      //Buffer size 500 only since the binary can be big
+      //Buffer size 100 only since the binary can be big
       StreamingSolrWarcExportBufferedInputStream is = new StreamingSolrWarcExportBufferedInputStream(solr, q, fq, 100,  30000);             
       return is;         
     }
-
+ 
     
     public static InputStream exportBriefStreaming(String q, String fq) throws Exception{                           
       SolrStreamingExportClient solr = new SolrStreamingExportClient(PropertiesLoader.SOLR_SERVER);      
