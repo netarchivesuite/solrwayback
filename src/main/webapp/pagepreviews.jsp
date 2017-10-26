@@ -20,7 +20,7 @@ String url = (String) request.getParameter("url");
     <link rel="stylesheet" type="text/css" media="all" href="./css/jquery-ui.min.css">
     <link rel="stylesheet" type="text/css" media="all" href="./css/solrwayback.css">
 
-    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="js/vue.js"></script>
     <script type="text/javascript" src="js/vue-resource.min.js"></script>
