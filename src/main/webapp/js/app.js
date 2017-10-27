@@ -280,7 +280,7 @@ Vue.component('result-box', {
             <!-- Download PDF's, Word docs etc. -->
             <div v-if="doc.content_type_norm && doc.content_type_norm != 'html' && doc.content_type_norm != 'other' && doc.content_type_norm != 'image'" class="item">
                 <div class="download">
-                    <a v-bind:href=" baseUrl + 'services/downloadRaw?source_file_path' + doc.source_file_path + '&offset=' + doc.source_file_offset"  target="_blank">
+                    <a v-bind:href=" baseUrl + 'services/downloadRaw?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset"  target="_blank">
                        Download {{ doc.content_type_norm }}
                     </a>
                 </div>  
