@@ -76,6 +76,10 @@ Search by gps location for images having exif location information.
 
 
 For image search see the documentation <a href="https://github.com/netarchivesuite/solrwayback/blob/master/doc/imagesearch.txt" >Image search documentation </a>
+ 
+## Streaming export
+Any search result can be exported to WARC format. If any of the documents are indexed as ARC format, they will be converted to WARC format. There is useful when extracting a corpus  (typical specific domains). There is no limit to the size of the export.
+Text information about a corpus can also be exported as a CSV file.
 
 
 The API for linking to and browsing archived webpages is the same as for Internet Archive:<br>
