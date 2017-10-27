@@ -82,6 +82,8 @@ Any search result can be exported to WARC format. If any of the documents are in
 Text information about a corpus can also be exported as a CSV file.
 
 
+
+## API
 The API for linking to and browsing archived webpages is the same as for Internet Archive:<br>
 
 Internet Archive:https://web.archive.org/web/20080213093319/http://www.statsbiblioteket.dk/ <br>
@@ -89,8 +91,6 @@ SolrWayback: http://server/solrwayback/services/wayback?waybackdata=201405151408
 
 If using a Solr search based web archive such as Shine (https://github.com/netarchivesuite/shine) or Blacklight (https://github.com/projectblacklight/blacklight)
 you only need to change to property pointing from the wayback server to the SolrWayback server.
-
-The SolrWayback web application comes with a simple front-end for testing Solr-search and image search.
  
  
  
