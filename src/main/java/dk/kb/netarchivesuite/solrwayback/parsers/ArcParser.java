@@ -119,8 +119,8 @@ public class ArcParser {
           arcEntry.setFileName(getArcLastUrlPart(line));            
           arcEntry.setCrawlDate(getCrawlDate(line));
           arcEntry.setUrl(getArcUrl(line));
-          arcEntry.setIp(getIp(line));
-                      
+          arcEntry.setIp(getIp(line));            
+          
           String[] split = line.split(" ");
           int totalSize = Integer.parseInt(split[split.length - 1]);
           
@@ -144,6 +144,7 @@ public class ArcParser {
           int binarySize = totalSize-byteCount;                                                   
           //System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);          
           byte[] chars = new byte[binarySize];           
+          arcEntry.setContentLength(binarySize);
           bis.read(chars);
           
           raf.close();
@@ -227,6 +228,7 @@ public class ArcParser {
     }
 
     
+    
     private static String getCrawlDate(String arcHeaderLine) throws Exception {
     	SimpleDateFormat dForm = new SimpleDateFormat("yyyyMMddHHmmss");    
         DateFormat solrDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");    
@@ -248,7 +250,7 @@ public class ArcParser {
     private static void populateArcHeader(ArcEntry arcEntry, String headerLine) {
         if (headerLine.toLowerCase().startsWith("content-length:")) {
             String[] split = headerLine.split(":");
-            arcEntry.setContentLength(Integer.parseInt(split[1].trim()));
+           //arcEntry.setContentLength(Integer.parseInt(split[1].trim())); //Dont trust server. Use binary size.        
         } else if (headerLine.toLowerCase().startsWith("content-type:")) {
             //text/html; charset=
             String[] part1 = headerLine.split(":");

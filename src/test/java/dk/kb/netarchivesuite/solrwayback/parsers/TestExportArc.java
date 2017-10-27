@@ -20,15 +20,18 @@ public class TestExportArc {
 
     PropertiesLoader.initProperties();
       
-    String arcFile="/netarkiv/0205/filedir/27081-33-20080331223131-00052-sb-prod-har-001.statsbiblioteket.dk.arc.gz";
-    long offset=20865935;
+    
+    String arcFile="/netarkiv/0205/filedir/27120-33-20080401191241-00000-sb-prod-har-001.statsbiblioteket.dk.arc.gz";
+    long offset=18475474;
+    
+
     
     ArcEntry arcEntry = ArcParser.getArcEntry(arcFile, offset);
     
     String warcHeader = ArcHeader2WarcHeader.arcHeader2WarcHeader(arcEntry);
     
     
-    Path exportPath = Paths.get("arc2warc_image.warc");
+    Path exportPath = Paths.get("arc2warc-error.warc");
     
     try{
     Files.delete(exportPath);
@@ -37,6 +40,9 @@ public class TestExportArc {
       
     }
     Files.createFile(exportPath);
+    System.out.println(arcEntry.getHeader()); // 37870 is corrent
+    System.out.println("-----");
+    System.out.println(warcHeader);
     
     Files.write(exportPath, warcHeader.getBytes(WarcParser.WARC_HEADER_ENCODING), StandardOpenOption.APPEND);           
     Files.write(exportPath, arcEntry.getBinary(), StandardOpenOption.APPEND);
