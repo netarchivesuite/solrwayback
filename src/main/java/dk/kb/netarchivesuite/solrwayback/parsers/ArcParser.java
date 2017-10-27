@@ -19,7 +19,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 public class ArcParser {
 
     private static final Logger log = LoggerFactory.getLogger(ArcParser.class);
-    public static final String newLineChar ="\n"; 
+    public static final String newLineChar ="\r\n"; //This is warc header ending, but the header is also only used for display or warc export
     public static String ARC_HEADER_ENCODING ="ISO-8859-1";
     /*
      *Header example:

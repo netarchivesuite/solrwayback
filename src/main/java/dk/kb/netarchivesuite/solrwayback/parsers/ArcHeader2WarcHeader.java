@@ -40,7 +40,7 @@ public class ArcHeader2WarcHeader {
   public static String arcHeader2WarcHeader(ArcEntry arc){
     
     int index = arc.getHeader().indexOf(ArcParser.newLineChar);
-    String arcHeaderExceptFirstLine = arc.getHeader().substring(index+1);
+    String arcHeaderExceptFirstLine = arc.getHeader().substring(index+ArcParser.newLineChar.length());
     int secondHeaderLength = arcHeaderExceptFirstLine.getBytes().length;
     long contentLength = secondHeaderLength + arc.getContentLength(); 
     
