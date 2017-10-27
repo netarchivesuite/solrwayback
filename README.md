@@ -68,7 +68,7 @@ Github like visualization of crawltimes
 
 
 <p align="center"> 
-   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/gps_exif_search.jpgraw=true" />
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/gps_exif_search.jpg&raw=true" />
 </p>
 <p align="center">
 Search by gps location for images having exif location information.
