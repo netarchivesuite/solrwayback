@@ -656,15 +656,7 @@ public class SolrClient {
     indexDoc.setId((String) doc.get("id"));
     indexDoc.setTitle((String) doc.get("title"));
     indexDoc.setSource_file_path((String) doc.get("source_file_path"));
-
-    
-
-
-    //Why is this multi valued ? 
-    ArrayList<String> resourceNames=  (ArrayList<String>) doc.get("resourcename");
-    if (resourceNames != null &&resourceNames.size() >0){
-      indexDoc.setResourceName(resourceNames.get(0));        
-    }
+    indexDoc.setResourceName((String) doc.get("resourcename"));        
     indexDoc.setUrl((String) doc.get("url"));
     indexDoc.setUrl_norm((String) doc.get("url_norm"));
     indexDoc.setOffset(getOffset(doc));
