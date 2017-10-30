@@ -21,6 +21,10 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.*;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
+import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
+import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
+import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
+import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +87,56 @@ public class Facade {
       ArrayList<IndexDoc> docs = SolrClient.getInstance().imagesLocationSearch(searchText,filter, resultInt, latitude, longitude, radius); //only search these two types            
       return indexDoc2Images(docs);            
     }
+    
+    public static SmurfYearBuckets generateNetarchiveSmurfData(String tag, String filterQuery, int startyear) throws Exception{
+
+      if (tag == null || tag.length() ==0){
+        throw new InvalidArgumentServiceException("tag must not be empty");
+      }
+      
+      log.info("netarchive smurf tag query:"+tag +" for startyear:"+startyear);
+      try{
+
+        HashMap<Integer, Long> yearFacetsQuery = SolrClient.getInstance().getYearHtmlFacets(tag);
+        HashMap<Integer, Long> yearFacetsAll = NetarchiveYearCountCache.getYearFacetsAllQuery();
+
+        SmurfYearBuckets buckets = SmurfUtil.generateYearBuckets(yearFacetsQuery, yearFacetsAll, startyear, null);      
+        return buckets;
+        
+      }
+      catch(Exception e){
+        e.printStackTrace();
+        throw e;
+      }
+
+    }
+
+    public static SmurfYearBuckets generateNetarchiveTextSmurfData(String q, String filterQuery, int startyear) throws Exception{
+
+      //No Little Toke Tabels tricks allowed
+      String qReplaced = q.replace("\"", "");
+      qReplaced = qReplaced.replace(":", "");
+      if (q == null || q.length() ==0){
+        throw new InvalidArgumentServiceException("tag must not be empty");
+      }
+      
+      log.info("netarchive content smurf query:"+ qReplaced +" for startyear:"+startyear);
+      try{
+
+        HashMap<Integer, Long> yearContentQuery = SolrClient.getInstance().getYearTextHtmlFacets(qReplaced);
+        HashMap<Integer, Long> yearFacetsAll = NetarchiveYearCountCache.getYearFacetsAllQuery();
+
+        SmurfYearBuckets buckets = SmurfUtil.generateYearBuckets(yearContentQuery, yearFacetsAll, startyear,null);      
+        return buckets;
+        
+      }
+      catch(Exception e){
+        e.printStackTrace();
+        throw e;
+      }
+
+    }
+
     
     
     

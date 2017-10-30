@@ -38,6 +38,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.*;
+import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
@@ -111,6 +112,40 @@ public class SolrWaybackResource {
     }
   }
 
+  
+  
+  @GET
+  @Path("smurf/tags")
+  @Produces({ MediaType.APPLICATION_JSON})
+  public  SmurfYearBuckets smurfNetarchiveTags( @QueryParam("tag") String tag , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws ServiceException {
+      try {                                                                                      
+        
+        if (startyear == null){
+          startyear=1990;
+        }
+        return Facade.generateNetarchiveSmurfData(tag, filterQuery,startyear);                  
+      } catch (Exception e) {         
+          throw handleServiceExceptions(e);
+      }
+  }
+  
+  
+  @GET
+  @Path("smurf/text")
+  @Produces({ MediaType.APPLICATION_JSON})
+  public  SmurfYearBuckets smurfNetarchiveText( @QueryParam("q") String q , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws ServiceException {
+      try {                                                                                                
+        if (startyear == null){
+          startyear=1990;
+        }
+        return Facade.generateNetarchiveTextSmurfData(q, filterQuery,startyear);                  
+      } catch (Exception e) {         
+          throw handleServiceExceptions(e);
+      }
+  }
+  
+  
+  
   @GET
   @Path("solr/search")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")

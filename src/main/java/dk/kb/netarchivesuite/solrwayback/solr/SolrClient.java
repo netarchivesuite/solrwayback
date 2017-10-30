@@ -4,9 +4,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
@@ -27,13 +29,15 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
+import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
+
 
 public class SolrClient {
 
   private static final Logger log = LoggerFactory.getLogger(SolrClient.class);
   private static HttpSolrClient solrServer;
   private static SolrClient instance = null;
-
+  private static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9æøåÆØÅ]+"); 
   
   private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type_norm,hash,crawl_date,content_type,content_encoding,exif_location";
   static {
@@ -541,6 +545,101 @@ public class SolrClient {
     return indexDocs.get(0);     
   }
 
+  
+  
+  public HashMap<Integer, Long> getYearHtmlFacets(String query) throws Exception {
+    //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
+      if (!TAGS_VALID_PATTERn.matcher(query).matches()) {
+        throw new InvalidArgumentServiceException("Tag syntax not accepted:"+query);        
+      }
+      
+      
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery("elements_used:\""+query+"\""); 
+        solrQuery.setFilterQueries("content_type_norm:html"); //only html pages
+        solrQuery.setRows(0); //1 page only
+        solrQuery.add("fl","id");//rows are 0 anyway
+        solrQuery.set("facet", "true");
+        solrQuery.set("facet.field", "crawl_year");
+        solrQuery.set("facet.sort", "index");
+        solrQuery.set("facet.limit", "500"); //500 is higher than number of different years
+        
+        
+
+        QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+
+        FacetField facetField = rsp.getFacetField("crawl_year");
+
+        HashMap<Integer, Long> allCount = new HashMap<Integer, Long>();
+        
+        for (FacetField.Count c :facetField.getValues()){
+           allCount.put(Integer.parseInt(c.getName()), c.getCount());                    
+        }        
+        return allCount;  
+    }
+      
+    public HashMap<Integer, Long> getYearFacetsHtmlAll() throws Exception {
+      //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
+        
+          SolrQuery solrQuery = new SolrQuery();
+          solrQuery.setQuery("*:*"); 
+          solrQuery.setFilterQueries("content_type_norm:html"); //only html pages
+          solrQuery.setRows(0); //1 page only
+          solrQuery.add("fl","id");//rows are 0 anyway
+          solrQuery.set("facet", "true");
+          solrQuery.set("facet.field", "crawl_year");
+          solrQuery.set("facet.sort", "index");
+          solrQuery.set("facet.limit", "500"); //500 is higher than number of different years
+                   
+          QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+
+          FacetField facetField = rsp.getFacetField("crawl_year");
+
+          HashMap<Integer, Long> allCount = new HashMap<Integer, Long>();
+          
+          for (FacetField.Count c :facetField.getValues()){
+             allCount.put(Integer.parseInt(c.getName()), c.getCount());                    
+          }        
+          return allCount;  
+      }
+        
+    
+    
+    public HashMap<Integer, Long> getYearTextHtmlFacets(String query) throws Exception {
+      //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
+    
+      
+      /*
+      if (!OK.matcher(query).matches()) {
+          throw new InvalidArgumentServiceException("Tag syntax not accepted:"+query);        
+        }
+        */
+        
+          SolrQuery solrQuery = new SolrQuery();
+          solrQuery.setQuery("text:\""+query+"\""); 
+          solrQuery.setFilterQueries("content_type_norm:html"); //only html pages
+          solrQuery.setRows(0); //1 page only
+          solrQuery.add("fl","id");//rows are 0 anyway
+          solrQuery.set("facet", "true");
+          solrQuery.set("facet.field", "crawl_year");
+          solrQuery.set("facet.sort", "index");
+          solrQuery.set("facet.limit", "500"); //500 is higher than number of different years
+          
+          
+
+          QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+
+          FacetField facetField = rsp.getFacetField("crawl_year");
+
+          HashMap<Integer, Long> allCount = new HashMap<Integer, Long>();
+          
+          for (FacetField.Count c :facetField.getValues()){
+             allCount.put(Integer.parseInt(c.getName()), c.getCount());                    
+          }        
+          return allCount;  
+      }
+        
+     
   
 
   private static ArrayList<IndexDoc> solrDocList2IndexDoc(SolrDocumentList docs) {
