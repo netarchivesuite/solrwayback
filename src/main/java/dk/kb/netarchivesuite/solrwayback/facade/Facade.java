@@ -66,18 +66,7 @@ public class Facade {
         ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(result.getResults(), false);
         return extractImages;      
     }
-    
-    /*
-    //TODO virker ikke. Skal være graph query    
-    public static ArrayList<ArcEntryDescriptor> findImagesWithLocation(String searchText) throws Exception {
-      SearchResult result = SolrClient.getInstance().search(searchText, "(content_type_norm:image AND exif_location_0_coordinate:*) OR content_type_norm:html", 50000); //only search these two types      
-                   log.info("images location, res:"+result.getNumberOfResults());
-      //multithreaded call solr to find arc file and offset
-      ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(result.getResults(), true);
-      return extractImages;      
-  }
-    */
-    
+        
         
     public static  ArrayList<ImageUrl> imagesLocationSearch(String searchText,String filter, String results, double latitude, double longitude, int radius) throws Exception {
       int resultInt=500;

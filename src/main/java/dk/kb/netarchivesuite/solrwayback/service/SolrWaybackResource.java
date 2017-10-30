@@ -78,22 +78,6 @@ public class SolrWaybackResource {
       throw handleServiceExceptions(e);
     }
   }
-
-  /*
-    //TODO virker ikke. Skal være graph query
-    @GET
-    @Path("/images/search/location")
-    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public  ArrayList<ImageUrl> imagesLocatoinSearch(@QueryParam("query") String query) throws ServiceException {
-        try {                                          
-          ArrayList<ArcEntryDescriptor> img = Facade.findImagesWithLocation(query);
-          return Facade.arcEntrys2Images(img);                                                            
-        } catch (Exception e) {           
-            throw handleServiceExceptions(e);
-        }
-    }
-   */
-
   
   // TODO https://wiki.apache.org/solr/SpatialSearch#How_to_boost_closest_results
   @GET
