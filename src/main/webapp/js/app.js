@@ -256,8 +256,8 @@ Vue.component('result-box', {
             <div v-if="doc.content" class="item">
                 <div class="label">Content:</div>
                 <div class="text"></div>
-                <div v-if="doc.content[0].length > 120" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content[0] }}</div>
-                <div v-else class="text long"> {{ doc.content[0] }}</div>
+                <div v-if="doc.content.length > 120" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content }}</div>
+                <div v-else class="text long"> {{ doc.content }}</div>
             </div>              
             
             <!-- Full post -->
