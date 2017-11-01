@@ -534,6 +534,7 @@ public class Facade {
                                   .queryParam("facet.field", "domain")
                                   .queryParam("facet.field", "content_type_norm")
                                   .queryParam("facet.field", "crawl_year")                           
+                                  .queryParam("facet.field", "status_code")
                                   .queryParam("f.crawl_year.facet.sort","index")
                                   .queryParam("facet.field", "public_suffix");
                
