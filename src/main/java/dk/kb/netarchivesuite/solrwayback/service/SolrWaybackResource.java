@@ -550,7 +550,6 @@ public class SolrWaybackResource {
       return view(indexDoc.getSource_file_path(),indexDoc.getOffset(),showToolbar);
 
     } catch (Exception e) {
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
 
