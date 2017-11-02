@@ -512,6 +512,7 @@ var app = new Vue({
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
                             	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
                             }
+                            /* Adding property highlight to search result */
                             for (var key in highlights){
                                 if(this.searchResult[i].id === key){
                                     this.searchResult[i].highlights = highlights[key];
