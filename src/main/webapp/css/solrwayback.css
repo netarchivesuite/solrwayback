@@ -255,6 +255,11 @@ input.imageSearchCheck{
     margin-bottom: .2em;
 }
 
+.searchResultItem .item em{
+    background: #ffff00;
+    padding: .2em .5em;
+}
+
 .searchResultItem .label {
     float: left;
     font-weight: bold;
