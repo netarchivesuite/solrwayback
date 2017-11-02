@@ -253,11 +253,18 @@ Vue.component('result-box', {
                 <div class="label">Score:</div>
                 <div class="text">{{ doc.score }}</div>
             </div> 
+            <div v-if="doc.highlights" class="item">
+                <div class="label">Highlights:</div>
+                <div  v-if="doc.highlights.content[0].length > 140" class="text long clickable" 
+                onclick="$(this).toggleClass('active')"
+                v-html="doc.highlights.content[0]"></div>
+                <div v-else class="text long"  v-html="doc.highlights.content[0]"></div>
+                <!--<div class="text" v-html="doc.highlights.content[0]"></div>-->
+            </div>
             <div v-if="doc.content" class="item">
                 <div class="label">Content:</div>
-                <div class="text"></div>
                 <div v-if="doc.content.length > 120" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content }}</div>
-                <div v-else class="text long"> {{ doc.content }}</div>
+                
             </div>              
             
             <!-- Full post -->
@@ -499,10 +506,16 @@ var app = new Vue({
                     }
                     if(!this.imageSearch){
                         this.searchResult = response.body.response.docs;
+                        var highlights = response.body.highlighting;
                         /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
                             	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
+                            }
+                            for (var key in highlights){
+                                if(this.searchResult[i].id === key){
+                                    this.searchResult[i].highlights = highlights[key];
+                                }
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
