@@ -254,7 +254,7 @@ Vue.component('result-box', {
                 <div class="text">{{ doc.score }}</div>
             </div> 
             <div v-if="doc.highlights" class="item">
-                <div class="label">Highlights:</div>
+                <div class="label">Highlighted content:</div>
                 <div  v-if="doc.highlights.content[0].length > 140" class="text long clickable" 
                 onclick="$(this).toggleClass('active')"
                 v-html="doc.highlights.content[0]"></div>
@@ -262,7 +262,7 @@ Vue.component('result-box', {
                 <!--<div class="text" v-html="doc.highlights.content[0]"></div>-->
             </div>
             <div v-if="doc.content" class="item">
-                <div class="label">Content:</div>
+                <div class="label">Full content:</div>
                 <div v-if="doc.content.length > 120" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content }}</div>
                 
             </div>              
