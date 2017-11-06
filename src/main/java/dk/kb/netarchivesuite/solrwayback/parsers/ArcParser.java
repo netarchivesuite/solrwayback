@@ -78,6 +78,7 @@ public class ArcParser {
             raf.read(bytes);
 
             arcEntry.setBinary(bytes);
+            arcEntry.setContentLength(binarySize);
             arcEntry.setHeader(headerLinesBuffer.toString());
             return arcEntry;
         }
