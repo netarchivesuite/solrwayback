@@ -41,7 +41,7 @@ public class SolrStreamingWarcExportClient {
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
      
     cursorMark = rsp.getNextCursorMark();
-    log.info("next cursormark warc export:"+cursorMark );
+    //log.info("next cursormark warc export:"+cursorMark );
     SolrDocumentList docs = rsp.getResults();
          
     return docs;
