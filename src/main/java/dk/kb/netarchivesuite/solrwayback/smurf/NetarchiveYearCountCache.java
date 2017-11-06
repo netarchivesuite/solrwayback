@@ -5,7 +5,7 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
 public class NetarchiveYearCountCache {
   
@@ -17,7 +17,7 @@ public class NetarchiveYearCountCache {
   private static void reload() throws Exception{    
     log.info("Reloading netarchive year count cache");
     lastReloadTime=System.currentTimeMillis();           
-    HashMap<Integer, Long> yearFacetsAllTemp = SolrClient.getInstance().getYearFacetsHtmlAll();   
+    HashMap<Integer, Long> yearFacetsAllTemp = NetarchiveSolrClient.getInstance().getYearFacetsHtmlAll();   
     yearFacetsAll=yearFacetsAllTemp;        
   }
   

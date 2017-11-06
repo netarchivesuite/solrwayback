@@ -19,7 +19,7 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.WaybackStatistics;
 
 public class SolrClientTest {
@@ -43,21 +43,21 @@ public class SolrClientTest {
 	        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	        String format = dateFormat.format(date);
 	        System.out.println(format+"Z");
-	        */  
-	        testWaybackStats();
-	        testexif();
-            testImagesLocationSearch();
-	        testGetImages();
-	        testHarvestTimesForUrl(); 
-	        testIngoingLinks();
-	        testFacetLinks();
-	        testSolrDate();
-	       testHarvestPreviewsForUrl();
+	        */  	        
+//	        testWaybackStats();
+//testexif();
+            testImagesLocationSearch(); 
+	          //	        testGetImages();
+	          //testHarvestTimesForUrl(); 
+	          //testIngoingLinks();
+	          //testFacetLinks();
+	          //testSolrDate();
+	       //   testHarvestPreviewsForUrl();
 	}
 	
 	public static void testWaybackStats() throws Exception{
       
-         SolrClient solr = SolrClient.getInstance();
+         NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();
          
          
          WaybackStatistics stats = solr.getWayBackStatistics("http://denstoredanske.dk/", "2008-12-04T18:52:50Z"); //vi
@@ -70,7 +70,7 @@ public class SolrClientTest {
 	
 	public static void testHarvestTimesForUrl() throws Exception{
       
-      SolrClient solr = SolrClient.getInstance();           
+      NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();           
       ArrayList<Date> harvestTimesForUrl = solr.getHarvestTimesForUrl("http://jp.dk/");
 
       System.out.println(harvestTimesForUrl.size());
@@ -79,7 +79,7 @@ public class SolrClientTest {
 	
       public static void testHarvestPreviewsForUrl() throws Exception{
       
-      SolrClient solr = SolrClient.getInstance();
+      NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();
       
       
        ArrayList<IndexDoc> indexDocs = solr.getHarvestPreviewsForUrl("http://denstoredanske.dk/");                 
@@ -90,7 +90,7 @@ public class SolrClientTest {
       
       public static void testexif() throws Exception{
         
-        SolrClient solr = SolrClient.getInstance();
+        NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();
         
         
          List<IndexDoc> indexDocs = solr.search("exif_location_0_coordinate:*",6000).getResults();                 
@@ -106,7 +106,7 @@ public class SolrClientTest {
 	   // AND content_length:[10000 TO *]
     public static void testGetImages() throws Exception{
       
-      SolrClient solr = SolrClient.getInstance();
+      NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();
             
       
       HashSet<String> used = new HashSet<String>();
@@ -145,7 +145,7 @@ public class SolrClientTest {
 	
 	public static void testImagesLocationSearch() throws Exception{
       
-      SolrClient solr = SolrClient.getInstance();//pt=56.431,9.431&d=500
+      NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();//pt=56.431,9.431&d=500
       ArrayList<IndexDoc> docs = solr.imagesLocationSearch("*:*",null,500, 56.4319d,9.431d , 100);      
       System.out.println(docs.size());
                 
@@ -155,7 +155,7 @@ public class SolrClientTest {
 	   
     public static void testSolrDate() throws Exception{
       
-      SolrClient solr = SolrClient.getInstance();
+      NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();
       SearchResult search = solr.search("crawl_date:\"2015-09-17T17:02:03Z\"", 10);      
  //     System.out.println(search.getResults().get(0).getCrawlDate());
                 
@@ -165,7 +165,7 @@ public class SolrClientTest {
 	
 public static void testFacetLinks() throws Exception{
       
-      SolrClient solr = SolrClient.getInstance();
+      NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();
       
       Date start= new Date(System.currentTimeMillis()-25L*365*86400*1000); //25 years ago
       Date end = new Date();
@@ -181,7 +181,7 @@ public static void testFacetLinks() throws Exception{
     
 public static void testIngoingLinks() throws Exception{
   
-  SolrClient solr = SolrClient.getInstance();
+  NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();
   
   Date start= new Date(System.currentTimeMillis()-25L*365*86400*1000); //25 years ago
   Date end = new Date();
@@ -199,10 +199,11 @@ public static void testIngoingLinks() throws Exception{
 	
 	public static void test1() throws Exception{
 	   HttpSolrClient solrServer;
-       SolrClient instance = null;
+       NetarchiveSolrClient instance = null;
        
-          solrServer = new HttpSolrClient("http://ariel:52300/solr/");
-          solrServer.setRequestWriter(new BinaryRequestWriter());
+       solrServer =  new HttpSolrClient.Builder("http://ariel:52300/solr/").build();
+          
+          //solrServer.setRequestWriter(new BinaryRequestWriter());
 
           String searchString="domain:jp.dk AND økonomi";
        

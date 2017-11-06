@@ -3,7 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.export;
 import java.io.PrintWriter;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 
 public class TestGenerateCSV {

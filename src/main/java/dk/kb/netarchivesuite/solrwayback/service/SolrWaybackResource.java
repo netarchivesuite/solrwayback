@@ -43,7 +43,7 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceExcept
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.ServiceException;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
 //No path except the context root+servletpath for the application. Example http://localhost:8080/officemood/services 
 
@@ -241,7 +241,7 @@ public class SolrWaybackResource {
       String solrDate = dateFormat.format(date)+"Z";
 
       //log.info("solrDate="+solrDate +" , url="+url);
-      IndexDoc doc = SolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
+      IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
       if (doc == null){
         log.info("Url has never been harvested:"+url);
         throw new IllegalArgumentException("Url has never been harvested:"+url);
@@ -462,7 +462,7 @@ public class SolrWaybackResource {
       String solrDate = dateFormat.format(date)+"Z";
 
       //log.info("solrDate="+solrDate +" , url="+url);
-      IndexDoc doc = SolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
+      IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
       if (doc == null){
         log.info("Url has never been harvested:"+url);
         throw new IllegalArgumentException("Url has never been harvested:"+url);
@@ -541,7 +541,7 @@ public class SolrWaybackResource {
         url = url.substring(0,anchorIndex);            
       }
 
-      IndexDoc indexDoc = SolrClient.getInstance().findClosestHarvestTimeForUrl(url, crawlDate);
+      IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, crawlDate);
       if (indexDoc == null){
         throw new NotFoundServiceException("Url has never been harvested:"+url);
       }

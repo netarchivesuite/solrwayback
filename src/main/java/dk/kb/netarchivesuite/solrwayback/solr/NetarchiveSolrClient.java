@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
-import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -32,33 +32,33 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 
 
-public class SolrClient {
+public class NetarchiveSolrClient {
 
-  private static final Logger log = LoggerFactory.getLogger(SolrClient.class);
-  private static HttpSolrClient solrServer;
-  private static SolrClient instance = null;
+  private static final Logger log = LoggerFactory.getLogger(NetarchiveSolrClient.class);
+  private static SolrClient solrServer;
+  private static NetarchiveSolrClient instance = null;
   private static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9æøåÆØÅ]+"); 
   
   private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type_norm,hash,crawl_date,content_type,content_encoding,exif_location";
   static {
-    SolrClient.initialize(PropertiesLoader.SOLR_SERVER);
+    NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
   }
 
-  private SolrClient() { // private. Singleton
+  private NetarchiveSolrClient() { // private. Singleton
   }
 
   // Example url with more than 1000 rewrites: http://belinda:9721/webarchivemimetypeservlet/services/wayback?waybackdata=20140119010303%2Fhttp%3A%2F%2Fbillige-skilte.dk%2F%3Fp%3D35
 
 
   public static void initialize(String solrServerUrl) {
-    solrServer = new HttpSolrClient(solrServerUrl);
-    solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http error code 413/414, due to monster URI. (and it is faster)
+    solrServer =  new HttpSolrClient.Builder(solrServerUrl).build();
+  //  solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http error code 413/414, due to monster URI. (and it is faster)
 
-    instance = new SolrClient();
+    instance = new NetarchiveSolrClient();
     log.info("SolrClient initialized with solr server url:" + solrServerUrl);
   }
 
-  public static SolrClient getInstance() {
+  public static NetarchiveSolrClient getInstance() {
     if (instance == null) {
       throw new IllegalArgumentException("SolrClient not initialized");
     }
@@ -416,7 +416,7 @@ public class SolrClient {
       solrQuery.setFilterQueries(filterQuery);
     }
     
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    QueryResponse rsp = solrServer.query(solrQuery);
     SolrDocumentList docs = rsp.getResults();
     
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
@@ -671,10 +671,8 @@ public class SolrClient {
     indexDoc.setCrawlDateLong(date.getTime());
     indexDoc.setCrawlDate(getSolrTimeStamp(date));  //HACK! demo must be ready for lunch
 
-    ArrayList<String> mimeTypes =  (ArrayList<String>) doc.get("content_type");
-    if (mimeTypes != null && mimeTypes.size() >0){
-      indexDoc.setMimeType(mimeTypes.get(0));        
-    }
+   indexDoc.setMimeType((String) doc.get("content_type"));         
+
     indexDoc.setOffset(getOffset(doc));
 
     Object o =  doc.getFieldValue("links_images");

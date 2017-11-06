@@ -12,7 +12,7 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
 public class TestExportArc {
 
@@ -21,8 +21,8 @@ public class TestExportArc {
     PropertiesLoader.initProperties();
       
     
-    String arcFile="/netarkiv/0205/filedir/27120-33-20080401191241-00000-sb-prod-har-001.statsbiblioteket.dk.arc.gz";
-    long offset=18475474;
+    String arcFile="/media/teg/1200GB_SSD/netarkiv/0205/filedir/27119-33-20080401194737-00004-kb-prod-har-001.kb.dk.arc.gz";
+    long offset=10776284;
     
 
     
@@ -31,7 +31,7 @@ public class TestExportArc {
     String warcHeader = ArcHeader2WarcHeader.arcHeader2WarcHeader(arcEntry);
     
     
-    Path exportPath = Paths.get("arc2warc-error.warc");
+    Path exportPath = Paths.get("arc2warc-pdf-error.warc");
     
     try{
     Files.delete(exportPath);
@@ -40,7 +40,7 @@ public class TestExportArc {
       
     }
     Files.createFile(exportPath);
-    System.out.println(arcEntry.getHeader()); // 37870 is corrent
+    System.out.println(arcEntry.getHeader()); 
     System.out.println("-----");
     System.out.println(warcHeader);
     

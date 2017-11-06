@@ -12,14 +12,14 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
 public class TestExportWarc {
 
   public static void main (String[] args) throws Exception{
 
     PropertiesLoader.initProperties();
-    SearchResult search = SolrClient.getInstance().search("hash:\"sha1:PROTE66RZ6GDXPZI3ZAHG6YPCXRKZMEN\"", 100000);
+    SearchResult search = NetarchiveSolrClient.getInstance().search("hash:\"sha1:PROTE66RZ6GDXPZI3ZAHG6YPCXRKZMEN\"", 100000);
     // /netarkiv/0105/filedir/272829-30-20170318193124175-00168-sb-prod-har-001.statsbiblioteket.dk.warc.gz
     
     //SearchResult search = SolrClient.getInstance().search("source_file:\"273055-254-20170317180213693-00000-sb-prod-har-004.statsbiblioteket.dk.warc.gz\"", 100000);

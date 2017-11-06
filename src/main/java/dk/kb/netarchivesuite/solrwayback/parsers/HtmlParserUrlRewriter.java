@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
 public class HtmlParserUrlRewriter {
 
@@ -141,7 +141,7 @@ public class HtmlParserUrlRewriter {
 				String resolvedUrl = new URL( base ,cssUrl).toString();
 				log.info("resolve CSS import url:"+resolvedUrl);		
 
-				IndexDoc indexDoc = SolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getCrawlDate());		         
+				IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getCrawlDate());		         
 				if (indexDoc!=null){    		    			 
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset(); 
 					css=css.replaceFirst(cssUrl, newUrl);
@@ -178,7 +178,7 @@ public class HtmlParserUrlRewriter {
 		
 		log.info("#unique urlset to resolve:"+urlSet.size());
 
-		ArrayList<IndexDoc> docs = SolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
+		ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
 
 
 		HashMap<String,IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
@@ -234,7 +234,7 @@ public class HtmlParserUrlRewriter {
       
       log.info("#unique urlset to resolve:"+urlSet.size());
 
-      ArrayList<IndexDoc> docs = SolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
+      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
 
       StringBuffer buf = new StringBuffer();
       for (IndexDoc indexDoc: docs){

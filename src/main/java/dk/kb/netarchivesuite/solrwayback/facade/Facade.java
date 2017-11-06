@@ -41,7 +41,7 @@ import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedI
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.FileParserFactory;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingWarcExportClient;
 
@@ -49,7 +49,7 @@ public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
 
     public static SearchResult search(String searchText, String filterQuery) throws Exception {
-        SearchResult result = SolrClient.getInstance().search(searchText, filterQuery);
+        SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, filterQuery);
         return result;
     }
     
@@ -59,7 +59,7 @@ public class Facade {
     
 
     public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {        
-        SearchResult result = SolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types
+        SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types
         
                 
         //multithreaded call solr to find arc file and offset
@@ -73,7 +73,7 @@ public class Facade {
       if (results != null){
         resultInt=Integer.parseInt(results);        
       }
-      ArrayList<IndexDoc> docs = SolrClient.getInstance().imagesLocationSearch(searchText,filter, resultInt, latitude, longitude, radius); //only search these two types            
+      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().imagesLocationSearch(searchText,filter, resultInt, latitude, longitude, radius); //only search these two types            
       return indexDoc2Images(docs);            
     }
     
@@ -86,7 +86,7 @@ public class Facade {
       log.info("netarchive smurf tag query:"+tag +" for startyear:"+startyear);
       try{
 
-        HashMap<Integer, Long> yearFacetsQuery = SolrClient.getInstance().getYearHtmlFacets(tag);
+        HashMap<Integer, Long> yearFacetsQuery = NetarchiveSolrClient.getInstance().getYearHtmlFacets(tag);
         HashMap<Integer, Long> yearFacetsAll = NetarchiveYearCountCache.getYearFacetsAllQuery();
 
         SmurfYearBuckets buckets = SmurfUtil.generateYearBuckets(yearFacetsQuery, yearFacetsAll, startyear, null);      
@@ -112,7 +112,7 @@ public class Facade {
       log.info("netarchive content smurf query:"+ qReplaced +" for startyear:"+startyear);
       try{
 
-        HashMap<Integer, Long> yearContentQuery = SolrClient.getInstance().getYearTextHtmlFacets(qReplaced);
+        HashMap<Integer, Long> yearContentQuery = NetarchiveSolrClient.getInstance().getYearTextHtmlFacets(qReplaced);
         HashMap<Integer, Long> yearFacetsAll = NetarchiveYearCountCache.getYearFacetsAllQuery();
 
         SmurfYearBuckets buckets = SmurfUtil.generateYearBuckets(yearContentQuery, yearFacetsAll, startyear,null);      
@@ -156,7 +156,7 @@ public class Facade {
       log.info("getting harvesttimes for url:"+url);
       HarvestDates datesVO = new HarvestDates();
       datesVO.setUrl(url);
-      ArrayList<Date> dates = SolrClient.getInstance().getHarvestTimesForUrl(url);
+      ArrayList<Date> dates = NetarchiveSolrClient.getInstance().getHarvestTimesForUrl(url);
       
       ArrayList<Long> crawltimes= new ArrayList<Long>(); // only YYYYMMDD part of day
       
@@ -174,7 +174,7 @@ public class Facade {
     public static ArrayList<PagePreview> getPagePreviewsForUrl(String url) throws Exception {
       log.info("getting pagePreviews for url:"+url);
   
-       ArrayList<IndexDoc> indexDocs = SolrClient.getInstance().getHarvestPreviewsForUrl(url); // Only contains the required fields for this method
+       ArrayList<IndexDoc> indexDocs = NetarchiveSolrClient.getInstance().getHarvestPreviewsForUrl(url); // Only contains the required fields for this method
        //Convert to PagePreview      
        ArrayList<PagePreview> previews =  new ArrayList<PagePreview>();
        
@@ -211,7 +211,7 @@ public class Facade {
     public static ArrayList<ArcEntryDescriptor>  getImagesForHtmlPageNewThreaded(String source_file_path,long offset) throws Exception {
       
   
-      IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(source_file_path, offset);
+      IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
       ArrayList<String> imageLinks = arcEntry.getImageUrls();          
       if (imageLinks.size() == 0){
         return  new ArrayList<ArcEntryDescriptor> ();
@@ -228,7 +228,7 @@ public class Facade {
       }
       query.append(" url_norm:none)"); //just close last OR
       String queryStr= query.toString();
-      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImagesForTimestamp(queryStr, arcEntry.getCrawlDate());
+      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, arcEntry.getCrawlDate());
                       
        return imagesFromHtmlPage;                
     }
@@ -244,7 +244,7 @@ public class Facade {
      */
     public static ArrayList<ArcEntryDescriptor> getImagesWithExifLocationForHtmlPageNewThreaded(String source_file_path,long offset) throws Exception {
         
-      IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(source_file_path, offset);
+      IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
       ArrayList<String> imageLinks = arcEntry.getImageUrls();          
       if (imageLinks.size() == 0){
         return  new ArrayList<ArcEntryDescriptor> ();
@@ -261,7 +261,7 @@ public class Facade {
       }
       query.append(" url_norm:none) AND exif_location_0_coordinate:*"); //just close last OR, and must have gps data
       String queryStr= query.toString();
-      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = SolrClient.getInstance().findImagesForTimestamp(queryStr, arcEntry.getCrawlDate());
+      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, arcEntry.getCrawlDate());
                       
        return imagesFromHtmlPage;                
     }
@@ -269,7 +269,7 @@ public class Facade {
     
     public static String getEncoding(String source_file_path,String offset) throws Exception{
     	            	    
-    	SearchResult search = SolrClient.getInstance().search("source_file_path:\""+source_file_path +"\" AND source_file_offset:"+offset, 1);
+    	SearchResult search = NetarchiveSolrClient.getInstance().search("source_file_path:\""+source_file_path +"\" AND source_file_offset:"+offset, 1);
         if (search.getNumberOfResults() ==0){
           log.warn("No content encoding found for:"+source_file_path +" and offset:"+offset);
           return "UTF-8";         
@@ -322,7 +322,7 @@ public class Facade {
         end = new Date(Long.valueOf(dateEnd));
       }
       
-      List<FacetCount>  facets = SolrClient.getInstance().getDomainFacets(domain,facetLimit, ingoing, start, end);
+      List<FacetCount>  facets = NetarchiveSolrClient.getInstance().getDomainFacets(domain,facetLimit, ingoing, start, end);
       log.info("Creating graph for domain:"+domain +" ingoing:"+ingoing +" and facetLimit:"+facetLimit);
       
       HashMap<String, List<FacetCount>> domainFacetMap = new HashMap<String, List<FacetCount>>();
@@ -332,7 +332,7 @@ public class Facade {
       //Do all queries
       for (FacetCount f : facets){
         String facetDomain =f.getValue();                  
-        List<FacetCount>  fc = SolrClient.getInstance().getDomainFacets(facetDomain,facetLimit, ingoing,start,end);
+        List<FacetCount>  fc = NetarchiveSolrClient.getInstance().getDomainFacets(facetDomain,facetLimit, ingoing,start,end);
         domainFacetMap.put(f.getValue(),fc);        
       }
       
@@ -430,7 +430,7 @@ public class Facade {
       ArcEntry arc=FileParserFactory.getArcEntry(source_file_path, offset);
       arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
       
-      IndexDoc docPage = SolrClient.getInstance().getArcEntry(source_file_path, offset);
+      IndexDoc docPage = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
             
       Date pageCrawlDate =new Date(docPage.getCrawlDateLong()); 
       ts.setPageCrawlDate(pageCrawlDate);
@@ -441,7 +441,7 @@ public class Facade {
       
       //the original page REMEMBER      
       HashSet<String> resources = HtmlParserUrlRewriter.getResourcLinksForHtmlFromArc(arc);      
-      ArrayList<IndexDoc> docs = SolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(resources,arc.getCrawlDate());
+      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(resources,arc.getCrawlDate());
       for(IndexDoc doc : docs){ //These are the resources found        
         String docUrl = doc.getUrl();                  
         PageResource pageResource = new PageResource();  

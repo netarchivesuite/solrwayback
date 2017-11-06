@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
@@ -15,14 +16,14 @@ import dk.kb.netarchivesuite.solrwayback.export.GenerateCSV;
 
 public class SolrStreamingExportClient {
 
-  private HttpSolrClient solrServer;
+  private static SolrClient solrServer;
   private final Logger log = LoggerFactory.getLogger(SolrStreamingExportClient.class);
   private String cursorMark = CursorMarkParams.CURSOR_MARK_START;
     
   
   public SolrStreamingExportClient(String solrServerUrl){
-    solrServer = new HttpSolrClient(solrServerUrl);
-    solrServer.setRequestWriter(new BinaryRequestWriter()); 
+    solrServer =  new HttpSolrClient.Builder(solrServerUrl).build();
+    //solrServer.setRequestWriter(new BinaryRequestWriter()); 
     cursorMark = CursorMarkParams.CURSOR_MARK_START; //Reset to start again 
   }
    

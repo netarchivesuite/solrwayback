@@ -16,7 +16,7 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.WaybackStatistics;
 
 
@@ -62,9 +62,9 @@ public class WaybackToolbarInjecter {
   
   public static String injectWaybacktoolBar(String source_file_path, long offset, String html) throws Exception{       
    try{                
-    IndexDoc arcEntry = SolrClient.getInstance().getArcEntry(source_file_path, offset);
+    IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
     
-    WaybackStatistics stats = SolrClient.getInstance().getWayBackStatistics(arcEntry .getUrl_norm(), arcEntry.getCrawlDate());
+    WaybackStatistics stats = NetarchiveSolrClient.getInstance().getWayBackStatistics(arcEntry .getUrl_norm(), arcEntry.getCrawlDate());
             
     stats.setHarvestDate(arcEntry.getCrawlDate());
     
