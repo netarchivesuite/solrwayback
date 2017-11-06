@@ -239,7 +239,7 @@ Vue.component('result-box', {
             </div>
             <div v-if="doc.content_type" class="item">
                 <div class="label">Content type:</div>
-                <div class="text">{{ doc.content_type[0] }}</div>
+                <!--<div class="text">{{ doc.content_type[0] }}</div>-->
             </div>
             <div v-if="doc.domain" class="item">
                 <div class="label">Domain:</div>
@@ -253,13 +253,9 @@ Vue.component('result-box', {
                 <div class="label">Score:</div>
                 <div class="text">{{ doc.score }}</div>
             </div> 
-            <div v-if="doc.highlights" class="item">
+            <div v-if="doc.highlights[0]" class="item">
                 <div class="label">Highlighted content:</div>
-                <div  v-if="doc.highlights.content[0].length > 140" class="text long clickable" 
-                onclick="$(this).toggleClass('active')"
-                v-html="doc.highlights.content[0]"></div>
-                <div v-else class="text long"  v-html="doc.highlights.content[0]"></div>
-                <!--<div class="text" v-html="doc.highlights.content[0]"></div>-->
+                <div class="text" v-html="doc.highlights.content[0]"></div>
             </div>
             <div v-if="doc.content" class="item">
                 <div class="label">Full content:</div>
@@ -512,7 +508,7 @@ var app = new Vue({
                             if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
                             	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
                             }
-                            /* Adding property highlight to search result */
+                            /* Adding property highlight to search result object */
                             for (var key in highlights){
                                 if(this.searchResult[i].id === key){
                                     this.searchResult[i].highlights = highlights[key];
