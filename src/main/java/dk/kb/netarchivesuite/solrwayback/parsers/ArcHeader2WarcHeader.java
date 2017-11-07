@@ -7,10 +7,14 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 public class ArcHeader2WarcHeader {
 
+  private static final Logger log = LoggerFactory.getLogger(ArcHeader2WarcHeader.class);
   private static final String newLineChar ="\r\n";
   
     /*
@@ -43,6 +47,16 @@ public class ArcHeader2WarcHeader {
     String arcHeaderExceptFirstLine = arc.getHeader().substring(index+ArcParser.newLineChar.length());
     int secondHeaderLength = arcHeaderExceptFirstLine.getBytes().length;
     long contentLength = secondHeaderLength + arc.getContentLength(); 
+    
+    // temp code below to check contentlenght for arc binary.
+    String arcHeader = arc.getHeader().substring(0,index);
+    String[] tokens = arcHeader.split(" ");
+    int  binaryLengthHeader = Integer.parseInt(tokens[tokens.length-1]);
+    
+    if (binaryLengthHeader != contentLength) { //Something is wrong. Happens very rare. Seems always 2 byte off
+      log.warn("Error convert arc header:"+arcHeader+ " binary content length does not match. calculated:"+contentLength +": from header"+binaryLengthHeader);  
+    }
+        
     
     StringBuilder b = new StringBuilder();
     b.append("WARC/1.0"+newLineChar);
