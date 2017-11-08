@@ -253,7 +253,7 @@ Vue.component('result-box', {
                 <div class="label">Score:</div>
                 <div class="text">{{ doc.score }}</div>
             </div> 
-            <div v-if="doc.highlights.content[0]" class="item">
+            <div v-if="Object.keys(doc.highlights).length > 0" class="item">
                 <div class="label">Highlighted content:</div>
                 <div class="text" v-html="doc.highlights.content[0]"></div>
             </div>
@@ -289,7 +289,7 @@ Vue.component('result-box', {
             </div>
              
             <!-- Images -->    
-            <div v-if="doc.content_type_norm && doc.content_type_norm == 'image'" class="item">
+            <div v-if="doc.content_type_norm == 'image'" class="item">
                 <div class="image">
                     <a v-bind:href=" baseUrl + 'services/downloadRaw?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
                         <img v-bind:src=" baseUrl + 'services/downloadRaw?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset"/>
@@ -298,13 +298,13 @@ Vue.component('result-box', {
                 <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + doc.url_norm + '&quot;');clearFacets()">Pages linking to image</span>
             </div>
               
-             <!-- Images in HTML pages -->  
-            <div v-if="doc.content_type && doc.content_type[0] == 'text/html'" class="item">
+            <!-- Images in HTML pages -->  
+            <div v-if="doc.content_type && doc.content_type == 'text/html'" class="item">
                 
                     <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
                         <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
                             <template  v-for="(imageUrl, index) in image.imageUrls" >
-                                <div class="thumb thumbSearch"v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
+                                <div class="thumb thumbSearch" v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
                                     <a :href="image.downloadUrls[index]" target="_blank">
                                         <span v-html="imageUrl"></span> 
                                     </a>
@@ -504,7 +504,7 @@ var app = new Vue({
                         var highlights = response.body.highlighting;
                         /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
-                            if(this.searchResult[i].content_type && this.searchResult[i].content_type[0] == 'text/html'){
+                            if(this.searchResult[i].content_type && this.searchResult[i].content_type == 'text/html'){
                             	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
                             }
                             /* Adding property highlight to search result object */
