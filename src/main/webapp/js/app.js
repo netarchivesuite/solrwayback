@@ -239,7 +239,7 @@ Vue.component('result-box', {
             </div>
             <div v-if="doc.content_type" class="item">
                 <div class="label">Content type:</div>
-                <!--<div class="text">{{ doc.content_type[0] }}</div>-->
+                <div class="text">{{ doc.content_type }}</div>
             </div>
             <div v-if="doc.domain" class="item">
                 <div class="label">Domain:</div>
@@ -253,14 +253,13 @@ Vue.component('result-box', {
                 <div class="label">Score:</div>
                 <div class="text">{{ doc.score }}</div>
             </div> 
-            <div v-if="doc.highlights[0]" class="item">
+            <div v-if="doc.highlights.content[0]" class="item">
                 <div class="label">Highlighted content:</div>
                 <div class="text" v-html="doc.highlights.content[0]"></div>
             </div>
             <div v-if="doc.content" class="item">
                 <div class="label">Full content:</div>
                 <div v-if="doc.content.length > 120" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content }}</div>
-                
             </div>              
             
             <!-- Full post -->
