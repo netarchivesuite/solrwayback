@@ -676,6 +676,7 @@ var app = new Vue({
                 var latLng = new google.maps.LatLng(item.lat,item.lng);
                 var _this = this;
                 var marker = new google.maps.Marker({
+                    downloadUrl: item.downloadUrl,
                     position: latLng,
                     map: _this.map,
                     title: item.resourceName,
@@ -688,15 +689,12 @@ var app = new Vue({
                 var infowindow = new google.maps.InfoWindow();
                 /* "this." refers to the marker params and not Vue in the event listeners below */
                 marker.addListener('click', function() {
-                    window.open(this.url, '_blank');
+                    window.open(this.downloadUrl, '_blank');
                 });
-                marker.addListener('mouseover', function(info) {
+                marker.addListener('mouseover', function() {
                     infowindow.setContent(this.info);
                     infowindow.open(_this.map, this);
                 });
-                /*marker.addListener('mouseout', function() {
-                    infowindow.close();
-                });*/
                 this.resultMarkers.push(marker);
             }
 
