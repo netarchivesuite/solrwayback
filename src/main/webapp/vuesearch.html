@@ -40,7 +40,7 @@
                    :setup-search="setupSearch"></facet-box>
 
 
-        <zerohits-box v-if="totalHits == 0 && searchResult && myQuery != '' && myQuery" :my-query="myQuery" :image-search="imageSearch"></zerohits-box>
+        <zerohits-box v-if="totalHits == 0 && searchResult && myQuery != '' && myQuery && !spinner" :my-query="myQuery" :image-search="imageSearch"></zerohits-box>
 
         <div class="result" v-if="myQuery && !errorMsg && !imageSearch">
 
