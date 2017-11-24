@@ -148,9 +148,11 @@ public class WaybackToolbarInjecter {
     "           </div>" +
     "      </div>" +
     "       <style>" +
-    "       #tegModal{z-index: 999999 !important; color: black; font-size: 14px; font-family: arial, Helvetica,sans-serif;background: #ffffff; border: 1px solid black;border-radius: 4px; box-shadow: 0 0 5px 5px #ccc; display: block; left: calc(50% - 450px); opacity: 1; padding: 1.5em 1.5em .5em;" +
-    " position:fixed; top: 25%; width: 900px; z-index: 500;" +
-    "               transition: left 0.4s, opacity 0.3s, padding 0.3s, top 0.4s, width 0.3s;}" +
+    "       #tegModal{z-index: 999999 !important; color: black; font-size: 14px;" + "font-family: arial, Helvetica,sans-serif;background: #ffffff; border: 1px solid black;border-radius: 4px; " +
+    "       box-shadow: 0 0 5px 5px #ccc; display: block; left: calc(50% - 450px); opacity: 1; padding: 1.5em 1.5em .5em;" +
+            "position:fixed; text-align:left !important; top: 25%; width: 900px; z-index: 500;" +
+    "       transition: left 0.4s, opacity 0.3s, padding 0.3s, top 0.4s, width 0.3s;}" +
+            "#tegModal p, #tegModal div{color: black !important; font-family: Arial, Helvetica, sans-serif; font-size: 12px !important}" +
     "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.5; padding:1em 1em 0 0; top: 3px; width: 30px; text-orientation: upright; writing-mode: vertical-rl;}" +
     "       #toggleSpinner, #closeSpinner{float: right; margin: -.8em -.5em 2em 2em;}" +
     "       #toggleSpinner{margin-left: 1em;}" +
