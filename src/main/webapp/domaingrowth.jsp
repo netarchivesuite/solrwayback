@@ -19,6 +19,9 @@
 
     <link rel="stylesheet" type="text/css" media="all" href="./css/solrwayback.css">
 
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
     <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="js/vue.js"></script>
     <script type="text/javascript" src="js/vue-resource.min.js"></script>
@@ -32,6 +35,7 @@
 
     <header-container :url="url"></header-container>
 
+    <div class="chart"></div>
 
     <div v-if="spinner" id="overlay"></div>
     <div v-if="spinner" id="spinnerVue">Loading...</div>
