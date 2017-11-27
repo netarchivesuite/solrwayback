@@ -87,10 +87,15 @@ public class WaybackToolbarInjecter {
     //Inject right after body if possible, else default to last
     Elements body = doc.select("body");   
     if (body != null){
-        body.first().children().first().append(injectHtml); //Inject just after <body>  
+          //body.append(injectHtml); //Inject just before </body>  
+      //body.first().children().first().append(injectHtml); //Inject just after <body> NOT WORKING          
+      //body.before(injectHtml);
+      body.append(injectHtml); //Inject just before </body> 
+      log.info("injected top of body, size:"+injectHtml.length());
     }
     else{
-     doc.body().append(injectHtml); //Inject just before </body>    
+      log.info("injected bottom of body");
+      body.append(injectHtml); //Inject just before </body>    
     }
     return doc.toString();    
   }
