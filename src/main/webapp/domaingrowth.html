@@ -1,17 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8"%>
-<%@ page import="
-    java.util.*,
-    dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview,
-    dk.kb.netarchivesuite.solrwayback.facade.Facade"%>
-
 <!DOCTYPE html>
-
-
-<%
-    String url = (String) request.getParameter("url");
-%>
-
-
 <html>
 <head>
     <meta charset="UTF-8">
@@ -20,7 +7,7 @@
     <link rel="stylesheet" type="text/css" media="all" href="./css/solrwayback.css">
 
 
-    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.js"></script>
 
     <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="js/vue.js"></script>
@@ -34,8 +21,13 @@
 <div class="wrapper" id="app">
 
     <header-container :url="url"></header-container>
+    <chart-container :chart-data="chartData" :chart-labels="chartLabels"></chart-container>
 
-    <div class="chart"></div>
+
+
+
+
+    <div id="chartBox"></div>
 
     <div v-if="spinner" id="overlay"></div>
     <div v-if="spinner" id="spinnerVue">Loading...</div>
