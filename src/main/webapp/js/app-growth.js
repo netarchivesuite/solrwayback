@@ -2,7 +2,7 @@ Vue.component('header-container', {
     props: ['url'],
     template: `
     <div id="header">
-        <h2 v-if="url">Domain: {{ url }}</h2>
+        <h1>Domain developement for: <span  v-if="url">{{ url }}</span></h1>
     </div>    
     `,
 })
@@ -27,82 +27,165 @@ var app = new Vue({
     router,
     el: '#app',
     data: {
+        url: '',
         spinner: false,
         chartData: [],
         chartLabels: [],
+        incomingLinks: [],
+        numberOfPages: []
     },
     methods: {
         getData: function(){
-            this.showSpinner();
-            this.url = this.$route.query.url.replace(/http.*:\/\//i,""); //Get domain from URL, using replace and regex to trim domain
-            if( this.url.slice(-1) === "/"){ // if trailing slash on url it's removed
-                this.url = this.url.slice(0, -1)
-            }
-            var searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=*:*&start=0&fq=domain%3A' + this.url;
+            this.url = this.$route.query.url
+            if(this.url){
+                this.showSpinner();
+                this.url = this.url.replace(/http.*:\/\//i,""); //Get domain from URL, using replace and regex to trim domain
+                if( this.url.slice(-1) === "/"){ // if trailing slash on url it's removed
+                    this.url = this.url.slice(0, -1)
+                }
+                var searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=*:*&start=0&fq=domain%3A' + this.url;
 
-            this.$http.get(searchUrl).then((response) => {
-                this.hideSpinner();
-                this.errorMsg = "";
-                var tempData = response.body.facet_counts.facet_fields.crawl_year;
-                for(var i = 0; i < tempData.length; i++){
-                    if(i % 2 == 1){
-                        this.chartData.push(tempData[i])
-                    }else{
-                        this.chartLabels.push(tempData[i])
+                this.$http.get(searchUrl).then((response) => {
+                    this.hideSpinner();
+                    this.errorMsg = "";
+                    /*
+                    var tempData = response.body.facet_counts.facet_fields.crawl_year;
+                    for(var i = 0; i < tempData.length; i++){
+                        if(i % 2 == 1){
+                            this.chartData.push(tempData[i])
+                        }else{
+                            this.chartLabels.push(tempData[i])
+                        }
+                    }*/
+                    var tempData = {
+                        2006:{
+                            links : 9,
+                            size: 456,
+                            pages: 28
+                        },
+                        2007:{
+                            links : 57,
+                            size: 1456,
+                            pages: 72
+                        },
+                        2008:{
+                            links : 107,
+                            size: 2256,
+                            pages: 73
+                        },
+                        2009:{
+                            links : 425,
+                            size: 4568,
+                            pages: 87
+                        }
+                    };
+                    for( key in tempData){
+                        console.log(key)
+                        this.chartLabels.push(key);
+                        this.chartData.push(tempData[key].size);
+                        this.incomingLinks.push(tempData[key].links);
+                        this.numberOfPages.push(tempData[key].pages);
                     }
-                }
-                console.log('tempData: ', tempData);
-                console.log('response: ', response);
-                console.log('this.chartData: ', this.chartData);
-                this.drawChart();
-                if(response.body.error){
-                    this.errorMsg = response.body.error.msg;
-                    return;
-                }
-            }, (response) => {
-                console.log('error: ', response);
-                this.hideSpinner();
-            });
+                    console.log('this.chartLabels',  this.chartLabels)
+                    console.log('this.chartData',  this.chartData)
+
+                    console.log('tempData: ', tempData);
+                    //console.log('response: ', response);
+                    console.log('this.chartData: ', this.chartData);
+                    this.drawChart();
+                    if(response.body.error){
+                        this.errorMsg = response.body.error.msg;
+                        return;
+                    }
+                }, (response) => {
+                    console.log('error: ', response);
+                    this.hideSpinner();
+                });
+            }
         },
 
         drawChart: function(){
             console.log('document.getElementById("line-chart', document.getElementById("line-chart"));
             new Chart(document.getElementById("line-chart"), {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: this.chartLabels,
-                    datasets: [{
-                        data: this.chartData,
-                        label: "Number of harvests",
-                        borderColor: "#3e95cd",
-                        fill: false
-                    }/*, {
-                        data: [282,350,411,502,635,809,947,1402,3700,5267],
-                        label: "Asia",
-                        borderColor: "#8e5ea2",
-                        fill: false
-                    }, {
-                        data: [168,170,178,190,203,276,408,547,675,734],
-                        label: "Europe",
-                        borderColor: "#3cba9f",
-                        fill: false
-                    }, {
-                        data: [40,20,10,16,24,38,74,167,508,784],
-                        label: "Latin America",
-                        borderColor: "#e8c3b9",
-                        fill: false
-                    }, {
-                        data: [6,3,2,2,7,26,82,172,312,433],
-                        label: "North America",
-                        borderColor: "#c45850",
-                        fill: false
-                    }*/
+                    datasets: [
+                        {
+                            data: this.chartData,
+                            label: "Number of crawls",
+                            yAxisID: 'A',
+                            borderColor: "#0066cc",
+                            type: "line",
+                            fill: false
+                        }/*,
+                        {
+                            data: this.chartData,
+                            label: "Number of crawls",
+                            yAxisID: 'A',
+                            type: "bar",
+                            backgroundColor: "#0066cc"
+                        }*/,
+                        {
+                            data: this.numberOfPages,
+                            label: "Number of pages",
+                            yAxisID: 'C',
+                            type: "line",
+                            borderColor: "#cc0000",
+                            fill: false
+                        },
+                        {
+                            data: this.incomingLinks,
+                            label: "Incoming links",
+                            yAxisID: 'B',
+                            type: "bar",
+                            backgroundColor: "#009900"
+                        }
                     ]
                 },
                 options: {
                     title: {
                         display: true,
                         text: 'Developement of domain: ' + this.url,
+                    },
+                    scales: {
+                        xAxes: [{
+                            barPercentage: 0.2
+                        }],
+                        yAxes: [
+                            {
+                                id: 'A',
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Number of harvests',
+                                    fontColor: "#0066cc",
+                                },
+                            },
+                            {
+                                id: 'B',
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Incoming links',
+                                    fontColor: "#009900",
+                                },
+                                ticks: {
+                                    max: 200,
+                                    min: 0
+                                }
+                            },
+                            {
+                                id: 'C',
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Incoming links',
+                                    fontColor: "#cc0000",
+                                },
+                                ticks: {
+                                    max: 1000,
+                                    min: 0
+                                }
+                            }
+                        ]
                     }
                 }
             });
@@ -120,4 +203,16 @@ var app = new Vue({
         this.getData();
     }
 })
+
+/* Some resources for the project:
+ * http://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ * */
 
