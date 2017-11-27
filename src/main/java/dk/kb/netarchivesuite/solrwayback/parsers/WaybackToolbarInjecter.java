@@ -7,6 +7,7 @@ import java.util.Date;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,16 +81,23 @@ public class WaybackToolbarInjecter {
   
   public static String injectInHmtl(String orgHtml, WaybackStatistics stats,String source_file_path, long offset) throws Exception{
     Document doc = Jsoup.parse(orgHtml);
-        
+    
     String injectHtml = generateToolbarHtml(stats, source_file_path, offset);
-    doc.body().append(injectHtml);                    
+    
+    //Inject right after body if possible, else default to last
+    Elements body = doc.select("body");   
+    if (body != null){
+        body.first().children().first().append(injectHtml); //Inject just after <body>  
+    }
+    else{
+     doc.body().append(injectHtml); //Inject just before </body>    
+    }
     return doc.toString();    
   }
   
   private static String generateToolbarHtml(WaybackStatistics stats, String source_file_path, long offset) throws Exception{
     
-
-    
+  
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     Date d = dateFormat.parse(stats.getHarvestDate());
         
