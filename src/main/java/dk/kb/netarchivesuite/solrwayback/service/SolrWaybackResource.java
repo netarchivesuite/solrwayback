@@ -9,6 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Random;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -39,6 +41,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.*;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
@@ -112,6 +115,35 @@ public class SolrWaybackResource {
           throw handleServiceExceptions(e);
       }
   }
+  
+  
+  
+  @GET
+  @Path("statistics/domain")
+  @Produces({ MediaType.APPLICATION_JSON})
+  public  ArrayList<DomainYearStatistics> statisticsDomain (@QueryParam("domain") String domain) throws ServiceException {
+      try {                                                                                                
+   
+        Random r = new Random();
+        
+        //Just generate fake temporary data
+        ArrayList<DomainYearStatistics> stats= new  ArrayList<DomainYearStatistics>();
+        for (int i=2005;i<2018;i++){
+          DomainYearStatistics yearStat = new DomainYearStatistics();
+          yearStat.setYear(i);
+          yearStat.setLinks(r.nextInt(1000));
+           yearStat.setSizeInKb(r.nextInt(100000));
+           yearStat.setTotalPages(r.nextInt(1000));
+           yearStat.setDomain(domain);
+           stats.add(yearStat);
+        }                
+        return stats;       
+        
+      } catch (Exception e) {         
+          throw handleServiceExceptions(e);
+      }
+  }
+ 
   
   
   @GET
