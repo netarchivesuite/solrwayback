@@ -49,14 +49,14 @@ var app = new Vue({
                     this.hideSpinner();
                     this.errorMsg = "";
                     /*
-                    var tempData = response.body.facet_counts.facet_fields.crawl_year;
-                    for(var i = 0; i < tempData.length; i++){
-                        if(i % 2 == 1){
-                            this.chartData.push(tempData[i])
-                        }else{
-                            this.chartLabels.push(tempData[i])
-                        }
-                    }*/
+                     var tempData = response.body.facet_counts.facet_fields.crawl_year;
+                     for(var i = 0; i < tempData.length; i++){
+                     if(i % 2 == 1){
+                     this.chartData.push(tempData[i])
+                     }else{
+                     this.chartLabels.push(tempData[i])
+                     }
+                     }*/
                     var tempData = {
                         2006:{
                             links : 9,
@@ -74,7 +74,7 @@ var app = new Vue({
                             pages: 73
                         },
                         2009:{
-                            links : 425,
+                            links : 729,
                             size: 4568,
                             pages: 87
                         }
@@ -88,6 +88,16 @@ var app = new Vue({
                     }
                     console.log('this.chartLabels',  this.chartLabels)
                     console.log('this.chartData',  this.chartData)
+
+                    /* Calculating max values for y-axis
+                     this.linksMax = Math.max(...this.incomingLinks);
+                     this.linksMax = Math.ceil(this.linksMax / 100) * 100;
+                     this.pagesMax = Math.max(...this.numberOfPages);
+                     this.pagesMax = Math.ceil(this.pagesMax / 10) * 10;
+                     console.log('this.linksMax: ', this.linksMax);
+                     console.log('this.pagesMax: ', this.pagesMax);
+                     **/
+
 
                     console.log('tempData: ', tempData);
                     //console.log('response: ', response);
@@ -106,7 +116,7 @@ var app = new Vue({
 
         drawChart: function(){
             console.log('document.getElementById("line-chart', document.getElementById("line-chart"));
-            new Chart(document.getElementById("line-chart"), {
+            var domainGrowthChart = new Chart(document.getElementById("line-chart"), {
                 type: 'bar',
                 data: {
                     labels: this.chartLabels,
@@ -118,14 +128,7 @@ var app = new Vue({
                             borderColor: "#0066cc",
                             type: "line",
                             fill: false
-                        }/*,
-                        {
-                            data: this.chartData,
-                            label: "Number of crawls",
-                            yAxisID: 'A',
-                            type: "bar",
-                            backgroundColor: "#0066cc"
-                        }*/,
+                        },
                         {
                             data: this.numberOfPages,
                             label: "Number of pages",
@@ -162,30 +165,38 @@ var app = new Vue({
                                 },
                             },
                             {
+                                id: 'C',
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Pages',
+                                    fontColor: "#cc0000",
+                                },
+                                gridLines : {
+                                    display : false
+                                }
+                            },
+                            {
                                 id: 'B',
                                 scaleLabel: {
                                     display: true,
                                     labelString: 'Incoming links',
                                     fontColor: "#009900",
                                 },
-                                ticks: {
-                                    max: 200,
-                                    min: 0
-                                }
-                            },
-                            {
-                                id: 'C',
-                                scaleLabel: {
-                                    display: true,
-                                    labelString: 'Incoming links',
-                                    fontColor: "#cc0000",
-                                },
-                                ticks: {
-                                    max: 1000,
-                                    min: 0
+                                gridLines : {
+                                    display : false
                                 }
                             }
                         ]
+                    },
+                    legend: {
+                        onClick: function(event, legendItem) {
+                            var index = legendItem.datasetIndex;
+                            //toggle the datasets visibility
+                            domainGrowthChart.data.datasets[index].hidden = !domainGrowthChart.data.datasets[index].hidden;
+                            //toggle the related labels' visibility
+                            domainGrowthChart.options.scales.yAxes[index].display = !domainGrowthChart.options.scales.yAxes[index].display;
+                            domainGrowthChart.update();
+                        }
                     }
                 }
             });
