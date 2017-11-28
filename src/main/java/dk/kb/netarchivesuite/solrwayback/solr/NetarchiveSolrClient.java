@@ -679,6 +679,7 @@ public class NetarchiveSolrClient {
                lengthTotal += length;
              }                          
          }
+         stats.setSizeInKb((int)lengthTotal/1024);
          stats.setTotalPages(urls.size()); 
          
          solrQuery = new SolrQuery();
@@ -699,8 +700,8 @@ public class NetarchiveSolrClient {
          if  (numberOfGroups > maxRows) {
            log.info("Max rows exceeded for  domain statistics (ingoing links):"+numberOfGroups  +" for domain:"+domain + " and year:"+year);
          }         
-         stats.setLinks(numberOfGroups);
-         stats.setSizeInKb((int)lengthTotal/1024);                   
+         stats.setIngoingLinks(numberOfGroups);
+                   
          return stats;
     }
     

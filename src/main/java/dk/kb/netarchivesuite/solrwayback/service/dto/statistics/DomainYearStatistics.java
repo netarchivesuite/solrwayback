@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class DomainYearStatistics {
 
   private int year;
-  private int links;
+  private int ingoingLinks;
   private int sizeInKb;
   private int totalPages;
   private String domain;
@@ -25,13 +25,16 @@ public class DomainYearStatistics {
   }
 
 
-  public int getLinks() {
-    return links;
+
+
+
+  public int getIngoingLinks() {
+    return ingoingLinks;
   }
 
 
-  public void setLinks(int links) {
-    this.links = links;
+  public void setIngoingLinks(int ingoingLinks) {
+    this.ingoingLinks = ingoingLinks;
   }
 
 
