@@ -44,8 +44,10 @@ var app = new Vue({
                     this.url = this.url.slice(0, -1)
                 }
                 var searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=*:*&start=0&fq=domain%3A' + this.url;
+                var domainGrowthUrl = 'http://' + location.host + '/solrwayback/services/statistics/domain?domain=' + this.url;
+                //var domainGrowthUrl = http://localhost:8080/solrwayback/services/statistics/domain?domain=dr.dk
 
-                this.$http.get(searchUrl).then((response) => {
+                this.$http.get(domainGrowthUrl).then((response) => {
                     this.hideSpinner();
                     this.errorMsg = "";
                     /*
@@ -100,7 +102,7 @@ var app = new Vue({
 
 
                     console.log('tempData: ', tempData);
-                    //console.log('response: ', response);
+                    console.log('response [Service delivered bogus data]: ', response);
                     console.log('this.chartData: ', this.chartData);
                     this.drawChart();
                     if(response.body.error){
@@ -216,8 +218,8 @@ var app = new Vue({
 })
 
 /* Some resources for the project:
- * http://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/
- *
+ *  Simple startup: http://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/
+ *  Hide y-axis and dataset: https://stackoverflow.com/questions/40006970/hide-y-axis-labels-when-data-is-not-displayed-in-chart-js
  *
  *
  *
