@@ -124,6 +124,11 @@ public class SolrWaybackResource {
   public  ArrayList<DomainYearStatistics> statisticsDomain (@QueryParam("domain") String domain) throws ServiceException {
       try {                                                                                                
    
+        return Facade.statisticsDomain(domain);
+                 
+        
+        
+        /*
         Random r = new Random();
         
         //Just generate fake temporary data
@@ -138,6 +143,8 @@ public class SolrWaybackResource {
            stats.add(yearStat);
         }                
         return stats;       
+        */
+        
         
       } catch (Exception e) {         
           throw handleServiceExceptions(e);

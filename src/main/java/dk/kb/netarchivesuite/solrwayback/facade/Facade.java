@@ -22,6 +22,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
@@ -65,6 +66,16 @@ public class Facade {
         //multithreaded call solr to find arc file and offset
         ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(result.getResults(), false);
         return extractImages;      
+    }
+    
+    public static ArrayList<DomainYearStatistics> statisticsDomain(String domain) throws Exception{
+      ArrayList<DomainYearStatistics> stats = new ArrayList<DomainYearStatistics>();
+      int year = Calendar.getInstance().get(Calendar.YEAR);
+      for (int i = 2005;i<=year;i++){
+        DomainYearStatistics yearStat=  NetarchiveSolrClient.getInstance().domainStatistics(domain, i);
+        stats.add(yearStat);         
+      }                  
+      return stats;            
     }
         
         

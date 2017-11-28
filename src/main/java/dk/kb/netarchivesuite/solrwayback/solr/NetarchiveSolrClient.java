@@ -18,6 +18,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.Group;
+import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -29,6 +30,7 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 
 
@@ -640,6 +642,68 @@ public class NetarchiveSolrClient {
       }
         
      
+    
+    public DomainYearStatistics domainStatistics(String domain, int year) throws Exception{
+      
+      DomainYearStatistics stats = new DomainYearStatistics();
+      stats.setYear(year);
+      stats.setDomain(domain);
+      
+      int maxRows = 20000;// it is faster than grouping to extract all
+         
+
+      String searchString="domain:\""+domain+"\"";
+      
+      SolrQuery solrQuery = new SolrQuery();
+         solrQuery.setQuery(searchString); 
+         solrQuery.set("facet", "false"); 
+         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
+         solrQuery.addFilterQuery("crawl_year:"+year);
+         solrQuery.set("facet", "false");            
+         solrQuery.setRows(maxRows);
+         solrQuery.add("fl","url_norm,content_length");
+         QueryResponse rsp = solrServer.query(solrQuery);
+     
+         if  (rsp.getResults().getNumFound() > maxRows) {
+            log.warn("Max rows exceeded for domain statistics:"+rsp.getResults().getNumFound() +" for domain:"+domain + " and year:"+year);
+         }
+         
+         HashSet<String> urls = new HashSet<String>(); //only count unique urls
+         
+         long  lengthTotal = 0;
+         for (SolrDocument current : rsp.getResults()) {
+             String url =(String) current.get("url_norm");
+             int length = (int) current.get("content_length");             
+             if (!urls.contains(url)){
+               urls.add(url);
+               lengthTotal += length;
+             }                          
+         }
+         stats.setTotalPages(urls.size()); 
+         
+         solrQuery = new SolrQuery();
+         solrQuery.setQuery("links_domains:\""+domain+"\" -"+searchString); //links to, but not from same domain         
+         solrQuery.set("facet", "false"); 
+         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
+         solrQuery.addFilterQuery("crawl_year:"+year);
+         solrQuery.add("fl","domain");
+         solrQuery.setRows(maxRows);
+         solrQuery.add("group","true");       
+         solrQuery.add("group.field","domain");
+                                 
+         rsp = solrServer.query(solrQuery);         
+         GroupResponse groupResponse = rsp.getGroupResponse();
+         
+         int numberOfGroups = groupResponse.getValues().get(0).getValues().size(); //Different domains
+         
+         if  (numberOfGroups > maxRows) {
+           log.info("Max rows exceeded for  domain statistics (ingoing links):"+numberOfGroups  +" for domain:"+domain + " and year:"+year);
+         }         
+         stats.setLinks(numberOfGroups);
+         stats.setSizeInKb((int)lengthTotal/1024);                   
+         return stats;
+    }
+    
   
 
   private static ArrayList<IndexDoc> solrDocList2IndexDoc(SolrDocumentList docs) {
