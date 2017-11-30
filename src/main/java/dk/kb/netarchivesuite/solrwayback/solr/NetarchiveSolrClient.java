@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
@@ -40,7 +41,7 @@ public class NetarchiveSolrClient {
   private static SolrClient solrServer;
   private static NetarchiveSolrClient instance = null;
   private static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9æøåÆØÅ]+"); 
-  
+
   private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type_norm,hash,crawl_date,content_type,content_encoding,exif_location";
   static {
     NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
@@ -54,7 +55,7 @@ public class NetarchiveSolrClient {
 
   public static void initialize(String solrServerUrl) {
     solrServer =  new HttpSolrClient.Builder(solrServerUrl).build();
-  //  solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http error code 413/414, due to monster URI. (and it is faster)
+    //  solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http error code 413/414, due to monster URI. (and it is faster)
 
     instance = new NetarchiveSolrClient();
     log.info("SolrClient initialized with solr server url:" + solrServerUrl);
@@ -266,14 +267,14 @@ public class NetarchiveSolrClient {
     solrQuery.add("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
     solrQuery.setFilterQueries("content_type_norm:image"); //only images
     solrQuery.setFilterQueries("record_type:response"); //No binary for revists.     
-    
+
     solrQuery.setFilterQueries("image_size:[2000 TO *]"); //No small images. (fillers etc.) 
     solrQuery.add("fl", indexDocFieldList);
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
 
     if (rsp.getGroupResponse()== null){
-     // log.info("no images found for search:"+searchString);
+      // log.info("no images found for search:"+searchString);
       return images;
     }
 
@@ -293,7 +294,7 @@ public class NetarchiveSolrClient {
       images.add(desc);
     }                              
 
-//    log.info("resolve images:" + searchString + " found:" + images.size());
+    //    log.info("resolve images:" + searchString + " found:" + images.size());
     return images;
   }
 
@@ -355,7 +356,7 @@ public class NetarchiveSolrClient {
     solrQuery.add("fl", indexDocFieldList);   
 
     String query = null;
-        
+
     query = "source_file_path:\""+source_file_path+"\" AND source_file_offset:"+offset ;         
     log.info("getArcEntry query:"+ query);    
     solrQuery.setQuery(query) ;
@@ -372,8 +373,8 @@ public class NetarchiveSolrClient {
 
     return indexDocs.get(0);
   }
-  
- /*
+
+  /*
 
   public SearchResult imageLocationSearch(String searchString, int results) throws Exception {
     log.info("imageLocationsearch for:" + searchString);
@@ -384,7 +385,7 @@ public class NetarchiveSolrClient {
     solrQuery.setQuery(searchString); // only search images
     solrQuery.setRows(results);    
     solrQuery.setFilterQueries( +" and filter:"+filterQuery););
-    
+
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
     SolrDocumentList docs = rsp.getResults();
@@ -397,14 +398,14 @@ public class NetarchiveSolrClient {
     return result;
   }
 
-  */
+   */
 
-  
-  
- 
+
+
+
   public ArrayList<IndexDoc> imagesLocationSearch(String searchText, String filterQuery,int results,double latitude, double longitude, int radius) throws Exception {
     log.info("imagesLocationSearch:" + searchText +" coordinates:"+latitude+","+longitude +" radius:"+radius);
-    
+
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl", indexDocFieldList);
@@ -413,20 +414,20 @@ public class NetarchiveSolrClient {
     solrQuery.setQuery("({!geofilt sfield=exif_location}) AND "+searchText);       
     solrQuery.setParam("pt", latitude+","+longitude);
     solrQuery.setParam("d", ""+radius);
-    
+
     if (filterQuery != null){
       solrQuery.setFilterQueries(filterQuery);
     }
-    
+
     QueryResponse rsp = solrServer.query(solrQuery);
     SolrDocumentList docs = rsp.getResults();
-    
+
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
-              
+
     return indexDocs;
   }
 
-  
+
   public SearchResult search(String searchString, String filterQuery, int results) throws Exception {
     log.info("search for:" + searchString +" and filter:"+filterQuery);
     SearchResult result = new SearchResult();
@@ -496,7 +497,7 @@ public class NetarchiveSolrClient {
     solrQuery.setRows(1000);
     solrQuery.setFilterQueries("record_type:response OR record_type:arc"); //No binary for revists. 
 
-    
+
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
 
     ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
@@ -547,165 +548,167 @@ public class NetarchiveSolrClient {
     return indexDocs.get(0);     
   }
 
-  
-  
+
+
   public HashMap<Integer, Long> getYearHtmlFacets(String query) throws Exception {
     //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
-      if (!TAGS_VALID_PATTERn.matcher(query).matches()) {
-        throw new InvalidArgumentServiceException("Tag syntax not accepted:"+query);        
-      }
-      
-      
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("elements_used:\""+query+"\""); 
-        solrQuery.setFilterQueries("content_type_norm:html"); //only html pages
-        solrQuery.setRows(0); //1 page only
-        solrQuery.add("fl","id");//rows are 0 anyway
-        solrQuery.set("facet", "true");
-        solrQuery.set("facet.field", "crawl_year");
-        solrQuery.set("facet.sort", "index");
-        solrQuery.set("facet.limit", "500"); //500 is higher than number of different years
-        
-        
-
-        QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
-
-        FacetField facetField = rsp.getFacetField("crawl_year");
-
-        HashMap<Integer, Long> allCount = new HashMap<Integer, Long>();
-        
-        for (FacetField.Count c :facetField.getValues()){
-           allCount.put(Integer.parseInt(c.getName()), c.getCount());                    
-        }        
-        return allCount;  
+    if (!TAGS_VALID_PATTERn.matcher(query).matches()) {
+      throw new InvalidArgumentServiceException("Tag syntax not accepted:"+query);        
     }
-      
-    public HashMap<Integer, Long> getYearFacetsHtmlAll() throws Exception {
-      //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
-        
-          SolrQuery solrQuery = new SolrQuery();
-          solrQuery.setQuery("*:*"); 
-          solrQuery.setFilterQueries("content_type_norm:html"); //only html pages
-          solrQuery.setRows(0); //1 page only
-          solrQuery.add("fl","id");//rows are 0 anyway
-          solrQuery.set("facet", "true");
-          solrQuery.set("facet.field", "crawl_year");
-          solrQuery.set("facet.sort", "index");
-          solrQuery.set("facet.limit", "500"); //500 is higher than number of different years
-                   
-          QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
 
-          FacetField facetField = rsp.getFacetField("crawl_year");
 
-          HashMap<Integer, Long> allCount = new HashMap<Integer, Long>();
-          
-          for (FacetField.Count c :facetField.getValues()){
-             allCount.put(Integer.parseInt(c.getName()), c.getCount());                    
-          }        
-          return allCount;  
-      }
-        
-    
-    
-    public HashMap<Integer, Long> getYearTextHtmlFacets(String query) throws Exception {
-      //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
-    
-      
-      /*
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.setQuery("elements_used:\""+query+"\""); 
+    solrQuery.setFilterQueries("content_type_norm:html"); //only html pages
+    solrQuery.setRows(0); //1 page only
+    solrQuery.add("fl","id");//rows are 0 anyway
+    solrQuery.set("facet", "true");
+    solrQuery.set("facet.field", "crawl_year");
+    solrQuery.set("facet.sort", "index");
+    solrQuery.set("facet.limit", "500"); //500 is higher than number of different years
+
+
+
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+
+    FacetField facetField = rsp.getFacetField("crawl_year");
+
+    HashMap<Integer, Long> allCount = new HashMap<Integer, Long>();
+
+    for (FacetField.Count c :facetField.getValues()){
+      allCount.put(Integer.parseInt(c.getName()), c.getCount());                    
+    }        
+    return allCount;  
+  }
+
+  public HashMap<Integer, Long> getYearFacetsHtmlAll() throws Exception {
+    //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
+
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.setQuery("*:*"); 
+    solrQuery.setFilterQueries("content_type_norm:html"); //only html pages
+    solrQuery.setRows(0); //1 page only
+    solrQuery.add("fl","id");//rows are 0 anyway
+    solrQuery.set("facet", "true");
+    solrQuery.set("facet.field", "crawl_year");
+    solrQuery.set("facet.sort", "index");
+    solrQuery.set("facet.limit", "500"); //500 is higher than number of different years
+
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+
+    FacetField facetField = rsp.getFacetField("crawl_year");
+
+    HashMap<Integer, Long> allCount = new HashMap<Integer, Long>();
+
+    for (FacetField.Count c :facetField.getValues()){
+      allCount.put(Integer.parseInt(c.getName()), c.getCount());                    
+    }        
+    return allCount;  
+  }
+
+
+
+  public HashMap<Integer, Long> getYearTextHtmlFacets(String query) throws Exception {
+    //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
+
+
+    /*
       if (!OK.matcher(query).matches()) {
           throw new InvalidArgumentServiceException("Tag syntax not accepted:"+query);        
         }
-        */
-        
-          SolrQuery solrQuery = new SolrQuery();
-          solrQuery.setQuery("text:\""+query+"\""); 
-          solrQuery.setFilterQueries("content_type_norm:html"); //only html pages
-          solrQuery.setRows(0); //1 page only
-          solrQuery.add("fl","id");//rows are 0 anyway
-          solrQuery.set("facet", "true");
-          solrQuery.set("facet.field", "crawl_year");
-          solrQuery.set("facet.sort", "index");
-          solrQuery.set("facet.limit", "500"); //500 is higher than number of different years
-          
-          
+     */
 
-          QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.setQuery("text:\""+query+"\""); 
+    solrQuery.setFilterQueries("content_type_norm:html"); //only html pages
+    solrQuery.setRows(0); //1 page only
+    solrQuery.add("fl","id");//rows are 0 anyway
+    solrQuery.set("facet", "true");
+    solrQuery.set("facet.field", "crawl_year");
+    solrQuery.set("facet.sort", "index");
+    solrQuery.set("facet.limit", "500"); //500 is higher than number of different years
 
-          FacetField facetField = rsp.getFacetField("crawl_year");
 
-          HashMap<Integer, Long> allCount = new HashMap<Integer, Long>();
-          
-          for (FacetField.Count c :facetField.getValues()){
-             allCount.put(Integer.parseInt(c.getName()), c.getCount());                    
-          }        
-          return allCount;  
-      }
-        
-     
-    
-    public DomainYearStatistics domainStatistics(String domain, int year) throws Exception{
-      
-      DomainYearStatistics stats = new DomainYearStatistics();
-      stats.setYear(year);
-      stats.setDomain(domain);
-      
-      int maxRows = 20000;// it is faster than grouping to extract all
-         
 
-      String searchString="domain:\""+domain+"\"";
-      
-      SolrQuery solrQuery = new SolrQuery();
-         solrQuery.setQuery(searchString); 
-         solrQuery.set("facet", "false"); 
-         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
-         solrQuery.addFilterQuery("crawl_year:"+year);
-         solrQuery.set("facet", "false");            
-         solrQuery.setRows(maxRows);
-         solrQuery.add("fl","url_norm,content_length");
-         QueryResponse rsp = solrServer.query(solrQuery);
-     
-         if  (rsp.getResults().getNumFound() > maxRows) {
-            log.warn("Max rows exceeded for domain statistics:"+rsp.getResults().getNumFound() +" for domain:"+domain + " and year:"+year);
-         }
-         
-         HashSet<String> urls = new HashSet<String>(); //only count unique urls
-         
-         long  lengthTotal = 0;
-         for (SolrDocument current : rsp.getResults()) {
-             String url =(String) current.get("url_norm");
-             int length = (int) current.get("content_length");             
-             if (!urls.contains(url)){
-               urls.add(url);
-               lengthTotal += length;
-             }                          
-         }
-         stats.setSizeInKb((int)lengthTotal/1024);
-         stats.setTotalPages(urls.size()); 
-         
-         solrQuery = new SolrQuery();
-         solrQuery.setQuery("links_domains:\""+domain+"\" -"+searchString); //links to, but not from same domain         
-         solrQuery.set("facet", "false"); 
-         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
-         solrQuery.addFilterQuery("crawl_year:"+year);
-         solrQuery.add("fl","domain");
-         solrQuery.setRows(maxRows);
-         solrQuery.add("group","true");       
-         solrQuery.add("group.field","domain");
-                                 
-         rsp = solrServer.query(solrQuery);         
-         GroupResponse groupResponse = rsp.getGroupResponse();
-         
-         int numberOfGroups = groupResponse.getValues().get(0).getValues().size(); //Different domains
-         
-         if  (numberOfGroups > maxRows) {
-           log.info("Max rows exceeded for  domain statistics (ingoing links):"+numberOfGroups  +" for domain:"+domain + " and year:"+year);
-         }         
-         stats.setIngoingLinks(numberOfGroups);
-                   
-         return stats;
-    }
-    
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+
+    FacetField facetField = rsp.getFacetField("crawl_year");
+
+    HashMap<Integer, Long> allCount = new HashMap<Integer, Long>();
+
+    for (FacetField.Count c :facetField.getValues()){
+      allCount.put(Integer.parseInt(c.getName()), c.getCount());                    
+    }        
+    return allCount;  
+  }
+
+
   
+  /*
+   * Uses the stats component and hyperloglog for ultra fast performance instead of grouping, which does not work well over many shards.
+   * 
+   * Extract statistics for a given domain and year.
+   * Number of unique pages (very precise due to hyperloglog)
+   * Number of ingoing links (very precise due to hyperloglog)
+   * Total size (of the unique pages). (not so precise due, tests show max 10% error, less for if there are many pages)
+   */
+  public DomainYearStatistics domainStatistics(String domain, int year) throws Exception{
+
+    DomainYearStatistics stats = new DomainYearStatistics();
+    stats.setYear(year);
+    stats.setDomain(domain);
+
+    String searchString="domain:\""+domain+"\"";
+
+    SolrQuery solrQuery = new SolrQuery();
+
+    solrQuery.setQuery(searchString); 
+    solrQuery.set("facet", "false"); 
+    solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
+    solrQuery.addFilterQuery("crawl_year:"+year);            
+    solrQuery.setRows(0);
+    solrQuery.add("fl","id");
+    solrQuery.add("stats","true");
+    solrQuery.add("stats.field","{!count=true cardinality=true}url_norm"); //Important, use cardinality and not unique.
+    solrQuery.add("stats.field","{!sum=true}content_length");
+
+    QueryResponse rsp = solrServer.query(solrQuery);  
+
+    Map<String, FieldStatsInfo> statsMap = rsp.getFieldStatsInfo();
+    FieldStatsInfo statsUrl_norm = statsMap.get("url_norm");
+    long url_norm_cardinality = statsUrl_norm.getCardinality();
+    long url_norm_total = statsUrl_norm.getCount();         
+
+    FieldStatsInfo statsContent_length = statsMap.get("content_length");
+    Double sum = (Double) statsContent_length.getSum();
+
+
+    //estimate content_length for the uniqie pages by fraction of total.
+    double size = sum*(url_norm_cardinality*1d/url_norm_total)*1d/1024d;                  
+    stats.setSizeInKb((int)size);         
+    stats.setTotalPages((int)url_norm_cardinality); 
+
+    //Links         
+    solrQuery = new SolrQuery();
+    solrQuery.setQuery("links_domains:\""+domain+"\" -"+searchString); //links to, but not from same domain   
+    solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
+    solrQuery.addFilterQuery("crawl_year:"+year);            
+    solrQuery.setRows(0);
+    solrQuery.add("stats","true");
+    solrQuery.add("fl","id");
+    solrQuery.add("stats.field","{!cardinality=true}domain"); //Important, use cardinality and not unique.
+
+    rsp = solrServer.query(solrQuery);
+    Map<String, FieldStatsInfo> stats2 = rsp.getFieldStatsInfo();
+
+
+    FieldStatsInfo statsLinks = stats2.get("domain");         
+    long links_cardinality = statsLinks.getCardinality();         
+    stats.setIngoingLinks((int)links_cardinality);         
+    return stats;
+  }
+
+
 
   private static ArrayList<IndexDoc> solrDocList2IndexDoc(SolrDocumentList docs) {
     ArrayList<IndexDoc> earchives = new ArrayList<IndexDoc>();
@@ -728,29 +731,29 @@ public class NetarchiveSolrClient {
     indexDoc.setContentTypeNorm((String) doc.get("content_type_norm"));
     indexDoc.setContentEncoding((String) doc.get("content_encoding"));
     indexDoc.setExifLocation((String) doc.get("exif_location"));
-     
+
     String hash = (String) doc.get("hash");
     indexDoc.setHash((String) hash);      
-    
+
     Date date = (Date) doc.get("crawl_date");        
     indexDoc.setCrawlDateLong(date.getTime());
     indexDoc.setCrawlDate(getSolrTimeStamp(date));  //HACK! demo must be ready for lunch
 
-   indexDoc.setMimeType((String) doc.get("content_type"));         
+    indexDoc.setMimeType((String) doc.get("content_type"));         
 
     indexDoc.setOffset(getOffset(doc));
 
     Object o =  doc.getFieldValue("links_images");
     if (o != null){
-     indexDoc.setImageUrls((ArrayList<String>) o);
+      indexDoc.setImageUrls((ArrayList<String>) o);
     }
-               
+
     return indexDoc;
   }
 
   //TO, remove method and inline 
   public static long getOffset(SolrDocument doc){
-      return  (Long) doc.get("source_file_offset");
+    return  (Long) doc.get("source_file_offset");
 
   }
 
@@ -783,6 +786,6 @@ public class NetarchiveSolrClient {
     return  query.toString(); 
   }
 
- 
+
 
 }

@@ -8,7 +8,7 @@ public class DomainYearStatistics {
   private int year;
   private int ingoingLinks;
   private int sizeInKb;
-  private int totalPages;
+  private int uniquePages;
   private String domain;
   
   public  DomainYearStatistics(){       
@@ -49,12 +49,12 @@ public class DomainYearStatistics {
 
 
   public int getTotalPages() {
-    return totalPages;
+    return uniquePages;
   }
 
 
   public void setTotalPages(int totalPages) {
-    this.totalPages = totalPages;
+    this.uniquePages = totalPages;
   }
 
 

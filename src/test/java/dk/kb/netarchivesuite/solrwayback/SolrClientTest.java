@@ -7,11 +7,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.FieldStatsInfo;
+import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 
@@ -46,13 +49,14 @@ public class SolrClientTest {
 	        */  	        
 //	        testWaybackStats();
 //testexif();
-            testImagesLocationSearch(); 
+            //testImagesLocationSearch(); 
 	          //	        testGetImages();
 	          //testHarvestTimesForUrl(); 
 	          //testIngoingLinks();
 	          //testFacetLinks();
 	          //testSolrDate();
 	       //   testHarvestPreviewsForUrl();
+	  domainStatistics();
 	}
 	
 	public static void testWaybackStats() throws Exception{
@@ -250,5 +254,76 @@ public static void testIngoingLinks() throws Exception{
           
           
 	}
+
+	public static void domainStatistics() throws Exception{
+      int maxRows = 20000;// it is faster than grouping to extract all
+	  String domain ="eb.dk";
+	  HttpSolrClient solrServer;
+      NetarchiveSolrClient instance = null;
+      
+      solrServer =  new HttpSolrClient.Builder("http://belinda:8983/solr/netarchivebuilder").build();
+         
+         //solrServer.setRequestWriter(new BinaryRequestWriter());
+
+         String searchString="domain:\""+domain+"\"";      
+         SolrQuery solrQuery = new SolrQuery();
+         solrQuery.setQuery(searchString); 
+         solrQuery.set("facet", "false"); 
+         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
+         solrQuery.addFilterQuery("crawl_year:2011");            
+         solrQuery.setRows(0);
+         solrQuery.add("fl","id");
+         solrQuery.add("stats","true");
+         solrQuery.add("stats.field","{!count=true cardinality=true}url_norm"); //Important, use cardinality and not unique.
+         solrQuery.add("stats.field","{!sum=true}content_length");
+                  
+         
+         QueryResponse rsp = solrServer.query(solrQuery);
+     
+         
+         Map<String, FieldStatsInfo> stats = rsp.getFieldStatsInfo();
+         FieldStatsInfo statsUrl_norm = stats.get("url_norm");
+         long url_norm_cardinality = statsUrl_norm.getCardinality();
+         long url_norm_total = statsUrl_norm.getCount();         
+                           
+         FieldStatsInfo statsContent_length = stats.get("content_length");
+         Double sum = (Double) statsContent_length.getSum();
+         
+         System.out.println("cardinality:"+url_norm_cardinality);
+         System.out.println("total:"+url_norm_total);
+         System.out.println("length:"+sum);
+         
+         //estimate content_length for the uniqie pages by fraction of total.
+         double size = sum*(url_norm_cardinality*1d/url_norm_total)*1d/1024d;
+       System.out.println("size:"+size);
+             
+                   
+         
+             
+         solrQuery = new SolrQuery();
+         solrQuery.setQuery("links_domains:\""+domain+"\" -"+searchString); //links to, but not from same domain   
+         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
+         solrQuery.addFilterQuery("crawl_year:2011");            
+         solrQuery.setRows(0);
+         solrQuery.add("stats","true");
+         solrQuery.add("fl","id");
+         solrQuery.add("stats.field","{!cardinality=true}domain"); //Important, use cardinality and not unique.
+         
+         rsp = solrServer.query(solrQuery);
+         Map<String, FieldStatsInfo> stats2 = rsp.getFieldStatsInfo();
+         
+                  
+         FieldStatsInfo statsLinks = stats2.get("domain");         
+         long links_cardinality = statsLinks.getCardinality();
+         
+         
+                  
+
+
+                  
+       
+       
+   }
 	
 }
+
