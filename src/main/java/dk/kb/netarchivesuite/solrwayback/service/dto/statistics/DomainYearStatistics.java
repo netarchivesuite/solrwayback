@@ -24,10 +24,7 @@ public class DomainYearStatistics {
     this.year = year;
   }
 
-
-
-
-
+  
   public int getIngoingLinks() {
     return ingoingLinks;
   }
