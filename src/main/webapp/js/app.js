@@ -299,7 +299,7 @@ Vue.component('result-box', {
             </div>
               
             <!-- Images in HTML pages -->  
-            <div v-if="doc.content_type && doc.content_type == 'text/html'" class="item">
+            <div v-if="doc.content_type_norm && doc.content_type_norm == 'html'" class="item">
                 
                     <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
                         <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
@@ -503,7 +503,7 @@ var app = new Vue({
                         var highlights = response.body.highlighting;
                         /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
-                            if(this.searchResult[i].content_type && this.searchResult[i].content_type == 'text/html'){
+                            if(this.searchResult[i].content_type_norm && this.searchResult[i].content_type_norm == 'html'){
                             	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
                             }
                             /* Adding property highlight to search result object */
