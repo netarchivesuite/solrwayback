@@ -1,8 +1,9 @@
 Vue.component('header-container', {
-    props: ['domain'],
+    props: ['domain','getData'],
     template: `
-    <div id="header">
+    <div id="headerDomainGrowth">
         <h1>Domain developement for: <span  v-if="domain">{{ domain }}</span></h1>
+        <search-box :domain="domain" :get-data="getData"></search-box>
     </div>    
     `,
 })
@@ -14,6 +15,31 @@ Vue.component('chart-container', {
         <canvas id="line-chart" width="800" height="450"></canvas>    
     </div>    
     `,
+})
+
+Vue.component('search-box', {
+    props: ["domain", "getData"],
+    data: function(){
+        return{
+            domainModel: this.domain,
+        }
+    },
+    template: `
+    <div id="domainSearch">
+        <input id="domainGrowth" v-model="domainModel" @keyup.enter="startSearch()" type="text">
+        <button id="domainGrowth" @click="startSearch()">Check domain</button>  
+    </div>    
+    `,
+    methods: {
+        startSearch: function() {
+            router.push({
+                query: {
+                    domain: this.domainModel
+                }
+            });
+            this.getData();
+        }
+    }
 })
 
 var router = new VueRouter({
@@ -34,7 +60,7 @@ var app = new Vue({
     },
     methods: {
         getData: function(){
-            this.domain = this.$route.query.domain
+            this.domain = this.$route.query.domain;
             if(this.domain){
                 this.showSpinner();
                 this.domain = this.domain.replace(/http.*:\/\//i,""); //Get domain from URL, using replace and regex to trim domain
@@ -45,8 +71,11 @@ var app = new Vue({
                 var domainGrowthUrl = 'http://' + location.host + '/solrwayback/services/statistics/domain?domain=' + this.domain;
 
                 this.$http.get(domainGrowthUrl).then((response) => {
-                    this.hideSpinner();
                     this.errorMsg = "";
+                    this.chartLabels = []; // Resetting data arrays
+                    this.sizeInKb = [];
+                    this.ingoingLinks = [];
+                    this.numberOfPages = [];
                     var tempData = response.body;
                     for(var i = 0; i < tempData.length; i++){
                         this.chartLabels.push(tempData[i].year);
@@ -54,10 +83,9 @@ var app = new Vue({
                         this.ingoingLinks.push(tempData[i].ingoingLinks);
                         this.numberOfPages.push(tempData[i].totalPages);
                     }
-
                     console.log('response.body: ', response.body);
-
                     this.drawChart();
+                    this.hideSpinner();
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
                         return;

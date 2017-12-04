@@ -20,14 +20,8 @@
 <body>
 <div class="wrapper" id="app">
 
-    <header-container :domain="domain"></header-container>
+    <header-container :domain="domain" :get-data="getData"></header-container>
     <chart-container></chart-container>
-
-
-
-
-
-    <div id="chartBox"></div>
 
     <div v-if="spinner" id="overlay"></div>
     <div v-if="spinner" id="spinnerVue">Loading...</div>
