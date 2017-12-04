@@ -8,11 +8,9 @@ Vue.component('header-container', {
 })
 
 Vue.component('chart-container', {
-    props: ["chartData","chartLabels"],
+    props: ["sizeInKb","chartLabels"],
     template: `
     <div id="chart">
-        <div>Chart data: {{ chartData }}</div>
-        <div>Labels: {{ chartLabels }}</div>
         <canvas id="line-chart" width="800" height="450"></canvas>    
     </div>    
     `,
@@ -29,9 +27,9 @@ var app = new Vue({
     data: {
         url: '',
         spinner: false,
-        chartData: [],
+        sizeInKb: [],
         chartLabels: [],
-        incomingLinks: [],
+        ingoingLinks: [],
         numberOfPages: []
     },
     methods: {
@@ -43,67 +41,22 @@ var app = new Vue({
                 if( this.url.slice(-1) === "/"){ // if trailing slash on url it's removed
                     this.url = this.url.slice(0, -1)
                 }
-                var searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=*:*&start=0&fq=domain%3A' + this.url;
+
                 var domainGrowthUrl = 'http://' + location.host + '/solrwayback/services/statistics/domain?domain=' + this.url;
-                //var domainGrowthUrl = http://localhost:8080/solrwayback/services/statistics/domain?domain=dr.dk
 
                 this.$http.get(domainGrowthUrl).then((response) => {
                     this.hideSpinner();
                     this.errorMsg = "";
-                    /*
-                     var tempData = response.body.facet_counts.facet_fields.crawl_year;
-                     for(var i = 0; i < tempData.length; i++){
-                     if(i % 2 == 1){
-                     this.chartData.push(tempData[i])
-                     }else{
-                     this.chartLabels.push(tempData[i])
-                     }
-                     }*/
-                    var tempData = {
-                        2006:{
-                            links : 9,
-                            size: 456,
-                            pages: 28
-                        },
-                        2007:{
-                            links : 57,
-                            size: 1456,
-                            pages: 72
-                        },
-                        2008:{
-                            links : 107,
-                            size: 2256,
-                            pages: 73
-                        },
-                        2009:{
-                            links : 729,
-                            size: 4568,
-                            pages: 87
-                        }
-                    };
-                    for( key in tempData){
-                        console.log(key)
-                        this.chartLabels.push(key);
-                        this.chartData.push(tempData[key].size);
-                        this.incomingLinks.push(tempData[key].links);
-                        this.numberOfPages.push(tempData[key].pages);
+                    var tempData = response.body;
+                    for(var i = 0; i < tempData.length; i++){
+                        this.chartLabels.push(tempData[i].year);
+                        this.sizeInKb.push(tempData[i].sizeInKb);
+                        this.ingoingLinks.push(tempData[i].ingoingLinks);
+                        this.numberOfPages.push(tempData[i].totalPages);
                     }
-                    console.log('this.chartLabels',  this.chartLabels)
-                    console.log('this.chartData',  this.chartData)
 
-                    /* Calculating max values for y-axis
-                     this.linksMax = Math.max(...this.incomingLinks);
-                     this.linksMax = Math.ceil(this.linksMax / 100) * 100;
-                     this.pagesMax = Math.max(...this.numberOfPages);
-                     this.pagesMax = Math.ceil(this.pagesMax / 10) * 10;
-                     console.log('this.linksMax: ', this.linksMax);
-                     console.log('this.pagesMax: ', this.pagesMax);
-                     **/
+                    console.log('response.body: ', response.body);
 
-
-                    console.log('tempData: ', tempData);
-                    console.log('response [Service delivered bogus data]: ', response);
-                    console.log('this.chartData: ', this.chartData);
                     this.drawChart();
                     if(response.body.error){
                         this.errorMsg = response.body.error.msg;
@@ -117,41 +70,38 @@ var app = new Vue({
         },
 
         drawChart: function(){
-            console.log('document.getElementById("line-chart', document.getElementById("line-chart"));
             var domainGrowthChart = new Chart(document.getElementById("line-chart"), {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: this.chartLabels,
                     datasets: [
                         {
-                            data: this.chartData,
-                            label: "Number of crawls",
-                            yAxisID: 'A',
+                            data: this.sizeInKb,
+                            label: "Size in Kilobytes",
+                            yAxisID: 'kilobytes',
                             borderColor: "#0066cc",
-                            type: "line",
                             fill: false
                         },
                         {
                             data: this.numberOfPages,
                             label: "Number of pages",
-                            yAxisID: 'C',
-                            type: "line",
+                            yAxisID: 'totalpages',
                             borderColor: "#cc0000",
                             fill: false
                         },
                         {
-                            data: this.incomingLinks,
+                            data: this.ingoingLinks,
                             label: "Incoming links",
-                            yAxisID: 'B',
-                            type: "bar",
-                            backgroundColor: "#009900"
+                            yAxisID: 'links',
+                            borderColor: "#009900",
+                            fill: false
                         }
                     ]
                 },
                 options: {
                     title: {
                         display: true,
-                        text: 'Developement of domain: ' + this.url,
+                        //text: 'Developement of domain: ' + this.url,
                     },
                     scales: {
                         xAxes: [{
@@ -159,15 +109,15 @@ var app = new Vue({
                         }],
                         yAxes: [
                             {
-                                id: 'A',
+                                id: 'kilobytes',
                                 scaleLabel: {
                                     display: true,
-                                    labelString: 'Number of harvests',
+                                    labelString: 'Size in kilobytes',
                                     fontColor: "#0066cc",
                                 },
                             },
                             {
-                                id: 'C',
+                                id: 'totalpages',
                                 scaleLabel: {
                                     display: true,
                                     labelString: 'Pages',
@@ -178,10 +128,10 @@ var app = new Vue({
                                 }
                             },
                             {
-                                id: 'B',
+                                id: 'links',
                                 scaleLabel: {
                                     display: true,
-                                    labelString: 'Incoming links',
+                                    labelString: 'Ingoing links',
                                     fontColor: "#009900",
                                 },
                                 gridLines : {
