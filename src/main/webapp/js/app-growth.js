@@ -1,8 +1,8 @@
 Vue.component('header-container', {
-    props: ['url'],
+    props: ['domain'],
     template: `
     <div id="header">
-        <h1>Domain developement for: <span  v-if="url">{{ url }}</span></h1>
+        <h1>Domain developement for: <span  v-if="domain">{{ domain }}</span></h1>
     </div>    
     `,
 })
@@ -25,7 +25,7 @@ var app = new Vue({
     router,
     el: '#app',
     data: {
-        url: '',
+        domain: '',
         spinner: false,
         sizeInKb: [],
         chartLabels: [],
@@ -34,15 +34,15 @@ var app = new Vue({
     },
     methods: {
         getData: function(){
-            this.url = this.$route.query.url
-            if(this.url){
+            this.domain = this.$route.query.domain
+            if(this.domain){
                 this.showSpinner();
-                this.url = this.url.replace(/http.*:\/\//i,""); //Get domain from URL, using replace and regex to trim domain
-                if( this.url.slice(-1) === "/"){ // if trailing slash on url it's removed
-                    this.url = this.url.slice(0, -1)
+                this.domain = this.domain.replace(/http.*:\/\//i,""); //Get domain from URL, using replace and regex to trim domain
+                if( this.domain.slice(-1) === "/"){ // if trailing slash on domain it's removed
+                    this.domain = this.domain.slice(0, -1)
                 }
 
-                var domainGrowthUrl = 'http://' + location.host + '/solrwayback/services/statistics/domain?domain=' + this.url;
+                var domainGrowthUrl = 'http://' + location.host + '/solrwayback/services/statistics/domain?domain=' + this.domain;
 
                 this.$http.get(domainGrowthUrl).then((response) => {
                     this.hideSpinner();
@@ -101,7 +101,7 @@ var app = new Vue({
                 options: {
                     title: {
                         display: true,
-                        //text: 'Developement of domain: ' + this.url,
+                        //text: 'Developement of domain: ' + this.domain,
                     },
                     scales: {
                         xAxes: [{
