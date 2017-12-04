@@ -140,7 +140,7 @@ public class WaybackToolbarInjecter {
     "               <span title=\"View XML\" class=\"dynamicData icon\">"+generatePwid("xml.png",source_file_path,offset) +"</span>" +
     "               <span title=\"View website previews\" class=\"dynamicData icon\">"+generatePagePreviews("preview.png",stats.getUrl_norm()) +"</span>" +
     "               <span title=\"View harvest time for page resources\" class=\"dynamicData icon\">"+generatePageResources("watch.png",source_file_path,offset) +"</span>" +
-            "       <span title=\"View domain developement over time\" class=\"dynamicData icon\">" + generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +
+            "       <span title=\"View domain developement over time\" class=\"dynamicData icon\">" + generateDomainGrowthImageLink("growth_icon.png",stats.getDomain()) +"</span>" +
     "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
@@ -247,6 +247,10 @@ public class WaybackToolbarInjecter {
   
   private static String generateDomainGraphImageLink(String image,String domain){
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"waybacklinkgraph.jsp?domain="+domain+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+  }
+  
+  private static String generateDomainGrowthImageLink(String image,String domain){
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"domaingrowth.html?domain="+domain+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
   
   
