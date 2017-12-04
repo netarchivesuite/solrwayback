@@ -477,7 +477,6 @@ var app = new Vue({
                     '&start=' + this.start + '&fq=' + this.filters;
             }
 
-            console.log('this.searchUrl',this.searchUrl);
             this.facetFields = []; //resetting facet fields before building them from query params
             if(this.filters){
                 var facetPairs = this.filters.split('%20AND%20');

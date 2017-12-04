@@ -1,9 +1,12 @@
 Vue.component('header-container', {
-    props: ['domain','getData'],
+    props: ['domain','getData','hasResults'],
     template: `
     <div id="headerDomainGrowth">
         <h1>Domain developement for: <span  v-if="domain">{{ domain }}</span></h1>
         <search-box :domain="domain" :get-data="getData"></search-box>
+        <div id="nohitsDomain" v-if="!hasResults" class="box">
+            <p>No results in the Netarchive for domain: <strong>{{ domain }}</strong></strong></p>
+        </div>
     </div>    
     `,
 })
@@ -56,13 +59,15 @@ var app = new Vue({
         sizeInKb: [],
         chartLabels: [],
         ingoingLinks: [],
-        numberOfPages: []
+        numberOfPages: [],
+        hasResults: true,
     },
     methods: {
         getData: function(){
             this.domain = this.$route.query.domain;
             if(this.domain){
                 this.showSpinner();
+                this.hasResults = true;
                 this.domain = this.domain.replace(/http.*:\/\//i,""); //Get domain from URL, using replace and regex to trim domain
                 if( this.domain.slice(-1) === "/"){ // if trailing slash on domain it's removed
                     this.domain = this.domain.slice(0, -1)
@@ -82,6 +87,18 @@ var app = new Vue({
                         this.sizeInKb.push(tempData[i].sizeInKb);
                         this.ingoingLinks.push(tempData[i].ingoingLinks);
                         this.numberOfPages.push(tempData[i].totalPages);
+                    }
+                    // local vars used to check if there's results on the chosen domain
+                    var sumSize = 0, sumLinks = 0, sumPages = 0;
+                    for(var i in this.sizeInKb) { sumSize += this.sizeInKb[i]; }
+                    for(var i in this.ingoingLinks) { sumLinks += this.ingoingLinks[i]; }
+                    for(var i in this.numberOfPages) { sumPages += this.numberOfPages[i]; }
+                    if(sumSize == 0 && sumLinks == 0 && sumPages == 0){
+                        this.hasResults = false;
+                        $("#line-chart").hide();
+                    }else{
+                        this.hasResults = true;
+                        $("#line-chart").show();
                     }
                     console.log('response.body: ', response.body);
                     this.drawChart();

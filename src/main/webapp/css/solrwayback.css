@@ -697,7 +697,10 @@ table#resourcesTable{
 #headerDomainGrowth {
     border-bottom: 1px solid #cccccc;
     overflow: hidden;
-    padding-bottom: 1em;
+}
+
+#headerDomainGrowth h1{
+    margin: 1.5em 0;
 }
 
 #headerDomainGrowth h1{
@@ -706,13 +709,17 @@ table#resourcesTable{
 
 #domainSearch{
     float: right;
-    margin: 2em 0 1em;
+    margin: 3em 0;
 }
 
 #domainSearch input, #domainSearch button{
     font-size: 16px;
     margin-right: .5em;
     padding: 2px 5px;
+}
+
+#nohitsDomain{
+    clear: both;
 }
 
 
