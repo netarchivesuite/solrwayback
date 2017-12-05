@@ -18,45 +18,6 @@ Vue.component('header-container', {
     `,
 })
 
-Vue.component('chart-container', {
-    props: ["sizeInKb","chartLabels"],
-    template: `
-    <div id="chart">
-        <canvas id="line-chart" width="800" height="450"></canvas>    
-    </div>    
-    `,
-})
-
-Vue.component('table-container', {
-    props: ["rawData"],
-    template: `
-    <div id="domainGrowthTableContainer">
-        <table id="domainGrowthTable" v-if="rawData.length > 0">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th v-for="item in rawData">{{ item['year'] }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Ingoing links</td>
-                    <td v-for="item in rawData">{{ item['ingoingLinks'] | thousandsSeperator }}</td>
-                </tr>
-                <tr>
-                    <td>Total pages</td>
-                    <td v-for="item in rawData">{{item['totalPages'] | thousandsSeperator }}</td>
-                </tr>
-                <tr>
-                    <td>Size in KB</td>
-                    <td v-for="item in rawData">{{ item['sizeInKb'] | thousandsSeperator }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>    
-    `,
-})
-
 Vue.component('search-box', {
     props: ["domain", "getData"],
     data: function(){
@@ -81,6 +42,46 @@ Vue.component('search-box', {
         }
     }
 })
+
+Vue.component('chart-container', {
+    props: ["sizeInKb","chartLabels"],
+    template: `
+    <div id="chart">
+        <canvas id="line-chart" width="800" height="450"></canvas>    
+    </div>    
+    `,
+})
+
+Vue.component('table-container', {
+    props: ["rawData"],
+    template: `
+    <div id="domainGrowthTableContainer">
+        <table id="domainGrowthTable" v-if="rawData.length > 0">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th v-for="item in rawData">{{ item.year }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Size in KB</td>
+                    <td v-for="item in rawData">{{ item.sizeInKb | thousandsSeperator }}</td>
+                </tr>
+                <tr>
+                    <td>Total pages</td>
+                    <td v-for="item in rawData">{{item.totalPages | thousandsSeperator }}</td>
+                </tr>
+                <tr>
+                    <td>Ingoing links</td>
+                    <td v-for="item in rawData">{{ item.ingoingLinks | thousandsSeperator }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>    
+    `,
+})
+
 
 var router = new VueRouter({
     mode: 'history',
@@ -175,6 +176,7 @@ var app = new Vue({
                         {
                             data: this.ingoingLinks,
                             label: "Incoming links",
+                            fontColor: 'black',
                             yAxisID: 'links',
                             borderColor: "#009900",
                             fill: false
@@ -186,38 +188,52 @@ var app = new Vue({
                         display: true,
                     },
                     scales: {
-                        xAxes: [{
-                            barPercentage: 0.2
-                        }],
                         yAxes: [
                             {
                                 id: 'kilobytes',
+                                ticks: {
+                                    beginAtZero: true,
+                                    //maxTicksLimit: 5,
+                                    suggestedMax: 10
+                                },
                                 scaleLabel: {
                                     display: true,
                                     labelString: 'Size in kilobytes',
                                     fontColor: "#0066cc",
-                                },
+                                }
                             },
                             {
                                 id: 'totalpages',
+                                ticks: {
+                                    beginAtZero: true,
+                                    //maxTicksLimit: 5,
+                                    suggestedMax: 10
+                                },
                                 scaleLabel: {
                                     display: true,
                                     labelString: 'Pages',
                                     fontColor: "#cc0000",
                                 },
                                 gridLines : {
-                                    display : false
+                                    display : true,
+                                    borderDash: [2,4]
                                 }
                             },
                             {
                                 id: 'links',
+                                ticks: {
+                                    beginAtZero: true,
+                                    //maxTicksLimit: 5,
+                                    suggestedMax: 10
+                                },
                                 scaleLabel: {
                                     display: true,
                                     labelString: 'Ingoing links',
                                     fontColor: "#009900",
                                 },
                                 gridLines : {
-                                    display : false
+                                    display : true,
+                                    borderDash: [2,4]
                                 }
                             }
                         ]
@@ -225,6 +241,7 @@ var app = new Vue({
                     legend: {
                         labels: {
                             //usePointStyle: true,
+                            fontColor: 'black',
                         },
                         onClick: function(event, legendItem) {
                             var index = legendItem.datasetIndex;
