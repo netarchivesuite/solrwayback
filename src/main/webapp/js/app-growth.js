@@ -1,4 +1,5 @@
 Vue.filter('thousandsSeperator', function(value) {
+    if (value === 0) return 0;
     if (!value) return '';
     var newValue = value.toLocaleString();
     return newValue;
@@ -29,7 +30,7 @@ Vue.component('chart-container', {
 Vue.component('table-container', {
     props: ["rawData"],
     template: `
-    <div id="tables">
+    <div id="domainGrowthTableContainer">
         <table id="domainGrowthTable" v-if="rawData.length > 0">
             <thead>
                 <tr>
@@ -132,10 +133,10 @@ var app = new Vue({
                     for(var i in this.numberOfPages) { sumPages += this.numberOfPages[i]; }
                     if(sumSize == 0 && sumLinks == 0 && sumPages == 0){
                         this.hasResults = false;
-                        $("#line-chart").hide();
+                        $("#line-chart, #domainGrowthTableContainer").hide();
                     }else{
                         this.hasResults = true;
-                        $("#line-chart").show();
+                        $("#line-chart, #domainGrowthTableContainer").show();
                     }
                     console.log('response.body: ', response.body);
                     this.drawChart();
