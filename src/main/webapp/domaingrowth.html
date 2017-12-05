@@ -22,6 +22,7 @@
 
     <header-container :domain="domain" :get-data="getData" :has-results="hasResults"></header-container>
     <chart-container></chart-container>
+    <table-container :raw-data="rawData"></table-container>
 
     <div v-if="spinner" id="overlay"></div>
     <div v-if="spinner" id="spinnerVue">Loading...</div>

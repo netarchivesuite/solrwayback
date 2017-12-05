@@ -661,14 +661,14 @@ ol.notHarvested li{
     clear: both;
 }
 
-table#resourcesTable{
+table{
     border: 1px solid #cccccc;
     border-collapse: collapse;
     margin: 2em 0;
     width: 100%;
 }
 
-#resourcesTable td, #resourcesTable th{
+td, th{
     border-bottom: 1px solid #cccccc;
     padding: .5em 1em;
 }
@@ -676,6 +676,9 @@ table#resourcesTable{
 #resourcesTable th{
     font-size: 110%;
     font-weight: bold;
+}
+
+#resourcesTable th{
     text-align: left;
 }
 
@@ -722,4 +725,18 @@ table#resourcesTable{
     clear: both;
 }
 
+table#domainGrowthTable{
+    margin-top: 5em;
+}
+
+#domainGrowthTable td{
+    border: 1px solid #cccccc;
+    text-align: center;
+}
+
+#domainGrowthTable th{
+    background: #666;
+    border-left: 1px solid #ccc;
+    color: white;
+}
 

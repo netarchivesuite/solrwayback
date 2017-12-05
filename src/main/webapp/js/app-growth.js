@@ -1,3 +1,9 @@
+Vue.filter('thousandsSeperator', function(value) {
+    if (!value) return '';
+    var newValue = value.toLocaleString();
+    return newValue;
+})
+
 Vue.component('header-container', {
     props: ['domain','getData','hasResults'],
     template: `
@@ -16,6 +22,36 @@ Vue.component('chart-container', {
     template: `
     <div id="chart">
         <canvas id="line-chart" width="800" height="450"></canvas>    
+    </div>    
+    `,
+})
+
+Vue.component('table-container', {
+    props: ["rawData"],
+    template: `
+    <div id="tables">
+        <table id="domainGrowthTable" v-if="rawData.length > 0">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th v-for="item in rawData">{{ item['year'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ingoing links</td>
+                    <td v-for="item in rawData">{{ item['ingoingLinks'] | thousandsSeperator }}</td>
+                </tr>
+                <tr>
+                    <td>Total pages</td>
+                    <td v-for="item in rawData">{{item['totalPages'] | thousandsSeperator }}</td>
+                </tr>
+                <tr>
+                    <td>Size in KB</td>
+                    <td v-for="item in rawData">{{ item['sizeInKb'] | thousandsSeperator }}</td>
+                </tr>
+            </tbody>
+        </table>
     </div>    
     `,
 })
@@ -56,6 +92,7 @@ var app = new Vue({
     data: {
         domain: '',
         spinner: false,
+        rawData: [],
         sizeInKb: [],
         chartLabels: [],
         ingoingLinks: [],
@@ -81,12 +118,12 @@ var app = new Vue({
                     this.sizeInKb = [];
                     this.ingoingLinks = [];
                     this.numberOfPages = [];
-                    var tempData = response.body;
-                    for(var i = 0; i < tempData.length; i++){
-                        this.chartLabels.push(tempData[i].year);
-                        this.sizeInKb.push(tempData[i].sizeInKb);
-                        this.ingoingLinks.push(tempData[i].ingoingLinks);
-                        this.numberOfPages.push(tempData[i].totalPages);
+                    this.rawData = response.body;
+                    for(var i = 0; i < this.rawData.length; i++){
+                        this.chartLabels.push(this.rawData[i].year);
+                        this.sizeInKb.push(this.rawData[i].sizeInKb);
+                        this.ingoingLinks.push(this.rawData[i].ingoingLinks);
+                        this.numberOfPages.push(this.rawData[i].totalPages);
                     }
                     // local vars used to check if there's results on the chosen domain
                     var sumSize = 0, sumLinks = 0, sumPages = 0;
@@ -125,7 +162,7 @@ var app = new Vue({
                             label: "Size in Kilobytes",
                             yAxisID: 'kilobytes',
                             borderColor: "#0066cc",
-                            fill: false
+                            fill: false,
                         },
                         {
                             data: this.numberOfPages,
@@ -146,7 +183,6 @@ var app = new Vue({
                 options: {
                     title: {
                         display: true,
-                        //text: 'Developement of domain: ' + this.domain,
                     },
                     scales: {
                         xAxes: [{
@@ -186,6 +222,9 @@ var app = new Vue({
                         ]
                     },
                     legend: {
+                        labels: {
+                            //usePointStyle: true,
+                        },
                         onClick: function(event, legendItem) {
                             var index = legendItem.datasetIndex;
                             //toggle the datasets visibility
