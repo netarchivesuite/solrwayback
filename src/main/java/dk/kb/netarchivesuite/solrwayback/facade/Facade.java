@@ -41,6 +41,7 @@ import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInput
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.FileParserFactory;
+import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParseResult;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
@@ -482,18 +483,23 @@ public class Facade {
     	
     	ArcEntry arc=FileParserFactory.getArcEntry(source_file_path, offset);    	 
 
+    	String encoding = arc.getContentEncoding();
+    	if (encoding == null){
+    	  encoding ="UTF-8";
+    	}
     	arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
     	if (("text/html".equals(arc.getContentType()))){
     		long start = System.currentTimeMillis();
         	log.debug(" Generate webpage from FilePath:" + source_file_path + " offset:" + offset);
-        	String textReplaced = HtmlParserUrlRewriter.replaceLinks(arc);    	 
-        	
+        	  HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);   	 
+        	  String textReplaced=htmlReplaced.getHtmlReplaced();
+        	  
         	//Inject tooolbar
         	if (showToolbar!=Boolean.FALSE ){ //If true or null. 
-        	  textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,textReplaced);
+        	   textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced);
         	}
         	
-        	arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));    	
+        	arc.setBinary(textReplaced.getBytes(encoding));    	
             log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start));
         	return arc;
     		 
@@ -502,7 +508,7 @@ public class Facade {
         	log.debug(" Generate css from FilePath:" + source_file_path + " offset:" + offset);
         	String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);        
         	
-        	arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));    	
+        	arc.setBinary(textReplaced.getBytes(encoding));    	
             log.info("Generating css total processing:"+(System.currentTimeMillis()-start));
         	return arc;
         	
@@ -539,6 +545,7 @@ public class Facade {
                                   .queryParam("start", startStr)
                                   .queryParam("q", query) 
                                   .queryParam("wt", "json")
+                                  .queryParam("hl", "on")
                                   .queryParam("q.op", "AND")
                                   .queryParam("indent", "true")                      
                                   .queryParam("facet", "true")

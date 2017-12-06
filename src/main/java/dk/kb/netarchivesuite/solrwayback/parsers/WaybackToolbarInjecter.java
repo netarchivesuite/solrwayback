@@ -54,35 +54,40 @@ public class WaybackToolbarInjecter {
     stats.setPreviousHarvestDate("2015-09-17T17:02:03Z");
     stats.setLastHarvestDate("2015-09-17T17:02:03Z");
     stats.setNumberOfHarvest(101);
-     
-    String injectedHtml = injectInHmtl(html,stats, "test",1234L);
+
+    HtmlParseResult htmlParsed = new HtmlParseResult();
+    htmlParsed.setHtmlReplaced(html);
+    htmlParsed.setNumberOfLinksNotFound(1);
+    htmlParsed.setNumberOfLinksReplaced(17);
+        
+    String injectedHtml = injectInHmtl(htmlParsed,stats, "test",1234L);
     System.out.println(injectedHtml);   
   }
   
   
   
-  public static String injectWaybacktoolBar(String source_file_path, long offset, String html) throws Exception{       
-   try{                
-    IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
+  public static String injectWaybacktoolBar(String source_file_path, long offset, HtmlParseResult htmlParsedResult) throws Exception{       
     
-    WaybackStatistics stats = NetarchiveSolrClient.getInstance().getWayBackStatistics(arcEntry .getUrl_norm(), arcEntry.getCrawlDate());
-            
-    stats.setHarvestDate(arcEntry.getCrawlDate());
+    try{                
+    IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);    
+    WaybackStatistics stats = NetarchiveSolrClient.getInstance().getWayBackStatistics(arcEntry .getUrl_norm(), arcEntry.getCrawlDate());            
+    stats.setHarvestDate(arcEntry.getCrawlDate());        
     
-    String injectedHtml =injectInHmtl(html, stats, source_file_path,offset);
+    String injectedHtml =injectInHmtl( htmlParsedResult, stats, source_file_path,offset);
     return injectedHtml;
    }catch (Exception e){
      log.error("error injecting waybacktoolbar", e);
-    return html;// no injection 
+    return htmlParsedResult.getHtmlReplaced();// no injection (should not happen). 
    }
 
     
   }
   
-  public static String injectInHmtl(String orgHtml, WaybackStatistics stats,String source_file_path, long offset) throws Exception{
+  public static String injectInHmtl(HtmlParseResult htmlParsed, WaybackStatistics stats,String source_file_path, long offset) throws Exception{
+    String orgHtml=htmlParsed.getHtmlReplaced();
     Document doc = Jsoup.parse(orgHtml);
     
-    String injectHtml = generateToolbarHtml(stats, source_file_path, offset);
+    String injectHtml = generateToolbarHtml(htmlParsed,stats, source_file_path, offset);
     
     //Inject right after body if possible, else default to last
     Elements body = doc.select("body");   
@@ -100,7 +105,7 @@ public class WaybackToolbarInjecter {
     return doc.toString();    
   }
   
-  private static String generateToolbarHtml(WaybackStatistics stats, String source_file_path, long offset) throws Exception{
+  private static String generateToolbarHtml(HtmlParseResult htmlParsed,WaybackStatistics stats, String source_file_path, long offset) throws Exception{
     
   
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -133,6 +138,15 @@ public class WaybackToolbarInjecter {
     "               <span class=\"dynamicData\">"+stats.getNumberHarvestDomain()+"</span>" +
     "               <span class=\"inlineLabel\">#Content length harvested:</span>" +
     "               <span class=\"dynamicData\">"+stats.getDomainHarvestTotalContentLength()+"</span>" +    
+    "            </div>" +
+    "            <div class=\"infoLine\">" +
+    "               <span class=\"label\">Page resources:</span>" +
+    "               <span class=\"inlineLabel\">#Found:</span>" +
+    "               <span class=\"dynamicData\">"+htmlParsed.getNumberOfLinksReplaced()+"</span>" +
+    "               <span class=\"inlineLabel\">#Not found:</span>" +
+    "               <span class=\"dynamicData\">"+htmlParsed.getNumberOfLinksNotFound()+"</span>" +
+    "               <span class=\"inlineLabel\">#Time span:</span>" +
+    "               <span class=\"dynamicData\">"+"1m 20s"+"</span>" + //TODO
     "            </div>" +
     "            <div class=\"infoLine\">" +
     "               <span title=\"View in- and out-going links\"class=\"dynamicData icon\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +

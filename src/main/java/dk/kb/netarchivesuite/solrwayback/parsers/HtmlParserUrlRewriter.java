@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -154,10 +155,17 @@ public class HtmlParserUrlRewriter {
 		return css;
 	}
 
-	public static String replaceLinks(ArcEntry arc) throws Exception{
-
+	public static HtmlParseResult replaceLinks(ArcEntry arc) throws Exception{
+	  AtomicInteger numberOfLinksReplaced = new  AtomicInteger();
+	  AtomicInteger numberOfLinksNotFound = new  AtomicInteger(); 
+	  
 		long start = System.currentTimeMillis();
-		String html = new String(arc.getBinary(),arc.getContentEncoding());
+		String encoding = arc.getContentEncoding();
+		if (encoding == null){
+		  encoding ="UTF-8";
+		}
+		
+		String html = new String(arc.getBinary(), encoding);
 		String url=arc.getUrl();
 
 
@@ -186,28 +194,31 @@ public class HtmlParserUrlRewriter {
 			urlReplaceMap.put(indexDoc.getUrl(),indexDoc);     		     		 
 		}
 
-		replaceUrlForElement(urlReplaceMap,doc, "img", "src", "downloadRaw");
-		replaceUrlForElement(urlReplaceMap,doc, "body", "background", "downloadRaw");             	     	 
-		replaceUrlForElement(urlReplaceMap,doc, "link", "href", "view");
-		replaceUrlForElement(urlReplaceMap,doc, "script", "src", "downloadRaw");
-		replaceUrlForElement(urlReplaceMap,doc, "td", "background", "downloadRaw");    	 
-        replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url);
-		replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url);
-
-		
+		replaceUrlForElement(urlReplaceMap,doc, "img", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
+		replaceUrlForElement(urlReplaceMap,doc, "body", "background", "downloadRaw" ,  numberOfLinksReplaced ,  numberOfLinksNotFound);             	     	 
+		replaceUrlForElement(urlReplaceMap,doc, "link", "href", "view",  numberOfLinksReplaced ,  numberOfLinksNotFound);
+		replaceUrlForElement(urlReplaceMap,doc, "script", "src", "downloadRaw",  numberOfLinksReplaced,  numberOfLinksNotFound);
+		replaceUrlForElement(urlReplaceMap,doc, "td", "background", "downloadRaw",  numberOfLinksReplaced ,  numberOfLinksNotFound);    	 
+        replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
+		replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
 		
 
 		//This are not resolved until clicked
 		rewriteUrlForElement(doc, "a" ,"href",arc.getCrawlDate());
-		rewriteUrlForElement(doc, "area" ,"href",arc.getCrawlDate());
-		
+		rewriteUrlForElement(doc, "area" ,"href",arc.getCrawlDate());		
 		rewriteUrlForElement(doc, "form" ,"action",arc.getCrawlDate());
 
 		log.info("Number of resolves:"+urlSet.size() +" total time:"+(System.currentTimeMillis()-start));    	 
-
+        log.info("numberOfReplaced:"+numberOfLinksReplaced + " numbernotfound:"+numberOfLinksNotFound);
+		
 		String html_output= doc.toString();
 		html_output=html_output.replaceAll(AMPERSAND_REPLACE, "&");		
-		return html_output;
+		
+		HtmlParseResult res = new HtmlParseResult();
+		res.setHtmlReplaced(html_output);
+		res.setNumberOfLinksReplaced(numberOfLinksReplaced.intValue());
+		res.setNumberOfLinksNotFound(numberOfLinksNotFound.intValue());		
+		return res;
 	}
 
 	
@@ -274,7 +285,7 @@ public class HtmlParserUrlRewriter {
 	
 	
 
-	public static void replaceUrlForElement( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type) throws Exception{
+	public static void replaceUrlForElement( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
 
 		for (Element e : doc.select(element)) {    		 
 			String url = e.attr("abs:"+attribute);
@@ -287,16 +298,18 @@ public class HtmlParserUrlRewriter {
 			if (indexDoc!=null){    		    			 
 				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset();    			 
 				e.attr(attribute,newUrl);    			     		 
+			    numberOfLinksReplaced.getAndIncrement();
 			}
 			else{
 			     e.attr(attribute,NOT_FOUND_LINK);
 				log.info("No harvest found for:"+url);
-			}
+			    numberOfLinksNotFound.getAndIncrement();;
+			 }
 
 		}
 	}
 
-	public static void replaceStyleBackground( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type, String baseUrl) throws Exception{
+	public static void replaceStyleBackground( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type, String baseUrl,   AtomicInteger numberOfLinksReplaced,  AtomicInteger numberOfLinksNotFound) throws Exception{
 
 		for (Element e : doc.select(element)) {
 
@@ -317,11 +330,13 @@ public class HtmlParserUrlRewriter {
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();    			     		
 					String styleFixed=style.replaceAll(urlUnresolved,newUrl);    			     
 					e.attr(attribute,styleFixed); 
+				     numberOfLinksReplaced.getAndIncrement();
 				}
 				else{
 				  String styleFixed=style.replaceAll(urlUnresolved,NOT_FOUND_LINK);                    
-                  e.attr(attribute,styleFixed); 				  
-			      log.info("No harvest found for:"+resolvedUrl);
+                  e.attr(attribute,styleFixed); 				  			     
+                  log.info("No harvest found for:"+resolvedUrl);
+                  numberOfLinksNotFound.getAndIncrement();
 				}
 
 
@@ -399,7 +414,7 @@ public class HtmlParserUrlRewriter {
 
 
 	
-	public static void replaceUrlsForStyleImport( HashMap<String,IndexDoc>  map, Document doc, String type, String baseUrl) throws Exception{
+	public static void replaceUrlsForStyleImport( HashMap<String,IndexDoc>  map, Document doc, String type, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
 	
       for (Element e : doc.select("style")) {         
         String styleTagContent = e.data();          
@@ -417,11 +432,12 @@ public class HtmlParserUrlRewriter {
               log.info("replaced with:"+newUrl );
               e.html("@import url("+newUrl+");"); //e.text will be encoded                            
               log.info("new tag (html):"+e);
-          
+              numberOfLinksReplaced.incrementAndGet();
           }
           else{
             e.html("@import url("+NOT_FOUND_LINK+");"); //e.text will be encoded
               log.info("No harvest found for:"+resolvedUrl );
+              numberOfLinksNotFound.incrementAndGet();
           }
           
         }                   
