@@ -253,7 +253,7 @@ Vue.component('result-box', {
                 <div class="label">Score:</div>
                 <div class="text">{{ doc.score }}</div>
             </div> 
-            <div v-if="Object.keys(doc.highlights).length > 0" class="item">
+            <div v-if="doc.highlights" class="item">
                 <div class="label">Highlighted content:</div>
                 <div class="text" v-html="doc.highlights.content[0]"></div>
             </div>
@@ -490,6 +490,7 @@ var app = new Vue({
             /* Starting search if there's a query*/
             if(this.myQuery && this.myQuery.trim() != ''){
                 this.showSpinner();
+                console.log('this.searchUrl: ', this.searchUrl);
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
                     console.log('response.body: ', response.body);
@@ -500,7 +501,10 @@ var app = new Vue({
                     }
                     if(!this.imageSearch){
                         this.searchResult = response.body.response.docs;
-                        var highlights = response.body.highlighting;
+                        if(response.body.highlighting){
+                            var highlights = response.body.highlighting;
+                        }
+
                         /* Nyt objektet med image URL'er ved content type HTML */
                         for(var i=0; i<this.searchResult.length;i++){
                             if(this.searchResult[i].content_type_norm && this.searchResult[i].content_type_norm == 'html'){
