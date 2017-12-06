@@ -1,5 +1,5 @@
 Vue.filter('thousandsSeperator', function(value) {
-    if (value === 0) return 0;
+    if (value === 0) return 0; // to keep zero's in table
     if (!value) return '';
     var newValue = value.toLocaleString();
     return newValue;
@@ -139,7 +139,7 @@ var app = new Vue({
                         this.hasResults = true;
                         $("#line-chart, #domainGrowthTableContainer").show();
                     }
-                    console.log('response.body: ', response.body);
+                    //console.log('response.body: ', response.body);
                     this.drawChart();
                     this.hideSpinner();
                     if(response.body.error){
@@ -240,7 +240,6 @@ var app = new Vue({
                     },
                     legend: {
                         labels: {
-                            //usePointStyle: true,
                             fontColor: 'black',
                         },
                         onClick: function(event, legendItem) {
@@ -269,15 +268,4 @@ var app = new Vue({
     }
 })
 
-/* Some resources for the project:
- *  Simple startup: http://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/
- *  Hide y-axis and dataset: https://stackoverflow.com/questions/40006970/hide-y-axis-labels-when-data-is-not-displayed-in-chart-js
- *
- *
- *
- *
- *
- *
- *
- * */
 
