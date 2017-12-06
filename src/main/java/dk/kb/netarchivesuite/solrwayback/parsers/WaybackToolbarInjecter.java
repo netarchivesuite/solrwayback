@@ -187,10 +187,10 @@ public class WaybackToolbarInjecter {
     "       #tegModal.closed #tegContent,#tegModal.closed #closeSpinner{display: none}" +
     "       #tegModal .infoLine{margin-bottom: .5em;}" +
     "       #tegModal a img {display: inline-block; margin: 2em 3em 2em 0; max-height: 60px; }" +        
-    "       #tegModal a {color: #0000cc; font-size: 14px; text-decoration: none}" +
-    "       #tegModal a:hover {color: #0000cc; text-decoration: underline}"+    
+    "       #tegModal a {color: #003399; font-size: 14px; text-decoration: none}" +
+    "       #tegModal a:hover {color: #003399; text-decoration: underline}"+
     "       #tegModal.closed a:hover {text-decoration: none}"+
-    "       #tegModal .label{display: inline-block;font-weight: bold; min-width: 110px;}" +
+    "       #tegModal .label{background:transparent;color:black;display: inline-block;font-size:12px;font-weight: bold; min-width: 110px;text-align: left;}" +
     "       #tegModal .inlineLabel{display: inline-block;font-weight: bold; margin: 0 .2em 0 .8em;}" +
     "       #tegModal .paging .inlineLabel{margin: 0 .5em 0 .1em;}" +
     "       #tegModal .paging{border-top: 1px solid #ccc; margin-top: 1em; padding-top: 0.8em;}" +
