@@ -252,11 +252,13 @@ Vue.component('result-box', {
             <div v-if="doc.score" class="item">
                 <div class="label">Score:</div>
                 <div class="text">{{ doc.score }}</div>
-            </div> 
-            <div v-if="doc.highlights && Object.keys(doc.highlights).length > 0" class="item">
-                <div class="label">Highlighted content:</div>
-                <div class="text" v-html="doc.highlights.content[0]"></div>
             </div>
+            <template v-if="doc.highlights">   
+                <div v-if="Object.keys(doc.highlights).length > 0" class="item">
+                     <div class="label">Highlighted content:</div>
+                     <div class="text" v-html="doc.highlights.content[0]"></div>
+                </div>
+            </template>
             <div v-if="doc.content" class="item">
                 <div class="label">Full content:</div>
                 <div v-if="doc.content.length > 120" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content }}</div>
@@ -502,6 +504,8 @@ var app = new Vue({
                     if(!this.imageSearch){
                         this.searchResult = response.body.response.docs;
                         if(response.body.highlighting){
+                            var highlights = response.body.highlighting;
+                        }else{
                             var highlights = response.body.highlighting;
                         }
 
