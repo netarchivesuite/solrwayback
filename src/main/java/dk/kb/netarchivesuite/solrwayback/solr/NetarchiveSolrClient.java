@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
 
+import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
@@ -171,9 +172,8 @@ public class NetarchiveSolrClient {
     final String statsField= "crawl_date";
 
     int results=0;
-
-    String urlNormFixed = fixUrlNormQuery(url_norm);
-    String query = "(url:\""+url_norm+"\" OR "+ urlNormFixed +") AND crawl_date:{\""+crawlDate+"\" TO *]";    
+    
+    String query = "url_norm:\""+url_norm+"\" AND crawl_date:{\""+crawlDate+"\" TO *]";    
 
     SolrQuery solrQuery = new SolrQuery(query);            
 
@@ -195,8 +195,8 @@ public class NetarchiveSolrClient {
       }
     }
 
-    urlNormFixed = fixUrlNormQuery(url_norm);    
-    solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR "+urlNormFixed +") AND crawl_date:[* TO \""+crawlDate+"\"}");                
+    
+    solrQuery = new SolrQuery("(url_norm:\""+url_norm+"\") AND crawl_date:[* TO \""+crawlDate+"\"}");                
     solrQuery.setRows(1);
     solrQuery.setGetFieldStatistics(true);
     solrQuery.setGetFieldStatistics(statsField);
@@ -220,7 +220,7 @@ public class NetarchiveSolrClient {
 
     if (domain == null){      
       //This can happen if we only have 1 harvest. It will not be include in the {x,*] og [*,x } since x is not included
-      solrQuery = new SolrQuery("(url:\""+url_norm+"\" OR "+urlNormFixed +")");            
+      solrQuery = new SolrQuery("url_norm:\""+url_norm+"\"");            
       solrQuery.setRows(1);
       solrQuery.setGetFieldStatistics(true);
       solrQuery.setGetFieldStatistics(statsField);
@@ -311,9 +311,9 @@ public class NetarchiveSolrClient {
   public ArrayList<Date> getHarvestTimesForUrl(String url) throws Exception {
     System.out.println("harvesttimes for url:"+url);
     ArrayList<Date> dates = new ArrayList<Date>();
-    String urlNormFixed = fixUrlNormQuery(url);    
+    String urlNormFixed = normalizeUrl(url);    
     SolrQuery solrQuery = new SolrQuery();
-    solrQuery = new SolrQuery("(url:\""+url+"\" OR "+urlNormFixed+")");     
+    solrQuery = new SolrQuery("url_norm:\""+urlNormFixed+"\"");     
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","id, crawl_date");    
     solrQuery.setRows(1000000);
@@ -332,9 +332,9 @@ public class NetarchiveSolrClient {
 
   public ArrayList<IndexDoc> getHarvestPreviewsForUrl(String url) throws Exception {
 
-    String urlNormFixed = fixUrlNormQuery(url);    
+    String urlNormFixed = normalizeUrl(url);    
     SolrQuery solrQuery = new SolrQuery();
-    solrQuery = new SolrQuery("(url:\""+url+"\" OR "+urlNormFixed+")");     
+    solrQuery = new SolrQuery("(url_norm:\""+urlNormFixed+"\"");     
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl","id, crawl_date,source_file_path, source_file, source_file_offset, score");    
     solrQuery.add("sort","crawl_date asc");
@@ -474,10 +474,10 @@ public class NetarchiveSolrClient {
 
     //Generate URL string: (url:"A" OR url:"B" OR ....)
     StringBuffer buf = new StringBuffer();
-    buf.append("(url:test"); //Just to avoid last OR logic
+    buf.append("(url_norm:test"); //Just to avoid last OR logic
     int i =0;
     for (String  url : urls) {            
-      buf.append(" OR url:\""+url+"\"");        
+      buf.append(" OR url_norm:\""+normalizeUrl(url)+"\"");        
 
     }
     buf.append(")");
@@ -524,8 +524,8 @@ public class NetarchiveSolrClient {
       throw new IllegalArgumentException("harvestUrl or timeStamp is null"); // Can happen for url-rewrites that are not corrected       
     }
 
-    String urlNormFixed = fixUrlNormQuery(url);
-    String query = "(url:\""+url+"\" OR "+ urlNormFixed +")";//Seems there is an error with url_norm. WWW is not always removed    
+    String urlNormFixed = normalizeUrl(url);
+    String query = "url_norm:\""+ urlNormFixed +"\"";//Seems there is an error with url_norm. WWW is not always removed    
 
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
@@ -766,26 +766,10 @@ public class NetarchiveSolrClient {
   }
 
 
-  //www,http,https combinations
-  private static String fixUrlNormQuery(String url){
-    int index = url.indexOf("://");
-    String lastPart = url.substring(index+3);
-
-    if (lastPart.startsWith("www.")){
-      lastPart=lastPart.substring(4);
-    }    
-    StringBuffer query = new StringBuffer(); 
-
-    query.append("url_norm:\"http://www."+lastPart +"\"");
-    query.append(" OR");
-    query.append(" url_norm:\"https://www."+lastPart+"\"");
-    query.append(" OR");
-    query.append(" url_norm:\"https://"+lastPart+"\"");
-    query.append(" OR");
-    query.append(" url_norm:\"http://"+lastPart+"\"");      
-    return  query.toString(); 
+  private static String normalizeUrl(String url){
+    return Normalisation.canonicaliseURL(url);          
   }
 
-
+  
 
 }

@@ -293,8 +293,8 @@ public class HtmlParserUrlRewriter {
 			if (url == null  || url.trim().length()==0){
 				continue;
 			}
-			String urlFixed = url.replace(" ", "%20");
-			IndexDoc indexDoc = map.get(urlFixed);   
+			
+			IndexDoc indexDoc = map.get(url);   
 			if (indexDoc!=null){    		    			 
 				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset();    			 
 				e.attr(attribute,newUrl);    			     		 
@@ -324,8 +324,8 @@ public class HtmlParserUrlRewriter {
 			if ( urlUnresolved != null){
 				URL base = new URL(baseUrl);
 				String resolvedUrl = new URL( base ,urlUnresolved).toString();			
-				String resolvedUrlfixed = resolvedUrl.replaceAll(" ", "%20");
-				IndexDoc indexDoc = map.get(resolvedUrlfixed);   
+				
+				IndexDoc indexDoc = map.get(resolvedUrl);   
 				if (indexDoc!=null){    		    			 
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();    			     		
 					String styleFixed=style.replaceAll(urlUnresolved,newUrl);    			     
@@ -362,8 +362,7 @@ public class HtmlParserUrlRewriter {
 			if (unResolvedUrl != null){
 				URL base = new URL(baseUrl);
 				URL resolvedUrl = new URL( base , unResolvedUrl);			
-				String resolvedUrlFixed = resolvedUrl.toString().replace(" ", "%20");
-				set.add(resolvedUrlFixed);
+				set.add(resolvedUrl.toString());
 			}
 
 		}
@@ -389,8 +388,7 @@ public class HtmlParserUrlRewriter {
 			if (url == null  || url.trim().length()==0){
 				continue;
 			}    		     		
-			String urlFixed = url.replace(" ","%20");
-			set.add(urlFixed);   		    		 		
+			set.add(url);   		    		 		
 		}
 	}
 
@@ -405,9 +403,8 @@ public class HtmlParserUrlRewriter {
             String cssUrl= m.group(1);         
               URL base = new URL(baseUrl);
               URL resolvedUrl = new URL( base , cssUrl);           
-              
-              String resolvedUrlFixed = resolvedUrl.toString().replaceAll(" ","%20");
-              set.add(resolvedUrlFixed);
+                            
+              set.add(resolvedUrl.toString());
         }                   
       }
   }
@@ -424,8 +421,8 @@ public class HtmlParserUrlRewriter {
           URL base = new URL(baseUrl);
           URL resolvedUrl = new URL( base , url);            
           
-          String resolvedUrlFixed = resolvedUrl.toString().replace(" ","%20");
-          IndexDoc indexDoc = map.get(resolvedUrlFixed);   
+
+          IndexDoc indexDoc = map.get(resolvedUrl.toString());   
           if (indexDoc!=null){                             
               String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"_STYLE_AMPERSAND_REPLACE_offset="+indexDoc.getOffset();                 
               log.info("replaced @import:"+e );

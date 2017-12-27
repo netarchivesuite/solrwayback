@@ -473,13 +473,15 @@ public class SolrWaybackResource {
   @Path("/wayback")
   public Response wayback(@Context UriInfo uriInfo) throws ServiceException {      
     //Get the full request url and find the waybackdata object
-    try {    		
+    try {
+      
       String fullUrl = uriInfo.getRequestUri().toString();
+
+      
       int dataStart=fullUrl.indexOf("/wayback?waybackdata=");
       if (dataStart <0){
         throw new InvalidArgumentServiceException("no waybackdata parameter in call. Syntax is: wayback?waybackdata={time}/{url}");
       }
-
       String waybackDataObject = fullUrl.substring(dataStart+21);
       log.info("Waybackdata object:"+waybackDataObject);
 
