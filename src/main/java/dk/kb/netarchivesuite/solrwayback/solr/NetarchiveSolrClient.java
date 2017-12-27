@@ -429,7 +429,6 @@ public class NetarchiveSolrClient {
 
 
   public SearchResult search(String searchString, String filterQuery, int results) throws Exception {
-    log.info("search for:" + searchString +" and filter:"+filterQuery);
     SearchResult result = new SearchResult();
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
@@ -447,7 +446,6 @@ public class NetarchiveSolrClient {
     result.setNumberOfResults(docs.getNumFound());
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
     result.setResults(indexDocs);
-    log.info("search for:" + searchString + " found:" + result.getNumberOfResults());
     return result;
   }
 

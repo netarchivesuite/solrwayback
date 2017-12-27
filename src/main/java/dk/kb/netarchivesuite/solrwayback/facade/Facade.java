@@ -509,7 +509,7 @@ public class Facade {
         	String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);        
         	
         	arc.setBinary(textReplaced.getBytes(encoding));    	
-            log.info("Generating css total processing:"+(System.currentTimeMillis()-start));
+            log.debug("Generating css total processing:"+(System.currentTimeMillis()-start));
         	return arc;
         	
         }
