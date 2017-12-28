@@ -460,6 +460,11 @@ public class HtmlParserUrlRewriter {
 		}   		  		
 	}
 
+	
+	/*
+	 * If using url as a query parameter
+	 * 
+	 */
 public static String canonicalizeUrl(String url) throws Exception{
   String urlNorm=Normalisation.canonicaliseURL(url); 
   String urlEncoded=URLEncoder.encode(urlNorm, "UTF-8");

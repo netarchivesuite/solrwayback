@@ -223,7 +223,7 @@ Vue.component('result-box', {
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
                 <h3>
-                <a v-bind:href=" baseUrl + 'services/view?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
+                <a v-bind:href=" baseUrl + 'services/viewForward?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
                 </a>

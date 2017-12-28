@@ -305,7 +305,9 @@ public class WarcParser {
      }
     
      
-     private static String  date2waybackdate(Date date) {
+     
+     //TODO move to util class
+       public static String  date2waybackdate(Date date) { 
        SimpleDateFormat dForm = new SimpleDateFormat("yyyyMMddHHmmss");        
        try {
        String waybackDate = dForm.format(date);

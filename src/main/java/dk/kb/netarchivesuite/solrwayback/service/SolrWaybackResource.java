@@ -4,8 +4,10 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,6 +23,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
@@ -32,6 +35,9 @@ import com.sun.jersey.multipart.FormDataParam;
 import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
+import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
+import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
@@ -509,13 +515,46 @@ public class SolrWaybackResource {
         throw new IllegalArgumentException("Url has never been harvested:"+url);
       }
       //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
-      return view(doc.getSource_file_path() , doc.getOffset(),true);        
+      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);        
 
     } catch (Exception e) {
       e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
+
+    
+  @GET
+  @Path("/viewForward")
+  public Response viewForward(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws ServiceException {
+    try {
+      IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
+      
+      String url =  arcEntry.getUrl();
+      String crawlDate = arcEntry.getCrawlDate();
+      Instant instant = Instant.parse (crawlDate);  //JAVA 8
+      Date date = java.util.Date.from( instant );      
+      String waybackDate = WarcParser.date2waybackdate(date);
+      
+      String urlEncoded=HtmlParserUrlRewriter.canonicalizeUrl(url);            
+                            
+     //Format is: ?waybackdata=20080331193533/http://ekstrabladet.dk/112/article990050.ece 
+      String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/wayback?waybackdata="+waybackDate+"/"+urlEncoded;
+       
+            
+      URI uri = UriBuilder.fromUri(newUrl).build();
+      log.info("forwarding to:"+url.toString());
+      return Response.seeOther( uri ).build(); //Jersey way to forward response.
+      
+      
+      //return viewImpl(source_file_path, offset,showToolbar);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw handleServiceExceptions(e);
+    }
+  }
+
 
   @GET
   @Path("/view")
@@ -529,8 +568,8 @@ public class SolrWaybackResource {
       throw handleServiceExceptions(e);
     }
   }
-
-
+  
+  
   @GET
   @Path("/generatepwid")
   public String generatePid(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
