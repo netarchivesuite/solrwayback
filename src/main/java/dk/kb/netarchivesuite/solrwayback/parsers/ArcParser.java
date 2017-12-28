@@ -56,7 +56,10 @@ public class ArcParser {
             }         
                         
             arcEntry.setFileName(getArcLastUrlPart(line));            
-            arcEntry.setCrawlDate(getCrawlDate(line));
+            
+            String waybackDate = getWaybackDate(line);                    
+            arcEntry.setCrawlDate(waybackdate2crawldate(waybackDate));          
+            arcEntry.setWaybackDate(waybackDate);                       
             arcEntry.setUrl(getArcUrl(line));
             arcEntry.setIp(getIp(line));
             
@@ -117,8 +120,10 @@ public class ArcParser {
             throw new IllegalArgumentException("ARC header does not start with http : "+line);
           }            
           
-          arcEntry.setFileName(getArcLastUrlPart(line));            
-          arcEntry.setCrawlDate(getCrawlDate(line));
+          arcEntry.setFileName(getArcLastUrlPart(line));                    
+          String waybackDate = getWaybackDate(line);                    
+          arcEntry.setCrawlDate(waybackdate2crawldate(waybackDate));          
+          arcEntry.setWaybackDate(waybackDate);
           arcEntry.setUrl(getArcUrl(line));
           arcEntry.setIp(getIp(line));            
           
@@ -230,23 +235,31 @@ public class ArcParser {
 
     
     
-    private static String getCrawlDate(String arcHeaderLine) throws Exception {
-    	SimpleDateFormat dForm = new SimpleDateFormat("yyyyMMddHHmmss");    
+ 
+    
+    
+    private static String  waybackdate2crawldate(String waybackdate) throws Exception {
+        SimpleDateFormat dForm = new SimpleDateFormat("yyyyMMddHHmmss");    
         DateFormat solrDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");    
 
-    	try {
-        String[] split = arcHeaderLine.split(" ");
-        String crawlDateTime = split[2];
-    	Date d = dForm.parse(crawlDateTime);
-    	String format = solrDateFormat.format(d);
-    	
-    	return format+"Z";         
-    	} 
-    	catch(Exception e){
-    		log.error("error Parsing crawlDate from headline:"+arcHeaderLine);
-    		throw new RuntimeException("Could not parse timestamp from '" + arcHeaderLine+"'",e);
-    	}
+        try {
+
+        Date d = dForm.parse(waybackdate);
+        String format = solrDateFormat.format(d);
+        
+        return format+"Z";         
+        } 
+        catch(Exception e){        
+            throw new RuntimeException("Could not parse waybackdate from:"+waybackdate,e);
+        }
     }
+    
+    
+    private static String getWaybackDate(String arcHeaderLine) throws Exception {
+      String[] split = arcHeaderLine.split(" ");
+      return split[2];                                
+  }
+  
     
     private static void populateArcHeader(ArcEntry arcEntry, String headerLine) {
         if (headerLine.toLowerCase().startsWith("content-length:")) {

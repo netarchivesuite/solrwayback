@@ -31,7 +31,9 @@ public class ArcParserTest extends UnitTestUtils{
         assertEquals(300,image.getWidth());
         assertEquals(116,image.getHeight());
         System.out.println(arcEntry.getUrl());
-
+        System.out.println(arcEntry.getWaybackDate());;
+        System.out.println(arcEntry.getCrawlDate());
+        
     }
     /*
     @Test

@@ -17,6 +17,7 @@ public class ArcEntry {
   private String fileName;
   private String crawlDate; // format 2009-12-09T05:32:50Z
   private String contentEncoding;
+  private String waybackDate; // format 20080331193532
 
   public byte[] getBinary() {
     return binary;
@@ -53,6 +54,13 @@ public class ArcEntry {
   }
   public void setCrawlDate(String crawlDate) {
     this.crawlDate = crawlDate;
+  }
+  
+  public String getWaybackDate() {
+    return waybackDate;
+  }
+  public void setWaybackDate(String waybackDate) {
+    this.waybackDate = waybackDate;
   }
   public String getUrl() {
     return url;

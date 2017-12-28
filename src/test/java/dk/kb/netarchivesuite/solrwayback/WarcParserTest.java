@@ -32,7 +32,13 @@ public class WarcParserTest extends UnitTestUtils{
         assertEquals(300,image.getWidth());
         assertEquals(116,image.getHeight());        
         assertEquals(" http://www.archive.org/images/hewlett.jpg",arcEntry.getUrl());
+        
+        System.out.println(arcEntry.getCrawlDate());
+        System.out.println(arcEntry.getWaybackDate());
+    
     }
+    
+    
 
              
 }

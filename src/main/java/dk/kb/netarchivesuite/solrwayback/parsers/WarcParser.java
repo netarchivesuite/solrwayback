@@ -10,7 +10,11 @@ import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.zip.GZIPInputStream;
 
 import org.slf4j.Logger;
@@ -226,8 +230,13 @@ public class WarcParser {
         
         else if (headerLine.startsWith("WARC-Date:")) {
             String[] contentLine = headerLine.split(" ");
-                           
-            warcEntry.setCrawlDate(contentLine[1].trim());                       
+             String crawlDate =contentLine[1].trim();  //Zulu time                                      
+             warcEntry.setCrawlDate(crawlDate);
+                                        
+             Instant instant = Instant.parse (crawlDate);  //JAVA 8
+             Date date = java.util.Date.from( instant );
+             String waybackDate = date2waybackdate(date);             
+             warcEntry.setWaybackDate(waybackDate);                          
         }
         
         
@@ -247,9 +256,7 @@ public class WarcParser {
                  if (charset.startsWith("charset=")){
                    String headerEncoding=charset.substring(8);
                    warcEntry.setContentEncoding(headerEncoding);
-                 }
-                  
-                 
+                 }                                   
                }
                
                
@@ -297,5 +304,17 @@ public class WarcParser {
        
      }
     
+     
+     private static String  date2waybackdate(Date date) {
+       SimpleDateFormat dForm = new SimpleDateFormat("yyyyMMddHHmmss");        
+       try {
+       String waybackDate = dForm.format(date);
+       return waybackDate;                              
+       } 
+       catch(Exception e){        
+       log.error("Could not parse date:"+date,e);
+       return "20170101010101"; //Default, should never happen.
+       }
+   }
     
 }

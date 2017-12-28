@@ -204,9 +204,9 @@ public class HtmlParserUrlRewriter {
 		
 
 		//This are not resolved until clicked
-		rewriteUrlForElement(doc, "a" ,"href",arc.getCrawlDate());
-		rewriteUrlForElement(doc, "area" ,"href",arc.getCrawlDate());		
-		rewriteUrlForElement(doc, "form" ,"action",arc.getCrawlDate());
+		rewriteUrlForElement(doc, "a" ,"href",arc.getWaybackDate());
+		rewriteUrlForElement(doc, "area" ,"href",arc.getWaybackDate());		
+		rewriteUrlForElement(doc, "form" ,"action",arc.getWaybackDate());
 
 		log.info("Number of resolves:"+urlSet.size() +" total time:"+(System.currentTimeMillis()-start));    	 
         log.info("numberOfReplaced:"+numberOfLinksReplaced + " numbernotfound:"+numberOfLinksNotFound);
@@ -446,15 +446,17 @@ public class HtmlParserUrlRewriter {
 	 * Only rewrite to new service, no need to resolve until clicked
 	 * 
 	 */
-	public static void rewriteUrlForElement(Document doc, String element, String attribute,  String crawlDate) throws Exception{      
+	public static void rewriteUrlForElement(Document doc, String element, String attribute,  String waybackDate) throws Exception{      
 		for (Element e : doc.select(element)) {
 			String url = e.attr("abs:"+attribute);
 			if (url == null  || url.trim().length()==0){
 				continue;
 			}    		               
             String urlEncoded=canonicalizeUrl(url);            
-			String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+"viewhref?url="+urlEncoded+"&crawlDate="+crawlDate;    			
-			e.attr("href",newUrl);    			     		 
+       			//String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+"viewhref?url="+urlEncoded+"&crawlDate="+crawlDate;    			            
+           //Format is: ?waybackdata=20080331193533/http://ekstrabladet.dk/112/article990050.ece 
+            String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/wayback?waybackdata="+waybackDate+"/"+urlEncoded;
+            e.attr("href",newUrl);    			     		 
 		}   		  		
 	}
 
