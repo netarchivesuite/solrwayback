@@ -523,8 +523,10 @@ public class NetarchiveSolrClient {
     }
 
     String urlNormFixed = normalizeUrl(url);
-    String query = "url_norm:\""+ urlNormFixed +"\"";//Seems there is an error with url_norm. WWW is not always removed    
-
+    String query = "url_norm:\""+ urlNormFixed +"\"";    
+    log.info("search for url_norm:"+urlNormFixed);
+    
+    
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
 
