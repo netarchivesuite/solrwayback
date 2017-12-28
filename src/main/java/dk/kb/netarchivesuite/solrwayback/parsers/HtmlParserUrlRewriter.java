@@ -451,11 +451,10 @@ public class HtmlParserUrlRewriter {
 			String url = e.attr("abs:"+attribute);
 			if (url == null  || url.trim().length()==0){
 				continue;
-			}    		               
-            String urlEncoded=canonicalizeUrl(url);            
+			}    		                                      
        			//String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+"viewhref?url="+urlEncoded+"&crawlDate="+crawlDate;    			            
            //Format is: ?waybackdata=20080331193533/http://ekstrabladet.dk/112/article990050.ece 
-            String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/wayback?waybackdata="+waybackDate+"/"+urlEncoded;
+            String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+url;
             e.attr("href",newUrl);    			     		 
 		}   		  		
 	}

@@ -17,6 +17,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -468,6 +469,55 @@ public class SolrWaybackResource {
 
 
   /*
+   * '/web/' is the same as wayback machine uses. 
+   * 
+   * Jersey syntax to match all after /web/.
+   */
+  @GET
+  @Path("/web/{var:.*?}")
+  public Response testUrl(@Context UriInfo uriInfo, @PathParam("var") String path) throws ServiceException {
+    try {        
+      //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
+      log.info("/web/ called with data:"+path);
+      String fullUrl = uriInfo.getRequestUri().toString();
+      log.info("full url:"+fullUrl);
+     
+      int dataStart=fullUrl.indexOf("/web/");
+      
+      String waybackDataObject = fullUrl.substring(dataStart+5);
+      log.info("Waybackdata object:"+waybackDataObject);
+
+      int indexFirstSlash = waybackDataObject.indexOf("/");  
+             
+      String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
+      String url = waybackDataObject.substring(indexFirstSlash+1);
+
+      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");          
+      Date date = waybackDateFormat.parse(waybackDate);
+
+      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new                   
+      String solrDate = dateFormat.format(date)+"Z";
+
+      //log.info("solrDate="+solrDate +" , url="+url);
+      IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
+      if (doc == null){
+        log.info("Url has never been harvested:"+url);
+        throw new IllegalArgumentException("Url has never been harvested:"+url);
+      }
+      //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
+      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);        
+      
+                     
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw handleServiceExceptions(e);
+    }
+
+  }
+
+  
+  
+  /*
    * Example call:
    * wayback?waybackdata=19990914144635/http://209.130.118.14/novelle/novelle.asp?id=478&grp=3
    * Since the URL part is not url encoded we can not use a jersey queryparam for the string
@@ -535,20 +585,14 @@ public class SolrWaybackResource {
       Instant instant = Instant.parse (crawlDate);  //JAVA 8
       Date date = java.util.Date.from( instant );      
       String waybackDate = WarcParser.date2waybackdate(date);
-      
-      String urlEncoded=HtmlParserUrlRewriter.canonicalizeUrl(url);            
-                            
-     //Format is: ?waybackdata=20080331193533/http://ekstrabladet.dk/112/article990050.ece 
-      String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/wayback?waybackdata="+waybackDate+"/"+urlEncoded;
-       
-            
+                                             
+     //Format is: /web/20080331193533/http://ekstrabladet.dk/112/article990050.ece 
+      String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+url;
+                   
       URI uri = UriBuilder.fromUri(newUrl).build();
       log.info("forwarding to:"+url.toString());
       return Response.seeOther( uri ).build(); //Jersey way to forward response.
-      
-      
-      //return viewImpl(source_file_path, offset,showToolbar);
-
+           
     } catch (Exception e) {
       e.printStackTrace();
       throw handleServiceExceptions(e);
