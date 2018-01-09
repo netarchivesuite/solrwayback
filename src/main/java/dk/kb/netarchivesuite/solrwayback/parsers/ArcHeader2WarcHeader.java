@@ -53,11 +53,11 @@ public class ArcHeader2WarcHeader {
     String[] tokens = arcHeader.split(" ");
     int  binaryLengthHeader = Integer.parseInt(tokens[tokens.length-1]);
     
-    if (binaryLengthHeader != contentLength) { //Something is wrong. Happens very rare. Seems always 2 byte off
-      log.warn("Error convert arc header:"+arcHeader+ " binary content length does not match. calculated:"+contentLength +": from header"+binaryLengthHeader);  
+    if (binaryLengthHeader != contentLength) { //Just an observation. 
+      //no need to log.
+      //log.info("Arc binary content length mismatch between arc header info and actual size. Actual size:"+contentLength +": from header"+binaryLengthHeader);  
     }
-        
-    
+            
     StringBuilder b = new StringBuilder();
     b.append("WARC/1.0"+newLineChar);
     b.append("WARC-Type: response"+newLineChar);
@@ -67,7 +67,7 @@ public class ArcHeader2WarcHeader {
     b.append("WARC-IP-Address: "+arc.getIp()+newLineChar);
     b.append("WARC-Record-ID: <urn:uuid:"+UUID.randomUUID().toString()+">"+newLineChar);    
     b.append("Content-Type: application/http; msgtype=response"+newLineChar);
-    b.append("Content-Length: "+contentLength+newLineChar);  //TODO fix
+    b.append("Content-Length: "+binaryLengthHeader +newLineChar); 
     b.append(newLineChar);
     //Now append the arc header, except first line
      
