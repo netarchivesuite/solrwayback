@@ -125,7 +125,12 @@ public class HtmlParserUrlRewriter {
 	public static String replaceLinksCss(ArcEntry arc) throws Exception{
 
 		String type="downloadRaw"; //not supporting nested @imports...
-		String css = new String(arc.getBinary(),arc.getContentEncoding());
+         String encoding = arc.getContentEncoding();
+         if (encoding == null){
+           encoding ="UTF-8";   
+         }
+		
+		String css = new String(arc.getBinary(),encoding);
 		String url=arc.getUrl();
 
 		String[] result = css.split("\n", 100); //Doubt there will be more than 100 of these.
