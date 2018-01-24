@@ -188,6 +188,7 @@ var app = new Vue({
         this.$http.get(serviceUrl).then((response) => {
             this.harvestData = response.body;
             console.log('this.harvestData: ', this.harvestData);
+            this.showPreview(this.harvestData[0].crawlDate)
         }, (response) => {
             console.log('error: ', response);
         });
