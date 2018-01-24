@@ -615,7 +615,10 @@ input.imageSearchCheck{
 }
 
 .webPageThumb{
+    background: white url(../images/loader30.gif) no-repeat 30px 30px;
     border: 1px solid black;
+    min-height: 90px;
+    min-width: 90px;
     max-width: 100%;
 }
 
