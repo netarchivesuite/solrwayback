@@ -1,17 +1,17 @@
 package dk.kb.netarchivesuite.solrwayback.smurf;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.YearCount;
 
-
 public class SmurfUtil {
-  
-  
+    
   public static  SmurfYearBuckets generateYearBuckets(HashMap<Integer, Long> yearFacetsQuery,  HashMap<Integer, Long>  yearFacetsAll , int baseYear , Integer endyear){
     
     ArrayList<Double> yearCountPercent = new  ArrayList<Double>();  
@@ -62,8 +62,10 @@ public class SmurfUtil {
   
   
   private static double divide(long l1,long l2){
-    DecimalFormat df = new DecimalFormat("#.##########");    
-    double percent=  (double) l1  /  (double) l2;             
+    NumberFormat nf = DecimalFormat.getInstance(Locale.ENGLISH);
+    DecimalFormat df = (DecimalFormat)nf;
+    df.applyPattern("#.##########");   
+    double percent=  (double) l1  /  (double) l2;     
     return Double.parseDouble(df.format(percent));    
   }
   
