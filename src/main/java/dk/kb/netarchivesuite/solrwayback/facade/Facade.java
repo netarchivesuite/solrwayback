@@ -485,9 +485,15 @@ public class Facade {
 
     	String encoding = arc.getContentEncoding();
     	if (encoding == null){
-    	  encoding ="UTF-8";
-    	}
-    	arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
+    	  encoding =Facade.getEncoding(source_file_path, ""+offset); //Ask the index
+    	}    	
+    	if (encoding == null){
+    	  log.warn("Encoding not found for:"+source_file_path +" and offset:"+offset);    	  
+           encoding="ISO-8859-1"; //Is UTF-8 a better default? 
+    	}    	
+    	log.info("encoding detected:"+encoding);
+
+    	arc.setContentEncoding(encoding);
     	if (("text/html".equals(arc.getContentType()))){
     		long start = System.currentTimeMillis();
         	log.debug(" Generate webpage from FilePath:" + source_file_path + " offset:" + offset);
