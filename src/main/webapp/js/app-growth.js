@@ -12,7 +12,7 @@ Vue.component('header-container', {
         <h1>Domain developement for: <span  v-if="domain">{{ domain }}</span></h1>
         <search-box :domain="domain" :get-data="getData"></search-box>
         <div id="nohitsDomain" v-if="!hasResults" class="box">
-            <p>No results in the Netarchive for domain: <strong>{{ domain }}</strong></strong></p>
+            <p>No results in the Netarchive for domain: <strong>{{ domain }}</strong></p>
         </div>
     </div>    
     `,
