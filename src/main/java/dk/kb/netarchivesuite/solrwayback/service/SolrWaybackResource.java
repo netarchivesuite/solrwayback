@@ -588,9 +588,15 @@ public class SolrWaybackResource {
                                              
      //Format is: /web/20080331193533/http://ekstrabladet.dk/112/article990050.ece 
       String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+url;
-                   
+      
+      //Below is for Open wayback at KB
+    // String newUrl="http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url="+url+"&time="+waybackDate;
+      //http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url=http%3A%2F%2Fwww.stiften.dk%2F&time=20120328044226
+      log.info("forward url:"+newUrl);
+      
+      
       URI uri = UriBuilder.fromUri(newUrl).build();
-      log.info("forwarding to:"+url.toString());
+      log.info("forwarding to:"+uri.toString());
       return Response.seeOther( uri ).build(); //Jersey way to forward response.
            
     } catch (Exception e) {
