@@ -43,7 +43,7 @@ Vue.component('table-container', {
     props: ["rawData"],
     template: `
     <div id="domainGrowthTableContainer">
-        <table id="domainGrowthTable" v-if="rawData.length > 0">
+        <table id="domainGrowthTable">
             <thead>
                 <tr>
                     <th></th>
@@ -88,12 +88,53 @@ var app = new Vue({
             this.showSpinner();
 
             this.tags.push(tag);
-            if(this.tags.length > 1){
+            if(this.tags.length > 2){
                 this.tags.shift();
             }
-            console.log('this.tags', this.tags)
-
+            console.log('this.tags', this.tags);
+            var promises = [];
             for( var i = 0; i < this.tags.length; i++ ){
+                var tagsUrl = 'http://' + location.host + '/solrwayback/services/smurf/tags?tag=' + this.tags[i];
+                promises.push(this.$http.get(tagsUrl));
+                console.log('tagsUrl', tagsUrl)
+            }
+            console.log('PROMISES   ', promises)
+            Promise.all(promises).then((response) => {
+                    this.errorMsg = "";
+                    this.chartLabels = []; // Resetting data arrays
+                    this.tag1 = []; // Resetting data arrays
+                    this.tag2 = []; // Resetting data arrays
+                    this.rawData = response[0].body;
+                    if(response[1]){
+                        this.rawData2 = response[1].body;
+                        for(var i = 0; i < this.rawData2.yearCountPercent.length; i++){
+                            this.tag2.push(this.rawData2.yearCountPercent[i] * 100);
+                        }
+                    }
+
+
+                    for(var i = 0; i < this.rawData.yearCountsTotal.length; i++){
+                        this.chartLabels.push(this.rawData.yearCountsTotal[i].year);
+                       /*this.ingoingLinks.push(this.rawData[i].ingoingLinks);
+                        this.numberOfPages.push(this.rawData[i].totalPages);*/
+                    }
+                    for(var i = 0; i < this.rawData.yearCountPercent.length; i++){
+                        this.tag1.push(this.rawData.yearCountPercent[i] * 100);
+                    }
+                    console.log('response: ', response);
+                    console.log('this.rawData: ', this.rawData);
+                    this.drawChart();
+                    this.hideSpinner();
+                    /*if(response.body.error){
+                        this.errorMsg = response.body.error.msg;
+                        return;
+                    }*/
+                }, (response) => {
+                    console.log('error: ', response);
+                    this.hideSpinner();
+                });
+
+            /*for( var i = 0; i < this.tags.length; i++ ){
                 var tagsUrl = 'http://' + location.host + '/solrwayback/services/smurf/tags?tag=' + this.tags[i];
                 console.log('tagsUrl', tagsUrl)
 
@@ -105,8 +146,6 @@ var app = new Vue({
                     this.rawData = response.body;
                     for(var i = 0; i < this.rawData.yearCountsTotal.length; i++){
                         this.chartLabels.push(this.rawData.yearCountsTotal[i].year);
-                       /*this.ingoingLinks.push(this.rawData[i].ingoingLinks);
-                        this.numberOfPages.push(this.rawData[i].totalPages);*/
                     }
                     for(var i = 0; i < this.rawData.yearCountPercent.length; i++){
                         this.tag1.push(this.rawData.yearCountPercent[i] * 100);
@@ -123,7 +162,7 @@ var app = new Vue({
                     console.log('error: ', response);
                     this.hideSpinner();
                 });
-            }
+            }*/
         },
 
         drawChart: function(){
@@ -136,6 +175,12 @@ var app = new Vue({
                             data: this.tag1,
                             label: this.tags[0],
                             borderColor: "#0066cc",
+                            fill: false,
+                        },
+                        {
+                            data: this.tag2,
+                            label: this.tags[1],
+                            borderColor: "#00cc66",
                             fill: false,
                         }
                     ]
