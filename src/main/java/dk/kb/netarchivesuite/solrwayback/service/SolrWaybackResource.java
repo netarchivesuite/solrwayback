@@ -37,6 +37,7 @@ import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
+import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
@@ -123,6 +124,21 @@ public class SolrWaybackResource {
       }
   }
   
+  
+  @GET
+  @Path("/util/normalizeurl")
+  @Produces(MediaType.APPLICATION_JSON)
+  public String waybackgraph(@QueryParam("url") String url) throws ServiceException {
+    try{        
+      String url_norm = Normalisation.canonicaliseURL(url);       
+      log.info("normalizing url:"+url +" url_norm:"+url_norm);      
+      return url_norm;        
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw handleServiceExceptions(e);
+    }
+  }
   
   
   @GET
