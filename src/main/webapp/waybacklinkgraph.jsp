@@ -37,9 +37,9 @@ if (ingoing){
 <html>
 <meta charset="utf-8">
 <link rel="stylesheet" href="css/iThing-min.css" type="text/css" />
-<script src="http://d3js.org/d3.v2.min.js?2.9.3"></script>
-<script src="http://code.jquery.com/jquery-3.2.1.min.js"></script>
-<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>        
+<script src="js/d3.v2.min.js"></script>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>        
 <script src="js/jQDateRangeSlider-min.js"></script>
 
 <style>
