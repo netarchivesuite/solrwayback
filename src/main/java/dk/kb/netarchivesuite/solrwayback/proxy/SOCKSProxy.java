@@ -103,7 +103,7 @@ public class SOCKSProxy implements Runnable {
                     }
                    else{
                      log.info("leaking prevented for url:"+remoteAddr);
-                     throw new IOException("leaking prevented for url:"+remoteAddr);
+                     //throw new IOException("leaking prevented for url:"+remoteAddr);
                    }                                     
                 }
 
@@ -247,6 +247,7 @@ public class SOCKSProxy implements Runnable {
     proxy.setDaemon(true);
     proxy.start();      
 
+    Thread.sleep(100000000000L); //Keep alive
   }
 
     
