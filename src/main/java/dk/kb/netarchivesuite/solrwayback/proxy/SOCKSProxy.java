@@ -91,20 +91,29 @@ public class SOCKSProxy implements Runnable {
                     byte b;
                     while ((b = inbuf.get()) != 0) {
                         host += (char)b;
-                    }
+                    }                  
+                    if (host.toString().toLowerCase().startsWith(proxy_allow_host.toLowerCase())){
+                      System.out.println("Allowing:"+host);
+                      log.info("Allowing:"+host);
+                     }
+                    else{
+                      System.out.println("leaking prevented for url:"+host);
+                      log.info("leaking prevented for url:"+host);
+                     //TODO Toke. Følgende linie stopper leaks. Men den får også tingene til at hænge. 
+                      //Der bliver ikke afsluttet korrekt og lukket connections mm.
+                     // throw new IOException("leaking prevented for url:"+remoteAddr);  
+                    }                          
+                    
+                    
                     try{
                     remoteAddr = InetAddress.getByName(host);
+                    System.out.println("calling remoteadrr:"+remoteAddr);
+                    log.info("calling remoteadrr:"+remoteAddr);
                     }
                     catch(Exception e){
                       e.printStackTrace();
                     }                    
-                   if (remoteAddr.toString().toLowerCase().startsWith(proxy_allow_host.toLowerCase())){
-                     log.info("Proxying:"+remoteAddr);
-                    }
-                   else{
-                     log.info("leaking prevented for url:"+remoteAddr);
-                     //throw new IOException("leaking prevented for url:"+remoteAddr);
-                   }                                     
+                             
                 }
 
                 remote = SocketChannel.open(new InetSocketAddress(remoteAddr, port));
@@ -243,7 +252,7 @@ public class SOCKSProxy implements Runnable {
    *   
    */    
   public static void main(String args[]) throws Exception {  
-    Thread proxy = new Thread(new SOCKSProxy(9000,"teg-desktop.sb.statsbiblioteket.dk"));
+    Thread proxy = new Thread(new SOCKSProxy(9000,"belinda.statsbiblioteket.dk"));
     proxy.setDaemon(true);
     proxy.start();      
 
