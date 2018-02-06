@@ -4,8 +4,8 @@
  * Copyright (C) 2012 Toke Eskildsen, te@ekot.dk
  *
  * This is confidential source code. Unless an explicit written permit has been obtained,
- * distribution, compiling and all other use of this code is prohibited.    
-  */
+ * distribution, compiling and all other use of this code is prohibited.
+ */
 package dk.kb.netarchivesuite.solrwayback.proxy;
 
 import org.slf4j.Logger;
@@ -152,30 +152,36 @@ class SocksClient {
     }
 
     private void copyData(SocketChannel source, SocketChannel destination) throws IOException {
-      // TODO: Understand why we only copy 1KB here, instead of all available data
-      ByteBuffer buf = ByteBuffer.allocate(1024);
-      int bufSize;
-      while ((bufSize = source.read(buf)) != -1 && bufSize != 0) {
+        // TODO: Understand why we only copy 1KB here, instead of all available data
+        final long startTime = System.nanoTime();
+        long read = 0;
+
+        ByteBuffer buf = ByteBuffer.allocate(1024);
+        int bufSize;
+        while ((bufSize = source.read(buf)) != -1 && bufSize != 0) {
+            read += bufSize;
+            lastData = System.currentTimeMillis();
+            buf.flip();
+            destination.write(buf);
+        }
+        if (read != 0) {
+            log.info("Copied full buffer size " + read + " bytes in " +
+                     (System.nanoTime() - startTime) / 1000000 + " ms");
+        }
+    }
+    private void copyDataOld(SocketChannel source, SocketChannel destination) throws IOException {
+        // TODO: Understand why we only copy 1KB here, instead of all available data
+        ByteBuffer buf = ByteBuffer.allocate(1024);
+        int bufSize = source.read(buf);
         System.out.println("Buffer size read: " + bufSize);
-        log.info("Buffer size read: " + bufSize);
-        lastData = System.currentTimeMillis();                
+        if (bufSize == -1) {
+            log.warn("Disconnect under copyData");
+            System.out.println("Disconnect under copyData");
+            throw new IOException("disconnected");
+        }
+        lastData = System.currentTimeMillis();
         buf.flip();
         destination.write(buf);
-     }
-  }
-    private void copyDataOld(SocketChannel source, SocketChannel destination) throws IOException {
-      // TODO: Understand why we only copy 1KB here, instead of all available data
-      ByteBuffer buf = ByteBuffer.allocate(1024);
-      int bufSize = source.read(buf);
-      System.out.println("Buffer size read: " + bufSize);
-      if (bufSize == -1) {
-        log.warn("Disconnect under copyData");
-        System.out.println("Disconnect under copyData");          
-        throw new IOException("disconnected");
-      }
-      lastData = System.currentTimeMillis();                
-      buf.flip();
-      destination.write(buf);
-  }
+    }
 
 }
