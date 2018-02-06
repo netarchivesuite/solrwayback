@@ -77,9 +77,9 @@ var app = new Vue({
     data: {
         spinner: false,
         rawData: [],
+        dataArray: [],
         tags: [],
         chartLabels: [],
-        tag1: [],
         numberOfPages: [],
         hasResults: true,
     },
@@ -102,27 +102,22 @@ var app = new Vue({
             Promise.all(promises).then((response) => {
                     this.errorMsg = "";
                     this.chartLabels = []; // Resetting data arrays
-                    this.tag1 = []; // Resetting data arrays
-                    this.tag2 = []; // Resetting data arrays
-                    this.rawData = response[0].body;
-                    if(response[1]){
-                        this.rawData2 = response[1].body;
-                        for(var i = 0; i < this.rawData2.yearCountPercent.length; i++){
-                            this.tag2.push(this.rawData2.yearCountPercent[i] * 100);
+                    this.dataArrays = []; // Resetting data arrays
+                    for(var i = 0; i < response.length; i++){
+                        var tempPercents = []; // Resetting temp array
+                        this.dataArrays.push(response[i].body)
+                        for(var j = 0; j < this.dataArrays[i].yearCountPercent.length; j++){
+                            tempPercents.push(this.dataArrays[i].yearCountPercent[j] * 100); // recalculating to percents
                         }
+                        this.dataArrays[i].yearPercent = tempPercents; // Real percents are added to data objects
                     }
+                    console.log('this.dataArrays', this.dataArrays);
 
-
-                    for(var i = 0; i < this.rawData.yearCountsTotal.length; i++){
-                        this.chartLabels.push(this.rawData.yearCountsTotal[i].year);
-                       /*this.ingoingLinks.push(this.rawData[i].ingoingLinks);
-                        this.numberOfPages.push(this.rawData[i].totalPages);*/
-                    }
-                    for(var i = 0; i < this.rawData.yearCountPercent.length; i++){
-                        this.tag1.push(this.rawData.yearCountPercent[i] * 100);
+                    // Setting chart labels (years in chart)
+                    for(var i = 0; i < this.dataArrays[0].yearCountsTotal.length; i++){
+                        this.chartLabels.push(this.dataArrays[0].yearCountsTotal[i].year);
                     }
                     console.log('response: ', response);
-                    console.log('this.rawData: ', this.rawData);
                     this.drawChart();
                     this.hideSpinner();
                     /*if(response.body.error){
@@ -133,44 +128,14 @@ var app = new Vue({
                     console.log('error: ', response);
                     this.hideSpinner();
                 });
-
-            /*for( var i = 0; i < this.tags.length; i++ ){
-                var tagsUrl = 'http://' + location.host + '/solrwayback/services/smurf/tags?tag=' + this.tags[i];
-                console.log('tagsUrl', tagsUrl)
-
-                this.$http.get(tagsUrl).then((response) => {
-                    this.errorMsg = "";
-                    this.chartLabels = []; // Resetting data arrays
-                    this.tag1 = []; // Resetting data arrays
-                    this.tag2 = []; // Resetting data arrays
-                    this.rawData = response.body;
-                    for(var i = 0; i < this.rawData.yearCountsTotal.length; i++){
-                        this.chartLabels.push(this.rawData.yearCountsTotal[i].year);
-                    }
-                    for(var i = 0; i < this.rawData.yearCountPercent.length; i++){
-                        this.tag1.push(this.rawData.yearCountPercent[i] * 100);
-                    }
-                    console.log('response.body: ', response.body);
-                    console.log('this.rawData: ', this.rawData);
-                    this.drawChart();
-                    this.hideSpinner();
-                    if(response.body.error){
-                        this.errorMsg = response.body.error.msg;
-                        return;
-                    }
-                }, (response) => {
-                    console.log('error: ', response);
-                    this.hideSpinner();
-                });
-            }*/
         },
 
         drawChart: function(){
-            var domainGrowthChart = new Chart(document.getElementById("line-chart"), {
+            var chartData = {
                 type: 'line',
                 data: {
                     labels: this.chartLabels,
-                    datasets: [
+                    /*datasets: [
                         {
                             data: this.tag1,
                             label: this.tags[0],
@@ -183,7 +148,7 @@ var app = new Vue({
                             borderColor: "#00cc66",
                             fill: false,
                         }
-                    ]
+                    ]*/
                 },
                 options: {
                     title: {
@@ -207,14 +172,45 @@ var app = new Vue({
                         onClick: function(event, legendItem) {
                             var index = legendItem.datasetIndex;
                             //toggle the datasets visibility
-                            domainGrowthChart.data.datasets[index].hidden = !domainGrowthChart.data.datasets[index].hidden;
+                            tagsChart.data.datasets[index].hidden = !tagsChart.data.datasets[index].hidden;
                             //toggle the related labels' visibility
-                            domainGrowthChart.options.scales.yAxes[index].display = !domainGrowthChart.options.scales.yAxes[index].display;
-                            domainGrowthChart.update();
+                            tagsChart.options.scales.yAxes[index].display = !tagsChart.options.scales.yAxes[index].display;
+                            tagsChart.update();
                         }
                     }
                 }
-            });
+            };
+            var datasets =  [];
+            var borderColors = ["#0066cc","#00cc66","#cc0066","#cc6600"];
+            for (var i = 0; i < this.dataArrays.length; i++){
+                var datasetTemp = {
+                    //data: this.dataArrays[i].yearCountPercent,
+                    data: this.dataArrays[i].yearPercent,
+                    label: this.tags[i],
+                    borderColor: borderColors[i],
+                    fill: false,
+                }
+                datasets.push(datasetTemp)
+                console.log('datasets', datasets);
+            }
+            /*var datasets =  [
+                {
+                    data: this.tag1,
+                    label: this.tags[0],
+                    borderColor: "#0066cc",
+                    fill: false,
+                },
+                {
+                    data: this.tag2,
+                    label: this.tags[1],
+                    borderColor: "#00cc66",
+                    fill: false,
+                }
+            ];*/
+
+            chartData.data.datasets = datasets;
+
+            var tagsChart = new Chart(document.getElementById("line-chart"), chartData);
         },
 
         showSpinner: function(){
