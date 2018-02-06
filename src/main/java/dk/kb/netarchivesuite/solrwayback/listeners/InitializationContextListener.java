@@ -34,11 +34,13 @@ public class InitializationContextListener implements ServletContextListener {
             //Starting up the socks proxy.
             
             String proxy_port= PropertiesLoader.PROXY_PORT;
-            String proxy_allow_host = PropertiesLoader.PROXY_ALLOW_HOST;
+            String proxy_allow_hosts = PropertiesLoader.PROXY_ALLOW_HOSTS;
             
-            if (proxy_port != null &&  proxy_allow_host != null){                        
+            if (proxy_port != null &&  proxy_allow_hosts != null){                        
               int port = Integer.parseInt(proxy_port);  
-              socksProxy = new SOCKSProxy(port, proxy_allow_host);              
+              String[] hosts= proxy_allow_hosts.replace(" ", "").split(","); //remove all white spaces and split by , 
+                            
+              socksProxy = new SOCKSProxy(port,  hosts);              
               proxyThread = new Thread(socksProxy);                                    
               proxyThread.setDaemon(true); //exit when tomcat stops
               proxyThread.start();                       
