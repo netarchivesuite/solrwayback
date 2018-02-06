@@ -20,6 +20,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * socks client class - one per client connection
@@ -30,7 +31,8 @@ class SocksClient {
 
     SocketChannel client, remote;
     private boolean connected = false;
-    long lastData = 0;
+    private boolean failed = false;
+    long lastData;
 
     SocksClient(Set<String> allowedHosts, SocketChannel client) throws IOException {
         this.client = client;
@@ -39,89 +41,135 @@ class SocksClient {
         this.allowedHosts = allowedHosts;
     }
 
-    void newRemoteData(Selector selector, SelectionKey sk) throws IOException {
+    public Callable<String> getNewRemoteDataCallable(final Selector selector, final SelectionKey sk) {
+        return new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                newRemoteData(selector, sk);
+                return "newRemoteData completed";
+            }
+        };
+    }
+    public synchronized void newRemoteData(Selector selector, SelectionKey sk) throws IOException {
         copyData(remote, client);
     }
 
-    void newClientData(Selector selector, SelectionKey sk) throws IOException {
+    public Callable<String> getNewClientDataCallable(final Selector selector, final SelectionKey sk) {
+        return new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                newClientData(selector, sk);
+                return "newClientData completed";
+            }
+        };
+    }
+    // https://en.wikipedia.org/wiki/SOCKS#SOCKS4
+    public synchronized void newClientData(Selector selector, SelectionKey sk) throws IOException {
         if (connected) {
             copyData(client, remote);
             return;
         }
+        if (failed) {
+            //log.debug("Attempting to use failed connection");
+            return;
+        }
 
+
+        // Read client request into buffer
         ByteBuffer inbuf = ByteBuffer.allocate(512);
         if (client.read(inbuf) < 1) {
             return;
         }
         inbuf.flip();
 
-        // read socks header
+        // Is this the correct SOCKS version?
         int ver = inbuf.get();
         if (ver != 4) {
+            failed = true;
             log.info("Incorrection socks version " + ver + ", expected 4");
             throw new IOException("Incorrection socks version " + ver + ", expected 4");
         }
-        int cmd = inbuf.get();
 
-        // check supported command
+        // Read command (1 == TCP/IP stream, 2 == port binding). Only TCP/IP stream is supported
+        int cmd = inbuf.get();
         if (cmd != 1) {
+            failed = true;
             log.info("Incorrect command " + cmd + ", expected 1");
             throw new IOException("Incorrect command " + cmd + ", expected 1");
         }
+
+        // Port number
         final int port = inbuf.getShort();
 
+        // IP address
         final byte ip[] = new byte[4];
-        // fetch IP
         inbuf.get(ip);
-        InetAddress remoteAddr = null;
+        InetAddress remoteAddr;
         try {
             remoteAddr = InetAddress.getByAddress(ip);
         } catch (Exception e) {
-            log.info("error IP lookup", e);
+            throw new IOException("Unable to determine IP address", e);
         }
 
-        while ((inbuf.get()) != 0) ; // username
+        // ID String
+        String user = readString("user ID", inbuf);
 
-        // hostname provided, not IP
+        // Optional host (implies invalid IP address)
         if (ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] != 0) { // host provided
-            String host = "";
-            byte b;
-            while ((b = inbuf.get()) != 0) {
-                host += (char) b;
-            }
+            String host = readString("host", inbuf);
+
             if (allowedHosts.contains(host.toLowerCase(Locale.ENGLISH))) {
-                System.out.println("Allowing:" + host);
-                log.info("Allowing:" + host);
+                message("Allowing connection to host " + host);
             } else {
-                System.out.println("leaking prevented for url:" + host);
-                log.info("leaking prevented for url:" + host);
+                message("Leaking prevented for host " + host);
                 failConnectionToHost(remoteAddr, port);
                 return;
             }
 
             try {
                 remoteAddr = InetAddress.getByName(host);
-                System.out.println("calling remoteaddr " + remoteAddr);
-                log.info("calling remoteaddr " + remoteAddr);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new IOException("Unable to get IP for allowed host " + host);
             }
         } else {
             // TODO: Why do we get all these IP lookups with Chrome? Is the check for host too picky?
-            if (remoteAddr == null || !allowedHosts.contains(remoteAddr.getHostAddress())) {
-                log.info("Leaking prevented for IP-address " +
-                         (remoteAddr == null ? "N/A" : remoteAddr.getHostAddress()));
+            if (!allowedHosts.contains(remoteAddr.getHostAddress())) {
+                log.info("Leaking prevented for IP-address " + remoteAddr.getHostAddress());
                 failConnectionToHost(remoteAddr, port);
                 return;
             } else {
-                log.info("Allowing connections to IP-address " + remoteAddr.getHostAddress());
+                log.info("Allowing connection to IP-address " + remoteAddr.getHostAddress());
             }
         }
 
         connectToRemote(selector, port, remoteAddr);
     }
 
+    private void message(String message) {
+        log.info(message);
+        //System.out.println(message);
+    }
+
+    public boolean isFailed() {
+        return failed;
+    }
+
+    private String readString(String designation, ByteBuffer inbuf) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        byte b;
+        try {
+            while ((b = inbuf.get()) != 0) {
+                sb.append((char) b);
+            }
+        } catch (Exception e) {
+            throw new IOException("Error reading '" + designation + "' from connect request", e);
+        }
+        return sb.toString();
+    }
+
     private void connectToRemote(Selector selector, int port, InetAddress remoteAddr) throws IOException {
+        message("Establishing connection to IP " + remoteAddr);
+
         remote = SocketChannel.open(new InetSocketAddress(remoteAddr, port));
 
         ByteBuffer out = ByteBuffer.allocate(20);
@@ -151,37 +199,34 @@ class SocksClient {
         client.write(out);
     }
 
-    private void copyData(SocketChannel source, SocketChannel destination) throws IOException {
-        // TODO: Understand why we only copy 1KB here, instead of all available data
+    private void copyData(SocketChannel source, SocketChannel destination) {
         final long startTime = System.nanoTime();
-        long read = 0;
+        if (failed) {
+            log.info("Skipping copyData as SocksClient is marked as failed");
+            return;
+        }
 
-        ByteBuffer buf = ByteBuffer.allocate(1024);
-        int bufSize;
-        while ((bufSize = source.read(buf)) != -1 && bufSize != 0) {
-            read += bufSize;
-            lastData = System.currentTimeMillis();
-            buf.flip();
-            destination.write(buf);
-        }
-        if (read != 0) {
-            log.info("Copied full buffer size " + read + " bytes in " +
-                     (System.nanoTime() - startTime) / 1000000 + " ms");
-        }
-    }
-    private void copyDataOld(SocketChannel source, SocketChannel destination) throws IOException {
-        // TODO: Understand why we only copy 1KB here, instead of all available data
-        ByteBuffer buf = ByteBuffer.allocate(1024);
-        int bufSize = source.read(buf);
-        System.out.println("Buffer size read: " + bufSize);
-        if (bufSize == -1) {
-            log.warn("Disconnect under copyData");
-            System.out.println("Disconnect under copyData");
-            throw new IOException("disconnected");
-        }
-        lastData = System.currentTimeMillis();
-        buf.flip();
-        destination.write(buf);
-    }
 
+        long total = 0;
+        try {
+            ByteBuffer buf = ByteBuffer.allocate(8192);
+            int bufSize;
+            while ((bufSize = source.read(buf)) != -1 && bufSize != 0) {
+                total += bufSize;
+                buf.flip();
+                destination.write(buf);
+            }
+            if (total != 0) {
+                message("Copied full buffer size " + total + " bytes in " +
+                        (System.nanoTime() - startTime) / 1000000 + " ms");
+            }
+            lastData = System.currentTimeMillis(); // Even if total == 0 to keep alive
+        } catch (Exception e) {
+            log.warn("Exception copying data. Marking SOCKSClient as failed", e);
+            failed = true;
+        }
+        // else if (bufSize == -1) {
+//            message("Logic error during copyData: Got -1 as only result. Client disconnected?");
+  //      }
+    }
 }

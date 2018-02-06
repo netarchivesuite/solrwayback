@@ -12,6 +12,9 @@ import java.nio.channels.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +22,7 @@ import org.slf4j.LoggerFactory;
 /**
  * SOCKS 4-proxy originally from 
  */
+@SuppressWarnings({"UnusedReturnValue"})
 public class SOCKSProxy implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(SOCKSProxy.class);
 
@@ -27,6 +31,15 @@ public class SOCKSProxy implements Runnable {
 
     private final ArrayList <SocksClient> clients = new ArrayList<>();
     private boolean running = true;
+    private final ExecutorService executor = Executors.newFixedThreadPool(16, new ThreadFactory() {
+        int threadID = 0;
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r, "SOCKS-" + threadID++);
+            t.setDaemon(true);
+            return t;
+        }
+    });
 
     public SOCKSProxy(int port, String... allowedHosts) throws IOException {
         this(port, new HashSet<>(Arrays.asList(allowedHosts)));
@@ -56,7 +69,6 @@ public class SOCKSProxy implements Runnable {
                 select.select(1000);
 
                 for (SelectionKey k: select.selectedKeys()) {
-
                     if (!k.isValid()) {
                         continue;
                     }
@@ -95,18 +107,25 @@ public class SOCKSProxy implements Runnable {
                 SocksClient cl = clients.get(i);
                 try {
                     if (selectionKey.channel() == cl.client) { // from client (e.g. socks client)
+                        // Using threaded processing seems to make the proxy unstable
+                        //executor.submit(cl.getNewClientDataCallable(selector, selectionKey));
                         cl.newClientData(selector, selectionKey);
                         foundOne = true;
+                        break;
                     } else if (selectionKey.channel() == cl.remote) {  // from server client is connected to (e.g. website)
+                        //executor.submit(cl.getNewRemoteDataCallable(selector, selectionKey));
                         cl.newRemoteData(selector, selectionKey);
                         foundOne = true;
+                        break;
                     }
-                } catch (IOException e) { // error occurred - remove client
+                    // TODO: Move error-handling to executors
+                } catch (Exception e) { // error occurred - remove client
                     log.info("IO-Exception,  closing", e);
                     clients.remove(cl);
                     cl.client.close();
-                    if (cl.remote != null)
+                    if (cl.remote != null) {
                         cl.remote.close();
+                    }
                     selectionKey.cancel();
                 }
             }
@@ -127,7 +146,7 @@ public class SOCKSProxy implements Runnable {
         synchronized (clients) {
             clients.add(cl);
         }
-        log.debug("Added new SocksClient");
+        log.debug("Added new SocksClient. Total live clients " + clients.size());
         return cl;
     }
 
@@ -135,7 +154,12 @@ public class SOCKSProxy implements Runnable {
         synchronized (clients) {
             for (int i = 0; i < clients.size(); i++) {
                 SocksClient cl = clients.get(i);
-                if ((System.currentTimeMillis() - cl.lastData) > 10000L) { //10 secs. Not sure this is total timeout, or connect timeout
+                // 10 secs. Not sure this is total timeout, or connect timeout
+                if (cl.isFailed() || (System.currentTimeMillis() - cl.lastData) > 10000L) {
+                    if (cl.isFailed()) {
+                        log.warn("Closing client with state failed=" + cl.isFailed() +
+                                 ". Remaining clients " + (clients.size()-1));
+                    }
                     cl.client.close();
                     if (cl.remote != null)
                         cl.remote.close();
@@ -155,11 +179,10 @@ public class SOCKSProxy implements Runnable {
      *
      */
     public static void main(String args[]) throws Exception {
-        Thread proxy = new Thread(new SOCKSProxy(9001, "belinda.statsbiblioteket.dk", "172.16.206.19"));
+        Thread proxy = new Thread(new SOCKSProxy(9002, "belinda.statsbiblioteket.dk", "172.16.206.19"));
         proxy.setDaemon(true);
         proxy.start();
         System.out.println("Started proxy");
         Thread.sleep(100000000000L); //Keep alive
     }
 }
-
