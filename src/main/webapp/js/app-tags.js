@@ -88,7 +88,7 @@ var app = new Vue({
             this.showSpinner();
 
             this.tags.push(tag);
-            if(this.tags.length > 2){
+            if(this.tags.length > 4){
                 this.tags.shift();
             }
             console.log('this.tags', this.tags);
@@ -135,20 +135,6 @@ var app = new Vue({
                 type: 'line',
                 data: {
                     labels: this.chartLabels,
-                    /*datasets: [
-                        {
-                            data: this.tag1,
-                            label: this.tags[0],
-                            borderColor: "#0066cc",
-                            fill: false,
-                        },
-                        {
-                            data: this.tag2,
-                            label: this.tags[1],
-                            borderColor: "#00cc66",
-                            fill: false,
-                        }
-                    ]*/
                 },
                 options: {
                     title: {
@@ -184,7 +170,6 @@ var app = new Vue({
             var borderColors = ["#0066cc","#00cc66","#cc0066","#cc6600"];
             for (var i = 0; i < this.dataArrays.length; i++){
                 var datasetTemp = {
-                    //data: this.dataArrays[i].yearCountPercent,
                     data: this.dataArrays[i].yearPercent,
                     label: this.tags[i],
                     borderColor: borderColors[i],
@@ -193,21 +178,6 @@ var app = new Vue({
                 datasets.push(datasetTemp)
                 console.log('datasets', datasets);
             }
-            /*var datasets =  [
-                {
-                    data: this.tag1,
-                    label: this.tags[0],
-                    borderColor: "#0066cc",
-                    fill: false,
-                },
-                {
-                    data: this.tag2,
-                    label: this.tags[1],
-                    borderColor: "#00cc66",
-                    fill: false,
-                }
-            ];*/
-
             chartData.data.datasets = datasets;
 
             var tagsChart = new Chart(document.getElementById("line-chart"), chartData);
