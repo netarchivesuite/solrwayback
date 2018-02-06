@@ -152,14 +152,30 @@ class SocksClient {
     }
 
     private void copyData(SocketChannel source, SocketChannel destination) throws IOException {
-        // TODO: Understand why we only copy 1KB here, instead of all available data
-        ByteBuffer buf = ByteBuffer.allocate(1024);
-        if (source.read(buf) == -1) {
-            throw new IOException("disconnected");
-        }
-        lastData = System.currentTimeMillis();
+      // TODO: Understand why we only copy 1KB here, instead of all available data
+      ByteBuffer buf = ByteBuffer.allocate(1024);
+      int bufSize;
+      while ((bufSize = source.read(buf)) != -1 && bufSize != 0) {
+        System.out.println("Buffer size read: " + bufSize);
+        log.info("Buffer size read: " + bufSize);
+        lastData = System.currentTimeMillis();                
         buf.flip();
         destination.write(buf);
-    }
+     }
+  }
+    private void copyDataOld(SocketChannel source, SocketChannel destination) throws IOException {
+      // TODO: Understand why we only copy 1KB here, instead of all available data
+      ByteBuffer buf = ByteBuffer.allocate(1024);
+      int bufSize = source.read(buf);
+      System.out.println("Buffer size read: " + bufSize);
+      if (bufSize == -1) {
+        log.warn("Disconnect under copyData");
+        System.out.println("Disconnect under copyData");          
+        throw new IOException("disconnected");
+      }
+      lastData = System.currentTimeMillis();                
+      buf.flip();
+      destination.write(buf);
+  }
 
 }

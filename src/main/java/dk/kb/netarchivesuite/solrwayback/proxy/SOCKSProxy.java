@@ -155,7 +155,7 @@ public class SOCKSProxy implements Runnable {
      *
      */
     public static void main(String args[]) throws Exception {
-        Thread proxy = new Thread(new SOCKSProxy(9000, "www.kb.dk", "kb.dk", "130.226.229.120"));
+        Thread proxy = new Thread(new SOCKSProxy(9001, "belinda.statsbiblioteket.dk", "kb.dk", "130.226.229.120"));
         proxy.setDaemon(true);
         proxy.start();
         System.out.println("Started proxy");
