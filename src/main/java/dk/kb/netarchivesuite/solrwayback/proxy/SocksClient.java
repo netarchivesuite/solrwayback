@@ -228,12 +228,8 @@ class SocksClient {
             ByteBuffer buf = ByteBuffer.allocate(8192);
             int bufSize;
             while ((bufSize = source.read(buf)) != -1 && bufSize != 0) {
-                total += bufSize;
                 buf.flip();
-                int written;
-                if ((written = destination.write(buf)) != bufSize) {
-                    log.warn("Error: Only flushed " + written + "/" + bufSize + " bytes");
-                }
+                total += flush(destination, buf, bufSize);
             }
             if (total != 0) {
                 message("Copied buffer size " + total + " bytes in " +
@@ -251,6 +247,23 @@ class SocksClient {
         // else if (bufSize == -1) {
 //            message("Logic error during copyData: Got -1 as only result. Client disconnected?");
   //      }
+    }
+
+    private long flush(SocketChannel destination, ByteBuffer buf, int bufSize) throws IOException {
+        int written = 0;
+        while (written < bufSize) {
+            int current = destination.write(buf);
+            written += current;
+            if (current == 0) {
+                log.info("Only flushed " + written + "/" + bufSize + ". Sleeping 50ms and retrying");
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    log.warn("Interrupted while sleeping before next flush attempt");
+                }
+            }
+        }
+        return written;
     }
 
 }
