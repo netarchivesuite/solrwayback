@@ -230,10 +230,13 @@ class SocksClient {
             while ((bufSize = source.read(buf)) != -1 && bufSize != 0) {
                 total += bufSize;
                 buf.flip();
-                destination.write(buf);
+                int written;
+                if ((written = destination.write(buf)) != bufSize) {
+                    log.warn("Error: Only flushed " + written + "/" + bufSize + " bytes");
+                }
             }
             if (total != 0) {
-                message("Copied full buffer size " + total + " bytes in " +
+                message("Copied buffer size " + total + " bytes in " +
                         (System.nanoTime() - startTime) / 1000000 + " ms");
             }
             if (bufSize == -1) {
