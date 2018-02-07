@@ -6,17 +6,18 @@ Vue.filter('thousandsSeperator', function(value) {
 })
 
 Vue.component('header-container', {
-    props: ['getData'],
+    props: ['addTag','tags',"removeTag"],
     template: `
     <div id="headerTags">
         <h1>Search for HTML tags</h1>
-        <search-box :get-data="getData"></search-box>
+        <search-box :add-tag="addTag"></search-box>
+        <tags-box :tags="tags" :remove-tag="removeTag"></tags-box>
     </div>    
     `,
 })
 
 Vue.component('search-box', {
-    props: ["getData"],
+    props: ["addTag"],
     data: function(){
         return{
             tagModel: '',
@@ -24,8 +25,20 @@ Vue.component('search-box', {
     },
     template: `
     <div id="tagSearch">
-        <input  v-model="tagModel" @keyup.enter="getData(tagModel)" type="text">
-        <button  @click="getData(tagModel)">Go</button>  
+        <input  v-model="tagModel" @keyup.enter="addTag(tagModel)" type="text">
+        <button  @click="addTag(tagModel)">Go</button>  
+    </div>    
+    `,
+})
+
+Vue.component('tags-box', {
+    props: ["tags","removeTag"],
+    template: `
+    <div id="tagsList" v-if="tags.length > 0">
+        <ul class="removeTags"> 
+            <li class="removeTags">Click tag to remove it (max. 4 tags):</li>
+            <li v-for="tag in tags" @click="removeTag(tag)" class="link removeTags">{{ tag }}</li>
+        </ul> 
     </div>    
     `,
 })
@@ -42,7 +55,7 @@ Vue.component('chart-container', {
 Vue.component('table-container', {
     props: ["rawData"],
     template: `
-    <div id="domainGrowthTableContainer">
+    <div id="domainGrowthTableContainer" v-if="1===2">
         <table id="domainGrowthTable">
             <thead>
                 <tr>
@@ -84,14 +97,17 @@ var app = new Vue({
         hasResults: true,
     },
     methods: {
-        getData: function(tag){
-            this.showSpinner();
-
+        addTag: function(tag) {
             this.tags.push(tag);
-            if(this.tags.length > 4){
+            if (this.tags.length > 4) {
                 this.tags.shift();
             }
             console.log('this.tags', this.tags);
+            this.getData();
+        },
+
+        getData: function(){
+            this.showSpinner();
             var promises = [];
             for( var i = 0; i < this.tags.length; i++ ){
                 var tagsUrl = 'http://' + location.host + '/solrwayback/services/smurf/tags?tag=' + this.tags[i];
@@ -160,7 +176,7 @@ var app = new Vue({
                             //toggle the datasets visibility
                             tagsChart.data.datasets[index].hidden = !tagsChart.data.datasets[index].hidden;
                             //toggle the related labels' visibility
-                            tagsChart.options.scales.yAxes[index].display = !tagsChart.options.scales.yAxes[index].display;
+                            //tagsChart.options.scales.yAxes[index].display = !tagsChart.options.scales.yAxes[index].display;
                             tagsChart.update();
                         }
                     }
@@ -181,6 +197,21 @@ var app = new Vue({
             chartData.data.datasets = datasets;
 
             var tagsChart = new Chart(document.getElementById("line-chart"), chartData);
+        },
+
+        removeTag: function(tag){
+            console.log("remove tag:", tag)
+            var index = this.tags.indexOf(tag);
+            if (index > -1) {
+                this.tags.splice(index, 1);
+            }
+            if(this.tags.length >0 ){
+                this.getData() //get data if tags in array
+            }else{
+                var canvas = '<canvas id="line-chart" width="800" height="450"></canvas>'
+                $("#chart").html(canvas);//insert clean canvas if tags is empty
+            }
+
         },
 
         showSpinner: function(){

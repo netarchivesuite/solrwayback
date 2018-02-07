@@ -739,3 +739,22 @@ table#domainGrowthTable{
     color: white;
 }
 
+/* TAGS */
+#tagSearch, #tagsList{
+    float: left;
+    margin: 1em 2em 0 0;
+}
+
+#tagSearch input, #tagSearch button{
+    font-size: 120%;
+}
+
+.removeTags{
+    float: left;
+    font-size: 115%;
+    list-style-type: none;
+    margin: 0.1em .5em 0 0;
+}
+
+
+
