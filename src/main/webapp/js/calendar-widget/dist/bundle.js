@@ -1,41 +1,41 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
+/******/ 		if(installedModules[moduleId]) {
 /******/ 			return installedModules[moduleId].exports;
-
+/******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
 /******/ 			l: false,
 /******/ 			exports: {}
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// identity function for calling harmony imports with the correct context
 /******/ 	__webpack_require__.i = function(value) { return value; };
-
+/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -46,7 +46,7 @@
 /******/ 			});
 /******/ 		}
 /******/ 	};
-
+/******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
 /******/ 	__webpack_require__.n = function(module) {
 /******/ 		var getter = module && module.__esModule ?
@@ -55,13 +55,13 @@
 /******/ 		__webpack_require__.d(getter, 'a', getter);
 /******/ 		return getter;
 /******/ 	};
-
+/******/
 /******/ 	// Object.prototype.hasOwnProperty.call
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(__webpack_require__.s = 45);
 /******/ })
@@ -2834,7 +2834,7 @@ exports = module.exports = __webpack_require__(12)();
 
 
 // module
-exports.push([module.i, "body {\n  font-size: 90%;\n}\nh1,\nh2,\nh3 {\n  margin: 0 0 .8em;\n}\nh1 {\n  font-weight: normal;\n}\nul,\nol {\n  padding-left: 2em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  border-collapse: separate;\n  float: left;\n  opacity: 1;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  cursor: pointer;\n  padding: .2em;\n}\n.totalHarvestData td {\n  background: white;\n  border: 0;\n}\n.totalHarvestData td:first-child {\n  white-space: nowrap;\n  width: 10%;\n}\n.totalHarvestData td:last-child {\n  font-weight: bold;\n}\n.detailsMenu {\n  clear: both;\n  float: left;\n  margin: 2em 0 1em;\n  width: 100%;\n}\n/* A fill cell used for empty days (when f.ex. not all days in the first week exist) */\ntd.filler {\n  background-color: white;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n  cursor: default;\n  font-weight: normal;\n}\nth.weekNumber {\n  border: 0;\n  color: #999999;\n  padding: 0;\n}\n.yearHeader {\n  clear: both;\n  float: left;\n  margin-top: 1.5em;\n  width: 100%;\n}\n#harvests-for-day {\n  box-sizing: border-box;\n  clear: both;\n  float: left;\n  margin-top: 2em;\n  min-width: 50%;\n}\n#harvests-for-day li {\n  padding: .2em 0;\n}\n.pointer {\n  cursor: pointer;\n}\n.active {\n  font-weight: bold;\n}\n.uppercase {\n  text-transform: uppercase;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\ntd.weekday {\n  width: 10px;\n  height: 10px;\n}\n/* Legends */\n#legends {\n  clear: both;\n  float: left;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n#details {\n  float: left;\n  width: 100%;\n}\n.hideDetails {\n  color: #666;\n  cursor: pointer;\n  text-decoration: underline;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n/* Vue transitions */\n.yearTables,\n.detailsContainer,\n#legends {\n  opacity: 1;\n  padding-top: 2em;\n}\n.detailsContainer {\n  padding-top: 0;\n}\n.fadeIn-enter-active {\n  transition: opacity .5s;\n}\n.fadeIn-leave-active {\n  transition: opacity 0s;\n}\n.fadeIn-enter-active {\n  transition-delay: 0s;\n}\n.fadeIn-enter,\n.fadeIn-leave-to {\n  opacity: 0;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
+exports.push([module.i, "body {\n  font-size: 90%;\n}\nh1,\nh2,\nh3 {\n  margin: 0 0 .8em;\n}\nh1 {\n  font-weight: normal;\n}\nul,\nol {\n  padding-left: 2em;\n}\n.tableContainer {\n  overflow: hidden;\n}\ntable {\n  border-collapse: separate;\n  border: 0;\n  float: left;\n  margin: 0;\n  opacity: 1;\n  width: auto;\n}\ntd,\nth {\n  background-color: #f0f0f0;\n  border: 1px solid white;\n  border-left: 0;\n  cursor: pointer;\n  padding: .2em;\n}\n.totalHarvestData td {\n  background: white;\n  border: 0;\n}\n.totalHarvestData td:first-child {\n  white-space: nowrap;\n  width: 10%;\n}\n.totalHarvestData td:last-child {\n  font-weight: bold;\n}\n.detailsMenu {\n  clear: both;\n  float: left;\n  margin: 2em 0 1em;\n  width: 100%;\n}\n/* A fill cell used for empty days (when f.ex. not all days in the first week exist) */\ntd.filler {\n  background-color: white;\n}\ntable.monthLabels td,\nth {\n  background-color: white;\n  cursor: default;\n  font-weight: normal;\n}\nth.weekNumber {\n  border: 0;\n  color: #999999;\n  padding: 0;\n}\n.yearHeader {\n  clear: both;\n  float: left;\n  margin: 1.5em 0 .5em;\n  width: 100%;\n}\n#harvests-for-day {\n  box-sizing: border-box;\n  clear: both;\n  float: left;\n  margin-top: 2em;\n  min-width: 50%;\n}\n#harvests-for-day li {\n  padding: .2em 0;\n}\n.pointer {\n  cursor: pointer;\n}\n.active {\n  font-weight: bold;\n}\n.uppercase {\n  text-transform: uppercase;\n}\ntd.empty {\n  border-color: transparent;\n}\ntd.activityLevel1,\n.legend.legend1 {\n  background: #d6e685;\n}\ntd.activityLevel2,\n.legend.legend2 {\n  background: #8cc665;\n}\ntd.activityLevel3,\n.legend.legend3 {\n  background: #44a340;\n}\ntd.activityLevel4,\n.legend.legend4 {\n  background: #1e6823;\n}\ntd.weekday {\n  width: 10px;\n  height: 10px;\n}\n/* Legends */\n#legends {\n  clear: both;\n  float: left;\n}\n.legend {\n  background-color: #f0f0f0;\n  display: inline-block;\n  height: 1.5em;\n  margin: 0 .3em;\n  vertical-align: bottom;\n  width: 2.5em;\n}\n#details {\n  float: left;\n  width: 100%;\n}\n.hideDetails {\n  color: #666;\n  cursor: pointer;\n  text-decoration: underline;\n}\n/*Spinner*/\n#overlay {\n  background-color: black;\n  opacity: .8;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  top: 0;\n  z-index: 50;\n}\n#spinner {\n  background-color: white;\n  /*url(../images/loader90.gif) no-repeat*/\n  border: 1px solid #ccc;\n  height: 125px;\n  /*left: calc(50% - 250px);*/\n  padding: 1em;\n  position: fixed;\n  text-indent: 140px;\n  top: 10%;\n  width: 500px;\n  z-index: 500;\n}\n.spinnerText {\n  font-size: 18px;\n  margin-top: 50px;\n}\n/* Vue transitions */\n.yearTables,\n.detailsContainer,\n#legends {\n  opacity: 1;\n  padding-top: 2em;\n}\n.detailsContainer {\n  padding-top: 0;\n}\n.fadeIn-enter-active {\n  transition: opacity .5s;\n}\n.fadeIn-leave-active {\n  transition: opacity 0s;\n}\n.fadeIn-enter-active {\n  transition-delay: 0s;\n}\n.fadeIn-enter,\n.fadeIn-leave-to {\n  opacity: 0;\n}\n.tooltip {\n  display: none;\n  opacity: 0;\n  pointer-events: none;\n  padding: 4px;\n  z-index: 10000;\n}\n.tooltip .tooltip-content {\n  background: black;\n  color: white;\n  padding: 5px 10px 4px;\n}\n.tooltip.tooltip-open-transitionend {\n  display: block;\n}\n.tooltip.tooltip-after-open {\n  opacity: 1;\n}\n", ""]);
 
 // exports
 
@@ -4114,6 +4114,10 @@ process.off = noop;
 process.removeListener = noop;
 process.removeAllListeners = noop;
 process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
 
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
@@ -16135,7 +16139,7 @@ function getOuterHTML (el) {
 
 Vue$3.compile = compileToFunctions;
 
-/* harmony default export */ __webpack_exports__["a"] = Vue$3;
+/* harmony default export */ __webpack_exports__["a"] = (Vue$3);
 
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(31), __webpack_require__(5)))
 
@@ -16144,11 +16148,11 @@ Vue$3.compile = compileToFunctions;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = groupHarvestDatesByYearAndMonth;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__transformers_month_transformer__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__transformers_week_transformer__ = __webpack_require__(43);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__transformers_plugins_add_month_activity_level__ = __webpack_require__(40);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__transformers_plugins_add_weekday_activity_level__ = __webpack_require__(41);
-/* harmony export (immutable) */ __webpack_exports__["a"] = groupHarvestDatesByYearAndMonth;
 
 
 
@@ -16229,9 +16233,9 @@ function buildYearRangeArray(fromDate, toDate) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = buildMonthObject;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__date__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(8);
-/* harmony export (immutable) */ __webpack_exports__["a"] = buildMonthObject;
 
 
 
@@ -16305,8 +16309,8 @@ function buildDayObject(allHarvestDatesInMonth) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__iterators__ = __webpack_require__(7);
 /* harmony export (immutable) */ __webpack_exports__["a"] = addActivityLevelToMonths;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__iterators__ = __webpack_require__(7);
 
 
 /**
@@ -16362,8 +16366,8 @@ function getMaximumHarvestCount(datesObject) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__iterators__ = __webpack_require__(7);
 /* harmony export (immutable) */ __webpack_exports__["a"] = addActivityLevelToWeeks;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__iterators__ = __webpack_require__(7);
 
 
 /**
@@ -16480,6 +16484,7 @@ function getBaseLog(x, y) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = buildWeekObject;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__date__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_date_fns_get_days_in_year__ = __webpack_require__(17);
@@ -16490,7 +16495,6 @@ function getBaseLog(x, y) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_date_fns_last_day_of_year___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_date_fns_last_day_of_year__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_date_fns_add_days__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_date_fns_add_days___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_date_fns_add_days__);
-/* harmony export (immutable) */ __webpack_exports__["a"] = buildWeekObject;
 
 
 
