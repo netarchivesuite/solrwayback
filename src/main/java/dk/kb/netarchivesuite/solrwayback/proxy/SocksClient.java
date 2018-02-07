@@ -32,6 +32,10 @@ class SocksClient {
     SocketChannel client, remote;
     private boolean connected = false;
     private boolean failed = false;
+    private boolean eos = false;
+
+    private long blockedCount = 0;
+    private long acceptedCount = 0;
     long lastData;
 
     SocksClient(Set<String> allowedHosts, SocketChannel client) throws IOException {
@@ -69,15 +73,15 @@ class SocksClient {
             copyData(client, remote);
             return;
         }
-        if (failed) {
-            //log.debug("Attempting to use failed connection");
+        if (shouldClose()) {
+            log.warn("Attempting to use SOCKS client marked as shouldClose");
             return;
         }
-
 
         // Read client request into buffer
         ByteBuffer inbuf = ByteBuffer.allocate(512);
         if (client.read(inbuf) < 1) {
+            eos = true;
             return;
         }
         inbuf.flip();
@@ -87,6 +91,7 @@ class SocksClient {
         if (ver != 4) {
             failed = true;
             log.info("Incorrection socks version " + ver + ", expected 4");
+            client.close();
             throw new IOException("Incorrection socks version " + ver + ", expected 4");
         }
 
@@ -95,6 +100,7 @@ class SocksClient {
         if (cmd != 1) {
             failed = true;
             log.info("Incorrect command " + cmd + ", expected 1");
+            client.close();
             throw new IOException("Incorrect command " + cmd + ", expected 1");
         }
 
@@ -108,6 +114,7 @@ class SocksClient {
         try {
             remoteAddr = InetAddress.getByAddress(ip);
         } catch (Exception e) {
+            client.close();
             throw new IOException("Unable to determine IP address", e);
         }
 
@@ -133,12 +140,12 @@ class SocksClient {
             }
         } else {
             // TODO: Why do we get all these IP lookups with Chrome? Is the check for host too picky?
-            if (!allowedHosts.contains(remoteAddr.getHostAddress())) {
+            if (allowedHosts.contains(remoteAddr.getHostAddress())) {
+                log.info("Allowing connection to IP-address " + remoteAddr.getHostAddress());
+            } else {
                 log.info("Leaking prevented for IP-address " + remoteAddr.getHostAddress());
                 failConnectionToHost(remoteAddr, port);
                 return;
-            } else {
-                log.info("Allowing connection to IP-address " + remoteAddr.getHostAddress());
             }
         }
 
@@ -152,6 +159,14 @@ class SocksClient {
 
     public boolean isFailed() {
         return failed;
+    }
+
+    public long getBlockedCount() {
+        return blockedCount;
+    }
+
+    public boolean shouldClose() {
+        return isFailed() || eos;
     }
 
     private String readString(String designation, ByteBuffer inbuf) throws IOException {
@@ -168,8 +183,8 @@ class SocksClient {
     }
 
     private void connectToRemote(Selector selector, int port, InetAddress remoteAddr) throws IOException {
-        message("Establishing connection to IP " + remoteAddr);
-
+        message("Establishing connection to IP " + remoteAddr +
+                " (total accepted connections for this SOCKS client: " + ++acceptedCount + ")");
         remote = SocketChannel.open(new InetSocketAddress(remoteAddr, port));
 
         ByteBuffer out = ByteBuffer.allocate(20);
@@ -181,7 +196,9 @@ class SocksClient {
         client.write(out);
         if (!remote.isConnected()) {
             log.info("connect failed");
-            throw new IOException("connect failed");
+            return; // Not a fatal error, just a missed connection
+            // TODO: Should this be marked as EOS or failed?
+            //throw new IOException("connect failed");
         }
 
         remote.configureBlocking(false);
@@ -190,6 +207,7 @@ class SocksClient {
     }
 
     private void failConnectionToHost(InetAddress remoteAddr, int port) throws IOException {
+        blockedCount++;
         ByteBuffer out = ByteBuffer.allocate(20);
         out.put((byte) 0);
         out.put((byte) (0x5b)); // Not connected
@@ -205,8 +223,6 @@ class SocksClient {
             log.info("Skipping copyData as SocksClient is marked as failed");
             return;
         }
-
-
         long total = 0;
         try {
             ByteBuffer buf = ByteBuffer.allocate(8192);
@@ -220,6 +236,10 @@ class SocksClient {
                 message("Copied full buffer size " + total + " bytes in " +
                         (System.nanoTime() - startTime) / 1000000 + " ms");
             }
+            if (bufSize == -1) {
+                message("Closing SOCKS client as EOS (-1) was received");
+                eos = true;
+            }
             lastData = System.currentTimeMillis(); // Even if total == 0 to keep alive
         } catch (Exception e) {
             log.warn("Exception copying data. Marking SOCKSClient as failed", e);
@@ -229,4 +249,5 @@ class SocksClient {
 //            message("Logic error during copyData: Got -1 as only result. Client disconnected?");
   //      }
     }
+
 }

@@ -68,17 +68,24 @@ public class SOCKSProxy implements Runnable {
             while (running) {
                 select.select(1000);
 
-                for (SelectionKey k: select.selectedKeys()) {
-                    if (!k.isValid()) {
+                Set<SelectionKey> keys = select.selectedKeys();
+                Iterator<SelectionKey> iterator = keys.iterator();
+                while (iterator.hasNext()) {
+                    SelectionKey key = iterator.next();
+
+                    if (!key.isValid()) {
                         continue;
                     }
-
                     // new connection?
-                    if (k.isAcceptable() && k.channel() == socks) {
-                        handleNewConnection(select, socks);
-                    } else if (k.isReadable()) {
+                    if (key.isAcceptable() && key.channel() == socks) {
+                        if (!handleNewConnection(select, socks)) {
+                            iterator.remove();
+                        }
+                    } else if (key.isReadable()) {
                         // new data on a client/remote socket
-                        handleNewData(select, k);
+                        if (!handleNewData(select, key)) {
+                            iterator.remove();
+                        }
                     }
                 }
 
@@ -90,18 +97,26 @@ public class SOCKSProxy implements Runnable {
         }
     }
 
-    private void handleNewConnection(Selector select, ServerSocketChannel socks) throws IOException {
+    /**
+     * @return true if a client was created.
+     */
+    private boolean handleNewConnection(Selector select, ServerSocketChannel socks) throws IOException {
         // server socket
         SocketChannel csock = socks.accept();
         if (csock == null) {
-            return;
+            return false;
         }
         addClient(csock);
         csock.register(select, SelectionKey.OP_READ);
+        return true;
     }
 
-    private void handleNewData(Selector selector, SelectionKey selectionKey) throws IOException {
+    /**
+     * @return false if the selectionKey is no longer active.
+     */
+    private boolean handleNewData(Selector selector, SelectionKey selectionKey) throws IOException {
         boolean foundOne = false;
+        boolean stillActive = true;
         synchronized (clients) {
             for (int i = 0; i < clients.size(); i++) { // Don't use foreach as it triggers ConcurrentModificationException
                 SocksClient cl = clients.get(i);
@@ -110,29 +125,36 @@ public class SOCKSProxy implements Runnable {
                         // Using threaded processing seems to make the proxy unstable
                         //executor.submit(cl.getNewClientDataCallable(selector, selectionKey));
                         cl.newClientData(selector, selectionKey);
+                        if (cl.shouldClose()) {
+                            stillActive = false;
+                        }
                         foundOne = true;
                         break;
                     } else if (selectionKey.channel() == cl.remote) {  // from server client is connected to (e.g. website)
                         //executor.submit(cl.getNewRemoteDataCallable(selector, selectionKey));
                         cl.newRemoteData(selector, selectionKey);
+                        if (cl.shouldClose()) {
+                            stillActive = false;
+                        }
                         foundOne = true;
                         break;
                     }
                     // TODO: Move error-handling to executors
                 } catch (Exception e) { // error occurred - remove client
-                    log.info("IO-Exception,  closing", e);
+                    log.info("IO-Exception, closing", e);
                     clients.remove(cl);
                     cl.client.close();
                     if (cl.remote != null) {
                         cl.remote.close();
                     }
-                    selectionKey.cancel();
+                    return false;
                 }
             }
         }
         if (!foundOne) {
             log.debug("Logic error: Could not locate client by channel");
         }
+        return foundOne && stillActive;
     }
 
     private SocksClient addClient(SocketChannel s) {
@@ -155,15 +177,17 @@ public class SOCKSProxy implements Runnable {
             for (int i = 0; i < clients.size(); i++) {
                 SocksClient cl = clients.get(i);
                 // 10 secs. Not sure this is total timeout, or connect timeout
-                if (cl.isFailed() || (System.currentTimeMillis() - cl.lastData) > 10000L) {
+                if (cl.shouldClose() || (System.currentTimeMillis() - cl.lastData) > 10000L) {
                     if (cl.isFailed()) {
                         log.warn("Closing client with state failed=" + cl.isFailed() +
                                  ". Remaining clients " + (clients.size()-1));
                     }
                     cl.client.close();
-                    if (cl.remote != null)
+                    if (cl.remote != null) {
                         cl.remote.close();
+                    }
                     clients.remove(cl);
+                    // TODO: Also deregister from select
                 }
             }
             return clients.size();
