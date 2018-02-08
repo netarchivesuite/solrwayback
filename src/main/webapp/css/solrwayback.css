@@ -154,7 +154,7 @@ input.imageSearchCheck{
     display: none;
 }
 
-.clearSearchLink, .clearSearchLink:hover{
+.clearSearchLink, .clearSearchLink:hover, .clearSearchLink a, .clearSearchLink a:hover{
     color: white;
     display: inline-block;
     margin-left: 1.5em;
@@ -740,6 +740,12 @@ table#domainGrowthTable{
 }
 
 /* TAGS */
+.backToSearch{
+    float: right;
+    font-size: 120%;
+    margin-top: 5px;
+}
+
 #tagSearch, #tagsList{
     float: left;
     margin: 1em 2em 0 0;

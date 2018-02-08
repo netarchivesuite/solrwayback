@@ -9,7 +9,8 @@ Vue.component('header-container', {
     props: ['addTag','tags',"removeTag"],
     template: `
     <div id="headerTags">
-        <h1>Search for HTML tags</h1>
+        <a class="backToSearch" href="./">Back to SOLR Wayback</a>
+        <h1>Search the Netarchive for HTML tags</h1>
         <search-box :add-tag="addTag"></search-box>
         <tags-box :tags="tags" :remove-tag="removeTag"></tags-box>
     </div>    
@@ -26,7 +27,7 @@ Vue.component('search-box', {
     template: `
     <div id="tagSearch">
         <input  v-model="tagModel" @keyup.enter="addTag(tagModel)" type="text">
-        <button  @click="addTag(tagModel)">Go</button>  
+        <button  @click="addTag(tagModel)">Search</button>  
     </div>    
     `,
 })

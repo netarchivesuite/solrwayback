@@ -30,7 +30,8 @@ Vue.component('search-box', {
                     <input class="imageSearchCheck" v-model="imageGeoSearchModel" type="checkbox"
                      v-on:change="setupSearch('search',queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false"> Geo search
                 </label>
-                <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span>               
+                <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span> 
+                <span class="link clearSearchLink"><a href="./tags.html">Search for HTML-tags</a></span>              
             </div>
         </div>
         <div v-if="searchByFile" id="uploadfilesContainer" class="box">
@@ -582,7 +583,6 @@ var app = new Vue({
                 });
             }, (response) => {
                 console.log('error: ', response);
-                this.errorMsg = response.statusText;
                 this.hideSpinner();
             });
         },
