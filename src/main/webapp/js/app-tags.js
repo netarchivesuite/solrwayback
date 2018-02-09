@@ -6,13 +6,13 @@ Vue.filter('thousandsSeperator', function(value) {
 })
 
 Vue.component('header-container', {
-    props: ['addTag','tags',"removeTag","errorMsg"],
+    props: ['addTag','tags',"removeTag","clearTags","errorMsg"],
     template: `
     <div id="headerTags">
         <a class="backToSearch" href="./">Back to SOLR Wayback</a>
         <h1>Search the Netarchive for HTML tags</h1>
         <div id="tagSearchBox">
-            <search-box :add-tag="addTag"></search-box>
+            <search-box :add-tag="addTag" :clear-tags="clearTags"></search-box>
             <tags-box :tags="tags" :remove-tag="removeTag"></tags-box>
         </div>
         <error-box v-if="errorMsg" :error-msg="errorMsg"></error-box>
@@ -21,7 +21,7 @@ Vue.component('header-container', {
 })
 
 Vue.component('search-box', {
-    props: ["addTag"],
+    props: ["addTag","clearTags"],
     data: function(){
         return{
             tagModel: '',
@@ -31,7 +31,7 @@ Vue.component('search-box', {
     <div id="tagSearch">
         <input  v-model="tagModel" @keyup.enter="addTag(tagModel)" placeholder="eg. h1;h2;h3;h4" type="text">
         <button  @click="addTag(tagModel)">Search</button>
-        <p>Search for up to 4 tags seperated by semi colon.</p>  
+        <p>Search for up to 4 tags seperated by semi colon. <span @click="clearTags()" class="link clearSearchLink">Clear all tags</span></p>  
     </div>    
     `,
 })
@@ -234,11 +234,20 @@ var app = new Vue({
             if(this.tags.length >0 ){
                 this.getData() //get data if tags in array
             }else{
-                var canvas = '<canvas id="line-chart" width="800" height="450"></canvas>'
+                this.dataArrays = [];
+                var canvas = '<canvas id="line-chart" width="800" height="450"></canvas>';
                 $("#chart").html(canvas);//insert clean canvas if tags is empty
                 this.errorMsg = "";
             }
 
+        },
+
+        clearTags: function(tag){
+            this.tags = [];
+            this.dataArrays = [];
+            var canvas = '<canvas id="line-chart" width="800" height="450"></canvas>';
+            $("#chart").html(canvas);//insert clean canvas if tags is empty
+            this.errorMsg = "";
         },
 
         showSpinner: function(){
