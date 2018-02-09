@@ -734,7 +734,7 @@ table#domainGrowthTable{
     text-align: center;
 }
 
-#domainGrowthTable th{
+#domainGrowthTable th, table.tagTable th{
     background: #666;
     border-left: 1px solid #ccc;
     color: white;
@@ -747,20 +747,51 @@ table#domainGrowthTable{
     margin-top: 5px;
 }
 
+#tagSearchBox{
+    background-color: #333944;
+    color: white;
+    margin: 2em 0 3em;
+    overflow: hidden;
+    padding: 1em 2em;
+}
+
 #tagSearch, #tagsList{
     float: left;
-    margin: 1em 2em 2em 0;
+    margin: 1em 2em 1em 0;
 }
 
 #tagSearch input, #tagSearch button{
-    font-size: 120%;
+    font-size: 140%;
+    padding: 3px 5px;
 }
 
 .removeTags{
+    color: white;
     float: left;
     font-size: 115%;
     list-style-type: none;
-    margin: 0.1em .5em 0 0;
+    margin: 0.2em .5em 0 0;
+}
+
+.removeTags .link,.removeTags .link:hover{
+    color: white;
+    text-decoration: underline;
+}
+
+table.tagTable{
+    margin-top: 1em;
+}
+
+table.tagTable th{
+    background: #333944;
+}
+
+.tagTable td{
+    border-left: 1px solid #ccc;
+}
+
+.tagTable td.data{
+    text-align: right;
 }
 
 

@@ -22,7 +22,7 @@
 
     <header-container :add-tag="addTag" :tags="tags" :remove-tag="removeTag" :error-msg="errorMsg"></header-container>
     <chart-container></chart-container>
-    <table-container :raw-data="rawData"></table-container>
+    <table-container :data-arrays="dataArrays"></table-container>
 
     <div v-if="spinner" id="overlay"></div>
     <div v-if="spinner" id="spinnerVue">Loading...</div>

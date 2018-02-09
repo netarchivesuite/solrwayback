@@ -11,8 +11,10 @@ Vue.component('header-container', {
     <div id="headerTags">
         <a class="backToSearch" href="./">Back to SOLR Wayback</a>
         <h1>Search the Netarchive for HTML tags</h1>
-        <search-box :add-tag="addTag"></search-box>
-        <tags-box :tags="tags" :remove-tag="removeTag"></tags-box>
+        <div id="tagSearchBox">
+            <search-box :add-tag="addTag"></search-box>
+            <tags-box :tags="tags" :remove-tag="removeTag"></tags-box>
+        </div>
         <error-box v-if="errorMsg" :error-msg="errorMsg"></error-box>
     </div>    
     `,
@@ -38,8 +40,9 @@ Vue.component('tags-box', {
     template: `
     <div id="tagsList" v-if="tags.length > 0">
         <ul class="removeTags"> 
-            <li class="removeTags">Click tag to remove it (max. 4 tags):</li>
-            <li v-for="tag in tags" @click="removeTag(tag)" class="link removeTags">{{ tag }}</li>
+            <li class="removeTags">Searched tags:</li>
+            <li v-for="tag in tags" @click="removeTag(tag)" class="removeTags"><span class="link">{{ tag }}</span>,</li> 
+            <li class="removeTags">(Click tag to remove it from your search)</li>
         </ul> 
     </div>    
     `,
@@ -49,8 +52,7 @@ Vue.component('error-box', {
     props: ['errorMsg'],
     template: `
     <div id="errorbox" class="box">
-        <p>Your search for:<br> <span class="bold">Something</span><br><br> 
-        Gave following error: <br><span class="bold">{{errorMsg}}</span></p>
+        <p>Your search gave an error: <span class="bold">{{errorMsg}}</span></p>
     </div>
     `
 })
@@ -65,27 +67,35 @@ Vue.component('chart-container', {
 })
 
 Vue.component('table-container', {
-    props: ["rawData"],
+    props: ["dataArrays"],
     template: `
-    <div id="domainGrowthTableContainer" v-if="1===2">
-        <table id="domainGrowthTable">
+    <div id="tagTableContainer" v-if="dataArrays.length > 0">
+        <h2>Results in raw numbers</h2>
+        <template v-for="dataset in dataArrays">
+        <h3>Tag: {{ dataset.searchedTag }}</h3>
+        <table class="tagTable" >
             <thead>
                 <tr>
                     <th></th>
-                    <th v-for="item in rawData" v-if="item.total > 0">{{ item.year }}</th>
+                    <th v-for="item in dataset.yearCountsTotal ">{{ item.year }}</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
+                    <td>Percent</td>
+                    <td v-for="item in dataset.yearCountPercent" class="data">{{ Math.round( item * 10000)/100 }}%</td>
+                </tr>
+                <tr>
                     <td>Count</td>
-                    <td v-for="item in rawData" v-if="item.total > 0">{{ item.count | thousandsSeperator }}</td>
+                    <td v-for="item in dataset.yearCountsTotal" class="data">{{ item.count | thousandsSeperator  }}</td>
                 </tr>
                 <tr>
                     <td>Total pages</td>
-                    <td v-for="item in rawData" v-if="item.total > 0">{{item.total | thousandsSeperator }}</td>
+                    <td v-for="item in dataset.yearCountsTotal" class="data">{{item.total | thousandsSeperator }}</td>
                 </tr>
             </tbody>
         </table>
+        </template>
     </div>    
     `,
 })
@@ -101,18 +111,31 @@ var app = new Vue({
     el: '#app',
     data: {
         spinner: false,
-        rawData: [],
-        dataArray: [],
+        dataArrays: [],
         tags: [],
         chartLabels: [],
         errorMsg: "",
     },
     methods: {
         addTag: function(tag) {
-            this.tags.push(tag);
-            if (this.tags.length > 4) {
-                this.tags.shift();
+            //var tagArray = tag.split(";").join('').split(''); //removing empty items if user is sloppy with the seperators
+            var tagArray = tag.split(";"); //removing empty items if user is sloppy with the seperators
+            if(tagArray.length > 4){
+                tagArray.length = 4;
             }
+            console.log('tagArray', tagArray)
+            if (this.tags.length + tagArray.length > 4) {
+                this.tags.length = 4 - tagArray.length;
+            }
+            for( var i=0;i<tagArray.length; i++){
+                tagArray[i] = tagArray[i].replace("<", "").replace(">", "").toLowerCase().trim();
+                this.tags.push(tagArray[i]);
+            }
+            /*var tag = tag.replace("<", "").replace(">", "").toLowerCase().trim();
+            if (this.tags.length > 3) {
+                this.tags.pop();
+            }
+            this.tags.push(tag);*/
             console.log('this.tags', this.tags);
             this.getData();
         },
@@ -121,41 +144,34 @@ var app = new Vue({
             this.showSpinner();
             var promises = [];
             for( var i = 0; i < this.tags.length; i++ ){
-                var tagsUrl = 'http://' + location.host + '/solrwayback/services/smurf/tags?tag=' + this.tags[i];
+                var tagsUrl = 'http://' + location.host + '/solrwayback/services/smurf/tags?tag=' + this.tags[i] + "&startyear=2006";
                 promises.push(this.$http.get(tagsUrl));
-                console.log('tagsUrl', tagsUrl)
             }
-            console.log('PROMISES   ', promises)
             Promise.all(promises).then((response) => {
                     this.errorMsg = "";
                     this.chartLabels = []; // Resetting data arrays
                     this.dataArrays = []; // Resetting data arrays
                     for(var i = 0; i < response.length; i++){
                         var tempPercents = []; // Resetting temp array
-                        this.dataArrays.push(response[i].body)
+                        this.dataArrays.push(response[i].body);
                         for(var j = 0; j < this.dataArrays[i].yearCountPercent.length; j++){
-                            tempPercents.push(this.dataArrays[i].yearCountPercent[j] * 100); // recalculating to percents
+                            tempPercents.push(Math.round(this.dataArrays[i].yearCountPercent[j] * 10000)/100); // recalculating to percents
                         }
                         this.dataArrays[i].yearPercent = tempPercents; // Real percents are added to data objects
+                        this.dataArrays[i].searchedTag = this.tags[i];
                     }
                     console.log('this.dataArrays', this.dataArrays);
 
-                    // Setting chart labels (years in chart)
+                    // Setting chart labels (years in chart) based on the first search
                     for(var i = 0; i < this.dataArrays[0].yearCountsTotal.length; i++){
                         this.chartLabels.push(this.dataArrays[0].yearCountsTotal[i].year);
                     }
                     console.log('response: ', response);
                     this.drawChart();
                     this.hideSpinner();
-                    if(response.body.error){
-                        this.errorMsg = response.body;
-                        return;
-                    }
                 }, (response) => {
                     console.log('error: ', response);
                     this.errorMsg = response.body;
-
-                console.log('this.errorMsg: ', this.errorMsg);
                     this.hideSpinner();
                 });
         },
@@ -214,7 +230,6 @@ var app = new Vue({
         },
 
         removeTag: function(tag){
-            console.log("remove tag:", tag)
             var index = this.tags.indexOf(tag);
             if (index > -1) {
                 this.tags.splice(index, 1);
