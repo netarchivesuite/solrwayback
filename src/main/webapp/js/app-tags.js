@@ -29,8 +29,9 @@ Vue.component('search-box', {
     },
     template: `
     <div id="tagSearch">
-        <input  v-model="tagModel" @keyup.enter="addTag(tagModel)" type="text">
-        <button  @click="addTag(tagModel)">Search</button>  
+        <input  v-model="tagModel" @keyup.enter="addTag(tagModel)" placeholder="eg. h1;h2;h3;h4" type="text">
+        <button  @click="addTag(tagModel)">Search</button>
+        <p>Search for up to 4 tags seperated by semi colon.</p>  
     </div>    
     `,
 })
@@ -119,25 +120,22 @@ var app = new Vue({
     methods: {
         addTag: function(tag) {
             //var tagArray = tag.split(";").join('').split(''); //removing empty items if user is sloppy with the seperators
-            var tagArray = tag.split(";"); //removing empty items if user is sloppy with the seperators
+            var tagArray = tag.split(";");
             if(tagArray.length > 4){
                 tagArray.length = 4;
             }
-            console.log('tagArray', tagArray)
             if (this.tags.length + tagArray.length > 4) {
                 this.tags.length = 4 - tagArray.length;
             }
             for( var i=0;i<tagArray.length; i++){
                 tagArray[i] = tagArray[i].replace("<", "").replace(">", "").toLowerCase().trim();
-                this.tags.push(tagArray[i]);
+                if(tagArray[i] != ''){
+                    this.tags.push(tagArray[i]);
+                }
             }
-            /*var tag = tag.replace("<", "").replace(">", "").toLowerCase().trim();
-            if (this.tags.length > 3) {
-                this.tags.pop();
+            if(this.tags.length > 0){
+                this.getData();
             }
-            this.tags.push(tag);*/
-            console.log('this.tags', this.tags);
-            this.getData();
         },
 
         getData: function(){
@@ -160,7 +158,6 @@ var app = new Vue({
                         this.dataArrays[i].yearPercent = tempPercents; // Real percents are added to data objects
                         this.dataArrays[i].searchedTag = this.tags[i];
                     }
-                    console.log('this.dataArrays', this.dataArrays);
 
                     // Setting chart labels (years in chart) based on the first search
                     for(var i = 0; i < this.dataArrays[0].yearCountsTotal.length; i++){

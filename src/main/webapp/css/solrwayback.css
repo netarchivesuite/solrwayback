@@ -752,17 +752,21 @@ table#domainGrowthTable{
     color: white;
     margin: 2em 0 3em;
     overflow: hidden;
-    padding: 1em 2em;
+    padding: 1em 2em 0;
+}
+
+#tagSearch input, #tagSearch button{
+     font-size: 140%;
+     padding: 3px 5px;
+}
+
+#tagSearch input{
+     width: 400px;
 }
 
 #tagSearch, #tagsList{
     float: left;
     margin: 1em 2em 1em 0;
-}
-
-#tagSearch input, #tagSearch button{
-    font-size: 140%;
-    padding: 3px 5px;
 }
 
 .removeTags{
