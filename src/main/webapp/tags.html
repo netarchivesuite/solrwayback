@@ -20,7 +20,7 @@
 <body>
 <div class="wrapper" id="app">
 
-    <header-container :add-tag="addTag" :has-results="hasResults" :tags="tags" :remove-tag="removeTag"></header-container>
+    <header-container :add-tag="addTag" :tags="tags" :remove-tag="removeTag" :error-msg="errorMsg"></header-container>
     <chart-container></chart-container>
     <table-container :raw-data="rawData"></table-container>
 

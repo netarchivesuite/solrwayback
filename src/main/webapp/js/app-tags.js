@@ -6,13 +6,14 @@ Vue.filter('thousandsSeperator', function(value) {
 })
 
 Vue.component('header-container', {
-    props: ['addTag','tags',"removeTag"],
+    props: ['addTag','tags',"removeTag","errorMsg"],
     template: `
     <div id="headerTags">
         <a class="backToSearch" href="./">Back to SOLR Wayback</a>
         <h1>Search the Netarchive for HTML tags</h1>
         <search-box :add-tag="addTag"></search-box>
         <tags-box :tags="tags" :remove-tag="removeTag"></tags-box>
+        <error-box v-if="errorMsg" :error-msg="errorMsg"></error-box>
     </div>    
     `,
 })
@@ -42,6 +43,16 @@ Vue.component('tags-box', {
         </ul> 
     </div>    
     `,
+})
+
+Vue.component('error-box', {
+    props: ['errorMsg'],
+    template: `
+    <div id="errorbox" class="box">
+        <p>Your search for:<br> <span class="bold">Something</span><br><br> 
+        Gave following error: <br><span class="bold">{{errorMsg}}</span></p>
+    </div>
+    `
 })
 
 Vue.component('chart-container', {
@@ -94,8 +105,7 @@ var app = new Vue({
         dataArray: [],
         tags: [],
         chartLabels: [],
-        numberOfPages: [],
-        hasResults: true,
+        errorMsg: "",
     },
     methods: {
         addTag: function(tag) {
@@ -137,12 +147,15 @@ var app = new Vue({
                     console.log('response: ', response);
                     this.drawChart();
                     this.hideSpinner();
-                    /*if(response.body.error){
-                        this.errorMsg = response.body.error.msg;
+                    if(response.body.error){
+                        this.errorMsg = response.body;
                         return;
-                    }*/
+                    }
                 }, (response) => {
                     console.log('error: ', response);
+                    this.errorMsg = response.body;
+
+                console.log('this.errorMsg: ', this.errorMsg);
                     this.hideSpinner();
                 });
         },
@@ -211,6 +224,7 @@ var app = new Vue({
             }else{
                 var canvas = '<canvas id="line-chart" width="800" height="450"></canvas>'
                 $("#chart").html(canvas);//insert clean canvas if tags is empty
+                this.errorMsg = "";
             }
 
         },
