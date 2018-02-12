@@ -16,10 +16,11 @@ public class PropertiesLoader {
 	private static final String SOLR_SERVER_PROPERTY="solr.server";
 	private static final String PROXY_PORT_PROPERTY="proxy.port";
 	private static final String PROXY_ALLOW_HOSTS_PROPERTY="proxy.allow.hosts";
-	
+	private static final String WARC_FILE_RESOLVER_CLASS_PROPERTY="warc.file.resolver.class";
 	private static final String WAYBACK_BASEURL_PROPERTY="wayback.baseurl";
 	private static final String PHANTOMJS_RASTERIZE_FILE_PROPERTY="phantomjs.rasterize.file";
 	private static final String PHANTOMJS_TEMP_IMAGEDIR_PROPERTY="phantomjs.temp.imagedir";
+	
 	
 	public static String SOLR_SERVER = null;
 	public static String WAYBACK_BASEURL = null;
@@ -27,7 +28,7 @@ public class PropertiesLoader {
 	public static String PHANTOMJS_TEMP_IMAGEDIR = null;
 	public static String PROXY_PORT= null;
 	public static String PROXY_ALLOW_HOSTS= null;
-	
+	public static String WARC_FILE_RESOLVER_CLASS = null;
 	
 	public static void initProperties()  throws Exception{
 	    try {
@@ -48,6 +49,7 @@ public class PropertiesLoader {
 		PHANTOMJS_TEMP_IMAGEDIR = serviceProperties.getProperty(PHANTOMJS_TEMP_IMAGEDIR_PROPERTY);
 		PROXY_PORT = serviceProperties.getProperty(PROXY_PORT_PROPERTY);		
 		PROXY_ALLOW_HOSTS = serviceProperties.getProperty(PROXY_ALLOW_HOSTS_PROPERTY);
+		WARC_FILE_RESOLVER_CLASS = serviceProperties.getProperty(WARC_FILE_RESOLVER_CLASS_PROPERTY);
 		
 		log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
 		log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);
@@ -55,7 +57,8 @@ public class PropertiesLoader {
 		log.info("Property:"+ PROXY_ALLOW_HOSTS_PROPERTY +" = " + PROXY_ALLOW_HOSTS);		
 		log.info("Property:"+ PHANTOMJS_RASTERIZE_FILE_PROPERTY +" = " + PHANTOMJS_RASTERIZE_FILE);
 		log.info("Property:"+ PHANTOMJS_TEMP_IMAGEDIR_PROPERTY +" = " + PHANTOMJS_TEMP_IMAGEDIR);
-		
+		log.info("Property:"+ PHANTOMJS_TEMP_IMAGEDIR_PROPERTY +" = " + PHANTOMJS_TEMP_IMAGEDIR);
+		log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);
 	    }
 		catch (Exception e) {
             e.printStackTrace();

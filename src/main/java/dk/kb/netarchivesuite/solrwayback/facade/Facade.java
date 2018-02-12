@@ -39,6 +39,8 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
+import dk.kb.netarchivesuite.solrwayback.interfaces.ArcFileLocationResolverInterface;
+import dk.kb.netarchivesuite.solrwayback.interfaces.IdentityArcFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.FileParserFactory;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParseResult;
@@ -50,6 +52,8 @@ import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingWarcExportClient;
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
 
+    private static ArcFileLocationResolverInterface  resolver = new IdentityArcFileResolver(); //Default
+    
     public static SearchResult search(String searchText, String filterQuery) throws Exception {
         SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, filterQuery);
         return result;
@@ -61,9 +65,7 @@ public class Facade {
     
 
     public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {        
-        SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 100); //only search these two types
-        
-                
+        SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 100); //only search these two types                        
         //multithreaded call solr to find arc file and offset
         ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(result.getResults(), false);
         return extractImages;      
@@ -678,8 +680,11 @@ public static String proxyBackendResources(String source_file_path, String offse
         imageUrl.setUrlNorm(entry.getUrl_norm());
         imageUrls.add(imageUrl);         
       }
-      return imageUrls;                 
-      
+      return imageUrls;                       
     }
     
+   public static void setArcFileLocationResolver(ArcFileLocationResolverInterface resolverImpl){
+     resolver=resolverImpl;     
+   }
+   
 }
