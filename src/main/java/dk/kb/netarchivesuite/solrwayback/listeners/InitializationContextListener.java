@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.proxy.SOCKSProxy;
@@ -31,8 +32,17 @@ public class InitializationContextListener implements ServletContextListener {
             PropertiesLoader.initProperties(); //backend
             PropertiesLoaderWeb.initProperties(); //frontend
 
-            //Starting up the socks proxy.
+
+            //TODO Delete code below, this is just a socks backup implementation
+            /* This works with socks 5 
+            new Thread(new Runnable() {
+              public void run() {
+                SOCKS.main(new String[]{"/home/teg/workspace/solrwayback/socks.properties"});
+              }
+             }).start();
+            */
             
+            //Starting up the socks proxy.            
             String proxy_port= PropertiesLoader.PROXY_PORT;
             String proxy_allow_hosts = PropertiesLoader.PROXY_ALLOW_HOSTS;
             
