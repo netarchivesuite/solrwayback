@@ -42,7 +42,8 @@ import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedI
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcFileLocationResolverInterface;
 import dk.kb.netarchivesuite.solrwayback.interfaces.IdentityArcFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
-import dk.kb.netarchivesuite.solrwayback.parsers.FileParserFactory;
+import dk.kb.netarchivesuite.solrwayback.parsers.ArcFileParserFactory;
+import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParseResult;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
@@ -51,8 +52,6 @@ import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingWarcExportClient;
 
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
-
-    private static ArcFileLocationResolverInterface  resolver = new IdentityArcFileResolver(); //Default
     
     public static SearchResult search(String searchText, String filterQuery) throws Exception {
         SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, filterQuery);
@@ -295,7 +294,7 @@ public class Facade {
     }
     
     public static ArcEntry getArcEntry(String source_file_path, long offset) throws Exception{         
-        return FileParserFactory.getArcEntry(source_file_path, offset);        
+        return ArcParserFileResolver.getArcEntry(source_file_path, offset);        
     }
     
 
@@ -413,7 +412,7 @@ public class Facade {
     
     
     public static String generatePid(String source_file_path, long offset) throws Exception{      
-      ArcEntry arc=FileParserFactory.getArcEntry(source_file_path, offset);           
+      ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);           
       arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
       StringBuffer parts = new StringBuffer();
       //the original page
@@ -441,7 +440,7 @@ public class Facade {
       ArrayList<PageResource> pageResources = new ArrayList<PageResource>();
       ts.setResources(pageResources);
             
-      ArcEntry arc=FileParserFactory.getArcEntry(source_file_path, offset);
+      ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);
       arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
       
       IndexDoc docPage = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
@@ -483,7 +482,7 @@ public class Facade {
     
     public static ArcEntry viewHtml(String source_file_path, long offset, Boolean showToolbar) throws Exception{         
     	
-    	ArcEntry arc=FileParserFactory.getArcEntry(source_file_path, offset);    	 
+    	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
 
     	String encoding = arc.getContentEncoding();
     	if (encoding == null){
@@ -683,8 +682,7 @@ public static String proxyBackendResources(String source_file_path, String offse
       return imageUrls;                       
     }
     
-   public static void setArcFileLocationResolver(ArcFileLocationResolverInterface resolverImpl){
-     resolver=resolverImpl;     
-   }
+  
+   
    
 }

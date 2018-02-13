@@ -6,8 +6,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcFileLocationResolverInterface;
+import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.proxy.SOCKSProxy;
@@ -40,7 +40,7 @@ public class InitializationContextListener implements ServletContextListener {
             Class c = Class.forName(arcFileResolverClass);                               
             Constructor constructor = c.getConstructor(); //Default constructor, no arguments
             ArcFileLocationResolverInterface resolverImpl= (ArcFileLocationResolverInterface) constructor.newInstance();          
-            Facade.setArcFileLocationResolver(resolverImpl); //Set this on the Facade
+            ArcParserFileResolver.setArcFileLocationResolver(resolverImpl); //Set this on the Facade
             log.info("Using warc-file-resolver implementation class:"+arcFileResolverClass);
             }
             else{
