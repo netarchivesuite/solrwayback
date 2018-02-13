@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcHeader2WarcHeader;
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParser;
+import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingWarcExportClient;
@@ -87,7 +88,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
         if (source_file_path.toLowerCase().endsWith(".arc")  || source_file_path.toLowerCase().endsWith(".arc.gz")){
           //log.info("skipping Arc record:"+source_file_path);
           try{
-            warcEntry = ArcParser.getArcEntry(source_file_path,offset);
+            warcEntry = ArcParserFileResolver.getArcEntry(source_file_path,offset);
           }
           catch(Exception e){ //This will only happen if warc file is not found etc. Should not happen for real.
             log.warn("Error loading arc:"+source_file_path,e);
@@ -101,7 +102,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
         }
         else{
           try{
-            warcEntry = WarcParser.getWarcEntry(source_file_path,offset);
+            warcEntry = ArcParserFileResolver.getArcEntry(source_file_path,offset);
           }
           catch(Exception e){ //This will only happen if warc file is not found etc. Should not happen for real.
             log.warn("Error loading warc:"+source_file_path,e);
