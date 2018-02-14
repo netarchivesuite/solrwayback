@@ -21,6 +21,7 @@ import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.Group;
 import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
+import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 
 
 public class NetarchiveSolrClient {
@@ -41,7 +43,7 @@ public class NetarchiveSolrClient {
   private static final Logger log = LoggerFactory.getLogger(NetarchiveSolrClient.class);
   private static SolrClient solrServer;
   private static NetarchiveSolrClient instance = null;
-  private static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9æøåÆØÅ]+"); 
+  private static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
 
   private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type_norm,hash,crawl_date,content_type,content_encoding,exif_location";
   static {
@@ -356,8 +358,11 @@ public class NetarchiveSolrClient {
     solrQuery.add("fl", indexDocFieldList);   
 
     String query = null;
-
-    query = "source_file_path:\""+source_file_path+"\" AND source_file_offset:"+offset ;         
+        
+    //This is due to windows path in solr field source_file_offset. For linux the escape does nothing
+    String pathEscaped= ClientUtils.escapeQueryChars(source_file_path);
+    
+    query = "source_file_path:\""+pathEscaped+"\" AND source_file_offset:"+offset ;         
     log.info("getArcEntry query:"+ query);    
     solrQuery.setQuery(query) ;
     solrQuery.setRows(1);
