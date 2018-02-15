@@ -18,14 +18,14 @@ public class PropertiesLoader {
 	private static final String PROXY_ALLOW_HOSTS_PROPERTY="proxy.allow.hosts";
 	private static final String WARC_FILE_RESOLVER_CLASS_PROPERTY="warc.file.resolver.class";
 	private static final String WAYBACK_BASEURL_PROPERTY="wayback.baseurl";
-	private static final String PHANTOMJS_RASTERIZE_FILE_PROPERTY="phantomjs.rasterize.file";
-	private static final String PHANTOMJS_TEMP_IMAGEDIR_PROPERTY="phantomjs.temp.imagedir";
+	private static final String CHROME_COMMAND_PROPERTY="chrome.command";
+	private static final String SCREENSHOT_TEMP_IMAGEDIR_PROPERTY="screenshot.temp.imagedir";
 	
 	
 	public static String SOLR_SERVER = null;
 	public static String WAYBACK_BASEURL = null;
-	public static String PHANTOMJS_RASTERIZE_FILE = null;
-	public static String PHANTOMJS_TEMP_IMAGEDIR = null;
+	public static String CHROME_COMMAND= null;
+	public static String SCREENSHOT_TEMP_IMAGEDIR = null;
 	public static String PROXY_PORT= null;
 	public static String PROXY_ALLOW_HOSTS= null;
 	public static String WARC_FILE_RESOLVER_CLASS = null;
@@ -45,8 +45,8 @@ public class PropertiesLoader {
 
 		SOLR_SERVER =serviceProperties.getProperty(SOLR_SERVER_PROPERTY);		
 		WAYBACK_BASEURL = serviceProperties.getProperty(WAYBACK_BASEURL_PROPERTY);
-		PHANTOMJS_RASTERIZE_FILE = serviceProperties.getProperty(PHANTOMJS_RASTERIZE_FILE_PROPERTY); 
-		PHANTOMJS_TEMP_IMAGEDIR = serviceProperties.getProperty(PHANTOMJS_TEMP_IMAGEDIR_PROPERTY);
+		CHROME_COMMAND = serviceProperties.getProperty(CHROME_COMMAND_PROPERTY); 
+		SCREENSHOT_TEMP_IMAGEDIR = serviceProperties.getProperty(SCREENSHOT_TEMP_IMAGEDIR_PROPERTY);
 		PROXY_PORT = serviceProperties.getProperty(PROXY_PORT_PROPERTY);		
 		PROXY_ALLOW_HOSTS = serviceProperties.getProperty(PROXY_ALLOW_HOSTS_PROPERTY);
 		WARC_FILE_RESOLVER_CLASS = serviceProperties.getProperty(WARC_FILE_RESOLVER_CLASS_PROPERTY);
@@ -55,9 +55,8 @@ public class PropertiesLoader {
 		log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);
 		log.info("Property:"+ PROXY_PORT_PROPERTY +" = " + PROXY_PORT);
 		log.info("Property:"+ PROXY_ALLOW_HOSTS_PROPERTY +" = " + PROXY_ALLOW_HOSTS);		
-		log.info("Property:"+ PHANTOMJS_RASTERIZE_FILE_PROPERTY +" = " + PHANTOMJS_RASTERIZE_FILE);
-		log.info("Property:"+ PHANTOMJS_TEMP_IMAGEDIR_PROPERTY +" = " + PHANTOMJS_TEMP_IMAGEDIR);
-		log.info("Property:"+ PHANTOMJS_TEMP_IMAGEDIR_PROPERTY +" = " + PHANTOMJS_TEMP_IMAGEDIR);
+		log.info("Property:"+ CHROME_COMMAND_PROPERTY +" = " + CHROME_COMMAND);	
+		log.info("Property:"+ SCREENSHOT_TEMP_IMAGEDIR_PROPERTY +" = " + SCREENSHOT_TEMP_IMAGEDIR);
 		log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);
 	    }
 		catch (Exception e) {

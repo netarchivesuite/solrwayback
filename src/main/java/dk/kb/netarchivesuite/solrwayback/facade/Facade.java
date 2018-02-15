@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
@@ -24,6 +25,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
+import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 
@@ -145,24 +147,30 @@ public class Facade {
     public static BufferedImage getHtmlPagePreview(String source_file_path, long offset) throws Exception {
       
       String url = PropertiesLoader.WAYBACK_BASEURL+"services/view?source_file_path="+source_file_path +"&offset="+offset+"&showToolbar=false";            
-      String filename = PropertiesLoader.PHANTOMJS_TEMP_IMAGEDIR+source_file_path+"@"+offset+".png";
-      String scriptFile = PropertiesLoader.PHANTOMJS_RASTERIZE_FILE;
+      String filename = PropertiesLoader.SCREENSHOT_TEMP_IMAGEDIR+source_file_path+"@"+offset+".png";
+      String chromeCommand = PropertiesLoader.CHROME_COMMAND;
       
       log.info("generate temp preview file:"+filename);
      ProcessBuilder pb =
-         new ProcessBuilder("phantomjs", scriptFile,url,filename,"1280px*1024px");
-         log.info("phantomjs"+" "+scriptFile +" "+"\""+url+"\""+" "+filename +"\"1280px*1024px\"");
-     
-    
-     Process start = pb.start();
-      InputStream is = start.getInputStream();
-      String conlog= getStringFromInputStream(is);
-      log.info("conlog:"+conlog);
-      start.waitFor(); //Wait until completed. 5 seconds timeout in script
-   
+         new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=3000","--screenshot="+filename,"--window-size=1280,1024",url);
+         log.info(chromeCommand+" --headless"+ " -disable-gpu -screenshot="+filename+" --window-size=1280,1024 "+url);
+         
+    // chromium-browser --headless --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024 https://www.google.com/ 
       
-     BufferedImage image =  ImageIO.read(new File(filename));
-     return image;
+      Process start = pb.start();      
+      if(!start.waitFor(10000, TimeUnit.MILLISECONDS)) {
+        //timeout - kill the process. 
+        log.info("Timeout generating preview.");
+        start.destroyForcibly(); 
+        throw new NotFoundServiceException("Timeout generating page preview"); // Just give a nice 404.
+      }else{
+        InputStream is = start.getInputStream();
+        String conlog= getStringFromInputStream(is);
+        //log.info("conlog:"+conlog); No need to log this, can be spammy. But usefull when debugging                    
+       BufferedImage image =  ImageIO.read(new File(filename));
+       return image;  
+      }
+            
     }
 
     public static HarvestDates getHarvestTimesForUrl(String url) throws Exception {
