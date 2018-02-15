@@ -15,6 +15,14 @@ Arc/Warc files.
  Netsearch(Archon/Arctika): https://github.com/netarchivesuite/netsearch<br>
 
 
+
+SolrWayback comes with additional features:
+* Image search similar to google images
+* Link graph showing links (ingoing/outgoing) for domains using the D3 javascript framework.
+* Raw download of any harvested resource from the binary Arc/Warc file.
+* Export a search resultset to a Warc-file. Streaming download, no limit of size of resultset.
+
+
 <p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" width="600" height="400"/>
 </p>
@@ -45,12 +53,6 @@ Page preview for different harvest times of a given url. Images are generated re
 </p>
 
 
-
-SolrWayback comes with additional features:
-* Image search similar to google images
-* Link graph showing links (ingoing/outgoing) for domains using the D3 javascript framework.
-* Raw download of any harvested resource from the binary Arc/Warc file.
-* Export a search resultset to a Warc-file. Streaming download, no limit of size of resultset.
 
 
 <p align="center"> 
