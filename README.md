@@ -18,10 +18,12 @@ Arc/Warc files.
 
 SolrWayback comes with additional features:
 * Image search similar to google images
+* Search by uploading a file. (image/pdf etc.) See if the resource has been harvested and from where.
 * Link graph showing links (ingoing/outgoing) for domains using the D3 javascript framework.
 * Raw download of any harvested resource from the binary Arc/Warc file.
 * Export a search resultset to a Warc-file. Streaming download, no limit of size of resultset.
 * Build in SOCKS proxy to view historical webpages without browser leaking resources from the live web.
+ 
 
 <p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" width="600" height="400"/>
