@@ -50,6 +50,7 @@ SolrWayback comes with additional features:
 * Image search similar to google images
 * Link graph showing links (ingoing/outgoing) for domains using the D3 javascript framework.
 * Raw download of any harvested resource from the binary Arc/Warc file.
+* Export a search resultset to a Warc-file. Streaming download, no limit of size of resultset.
 
 
 <p align="center"> 
