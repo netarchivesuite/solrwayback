@@ -21,7 +21,7 @@ SolrWayback comes with additional features:
 * Link graph showing links (ingoing/outgoing) for domains using the D3 javascript framework.
 * Raw download of any harvested resource from the binary Arc/Warc file.
 * Export a search resultset to a Warc-file. Streaming download, no limit of size of resultset.
-
+* Build in SOCKS proxy to view historical webpages without browser leaking resources from the live web.
 
 <p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" width="600" height="400"/>
@@ -83,6 +83,14 @@ Any search result can be exported to WARC format. If any of the documents are in
 Text information about a corpus can also be exported as a CSV file.
 
 
+## SOCKS proxy
+Solrwayback starts up listing on two ports. The default port 8080 and then port 9000 for SOCKS proxy v.4 mode.
+The default SOCKS  proxy port in the property file is 9000.
+Configure your browser to run SOCKS v4 to <solrwaybackurl> port 9000
+Ie. localhost port 9000
+You can still connect to solrwayback without SOCKS mode to the normal port 8080.
+This useful so the page can be seen both with and without leaking, using two different browsers with 1 using SOCKS v.4 mode.
+
 
 ## API
 The API for linking to and browsing archived webpages is the same as for Internet Archive:<br>
@@ -102,7 +110,7 @@ you only need to change to property pointing from the wayback server to the Solr
  * Tomcat 7+  or another J2EE server for deploying the WAR-file
  * A Solr server with the index build from the Arc/Warc files using the Warc-Indexer.
  * The J2EE server must have the Arc/Warc file drive mounted
- * (Optional) phanomjs native installed to generate webpage previews.
+ * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage
  * Build the application with: mvn package
