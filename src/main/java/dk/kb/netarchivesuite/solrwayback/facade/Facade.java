@@ -514,7 +514,7 @@ public class Facade {
         	   textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced);
         	}
         	
-        	arc.setBinary(textReplaced.getBytes(encoding));    	
+        	arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1  	
             log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start));
         	return arc;
     		 
