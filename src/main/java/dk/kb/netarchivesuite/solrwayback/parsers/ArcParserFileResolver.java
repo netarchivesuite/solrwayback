@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 
 import org.slf4j.Logger;
@@ -22,31 +23,34 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
  */
 public class ArcParserFileResolver {
 
-  private static HashMap<String,String> cache = new HashMap<String,String>(); 
-  
-  private static ArcFileLocationResolverInterface resolver = new IdentityArcFileResolver(); //Default
-  private static final Logger log = LoggerFactory.getLogger(ArcFileLocationResolverInterface.class);  
-  
-  public static void setArcFileLocationResolver(ArcFileLocationResolverInterface resolverImpl){
-    resolver=resolverImpl;     
+  private static HashMap<String, String> cache = new HashMap<String, String>();
+
+  private static ArcFileLocationResolverInterface resolver = new IdentityArcFileResolver(); // Default
+  private static final Logger log = LoggerFactory.getLogger(ArcFileLocationResolverInterface.class);
+
+  public static void setArcFileLocationResolver(ArcFileLocationResolverInterface resolverImpl) {
+    resolver = resolverImpl;
   }
 
-  public static ArcEntry getArcEntry (String source_file_path, long offset) throws Exception{
-    String cached = cache.get(source_file_path);
-    String fileLocation = null;
-    if (cached != null){
-      fileLocation = cached;
-      //log.info("Using cached arcfile location:"+source_file_path +"->"+fileLocation);
-    }else{
-      fileLocation = resolver.resolveArcFileLocation(source_file_path);
-      cache.put(source_file_path, fileLocation);
-      log.debug("Resolved arcfile location:"+source_file_path +"->"+fileLocation);
-    }                    
-    return ArcFileParserFactory.getArcEntry(fileLocation, offset);
-    
+  public static ArcEntry getArcEntry(String source_file_path, long offset) throws Exception {
+    try {
+      String cached = cache.get(source_file_path);
+      String fileLocation = null;
+      if (cached != null) {
+        fileLocation = cached;
+        // log.info("Using cached arcfile location:"+source_file_path +"->"+fileLocation);
+      } else {
+        fileLocation = resolver.resolveArcFileLocation(source_file_path);
+        cache.put(source_file_path, fileLocation);
+        log.debug("Resolved arcfile location:" + source_file_path + "->" + fileLocation);
+      }
+      return ArcFileParserFactory.getArcEntry(fileLocation, offset);
+    } catch (ConcurrentModificationException e) {
+      // It CAN happen, but crazy unlikely, and not critical at all... (took 10 threads spamming 1M+ requests/sec for it to happen in a test.):
+      log.error("Toke wins! Thomas Egense hereby owns Toke a free cocktail of his choice");
+      throw e;
+    }
+
   }
-  
-  
-  
-  
+
 }
