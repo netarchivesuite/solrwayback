@@ -385,14 +385,12 @@ public class SolrWaybackResource {
       InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
       ResponseBuilder response = null;
       try{
-        //TODO can this be fixed? Below is an example of a arc-header that failes. 
-         //Content-Type: charset=ISO-8859-1;charset=ISO-8859-1        
-        //log.info("serving contentype:"+arcEntry.getContentType());
         response= Response.ok((Object) in).type(arcEntry.getContentType());          
       }
-      catch (Exception e){
-         log.warn("Error setting HTTP header Content-Type:"+arcEntry.getContentType());
-         response = Response.ok((Object) in).type(MediaType.APPLICATION_OCTET_STREAM_TYPE); 
+      catch (Exception e){         
+         IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);         
+         log.warn("Error setting HTTP header Content-Type:'"+arcEntry.getContentType() +"' using index Content-Type:'"+indexDoc.getContentType()+"'");
+         response = Response.ok((Object) in).type(indexDoc.getContentType()); 
       }
             
       if (arcEntry.getFileName() != null){
@@ -677,7 +675,8 @@ public class SolrWaybackResource {
     ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset,showToolbar);
 
     InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
-    ResponseBuilder response = Response.ok((Object) in).type(arcEntry.getContentType());                 
+   
+    ResponseBuilder response = Response.ok((Object) in).type(arcEntry.getContentType() +"; charset="+arcEntry.getContentEncoding());                 
     return response.build();
 
   }

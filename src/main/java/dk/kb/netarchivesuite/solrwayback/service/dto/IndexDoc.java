@@ -17,6 +17,7 @@ public class IndexDoc {
     private String url_norm;
     private String mimeType;
     private String contentTypeNorm;
+    private String contentType;    
     private String crawlDate; // format 2009-12-09T05:32:50Z    
     private long crawlDateLong;
     private String hash;
@@ -60,6 +61,15 @@ public class IndexDoc {
     public void setContentTypeNorm(String contentTypeNorm) {
         this.contentTypeNorm = contentTypeNorm;
     }
+        
+    public String getContentType() {
+      return contentType;
+    }
+
+    public void setContentType(String contentType) {
+      this.contentType = contentType;
+    }
+
     public String getCrawlDate() {
         return crawlDate;
     }
