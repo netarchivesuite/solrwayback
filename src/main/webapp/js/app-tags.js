@@ -119,19 +119,16 @@ var app = new Vue({
     },
     methods: {
         addTag: function(tag) {
-            //var tagArray = tag.split(";").join('').split(''); //removing empty items if user is sloppy with the seperators
+            this.tags = []; //resetting tags on new search
             var tagArray = tag.split(";");
-            if(tagArray.length > 4){
-                tagArray.length = 4;
-            }
-            if (this.tags.length + tagArray.length > 4) {
-                this.tags.length = 4 - tagArray.length;
-            }
             for( var i=0;i<tagArray.length; i++){
-                tagArray[i] = tagArray[i].replace("<", "").replace(">", "").toLowerCase().trim();
+                tagArray[i] = tagArray[i].replace("<", "").replace(">", "").toLowerCase().trim(); //normalize user input
                 if(tagArray[i] != ''){
-                    this.tags.push(tagArray[i]);
+                    this.tags.push(tagArray[i]); //normalized tags pushed to this.tags
                 }
+            }
+            if(this.tags.length > 4){
+                this.tags.length = 4; //setting max length of requests
             }
             if(this.tags.length > 0){
                 this.getData();
@@ -203,7 +200,6 @@ var app = new Vue({
                             //toggle the datasets visibility
                             tagsChart.data.datasets[index].hidden = !tagsChart.data.datasets[index].hidden;
                             //toggle the related labels' visibility
-                            //tagsChart.options.scales.yAxes[index].display = !tagsChart.options.scales.yAxes[index].display;
                             tagsChart.update();
                         }
                     }
