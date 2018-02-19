@@ -21,7 +21,7 @@ public class NetarchiveYearCountCache {
     yearFacetsAll=yearFacetsAllTemp;        
   }
   
-  public static HashMap<Integer, Long> getYearFacetsAllQuery() throws Exception{
+  public static synchronized HashMap<Integer, Long> getYearFacetsAllQuery() throws Exception{
     if (  (System.currentTimeMillis() - reloadInterval) > lastReloadTime){
       reload();
     }       
