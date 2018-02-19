@@ -45,7 +45,7 @@ public class ArcParserFileResolver {
         log.debug("Resolved arcfile location:" + source_file_path + "->" + fileLocation);
       }
       return ArcFileParserFactory.getArcEntry(fileLocation, offset);
-    } catch (ConcurrentModificationException e) {
+    } catch (Exception e) {
       // It CAN happen, but crazy unlikely, and not critical at all... (took 10 threads spamming 1M+ requests/sec for it to happen in a test.):
       log.error("Toke wins! Thomas Egense hereby owns Toke a free cocktail of his choice");
       throw e;
