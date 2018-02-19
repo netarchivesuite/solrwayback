@@ -193,10 +193,10 @@ public class HtmlParserUrlRewriter {
 
 		ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
 
-
+        //Rewriting to url_norm, so it can be matched when replacing.
 		HashMap<String,IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
 		for (IndexDoc indexDoc: docs){
-			urlReplaceMap.put(indexDoc.getUrl(),indexDoc);     		     		 
+			urlReplaceMap.put(indexDoc.getUrl_norm(),indexDoc);     		     		 
 		}
 
 		replaceUrlForElement(urlReplaceMap,doc, "img", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
@@ -299,7 +299,7 @@ public class HtmlParserUrlRewriter {
 				continue;
 			}
 			
-			IndexDoc indexDoc = map.get(url);   
+			IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(url));   
 			if (indexDoc!=null){    		    			 
 				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset();    			 
 				e.attr(attribute,newUrl);    			     		 
@@ -330,7 +330,7 @@ public class HtmlParserUrlRewriter {
 				URL base = new URL(baseUrl);
 				String resolvedUrl = new URL( base ,urlUnresolved).toString();			
 				
-				IndexDoc indexDoc = map.get(resolvedUrl);   
+				IndexDoc indexDoc = map.get(map.get(Normalisation.canonicaliseURL(resolvedUrl)));   
 				if (indexDoc!=null){    		    			 
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();    			     		
 					String styleFixed=style.replaceAll(urlUnresolved,newUrl);    			     
@@ -367,7 +367,7 @@ public class HtmlParserUrlRewriter {
 			if (unResolvedUrl != null){
 				URL base = new URL(baseUrl);
 				URL resolvedUrl = new URL( base , unResolvedUrl);			
-				set.add(resolvedUrl.toString());
+				set.add(Normalisation.canonicaliseURL(resolvedUrl.toString()));
 			}
 
 		}
@@ -393,7 +393,7 @@ public class HtmlParserUrlRewriter {
 			if (url == null  || url.trim().length()==0){
 				continue;
 			}    		     		
-			set.add(url);   		    		 		
+			set.add(Normalisation.canonicaliseURL(url));   		    		 		
 		}
 	}
 
@@ -409,7 +409,7 @@ public class HtmlParserUrlRewriter {
               URL base = new URL(baseUrl);
               URL resolvedUrl = new URL( base , cssUrl);           
                             
-              set.add(resolvedUrl.toString());
+              set.add(Normalisation.canonicaliseURL(resolvedUrl.toString()));
         }                   
       }
   }
@@ -427,7 +427,7 @@ public class HtmlParserUrlRewriter {
           URL resolvedUrl = new URL( base , url);            
           
 
-          IndexDoc indexDoc = map.get(resolvedUrl.toString());   
+          IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(resolvedUrl.toString()));   
           if (indexDoc!=null){                             
               String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"_STYLE_AMPERSAND_REPLACE_offset="+indexDoc.getOffset();                 
               log.info("replaced @import:"+e );
@@ -464,17 +464,6 @@ public class HtmlParserUrlRewriter {
 		}   		  		
 	}
 
-	
-	/*
-	 * If using url as a query parameter
-	 * 
-	 */
-public static String canonicalizeUrl(String url) throws Exception{
-  String urlNorm=Normalisation.canonicaliseURL(url); 
-  String urlEncoded=URLEncoder.encode(urlNorm, "UTF-8");
-  //log.info("after encode1:"+urlEncoded);
-  return urlEncoded;
-}
 	
 
 	public static HashMap<String,String> test(String html,String url) throws Exception{

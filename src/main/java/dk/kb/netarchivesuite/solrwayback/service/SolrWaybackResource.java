@@ -518,14 +518,15 @@ public class SolrWaybackResource {
       IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
       if (doc == null){
         log.info("Url has never been harvested:"+url);
-        throw new IllegalArgumentException("Url has never been harvested:"+url);
+        throw new NotFoundServiceException("Url has never been harvested:"+url);
       }
       //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
+      log.info("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
       return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);        
       
                      
     } catch (Exception e) {
-      e.printStackTrace();
+      //e.printStackTrace();
       throw handleServiceExceptions(e);
     }
 
