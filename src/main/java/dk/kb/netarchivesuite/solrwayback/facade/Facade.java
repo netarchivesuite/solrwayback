@@ -149,12 +149,24 @@ public class Facade {
       String url = PropertiesLoader.WAYBACK_BASEURL+"services/view?source_file_path="+source_file_path +"&offset="+offset+"&showToolbar=false";            
       String filename = PropertiesLoader.SCREENSHOT_TEMP_IMAGEDIR+source_file_path+"@"+offset+".png";
       String chromeCommand = PropertiesLoader.CHROME_COMMAND;
+                                 
       
-      log.info("generate temp preview file:"+filename);
-     ProcessBuilder pb =
-         new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=3000","--screenshot="+filename,"--window-size=1280,1024",url);
+      boolean useChrome=true;
+      ProcessBuilder pb  =  null;
+      
+      ///temp hack for CentOS.
+      if(!useChrome){
+       String scriptFile = "/home/summanet/scripts/rasterize.js";
+        
+        log.info("generate temp preview file:"+filename);
+        pb = new ProcessBuilder("phantomjs", scriptFile,url,filename,"1280px*1024px");
+           log.info("phantomjs"+" "+scriptFile +" "+"\""+url+"\""+" "+filename +"\"1280px*1024px\"");
+      }
+      else{           
+         log.info("generate temp preview file:"+filename);
+          pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=3000","--screenshot="+filename,"--window-size=1280,1024",url);
          log.info(chromeCommand+" --headless"+ " -disable-gpu -screenshot="+filename+" --window-size=1280,1024 "+url);
-         
+      }
     // chromium-browser --headless --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024 https://www.google.com/ 
       
       Process start = pb.start();      
