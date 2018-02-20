@@ -11,24 +11,28 @@ Vue.filter('thousandsSeperator', function(value) {
 })
 
 Vue.component('search-box', {
-    props: ['setupSearch','myQuery','imageSearch','imageGeoSearch','clearSearch'],
+    props: ['setupSearch','myQuery','imageSearch','imageGeoSearch','urlSearch','clearSearch'],
     template: `
     <div>
         <div id="searchbox">
             <div>
-                <input  id="queryInput"  v-on:keyup.enter="setupSearch('search',queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false" 
+                <input  id="queryInput"  v-on:keyup.enter="setupSearch('search',queryModel, urlSearchModel, imageSearchModel, imageGeoSearchModel);searchByFile = false" 
                 v-model='queryModel' type="text" placeholder="search" autofocus />
                 <button class="btn" 
-                v-on:click="setupSearch('search', queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false">Search</button>
+                v-on:click="setupSearch('search', queryModel, urlSearchModel, urlSearchModel, imageSearchModel, imageGeoSearchModel);searchByFile = false">Search</button>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = false">Clear search</span>
                 <br>
                 <label>
                     <input class="imageSearchCheck" v-model="imageSearchModel" type="checkbox"
-                    v-on:change="setupSearch('search',queryModel, imageSearchModel);searchByFile = false"> Image search
+                    v-on:change="setupSearch('search',queryModel, urlSearchModel, imageSearchModel);searchByFile = false"> Image search
                 </label>
                 <label v-if="imageSearch">
                     <input class="imageSearchCheck" v-model="imageGeoSearchModel" type="checkbox"
-                     v-on:change="setupSearch('search',queryModel, imageSearchModel, imageGeoSearchModel);searchByFile = false"> Geo search
+                     v-on:change="setupSearch('search',queryModel, urlSearchModel, imageSearchModel, imageGeoSearchModel);searchByFile = false"> Geo search
+                </label>
+                <label>
+                    <input class="urlSearchCheck" v-model="urlSearchModel" type="checkbox"
+                    v-on:change="setupSearch('search',queryModel, urlSearchModel, imageSearchModel);searchByFile = false"> URL search
                 </label>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span> 
                 <span class="link clearSearchLink"><a href="./tags.html">Search for HTML-tags</a></span>              
@@ -43,6 +47,7 @@ Vue.component('search-box', {
         return {
             queryModel: this.myQuery,
             imageSearchModel: this.imageSearch,
+            urlSearchModel: this.urlSearch,
             imageGeoSearchModel: this.imageGeoSearch,
             searchByFile: false,
         };
@@ -50,6 +55,9 @@ Vue.component('search-box', {
     watch: { // updating v-model when vars are updated
         imageSearch: function () {
             this.imageSearchModel = this.imageSearch;
+        },
+        urlSearch: function () {
+            this.urlSearchModel = this.urlSearch;
         },
         imageGeoSearch: function () {
             this.imageGeoSearchModel = this.imageGeoSearch;
@@ -376,6 +384,7 @@ var app = new Vue({
         start: 0,
         imageSearch: false,
         imageGeoSearch: false,
+        urlSearch: false,
         spinner: false,
         errorMsg: '',
         imageObjects: [],
@@ -388,7 +397,7 @@ var app = new Vue({
     watch: { //updating when route is changing
         '$route' () {
            this.getQueryparams();
-           this.doSearch();
+           this.makeUrl();
         }
     },
     created: function() {
@@ -400,23 +409,28 @@ var app = new Vue({
             this.hideSpinner();
         });
         this.getQueryparams();
-        this.doSearch();
+        this.makeUrl();
     },
     methods: {
-        setupSearch: function(type, query, param3, param4) {
+        setupSearch: function(type, query, param3, param4, imagegeosearch) {
             if (type == "search") {
                 this.filters = ''; ////resetting filters on new search
                 this.myQuery = query;
                 this.start = 0;
                 if (param3) {
-                    this.imageSearch = param3;
-                    if (param4) {
-                        this.imageGeoSearch = param4;
+                    this.urlSearch = true;
+                    this.imageSearch = false; // can't make uRL and Imagesearch at the same time
+                    this.imageGeoSearch = false;
+                }else if (param4) {
+                    this.imageSearch = true;
+                    if (imagegeosearch) {
+                        this.imageGeoSearch = imagegeosearch;
                     } else {
                         this.imageGeoSearch = false;
                     }
-                } else {
+                }else {
                     this.imageSearch = false;
+                    this.urlSearch = false;
                     this.imageGeoSearch = false;
                 }
             }
@@ -459,37 +473,69 @@ var app = new Vue({
                     filter: this.filters,
                     imgsearch: this.imageSearch,
                     imggeosearch: this.imageGeoSearch,
+                    urlsearch: this.urlSearch,
                 }
             });
         },
 
-        doSearch: function(){
+        makeUrl: function() {
             this.imageObjects = []; //resetting imageObjecs on new search
             this.searchResult = []; //resetting search result on new search
-            if (!this.imageSearch) {
-                this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
-                    '&start=' + parseInt(this.start) + '&fq=' + this.filters;
-            }else if (this.imageGeoSearch) {
-                if( !this.latitude || !this.longitude ){
+            if (this.urlSearch) {
+                var tempUrl = 'http://' + location.host + '/solrwayback/services/util/normalizeurl?url='
+                    + encodeURI(encodeURI(this.myQuery));
+                this.$http.get(tempUrl).then((response) => {
+                    console.log('response.body.url: ', response.body.url);
+                    this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=url_norm:"' +
+                        response.body.url + '"&start=' + parseInt(this.start) + '&fq=' + this.filters;
+                    console.log('this.searchUrl URLSEARCH: ', this.searchUrl);
+                    this.doSearch();
+
+                }, (response) => {
+                    console.log('error: ', response);
+                });
+                return;
+            } else if (this.imageSearch) {
+                this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
+                    '&start=' + this.start + '&fq=' + this.filters;
+            } else if (this.imageGeoSearch) {
+                if (!this.latitude || !this.longitude) {
                     return //leaving search if latítude or longitude isn't set
                 }
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search/location?query=' + this.myQuery +
-                    '&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=' + this.markerPosition.radius/1000;
-            }else {
-                this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
-                    '&start=' + this.start + '&fq=' + this.filters;
+                    '&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=' + this.markerPosition.radius / 1000;
+            } else {
+                this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
+                    '&start=' + parseInt(this.start) + '&fq=' + this.filters;
             }
+            /*if (!this.imageSearch) {
+             this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
+             '&start=' + parseInt(this.start) + '&fq=' + this.filters;
+             }else if (this.imageGeoSearch) {
+             if( !this.latitude || !this.longitude ){
+             return //leaving search if latítude or longitude isn't set
+             }
+             this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search/location?query=' + this.myQuery +
+             '&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=' + this.markerPosition.radius/1000;
+             }else {
+             this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
+             '&start=' + this.start + '&fq=' + this.filters;
+             }*/
 
             this.facetFields = []; //resetting facet fields before building them from query params
-            if(this.filters){
+            if (this.filters) {
                 var facetPairs = this.filters.split('%20AND%20');
                 facetFieldsTemp = [];
-                for( var i = 0; i < facetPairs.length; i++ ){
+                for (var i = 0; i < facetPairs.length; i++) {
                     facetFieldsTemp = facetPairs[i].split('%3A');
                     var tempObj = {[facetFieldsTemp[0]]: facetFieldsTemp[1]}; //Facet field and facet term saved in object and pushed to array
                     this.facetFields.push(tempObj);
                 }
             }
+            this.doSearch();
+        },
+
+        doSearch: function(){
             /* Starting search if there's a query*/
             if(this.myQuery && this.myQuery.trim() != ''){
                 this.showSpinner();
@@ -592,6 +638,7 @@ var app = new Vue({
             this.start= this.$route.query.start;
             this.filters = this.$route.query.filter;
             this.imageSearch = this.$route.query.imgsearch;
+            this.urlSearch = this.$route.query.urlsearch;
             this.imageGeoSearch = this.$route.query.imggeosearch;
             //converting possible string value from query param to boolean
             if(!this.imageSearch || this.imageSearch == 'false' ){
@@ -603,6 +650,11 @@ var app = new Vue({
                 this.imageGeoSearch = false
             }else{
                 this.imageGeoSearch = true
+            }
+            if(!this.urlSearch || this.urlSearch == 'false' ){
+                this.urlSearch = false
+            }else{
+                this.urlSearch = true
             }
         },
 
@@ -670,7 +722,7 @@ var app = new Vue({
                 lng: marker.getPosition().lng(),
             };
             map.panTo(position);
-            this.doSearch();
+            this.makeUrl();
         },
 
         setResultMarkers: function(){
