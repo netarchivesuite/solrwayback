@@ -47,6 +47,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
+import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.*;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
@@ -128,12 +129,13 @@ public class SolrWaybackResource {
   @GET
   @Path("/util/normalizeurl")
   @Produces(MediaType.APPLICATION_JSON)
-  public String waybackgraph(@QueryParam("url") String url) throws ServiceException {
-    try{        
+  public UrlWrapper waybackgraph(@QueryParam("url") String url) throws ServiceException {
+    try{              
       String url_norm = Normalisation.canonicaliseURL(url);       
+      UrlWrapper wrapper = new UrlWrapper();
+      wrapper.setUrl(url_norm);
       log.info("normalizing url:"+url +" url_norm:"+url_norm);      
-      return url_norm;        
-
+      return wrapper;
     } catch (Exception e) {
       e.printStackTrace();
       throw handleServiceExceptions(e);
