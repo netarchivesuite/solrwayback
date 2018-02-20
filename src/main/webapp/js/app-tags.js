@@ -6,14 +6,14 @@ Vue.filter('thousandsSeperator', function(value) {
 })
 
 Vue.component('header-container', {
-    props: ['addTag','tags',"removeTag","clearTags","errorMsg"],
+    props: ['addTag','tags',"clearTags","errorMsg"],
     template: `
     <div id="headerTags">
         <a class="backToSearch" href="./">Back to SOLR Wayback</a>
         <h1>Search the Netarchive for HTML tags</h1>
         <div id="tagSearchBox">
             <search-box :add-tag="addTag" :clear-tags="clearTags"></search-box>
-            <tags-box :tags="tags" :remove-tag="removeTag"></tags-box>
+            <!-- <tags-box :tags="tags" :remove-tag="removeTag"></tags-box> -->
         </div>
         <error-box v-if="errorMsg" :error-msg="errorMsg"></error-box>
     </div>    
@@ -36,7 +36,7 @@ Vue.component('search-box', {
     `,
 })
 
-Vue.component('tags-box', {
+/*Vue.component('tags-box', {
     props: ["tags","removeTag"],
     template: `
     <div id="tagsList" v-if="tags.length > 0">
@@ -47,7 +47,7 @@ Vue.component('tags-box', {
         </ul> 
     </div>    
     `,
-})
+})*/
 
 Vue.component('error-box', {
     props: ['errorMsg'],
@@ -102,13 +102,7 @@ Vue.component('table-container', {
 })
 
 
-var router = new VueRouter({
-    mode: 'history',
-    routes: []
-});
-
 var app = new Vue({
-    router,
     el: '#app',
     data: {
         spinner: false,
@@ -160,7 +154,7 @@ var app = new Vue({
                     for(var i = 0; i < this.dataArrays[0].yearCountsTotal.length; i++){
                         this.chartLabels.push(this.dataArrays[0].yearCountsTotal[i].year);
                     }
-                    console.log('response: ', response);
+                    //console.log('response: ', response);
                     this.drawChart();
                     this.hideSpinner();
                 }, (response) => {
@@ -214,14 +208,14 @@ var app = new Vue({
                     borderColor: borderColors[i],
                     fill: false,
                 }
-                datasets.push(datasetTemp)
-                console.log('datasets', datasets);
+                datasets.push(datasetTemp);
             }
             chartData.data.datasets = datasets;
 
             var tagsChart = new Chart(document.getElementById("line-chart"), chartData);
         },
 
+        /* Method not in use because search is cleared
         removeTag: function(tag){
             var index = this.tags.indexOf(tag);
             if (index > -1) {
@@ -236,7 +230,7 @@ var app = new Vue({
                 this.errorMsg = "";
             }
 
-        },
+        },*/
 
         clearTags: function(tag){
             this.tags = [];

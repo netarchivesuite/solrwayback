@@ -6,21 +6,18 @@
 
     <link rel="stylesheet" type="text/css" media="all" href="./css/solrwayback.css">
 
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.js"></script> -->
     <script type="text/javascript" src="js/chart-min-3.2.1.js"></script>
 
     <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="js/vue.js"></script>
     <script type="text/javascript" src="js/vue-resource.min.js"></script>
 
-    <script type="text/javascript" src="js/vue-router.js"></script>
-
 </head>
 
 <body>
 <div class="wrapper" id="app">
 
-    <header-container :add-tag="addTag" :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags" :error-msg="errorMsg"></header-container>
+    <header-container :add-tag="addTag" :tags="tags" :clear-tags="clearTags" :error-msg="errorMsg"></header-container>
     <chart-container></chart-container>
     <table-container :data-arrays="dataArrays"></table-container>
 

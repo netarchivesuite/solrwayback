@@ -106,7 +106,7 @@ a:hover, .link:hover{
     padding: 2em 1em 0em;
 }
 
-#searchbox input, #searchbox button{
+#searchbox input, #searchbox button, #tagSearch input, #tagSearch button{
     border: 1px solid #000;
     border-radius: 3px;
     font-size: 18px;
@@ -114,11 +114,11 @@ a:hover, .link:hover{
 }
 
 #searchbox #queryInput{
-    margin-right: 1em;
+    margin-right: .5em;
     width: 70%;
 }
 
-#searchbox button{
+#searchbox button, #tagSearch button{
     background: #009999;
     color: white;
     cursor: pointer;
@@ -756,17 +756,18 @@ table#domainGrowthTable{
 }
 
 #tagSearch input, #tagSearch button{
-     font-size: 140%;
-     padding: 3px 5px;
+    font-size: 140%;
+    padding: 3px 5px;
 }
 
 #tagSearch input{
-     width: 400px;
+    margin-right: .5em;
+    width: 400px;
 }
 
 #tagSearch, #tagsList{
     float: left;
-    margin: 1em 2em 1em 0;
+    margin: 1em 2em 0em 0;
 }
 
 .removeTags{
