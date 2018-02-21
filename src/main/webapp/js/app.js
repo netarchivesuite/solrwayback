@@ -32,7 +32,7 @@ Vue.component('search-box', {
                 </label>
                 <label>
                     <input class="urlSearchCheck" v-model="urlSearchModel" type="checkbox"
-                    v-on:change="setupSearch('search',queryModel, urlSearchModel, imageSearchModel);searchByFile = false"> URL search
+                    v-on:change="searchUrl(urlSearchModel)"> URL search
                 </label>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span> 
                 <span class="link clearSearchLink"><a href="./tags.html">Search for HTML-tags</a></span>              
@@ -79,6 +79,17 @@ Vue.component('search-box', {
                 console.log('error: ', response);
             });
         },
+
+        /* Method to set up searchfield for dedicated URL search*/
+        searchUrl: function(start){
+            if(start){
+                this.queryModel = "http://";
+                this.imageSearchModel = false;
+                this.imageGeoSearchModel = false;
+            }else{
+                this.queryModel = "";
+            }
+        }
     }
 })
 
@@ -187,7 +198,7 @@ Vue.component('facet-box', {
 })
 
 Vue.component('pager-box', {
-    props: ['setupSearch', 'totalHits', 'start','isBottom','myQuery','filters','showSpinner','hideSpinner','imageSearch'],
+    props: ['setupSearch', 'totalHits', 'start','isBottom','myQuery','filters','imageSearch'],
     template: `
     <div class="counterBox" :class="{bottom : isBottom}" v-if="totalHits > 0">
         <div class="selectDownload" v-if="!isBottom">
@@ -473,7 +484,7 @@ var app = new Vue({
                     filter: this.filters,
                     imgsearch: this.imageSearch,
                     imggeosearch: this.imageGeoSearch,
-                    urlsearch: this.urlSearch,
+                    //urlsearch: this.urlSearch,
                 }
             });
         },
@@ -483,19 +494,18 @@ var app = new Vue({
             this.searchResult = []; //resetting search result on new search
             if (this.urlSearch) {
                 var tempUrl = 'http://' + location.host + '/solrwayback/services/util/normalizeurl?url='
-                    + encodeURI(encodeURI(this.myQuery));
+                    + encodeURI(encodeURI(this.myQuery.trim()));
+                this.showSpinner();
                 this.$http.get(tempUrl).then((response) => {
-                    console.log('response.body.url: ', response.body.url);
                     this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=url_norm:"' +
                         response.body.url + '"&start=' + parseInt(this.start) + '&fq=' + this.filters;
-                    console.log('this.searchUrl URLSEARCH: ', this.searchUrl);
                     this.doSearch();
 
                 }, (response) => {
                     console.log('error: ', response);
                 });
-                return;
-            } else if (this.imageSearch) {
+                return; // returning if URL search, because we're waiting for service to generate URL
+            } else if (this.imageSearch && !this.imageGeoSearch) {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
                     '&start=' + this.start + '&fq=' + this.filters;
             } else if (this.imageGeoSearch) {
@@ -508,20 +518,6 @@ var app = new Vue({
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
                     '&start=' + parseInt(this.start) + '&fq=' + this.filters;
             }
-            /*if (!this.imageSearch) {
-             this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
-             '&start=' + parseInt(this.start) + '&fq=' + this.filters;
-             }else if (this.imageGeoSearch) {
-             if( !this.latitude || !this.longitude ){
-             return //leaving search if latítude or longitude isn't set
-             }
-             this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search/location?query=' + this.myQuery +
-             '&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=' + this.markerPosition.radius/1000;
-             }else {
-             this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
-             '&start=' + this.start + '&fq=' + this.filters;
-             }*/
-
             this.facetFields = []; //resetting facet fields before building them from query params
             if (this.filters) {
                 var facetPairs = this.filters.split('%20AND%20');
@@ -638,7 +634,7 @@ var app = new Vue({
             this.start= this.$route.query.start;
             this.filters = this.$route.query.filter;
             this.imageSearch = this.$route.query.imgsearch;
-            this.urlSearch = this.$route.query.urlsearch;
+            //this.urlSearch = this.$route.query.urlsearch;
             this.imageGeoSearch = this.$route.query.imggeosearch;
             //converting possible string value from query param to boolean
             if(!this.imageSearch || this.imageSearch == 'false' ){
