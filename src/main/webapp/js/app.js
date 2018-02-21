@@ -408,7 +408,7 @@ var app = new Vue({
     watch: { //updating when route is changing
         '$route' () {
            this.getQueryparams();
-           this.makeUrl();
+           this.setupUrl();
         }
     },
     created: function() {
@@ -420,12 +420,12 @@ var app = new Vue({
             this.hideSpinner();
         });
         this.getQueryparams();
-        this.makeUrl();
+        this.setupUrl();
     },
     methods: {
         setupSearch: function(type, query, param3, param4, imagegeosearch) {
             if (type == "search") {
-                this.filters = ''; ////resetting filters on new search
+                this.filters = ''; //resetting filters on new search
                 this.myQuery = query;
                 this.start = 0;
                 if (param3) {
@@ -489,10 +489,10 @@ var app = new Vue({
             });
         },
 
-        makeUrl: function() {
+        setupUrl: function() {
             this.imageObjects = []; //resetting imageObjecs on new search
             this.searchResult = []; //resetting search result on new search
-            if (this.urlSearch) {
+            if (this.urlSearch && this.myQuery) {
                 var tempUrl = 'http://' + location.host + '/solrwayback/services/util/normalizeurl?url='
                     + encodeURI(encodeURI(this.myQuery.trim()));
                 this.showSpinner();
@@ -718,7 +718,7 @@ var app = new Vue({
                 lng: marker.getPosition().lng(),
             };
             map.panTo(position);
-            this.makeUrl();
+            this.setupUrl();
         },
 
         setResultMarkers: function(){
