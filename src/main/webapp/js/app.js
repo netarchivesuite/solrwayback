@@ -497,8 +497,9 @@ var app = new Vue({
                     + encodeURI(encodeURI(this.myQuery.trim()));
                 this.showSpinner();
                 this.$http.get(tempUrl).then((response) => {
+                    var url_norm = response.body.url;
                     this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=url_norm:"' +
-                        response.body.url + '"&start=' + parseInt(this.start) + '&fq=' + this.filters;
+                        url_norm + '"&start=' + parseInt(this.start) + '&fq=' + this.filters;
                     this.doSearch();
 
                 }, (response) => {
