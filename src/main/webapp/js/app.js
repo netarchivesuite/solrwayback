@@ -24,7 +24,7 @@ Vue.component('search-box', {
                 <br>
                 <label>
                     <input class="imageSearchCheck" v-model="imageSearchModel" type="checkbox"
-                    v-on:change="setupSearch('search',queryModel, urlSearchModel, imageSearchModel);searchByFile = false"> Image search
+                    v-on:change="urlSearchModel = false; setupSearch('search',queryModel, urlSearchModel, imageSearchModel);searchByFile = false"> Image search
                 </label>
                 <label v-if="imageSearch">
                     <input class="imageSearchCheck" v-model="imageGeoSearchModel" type="checkbox"
@@ -52,7 +52,7 @@ Vue.component('search-box', {
             searchByFile: false,
         };
     },
-    watch: { // updating v-model when vars are updated
+    watch: { // updating v-models in search box when vars are updated
         imageSearch: function () {
             this.imageSearchModel = this.imageSearch;
         },
@@ -83,11 +83,11 @@ Vue.component('search-box', {
         /* Method to set up searchfield for dedicated URL search*/
         searchUrl: function(start){
             if(start){
-                this.queryModel = "http://";
+                this.queryModel = "http://"; //helping user writing "http://" in search field
                 this.imageSearchModel = false;
                 this.imageGeoSearchModel = false;
             }else{
-                this.queryModel = "";
+                this.queryModel = ""; //clearing searchfield when URL search is deactivatd
             }
         }
     }
@@ -145,6 +145,7 @@ Vue.component('map-box', {
     }
 })
 
+/* Component shows selected facets and has method to deselect them one by one */
 Vue.component('selected-facets-box', {
     props: ['setupSearch','facetFields','myQuery','clearFacets'],
     template: `
@@ -172,6 +173,7 @@ Vue.component('selected-facets-box', {
     }
 })
 
+/* Component shows facets and has method to select them */
 Vue.component('facet-box', {
     props: ['setupSearch','myQuery','myFacets'],
     template: `
@@ -197,6 +199,7 @@ Vue.component('facet-box', {
     }
 })
 
+/* Component shows hit count, pager and download menu. Has method to download search result */
 Vue.component('pager-box', {
     props: ['setupSearch', 'totalHits', 'start','isBottom','myQuery','filters','imageSearch'],
     template: `
@@ -224,11 +227,6 @@ Vue.component('pager-box', {
         </div>
     </div>
     `,
-    data: function() {
-        return {
-            downloadBriefUrl: '',
-        };
-    },
     methods:{
         exportResult: function(downloadType){
             return 'http://' + location.host + '/solrwayback/services/export/' + downloadType + '?query=' + this.myQuery + '&fq=' + this.filters;
@@ -236,6 +234,7 @@ Vue.component('pager-box', {
     },
 })
 
+/* Component shows search result when not image search*/
 Vue.component('result-box', {
     props: ['searchResult','imageObjects','setupSearch','clearFacets','baseUrl'],
     template: `
@@ -344,7 +343,7 @@ Vue.component('result-box', {
     `
 })
 
-
+/* Component shows search result for images */
 Vue.component('result-box-images', {
     props: ['searchResult','setupSearch','clearFacets'],
     template: `
@@ -358,6 +357,7 @@ Vue.component('result-box-images', {
     `
 })
 
+/* Component shows zero hits info */
 Vue.component('zerohits-box', {
     props: ['myQuery','imageSearch'],
     template: `
@@ -367,6 +367,7 @@ Vue.component('zerohits-box', {
     `
 })
 
+/* Component shows errors  */
 Vue.component('error-box', {
     props: ['errorMsg', 'myQuery'],
     template: `
@@ -377,6 +378,7 @@ Vue.component('error-box', {
     `
 })
 
+/* Router used to make history/back button work */
 var router = new VueRouter({
     mode: 'history',
     routes: []
@@ -405,13 +407,13 @@ var app = new Vue({
         resultMarkers: [],
         map:{}
     },
-    watch: { //updating when route is changing
+    watch: { //updating when route is changing to make history/back button work
         '$route' () {
            this.getQueryparams();
            this.setupUrl();
         }
     },
-    created: function() {
+    created: function() { // getting applications base URL on creation
         this.$http.get( "http://" + location.host +  "/solrwayback/services/properties/solrwaybackweb").then((response) => {
             this.baseUrl = response.body['wayback.baseurl'];
         }, (response) => {
@@ -423,17 +425,20 @@ var app = new Vue({
         this.setupUrl();
     },
     methods: {
+        /* Setting up search. Checking if it's an ordinary search, URL search, image search, paging, facet delimit */
         setupSearch: function(type, query, param3, param4, imagegeosearch) {
             if (type == "search") {
                 this.filters = ''; //resetting filters on new search
                 this.myQuery = query;
                 this.start = 0;
+                console.log("type, query, param3, param4, imagegeosearch", type, query, param3, param4, imagegeosearch)
                 if (param3) {
                     this.urlSearch = true;
-                    this.imageSearch = false; // can't make uRL and Imagesearch at the same time
+                    this.imageSearch = false; // deselecting image search when URL search
                     this.imageGeoSearch = false;
                 }else if (param4) {
                     this.imageSearch = true;
+                    this.urlSearch = false;
                     if (imagegeosearch) {
                         this.imageGeoSearch = imagegeosearch;
                     } else {
