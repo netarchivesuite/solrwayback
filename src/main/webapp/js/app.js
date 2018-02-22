@@ -10,6 +10,7 @@ Vue.filter('thousandsSeperator', function(value) {
     return newValue;
 })
 
+/* Component with search field, check boxes to decide searchtype and relevant links */
 Vue.component('search-box', {
     props: ['setupSearch','myQuery','imageSearch','imageGeoSearch','urlSearch','clearSearch'],
     template: `
@@ -67,6 +68,7 @@ Vue.component('search-box', {
         }
     },
     methods:{
+        /* Method that uses SOLRWayback hashes to perfom search*/
         searchHash: function(event){
             var file = event.target.files[0];
             var url = "http://" + location.host + "/solrwayback/services/upload/gethash";
@@ -93,7 +95,7 @@ Vue.component('search-box', {
     }
 })
 
-
+/* Component shows Google map with results plugged in */
 Vue.component('map-box', {
     props: ['markerPosition',"placeMarker","doSearch","totalHits"],
     data: function() {
@@ -515,11 +517,12 @@ var app = new Vue({
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
                     '&start=' + this.start + '&fq=' + this.filters;
             } else if (this.imageGeoSearch) {
-                if (!this.latitude || !this.longitude) {
+                if (!this.markerPosition.lat || !this.markerPosition.lng) {
                     return //leaving search if latítude or longitude isn't set
                 }
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search/location?query=' + this.myQuery +
-                    '&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=' + this.markerPosition.radius / 1000;
+                    //'&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=' + this.markerPosition.radius / 1000;
+                    '&latitude=' + this.markerPosition.lat + '&longitude=' + this.markerPosition.lng + '&d=' + this.markerPosition.radius / 1000;
             } else {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
                     '&start=' + parseInt(this.start) + '&fq=' + this.filters;
@@ -538,7 +541,7 @@ var app = new Vue({
         },
 
         doSearch: function(){
-            /* Starting search if there's a query*/
+            /* Starting search if there's a query using the search URL set up above */
             if(this.myQuery && this.myQuery.trim() != ''){
                 this.showSpinner();
                 console.log('this.searchUrl: ', this.searchUrl);
@@ -635,12 +638,12 @@ var app = new Vue({
             });
         },
 
+        /* Method used on creation, reload and route change to get query parameters */
         getQueryparams:function(){
             this.myQuery = this.$route.query.query;
             this.start= this.$route.query.start;
             this.filters = this.$route.query.filter;
             this.imageSearch = this.$route.query.imgsearch;
-            //this.urlSearch = this.$route.query.urlsearch;
             this.imageGeoSearch = this.$route.query.imggeosearch;
             //converting possible string value from query param to boolean
             if(!this.imageSearch || this.imageSearch == 'false' ){
@@ -715,9 +718,7 @@ var app = new Vue({
             });
             markers.push(marker);
             markerCircles.push( markerCircle);
-            /* Building object */
-            this.latitude = marker.getPosition().lat();
-            this.longitude = marker.getPosition().lng();
+            /* Building marker info object */
             this.markerPosition = {
                 radius: radius*1000,
                 lat: marker.getPosition().lat(),
@@ -727,6 +728,7 @@ var app = new Vue({
             this.setupUrl();
         },
 
+           /* Method that place result markers on Google map and setting hover info and link to image */
         setResultMarkers: function(){
             for (var i = 0; i < this.resultMarkers.length; i++) { //deleting previous markers and circles
                 this.resultMarkers[i].setMap(null);
