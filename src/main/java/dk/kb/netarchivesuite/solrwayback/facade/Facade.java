@@ -151,7 +151,7 @@ public class Facade {
       String chromeCommand = PropertiesLoader.CHROME_COMMAND;
                                  
       
-      boolean useChrome=true;
+      boolean useChrome=false;
       ProcessBuilder pb  =  null;
       
       ///temp hack for CentOS.

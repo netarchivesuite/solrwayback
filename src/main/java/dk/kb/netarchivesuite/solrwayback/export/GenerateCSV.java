@@ -82,8 +82,8 @@ public class GenerateCSV {
            String waybackDate = ""+ (Long) doc.get("wayback_date");
            String url = (String) doc.get("url");          
            
-           ArrayList<String> contentTypes = (ArrayList<String>) doc.get("content_type");
-           String content_type=contentTypes.get(0);
+           String contentType = (String)doc.get("content_type");
+           String content_type=contentType;
            buffer.append(formatCsvEntry((String) doc.get("title")));
            buffer.append(SEPARATOR);          
            buffer.append(formatCsvEntry((String) doc.get("host")));
