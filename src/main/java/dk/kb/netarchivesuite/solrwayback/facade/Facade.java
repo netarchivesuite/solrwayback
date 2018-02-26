@@ -471,9 +471,14 @@ public class Facade {
       
       //the original page REMEMBER      
       HashSet<String> resources = HtmlParserUrlRewriter.getResourcLinksForHtmlFromArc(arc);      
+      for (String c : resources){
+        System.out.println("looking for resource:"+c);
+      }
+      
       ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(resources,arc.getCrawlDate());
+          
       for(IndexDoc doc : docs){ //These are the resources found        
-        String docUrl = doc.getUrl();                  
+        String docUrl = doc.getUrl_norm();                  
         PageResource pageResource = new PageResource();  
         
         Date resourceDate = new Date(doc.getCrawlDateLong());
