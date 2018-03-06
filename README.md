@@ -110,8 +110,7 @@ you only need to change to property pointing from the wayback server to the Solr
  * Maven 3 
  * Some Arc/Warc files 
  * Tomcat 7+  or another J2EE server for deploying the WAR-file
- * A Solr server with the index build from the Arc/Warc files using the Warc-Indexer.
- * The J2EE server must have the Arc/Warc file drive mounted
+ * A Solr 7.1+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.0
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage
