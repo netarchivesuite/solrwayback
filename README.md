@@ -85,7 +85,7 @@ Any search result can be exported to WARC format. If any of the documents are in
 Text information about a corpus can also be exported as a CSV file.
 
 
-## SOCKS proxy
+## SOCKS proxy - No leaking to the live web
 Solrwayback starts up listing on two ports. The default port 8080 and then port 9000 for SOCKS proxy v.4 mode.
 The default SOCKS  proxy port in the property file is 9000.
 Configure your browser to run SOCKS v4 to <solrwaybackurl> port 9000
