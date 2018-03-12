@@ -6,14 +6,13 @@ Vue.filter('thousandsSeperator', function(value) {
 })
 
 Vue.component('header-container', {
-    props: ['addTag','tags',"clearTags","errorMsg"],
+    props: ['setTags','tags',"clearTags","errorMsg"],
     template: `
     <div id="headerTags">
         <a class="backToSearch" href="./">Back to SOLR Wayback</a>
         <h1>Search the Netarchive for HTML tags</h1>
         <div id="tagSearchBox">
-            <search-box :add-tag="addTag" :clear-tags="clearTags"></search-box>
-            <!-- <tags-box :tags="tags" :remove-tag="removeTag"></tags-box> -->
+            <search-box :set-tags="setTags" :clear-tags="clearTags" :tags="tags"></search-box>
         </div>
         <error-box v-if="errorMsg" :error-msg="errorMsg"></error-box>
     </div>    
@@ -21,33 +20,26 @@ Vue.component('header-container', {
 })
 
 Vue.component('search-box', {
-    props: ["addTag","clearTags"],
-    data: function(){
-        return{
-            tagModel: '',
+    props: ["setTags","clearTags","tags"],
+    data: function() {
+        return {
+            tagModel: this.tags
+        };
+    },
+    //updating search field when tags are updated e.g. through normalisation
+    watch: {
+        tags: function() {
+            this.tagModel = this.tags;
         }
     },
     template: `
     <div id="tagSearch">
-        <input  v-model="tagModel" @keyup.enter="addTag(tagModel)" placeholder="eg. h1;h2;h3;h4" type="text">
-        <button  @click="addTag(tagModel)">Search</button>
-        <p>Search for up to 4 tags seperated by semi colon. <span @click="clearTags()" class="link clearSearchLink">Clear all tags</span></p>  
+        <input  v-model="tagModel" @keyup.enter="setTags(tagModel)" placeholder="eg. h1,h2,h3,h4" type="text">
+        <button  @click="setTags(tagModel)">Search</button>
+        <p>Search for up to 4 tags seperated by comma. <span @click="clearTags()" class="link clearSearchLink">Clear all tags</span></p>  
     </div>    
     `,
 })
-
-/*Vue.component('tags-box', {
-    props: ["tags","removeTag"],
-    template: `
-    <div id="tagsList" v-if="tags.length > 0">
-        <ul class="removeTags"> 
-            <li class="removeTags">Searched tags:</li>
-            <li v-for="tag in tags" @click="removeTag(tag)" class="removeTags"><span class="link">{{ tag }}</span>,</li> 
-            <li class="removeTags">(Click tag to remove it from your search)</li>
-        </ul> 
-    </div>    
-    `,
-})*/
 
 Vue.component('error-box', {
     props: ['errorMsg'],
@@ -112,9 +104,9 @@ var app = new Vue({
         errorMsg: "",
     },
     methods: {
-        addTag: function(tag) {
+        setTags: function(tag) {
             this.tags = []; //resetting tags on new search
-            var tagArray = tag.split(";");
+            var tagArray = tag.split(",");
             for( var i=0;i<tagArray.length; i++){
                 tagArray[i] = tagArray[i].replace("<", "").replace(">", "").toLowerCase().trim(); //normalize user input
                 if(tagArray[i] != ''){
@@ -214,23 +206,6 @@ var app = new Vue({
 
             var tagsChart = new Chart(document.getElementById("line-chart"), chartData);
         },
-
-        /* Method not in use because search is cleared
-        removeTag: function(tag){
-            var index = this.tags.indexOf(tag);
-            if (index > -1) {
-                this.tags.splice(index, 1);
-            }
-            if(this.tags.length >0 ){
-                this.getData() //get data if tags in array
-            }else{
-                this.dataArrays = [];
-                var canvas = '<canvas id="line-chart" width="800" height="450"></canvas>';
-                $("#chart").html(canvas);//insert clean canvas if tags is empty
-                this.errorMsg = "";
-            }
-
-        },*/
 
         clearTags: function(tag){
             this.tags = [];
