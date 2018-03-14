@@ -340,6 +340,26 @@ Vue.component('result-box', {
                         </div> 
                     </template>
             </div>         
+            
+             <!-- Images in TWITTER, same as for HTML. I dont know how to use OR clause... NIG! Denne block skal slettes og ind i den ovenfor -->  
+            <div v-if="doc.type && doc.type == 'Twitter Tweet'" class="item">
+                    <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
+                        <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
+                            <template  v-for="(imageUrl, index) in image.imageUrls" >
+                                <div class="thumb thumbSearch" v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
+                                    <a :href="image.downloadUrls[index]" target="_blank">
+                                        <span v-html="imageUrl"></span> 
+                                    </a>
+                                    <br/>  
+                                    <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
+                                    <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
+                                </div>
+                                <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
+                            </template>
+                        </div> 
+                    </template>
+            </div>         
+            
         </div>
     </div>    
     `
@@ -566,6 +586,10 @@ var app = new Vue({
                             if(this.searchResult[i].content_type_norm && this.searchResult[i].content_type_norm == 'html'){
                             	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
                             }
+                            if(this.searchResult[i].type && this.searchResult[i].type == 'Twitter Tweet'){ //double logic again. TODO NIG, see above
+                            	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
+                            }
+                            
                             /* Adding property highlight to search result object */
                             for (var key in highlights){
                                 if(this.searchResult[i].id === key){
