@@ -17,7 +17,8 @@ public class IndexDoc {
     private String url_norm;
     private String mimeType;
     private String contentTypeNorm;
-    private String contentType;    
+    private String contentType;
+    private String type;
     private String crawlDate; // format 2009-12-09T05:32:50Z    
     private long crawlDateLong;
     private String hash;
@@ -150,6 +151,14 @@ public class IndexDoc {
 
   public void setResourceName(String resourceName) {
     this.resourceName = resourceName;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }  
 
        

@@ -42,6 +42,7 @@ import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
+import dk.kb.netarchivesuite.solrwayback.parsers.Twitter2Html;
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParseResult;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
@@ -227,6 +228,7 @@ public class Facade {
     
     public static ArrayList<ImageUrl> getImagesForHtmlPageNew(String source_file_path,long offset) throws Exception {            
       ArrayList<ArcEntryDescriptor> arcs = getImagesForHtmlPageNewThreaded(source_file_path,offset);       
+
       return arcEntrys2Images(arcs);
       
     }
@@ -505,7 +507,7 @@ public class Facade {
     public static ArcEntry viewHtml(String source_file_path, long offset, Boolean showToolbar) throws Exception{         
     	
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
-
+        IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); //temp hack for Jodel, Twitter
     	String encoding = arc.getContentEncoding();
     	if (encoding == null){
     	  encoding =Facade.getEncoding(source_file_path, ""+offset); //Ask the index
@@ -514,10 +516,46 @@ public class Facade {
     	  log.warn("Encoding not found for:"+source_file_path +" and offset:"+offset);    	  
            encoding="ISO-8859-1"; //Is UTF-8 a better default? 
     	}    	
-    	log.info("encoding detected:"+encoding);
-
+    	log.info("encoding detected:"+encoding  +" type:"+doc.getType());
     	arc.setContentEncoding(encoding);
-    	if (("text/html".equals(arc.getContentType()))){
+    	
+    	if(doc.getType().equals("Twitter Tweet")){    	      	  
+    	  log.debug(" Generate twitter webpage from FilePath:" + source_file_path + " offset:" + offset);
+    	  //Fake html into arc.
+    	                      
+          String json = new String(arc.getBinary(), encoding);
+          String html = Twitter2Html.twitter2Html(json);
+          arc.setBinary(html.getBytes());               
+          arc.setContentType("text/html");
+    	  HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);      
+          String textReplaced=htmlReplaced.getHtmlReplaced();
+          
+        //Inject tooolbar
+        if (showToolbar!=Boolean.FALSE ){ //If true or null. 
+           textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced);
+        }        
+        arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1    
+    	  
+    	}
+    	else if(doc.getType().equals("Jodel Post")){          
+          log.debug(" Generate twitter jodel from FilePath:" + source_file_path + " offset:" + offset);
+          //Fake html into arc.
+                              
+          String json = new String(arc.getBinary(), encoding);
+          String html = Twitter2Html.twitter2Html(json);
+          arc.setBinary(html.getBytes());        
+          arc.setContentType("text/html");
+          HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);      
+          String textReplaced=htmlReplaced.getHtmlReplaced();
+          
+        //Inject tooolbar
+        if (showToolbar!=Boolean.FALSE ){ //If true or null. 
+           textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced);
+        }        
+        arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1             
+    	}
+    	 
+    	else if (("text/html".equals(arc.getContentType()))){
     		long start = System.currentTimeMillis();
         	log.debug(" Generate webpage from FilePath:" + source_file_path + " offset:" + offset);
         	  HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);   	 

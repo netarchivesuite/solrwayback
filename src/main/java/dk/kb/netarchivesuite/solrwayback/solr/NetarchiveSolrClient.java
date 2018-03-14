@@ -45,7 +45,7 @@ public class NetarchiveSolrClient {
   private static NetarchiveSolrClient instance = null;
   private static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
 
-  private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type,content_type_norm,hash,crawl_date,content_type,content_encoding,exif_location";
+  private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location";
   static {
     NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
   }
@@ -733,9 +733,10 @@ public class NetarchiveSolrClient {
     indexDoc.setUrl((String) doc.get("url"));
     indexDoc.setUrl_norm((String) doc.get("url_norm"));
     indexDoc.setOffset(getOffset(doc));
-    indexDoc.setContentType((String) doc.get("content_type"));
+    indexDoc.setContentType((String) doc.get("content_type"));    
     indexDoc.setContentTypeNorm((String) doc.get("content_type_norm"));
     indexDoc.setContentEncoding((String) doc.get("content_encoding"));
+    indexDoc.setType((String) doc.get("type"));
     indexDoc.setExifLocation((String) doc.get("exif_location"));
 
     String hash = (String) doc.get("hash");

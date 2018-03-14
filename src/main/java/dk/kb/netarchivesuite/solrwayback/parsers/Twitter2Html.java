@@ -11,6 +11,7 @@ public class Twitter2Html {
     
     b.append("<html><body>");
     
+    b.append("test");
     //DO stuff write html
     
       
