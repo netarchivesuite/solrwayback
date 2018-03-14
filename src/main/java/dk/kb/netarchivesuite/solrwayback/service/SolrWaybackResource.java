@@ -225,19 +225,21 @@ public class SolrWaybackResource {
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
   public ArrayList<ImageUrl> imagesForPage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset ) throws ServiceException {
 
+ 
     if (source_file_path == null || offset < 0){
       log.error("source_file_path and offset queryparams missing");
       throw new InvalidArgumentServiceException("source_file_path and offset queryparams missing");
     }
 
-    try {                    
-      return Facade.getImagesForHtmlPageNew(source_file_path, offset);  
+    try {    
+      ArrayList<ImageUrl> images = Facade.getImagesForHtmlPageNew(source_file_path, offset);
+      return images;     
     }
     catch (Exception e) {           
       throw handleServiceExceptions(e);
     }
   }
-
+   
   @GET
   @Path("/harvestDates")
   @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
