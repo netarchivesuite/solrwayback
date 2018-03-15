@@ -21,7 +21,8 @@ public class TwitterParser {
   private int numberOfLikes = 0 ;//favorites
   private int numberOfRetweets = 0;
   private int numberOfReplies = 0; // mentions 
-
+  private boolean retweet = false;
+  
   public TwitterParser(String json) throws Exception{
     
     imageUrlsList = new  ArrayList<String>();
@@ -51,9 +52,10 @@ public class TwitterParser {
     if (full.has("retweet_count")){
       numberOfRetweets = full.getInt("retweet_count");
     }
-
     
-    
+    if (full.has("retweeted_status")){
+      this.retweet=true;
+    }    
             
     JSONObject entities; // Getting the entities require many special cases. Sometimes they are double, need to read into specification
 
@@ -156,6 +158,10 @@ public class TwitterParser {
 
   public String getUserImage() {
     return userImage;
+  }
+
+  public boolean isRetweet() {
+    return retweet;
   }
 
 

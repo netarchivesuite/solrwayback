@@ -18,6 +18,13 @@ public class Twitter2Html {
     TwitterParser parser = new TwitterParser(jsonString);
     String image_icons = PropertiesLoader.WAYBACK_BASEURL+"images/twitter_sprite.png";
     
+    String title;
+    if (parser.isRetweet()){
+      title ="Retweet by: "+ parser.getAuthor();
+    }
+    else{
+      title ="Tweet by: "+ parser.getAuthor();      
+    }
     ArrayList<String> images_norm = new ArrayList<String>(); 
     
     for (String img : parser.getImageUrlsList()){
@@ -46,14 +53,14 @@ public class Twitter2Html {
     "<head>"+
       "<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'>"+
       "<meta name='viewport' content='width=device-width, initial-scale=1'>"+
-      "<title>Tweet by:"+parser.getAuthor()+"</title>"+
+      "<title>"+title+"</title>"+
 
  "<style>"+
       "body {background: #f3f3f6;color: #333333;font-family: Arial, Helvetica, sans-serif;margin: 0;}"+      
       "#wrapper {"+
       "  background: white;margin: 0 auto; padding: 2em; max-width: 1000px;}"+
       "h2 {"+
-      "  margin: 0;"+
+      "  margin: 5px 0 0; font-size: 18px;"+
       "}"+
       ".tweet {"+
       "  border: 1px solid #cccccc; line-height: 1.6em;overflow: hidden; padding: 1em;"+
@@ -84,23 +91,33 @@ public class Twitter2Html {
       ".item.reactions span.likes {"+
        " background: transparent url("+image_icons+") no-repeat -145px -130px;"+
       "}"+
+      ".avatar{"+
+         "float: left;"+
+        " margin-right: 1em;"+
+     "}"+      
+     ".avatar img{"+
+      "   border-radius: 50%;"+
+     "}"+      
+     ".item.date{"+
+         "clear: both;"+
+     "}"+   
     "</style>"+  
         
     "</head>"+
     "<body>"+
       "<div id='wrapper'>"+
         "<div class='tweet'>"+
-        "<span class='image'>"+
+        "<span class='avatar'>"+
         imagesHtml(imageUrl_user)+
         "</span>"+        
           "<div class='item author'>"+
-            "<h2>Tweet by:"+parser.getAuthor()+"</h2>"+
+            "<h2>"+parser.getAuthor()+"</h2>"+
           "</div>"+
           "<div class='item date'>"+
             "<div>"+parser.getCreateDate()+"</div>"+
           "</div>"+
           "<div class='item text'>"+
-          parser.getText()+            
+           newline2Br(parser.getText())+            
             "<span class='item hashtags'>"+
              keyHashTagsHtml(parser.getHashTagsList())+         
             "<span class='image'>"+
@@ -127,8 +144,12 @@ public class Twitter2Html {
       b.append("<span><a href=''>#"+tag+"</a></span>\n");
     }
        
-    return b.toString();
-        
+    return b.toString();        
+  }
+  
+  private static String newline2Br(String text){
+    return text.replace("\n","<br>");
+    
   }
   
   public static String imagesHtml(ArrayList<ImageUrl> images){
