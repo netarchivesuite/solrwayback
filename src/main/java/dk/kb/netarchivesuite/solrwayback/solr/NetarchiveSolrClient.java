@@ -454,13 +454,13 @@ public class NetarchiveSolrClient {
     return result;
   }
 
-  public ArrayList<IndexDoc> findClosetsHarvestTimeForMultipleUrls(HashSet<String> urls, String timeStamp) throws Exception{
+  public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrls(HashSet<String> urls, String timeStamp) throws Exception{
     ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
     Iterable<List<String>> splitSets = Iterables.partition(urls, 1000); //split into sets of size max 1000;
     for (List<String> set : splitSets){
       HashSet<String> urlPartSet = new  HashSet<String>();
       urlPartSet.addAll(set);
-      ArrayList<IndexDoc> partIndexDocs= findClosetsHarvestTimeForMultipleUrlsMax1000(urlPartSet, timeStamp);
+      ArrayList<IndexDoc> partIndexDocs= findNearestHarvestTimeForMultipleUrlsMax1000(urlPartSet, timeStamp);
       allDocs.addAll(partIndexDocs);
     }				
     return allDocs;			
@@ -469,7 +469,7 @@ public class NetarchiveSolrClient {
   /*
    * Notice this is searcing in the url field for excact match 
    */
-  private ArrayList<IndexDoc> findClosetsHarvestTimeForMultipleUrlsMax1000(HashSet<String> urls, String timeStamp) throws Exception{
+  private ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrlsMax1000(HashSet<String> urls, String timeStamp) throws Exception{
 
     if (urls.size() > 1000){
       throw new IllegalArgumentException("More than 1000 different urls in query:"+urls.size() +". Solr does not allow more than 1024 queries");

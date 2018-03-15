@@ -191,7 +191,7 @@ public class HtmlParserUrlRewriter {
 		
 		log.info("#unique urlset to resolve:"+urlSet.size());
 
-		ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
+		ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
 
         //Rewriting to url_norm, so it can be matched when replacing.
 		HashMap<String,IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
@@ -250,7 +250,7 @@ public class HtmlParserUrlRewriter {
       
       log.info("#unique urlset to resolve:"+urlSet.size());
 
-      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
+      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
 
       StringBuffer buf = new StringBuffer();
       for (IndexDoc indexDoc: docs){

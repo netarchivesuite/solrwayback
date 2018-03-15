@@ -243,11 +243,18 @@ public class Facade {
     public static ArrayList<ArcEntryDescriptor>  getImagesForHtmlPageNewThreaded(String source_file_path,long offset) throws Exception {
       
   
-      IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
-      ArrayList<String> imageLinks = arcEntry.getImageUrls();          
+      IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
+      ArrayList<String> imageLinks = doc.getImageUrls();          
       if (imageLinks.size() == 0){
         return  new ArrayList<ArcEntryDescriptor> ();
       }
+      String queryStr = queryStringForImages(imageLinks);
+      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, doc.getCrawlDate());
+      log.info("images found:"+imagesFromHtmlPage.size());              
+       return imagesFromHtmlPage;                
+    }
+
+   public static String queryStringForImages(ArrayList<String> imageLinks) {
       StringBuilder query = new StringBuilder();
       query.append("(");
       for (String imageUrl : imageLinks ){         
@@ -260,9 +267,7 @@ public class Facade {
       }
       query.append(" url_norm:none)"); //just close last OR
       String queryStr= query.toString();
-      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, arcEntry.getCrawlDate());
-                      
-       return imagesFromHtmlPage;                
+      return queryStr;
     }
     
     
@@ -477,7 +482,7 @@ public class Facade {
         System.out.println("looking for resource:"+c);
       }
       
-      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findClosetsHarvestTimeForMultipleUrls(resources,arc.getCrawlDate());
+      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(resources,arc.getCrawlDate());
           
       for(IndexDoc doc : docs){ //These are the resources found        
         String docUrl = doc.getUrl_norm();                  
@@ -524,11 +529,12 @@ public class Facade {
     	  //Fake html into arc.
     	                      
           String json = new String(arc.getBinary(), encoding);
-          String html = Twitter2Html.twitter2Html(json);
+          String html = Twitter2Html.twitter2Html(json,arc.getCrawlDate());
           arc.setBinary(html.getBytes());               
           arc.setContentType("text/html");
-    	  HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);      
-          String textReplaced=htmlReplaced.getHtmlReplaced();
+    	  HtmlParseResult htmlReplaced = new HtmlParseResult(); //Do not parse.
+    	  htmlReplaced.setHtmlReplaced(html);
+          String textReplaced=htmlReplaced.getHtmlReplaced(); //TODO count linkes found, replaced
           
         //Inject tooolbar
         if (showToolbar!=Boolean.FALSE ){ //If true or null. 
@@ -542,7 +548,7 @@ public class Facade {
           //Fake html into arc.
                               
           String json = new String(arc.getBinary(), encoding);
-          String html = Twitter2Html.twitter2Html(json);
+          String html = Twitter2Html.twitter2Html(json,arc.getCrawlDate());
           arc.setBinary(html.getBytes());        
           arc.setContentType("text/html");
           HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);      
