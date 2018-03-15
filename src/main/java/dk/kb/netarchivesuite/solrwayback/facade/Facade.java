@@ -547,8 +547,9 @@ public class Facade {
           String html = Jodel2Html.render(json, arc.getCrawlDate());
           arc.setBinary(html.getBytes());        
           arc.setContentType("text/html");
-          HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);      
-          String textReplaced=htmlReplaced.getHtmlReplaced();
+          HtmlParseResult htmlReplaced = new HtmlParseResult(); //Do not parse.
+          htmlReplaced.setHtmlReplaced(html);
+          String textReplaced=htmlReplaced.getHtmlReplaced(); //TODO count linkes found, replaced          
           
           //Inject tooolbar
           if (showToolbar!=Boolean.FALSE ){ //If true or null.
@@ -620,6 +621,7 @@ public class Facade {
                                   .queryParam("facet", "true")
                                   .queryParam("facet.field", "domain")
                                   .queryParam("facet.field", "content_type_norm")
+                                  .queryParam("facet.field", "type")
                                   .queryParam("facet.field", "crawl_year")                           
                                   .queryParam("facet.field", "status_code")
                                   .queryParam("f.crawl_year.facet.sort","index")
