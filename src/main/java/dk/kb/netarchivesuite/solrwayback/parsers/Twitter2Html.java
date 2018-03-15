@@ -18,11 +18,16 @@ public class Twitter2Html {
     TwitterParser parser = new TwitterParser(jsonString);
     String image_icons = PropertiesLoader.WAYBACK_BASEURL+"images/twitter_sprite.png";
     
+    
+    
     String title;
+    String type;
     if (parser.isRetweet()){
+    type=", Retweeted";
       title ="Retweet by: "+ parser.getAuthor();
     }
     else{
+      type=", Tweeted";
       title ="Tweet by: "+ parser.getAuthor();      
     }
     ArrayList<String> images_norm = new ArrayList<String>(); 
@@ -111,7 +116,7 @@ public class Twitter2Html {
         imagesHtml(imageUrl_user)+
         "</span>"+        
           "<div class='item author'>"+
-            "<h2>"+parser.getAuthor()+"</h2>"+
+            "<h2>"+parser.getAuthor()+ type+"</h2>"+
           "</div>"+
           "<div class='item date'>"+
             "<div>"+parser.getCreateDate()+"</div>"+
@@ -148,6 +153,9 @@ public class Twitter2Html {
   }
   
   private static String newline2Br(String text){
+    if (text==null){
+      return "";
+    }
     return text.replace("\n","<br>");
     
   }

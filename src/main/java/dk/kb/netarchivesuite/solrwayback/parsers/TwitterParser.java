@@ -28,25 +28,24 @@ public class TwitterParser {
     imageUrlsList = new  ArrayList<String>();
     hashTagsList = new  ArrayList<String>();
 
-    JSONObject full = new JSONObject(json);        
-    String text =  "";
+    JSONObject full = new JSONObject(json);                
+    this.text="";
 
     if (full.has("full_text")){
       //System.out.println("fulltext case");
-      text = full.getString("full_text");
+      this.text = full.getString("full_text");
     }    
     else{
       //System.out.println("text case");
-      text =full.getString("text"); //legacy 
+      this.text =full.getString("text"); //legacy 
     }
 
-    this.text=text;
+    //Text can be overruled again under retweet
 
     //Likes
     if (full.has("favorite_count")){
       numberOfLikes = full.getInt("favorite_count");
     }
-
 
     //retweets
     if (full.has("retweet_count")){
@@ -60,14 +59,15 @@ public class TwitterParser {
     JSONObject entities; // Getting the entities require many special cases. Sometimes they are double, need to read into specification
 
     if (full.has("retweeted_status")) {
-      //System.out.println("retweeted case");
+     this.retweet=true;
+      
       JSONObject retweet = full.getJSONObject("retweeted_status");
+      this.text= retweet.getString("text");
       if (retweet.has("extended_tweet")){
         entities = retweet.getJSONObject("extended_tweet").getJSONObject("entities");
       }
       else{
         entities = retweet.getJSONObject("entities");
-
       }           
     }
     else if (full.has("entities")){     

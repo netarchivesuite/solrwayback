@@ -12,7 +12,7 @@ public class TwitterParserTest {
      * This is just test code to load the json. When used only a single json document will be parsed at a time.
      * 
      */
-    String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/twitter/twitter4.txt")));
+    String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/twitter/twitter6.txt")));
     
     TwitterParser tweet = new TwitterParser(content);
     System.out.println(tweet.getText());
