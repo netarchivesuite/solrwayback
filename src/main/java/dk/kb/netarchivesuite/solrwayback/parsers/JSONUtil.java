@@ -47,6 +47,7 @@ public class JSONUtil {
         private final List<List<String>> pathElements;
         private final boolean onlyFirstMatchInPath;
         private final boolean onlyFirstMatchingPath;
+        private String defaultValue = null;
 
         public JSONRule(boolean onlyFirstMatchInPath, boolean onlyFirstMatchingPath, String... paths) {
             this.paths = Arrays.asList(paths);
@@ -69,7 +70,7 @@ public class JSONUtil {
         }
 
         public String getSingleMatch(JSONObject json) {
-            return getSingleMatch(json, null);
+            return getSingleMatch(json, defaultValue);
         }
         public String getSingleMatch(JSONObject json, String defaultValue) {
             List<String> matches = getMatches(json);
@@ -135,6 +136,14 @@ public class JSONUtil {
                 }
             }
             return aggregated;
+        }
+
+        /**
+         * Used if no values are found in {@link #getSingleMatch(JSONObject)}.
+         */
+        public JSONRule setSingleDefault(String value) {
+            this.defaultValue = value;
+            return this;
         }
 
         private boolean isArrayPath(String element) {
