@@ -28,18 +28,35 @@ import java.util.List;
  * Generic extraction of values from JSON.
  */
 public class JSONUtil {
-    private static Log log = LogFactory.getLog(JSONUtil.class);
-
-    public static JSONRule getSingleMatcher(String... paths) {
-        return new JSONRule(true, true, paths);
+    public static JSONSingleValueRule getSingleMatcher(String... paths) {
+        return new JSONSingleValueRule(paths);
     }
 
-    public static JSONRule getAllMatcher(String... paths) {
-        return new JSONRule(false, false, paths);
+    public static JSONMultiValueRule getAllMatcher(String... paths) {
+        return new JSONMultiValueRule(false, false, paths);
     }
 
     public static JSONRule getMatcher(boolean onlyFirstMatchInPath, boolean onlyFirstMatchingPath, String... paths) {
         return new JSONRule(onlyFirstMatchInPath, onlyFirstMatchingPath, paths);
+    }
+
+    public static class JSONSingleValueRule extends JSONRule {
+        public JSONSingleValueRule(String... paths) {
+            super(true, true, paths);
+        }
+        public String match(JSONObject json) {
+            return super.getSingleMatch(json);
+        }
+    }
+
+    public static class JSONMultiValueRule extends JSONRule {
+        public JSONMultiValueRule(boolean onlyFirstMatchInPath, boolean onlyFirstMatchingPath, String... paths) {
+            super(onlyFirstMatchInPath, onlyFirstMatchingPath, paths);
+        }
+
+        public List<String> match(JSONObject json) {
+            return super.getMatches(json);
+        }
     }
 
     public static class JSONRule {
@@ -107,8 +124,8 @@ public class JSONUtil {
 
             // Are we at the end?
             if (elementIndex == elements.size()-1) {
-                if (!isArrayPath(element)) {
-                    return Collections.singletonList(json.getString(elementName(element)));
+                if (!isArrayPath(element)) { // Everything is a String in this simplified helper
+                    return Collections.singletonList(json.get(elementName(element)).toString());
                 }
 
                 // Multi-value
