@@ -19,7 +19,11 @@ public class Jodel2Html {
         sb.append(PLACE.getSingleMatch(json, "Unknown place"));
         sb.append(" ");
         sb.append(UPDATED.getSingleMatch(json, "unknown time"));
-        sb.append("</title>\n</head>\n<body>\n");
+        sb.append("</title>\n");
+        sb.append("<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">\n");
+        sb.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n");
+        sb.append("</head>\n");
+        sb.append("<body>\n");
         sb.append("<div class=\"jodelbody\">\n");
 
         sb.append("<div class=\"jodelmain\">\n"); // TODO: Add color, votes etc.
@@ -40,4 +44,5 @@ public class Jodel2Html {
         sb.append("</body>\n");
         return sb.toString();
     }
+    
 }
