@@ -116,10 +116,12 @@ you only need to change to property pointing from the wayback server to the Solr
 ## Build and usage
  * Build the application with: mvn package
  * Deploy the solrwayback.war file in a web-container. 
- * Copy resources/properties/solrwayback.properties to user/home/ folder for the J2EE server
- * Modify the 2 properties in solrwayback.properties
+ * Copy resources/properties/solrwayback.properties and resources/properties/solrwaybackweb.properties 
+   to user/home/ folder for the J2EE server
+ * Modify the property files. (default all urls http:://localhost:8080)
  * Optional: configure the log4j using the files in resources/tomcat
- * Search url: localhost:8080/solrwayback
+ * Restart tomcat.
+ * Open search interface: localhost:8080/solrwayback
 
 ## Run using Docker
  * Copy resources/properties/solrwayback.properties to the project root directory and modify it to your needs.
