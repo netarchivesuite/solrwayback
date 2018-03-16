@@ -542,7 +542,7 @@ public class Facade {
     	else if(doc.getType().equals("Jodel Post") || doc.getType().equals("Jodel Thread")){
           log.debug(" Generate jodel post from FilePath:" + source_file_path + " offset:" + offset);
           //Fake html into arc.
-                              
+                  
           String json = new String(arc.getBinary(), encoding);
           String html = Jodel2Html.render(json, arc.getCrawlDate());
           arc.setBinary(html.getBytes());        
@@ -555,6 +555,8 @@ public class Facade {
           if (showToolbar!=Boolean.FALSE ){ //If true or null.
              textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced);
           }
+          encoding="UTF-8"; // hack, since the HTML was generated as UTF-8.
+          arc.setContentEncoding(encoding);
           arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
     	  }
     	 
