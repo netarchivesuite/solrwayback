@@ -1,5 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback;
 
+import org.apache.tools.ant.filters.StringInputStream;
+
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -28,20 +30,32 @@ public class UnitTestUtils {
       return new File(fromURL);
   }
 
-  public static String loadUTF8(String resource) throws IOException {
-      File source = getFile(resource);
-      if (source == null) {
-          return null;
-      }
-      byte[] buffer = new byte[1024];
-      InputStream in = new FileInputStream(source);
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      int read;
-      while ((read = in.read(buffer)) != -1) {
-          bos.write(buffer, 0, read);
-      }
-      bos.flush();
-      in.close();
-      return bos.toString("utf-8");
-  }
+    public static String loadUTF8(String resource) throws IOException {
+        File source = getFile(resource);
+        if (source == null) {
+            return null;
+        }
+        InputStream in = new FileInputStream(source);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        pipe(in, bos);
+        in.close();
+        return bos.toString("utf-8");
+    }
+
+    public static void saveUTF8(String content, File location) throws IOException {
+        InputStream in = new StringInputStream(content);
+        FileOutputStream out = new FileOutputStream(location);
+        pipe(in, out);
+        out.close();
+    }
+
+    private static void pipe(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while ((read = in.read(buffer)) != -1) {
+            out.write(buffer, 0, read);
+        }
+        out.flush();
+    }
+
 }

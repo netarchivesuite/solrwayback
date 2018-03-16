@@ -3,8 +3,12 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.Assert.*;
 
 /*
@@ -23,6 +27,8 @@ import static org.junit.Assert.*;
  */
 public class Jodel2HtmlTest {
 
+    private final File testFolder = new File(System.getProperty("java.io.tmpdir"), "jodeltest");
+
     @Test
     public void testManualInspection() throws IOException {
         String json = UnitTestUtils.loadUTF8("example_jodel/jodel.json");
@@ -30,6 +36,23 @@ public class Jodel2HtmlTest {
 
         // TODO: Make proper test for the returned HTML
         System.out.println(html);
+        if (!testFolder.exists()) {
+            assertTrue("The test folder " + testFolder + " should be available", testFolder.mkdirs());
+        }
+        UnitTestUtils.saveUTF8(html, new File(testFolder, "index.html"));
+
+        File cssFolder = new File(testFolder, "css");
+        if (!cssFolder.exists()) {
+            assertTrue("The css folder should be available", cssFolder.mkdirs());
+        }
+        try {
+            Files.copy(UnitTestUtils.getFile("css/jodel.css").toPath(),
+                       new File(cssFolder, "jodel.css").toPath(),
+                       REPLACE_EXISTING);
+        } catch (IOException e) {
+            // TODO: How do we get access to webapp/css/jodel.css from test?
+        }
+        System.out.println("Output available as file://" + testFolder + "/index.html");
     }
 
 }
