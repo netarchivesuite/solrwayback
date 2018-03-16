@@ -3,6 +3,8 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+// TODO: Show "Thanks! ❤" if 'got_thanks' is true
+// TODO: Rename ('replier' == 0) to 'OJ' (Original Jodler)
 // See src/test/resources/example_jodel/jodel.json for Jodel JSON structure
 public class Jodel2Html {
 
