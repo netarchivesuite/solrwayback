@@ -1,9 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.nio.charset.Charset;
 
 public class UnitTestUtils {
   
@@ -28,5 +27,21 @@ public class UnitTestUtils {
       }
       return new File(fromURL);
   }
-  
+
+  public static String loadUTF8(String resource) throws IOException {
+      File source = getFile(resource);
+      if (source == null) {
+          return null;
+      }
+      byte[] buffer = new byte[1024];
+      InputStream in = new FileInputStream(source);
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      int read;
+      while ((read = in.read(buffer)) != -1) {
+          bos.write(buffer, 0, read);
+      }
+      bos.flush();
+      in.close();
+      return bos.toString("utf-8");
+  }
 }
