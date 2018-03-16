@@ -59,10 +59,12 @@ public class Jodel2Html {
         String imageUrl = "http:" + IMAGE_URL.getSingleMatch(detailsJSON);
 
         sb.append("      <div class=\"jodelmain\" style=\"background: #").append(background).append("\">\n");
+        sb.append("        <p class=\"user\">User: ").append(user).append("</p>\n");
+        if (!imageUrl.equalsIgnoreCase("http:")) {
+            sb.append("        <p class=\"image_url\">").append("<img src=\"").append(imageUrl).append("\"></p>\n");
+        }
         sb.append("        <p class=\"message\">").append(message).append("</p>\n");
-        sb.append("        <p class=\"vote\">").append(vote).append("</p>\n");
-        sb.append("        <p class=\"user\">").append(user).append("</p>\n");
-        sb.append("        <p class=\"image_url\">").append("<img src=\"").append(imageUrl).append("></p>\n");
+        sb.append("        <p class=\"vote\">Vote count: ").append(vote).append("</p>\n");
         sb.append("      </div>\n"); // end jodelreply
     }
 
@@ -86,10 +88,12 @@ public class Jodel2Html {
         String imageUrl = "http:" + IMAGE_URL.getSingleMatch(replyJSON);
 
         sb.append("      <div class=\"jodelreply\" style=\"background: #").append(background).append("\">\n");
+        sb.append("        <p class=\"user\">User: ").append(user).append("</p>\n");
+        if (!imageUrl.equalsIgnoreCase("http:")) {
+            sb.append("        <p class=\"image_url\">").append("<img src=\"").append(imageUrl).append("></p>\n");
+        }
         sb.append("        <p class=\"message\">").append(message).append("</p>\n");
-        sb.append("        <p class=\"vote\">").append(vote).append("</p>\n");
-        sb.append("        <p class=\"user\">").append(user).append("</p>\n");
-        sb.append("        <p class=\"image_url\">").append("<img src=\"").append(imageUrl).append("></p>\n");
+        sb.append("        <p class=\"vote\">Vote count: ").append(vote).append("</p>\n");
         sb.append("      </div>\n"); // end jodelreply
     }
 
