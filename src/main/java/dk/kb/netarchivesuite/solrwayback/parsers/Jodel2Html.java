@@ -15,6 +15,7 @@ public class Jodel2Html {
             .setDefault("unknown time");;
     public static final JSONUtil.JSONSingleValueRule CREATED = JSONUtil.getSingleMatcher(".details.created_at", ".created_at")
             .setDefault("unknown time");;
+    public static final JSONUtil.JSONSingleValueRule SHARE_URL = JSONUtil.getSingleMatcher(".share_url");
 
     // Relative to either .details or an entry in .replies[]
     public static final JSONUtil.JSONSingleValueRule MESSAGE = JSONUtil.getSingleMatcher(".message");
@@ -27,9 +28,16 @@ public class Jodel2Html {
         StringBuilder sb = new StringBuilder();
         JSONObject json = new JSONObject(jsonString);
 
+        String shareUrl = SHARE_URL.match(json);
         generateHead(json, sb);
 
         sb.append("<body>\n");
+        sb.append("  <h1>Jodel: ").append(getDesignation(json)).append("</h1>");
+        if (shareUrl != null) {
+            sb.append("  <p class=\"share_url\">Share URL: <a href=\"").append(shareUrl).append("\">").append(shareUrl).append("</a></p>");
+        } else {
+            sb.append("  <p class=\"share_url\">Share URL: Not available (legacy harvest)</a></p>");
+        }
         sb.append("  <div class=\"jodelbody\">\n");
         generateMain(sb, json.getJSONObject("details"));
 
@@ -42,12 +50,7 @@ public class Jodel2Html {
 
     private static void generateHead(JSONObject json, StringBuilder sb) {
         sb.append("<!DOCTYPE html>\n<html>\n<head>\n");
-        sb.append(  "<title>");
-        sb.append("Jodel: ");
-        sb.append(LOCATION.match(json));
-        sb.append(" ");
-        sb.append(UPDATED.match(json));
-        sb.append("  </title>\n");
+        sb.append(  "<title>Jodel: ").append(getDesignation(json)).append("</title>\n");
         sb.append("  <meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\" />\n");
         sb.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n");
         sb.append("  <link href=\"css/jodel.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
@@ -115,4 +118,9 @@ public class Jodel2Html {
         return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").
                 replace("\n", "<br/>");
     }
+
+    private static String getDesignation(JSONObject json) {
+        return LOCATION.match(json) + " " + UPDATED.match(json);
+    }
+
 }

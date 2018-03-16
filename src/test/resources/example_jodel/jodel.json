@@ -1,4 +1,10 @@
 {
+  "harvester_info": {
+    "latitude": "56.15",
+    "city": "Aarhus",
+    "share_url": "https://example.com/",
+    "longitude": "10.216667"
+  },
   "next": null,
   "hasPrev": false,
   "readonly": false,
