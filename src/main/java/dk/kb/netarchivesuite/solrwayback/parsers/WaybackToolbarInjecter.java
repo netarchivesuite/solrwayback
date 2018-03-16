@@ -145,8 +145,6 @@ public class WaybackToolbarInjecter {
     "               <span class=\"dynamicData\">"+htmlParsed.getNumberOfLinksReplaced()+"</span>" +
     "               <span class=\"inlineLabel\">#Not found:</span>" +
     "               <span class=\"dynamicData\">"+htmlParsed.getNumberOfLinksNotFound()+"</span>" +
-    "               <span class=\"inlineLabel\">#Time span:</span>" +
-    "               <span class=\"dynamicData\">"+"1m 20s"+"</span>" + //TODO
     "            </div>" +
     "            <div class=\"infoLine\">" +
     "               <span title=\"View in- and out-going links\"class=\"dynamicData icon\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +
