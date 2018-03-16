@@ -6,18 +6,18 @@ import org.json.JSONObject;
 // See src/test/resources/example_jodel/jodel.json for Jodel JSON structure
 public class Jodel2Html {
 
-    public static final JSONUtil.JSONRule PLACE =
+    public static final JSONUtil.JSONSingleValueRule PLACE =
             JSONUtil.getSingleMatcher(".details.location.name", ".replies[].location.name")
-                    .setSingleDefault("Unknown location");
-    public static final JSONUtil.JSONRule UPDATED = JSONUtil.getSingleMatcher(".details.updated_at")
-            .setSingleDefault("unknown time");;
+                    .setDefault("Unknown location");
+    public static final JSONUtil.JSONSingleValueRule UPDATED = JSONUtil.getSingleMatcher(".details.updated_at")
+            .setDefault("unknown time");;
 
     // Relative to either .details or an entry in .replies[]
-    public static final JSONUtil.JSONRule MESSAGE = JSONUtil.getAllMatcher(".message");
-    public static final JSONUtil.JSONRule COLOR = JSONUtil.getSingleMatcher(".color").setSingleDefault("CCCCCC");
-    public static final JSONUtil.JSONRule VOTE = JSONUtil.getSingleMatcher(".vote_count").setSingleDefault("0");
-    public static final JSONUtil.JSONRule USER = JSONUtil.getSingleMatcher(".replier").setSingleDefault("0");
-    public static final JSONUtil.JSONRule IMAGE_URL = JSONUtil.getSingleMatcher(".image_url").setSingleDefault("");
+    public static final JSONUtil.JSONSingleValueRule MESSAGE = JSONUtil.getSingleMatcher(".message");
+    public static final JSONUtil.JSONSingleValueRule COLOR = JSONUtil.getSingleMatcher(".color").setDefault("CCCCCC");
+    public static final JSONUtil.JSONSingleValueRule VOTE = JSONUtil.getSingleMatcher(".vote_count").setDefault("0");
+    public static final JSONUtil.JSONSingleValueRule USER = JSONUtil.getSingleMatcher(".replier").setDefault("0");
+    public static final JSONUtil.JSONSingleValueRule IMAGE_URL = JSONUtil.getSingleMatcher(".image_url").setDefault("");
 
     public static String render(String jsonString, String crawlDate) {
         StringBuilder sb = new StringBuilder();
@@ -40,9 +40,9 @@ public class Jodel2Html {
         sb.append("<!DOCTYPE html>\n<html>\n<head>\n");
         sb.append(  "<title>");
         sb.append("Jodel: ");
-        sb.append(PLACE.getSingleMatch(json));
+        sb.append(PLACE.match(json));
         sb.append(" ");
-        sb.append(UPDATED.getSingleMatch(json));
+        sb.append(UPDATED.match(json));
         sb.append("  </title>\n");
         sb.append("  <meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\" />\n");
         sb.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n");
@@ -52,18 +52,18 @@ public class Jodel2Html {
 
     // .details
     private static void generateMain(StringBuilder sb, JSONObject detailsJSON) {
-        String message = MESSAGE.getSingleMatch(detailsJSON);
-        String background = COLOR.getSingleMatch(detailsJSON);
-        String vote = VOTE.getSingleMatch(detailsJSON);
-        String user = USER.getSingleMatch(detailsJSON);
-        String imageUrl = "http:" + IMAGE_URL.getSingleMatch(detailsJSON);
+        String message = MESSAGE.match(detailsJSON);
+        String background = COLOR.match(detailsJSON);
+        String vote = VOTE.match(detailsJSON);
+        String user = USER.match(detailsJSON);
+        String imageUrl = "http:" + IMAGE_URL.match(detailsJSON);
 
         sb.append("      <div class=\"jodelmain\" style=\"background: #").append(background).append("\">\n");
         sb.append("        <p class=\"user\">User: ").append(user).append("</p>\n");
         if (!imageUrl.equalsIgnoreCase("http:")) {
             sb.append("        <p class=\"image_url\">").append("<img src=\"").append(imageUrl).append("\"></p>\n");
         }
-        sb.append("        <p class=\"message\">").append(message).append("</p>\n");
+        sb.append("        <p class=\"message\">").append(toHTML(message)).append("</p>\n");
         sb.append("        <p class=\"vote\">Vote count: ").append(vote).append("</p>\n");
         sb.append("      </div>\n"); // end jodelreply
     }
@@ -81,20 +81,24 @@ public class Jodel2Html {
 
     // .replies[] entry
     private static void generateReply(StringBuilder sb, JSONObject replyJSON) {
-        String message = MESSAGE.getSingleMatch(replyJSON);
-        String background = COLOR.getSingleMatch(replyJSON);
-        String vote = VOTE.getSingleMatch(replyJSON);
-        String user = USER.getSingleMatch(replyJSON);
-        String imageUrl = "http:" + IMAGE_URL.getSingleMatch(replyJSON);
+        String message = MESSAGE.match(replyJSON);
+        String background = COLOR.match(replyJSON);
+        String vote = VOTE.match(replyJSON);
+        String user = USER.match(replyJSON);
+        String imageUrl = "http:" + IMAGE_URL.match(replyJSON);
 
         sb.append("      <div class=\"jodelreply\" style=\"background: #").append(background).append("\">\n");
         sb.append("        <p class=\"user\">User: ").append(user).append("</p>\n");
         if (!imageUrl.equalsIgnoreCase("http:")) {
             sb.append("        <p class=\"image_url\">").append("<img src=\"").append(imageUrl).append("></p>\n");
         }
-        sb.append("        <p class=\"message\">").append(message).append("</p>\n");
+        sb.append("        <p class=\"message\">").append(toHTML(message)).append("</p>\n");
         sb.append("        <p class=\"vote\">Vote count: ").append(vote).append("</p>\n");
         sb.append("      </div>\n"); // end jodelreply
     }
 
+    public static String toHTML(String text) {
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").
+                replace("\n", "<br/>");
+    }
 }

@@ -47,6 +47,13 @@ public class JSONUtil {
         public String match(JSONObject json) {
             return super.getSingleMatch(json);
         }
+        /**
+         * Used if no values are found in {@link #getSingleMatch(JSONObject)}.
+         */
+        public JSONSingleValueRule setDefault(String value) {
+            defaultValue = value;
+            return this;
+        }
     }
 
     public static class JSONMultiValueRule extends JSONRule {
@@ -64,7 +71,7 @@ public class JSONUtil {
         private final List<List<String>> pathElements;
         private final boolean onlyFirstMatchInPath;
         private final boolean onlyFirstMatchingPath;
-        private String defaultValue = null;
+        protected String defaultValue = null;
 
         public JSONRule(boolean onlyFirstMatchInPath, boolean onlyFirstMatchingPath, String... paths) {
             this.paths = Arrays.asList(paths);
@@ -153,14 +160,6 @@ public class JSONUtil {
                 }
             }
             return aggregated;
-        }
-
-        /**
-         * Used if no values are found in {@link #getSingleMatch(JSONObject)}.
-         */
-        public JSONRule setSingleDefault(String value) {
-            this.defaultValue = value;
-            return this;
         }
 
         private boolean isArrayPath(String element) {
