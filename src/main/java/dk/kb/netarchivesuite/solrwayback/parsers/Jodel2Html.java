@@ -6,10 +6,12 @@ import org.json.JSONObject;
 // See src/test/resources/example_jodel/jodel.json for Jodel JSON structure
 public class Jodel2Html {
 
-    public static final JSONUtil.JSONSingleValueRule PLACE =
-            JSONUtil.getSingleMatcher(".details.location.name", ".replies[].location.name")
+    public static final JSONUtil.JSONSingleValueRule LOCATION =
+            JSONUtil.getSingleMatcher(".details.location.name", ".replies[].location.name", ".location.name")
                     .setDefault("Unknown location");
-    public static final JSONUtil.JSONSingleValueRule UPDATED = JSONUtil.getSingleMatcher(".details.updated_at")
+    public static final JSONUtil.JSONSingleValueRule UPDATED = JSONUtil.getSingleMatcher(".details.updated_at", ".updated_at")
+            .setDefault("unknown time");;
+    public static final JSONUtil.JSONSingleValueRule CREATED = JSONUtil.getSingleMatcher(".details.created_at", ".created_at")
             .setDefault("unknown time");;
 
     // Relative to either .details or an entry in .replies[]
@@ -40,7 +42,7 @@ public class Jodel2Html {
         sb.append("<!DOCTYPE html>\n<html>\n<head>\n");
         sb.append(  "<title>");
         sb.append("Jodel: ");
-        sb.append(PLACE.match(json));
+        sb.append(LOCATION.match(json));
         sb.append(" ");
         sb.append(UPDATED.match(json));
         sb.append("  </title>\n");
@@ -56,10 +58,16 @@ public class Jodel2Html {
         String background = COLOR.match(detailsJSON);
         String vote = VOTE.match(detailsJSON);
         String user = USER.match(detailsJSON);
+        String created = CREATED.match(detailsJSON);
+        String lastReply = UPDATED.match(detailsJSON);
+        String location = LOCATION.match(detailsJSON);
         String imageUrl = "http:" + IMAGE_URL.match(detailsJSON);
 
         sb.append("      <div class=\"jodelmain\" style=\"background: #").append(background).append("\">\n");
         sb.append("        <p class=\"user\">User: ").append(user).append("</p>\n");
+        sb.append("        <p class=\"created\">Created: ").append(created).append("</p>\n");
+        sb.append("        <p class=\"updated\">Last reply: ").append(lastReply).append("</p>\n");
+        sb.append("        <p class=\"location\">Location: ").append(location).append("</p>\n");
         if (!imageUrl.equalsIgnoreCase("http:")) {
             sb.append("        <p class=\"image_url\">").append("<img src=\"").append(imageUrl).append("\"></p>\n");
         }
@@ -85,10 +93,14 @@ public class Jodel2Html {
         String background = COLOR.match(replyJSON);
         String vote = VOTE.match(replyJSON);
         String user = USER.match(replyJSON);
+        String created = CREATED.match(replyJSON);
+        String location = LOCATION.match(replyJSON);
         String imageUrl = "http:" + IMAGE_URL.match(replyJSON);
 
         sb.append("      <div class=\"jodelreply\" style=\"background: #").append(background).append("\">\n");
         sb.append("        <p class=\"user\">User: ").append(user).append("</p>\n");
+        sb.append("        <p class=\"created\">Created: ").append(created).append("</p>\n");
+        sb.append("        <p class=\"location\">Location: ").append(location).append("</p>\n");
         if (!imageUrl.equalsIgnoreCase("http:")) {
             sb.append("        <p class=\"image_url\">").append("<img src=\"").append(imageUrl).append("></p>\n");
         }
