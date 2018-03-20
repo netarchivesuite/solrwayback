@@ -48,6 +48,7 @@ import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingWarcExportClient;
 
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
+        
     
     public static SearchResult search(String searchText, String filterQuery) throws Exception {
         SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, filterQuery);
@@ -490,10 +491,10 @@ public class Facade {
         pageResource.setContentType(doc.getContentTypeNorm());        
         String downloadUrl = PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+doc.getSource_file_path() +"&offset="+doc.getOffset();
         pageResource.setDownloadUrl(downloadUrl);
-        long timeDif = resourceDate.getTime()-pageCrawlDate.getTime();
         
-        String timeHuman = String.format( ((long)timeDif/1000) + " sec");         
-        pageResource.setTimeDifference(timeHuman);
+        long timeDif = resourceDate.getTime()-pageCrawlDate.getTime();
+                 
+        pageResource.setTimeDifference(millisToDuration(timeDif));
         
         pageResources.add(pageResource);                       
         resources.remove(docUrl);                 
@@ -747,8 +748,33 @@ public static String proxyBackendResources(String source_file_path, String offse
       }
       return imageUrls;                       
     }
+
+   /*
+    * Just show the most important  
+    */     
+  private static String millisToDuration(long millis){ //TODO better... fast impl for demo    
+    String sign ="";
+    if (millis <0){
+      sign="-";
+      millis=-millis;
+    }
     
-  
+    long days = TimeUnit.MILLISECONDS.toDays(millis);
+    if (days >0){
+      return sign+days +" days";
+    }
+    long hours = TimeUnit.MILLISECONDS.toHours(millis);
+    if(hours >0){
+      return sign+hours +" hours";      
+    }
+    long minutes = TimeUnit.MILLISECONDS.toMinutes(millis); 
+    if (minutes >0){
+      return sign+minutes +" minutes";
+    }
+    
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(millis); 
+    return sign+seconds +" seconds";    
+  }
    
    
 }
