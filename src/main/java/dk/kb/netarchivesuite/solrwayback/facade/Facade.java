@@ -628,8 +628,9 @@ public class Facade {
                                   .queryParam("facet.field", "crawl_year")                           
                                   .queryParam("facet.field", "status_code")
                                   .queryParam("f.crawl_year.facet.sort","index")
-                                  .queryParam("facet.field", "public_suffix");
-               
+                                  .queryParam("facet.field", "public_suffix")
+                                  .queryParam( "fq","{!collapse%20field=url}");   //Only 1 hit from each URL                                    
+      
       if ( fq != null && fq.length() > 0){
         queryWs = queryWs.queryParam("fq",fq);                        
        }
