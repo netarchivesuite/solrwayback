@@ -90,18 +90,12 @@ public class WaybackToolbarInjecter {
     String injectHtml = generateToolbarHtml(htmlParsed,stats, source_file_path, offset);
     
     //Inject right after body if possible, else default to last
-    Elements body = doc.select("body");   
-    if (body != null){
-          //body.append(injectHtml); //Inject just before </body>  
+    Elements body = doc.select("body");   //Seems this will always work. Will fix missing html/body tags
+      //body.append(injectHtml); //Inject just before </body>  
       //body.first().children().first().append(injectHtml); //Inject just after <body> NOT WORKING          
       //body.before(injectHtml);
-      body.append(injectHtml); //Inject just before </body> 
-      log.info("injected top of body, size:"+injectHtml.length());
-    }
-    else{
-      log.info("injected bottom of body");
-      body.append(injectHtml); //Inject just before </body>    
-    }
+      body.prepend(injectHtml); //Inject just before </body> 
+
     return doc.toString();    
   }
   
