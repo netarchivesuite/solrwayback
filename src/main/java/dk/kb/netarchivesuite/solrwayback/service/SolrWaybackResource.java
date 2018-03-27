@@ -679,8 +679,14 @@ public class SolrWaybackResource {
     ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset,showToolbar);
 
     InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
-   
-    ResponseBuilder response = Response.ok((Object) in).type(arcEntry.getContentType() +"; charset="+arcEntry.getContentEncoding());                 
+   String contentType = arcEntry.getContentType();
+   if (contentType ==  null){
+     contentType= "text/plain";
+     log.warn("no contenttype, setting:text/plain");
+   }
+    
+    
+    ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
     return response.build();
 
   }
