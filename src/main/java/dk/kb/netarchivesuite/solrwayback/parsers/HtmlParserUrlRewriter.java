@@ -186,7 +186,10 @@ public class HtmlParserUrlRewriter {
 		collectRewriteUrlsForElement(urlSet,doc, "link", "href");
 		collectRewriteUrlsForElement(urlSet,doc, "script", "src");
 		collectRewriteUrlsForElement(urlSet,doc, "td", "background");
+		collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
 		collectStyleBackgroundRewrite(urlSet,doc, "a", "style",url);
+		
+		
 		collectRewriteUrlsForStyleImport(urlSet,doc, url);
 		
 		log.info("#unique urlset to resolve:"+urlSet.size());
@@ -204,6 +207,7 @@ public class HtmlParserUrlRewriter {
 		replaceUrlForElement(urlReplaceMap,doc, "link", "href", "view",  numberOfLinksReplaced ,  numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "script", "src", "downloadRaw",  numberOfLinksReplaced,  numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "td", "background", "downloadRaw",  numberOfLinksReplaced ,  numberOfLinksNotFound);    	 
+	    replaceUrlForFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
         replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
 		replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
 		
@@ -245,6 +249,7 @@ public class HtmlParserUrlRewriter {
       collectRewriteUrlsForElement(urlSet, doc, "link", "href");
       collectRewriteUrlsForElement(urlSet , doc, "script", "src");
       collectRewriteUrlsForElement(urlSet, doc, "td", "background");
+      collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
       collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
       collectRewriteUrlsForStyleImport(urlSet, doc,url);
       
@@ -282,6 +287,7 @@ public class HtmlParserUrlRewriter {
       collectRewriteUrlsForElement(urlSet, doc, "link", "href");
       collectRewriteUrlsForElement(urlSet , doc, "script", "src");
       collectRewriteUrlsForElement(urlSet, doc, "td", "background");
+      collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
       collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
       collectRewriteUrlsForStyleImport(urlSet, doc,url);
             
@@ -313,6 +319,36 @@ public class HtmlParserUrlRewriter {
 
 		}
 	}
+	
+	/*
+	 * Will not generate toolb<r
+	 */
+	   public static void replaceUrlForFrame( HashMap<String,IndexDoc>  map,Document doc, String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
+          String element="frame";
+          String attribute="src";
+	     
+	        for (Element e : doc.select(element)) {          
+	            String url = e.attr("abs:"+attribute);
+
+	            if (url == null  || url.trim().length()==0){
+	                continue;
+	            }
+	            
+	            IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(url));   
+	            if (indexDoc!=null){                             
+	                String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset()+"&showToolbar=false";           
+	                e.attr(attribute,newUrl);                            
+	                numberOfLinksReplaced.getAndIncrement();
+	            }
+	            else{
+	                 e.attr(attribute,NOT_FOUND_LINK);
+	                log.info("No harvest found for:"+url);
+	                numberOfLinksNotFound.getAndIncrement();;
+	             }
+
+	        }
+	    }
+	
 
 	public static void replaceStyleBackground( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type, String baseUrl,   AtomicInteger numberOfLinksReplaced,  AtomicInteger numberOfLinksNotFound) throws Exception{
 
