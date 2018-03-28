@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -46,9 +47,6 @@ public class NetarchiveSolrClient {
   private static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
 
   private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location";
-  static {
-    NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
-  }
 
   private NetarchiveSolrClient() { // private. Singleton
   }
@@ -56,6 +54,10 @@ public class NetarchiveSolrClient {
   // Example url with more than 1000 rewrites: http://belinda:9721/webarchivemimetypeservlet/services/wayback?waybackdata=20140119010303%2Fhttp%3A%2F%2Fbillige-skilte.dk%2F%3Fp%3D35
 
 
+   /*
+   * Called from initialcontextlistener when tomcat is starting up.
+   * 
+   */
   public static void initialize(String solrServerUrl) {
     solrServer =  new HttpSolrClient.Builder(solrServerUrl).build();
     //  solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http error code 413/414, due to monster URI. (and it is faster)
@@ -64,6 +66,18 @@ public class NetarchiveSolrClient {
     log.info("SolrClient initialized with solr server url:" + solrServerUrl);
   }
 
+
+  /*
+   * Called from unittest   
+   */
+  public static void initializeOverLoadUnitTest(EmbeddedSolrServer server) {
+    solrServer=server;
+    instance = new NetarchiveSolrClient();
+    log.info("SolrClient initialized with embedded solr for unittest");
+  }
+
+  
+  
   public static NetarchiveSolrClient getInstance() {
     if (instance == null) {
       throw new IllegalArgumentException("SolrClient not initialized");
@@ -453,7 +467,16 @@ public class NetarchiveSolrClient {
     result.setResults(indexDocs);
     return result;
   }
+  
 
+  public long numberOfDocuments() throws Exception {    
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.setQuery("*:*"); 
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+    return docs.getNumFound();    
+  }
+  
   public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrls(HashSet<String> urls, String timeStamp) throws Exception{
     ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
     Iterable<List<String>> splitSets = Iterables.partition(urls, 1000); //split into sets of size max 1000;

@@ -11,6 +11,7 @@ import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.proxy.SOCKSProxy;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -33,7 +34,10 @@ public class InitializationContextListener implements ServletContextListener {
             version = props.getProperty("APPLICATION.VERSION");
             PropertiesLoader.initProperties(); //backend
             PropertiesLoaderWeb.initProperties(); //frontend
-                        
+
+            // initialise the solrclient
+            NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
+            
             //Load the warcfilelocation resolver.                        
             String arcFileResolverClass = PropertiesLoader.WARC_FILE_RESOLVER_CLASS;
             if (arcFileResolverClass != null){            
