@@ -142,10 +142,14 @@ public class Facade {
     public static BufferedImage getHtmlPagePreview(String source_file_path, long offset) throws Exception {
       
       String url = PropertiesLoader.WAYBACK_BASEURL+"services/view?source_file_path="+source_file_path +"&offset="+offset+"&showToolbar=false";            
-      String filename = PropertiesLoader.SCREENSHOT_TEMP_IMAGEDIR+source_file_path+"@"+offset+".png";
+      long now = System.currentTimeMillis();
+      
+      //String filename = PropertiesLoader.SCREENSHOT_TEMP_IMAGEDIR+source_file_path+"@"+offset+".png"; //Does not work since subfolders must be created before.
+      //TODO implement caching for images?
+      String filename = PropertiesLoader.SCREENSHOT_TEMP_IMAGEDIR+now+".png";
       String chromeCommand = PropertiesLoader.CHROME_COMMAND;
                                  
-      
+      log.info("preview for url:"+url);
       boolean useChrome=true;
       ProcessBuilder pb  =  null;
       
@@ -159,8 +163,8 @@ public class Facade {
       }
       else{           
          log.info("generate temp preview file:"+filename);
-          pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=3000","--screenshot="+filename,"--window-size=1280,1024",url);
-         log.info(chromeCommand+" --headless"+ " -disable-gpu -screenshot="+filename+" --window-size=1280,1024 "+url);
+          pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=5000","--screenshot="+filename,"--window-size=1280,1024",url);
+         log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=5000 --screenshot="+filename+" --window-size=1280,1024 "+url);
       }
     // chromium-browser --headless --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024 https://www.google.com/ 
       
