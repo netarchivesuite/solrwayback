@@ -20,7 +20,6 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.Group;
-import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
@@ -557,15 +556,19 @@ public class NetarchiveSolrClient {
     
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
-
-    solrQuery.setRows(1); //get 50 images...
+ 
     solrQuery.setFilterQueries("record_type:response OR record_type:arc"); //No binary for revists. 
 
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
     solrQuery.add("fl", indexDocFieldList);
-
-    solrQuery.setRows(1);
+    //solrQuery.setRows(1);
+    //code below is temporary fix for the solr bug. Get the nearest and find which one is nearest.
+    //The solr sort is bugged when timestamps are close. The bug is also present in other methods in this class, but not as critical there.
+    //Hoping for a solr fix....
+    solrQuery.setRows(10);
+    
+    
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
 
     SolrDocumentList docs = rsp.getResults();
@@ -573,7 +576,31 @@ public class NetarchiveSolrClient {
       return null;
     }
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);              
-    return indexDocs.get(0);     
+
+     //Return the one nearest
+    int bestIndex = 0; //This would be correct if there was no solr bug
+    //Instead we extract the top 10 and find the nearest but checking against all.
+    //Remove if bug is fixed in solr, would improve performance slightly
+    
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); 
+    long inputCrawlDate= dateFormat.parse(timeStamp).getTime(); //From the input
+    long bestMatchDifference = 9999999999999L;
+    
+    for (int i =0 ;i<docs.getNumFound() ;i++){           
+      IndexDoc doc = indexDocs.get(i);
+      String crawlDateDoc = doc.getCrawlDate();      
+      long crawlDateForDocument=  dateFormat.parse(crawlDateDoc).getTime();  //For this document      
+      long thisMatch = Math.abs(inputCrawlDate - crawlDateForDocument);
+      if (thisMatch<bestMatchDifference){
+        bestIndex = i;
+        bestMatchDifference = thisMatch;      
+      }            
+    }
+    
+    if (bestIndex != 0){
+      log.warn("Fixed Solr time sort bug, found a better match, # result:"+bestIndex);     
+    }    
+    return indexDocs.get(bestIndex);     
   }
 
 

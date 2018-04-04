@@ -86,11 +86,9 @@ public class EmbeddedSolrTest {
        
        
        String dateToSearchFor="2018-03-15T12:36:43Z";
-       HashSet<String> urls = new HashSet<String>();
-       urls.add(url);
-       ArrayList<IndexDoc> result = server.findNearestHarvestTimeForMultipleUrls(urls, dateToSearchFor);
-       assertEquals(1, result.size());
-       assertEquals("2018-03-15T12:36:43Z", result.get(0).getCrawlDate());
+
+       IndexDoc result = server.findClosestHarvestTimeForUrl(url, dateToSearchFor);
+       assertEquals("2018-03-15T12:36:43Z", result.getCrawlDate());
 
        //TODO more tests for other time stamps
     }
