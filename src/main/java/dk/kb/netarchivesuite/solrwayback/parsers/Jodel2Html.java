@@ -53,7 +53,7 @@ public class Jodel2Html {
         sb.append(  "<title>Jodel: ").append(getDesignation(json)).append("</title>\n");
         sb.append("  <meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\" />\n");
         sb.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n");
-        sb.append("  <link href=\"css/jodel.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
+        //sb.append("  <link href=\"css/jodel.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
         sb.append("</head>\n");
     }
 
