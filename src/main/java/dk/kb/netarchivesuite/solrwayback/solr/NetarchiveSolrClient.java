@@ -578,9 +578,10 @@ public class NetarchiveSolrClient {
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);              
 
      //Return the one nearest
-    int bestIndex = 0; //This would be correct if there was no solr bug
+    int bestIndex = 0; //This would be correct if solr could sort correct. 
+    // Solr uses a precisionsStep you can define in schema.xml if you want precision to seconds. But this is not done in warc-indexer 3.0 schema.
     //Instead we extract the top 10 and find the nearest but checking against all.
-    //Remove if bug is fixed in solr, would improve performance slightly
+
     
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); 
     long inputCrawlDate= dateFormat.parse(timeStamp).getTime(); //From the input
