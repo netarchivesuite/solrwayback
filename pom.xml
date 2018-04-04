@@ -169,12 +169,24 @@
 			<scope>provided</scope>
 		</dependency>
 
+<dependency>
+    <groupId>org.json</groupId>
+    <artifactId>json</artifactId>
+    <version>20180130</version>
+</dependency>
+
+
+
  <dependency>
          <groupId>org.netpreserve.openwayback</groupId>
          <artifactId>openwayback-core</artifactId>
          <version>2.3.2</version>
          <exclusions>
             <exclusion>
+               <groupId>org.json</groupId>
+               <artifactId>json</artifactId>
+            </exclusion>
+                <exclusion>
                <groupId>org.netpreserve.commons</groupId>
                <artifactId>commons-web</artifactId>
             </exclusion>
