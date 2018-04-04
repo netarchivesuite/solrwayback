@@ -586,7 +586,7 @@ public class NetarchiveSolrClient {
     long inputCrawlDate= dateFormat.parse(timeStamp).getTime(); //From the input
     long bestMatchDifference = 9999999999999L;
     
-    for (int i =0 ;i<docs.getNumFound() ;i++){           
+    for (int i =0 ;i<indexDocs.size() ;i++){           
       IndexDoc doc = indexDocs.get(i);
       String crawlDateDoc = doc.getCrawlDate();      
       long crawlDateForDocument=  dateFormat.parse(crawlDateDoc).getTime();  //For this document      
