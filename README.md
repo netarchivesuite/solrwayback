@@ -1,8 +1,14 @@
 # SolrWayback
 
-Important: For warc-indexer version 2.0 use the solrwayback warc_indexer2.x branch. 
-This 3.0 branch will only work with warc-indexer version 3.0+
+#  prototype release, Solrwayback 3.1 bundle 
+With this download you will be able to index, search and playback web pages from your warc-files.
+The bundle contains Solr, the warc-indexer tool and Solrwayback installed on a Tomcat webserver.
+Just unzip the bundle and copy two files to your home directory and explore your warc files. 
+Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.1/solrwayback_package_3.1.zip
+Unzip and follow the instructions in the README.txt
 
+
+This 3.0 branch will only work with warc-indexer version 3.0+
 
 SolrWayback is web-application for browsing historical harvested ARC/WARC files similar
 to the Internet Archive Wayback Machine. The SolrWayback depends on a Solr server where
