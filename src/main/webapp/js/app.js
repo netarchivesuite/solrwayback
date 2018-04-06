@@ -517,7 +517,8 @@ var app = new Vue({
                         this.filters = this.filters + '%20AND%20'
                     }
                     for (var key in this.facetFields[i]) {
-                        this.filters = this.filters + key + '%3A' + this.facetFields[i][key]
+                        // Quotes removed from filters to avoid double quotes before adding them again to handle spaces.
+                        this.filters = this.filters + key + '%3A' + '"' + this.facetFields[i][key].replace(/"/g,"") + '"'
                     }
                 }
                 this.start = 0; //resetting pager
@@ -583,7 +584,7 @@ var app = new Vue({
             /* Starting search if there's a query using the search URL set up above */
             if(this.myQuery && this.myQuery.trim() != ''){
                 this.showSpinner();
-                console.log('this.searchUrl: ', this.searchUrl);
+                //console.log('this.searchUrl: ', this.searchUrl);
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
                     console.log('response.body: ', response.body);
