@@ -97,6 +97,11 @@ a:hover, .link:hover{
     cursor: pointer;
 }
 
+.capitalize{
+    text-transform: capitalize;
+}
+
+
 /* SEARCH BOX */
 #searchbox{
     background-color: #333944;
@@ -215,7 +220,6 @@ input.imageSearchCheck{
 
 #facets h3{
     margin: 1em 0 .3em;
-    text-transform: capitalize;
 }
 
 #facets li{

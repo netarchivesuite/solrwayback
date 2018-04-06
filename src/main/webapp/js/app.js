@@ -1,6 +1,7 @@
 Vue.filter('facetName', function(value) {
     if (!value) return '';
     var newValue = value.split('_').join(' ')
+    newValue = newValue.replace(/"/g,"")
     return newValue;
 })
 
@@ -155,7 +156,7 @@ Vue.component('selected-facets-box', {
         <span>Selected facets:</span>
         <ul>
             <li v-for="(key, index) in facetFields">
-                <span class="selectedFacetName" v-on:click="removeFacet(index)" v-for="(key, index) in facetFields[index]">{{index | facetName}}: <span class=bold>{{key}}</span> 
+                <span class="selectedFacetName" v-on:click="removeFacet(index)" v-for="(key, index) in facetFields[index]"><span class="capitalize">{{index | facetName}}</span>: <span class=bold>{{key | facetName}}</span> 
                     <span class="deleteIcon"></span>
                 </span>
             </li>
@@ -183,7 +184,7 @@ Vue.component('facet-box', {
         <div id="facets">
             <h2>Limit results</h2>
             <div class="facet" v-for="(facets,key) in myFacets">
-                <h3>{{ key | facetName }}</h3>
+                <h3 class="capitalize">{{ key | facetName }}</h3>
                 <ul v-for="(index, facet) in facets.length / 2">
                     <li v-if="facets[2*(index-1)+1] > 0">
                         <a v-on:click="facetClicked(key,facet)"> {{ facets[2*(index-1)] }}  : {{ facets[2*(index-1)+1] }}</a>
