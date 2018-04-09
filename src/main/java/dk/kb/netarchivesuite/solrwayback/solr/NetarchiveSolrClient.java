@@ -494,7 +494,7 @@ public class NetarchiveSolrClient {
       throw new IllegalArgumentException("More than 1000 different urls in query:"+urls.size() +". Solr does not allow more than 1024 queries");
     }
 
-    //Generate URL string: (url:"A" OR url:"B" OR ....)
+    //Generate URL string: (url_norm:"A" OR url_norm:"B" OR ....)
     StringBuffer buf = new StringBuffer();
     buf.append("(url_norm:test"); //Just to avoid last OR logic
     int i =0;
