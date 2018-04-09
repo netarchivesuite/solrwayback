@@ -13,13 +13,7 @@
    <listener>
       <listener-class>dk.kb.netarchivesuite.solrwayback.listeners.InitializationContextListener</listener-class>
    </listener>
-  
-    <servlet>
-   <servlet-name>AdminContent</servlet-name>
-     <display-name>AdminContent</display-name>
-   <description></description>
-   <servlet-class>basicauth.AdminContent</servlet-class>
-  </servlet>
+     
   
   <servlet>
     <servlet-name>SolrWayback Service</servlet-name>
@@ -39,21 +33,6 @@
     <servlet-name>SolrWayback Service</servlet-name>
     <url-pattern>/services/*</url-pattern>
   </servlet-mapping>
-
-
-        <!-- Define a JSP file to respond to /wayback/* URL's -->
-        <servlet>
-                <servlet-name>wayback</servlet-name>
-                <jsp-file>/wayback_forward.jsp</jsp-file>
-        </servlet>
-
-        <servlet-mapping>
-                <servlet-name>wayback</servlet-name>
-                <url-pattern>/wayback/*</url-pattern>
-        </servlet-mapping> 
-
-
-
 
 
   <welcome-file-list>
