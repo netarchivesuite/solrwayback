@@ -60,9 +60,9 @@ public class EmbeddedSolrTest {
        crawlTimes.add("2018-03-15T12:34:37Z");
        crawlTimes.add("2018-03-15T12:35:56Z");
        crawlTimes.add("2018-03-15T12:36:14Z");
-       crawlTimes.add("2018-03-15T12:36:43Z"); //  <-- The one we search for, excact match
-       crawlTimes.add("2018-03-15T12:37:32Z");
-       crawlTimes.add("2018-03-15T12:37:52Z");     
+       crawlTimes.add("2018-03-15T12:36:43Z"); //  <-- Excact match test #1
+       crawlTimes.add("2018-03-15T12:37:32Z");//   <-- nearest for test #3
+       crawlTimes.add("2018-03-15T12:37:52Z"); //  <-- nearest for test #2 
        crawlTimes.add("2018-03-15T12:39:15Z");
        crawlTimes.add("2018-03-15T12:40:09Z");
              
@@ -86,11 +86,17 @@ public class EmbeddedSolrTest {
        
        
        String dateToSearchFor="2018-03-15T12:36:43Z";
-
        IndexDoc result = server.findClosestHarvestTimeForUrl(url, dateToSearchFor);
        assertEquals("2018-03-15T12:36:43Z", result.getCrawlDate());
-
-       //TODO more tests for other time stamps
+       
+       
+       dateToSearchFor="2018-03-15T12:37:45Z"; // 7 seconds from match          
+       result = server.findClosestHarvestTimeForUrl(url, dateToSearchFor);
+       assertEquals("2018-03-15T12:37:52Z", result.getCrawlDate());
+       
+       dateToSearchFor="2018-03-15T12:37:40Z"; // 8 seconds from match          
+       result = server.findClosestHarvestTimeForUrl(url, dateToSearchFor);
+       assertEquals("2018-03-15T12:37:32Z", result.getCrawlDate());       
     }
     
 
