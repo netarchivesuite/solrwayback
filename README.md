@@ -4,6 +4,7 @@
 Release planned for 1. May 2018
 
 
+## About Solrwayback
 This 3.0 branch will only work with warc-indexer version 3.0+
 
 SolrWayback is web-application for browsing historical harvested ARC/WARC files similar
