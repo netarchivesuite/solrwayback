@@ -62,21 +62,6 @@ import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 @Path("/")
 public class SolrWaybackResource {
 
-  public static void main(String[] args) throws Exception{
-
-    SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");		
-    String waybackDate="19990914144635";
-
-
-    Date date = waybackDateFormat.parse(waybackDate);
-
-
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new        	        
-    String solrDate = dateFormat.format(date)+"Z";
-    System.out.println(solrDate);
-
-  }
-
   private static final Logger log = LoggerFactory.getLogger(SolrWaybackResource.class);
 
   @GET
@@ -147,30 +132,8 @@ public class SolrWaybackResource {
   @Path("statistics/domain")
   @Produces({ MediaType.APPLICATION_JSON})
   public  ArrayList<DomainYearStatistics> statisticsDomain (@QueryParam("domain") String domain) throws ServiceException {
-      try {                                                                                                
-   
+      try {                                                                                                   
         return Facade.statisticsDomain(domain);
-                 
-        
-        
-        /*
-        Random r = new Random();
-        
-        //Just generate fake temporary data
-        ArrayList<DomainYearStatistics> stats= new  ArrayList<DomainYearStatistics>();
-        for (int i=2005;i<2018;i++){
-          DomainYearStatistics yearStat = new DomainYearStatistics();
-          yearStat.setYear(i);
-          yearStat.setLinks(r.nextInt(1000));
-           yearStat.setSizeInKb(r.nextInt(100000));
-           yearStat.setTotalPages(r.nextInt(1000));
-           yearStat.setDomain(domain);
-           stats.add(yearStat);
-        }                
-        return stats;       
-        */
-        
-        
       } catch (Exception e) {         
           throw handleServiceExceptions(e);
       }
@@ -543,64 +506,7 @@ public class SolrWaybackResource {
   }
 
   
-  
-  /*
-   * Example call:
-   * wayback?waybackdata=19990914144635/http://209.130.118.14/novelle/novelle.asp?id=478&grp=3
-   * Since the URL part is not url encoded we can not use a jersey queryparam for the string
-   * The part after 'waybackdata=' is same syntax as the (archive.org) wayback machine. (not url encoded).
-   * Also supports URL encoding of the parameters as fallback if above syntax does not validate   
-   */
 
-  @GET
-  @Path("/wayback")
-  public Response wayback(@Context UriInfo uriInfo) throws ServiceException {      
-    //Get the full request url and find the waybackdata object
-    try {
-      
-      String fullUrl = uriInfo.getRequestUri().toString();
-
-      
-      int dataStart=fullUrl.indexOf("/wayback?waybackdata=");
-      if (dataStart <0){
-        throw new InvalidArgumentServiceException("no waybackdata parameter in call. Syntax is: wayback?waybackdata={time}/{url}");
-      }
-      String waybackDataObject = fullUrl.substring(dataStart+21);
-      log.info("Waybackdata object:"+waybackDataObject);
-
-      int indexFirstSlash = waybackDataObject.indexOf("/");  
-      if (indexFirstSlash == -1){ //Fallback, try URL decode
-        waybackDataObject = java.net.URLDecoder.decode(waybackDataObject, "UTF-8");
-        log.info("urldecoded wayback dataobject:"+waybackDataObject);
-        indexFirstSlash = waybackDataObject.indexOf("/");          
-      }
-
-
-      String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
-      String url = waybackDataObject.substring(indexFirstSlash+1);
-
-      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");	    	
-      Date date = waybackDateFormat.parse(waybackDate);
-
-      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new        	        
-      String solrDate = dateFormat.format(date)+"Z";
-
-      //log.info("solrDate="+solrDate +" , url="+url);
-      IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
-      if (doc == null){
-        log.info("Url has never been harvested:"+url);
-        throw new IllegalArgumentException("Url has never been harvested:"+url);
-      }
-      //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
-      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);        
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw handleServiceExceptions(e);
-    }
-  }
-
-    
   @GET
   @Path("/viewForward")
   public Response viewForward(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws ServiceException {
