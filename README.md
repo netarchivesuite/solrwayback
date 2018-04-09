@@ -1,11 +1,7 @@
 # SolrWayback
 
 ## Prototype release, Solrwayback 3.1 bundle 
-With this download you will be able to index, search and playback web pages from your warc-files.
-The bundle contains Solr, the warc-indexer tool and Solrwayback installed on a Tomcat webserver.
-Just unzip the bundle and copy two files to your home directory and explore your warc files. 
-Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.1/solrwayback_package_3.1.zip
-Unzip and follow the instructions in the README.txt
+Release planned for 1. May 2018
 
 
 This 3.0 branch will only work with warc-indexer version 3.0+
