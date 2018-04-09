@@ -488,11 +488,8 @@ public class NetarchiveSolrClient {
     return allDocs;			
   }
 
-  /*
-   * Notice this is searcing in the url field for excact match 
-   */
-  private ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrlsMax1000(HashSet<String> urls, String timeStamp) throws Exception{
 
+  private ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrlsMax1000(HashSet<String> urls, String timeStamp) throws Exception{
     if (urls.size() > 1000){
       throw new IllegalArgumentException("More than 1000 different urls in query:"+urls.size() +". Solr does not allow more than 1024 queries");
     }
@@ -508,36 +505,30 @@ public class NetarchiveSolrClient {
     buf.append(")");
 
 
-    String  query = buf.toString();		
+    String  query = buf.toString();     
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
 
     solrQuery.setRows(urls.size());
-    solrQuery.add("group","true");       
-    solrQuery.add("group.field","url");
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
     solrQuery.add("fl", indexDocFieldList);
-
+            
     solrQuery.setRows(1000);
-    solrQuery.setFilterQueries("record_type:response OR record_type:arc"); //No binary for revists. 
-
+    solrQuery.setFilterQueries("record_type:response OR record_type:arc", "{!collapse field=url}"); //No binary for revists. 
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
 
     ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
-    List<Group> values = rsp.getGroupResponse().getValues().get(0).getValues();
-    for (Group current:values){
-      SolrDocumentList docs = current.getResult();
-      IndexDoc groupDoc = solrDocList2IndexDoc(docs).get(0);
+      SolrDocumentList docs = rsp.getResults();
+    for (SolrDocument current:docs){
+      IndexDoc groupDoc = solrDocument2IndexDoc(current);
       allDocs.add(groupDoc);                             
     }                    
 
-    log.info("number URLS in search:" +urls.size() +" number of harvested url found:"  +allDocs.size() +" resultset:"+rsp.getGroupResponse().getValues().get(0).getMatches() +" time:"+rsp.getQTime());
+    log.info("number URLS in search:" +urls.size() +" number of harvested url found:"  +allDocs.size() + " time:"+rsp.getQTime());
     return allDocs;                     
   }
-
-
 
   /*
    * Notice here do we not fix url_norm 
