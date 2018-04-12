@@ -513,7 +513,7 @@ public class Facade {
     public static ArcEntry viewHtml(String source_file_path, long offset, Boolean showToolbar) throws Exception{         
     	
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
-        IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); //temp hack for Jodel, Twitter
+        IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
     	String encoding = arc.getContentEncoding();
     	if (encoding == null){
     	  encoding =Facade.getEncoding(source_file_path, ""+offset); //Ask the index
@@ -539,7 +539,7 @@ public class Facade {
           
             //Inject tooolbar
           if (showToolbar!=Boolean.FALSE ){ //If true or null.
-              textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced);
+              textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced, false);
           }
           arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
     	}
@@ -558,25 +558,25 @@ public class Facade {
           
           //Inject tooolbar
           if (showToolbar!=Boolean.FALSE ){ //If true or null.
-             textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced);
+             textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced, false);
           }
           encoding="UTF-8"; // hack, since the HTML was generated as UTF-8.
           arc.setContentEncoding(encoding);
           arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
     	  }
     	 
-    	else if (("text/html".equals(arc.getContentType()))){
+    	else if ("Web Page".equals(doc.getType())){
     		long start = System.currentTimeMillis();
         	log.debug(" Generate webpage from FilePath:" + source_file_path + " offset:" + offset);
         	  HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);   	 
-        	  String textReplaced=htmlReplaced.getHtmlReplaced();
-        	  
+        	  String textReplaced=htmlReplaced.getHtmlReplaced();        	  
+        	  boolean xhtml =doc.getContentType().toLowerCase().indexOf("application/xhtml") > -1;        	  
         	//Inject tooolbar
         	if (showToolbar!=Boolean.FALSE ){ //If true or null. 
-        	   textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced);
+        	   textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced , xhtml);
         	}
-        	
-        	arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1  	
+            
+        	  arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1  	
             log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start));
         	return arc;
     		 

@@ -35,7 +35,7 @@ public class WaybackToolbarInjecter {
         "   <title>kimse.rovfisk.dk/katte/</title>"+
         "   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />"+         
         "   <link rel=\"stylesheet\" href=\"/style.css\"  type=\"text/css\" media=\"screen\" />"+
-        " <link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS 2.0\" href=\"/rss2.php\" />"+
+        " <link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS 2.0\" href=\"/rss2.php\" />"+        
         "</head>"+
         "<body>"+
         "<a class=\"toplink\" href=\"/\">kimse.rovfisk.dk  </a><a class=\"toplink\" href=\"/katte/\">katte / </a><br /><br /><table cellspacing=\"8\"><tr><td></td><td class=\"itemw\"><a href=\"/katte/?browse=DSC00175.JPG\"><img class=\"lo\" src=\"/cache/katte/DSC00175.JPG\" /></a></td>"+
@@ -60,20 +60,20 @@ public class WaybackToolbarInjecter {
     htmlParsed.setNumberOfLinksNotFound(1);
     htmlParsed.setNumberOfLinksReplaced(17);
         
-    String injectedHtml = injectInHmtl(htmlParsed,stats, "test",1234L);
+    String injectedHtml = injectInHmtl(htmlParsed,stats, "test",1234L, false);
     System.out.println(injectedHtml);   
   }
   
   
   
-  public static String injectWaybacktoolBar(String source_file_path, long offset, HtmlParseResult htmlParsedResult) throws Exception{       
+  public static String injectWaybacktoolBar(String source_file_path, long offset, HtmlParseResult htmlParsedResult, boolean xhtml) throws Exception{       
     
     try{                
     IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);    
     WaybackStatistics stats = NetarchiveSolrClient.getInstance().getWayBackStatistics(arcEntry .getUrl_norm(), arcEntry.getCrawlDate());            
     stats.setHarvestDate(arcEntry.getCrawlDate());        
     
-    String injectedHtml =injectInHmtl( htmlParsedResult, stats, source_file_path,offset);
+    String injectedHtml =injectInHmtl( htmlParsedResult, stats, source_file_path,offset, xhtml);
     return injectedHtml;
    }catch (Exception e){
      log.error("error injecting waybacktoolbar", e);
@@ -83,10 +83,12 @@ public class WaybackToolbarInjecter {
     
   }
   
-  public static String injectInHmtl(HtmlParseResult htmlParsed, WaybackStatistics stats,String source_file_path, long offset) throws Exception{
+  public static String injectInHmtl(HtmlParseResult htmlParsed, WaybackStatistics stats,String source_file_path, long offset, boolean xhtml) throws Exception{
     String orgHtml=htmlParsed.getHtmlReplaced();
     Document doc = Jsoup.parse(orgHtml);
-    
+    if (xhtml){
+      doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml); //Without this json will not terminate tags correct as xhtml 
+    }
     String injectHtml = generateToolbarHtml(htmlParsed,stats, source_file_path, offset);
     
     //Inject right after body if possible, else default to last
@@ -95,7 +97,8 @@ public class WaybackToolbarInjecter {
       //body.first().children().first().append(injectHtml); //Inject just after <body> NOT WORKING          
       //body.before(injectHtml);
       body.prepend(injectHtml); //Inject just before </body> 
-
+      log.info("wayback tool injected. xhtml:"+xhtml);
+      
     return doc.toString();    
   }
   
