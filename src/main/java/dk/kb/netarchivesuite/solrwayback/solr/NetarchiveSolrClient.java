@@ -172,8 +172,9 @@ public class NetarchiveSolrClient {
   /*
    * The logic for getting the 4 dates in 2 queries is too complicated, and only gives small performance boost... 
    */
-  public WaybackStatistics getWayBackStatistics(String url_norm, String crawlDate)  throws Exception{
+  public WaybackStatistics getWayBackStatistics(String url, String url_norm, String crawlDate)  throws Exception{    
     WaybackStatistics stats = new  WaybackStatistics();
+    stats.setUrl(url);
     stats.setUrl_norm(url_norm);
     //These will only be set if they are different from input (end points). So set them below
     stats.setLastHarvestDate(crawlDate);

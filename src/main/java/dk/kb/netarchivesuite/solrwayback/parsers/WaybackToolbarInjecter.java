@@ -70,7 +70,7 @@ public class WaybackToolbarInjecter {
     
     try{                
     IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);    
-    WaybackStatistics stats = NetarchiveSolrClient.getInstance().getWayBackStatistics(arcEntry .getUrl_norm(), arcEntry.getCrawlDate());            
+    WaybackStatistics stats = NetarchiveSolrClient.getInstance().getWayBackStatistics(arcEntry.getUrl(),arcEntry.getUrl_norm(), arcEntry.getCrawlDate());            
     stats.setHarvestDate(arcEntry.getCrawlDate());        
     
     String injectedHtml =injectInHmtl( htmlParsedResult, stats, source_file_path,offset, xhtml);
@@ -124,7 +124,7 @@ public class WaybackToolbarInjecter {
     "           </div>" +
     "           <div class=\"infoLine\">" +
     "               <span class=\"label\">Url:</span>" +
-    "               <span class=\"dynamicData\">"+stats.getUrl_norm()+"</span>" +
+    "               <span class=\"dynamicData\">"+stats.getUrl()+"</span>" +
     "               <span class=\"inlineLabel\">#Harvested:</span>" +
     "               <span class=\"dynamicData\">"+stats.getNumberOfHarvest() +"</span>" +
     "            </div>" +

@@ -64,7 +64,7 @@ public class SolrClientTest {
          NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();
          
          
-         WaybackStatistics stats = solr.getWayBackStatistics("http://denstoredanske.dk/", "2008-12-04T18:52:50Z"); //vi
+         WaybackStatistics stats = solr.getWayBackStatistics("https://denstoredanske.dk/","http://denstoredanske.dk/", "2008-12-04T18:52:50Z"); //vi
          
          System.out.println(stats);
          

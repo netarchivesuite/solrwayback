@@ -4,6 +4,7 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 public class WaybackStatistics {
 
   private String url_norm;
+  private String url;
   private long numberOfHarvest;
   private long domainHarvestTotalContentLength;
   private long numberHarvestDomain;
@@ -13,8 +14,14 @@ public class WaybackStatistics {
   private String previousHarvestDate;
   private String lastHarvestDate;
   private String harvestDate;
+     
  
-    
+  public String getUrl() {
+    return url;
+  }
+  public void setUrl(String url) {
+    this.url = url;
+  }
   public String getUrl_norm() {
     return url_norm;
   }
