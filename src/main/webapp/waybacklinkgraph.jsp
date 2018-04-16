@@ -155,7 +155,7 @@ input:checked + .slider:before {
 $("#rangeslider").dateRangeSlider({          
     defaultValues: {min: new Date(<%=selectedDateMin%>), max: new Date(<%=selectedDateMax%>)},
     bounds:{
-    	min: new Date(2005, 0, 1),
+    	min: new Date(1995, 0, 1),
       max: new Date()
    }});
 
