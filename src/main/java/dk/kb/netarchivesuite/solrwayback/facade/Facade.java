@@ -70,7 +70,7 @@ public class Facade {
     public static ArrayList<DomainYearStatistics> statisticsDomain(String domain) throws Exception{
       ArrayList<DomainYearStatistics> stats = new ArrayList<DomainYearStatistics>();
       int year = Calendar.getInstance().get(Calendar.YEAR);
-      for (int i = 2005;i<=year;i++){
+      for (int i = 1995;i<=year;i++){
         DomainYearStatistics yearStat=  NetarchiveSolrClient.getInstance().domainStatistics(domain, i);
         stats.add(yearStat);         
       }                  
