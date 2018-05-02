@@ -146,12 +146,18 @@ public class Facade {
       
       //String filename = PropertiesLoader.SCREENSHOT_TEMP_IMAGEDIR+source_file_path+"@"+offset+".png"; //Does not work since subfolders must be created before.
       //TODO implement caching for images?
-      String filename = PropertiesLoader.SCREENSHOT_TEMP_IMAGEDIR+now+".png";
+      String filename = PropertiesLoader.SCREENSHOT_TEMP_IMAGEDIR+now+"_"+offset +".png"; //Include offset to avoid hitting same time.
       String chromeCommand = PropertiesLoader.CHROME_COMMAND;
                                  
       log.info("preview for url:"+url);
       boolean useChrome=true;
       ProcessBuilder pb  =  null;
+      
+      //Use proxy. Construct proxy URL from base url and proxy port.
+      String proxyUrl = getProxySocksUrl();
+        
+      
+      log.info("proxyUrl:"+proxyUrl);      
       
       ///temp hack for CentOS.
       if(!useChrome){
@@ -163,11 +169,10 @@ public class Facade {
       }
       else{           
          log.info("generate temp preview file:"+filename);
-          pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=5000","--screenshot="+filename,"--window-size=1280,1024",url);
-         log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=5000 --screenshot="+filename+" --window-size=1280,1024 "+url);
+          pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=5000","--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
+         log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=5000 --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
       }
-    // chromium-browser --headless --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024 https://www.google.com/ 
-      
+    // chromium-browser --headless  --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024   --proxy-server="socks4://localhost:9000" https://www.google.com/        
       Process start = pb.start();      
       if(!start.waitFor(10000, TimeUnit.MILLISECONDS)) {
         //timeout - kill the process. 
@@ -781,5 +786,22 @@ public static String proxyBackendResources(String source_file_path, String offse
     return sign+seconds +" seconds";    
   }
    
+  
+  //takes the wayback_base url and create the proxy url
+  // http://localhost:8080/solrwayback/ -> socks4://localhost:9000 
+  private static String getProxySocksUrl(){
+    String baseUrl = PropertiesLoader.WAYBACK_BASEURL;
+    System.out.println(baseUrl);
+    int serverStart = baseUrl.indexOf("://");
+    System.out.println(serverStart);
+    baseUrl = baseUrl.substring(serverStart+3);
+    
+    int portStart = baseUrl.indexOf(":");
+    
+    String proxyUrl = "socks4://"+baseUrl.substring(0,portStart)+":"+PropertiesLoader.PROXY_PORT;
+    return  proxyUrl;
+    
+  }
+  
    
 }
