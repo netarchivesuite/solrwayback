@@ -54,9 +54,8 @@ Solrwayback showing an archived webpage with an overlay statistics and further n
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/multiple_pagepreviews.png?raw=true" width="600" height="400"/>
 </p>
 <p align="center">
-Page preview for different harvest times of a given url. Images are generated real-time.
+Page previews for different harvest times of a given url. Images are generated real-time and uses the build in socks proxy to prevent leaking to the live web.
 </p>
-
 
 
 
