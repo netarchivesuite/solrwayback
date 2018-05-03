@@ -2,7 +2,7 @@
 
 # Prototype release, SolrWayback 3.1 bundle 
 Solrwayback 3.1 software bundle has been released.
-Scroll down to the install guide as follow the instructions.
+Scroll down to the install guide below and follow the instructions.
 
 
 ## About SolrWayback
