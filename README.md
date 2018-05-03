@@ -182,8 +182,8 @@ Tomcat:
 Start tomcat: apache-tomcat-8.5.29/bin/startup.sh  
 Stop tomcat:  apache-tomcat-8.5.29/bin/shutdown.sh  
 (For windows navigate to apache-tomcat-8.5.29/bin/ and type startup.bat or shutdown.bat )  
-To see Tomcat is running open: http://localhost:8080/solrwayback/
-This  
+To see Tomcat is running open: http://localhost:8080/solrwayback/  
+This is the search interface frontpage  
 
 Solr:  
 Start solr: solrwayback_package/solr-7.1.0/bin/solr start  
