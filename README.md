@@ -199,6 +199,7 @@ Creating an index:
 Copy arc/warc files into folder: /solrwayback_package/indexing/warcs  
 Start indexing:  call indexing/batch_warc_folder.sh  
 Indexing can take up to 10 minutes/GB files. After indexing, the warc-files must stay in the same folder for solrwayback to work.  
+Having whitespace characters in warc file names can result in pagepreviews and playback not working on some OS.
 There can be up to 5 minutes delay before the indexed files are visible from search. Visit this url after index job have finished to commit them instantly: http://localhost:8983/solr/netarchivebuilder/update?commit=true  
 
 Deleting an Index:  
