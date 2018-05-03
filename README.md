@@ -1,11 +1,12 @@
 # SolrWayback
 
 ## Prototype release, Solrwayback 3.1 bundle 
-Release planned for 1. May 2018
+Solrwayback 3.1 software bundle has been released.
+Scroll down to the install guide as follow the instructions.
 
 
 ## About Solrwayback
-This 3.0 branch will only work with warc-indexer version 3.0+
+Solrwayback will only work with warc-indexer version 3.0+
 
 SolrWayback is web-application for browsing historical harvested ARC/WARC files similar
 to the Internet Archive Wayback Machine. The SolrWayback depends on a Solr server where
@@ -143,6 +144,91 @@ All document contains a field with arcfilename and offset, this is so  the binar
 the arc/warc file can be loaded again - not through solr but by IO read on the disk where the 
 arc/warc file is stored.
  
+
+
+## Solrwayback software bundle 3.1 install guide
+
+ 
+With this download you will be able to index, search and playback web pages from your warc-files.
+The bundle contains Solr, the warc-indexer tool and Solrwayback installed on a Tomcat webserver.
+Just unzip the bundle and copy two files to your home directory and explore your warc files. 
+
+#Download
+Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.1/solrwayback_package_3.1.zip
+
+Unzip and follow the instructions below.
+ 
+
+#Requirements:
+For the Solrwayback software bundle you only need to have Java 8 (64 bit) installed. 
+Works on MacOs/Linux/Windows. 
+To check java is installed, type the following from a prompt: java -version
+
+
+Getting solrwayback up and running:
+
+Properties:
+Copy the two files solrwayback.properties and solrwaybackweb.properties to your HOME folder.
+
+Optional: For screenshot previews to work you may have to edit solrwayback.properties and change the value of the last two properties : chrome.command  and screenshot.temp.imagedir. 
+Chrome(Chromium) must has to be installed for screenshot preview images.
+
+If there are errors when running a script, try change the permissions for the file (startup.sh etc). Linux: chmod +x filename.sh
+
+Solrwayback requires both Solr and Tomcat to be running. Indexing warc files makes the archived webpages searchable and viewable(playback) in solrwayback.
+
+Tomcat:
+Start tomcat: apache-tomcat-8.5.29/bin/startup.sh
+Stop tomcat:  apache-tomcat-8.5.29/bin/shutdown.sh
+(For windows navigate to apache-tomcat-8.5.29/bin/ and type startup.bat or shutdown.bat )
+To see Tomcat is running open: http://localhost:8080/solrwayback/
+
+Solr:
+Start solr: solrwayback_package/solr-7.1.0/bin/solr start
+Stop solr: solrwayback_package/solr-7.1.0/bin/solr stop
+(For windows navigate to solrwayback_package/solr-7.1.0/bin/ and type solr.cmd start or solr.cmd stop)
+To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder
+
+Indexing:
+Copy arc/warc files into folder: /solrwayback_package/indexing/warcs
+Start indexing:  call indexing/batch_warc_folder.sh
+Indexing can take up to 10 minutes/GB files. After indexing, the warc-files must stay in the same folder for solrwayback to work.
+There can be up to 5 minutes delay before the indexed file are visible from search. Visit this url after index job have finished to commit them instantly: http://localhost:8983/solr/netarchivebuilder/update?commit=true
+
+Prevent resource leaking from live-web during playback (Optional). Use the built in socks proxy. 
+Configure browser to SOCKS version 4 to localhost port 9000 and open http://localhost:8080/solrwayback/
+
+
+--------------------------------
+
+Additional tips and tricks:
+
+This query in solrwayback will return all documents: *:*
+
+Delete an index.
+If you want to index a new collection into solr and remove the old index.
+1) stop solr
+2) delete the folder: 
+solr-7.1.0/server/solr/netarchivebuilder/netarchivebuilder_data/index
+(or rename to index1 etc, you if later want to switch back)
+3) start solr
+4) start the indexing script.
+
+Faster indexing:
+Copy batch_warc_folder.sh and rename to batch_warc1_folder.sh . Also create a warcs1 folder. Edit the batch_warc1_folder.sh script and change the foldername from warcs to warcs1.
+This way you can start two index jobs running at the same time. A powerful laptop can handle up to 4 simultaneous indexing processes.
+You can also just add more warc files to the index without having to index all content in the warc folder again.
+Major solrwayback performance improvement for searching and playback by having the solrwayback_package folder on a SSD.
+
+How to do your own web harvest websites (Linux/MacOS only):
+Using the wget command is an easy way to harvest websites compared to using Heritrix. The warc-files can then be indexed into solrwayback.
+Create a new folder since there will be several files written in this folder. Navigate to that folder in a prompt.
+Create a text file call url_list.txt with one URL pr. line in that folder.
+Type the following in a prompt:
+wget  --level=0  --warc-cdx   --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt
+(rename the warcfilename to your liking)
+The script will harvest all pages in the url_list.txt file with all resources required for that page (images, css etc.) and be written to a warc file(s) called warcfilename.warc
+Change --level=0 to --level=1 for following links. This will substantially increase the size of the warc file(s).
 
 
 
