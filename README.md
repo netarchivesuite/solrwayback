@@ -191,7 +191,7 @@ Stop solr: solrwayback_package/solr-7.1.0/bin/solr stop
 (For windows navigate to solrwayback_package/solr-7.1.0/bin/ and type solr.cmd start or solr.cmd stop)    
 To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
-### 3) Indexing:
+### 3) INDEXING
 Solrwayback uses a Solr index of warc files and makes the archived webpages searchable and viewable.  
 If you do not have existing warc files, see steps below on harvesting with wget.        
 
@@ -199,7 +199,7 @@ Creating an index:
 Copy arc/warc files into folder: /solrwayback_package/indexing/warcs  
 Start indexing:  call indexing/batch_warc_folder.sh  
 Indexing can take up to 10 minutes/GB files. After indexing, the warc-files must stay in the same folder for solrwayback to work.  
-There can be up to 5 minutes delay before the indexed file are visible from search. Visit this url after index job have finished to commit them instantly: http://localhost:8983/solr/netarchivebuilder/update?commit=true  
+There can be up to 5 minutes delay before the indexed files are visible from search. Visit this url after index job have finished to commit them instantly: http://localhost:8983/solr/netarchivebuilder/update?commit=true  
 
 Deleting an Index:  
 If you want to index a new collection into solr and remove the old index.  
