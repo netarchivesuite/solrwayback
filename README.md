@@ -154,7 +154,7 @@ The bundle contains Solr, the warc-indexer tool and Solrwayback installed on a T
 Just unzip the bundle and copy two files to your home directory and explore your warc files. 
 
 ## Download
-Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.1/solrwayback_package_3.1.zip
+Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.1/solrwayback_package_3.1.zip  
 Unzip and follow the instructions below.
  
 
@@ -163,7 +163,7 @@ For the Solrwayback software bundle you only need to have Java 8 (64 bit) instal
 Works on MacOs/Linux/Windows. 
 To check java is installed, type the following from a prompt: java -version
 
-## Install instruction:
+## Install instructions:
 
 Properties:  
 Copy the two files solrwayback.properties and solrwaybackweb.properties to your HOME folder.
@@ -195,6 +195,9 @@ There can be up to 5 minutes delay before the indexed file are visible from sear
 
 Prevent resource leaking from live-web during playback (Optional). Use the built in socks proxy. 
 Configure browser to SOCKS version 4 to localhost port 9000 and open http://localhost:8080/solrwayback/
+
+Navigate to the Solrwayback frontpage:  
+http://localhost:8080/solrwayback/
 
 
 ## Additional tips and tricks:
