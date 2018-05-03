@@ -166,7 +166,7 @@ Any version 1.8+ will be compatible.
 
 ## Install instructions:
 
-# 1) INITIAL SETUP  
+### 1) INITIAL SETUP  
 Properties:  
 Copy the two files solrwayback.properties and solrwaybackweb.properties to your HOME folder.
 
@@ -175,7 +175,7 @@ Chrome(Chromium) must has to be installed for screenshot preview images.
 
 If there are errors when running a script, try change the permissions for the file (startup.sh etc). Linux: chmod +x filename.sh
 
-# 2) STARTING SOLRWAYBACK  
+### 2) STARTING SOLRWAYBACK  
 Solrwayback requires both Solr and Tomcat to be running. 
 
 Tomcat:  
@@ -191,7 +191,7 @@ Stop solr: solrwayback_package/solr-7.1.0/bin/solr stop
 (For windows navigate to solrwayback_package/solr-7.1.0/bin/ and type solr.cmd start or solr.cmd stop)    
 To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
-# 3) Indexing:
+### 3) Indexing:
 Solrwayback uses a Solr index of warc files and makes the archived webpages searchable and viewable.  
 If you do not have existing warc files, see steps below on harvesting with wget.        
 
@@ -217,7 +217,7 @@ You can also just add more warc files to the index without having to index all c
 Major solrwayback performance improvement for searching and playback by having the solrwayback_package folder on a SSD.  
 
 
-# 4) SEARCHING AND ADDITIONAL FEATURES  
+### 4) SEARCHING AND ADDITIONAL FEATURES  
 Solrwayback provides a search interface to explore the content of the warc files that have been indexed.  
 The basic query in solrwayback will return all documents in the index: *:*  
 Results can then be filtered by fields like Domain, Content Type Norm, Crawl Year, Status Code, Public Suffix (tld).  
@@ -233,7 +233,7 @@ Additional features include:
 
 For more info on all additional features, see https://github.com/netarchivesuite/solrwayback
 
-# 5) TO CREATE YOUR OWN WARCS - HARVESTING WITH WGET  
+### 5) TO CREATE YOUR OWN WARCS - HARVESTING WITH WGET  
 How to do your own web harvest websites (Linux/MacOS only):  
 Using the wget command is an easy way to harvest websites compared to using Heritrix. The warc-files can then be indexed into solrwayback.  
 Create a new folder since there will be several files written in this folder. Navigate to that folder in a prompt.  
