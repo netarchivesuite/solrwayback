@@ -159,77 +159,90 @@ Unzip and follow the instructions below.
  
 
 ## Requirements:
+Works on MacOs/Linux/Windows.  
 For the Solrwayback software bundle you only need to have Java 8 (64 bit) installed. 
-Works on MacOs/Linux/Windows. 
-To check java is installed, type the following from a prompt: java -version
+To check java is installed, type the following from a prompt: java -version  
+Any version 1.8+ will be compatible.  
 
 ## Install instructions:
 
+# 1) INITIAL SETUP  
 Properties:  
 Copy the two files solrwayback.properties and solrwaybackweb.properties to your HOME folder.
 
 Optional: For screenshot previews to work you may have to edit solrwayback.properties and change the value of the last two properties : chrome.command  and screenshot.temp.imagedir. 
-Chrome(Chromium) must has to be installed for screenshot preview images.
+Chrome(Chromium) must has to be installed for screenshot preview images.  
 
 If there are errors when running a script, try change the permissions for the file (startup.sh etc). Linux: chmod +x filename.sh
 
-Solrwayback requires both Solr and Tomcat to be running. Indexing warc files makes the archived webpages searchable and viewable(playback) in solrwayback.
+# 2) STARTING SOLRWAYBACK  
+Solrwayback requires both Solr and Tomcat to be running. 
 
 Tomcat:  
 Start tomcat: apache-tomcat-8.5.29/bin/startup.sh  
 Stop tomcat:  apache-tomcat-8.5.29/bin/shutdown.sh  
 (For windows navigate to apache-tomcat-8.5.29/bin/ and type startup.bat or shutdown.bat )  
-To see Tomcat is running open: http://localhost:8080/solrwayback/  
+To see Tomcat is running open: http://localhost:8080/solrwayback/
+This  
 
 Solr:  
 Start solr: solrwayback_package/solr-7.1.0/bin/solr start  
 Stop solr: solrwayback_package/solr-7.1.0/bin/solr stop  
-(For windows navigate to solrwayback_package/solr-7.1.0/bin/ and type solr.cmd start or solr.cmd stop)  
+(For windows navigate to solrwayback_package/solr-7.1.0/bin/ and type solr.cmd start or solr.cmd stop)    
 To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
-Indexing:  
-Copy arc/warc files into folder: /solrwayback_package/indexing/warcs
-Start indexing:  call indexing/batch_warc_folder.sh
-Indexing can take up to 10 minutes/GB files. After indexing, the warc-files must stay in the same folder for solrwayback to work.
-There can be up to 5 minutes delay before the indexed file are visible from search. Visit this url after index job have finished to commit them instantly: http://localhost:8983/solr/netarchivebuilder/update?commit=true
+# 3) Indexing:
+Solrwayback uses a Solr index of warc files and makes the archived webpages searchable and viewable.  
+If you do not have existing warc files, see steps below on harvesting with wget.        
 
-Prevent resource leaking from live-web during playback (Optional). Use the built in socks proxy. 
-Configure browser to SOCKS version 4 to localhost port 9000 and open http://localhost:8080/solrwayback/
+Creating an index:
+Copy arc/warc files into folder: /solrwayback_package/indexing/warcs  
+Start indexing:  call indexing/batch_warc_folder.sh  
+Indexing can take up to 10 minutes/GB files. After indexing, the warc-files must stay in the same folder for solrwayback to work.  
+There can be up to 5 minutes delay before the indexed file are visible from search. Visit this url after index job have finished to commit them instantly: http://localhost:8983/solr/netarchivebuilder/update?commit=true  
 
-Navigate to the Solrwayback frontpage:  
-http://localhost:8080/solrwayback/
-
-
-## Additional tips and tricks:
-
-This query in solrwayback will return all documents: *:*
-
-Delete an index.  
+Deleting an Index:  
 If you want to index a new collection into solr and remove the old index.  
 1) stop solr  
 2) delete the folder:   
 solr-7.1.0/server/solr/netarchivebuilder/netarchivebuilder_data/index  
 (or rename to index1 etc, you if later want to switch back)  
 3) start solr  
-4) start the indexing script.  
+4) start the indexing script. 
 
 Faster indexing:  
-Copy batch_warc_folder.sh and rename to batch_warc1_folder.sh . Also create a warcs1 folder. Edit the batch_warc1_folder.sh script and change the foldername from warcs to warcs1.
-This way you can start two index jobs running at the same time. A powerful laptop can handle up to 4 simultaneous indexing processes.
-You can also just add more warc files to the index without having to index all content in the warc folder again.
-Major solrwayback performance improvement for searching and playback by having the solrwayback_package folder on a SSD.
-
-How to do your own web harvest websites (Linux/MacOS only):
-Using the wget command is an easy way to harvest websites compared to using Heritrix. The warc-files can then be indexed into solrwayback.
-Create a new folder since there will be several files written in this folder. Navigate to that folder in a prompt.
-Create a text file call url_list.txt with one URL pr. line in that folder.
-Type the following in a prompt:
-wget  --level=0  --warc-cdx   --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt
-(rename the warcfilename to your liking)
-The script will harvest all pages in the url_list.txt file with all resources required for that page (images, css etc.) and be written to a warc file(s) called warcfilename.warc
-Change --level=0 to --level=1 for following links. This will substantially increase the size of the warc file(s).
+Copy batch_warc_folder.sh and rename to batch_warc1_folder.sh . Also create a warcs1 folder. Edit the batch_warc1_folder.sh script and change the foldername from warcs to warcs1.  
+This way you can start two index jobs running at the same time. A powerful laptop can handle up to 4 simultaneous indexing processes. 
+You can also just add more warc files to the index without having to index all content in the warc folder again.  
+Major solrwayback performance improvement for searching and playback by having the solrwayback_package folder on a SSD.  
 
 
+# 4) SEARCHING AND ADDITIONAL FEATURES  
+Solrwayback provides a search interface to explore the content of the warc files that have been indexed.  
+The basic query in solrwayback will return all documents in the index: *:*  
+Results can then be filtered by fields like Domain, Content Type Norm, Crawl Year, Status Code, Public Suffix (tld).  
+Advanced queries can be constructed using Boolean terms, and searching fields eg: domain:statsbiblioteket.dk AND title:"Aarhus University Library"  
 
-      
+Additional features include:  
+- Image search similar to google images  
+- Search by uploading a file. (image/pdf etc.) See if the resource has been harvested and from where.  
+- Link graph showing links (ingoing/outgoing) for domains using the D3 javascript framework.  
+- Raw download of any harvested resource from the binary Arc/Warc file.  
+- Export a search resultset to a Warc-file. Streaming download, no limit of size of resultset.  
+- An optional built in SOCKS proxy can be used to view historical webpages without browser leaking resources from the live web. Configure browser to SOCKS version 4 to localhost port 9000 and open http://localhost:8080/solrwayback/  
+
+For more info on all additional features, see https://github.com/netarchivesuite/solrwayback
+
+# 5) TO CREATE YOUR OWN WARCS - HARVESTING WITH WGET  
+How to do your own web harvest websites (Linux/MacOS only):  
+Using the wget command is an easy way to harvest websites compared to using Heritrix. The warc-files can then be indexed into solrwayback.  
+Create a new folder since there will be several files written in this folder. Navigate to that folder in a prompt.  
+Create a text file call url_list.txt with one URL pr. line in that folder.  
+Type the following in a prompt:  
+wget  --level=0  --warc-cdx   --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt    
+(rename the warcfilename to your liking)  
+The script will harvest all pages in the url_list.txt file with all resources required for that page (images, css etc.) and be written to a warc file(s) called warcfilename.warc  
+Change --level=0 to --level=1 for following links. This will substantially increase the size of the warc file(s).  
+
+
 
