@@ -1,6 +1,6 @@
-# SolrWayback
+## SolrWayback
 
-## Prototype release, Solrwayback 3.1 bundle 
+### Prototype release, Solrwayback 3.1 bundle 
 Solrwayback 3.1 software bundle has been released.
 Scroll down to the install guide as follow the instructions.
 
@@ -146,26 +146,24 @@ arc/warc file is stored.
  
 
 
-## Solrwayback software bundle 3.1 install guide
+### Solrwayback software bundle 3.1 install guide
 
  
 With this download you will be able to index, search and playback web pages from your warc-files.
 The bundle contains Solr, the warc-indexer tool and Solrwayback installed on a Tomcat webserver.
 Just unzip the bundle and copy two files to your home directory and explore your warc files. 
 
-#Download
+# Download
 Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.1/solrwayback_package_3.1.zip
-
 Unzip and follow the instructions below.
  
 
-#Requirements:
+# Requirements:
 For the Solrwayback software bundle you only need to have Java 8 (64 bit) installed. 
 Works on MacOs/Linux/Windows. 
 To check java is installed, type the following from a prompt: java -version
 
-
-Getting solrwayback up and running:
+#Install instruction:
 
 Properties:
 Copy the two files solrwayback.properties and solrwaybackweb.properties to your HOME folder.
@@ -199,9 +197,7 @@ Prevent resource leaking from live-web during playback (Optional). Use the built
 Configure browser to SOCKS version 4 to localhost port 9000 and open http://localhost:8080/solrwayback/
 
 
---------------------------------
-
-Additional tips and tricks:
+# Additional tips and tricks:
 
 This query in solrwayback will return all documents: *:*
 
