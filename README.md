@@ -165,7 +165,7 @@ To check java is installed, type the following from a prompt: java -version
 
 ## Install instruction:
 
-Properties:
+Properties:  
 Copy the two files solrwayback.properties and solrwaybackweb.properties to your HOME folder.
 
 Optional: For screenshot previews to work you may have to edit solrwayback.properties and change the value of the last two properties : chrome.command  and screenshot.temp.imagedir. 
@@ -175,19 +175,19 @@ If there are errors when running a script, try change the permissions for the fi
 
 Solrwayback requires both Solr and Tomcat to be running. Indexing warc files makes the archived webpages searchable and viewable(playback) in solrwayback.
 
-Tomcat:
+Tomcat:  
 Start tomcat: apache-tomcat-8.5.29/bin/startup.sh  
 Stop tomcat:  apache-tomcat-8.5.29/bin/shutdown.sh  
 (For windows navigate to apache-tomcat-8.5.29/bin/ and type startup.bat or shutdown.bat )  
 To see Tomcat is running open: http://localhost:8080/solrwayback/  
 
-Solr:
+Solr:  
 Start solr: solrwayback_package/solr-7.1.0/bin/solr start  
 Stop solr: solrwayback_package/solr-7.1.0/bin/solr stop  
 (For windows navigate to solrwayback_package/solr-7.1.0/bin/ and type solr.cmd start or solr.cmd stop)  
 To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
-Indexing:
+Indexing:  
 Copy arc/warc files into folder: /solrwayback_package/indexing/warcs
 Start indexing:  call indexing/batch_warc_folder.sh
 Indexing can take up to 10 minutes/GB files. After indexing, the warc-files must stay in the same folder for solrwayback to work.
