@@ -1,11 +1,11 @@
 # SolrWayback
 
-# Prototype release, Solrwayback 3.1 bundle 
+# Prototype release, SolrWayback 3.1 bundle 
 Solrwayback 3.1 software bundle has been released.
 Scroll down to the install guide as follow the instructions.
 
 
-## About Solrwayback
+## About SolrWayback
 Solrwayback will only work with warc-indexer version 3.0+
 
 SolrWayback is web-application for browsing historical harvested ARC/WARC files similar
@@ -146,7 +146,7 @@ arc/warc file is stored.
  
 
 
-# Solrwayback software bundle 3.1 install guide
+# SolrWayback software bundle 3.1 install guide
 
  
 With this download you will be able to index, search and playback web pages from your warc-files.
