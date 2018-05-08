@@ -610,7 +610,7 @@ public class Facade {
     
     
     
-    public static String proxySolr( String query, String fq, boolean revisits, Integer start) throws Exception{                    
+    public static String proxySolr( String query, String fq, boolean revisits, Integer start) {
       
       String startStr ="0";
       if (start != null){
@@ -630,16 +630,16 @@ public class Facade {
                                   .queryParam("hl", "on")
                                   .queryParam("q.op", "AND")
                                   .queryParam("indent", "true")                      
-                                  .queryParam("facet", "true")
-                                  .queryParam("facet.field", "domain")
-                                  .queryParam("facet.field", "content_type_norm")
-                                  .queryParam("facet.field", "type")
-                                  .queryParam("facet.field", "crawl_year")                           
-                                  .queryParam("facet.field", "status_code")
                                   .queryParam("f.crawl_year.facet.sort","index")
-                                  .queryParam("facet.field", "public_suffix")
-                                  .queryParam( "fq","{!collapse%20field=url}");   //Only 1 hit from each URL                                    
-      
+                                  .queryParam( "fq","{!collapse%20field=url}");   //Only 1 hit from each URL
+        
+      if (!PropertiesLoader.FACETS.isEmpty()) {
+          queryWs = queryWs.queryParam("facet", "true");
+          for (String facet: PropertiesLoader.FACETS) {
+              queryWs = queryWs.queryParam("facet.field", facet);
+          }
+      }
+
       if ( fq != null && fq.length() > 0){
         queryWs = queryWs.queryParam("fq",fq);                        
        }
