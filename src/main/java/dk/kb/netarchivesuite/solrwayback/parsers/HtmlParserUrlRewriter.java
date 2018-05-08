@@ -33,9 +33,14 @@ public class HtmlParserUrlRewriter {
 	//So it can not be set using JSOUP and must be replaced after.
 	private static final String AMPERSAND_REPLACE="_STYLE_AMPERSAND_REPLACE_";
 	
+	// private static Pattern backgroundUrlPattern = Pattern.compile(".*background:url\\([\"']?([^\"')]*)[\"']?\\).*"); is this better?
+	
+	//TODO use for more CSS replacement
+	private static Pattern urlPattern = Pattern.compile("[: ,]url\\([\"']?([^\"')]*)[\"']?\\)");
+	
 	private static Pattern backgroundUrlPattern = Pattern.compile(".*background:url\\((.*)\\).*");
 	private static final String CSS_IMPORT_PATTERN_STRING = 
-			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css)['\"]?\\s*[)]?.*";
+			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css[^'\") ]*)['\"]?\\s*[)]?.*";
 	private static Pattern  CSS_IMPORT_PATTERN = Pattern.compile(CSS_IMPORT_PATTERN_STRING);
 
 	//replacing urls that points into the world outside solrwayback because they are never harvested
@@ -43,17 +48,19 @@ public class HtmlParserUrlRewriter {
 	
 	public static void main(String[] args) throws Exception{
 
-
-		  	String css="@import \"mystyle.css\";\n"+
+	   
+	  
+	  
+		  String css1="@import url('gamespot_white-1b5761d5e5bc48746b24cb1d708223cd-blessed1.css?z=1384381230968');#moderation .user-history div.icon div.approved;"+"\n"+
                 "@import url(slidearrows.css);\n"+
                 "@import url(shadow_frames.css);\n"+
                 "body {";
 
-		 /*
 
-		//String css= new String(Files.readAllBytes(Paths.get("/home/teg/Desktop/toke.css")));
 
-		System.out.println(css);
+		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
+
+//		System.out.println(css);
 
 		String[] result = css.split("\n", 100);
 		//Get the lines starting with @import until you find one that does not. 
@@ -74,7 +81,6 @@ public class HtmlParserUrlRewriter {
 
 		System.out.println("done");
 		System.exit(1);
-*/
 
 		String html="<?xml version=\"1.1\" encoding=\"iso-8859-1\"?>"+
 				"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"da\">"+
@@ -145,18 +151,22 @@ public class HtmlParserUrlRewriter {
 				String cssUrl= m.group(1);		   
 				URL base = new URL(url);
 				String resolvedUrl = new URL( base ,cssUrl).toString();
-				log.info("resolve CSS import url:"+resolvedUrl);		
-
+						
 				IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getCrawlDate());		         
 				if (indexDoc!=null){    		    			 
-					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset(); 
-					css=css.replaceFirst(cssUrl, newUrl);
+				  log.info("resolved CSS import url:"+resolvedUrl);
+					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset(); 					
+					css=css.replace(cssUrl, newUrl);					
 				}else{
-				    css=css.replaceFirst(cssUrl, NOT_FOUND_LINK);				
+	                log.info("could not resolved CSS import url:"+resolvedUrl);  
+				    css=css.replace(cssUrl, NOT_FOUND_LINK);				
 					log.info("CSS @import url not harvested:"+cssUrl);
 				}	    		 	    		 
 			}
-		}    	    	    	
+		}
+		
+		//Replace URL's
+		
 		return css;
 	}
 
