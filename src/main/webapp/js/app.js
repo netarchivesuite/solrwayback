@@ -287,10 +287,10 @@ Vue.component('result-box', {
             </div>              
             
             <!-- Full post -->
-            <div class="item" onclick="$(this).next().toggle();$(this).toggleClass('active')">
+            <div class="item" @click="getFullpost(doc.id)"onclick="$(this).next().toggle();$(this).toggleClass('active')">
                 <div class="link fullPost" > full post</div>
             </div>
-            <div class="fullpost">
+            <div class="fullpost" v-bind:id="doc.id">
                 <h3>Click value to perform a field search</h3>
                 <template v-for="(value, key) in doc" v-if="key !== 'content'">
                     <div class="item">
@@ -382,7 +382,21 @@ Vue.component('result-box', {
             
         </div>
     </div>    
-    `
+    `,
+    methods: {
+        getFullpost: function(id){
+            /*
+            console.log("id", id)
+            var fullpostUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=id:"' + id + '"';
+            console.log("fullpostUrl", fullpostUrl)
+            this.$http.get(fullpostUrl).then((response) => {
+                console.log(response.body)
+            }, (response) => {
+                console.log('error: ', response);
+                this.hideSpinner();
+            });*/
+        }
+    }
 })
 
 /* Component shows search result for images */
@@ -597,8 +611,6 @@ var app = new Vue({
                     if(!this.imageSearch){
                         this.searchResult = response.body.grouped.url.doclist.docs;
                         if(response.body.highlighting){
-                            var highlights = response.body.highlighting;
-                        }else{
                             var highlights = response.body.highlighting;
                         }
 
