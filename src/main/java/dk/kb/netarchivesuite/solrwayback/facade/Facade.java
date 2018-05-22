@@ -59,6 +59,11 @@ public class Facade {
       return proxySolr(query, filterQuery , revisits, start);
   }
     
+    
+    public static String solrIdLookup(String id) throws Exception {
+      return proxySolrIdLookup(id);
+  }
+    
 
     public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {        
         SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 100); //only search these two types                        
@@ -78,7 +83,7 @@ public class Facade {
     }
         
         
-    public static  ArrayList<ImageUrl> imagesLocationSearch(String searchText,String filter, String results, double latitude, double longitude, int radius) throws Exception {
+    public static  ArrayList<ImageUrl> imagesLocationSearch(String searchText,String filter, String results, double latitude, double longitude, double radius) throws Exception {
       int resultInt=500;
       if (results != null){
         resultInt=Integer.parseInt(results);        
@@ -484,9 +489,6 @@ public class Facade {
       
       //the original page REMEMBER      
       HashSet<String> resources = HtmlParserUrlRewriter.getResourcLinksForHtmlFromArc(arc);      
-      for (String c : resources){
-        System.out.println("looking for resource:"+c);
-      }
       
       ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(resources,arc.getCrawlDate());
           
@@ -598,7 +600,7 @@ public class Facade {
 
 		log.info("skipping html url rewrite for contentype:"+arc.getContentType());
     	return arc; //dont parse
-            
+                
     }
     
     //For fronted
@@ -626,20 +628,27 @@ public class Facade {
                                   .queryParam("rows", "20") //Hardcoded pt.
                                   .queryParam("start", startStr)
                                   .queryParam("q", query) 
+                                  .queryParam("fl", "id,score,title,hash,source_file_path,source_file_offset,url,domain,content_type,crawl_date,content_type_norm,type")
                                   .queryParam("wt", "json")
                                   .queryParam("hl", "on")
                                   .queryParam("q.op", "AND")
                                   .queryParam("indent", "true")                      
                                   .queryParam("facet", "true")
                                   .queryParam("facet.field", "domain")
-                                  .queryParam("facet.field", "content_type_norm")
+                                  .queryParam("facet.field", "content_type_norm")                                  
                                   .queryParam("facet.field", "type")
-                                  .queryParam("facet.field", "crawl_year")                           
+                                  .queryParam("facet.field", "crawl_year")
+                                  .queryParam("f.crawl_year.facet.limit", "100") //Show all crawl years
                                   .queryParam("facet.field", "status_code")
                                   .queryParam("f.crawl_year.facet.sort","index")
                                   .queryParam("facet.field", "public_suffix")
-                                  .queryParam( "fq","{!collapse%20field=url}");   //Only 1 hit from each URL                                    
-      
+                                  //.queryParam( "fq","{!collapse%20field=url}")   //Only 1 hit from each URL, does not work in cloud                                    
+                                  .queryParam( "group","true")
+                                  .queryParam( "group.field","url")
+                                  .queryParam( "group.format","simple")
+                                  .queryParam( "group.limit","1");
+                                  
+            
       if ( fq != null && fq.length() > 0){
         queryWs = queryWs.queryParam("fq",fq);                        
        }
@@ -651,7 +660,7 @@ public class Facade {
       ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
       String responseStr= response.getEntity(String.class);
 
-      log.info(responseStr.substring(0, Math.min(800, responseStr.length()-1)));
+      log.debug(responseStr.substring(0, Math.min(800, responseStr.length()-1)));
       
       
       return responseStr;
@@ -660,13 +669,30 @@ public class Facade {
     
     
     
+ public static String proxySolrIdLookup(String id) throws Exception{                                
+   log.debug("id lookup:"+id);
+      String solrUrl =PropertiesLoader.SOLR_SERVER;  
+      ClientConfig config = new DefaultClientConfig();
+      Client client = Client.create(config);
+      WebResource service = client.resource(UriBuilder.fromUri(solrUrl).build());
+      WebResource queryWs= service.path("select")                                    
+                                  .queryParam("rows", "1") 
+                                  .queryParam("q", "id:\"" +id +"\"") 
+                                  .queryParam("wt", "json")                                  
+                                  .queryParam("indent", "true")                      
+                                  .queryParam("facet", "false");                                   
+      ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+      String responseStr= response.getEntity(String.class);
+      log.debug(responseStr.substring(0, Math.min(800, responseStr.length()-1)));            
+      return responseStr;      
+  }
+            
     /*
      * Temp solution, make generic query properties
      * 
      */
 public static String proxyBackendResources(String source_file_path, String offset, String serviceName) throws Exception{                    
       
-
       String backendServer= PropertiesLoaderWeb.WAYBACK_SERVER;
   
         

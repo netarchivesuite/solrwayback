@@ -20,6 +20,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.Group;
+import org.apache.solr.client.solrj.response.GroupCommand;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
@@ -182,7 +183,7 @@ public class NetarchiveSolrClient {
 
     //We query for 1 result to get the domain.
     String domain = null;
-
+     long start = System.currentTimeMillis();
     stats.setHarvestDate(crawlDate);
     log.info("Getting wayback statistics for solrdate:"+crawlDate); 
     final String statsField= "crawl_date";
@@ -198,6 +199,7 @@ public class NetarchiveSolrClient {
     solrQuery.setGetFieldStatistics(statsField);
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);	  	  
+    log.info("Stats call part 1:"+(System.currentTimeMillis()-start));
     results += rsp.getResults().getNumFound();
     if (rsp.getResults().getNumFound() != 0 ){
       domain=  (String) rsp.getResults().get(0).getFieldValue("domain");
@@ -214,11 +216,13 @@ public class NetarchiveSolrClient {
     
     solrQuery = new SolrQuery("(url_norm:\""+url_norm+"\") AND crawl_date:[* TO \""+crawlDate+"\"}");                
     solrQuery.setRows(1);
+    solrQuery.add("fl","domain");
     solrQuery.setGetFieldStatistics(true);
     solrQuery.setGetFieldStatistics(statsField);
 
 
     rsp = solrServer.query(solrQuery,METHOD.POST);          
+    log.info("Stats call part 2:"+(System.currentTimeMillis()-start));
     results += rsp.getResults().getNumFound();
     if (rsp.getResults().getNumFound() != 0 ){
       domain=  (String) rsp.getResults().get(0).getFieldValue("domain");
@@ -237,7 +241,7 @@ public class NetarchiveSolrClient {
     if (domain == null){      
       //This can happen if we only have 1 harvest. It will not be include in the {x,*] og [*,x } since x is not included
       solrQuery = new SolrQuery("url_norm:\""+url_norm+"\"");            
-      solrQuery.setRows(1);
+      solrQuery.setRows(0);
       solrQuery.setGetFieldStatistics(true);
       solrQuery.setGetFieldStatistics(statsField);
 
@@ -249,12 +253,13 @@ public class NetarchiveSolrClient {
     }    
     stats.setDomain(domain);
     solrQuery = new SolrQuery("domain:\""+domain+"\"");            
-    solrQuery.setRows(1);
+    solrQuery.setRows(0);
     solrQuery.setGetFieldStatistics(true);
     solrQuery.setGetFieldStatistics("content_length");
 
 
-    rsp = solrServer.query(solrQuery,METHOD.POST);          
+    rsp = solrServer.query(solrQuery,METHOD.POST);
+    log.info("Stats call part 3:"+(System.currentTimeMillis()-start));
     long numberHarvestDomain= rsp.getResults().getNumFound();
     stats.setNumberHarvestDomain(numberHarvestDomain);
     if (numberHarvestDomain != 0 ){    
@@ -422,12 +427,16 @@ public class NetarchiveSolrClient {
 
 
 
-  public ArrayList<IndexDoc> imagesLocationSearch(String searchText, String filterQuery,int results,double latitude, double longitude, int radius) throws Exception {
+  public ArrayList<IndexDoc> imagesLocationSearch(String searchText, String filterQuery,int results,double latitude, double longitude, double radius) throws Exception {
     log.info("imagesLocationSearch:" + searchText +" coordinates:"+latitude+","+longitude +" radius:"+radius);
 
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
     solrQuery.add("fl", indexDocFieldList);
+    solrQuery.add("group","true");       
+    solrQuery.add("group.field","hash"); //Notice not using url_norm. We want really unique images.
+    solrQuery.add("group.format","simple");
+    solrQuery.add("group.limit","1");    
     solrQuery.setRows(results);
     //The 3 lines defines geospatial search. The ( ) are required if you want to AND with another query
     solrQuery.setQuery("({!geofilt sfield=exif_location}) AND "+searchText);       
@@ -439,10 +448,12 @@ public class NetarchiveSolrClient {
     }
 
     QueryResponse rsp = solrServer.query(solrQuery);
-    SolrDocumentList docs = rsp.getResults();
 
+
+    //SolrDocumentList docs = rsp.getResults();
+    SolrDocumentList docs =  rsp.getGroupResponse().getValues().get(0).getValues().get(0).getResult();     
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
-
+   
     return indexDocs;
   }
 
@@ -504,26 +515,31 @@ public class NetarchiveSolrClient {
 
     }
     buf.append(")");
-
+ log.info(buf.toString());
 
     String  query = buf.toString();     
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
 
     solrQuery.setRows(urls.size());
-    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+    solrQuery.add("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.    
+    solrQuery.add("fl", indexDocFieldList);            
+    solrQuery.add("group","true"); //Default only 1 value
+    solrQuery.add("group.field","url_norm");
     solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-    solrQuery.add("fl", indexDocFieldList);
-            
+    solrQuery.add("group.format","simple");
+    solrQuery.add("group.limit","1");
     solrQuery.setRows(1000);
-    solrQuery.setFilterQueries("record_type:response OR record_type:arc", "{!collapse field=url}"); //No binary for revists. 
+    solrQuery.setFilterQueries("record_type:response OR record_type:arc"); //No binary for revists. 
 
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
 
     ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
-      SolrDocumentList docs = rsp.getResults();
+    SolrDocumentList docs =  rsp.getGroupResponse().getValues().get(0).getValues().get(0).getResult();
+           
     for (SolrDocument current:docs){
       IndexDoc groupDoc = solrDocument2IndexDoc(current);
+       log.info("url_norm:"+groupDoc.getUrl_norm());
       allDocs.add(groupDoc);                             
     }                    
 

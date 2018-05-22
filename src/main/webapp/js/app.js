@@ -595,7 +595,7 @@ var app = new Vue({
                         return;
                     }
                     if(!this.imageSearch){
-                        this.searchResult = response.body.response.docs;
+                        this.searchResult = response.body.grouped.url.doclist.docs;
                         if(response.body.highlighting){
                             var highlights = response.body.highlighting;
                         }else{
@@ -622,7 +622,7 @@ var app = new Vue({
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
-                        this.totalHits = response.body.response.numFound;
+                        this.totalHits = response.body.grouped.url.doclist.numFound;
                     }else{
                         this.geoImageInfo = []; // Resetting image positions array
                         this.searchResult = response.body;
