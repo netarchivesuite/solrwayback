@@ -269,7 +269,7 @@ public class NetarchiveSolrClient {
         stats.setDomainHarvestTotalContentLength((long) totalContentLength);         
       }      
     }
-
+    log.info("total time getting wayback statistics for solrdate:"+crawlDate +" was :"+(System.currentTimeMillis()-start)); 
     return stats;
 
   }
