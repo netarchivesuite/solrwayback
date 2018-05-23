@@ -220,8 +220,8 @@ Vue.component('pager-box', {
         </div>      
 
         <div v-if="totalHits > 0 && !imageSearch" class="resultCount">
-            <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of <span title="Hit count with unique URLs"> {{ totalHits | thousandsSeperator }}</span>  <span title="Hit count with duplicate URLs">({{ totalHitsDuplicates | thousandsSeperator }})</span> hits</h3>
-            <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of <span title="Hit count with unique URLs"> {{ totalHits | thousandsSeperator }}</span> <span title="Hit count with duplicate URLs">  ({{ totalHitsDuplicates | thousandsSeperator }})</span>  hits</h3>
+            <h3 v-if="parseInt(start) + 20 < totalHits" ><span title="Hit count with unique URLs">Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits | thousandsSeperator }}</span>  unique hits <span class="discrete" title="Hit count with duplicate URLs">(total hits: {{ totalHitsDuplicates | thousandsSeperator }}).</span></h3> 
+            <h3  v-else><span title="Hit count with unique URLs">Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits | thousandsSeperator }}</span> unique hits  <span class="discrete" title="Hit count with duplicate URLs">  (total hits:{{ totalHitsDuplicates | thousandsSeperator }}).</span></h3>
         </div>
 
         <div class="pagerBox" v-if="totalHits > 21 && !imageSearch">
@@ -385,16 +385,16 @@ Vue.component('result-box', {
     `,
     methods: {
         getFullpost: function(id){
-            /*
+
             console.log("id", id)
-            var fullpostUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=id:"' + id + '"';
+            var fullpostUrl = 'http://' + location.host + '/solrwayback/services/solr/idlookup?id=' + id;
             console.log("fullpostUrl", fullpostUrl)
             this.$http.get(fullpostUrl).then((response) => {
                 console.log(response.body)
             }, (response) => {
                 console.log('error: ', response);
                 this.hideSpinner();
-            });*/
+            });
         }
     }
 })
@@ -635,7 +635,8 @@ var app = new Vue({
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
-                        this.totalHits = response.body.grouped.url.doclist.numFound;
+                        //this.totalHits = response.body.grouped.url.doclist.numFound;
+                        this.totalHits = response.body.stats.stats_fields.url.cardinality;
                         this.totalHitsDuplicates = response.body.grouped.url.matches;
                     }else{
                         this.geoImageInfo = []; // Resetting image positions array
