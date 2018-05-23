@@ -204,7 +204,7 @@ Vue.component('facet-box', {
 
 /* Component shows hit count, pager and download menu. Has method to download search result */
 Vue.component('pager-box', {
-    props: ['setupSearch', 'totalHits', 'start','isBottom','myQuery','filters','imageSearch'],
+    props: ['setupSearch', 'totalHits', 'totalHitsDuplicates','start','isBottom','myQuery','filters','imageSearch'],
     template: `
     <div class="counterBox" :class="{bottom : isBottom}" v-if="totalHits > 0">
         <div class="selectDownload" v-if="!isBottom">
@@ -220,8 +220,8 @@ Vue.component('pager-box', {
         </div>      
 
         <div v-if="totalHits > 0 && !imageSearch" class="resultCount">
-            <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits | thousandsSeperator }} hits</h3>
-            <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits | thousandsSeperator }} hits</h3>
+            <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of <span title="Hit count with unique URLs"> {{ totalHits | thousandsSeperator }}</span>  <span title="Hit count with duplicate URLs">({{ totalHitsDuplicates | thousandsSeperator }})</span> hits</h3>
+            <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of <span title="Hit count with unique URLs"> {{ totalHits | thousandsSeperator }}</span> <span title="Hit count with duplicate URLs">  ({{ totalHitsDuplicates | thousandsSeperator }})</span>  hits</h3>
         </div>
 
         <div class="pagerBox" v-if="totalHits > 21 && !imageSearch">
@@ -450,6 +450,7 @@ var app = new Vue({
         facetFields: [],
         filters: '',
         totalHits: 0,
+        totalHitsDuplicates: 0,
         start: 0,
         imageSearch: false,
         imageGeoSearch: false,
@@ -635,6 +636,7 @@ var app = new Vue({
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
                         this.totalHits = response.body.grouped.url.doclist.numFound;
+                        this.totalHitsDuplicates = response.body.grouped.url.matches;
                     }else{
                         this.geoImageInfo = []; // Resetting image positions array
                         this.searchResult = response.body;

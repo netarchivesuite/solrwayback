@@ -44,14 +44,14 @@
 
         <div class="result" v-if="myQuery && !errorMsg && !imageSearch">
 
-            <pager-box v-if="searchResult && !spinner" :setup-search="setupSearch" :total-hits="totalHits" :start="start" :my-query="myQuery"
+            <pager-box v-if="searchResult && !spinner" :setup-search="setupSearch" :total-hits="totalHits" :total-hits-duplicates="totalHitsDuplicates" :start="start" :my-query="myQuery"
                        :filters="filters" :image-search="imageSearch"></pager-box>
 
             <result-box v-if="totalHits > 0" :search-result="searchResult" :image-objects="imageObjects" :base-url="baseUrl"
                         :setup-search="setupSearch" :clear-facets="clearFacets"></result-box>
 
 
-            <pager-box  v-if="totalHits > 21 && !spinner" :setup-search="setupSearch" :total-hits="totalHits" :start="start"
+            <pager-box  v-if="totalHits > 21 && !spinner" :setup-search="setupSearch" :total-hits="totalHits" :total-hits-duplicates="totalHitsDuplicates" :start="start"
                         is-bottom="true"></pager-box>
         </div>
 
