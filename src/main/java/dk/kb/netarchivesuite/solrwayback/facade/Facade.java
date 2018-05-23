@@ -677,6 +677,8 @@ public class Facade {
                                   //.queryParam( "fq","{!collapse%20field=url}")   //Only 1 hit from each URL, does not work in cloud                                    
                                   .queryParam( "group","true")
                                   .queryParam( "group.field","url")
+                                  .queryParam("stats",  "true")
+                                  .queryParam("stats.field",  "{!cardinality=true}url")
                                   .queryParam( "group.format","simple")
                                   .queryParam( "group.limit","1");
                                   
