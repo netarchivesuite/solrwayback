@@ -390,7 +390,7 @@ public class NetarchiveSolrClient {
     SolrDocumentList docs = rsp.getResults();
 
     if (docs.getNumFound() == 0){
-      throw new Exception("Could not find arc entry:"+source_file_path +" offset:"+offset);
+      throw new Exception("Could not find arc entry in index:"+source_file_path +" offset:"+offset);
     }
 
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
