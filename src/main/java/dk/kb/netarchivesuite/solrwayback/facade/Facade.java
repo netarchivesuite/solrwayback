@@ -7,6 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.IDN;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -32,6 +36,7 @@ import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.CharMatcher;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -245,6 +250,33 @@ public class Facade {
     }
     
 
+    public static String punyCodeAndNormaliseUrl(String url) throws Exception {     
+      if (!url.startsWith("http://")){ 
+        throw new Exception("Url not starting with http://");
+      }
+      
+      URL uri = new URL(url);
+      String hostName = uri.getHost();
+      String hostNameEncoded = IDN.toASCII(hostName);
+      
+      String path = uri.getPath();
+      if ("".equals(path)){
+        path="/";
+      }
+      String urlQueryPath =  uri.getQuery();
+      if(urlQueryPath == null){
+        urlQueryPath="";
+      }
+                
+      String urlPunied = "http://"+hostNameEncoded + path +urlQueryPath;
+      String urlPuniedAndNormalized = Normalisation.canonicaliseURL(urlPunied);     
+      
+      log.info("normalizing url:"+url +" url_norm:"+urlPuniedAndNormalized );
+       return urlPuniedAndNormalized;        
+    }
+      
+     
+    
     /*
      * Find images on a HTML page.
      * 1) Find the doc in solr from source_file_path and offset. (fast)
