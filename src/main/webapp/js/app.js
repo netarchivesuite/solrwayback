@@ -204,7 +204,7 @@ Vue.component('facet-box', {
 
 /* Component shows hit count, pager and download menu. Has method to download search result */
 Vue.component('pager-box', {
-    props: ['setupSearch', 'totalHits', 'start','isBottom','myQuery','filters','imageSearch'],
+    props: ['setupSearch', 'totalHits', 'totalHitsDuplicates','start','isBottom','myQuery','filters','imageSearch'],
     template: `
     <div class="counterBox" :class="{bottom : isBottom}" v-if="totalHits > 0">
         <div class="selectDownload" v-if="!isBottom">
@@ -220,8 +220,8 @@ Vue.component('pager-box', {
         </div>      
 
         <div v-if="totalHits > 0 && !imageSearch" class="resultCount">
-            <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits | thousandsSeperator }} hits</h3>
-            <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits | thousandsSeperator }} hits</h3>
+            <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of <span title="Hit count with unique URLs"> {{ totalHits | thousandsSeperator }}</span>  <span title="Hit count with duplicate URLs">({{ totalHitsDuplicates | thousandsSeperator }})</span> hits</h3>
+            <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of <span title="Hit count with unique URLs"> {{ totalHits | thousandsSeperator }}</span> <span title="Hit count with duplicate URLs">  ({{ totalHitsDuplicates | thousandsSeperator }})</span>  hits</h3>
         </div>
 
         <div class="pagerBox" v-if="totalHits > 21 && !imageSearch">
@@ -265,11 +265,11 @@ Vue.component('result-box', {
             </div>
             <div v-if="doc.domain" class="item">
                 <div class="label">Domain:</div>
-                <div class="text"><a v-bind:href="'http://' + doc.domain"  target="_blank">{{ doc.domain }}</a></div>
+                <div class="text">{{ doc.domain }}</div>
             </div>
             <div v-if="doc.url" class="item">
                 <div class="label">Url:</div>
-                <div class="text"><a v-bind:href="doc.url" target="_blank">{{ doc.url }}</a></div>
+                <div class="text">{{ doc.url }}</div>
             </div>
             <div v-if="doc.score" class="item">
                 <div class="label">Score:</div>
@@ -287,10 +287,10 @@ Vue.component('result-box', {
             </div>              
             
             <!-- Full post -->
-            <div class="item" onclick="$(this).next().toggle();$(this).toggleClass('active')">
+            <div class="item" @click="getFullpost(doc.id)"onclick="$(this).next().toggle();$(this).toggleClass('active')">
                 <div class="link fullPost" > full post</div>
             </div>
-            <div class="fullpost">
+            <div class="fullpost" v-bind:id="doc.id">
                 <h3>Click value to perform a field search</h3>
                 <template v-for="(value, key) in doc" v-if="key !== 'content'">
                     <div class="item">
@@ -382,7 +382,21 @@ Vue.component('result-box', {
             
         </div>
     </div>    
-    `
+    `,
+    methods: {
+        getFullpost: function(id){
+            /*
+            console.log("id", id)
+            var fullpostUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=id:"' + id + '"';
+            console.log("fullpostUrl", fullpostUrl)
+            this.$http.get(fullpostUrl).then((response) => {
+                console.log(response.body)
+            }, (response) => {
+                console.log('error: ', response);
+                this.hideSpinner();
+            });*/
+        }
+    }
 })
 
 /* Component shows search result for images */
@@ -436,6 +450,7 @@ var app = new Vue({
         facetFields: [],
         filters: '',
         totalHits: 0,
+        totalHitsDuplicates: 0,
         start: 0,
         imageSearch: false,
         imageGeoSearch: false,
@@ -598,8 +613,6 @@ var app = new Vue({
                         this.searchResult = response.body.grouped.url.doclist.docs;
                         if(response.body.highlighting){
                             var highlights = response.body.highlighting;
-                        }else{
-                            var highlights = response.body.highlighting;
                         }
 
                         /* Nyt objektet med image URL'er ved content type HTML */
@@ -623,6 +636,7 @@ var app = new Vue({
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
                         this.totalHits = response.body.grouped.url.doclist.numFound;
+                        this.totalHitsDuplicates = response.body.grouped.url.matches;
                     }else{
                         this.geoImageInfo = []; // Resetting image positions array
                         this.searchResult = response.body;
