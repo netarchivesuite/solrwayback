@@ -115,11 +115,14 @@ public class SolrWaybackResource {
   @Path("/util/normalizeurl")
   @Produces(MediaType.APPLICATION_JSON)
   public UrlWrapper waybackgraph(@QueryParam("url") String url) throws ServiceException {
-    try{              
-      String url_norm = Normalisation.canonicaliseURL(url);       
+    try{
+      String urlDecoded = java.net.URLDecoder.decode(url, "UTF-8"); //frontend sending this encocefd
+      
+      log.info("url:"+urlDecoded);
+      //also rewrite to puny code
+      String url_norm =  Facade.punyCodeAndNormaliseUrl(urlDecoded);       
       UrlWrapper wrapper = new UrlWrapper();
-      wrapper.setUrl(url_norm);
-      log.info("normalizing url:"+url +" url_norm:"+url_norm);      
+      wrapper.setUrl(url_norm);      
       return wrapper;
     } catch (Exception e) {
       e.printStackTrace();
