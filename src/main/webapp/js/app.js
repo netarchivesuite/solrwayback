@@ -265,11 +265,11 @@ Vue.component('result-box', {
             </div>
             <div v-if="doc.domain" class="item">
                 <div class="label">Domain:</div>
-                <div class="text"><a v-bind:href="'http://' + doc.domain"  target="_blank">{{ doc.domain }}</a></div>
+                <div class="text">{{ doc.domain }}</div>
             </div>
             <div v-if="doc.url" class="item">
                 <div class="label">Url:</div>
-                <div class="text"><a v-bind:href="doc.url" target="_blank">{{ doc.url }}</a></div>
+                <div class="text">{{ doc.url }}</div>
             </div>
             <div v-if="doc.score" class="item">
                 <div class="label">Score:</div>
