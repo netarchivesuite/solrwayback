@@ -373,14 +373,6 @@ input.imageSearchCheck{
     margin-top: .8em;
 }
 
-.link.fullPost:before{
-    content: 'Show';
-}
-
-.active > .link.fullPost:before{
-    content: 'Hide';
-}
-
 .fullpost{
     background: #ecf3f6;
     display: none;

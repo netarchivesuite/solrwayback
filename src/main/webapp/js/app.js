@@ -239,7 +239,7 @@ Vue.component('pager-box', {
 
 /* Component shows search result when not image search*/
 Vue.component('result-box', {
-    props: ['searchResult','imageObjects','setupSearch','clearFacets','baseUrl'],
+    props: ['searchResult','imageObjects','setupSearch','clearFacets','baseUrl','getFullpost','fullpost'],
     template: `
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
@@ -250,14 +250,6 @@ Vue.component('result-box', {
                     <span v-else>No title available</span>
                 </a>
                 </h3>
-            </div>
-            <div v-if="doc.arc_harvesttime" class="item">
-                <div class="label">Harvest time:</div>
-                <div class="text">{{ doc.arc_harvesttime }}</div>
-            </div>  
-            <div v-if="doc.last_modified" class="item">
-                <div class="label">Last modified:</div>
-                <div class="text">{{ doc.last_modified }}</div>
             </div>
             <div v-if="doc.content_type" class="item">
                 <div class="label">Content type:</div>
@@ -280,27 +272,28 @@ Vue.component('result-box', {
                      <div class="label">Highlighted content:</div>
                      <div class="text" v-html="doc.highlights.content[0]"></div>
                 </div>
-            </template>
-            <div v-if="doc.content" class="item">
-                <div class="label">Full content:</div>
-                <div v-if="doc.content.length > 120" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content }}</div>
-            </div>              
+            </template>             
             
             <!-- Full post -->
-            <div class="item" @click="getFullpost(doc.id)"onclick="$(this).next().toggle();$(this).toggleClass('active')">
-                <div class="link fullPost" > full post</div>
+            <div class="item" @click="getFullpost(doc.id);toggleFullpost(doc.id)">
+                <div class="link fullPost" >Toggle full post</div>
             </div>
             <div class="fullpost" v-bind:id="doc.id">
-                <h3>Click value to perform a field search</h3>
-                <template v-for="(value, key) in doc" v-if="key !== 'content'">
-                    <div class="item">
-                        <div class="label">{{ key | facetName }}</div>
-                        <div v-if="value.constructor !== Array" class="text link" v-on:click="setupSearch('search', key + ':&quot;' + value + '&quot;');clearFacets()" >{{ value }}</div>
-                        <div v-else >
-                            <div v-for="item in value" v-on:click="setupSearch('search', key + ':&quot;' + item + '&quot;');clearFacets()" class="text link">{{item}}</div>
+                <div v-if="fullpost">
+                    <h3>Click value to perform a field search</h3>
+                    <template v-for="(value, key) in fullpost[0]">
+                        <div class="item">
+                            <div class="label">{{ key | facetName }}</div>
+                            <div v-if="value.constructor !== Array" class="text link" v-on:click="setupSearch('search', key + ':&quot;' + value + '&quot;');clearFacets()" >{{ value }}</div>
+                            <div v-else >
+                                <div v-for="item in value" v-on:click="setupSearch('search', key + ':&quot;' + item + '&quot;');clearFacets()" class="text link">{{item}}</div>
+                            </div>
                         </div>
-                    </div>
-                </template>    
+                    </template> 
+                </div> 
+                <div v-else>
+                    <p>Retrieving data...</p>
+                </div>  
             </div> 
             
             <!-- Download PDF's, Word docs etc. -->
@@ -384,17 +377,14 @@ Vue.component('result-box', {
     </div>    
     `,
     methods: {
-        getFullpost: function(id){
-
-            console.log("id", id)
-            var fullpostUrl = 'http://' + location.host + '/solrwayback/services/solr/idlookup?id=' + id;
-            console.log("fullpostUrl", fullpostUrl)
-            this.$http.get(fullpostUrl).then((response) => {
-                console.log(response.body)
-            }, (response) => {
-                console.log('error: ', response);
-                this.hideSpinner();
-            });
+        toggleFullpost: function(id){
+            console.log('toggle full post ID', id);
+            if(document.getElementById(id).style.display === "block"){
+                document.getElementById(id).style.display = "none";
+            }else{
+                $('.fullpost').hide();
+                document.getElementById(id).style.display = "block";
+            }
         }
     }
 })
@@ -445,6 +435,7 @@ var app = new Vue({
     el: '#app',
     data: {
         searchResult: null,
+        fullpost: null,
         myFacets: '',
         myQuery: '',
         facetFields: [],
@@ -611,6 +602,12 @@ var app = new Vue({
                     }
                     if(!this.imageSearch){
                         this.searchResult = response.body.grouped.url.doclist.docs;
+                        /* Adding empty fullpost to searchResult to make vue reactive to changes to the full post
+                        for(i= 0; i < this.searchResult.length;i++){
+                            //this.searchResult[i].fullpost = [{id:""}];
+                            app.searchResult[i].fullpost = [{id:""}];
+                        }
+                        console.log('this.searchResult with empty full post',this.searchResult)*/
                         if(response.body.highlighting){
                             var highlights = response.body.highlighting;
                         }
@@ -666,13 +663,38 @@ var app = new Vue({
             }
         },
 
+        getFullpost: function(id){
+            var fullpostUrl = 'http://' + location.host + '/solrwayback/services/solr/idlookup?id=' + encodeURIComponent(id);
+            this.$http.get(fullpostUrl).then((response) => {
+                this.fullpost = response.body.response.docs;
+                /* Merging full post into searchresult
+                for( i= 0; i < this.searchResult.length;i++){
+                    if(id === this.searchResult[i].id){
+                        console.log('this.searchResult[i].id',this.searchResult[i].id)
+                        console.log('match på id i post fraroden', i + 1)
+                        //this.searchResult[i].fullpost = fullpost;
+                        //this.$set(this.searchResult[i].fullpost[0], "id", fullpost[0].id)
+                        //vm.items[indexOfItem] = newValue
+                        app.searchResult[i].fullpost = fullpost
+                        //Vue.set( target, key, value )
+                        //Vue.set( this.searchResult[i].fullpost, key, value )
+                    }
+
+                }
+                console.log('this.searchResult after merge ', this.searchResult)
+                */
+            }, (response) => {
+                console.log('error: ', response);
+            });
+        },
+
         getImages: function(id,source_file_path, offset){
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_path=" + source_file_path +"&offset="+offset;
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = ""; // Url in the netarchive
                 var downloadUrl = ""; // Url in the netarchive
                 var hash = "";
-                var urlNorm = ""; // // Url in real life
+                var urlNorm = ""; // Url in real life
                 var imageUrlArray = [];
                 var downloadArray = [];
                 var hashArray = [];

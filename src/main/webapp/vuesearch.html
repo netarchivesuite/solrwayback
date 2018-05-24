@@ -47,8 +47,8 @@
             <pager-box v-if="searchResult && !spinner" :setup-search="setupSearch" :total-hits="totalHits" :total-hits-duplicates="totalHitsDuplicates" :start="start" :my-query="myQuery"
                        :filters="filters" :image-search="imageSearch"></pager-box>
 
-            <result-box v-if="totalHits > 0" :search-result="searchResult" :image-objects="imageObjects" :base-url="baseUrl"
-                        :setup-search="setupSearch" :clear-facets="clearFacets"></result-box>
+            <result-box v-if="totalHits > 0" :search-result="searchResult" :fullpost="fullpost" :image-objects="imageObjects" :base-url="baseUrl"
+                        :setup-search="setupSearch" :clear-facets="clearFacets" :get-fullpost="getFullpost"></result-box>
 
 
             <pager-box  v-if="totalHits > 21 && !spinner" :setup-search="setupSearch" :total-hits="totalHits" :total-hits-duplicates="totalHitsDuplicates" :start="start"
