@@ -241,7 +241,7 @@ public class NetarchiveSolrClient {
     if (domain == null){      
       //This can happen if we only have 1 harvest. It will not be include in the {x,*] og [*,x } since x is not included
       solrQuery = new SolrQuery("url_norm:\""+url_norm+"\"");            
-      solrQuery.setRows(0);
+      solrQuery.setRows(1);
       solrQuery.setGetFieldStatistics(true);
       solrQuery.setGetFieldStatistics(statsField);
 
