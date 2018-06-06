@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
+import dk.kb.netarchivesuite.solrwayback.parsers.ArcFileParserFactory;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 
@@ -38,9 +39,22 @@ public class WarcGzParserTest  extends UnitTestUtils{
     
     }
 
-
+    /* The warc file used for these tests below can not be shared.
    
-    /* The warc file used for these tests below can not be shared.                
+     @Test
+      public void testWarcEncoding() throws Exception {
+      
+      //content-type is lower case in warc
+      File file = getFile("/media/teg/1200GB_SSD/netarkiv/pligt/5065-215-20131114083855-00000-kb-test-har-003.kb.dk.warc.gz");
+      
+      ArcEntry arcEntry = ArcFileParserFactory.getArcEntry(file.getCanonicalPath(), 353703887); //Image entry      
+      assertEquals("text/html", arcEntry.getContentType());
+      assertEquals(195850, arcEntry.getContentLength());                                          
+    }
+        
+        
+    
+                
     @Test
     public void testWarcParserJSZipped() throws Exception {
     

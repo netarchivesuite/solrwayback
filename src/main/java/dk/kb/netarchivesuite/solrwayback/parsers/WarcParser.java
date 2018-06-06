@@ -245,10 +245,9 @@ public class WarcParser {
      private static void populateWarcSecondHeader(ArcEntry warcEntry, String headerLine) {
         //  log.debug("parsing warc headerline(part 2):"+headerLine);                
           //Content-Type: image/jpeg
-         // or Content-Type: text/html; charset=windows-1252
-
-          if (headerLine.startsWith("Content-Type:")) {
-               String[] part1 = headerLine.split(":");
+         // or Content-Type: text/html; charset=windows-1252       
+          if (headerLine.toLowerCase().startsWith("content-type:")) {            
+            String[] part1 = headerLine.split(":");
                String[] part2= part1[1].split(";");                        
                warcEntry.setContentType(part2[0].trim());          
                if (part2.length == 2){
@@ -261,8 +260,8 @@ public class WarcParser {
                
                
           }  //Content-Length: 31131
-          else if (headerLine.startsWith("Content-Length:")) {
-              String[] contentLine = headerLine.split(" ");
+          else if (headerLine.toLowerCase().startsWith("content-length:")) {
+            String[] contentLine = headerLine.split(" ");
               int totalSize = Integer.parseInt(contentLine[1].trim());               
               warcEntry.setContentLength(totalSize);                       
           }                         
