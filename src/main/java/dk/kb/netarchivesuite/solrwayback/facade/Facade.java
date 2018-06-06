@@ -630,8 +630,7 @@ public class Facade {
                                   .queryParam("hl", "on")
                                   .queryParam("q.op", "AND")
                                   .queryParam("indent", "true")                      
-                                  .queryParam("f.crawl_year.facet.sort","index")
-                                  .queryParam( "fq","{!collapse%20field=url}");   //Only 1 hit from each URL
+          .queryParam("f.crawl_year.facet.sort","index");
         
       if (!PropertiesLoader.FACETS.isEmpty()) {
           queryWs = queryWs.queryParam("facet", "true");
