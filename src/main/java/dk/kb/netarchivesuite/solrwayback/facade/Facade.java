@@ -483,7 +483,7 @@ public class Facade {
       ts.setPagePreviewUrl(previewUrl);      
       
       //the original page REMEMBER      
-      HashSet<String> resources = HtmlParserUrlRewriter.getResourcLinksForHtmlFromArc(arc);      
+      HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
       for (String c : resources){
         System.out.println("looking for resource:"+c);
       }
