@@ -287,7 +287,7 @@ public class NetarchiveSolrClient {
     solrQuery.add("group.field","url_norm");
     solrQuery.add("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
     solrQuery.setFilterQueries("content_type_norm:image"); //only images
-    solrQuery.setFilterQueries("record_type:response"); //No binary for revists.     
+    solrQuery.setFilterQueries("record_type:response"); //No binary for revists.       //TODO record_type arc missing!
 
     solrQuery.setFilterQueries("image_size:[2000 TO *]"); //No small images. (fillers etc.) 
     solrQuery.add("fl", indexDocFieldList);
