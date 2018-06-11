@@ -644,7 +644,7 @@ public class Facade {
     
     
     
-    public static String proxySolr( String query, String fq, boolean revisits, Integer start) throws Exception{                    
+    public static String proxySolr( String query, String fq, boolean revisits, Integer start) {
       
       String startStr ="0";
       if (start != null){
@@ -665,14 +665,7 @@ public class Facade {
                                   .queryParam("hl", "on")
                                   .queryParam("q.op", "AND")
                                   .queryParam("indent", "true")                      
-                                  .queryParam("facet", "true")
-                                  .queryParam("facet.field", "domain")
-                                  .queryParam("facet.field", "content_type_norm")                                  
-                                  .queryParam("facet.field", "type")
-                                  .queryParam("facet.field", "crawl_year")
                                   .queryParam("f.crawl_year.facet.limit", "100") //Show all crawl years
-                                  .queryParam("facet.field", "status_code")
-                                  .queryParam("f.crawl_year.facet.sort","index")
                                   .queryParam("facet.field", "public_suffix")
                                   //.queryParam( "fq","{!collapse%20field=url}")   //Only 1 hit from each URL, does not work in cloud                                    
                                   .queryParam( "group","true")
@@ -680,13 +673,18 @@ public class Facade {
                                   //.queryParam("stats",  "true")
                                   //.queryParam("stats.field",  "{!cardinality=0.1}url")
                                   .queryParam( "group.format","simple")
-                                  .queryParam( "group.limit","1");
-                                  
-            
+                                  .queryParam( "group.limit","1")                                              
+                                  .queryParam("f.crawl_year.facet.sort","index");
+        
+      if (!PropertiesLoader.FACETS.isEmpty()) {
+          queryWs = queryWs.queryParam("facet", "true");
+          for (String facet: PropertiesLoader.FACETS) {
+              queryWs = queryWs.queryParam("facet.field", facet);
+          }
+      }
       if ( fq != null && fq.length() > 0){
         queryWs = queryWs.queryParam("fq",fq);                        
-       }
-      
+      }      
       if (!revisits){
         queryWs = queryWs.queryParam("fq", "record_type:response OR record_type:arc"); //Not very smart to have arc as a value here... Maybe Toke can fix
       }
