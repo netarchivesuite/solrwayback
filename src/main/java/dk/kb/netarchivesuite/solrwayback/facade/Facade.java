@@ -664,9 +664,7 @@ public class Facade {
                                   .queryParam("wt", "json")
                                   .queryParam("hl", "on")
                                   .queryParam("q.op", "AND")
-                                  .queryParam("indent", "true")                      
-                                  .queryParam("f.crawl_year.facet.limit", "100") //Show all crawl years
-                                  .queryParam("facet.field", "public_suffix")
+                                  .queryParam("indent", "true")                                                        
                                   //.queryParam( "fq","{!collapse%20field=url}")   //Only 1 hit from each URL, does not work in cloud                                    
                                   .queryParam( "group","true")
                                   .queryParam( "group.field","url")
@@ -674,11 +672,12 @@ public class Facade {
                                   //.queryParam("stats.field",  "{!cardinality=0.1}url")
                                   .queryParam( "group.format","simple")
                                   .queryParam( "group.limit","1")                                              
-                                  .queryParam("f.crawl_year.facet.sort","index");
-        
-      if (!PropertiesLoader.FACETS.isEmpty()) {
+                                  .queryParam("f.crawl_year.facet.sort","index") // Sort by year (if facet is selected)
+                                  .queryParam("f.crawl_year.facet.limit", "100"); //Show all crawl years (if facet is selected)  
+      
+      if (!PropertiesLoaderWeb.FACETS.isEmpty()) {
           queryWs = queryWs.queryParam("facet", "true");
-          for (String facet: PropertiesLoader.FACETS) {
+          for (String facet: PropertiesLoaderWeb.FACETS) {
               queryWs = queryWs.queryParam("facet.field", facet);
           }
       }
@@ -686,7 +685,7 @@ public class Facade {
         queryWs = queryWs.queryParam("fq",fq);                        
       }      
       if (!revisits){
-        queryWs = queryWs.queryParam("fq", "record_type:response OR record_type:arc"); //Not very smart to have arc as a value here... Maybe Toke can fix
+        queryWs = queryWs.queryParam("fq", "record_type:response OR record_type:arc"); // (only revisits not included(
       }
                  
       ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);

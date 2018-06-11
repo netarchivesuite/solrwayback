@@ -24,9 +24,7 @@ public class PropertiesLoader {
     private static final String WAYBACK_BASEURL_PROPERTY="wayback.baseurl";
     private static final String CHROME_COMMAND_PROPERTY="chrome.command";
     private static final String SCREENSHOT_TEMP_IMAGEDIR_PROPERTY="screenshot.temp.imagedir";
-
-    private static final String FACETS_PROPERTY = "facets";
-
+   
     private static Properties serviceProperties = null;
 
     public static String SOLR_SERVER = null;
@@ -36,9 +34,7 @@ public class PropertiesLoader {
     public static String PROXY_PORT= null;
     public static String PROXY_ALLOW_HOSTS= null;
     public static String WARC_FILE_RESOLVER_CLASS = null;
-    public static List<String> FACETS =
-            Arrays.asList("domain", "content_type_norm", "type", "crawl_year", "status_code", "public_suffix");
-
+    
 
     public static void initProperties() {
         try {
@@ -60,7 +56,7 @@ public class PropertiesLoader {
             PROXY_PORT = serviceProperties.getProperty(PROXY_PORT_PROPERTY);
             PROXY_ALLOW_HOSTS = serviceProperties.getProperty(PROXY_ALLOW_HOSTS_PROPERTY);
             WARC_FILE_RESOLVER_CLASS = serviceProperties.getProperty(WARC_FILE_RESOLVER_CLASS_PROPERTY);
-            FACETS = Arrays.asList(getProperty(FACETS_PROPERTY, StringUtils.join(FACETS, ",")).split(", *"));
+       
 
             log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
             log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);
@@ -68,8 +64,7 @@ public class PropertiesLoader {
             log.info("Property:"+ PROXY_ALLOW_HOSTS_PROPERTY +" = " + PROXY_ALLOW_HOSTS);
             log.info("Property:"+ CHROME_COMMAND_PROPERTY +" = " + CHROME_COMMAND);
             log.info("Property:"+ SCREENSHOT_TEMP_IMAGEDIR_PROPERTY +" = " + SCREENSHOT_TEMP_IMAGEDIR);
-            log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);
-            log.info("Property:"+ FACETS_PROPERTY +" = " + FACETS);
+            log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);            
         }
         catch (Exception e) {
             e.printStackTrace();
