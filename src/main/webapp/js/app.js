@@ -633,7 +633,7 @@ var app = new Vue({
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
                         //this.totalHits = response.body.grouped.url.doclist.numFound;
-                        this.totalHits = response.body.stats.stats_fields.url.cardinality;
+                        this.totalHits = response.body.grouped.url.matches;// response.body.stats.stats_fields.url.cardinality;
                         this.totalHitsDuplicates = response.body.grouped.url.matches;
                     }else{
                         this.geoImageInfo = []; // Resetting image positions array
