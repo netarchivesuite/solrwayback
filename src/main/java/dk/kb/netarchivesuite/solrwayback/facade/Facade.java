@@ -29,6 +29,7 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceExcept
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 
+import dk.kb.netarchivesuite.solrwayback.solr.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,10 +42,6 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
-import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
-import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingWarcExportClient;
 
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
@@ -318,8 +315,7 @@ public class Facade {
           return "UTF-8";         
         }
         else{
-          String encoding = search.getResults().get(0).getContentEncoding();                    
-          return encoding; //Can still be null. 
+          return search.getResults().get(0).getContentEncoding(); //Can still be null.
         }
     }
     
@@ -328,15 +324,19 @@ public class Facade {
     }
     
 
-    public static InputStream exportWarcStreaming(String q, String fq) throws Exception{                           
-      SolrStreamingWarcExportClient solr = new SolrStreamingWarcExportClient(PropertiesLoader.SOLR_SERVER);            
+    public static InputStream exportWarcStreaming(
+            boolean expandResources, boolean avoidDuplicates, String query, String... filterqueries) {
+      SolrGenericStreaming solr = new SolrGenericStreaming(
+              PropertiesLoader.SOLR_SERVER, 100, Arrays.asList("source_file_path", "source_file_offset"),
+              expandResources, avoidDuplicates, query, filterqueries);
+
+      // TODO: Why do we have a max of 1M?
       //Buffer size 100 only since the binary can be big
-      return new StreamingSolrWarcExportBufferedInputStream(
-              solr, q, fq, 100,  1000000); //1M max. results just for now
+      return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000); //1M max. results just for now
     }
  
-    
-    public static InputStream exportBriefStreaming(String q, String fq) throws Exception{                           
+
+    public static InputStream exportBriefStreaming(String q, String fq) throws Exception {
       SolrStreamingExportClient solr = SolrStreamingExportClient.createExporter(
               PropertiesLoader.SOLR_SERVER, true, q, fq);
       return new StreamingSolrExportBufferedInputStream(solr, 50000, 1000000);

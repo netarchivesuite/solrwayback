@@ -11,6 +11,10 @@ import org.apache.solr.common.params.CursorMarkParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated superceded by {@link SolrGenericStreaming}
+ */
+@Deprecated
 public class SolrStreamingWarcExportClient {
 
   private static SolrClient solrServer;

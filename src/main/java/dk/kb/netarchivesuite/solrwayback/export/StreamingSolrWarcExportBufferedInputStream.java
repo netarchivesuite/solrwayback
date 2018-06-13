@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
@@ -26,10 +27,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   private int maxRecords;
   private int docsWarcRead;
   private int docsArcRead;
-  private SolrStreamingWarcExportClient solrClient;
-  private String query;
-  private String filterQuery;
-  private int solrPagingBufferSize;
+  private SolrGenericStreaming solrClient;
 
 
   @Override
@@ -60,26 +58,27 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
     return 0xff & result; //We are not in ascii anymore.
   }
 
-  public StreamingSolrWarcExportBufferedInputStream(SolrStreamingWarcExportClient solrClient, String query, String filterQuery,
-      int solrPagingBufferSize,  int maxRecords) {
+  public StreamingSolrWarcExportBufferedInputStream(SolrGenericStreaming solrClient, int maxRecords) {
     this.solrClient = solrClient;
     this.maxRecords = maxRecords;
-    this.query = query;
-    this.filterQuery = filterQuery;
-    this.solrPagingBufferSize = solrPagingBufferSize;
   }
 
   private void loadMore() {
     try {
+      inputBuffer = new ArrayList<>();
+
       if (docsWarcRead > maxRecords) { //Stop loading more
-        inputBuffer = new ArrayList<byte[]>();
         log.info("Max documents reached. Stopping loading more documents");
         return;
       }
 
-      SolrDocumentList docs = solrClient.exportWarcBuffered(query, filterQuery, solrPagingBufferSize);    
-      inputBuffer = new ArrayList<byte[]>();
-      for  (SolrDocument doc : docs){               
+      SolrDocumentList docs = solrClient.nextDocuments();
+      if (docs == null || docs.isEmpty()) {
+        log.info("No more documents available");
+        return;
+      }
+
+      for  (SolrDocument doc : docs){
         String source_file_path = (String) doc.getFieldValue("source_file_path");
         long offset = (Long) doc.getFieldValue("source_file_offset");
 
