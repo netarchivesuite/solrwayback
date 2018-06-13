@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,6 +33,11 @@ public class SolrGenericStreamingResultTest {
     @BeforeClass
     public static void setUp() {
         NetarchiveSolrClient.initialize(SOLR);
+        try {
+            PropertiesLoader.initProperties();
+        } catch (Exception e) {
+            throw new RuntimeException("Exception initializing properties", e);
+        }
     }
 
     // Integration test
@@ -39,12 +45,12 @@ public class SolrGenericStreamingResultTest {
     public void testLocalGeneric() throws Exception {
         final String QUERY = "content_type_norm:html";
 
-        SolrGenericStreamingResult stream = new SolrGenericStreamingResult(
+        SolrGenericStreaming stream = new SolrGenericStreaming(
                 SOLR, 1000,  null, false, true, QUERY);
         long unexpanded = count(stream);
         assertTrue("There should be at least 1 result", unexpanded > 0);
 
-        stream = new SolrGenericStreamingResult(
+        stream = new SolrGenericStreaming(
                 SOLR, 1000,  null, true, true, QUERY);
         long expanded = count(stream);
 
@@ -60,14 +66,14 @@ public class SolrGenericStreamingResultTest {
     public void testLocalCSV() throws Exception {
         final String QUERY = "content_type_norm:html";
 
-        SolrGenericStreamingResult checkStream = new SolrGenericStreamingResult(
+        SolrGenericStreaming checkStream = new SolrGenericStreaming(
                 SOLR, 1000,  null, false, true, QUERY);
         long unexpanded = count(checkStream);
         System.out.println("Raw results for '" + QUERY + "' was " + unexpanded);
         
-        SolrStreamingExportClient sec = new SolrStreamingExportClient(SOLR);
+        SolrStreamingExportClient sec = SolrStreamingExportClient.createExporter(SOLR, false, QUERY);
         StreamingSolrExportBufferedInputStream stream = new StreamingSolrExportBufferedInputStream(
-                sec, QUERY, null, 1000, true, Integer.MAX_VALUE);
+                sec, 50000, Integer.MAX_VALUE);
 
         ByteOutputStream bos = new ByteOutputStream();
         byte[] buff = new byte[8192];
@@ -78,11 +84,11 @@ public class SolrGenericStreamingResultTest {
             bos.write(buff, 0, read);
         }
         System.out.println("Read full " + bos.size() + " bytes with check sum " + sum);
+//        System.out.println(new String(bos.toByteArray()));
         // Read full 120278 with check sum 1201
     }
 
-
-    private long count(SolrGenericStreamingResult stream) throws Exception {
+    private long count(SolrGenericStreaming stream) throws Exception {
         long count = 0;
         while (true) {
             SolrDocumentList docs = stream.nextDocuments();

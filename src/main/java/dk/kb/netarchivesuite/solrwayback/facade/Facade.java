@@ -331,23 +331,23 @@ public class Facade {
     public static InputStream exportWarcStreaming(String q, String fq) throws Exception{                           
       SolrStreamingWarcExportClient solr = new SolrStreamingWarcExportClient(PropertiesLoader.SOLR_SERVER);            
       //Buffer size 100 only since the binary can be big
-      StreamingSolrWarcExportBufferedInputStream is = new StreamingSolrWarcExportBufferedInputStream(solr, q, fq, 100,  1000000); //1M max. results just for now             
-      return is;         
+      return new StreamingSolrWarcExportBufferedInputStream(
+              solr, q, fq, 100,  1000000); //1M max. results just for now
     }
  
     
     public static InputStream exportBriefStreaming(String q, String fq) throws Exception{                           
-      SolrStreamingExportClient solr = new SolrStreamingExportClient(PropertiesLoader.SOLR_SERVER);      
-      StreamingSolrExportBufferedInputStream is = new StreamingSolrExportBufferedInputStream(solr, q, fq, 50000, false, 1000000);            
-      return is;         
+      SolrStreamingExportClient solr = SolrStreamingExportClient.createExporter(
+              PropertiesLoader.SOLR_SERVER, true, q, fq);
+      return new StreamingSolrExportBufferedInputStream(solr, 50000, 1000000);
     }
      
     
     
     public static InputStream exportFullStreaming(String q, String fq) throws Exception{                           
-      SolrStreamingExportClient solr = new SolrStreamingExportClient(PropertiesLoader.SOLR_SERVER);      
-      StreamingSolrExportBufferedInputStream is = new StreamingSolrExportBufferedInputStream(solr, q, fq, 50000, true, 1000000);            
-      return is;         
+        SolrStreamingExportClient solr = SolrStreamingExportClient.createExporter(
+                PropertiesLoader.SOLR_SERVER, false, q, fq);
+        return new StreamingSolrExportBufferedInputStream(solr, 50000, 1000000);
     }
     
     

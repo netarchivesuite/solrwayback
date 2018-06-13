@@ -21,10 +21,11 @@ import static org.apache.commons.lang3.StringUtils.join;
 /**
  * CursorMark-based chunking search client allowing for arbitrary sized result sets.
  */
-public class SolrGenericStreamingResult {
+public class SolrGenericStreaming {
 
+  private static final int DEFAULT_PAGESIZE = 1000; // Due to Solr boolean queries limit
   private static SolrClient solrServer;
-  private final Logger log = LoggerFactory.getLogger(SolrGenericStreamingResult.class);
+  private final Logger log = LoggerFactory.getLogger(SolrGenericStreaming.class);
   private final boolean expandResources;
   private final int pageSize;
 
@@ -37,6 +38,34 @@ public class SolrGenericStreamingResult {
   private boolean hasFinished = false;
 
   // TODO: Make graph traversal of JavaScript & CSS-includes with expandResources
+
+  /**
+   * Default page size 1000, expandResources=false and avoidDuplicates=false.
+   * @param solrServerUrl complete address for a Solr server.
+   * @param fields        the fields to export.
+   * @param query         standard Solr query.
+   * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+   *                      If multiple filters are to be used, consider collapsing them into one:
+   *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   */
+  public SolrGenericStreaming(String solrServerUrl, List<String> fields, String query, String... filterQueries) {
+    this(solrServerUrl, buildBaseQuery(DEFAULT_PAGESIZE, fields, false, query, filterQueries),
+         false, false);
+  }
+
+  /**
+   * Default page size 1000, expandResources=false and avoidDuplicates=false.
+   * @param solrServerUrl complete address for a Solr server.
+   * @param fields        comma separated fields to export.
+   * @param query         standard Solr query.
+   * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+   *                      If multiple filters are to be used, consider collapsing them into one:
+   *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   */
+  public SolrGenericStreaming(String solrServerUrl, String fields, String query, String... filterQueries) {
+    this(solrServerUrl, buildBaseQuery(DEFAULT_PAGESIZE, Arrays.asList(fields.split(", *")), false,
+                                       query, filterQueries), false, false);
+  }
 
   /**
    * @param solrServerUrl       complete address for a Solr server.
@@ -53,7 +82,7 @@ public class SolrGenericStreamingResult {
    *                            If multiple filters are to be used, consider collapsing them into one:
    *                            {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
    */
-  public SolrGenericStreamingResult(
+  public SolrGenericStreaming(
           String solrServerUrl, int pageSize, List<String> fields, boolean expandResources, boolean avoidDuplicates,
           String query, String... filterQueries) {
     this(solrServerUrl, buildBaseQuery(pageSize, fields, expandResources, query, filterQueries),
@@ -73,7 +102,7 @@ public class SolrGenericStreamingResult {
    *                            encountered documents. For result sets above tens of millions, this may result in
    *                            out of memory.
    */
-  public SolrGenericStreamingResult(
+  public SolrGenericStreaming(
           String solrServerUrl, SolrQuery solrQuery, boolean expandResources, boolean avoidDuplicates) {
     solrServer =  new HttpSolrClient.Builder(solrServerUrl).build();
     this.solrQuery = solrQuery;
@@ -95,7 +124,9 @@ public class SolrGenericStreamingResult {
     solrQuery.setQuery(query);
     if (filterQueries != null) {
       for (String filter: filterQueries) {
-        solrQuery.addFilterQuery(filter);
+        if (filter != null) {
+          solrQuery.addFilterQuery(filter);
+        }
       }
     }
     solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
@@ -189,7 +220,7 @@ public class SolrGenericStreamingResult {
     return duplicatesRemoved;
   }
 
-  public boolean isHasFinished() {
+  public boolean hasFinished() {
     return hasFinished;
   }
 
