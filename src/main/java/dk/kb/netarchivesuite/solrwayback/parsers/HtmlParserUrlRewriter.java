@@ -272,7 +272,7 @@ public class HtmlParserUrlRewriter {
       StringBuffer buf = new StringBuffer();
       for (IndexDoc indexDoc: docs){
           buf.append("<part>\n");        
-          buf.append("pwid:netarkivet.dk:"+indexDoc.getCrawlDate()+":part:"+indexDoc.getUrl() +"\n");
+          buf.append("urn:pwid:netarkivet.dk:"+indexDoc.getCrawlDate()+":part:"+indexDoc.getUrl() +"\n");
           buf.append("</part>\n");
           //pwid:netarkivet.dk:time:part:url
       

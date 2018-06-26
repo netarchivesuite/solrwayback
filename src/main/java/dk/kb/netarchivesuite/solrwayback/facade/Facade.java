@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.*;
@@ -40,8 +41,10 @@ import com.google.common.base.CharMatcher;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
@@ -60,8 +63,8 @@ public class Facade {
         return result;
     }
     
-    public static String solrSearch(String query, String filterQuery,boolean revisits, int start) throws Exception {
-      return proxySolr(query, filterQuery , revisits, start);
+    public static String solrSearch(String query, String filterQuery,boolean grouping, boolean revisits, int start) throws Exception {
+      return proxySolr(query, filterQuery , grouping, revisits, start);
   }
     
     
@@ -484,7 +487,7 @@ public class Facade {
       StringBuffer parts = new StringBuffer();
       //the original page
       parts.append("<part>\n");
-      parts.append("pwid:netarkivet.dk:"+arc.getCrawlDate()+":part:"+arc.getUrl() +"\n");
+      parts.append("urn:pwid:netarkivet.dk:"+arc.getCrawlDate()+":part:"+arc.getUrl() +"\n");
       parts.append("</part>\n");      
       String xmlIncludes = HtmlParserUrlRewriter.generatePwid(arc);//all sub elements            
       parts.append(xmlIncludes);
@@ -644,61 +647,62 @@ public class Facade {
     
     
     
-    public static String proxySolr( String query, String fq, boolean revisits, Integer start) {
+    public static String proxySolr( String query, String fq, boolean grouping, boolean revisits, Integer start) {
+      log.info("query "+query +" grouping:"+grouping +" revisits:"+revisits);
       
       String startStr ="0";
       if (start != null){
         startStr=start.toString();
       }
 
-      log.info("query "+query +" revisits:"+revisits);
+      //Build all query params in map
+      MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+      params.add("rows", "20"); //Hardcoded pt.
+      params.add("start", startStr);
+      params.add("q", query);
+      params.add("fl", "id,score,title,hash,source_file_path,source_file_offset,url,domain,content_type,crawl_date,content_type_norm,type");
+      params.add("wt", "json");
+      params.add("hl", "on");
+      params.add("q.op", "AND");
+      params.add("indent", "true");                  
+      //params.add( "fq","{!collapse%20field=url}")   //Only 1 hit from each URL, does not work in cloud
+      if (grouping){
+        //Both group and stats must be enabled at same time                
+        params.add( "group","true");
+        params.add( "group.field","url");
+        params.add("stats",  "true");
+        params.add("stats.field",  "{!cardinality=0.1}url");
+        params.add( "group.format","simple");
+        params.add( "group.limit","1"); 
+      }
+            
+      if (!revisits){
+        params.add("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
+      }
+      if ( fq != null && fq.length() > 0){
+        params.add("fq",fq);                        
+      }
+      if (!PropertiesLoaderWeb.FACETS.isEmpty()) {
+        params.add("facet", "true");
+        for (String facet: PropertiesLoaderWeb.FACETS) {
+          params.add("facet.field", facet);
+        }
+     }
+                
       String solrUrl =PropertiesLoader.SOLR_SERVER;  
       ClientConfig config = new DefaultClientConfig();
       Client client = Client.create(config);
       WebResource service = client.resource(UriBuilder.fromUri(solrUrl).build());
-      WebResource queryWs= service.path("select")                                    
-                                  .queryParam("rows", "20") //Hardcoded pt.
-                                  .queryParam("start", startStr)
-                                  .queryParam("q", query) 
-                                  .queryParam("fl", "id,score,title,hash,source_file_path,source_file_offset,url,domain,content_type,crawl_date,content_type_norm,type")
-                                  .queryParam("wt", "json")
-                                  .queryParam("hl", "on")
-                                  .queryParam("q.op", "AND")
-                                  .queryParam("indent", "true")                                                        
-                                  //.queryParam( "fq","{!collapse%20field=url}")   //Only 1 hit from each URL, does not work in cloud                                    
-                                  .queryParam( "group","true")
-                                  .queryParam( "group.field","url")
-                                  //.queryParam("stats",  "true")
-                                  //.queryParam("stats.field",  "{!cardinality=0.1}url")
-                                  .queryParam( "group.format","simple")
-                                  .queryParam( "group.limit","1")                                              
-                                  .queryParam("f.crawl_year.facet.sort","index") // Sort by year (if facet is selected)
-                                  .queryParam("f.crawl_year.facet.limit", "100"); //Show all crawl years (if facet is selected)  
-      
-      if (!PropertiesLoaderWeb.FACETS.isEmpty()) {
-          queryWs = queryWs.queryParam("facet", "true");
-          for (String facet: PropertiesLoaderWeb.FACETS) {
-              queryWs = queryWs.queryParam("facet.field", facet);
-          }
-      }
-      if ( fq != null && fq.length() > 0){
-        queryWs = queryWs.queryParam("fq",fq);                        
-      }      
-      if (!revisits){
-        queryWs = queryWs.queryParam("fq", "record_type:response OR record_type:arc"); // (only revisits not included(
-      }
-                 
+           
+      WebResource queryWs= service.path("select").queryParams(params);                                                                                            
+                                                                   
       ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
       String responseStr= response.getEntity(String.class);
 
-      log.debug(responseStr.substring(0, Math.min(800, responseStr.length()-1)));
-      
-      
-      return responseStr;
-      
+      log.debug(responseStr.substring(0, Math.min(800, responseStr.length()-1)));            
+      return responseStr;      
   }
-    
-    
+        
     
  public static String proxySolrIdLookup(String id) throws Exception{                                
    log.debug("id lookup:"+id);

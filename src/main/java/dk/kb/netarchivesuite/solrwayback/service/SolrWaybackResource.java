@@ -163,9 +163,9 @@ public class SolrWaybackResource {
   @GET
   @Path("solr/search")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public String  solrSearch(@QueryParam("query") String query, @QueryParam("fq") String filterQuery ,  @QueryParam("revisits") boolean revisits , @QueryParam("start") int start) throws ServiceException {
-    try {                    
-      String res = Facade.solrSearch(query,filterQuery, revisits, start);          
+  public String  solrSearch(@QueryParam("query") String query, @QueryParam("fq") String filterQuery ,  @QueryParam("grouping") boolean grouping,  @QueryParam("revisits") boolean revisits , @QueryParam("start") int start) throws ServiceException {
+    try {
+      String res = Facade.solrSearch(query,filterQuery, grouping, revisits, start);          
       return res;
     } catch (Exception e) {
       log.error("error for search:"+query, e);
@@ -525,7 +525,10 @@ public class SolrWaybackResource {
   }
 
   
-
+/*
+ * Showtoolbarnot working here.
+ * 
+ */
   @GET
   @Path("/viewForward")
   public Response viewForward(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws ServiceException {
