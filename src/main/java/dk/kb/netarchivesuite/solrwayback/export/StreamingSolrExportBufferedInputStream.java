@@ -10,13 +10,10 @@ public class StreamingSolrExportBufferedInputStream extends InputStream {
 
   private int index;
   private List<byte[]> inputBuffer = new ArrayList<>();
-  private int maxLines;
+  private final int maxLines;
   private int linesRead;
   private SolrStreamingExportClient solrClient;
-  private String query;
-  private String filterQuery;
-  private int solrPagingBufferSize;
-  private boolean fullExport;
+  private final int solrPagingBufferSize;
 
   @Override
   public int read() throws IOException {
@@ -43,39 +40,31 @@ public class StreamingSolrExportBufferedInputStream extends InputStream {
       // and reset the current index
       inputBuffer.remove(0);
       index = 0;
+      // TODO: Replace this hack with a proper line counter (check for line break or something like that)
       linesRead = linesRead + solrPagingBufferSize;
       System.out.println(linesRead);
     }
     return result;
   }
 
-  public StreamingSolrExportBufferedInputStream(SolrStreamingExportClient solrClient, String query, String filterQuery,
-      int solrPagingBufferSize, boolean fullExport, int maxLines) {
+  public StreamingSolrExportBufferedInputStream(
+          SolrStreamingExportClient solrClient, int solrPagingBufferSize, int maxLines) {
     this.solrClient = solrClient;
     this.maxLines = maxLines;
-    this.query = query;
-    this.filterQuery = filterQuery;
     this.solrPagingBufferSize = solrPagingBufferSize;
-    this.fullExport = fullExport;
   }
 
   private void loadMore() {
     try {
-      String lines;
-      if (fullExport) {
-        lines = solrClient.exportFullBuffered(query, filterQuery, solrPagingBufferSize);
-      } else {
-        lines = solrClient.exportBriefBuffered(query, filterQuery, solrPagingBufferSize);
-      }
+      String lines = solrClient.next();
 
       inputBuffer = new ArrayList<byte[]>();
-      if (lines.length() > 0) {
+      if (lines != null && !lines.isEmpty()) {
         inputBuffer.add(lines.getBytes("utf-8"));
       }
 
     } catch (Exception e) {
       e.printStackTrace();
     }
-
   }
 }
