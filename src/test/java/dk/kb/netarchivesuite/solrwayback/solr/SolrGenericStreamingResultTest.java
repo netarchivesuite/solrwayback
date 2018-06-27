@@ -42,7 +42,6 @@ public class SolrGenericStreamingResultTest {
     }
 
     // Integration test
-    @Test
     public void testLocalGeneric() throws Exception {
         final String QUERY = "content_type_norm:html";
 
@@ -63,7 +62,6 @@ public class SolrGenericStreamingResultTest {
     }
 
     // Integration test
-    @Test
     public void testLocalCSV() throws Exception {
         final String QUERY = "content_type_norm:html";
 
