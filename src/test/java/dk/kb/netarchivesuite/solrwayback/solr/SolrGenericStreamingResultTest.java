@@ -1,6 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.apache.solr.common.SolrDocumentList;
@@ -10,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
+
+import java.io.ByteArrayOutputStream;
 
 /*
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,7 +76,7 @@ public class SolrGenericStreamingResultTest {
         StreamingSolrExportBufferedInputStream stream = new StreamingSolrExportBufferedInputStream(
                 sec, 50000, Integer.MAX_VALUE);
 
-        ByteOutputStream bos = new ByteOutputStream();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
         byte[] buff = new byte[8192];
         int read;
         long sum = 0;

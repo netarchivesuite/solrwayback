@@ -378,13 +378,18 @@ public class SolrWaybackResource {
   @Path("/export/warc")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
   public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
-    return exportWarcExpanded(q, fq, false, false);
+    return exportWarcImpl(q, fq, false, false);
   }
 
   @GET
-  @Path("/export/warcExpanded")
-  @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response exportWarcExpanded(@QueryParam("query") String q,
+  @Path("/export/warcExpanded")    
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)    
+  public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+    return exportWarcImpl(q, fq, true, true);
+  }
+  
+  
+  private Response exportWarcImpl(@QueryParam("query") String q,
                                      @QueryParam("fq") String fq,
                                      @QueryParam("expand") boolean expandResources,
                                      @QueryParam("deduplicate") boolean avoidDuplicates) throws ServiceException {
