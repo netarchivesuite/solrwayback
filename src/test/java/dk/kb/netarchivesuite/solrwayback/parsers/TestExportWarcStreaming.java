@@ -1,12 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 
+import java.io.File;
+import java.io.InputStream;
 import org.apache.commons.io.FileUtils;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
