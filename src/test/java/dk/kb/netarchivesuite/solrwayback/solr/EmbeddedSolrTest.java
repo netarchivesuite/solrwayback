@@ -33,7 +33,7 @@ public class EmbeddedSolrTest {
        coreContainer = new CoreContainer(solr_home);
        coreContainer.load();
        embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
-       NetarchiveSolrClient.initializeOverLoadUnitTest(embeddedServer);
+       NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
        server = NetarchiveSolrClient.getInstance();
        
         // Remove any items from previous executions:

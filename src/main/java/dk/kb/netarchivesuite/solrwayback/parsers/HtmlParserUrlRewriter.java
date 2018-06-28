@@ -281,10 +281,11 @@ public class HtmlParserUrlRewriter {
 	}
 
   
-	public static HashSet<String> getResourcLinksForHtmlFromArc(ArcEntry arc) throws Exception{
+	public static HashSet<String> getResourceLinksForHtmlFromArc(ArcEntry arc) throws Exception{
 
       long start = System.currentTimeMillis();
-      String html = new String(arc.getBinary(),arc.getContentEncoding());
+      String charset = arc.getContentEncoding();
+      String html = new String(arc.getBinary(), charset == null ? "utf-8" : charset);
       String url=arc.getUrl();
 
 

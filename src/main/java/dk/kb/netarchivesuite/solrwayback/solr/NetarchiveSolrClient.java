@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,14 +15,16 @@ import java.util.regex.Pattern;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.*;
 import org.apache.solr.client.solrj.response.FacetField.Count;
+
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.Group;
 import org.apache.solr.client.solrj.response.GroupCommand;
 import org.apache.solr.client.solrj.response.QueryResponse;
+
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -42,13 +45,13 @@ import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 public class NetarchiveSolrClient {
 
   private static final Logger log = LoggerFactory.getLogger(NetarchiveSolrClient.class);
-  private static SolrClient solrServer;
-  private static NetarchiveSolrClient instance = null;
-  private static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
+  protected static SolrClient solrServer;
+  protected  static NetarchiveSolrClient instance = null;
+  protected  static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
 
-  private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location";
+  protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location";
 
-  private NetarchiveSolrClient() { // private. Singleton
+  protected NetarchiveSolrClient() { // private. Singleton
   }
 
   // Example url with more than 1000 rewrites: http://belinda:9721/webarchivemimetypeservlet/services/wayback?waybackdata=20140119010303%2Fhttp%3A%2F%2Fbillige-skilte.dk%2F%3Fp%3D35
@@ -64,16 +67,6 @@ public class NetarchiveSolrClient {
 
     instance = new NetarchiveSolrClient();
     log.info("SolrClient initialized with solr server url:" + solrServerUrl);
-  }
-
-
-  /*
-   * Called from unittest   
-   */
-  public static void initializeOverLoadUnitTest(EmbeddedSolrServer server) {
-    solrServer=server;
-    instance = new NetarchiveSolrClient();
-    log.info("SolrClient initialized with embedded solr for unittest");
   }
 
   
@@ -488,63 +481,109 @@ public class NetarchiveSolrClient {
     return docs.getNumFound();    
   }
   
+  
   public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrls(HashSet<String> urls, String timeStamp) throws Exception{
     ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
     Iterable<List<String>> splitSets = Iterables.partition(urls, 1000); //split into sets of size max 1000;
     for (List<String> set : splitSets){
       HashSet<String> urlPartSet = new  HashSet<String>();
       urlPartSet.addAll(set);
-      ArrayList<IndexDoc> partIndexDocs= findNearestHarvestTimeForMultipleUrlsMax1000(urlPartSet, timeStamp);
+      List<IndexDoc> partIndexDocs= findNearestHarvestTimeForMultipleUrlsMax1000(urlPartSet, timeStamp);
       allDocs.addAll(partIndexDocs);
-    }				
-    return allDocs;			
-  }
+    }               
+    return allDocs;         
+}
 
+  private List<IndexDoc> findNearestHarvestTimeForMultipleUrlsMax1000(HashSet<String> urls, String timeStamp) throws Exception{
+    SolrDocumentList docs = findNearestDocuments(urls, timeStamp, indexDocFieldList);
 
-  private ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrlsMax1000(HashSet<String> urls, String timeStamp) throws Exception{
-    if (urls.size() > 1000){
-      throw new IllegalArgumentException("More than 1000 different urls in query:"+urls.size() +". Solr does not allow more than 1024 queries");
-    }
-
-    //Generate URL string: (url_norm:"A" OR url_norm:"B" OR ....)
-    StringBuffer buf = new StringBuffer();
-    buf.append("(url_norm:test"); //Just to avoid last OR logic
-    int i =0;
-    for (String  url : urls) {            
-      buf.append(" OR url_norm:\""+normalizeUrl(url)+"\"");        
-
-    }
-    buf.append(")");
- log.info(buf.toString());
-
-    String  query = buf.toString();     
-    SolrQuery solrQuery = new SolrQuery();
-    solrQuery.setQuery(query);
-
-    solrQuery.setRows(urls.size());
-    solrQuery.add("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.    
-    solrQuery.add("fl", indexDocFieldList);            
-    solrQuery.add("group","true"); //Default only 1 value
-    solrQuery.add("group.field","url_norm");
-    solrQuery.add("sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-    solrQuery.add("group.format","simple");
-    solrQuery.add("group.limit","1");
-    solrQuery.setRows(1000);
-    solrQuery.setFilterQueries("record_type:response OR record_type:arc"); //No binary for revists. 
-
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
-
-    ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
-    SolrDocumentList docs =  rsp.getGroupResponse().getValues().get(0).getValues().get(0).getResult();
-           
+    ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>(docs.size());
     for (SolrDocument current:docs){
       IndexDoc groupDoc = solrDocument2IndexDoc(current);
-       log.info("url_norm:"+groupDoc.getUrl_norm());
       allDocs.add(groupDoc);                             
     }                    
 
-    log.info("number URLS in search:" +urls.size() +" number of harvested url found:"  +allDocs.size() + " time:"+rsp.getQTime());
-    return allDocs;                     
+    return allDocs;
+  }
+
+  public SolrDocumentList findNearestDocuments(HashSet<String> urls, String timeStamp, String fieldList)
+      throws SolrServerException, IOException {
+final int chunkSize = 1000;
+
+if (urls.size() > chunkSize){
+  SolrDocumentList allDocs = new SolrDocumentList();
+  Iterable<List<String>> splitSets = Iterables.partition(urls, chunkSize); //split into sets of size max chunkSize;
+  for (List<String> chunk : splitSets){
+    SolrDocumentList chunkDocs = findNearestDocuments(new HashSet<>(chunk), timeStamp, fieldList);
+    mergeInto(allDocs, chunkDocs);
+    // What is allDocs.start and should we care?
+  }
+  return allDocs;
+}
+
+SolrQuery solrQuery = new SolrQuery();
+solrQuery.setQuery(urlQueryJoin("url_norm", "OR", urls));
+
+solrQuery.setFacet(false);
+solrQuery.setGetFieldStatistics(false);
+solrQuery.setRows(urls.size());
+solrQuery.set("group", "true");
+solrQuery.set("group.field", "url_norm");
+solrQuery.set("group.size", "1");
+solrQuery.set("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
+solrQuery.add("fl", fieldList);
+
+solrQuery.setFilterQueries("record_type:response OR record_type:arc"); //No binary for revists.
+
+QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+SolrDocumentList docs = groupsToDoc(rsp);
+log.info("number URLS in search:" +urls.size() +" number of harvested url found:"  + docs.size() +
+         " time:"+rsp.getQTime());
+return docs;
+}
+
+ 
+
+  public static void mergeInto(SolrDocumentList main, SolrDocumentList additional) {
+    main.addAll(additional);
+    if (additional.getMaxScore() != null) {
+      main.setMaxScore(main.getMaxScore() == null ? additional.getMaxScore() :
+                               Math.max(main.getMaxScore(), additional.getMaxScore()));
+    }
+    main.setNumFound(main.getNumFound() + additional.getNumFound());
+  }
+
+  
+    
+  private SolrDocumentList groupsToDoc(QueryResponse rsp) {
+    SolrDocumentList docs = new SolrDocumentList();
+    if (rsp == null || rsp.getGroupResponse() == null || rsp.getGroupResponse().getValues() == null ||
+            rsp.getGroupResponse().getValues().isEmpty()) {
+      return docs;
+    }
+    for (GroupCommand groupCommand: rsp.getGroupResponse().getValues()) {
+      for (Group group: groupCommand.getValues()) {
+        mergeInto(docs, group.getResult());
+      }
+    }
+    return docs;
+  }
+
+
+  @SuppressWarnings("SameParameterValue")
+  private String urlQueryJoin(String field, String operator, Iterable<String> urls) {
+    StringBuilder sb = new StringBuilder();
+    boolean first = true;
+    sb.append(field).append(":(");
+    for (String url: urls) {
+      if (!first) {
+        sb.append(" ").append(operator).append(" ");
+      }
+      first = false;
+      sb.append("\"").append(normalizeUrl(url)).append("\"");
+    }
+    sb.append(")");
+    return sb.toString();
   }
 
   /*

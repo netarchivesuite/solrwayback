@@ -1,12 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 
+import java.io.File;
+import java.io.InputStream;
 import org.apache.commons.io.FileUtils;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
@@ -49,7 +45,7 @@ public class TestExportWarcStreaming {
     FileUtils.copyInputStreamToFile( is, new File(fileFromBytesWarcInputStream)); 
     */
     
-    InputStream is1 = Facade.exportWarcStreaming("hash:\"sha1:PROTE66RZ6GDXPZI3ZAHG6YPCXRKZMEN\"", null);
+    InputStream is1 = Facade.exportWarcStreaming(false, false, "hash:\"sha1:PROTE66RZ6GDXPZI3ZAHG6YPCXRKZMEN\"");
     FileUtils.copyInputStreamToFile( is1, new File("export_final.warc"));
     
     
