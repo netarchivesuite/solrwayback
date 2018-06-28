@@ -14,10 +14,8 @@ import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.*;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -41,13 +39,13 @@ import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 public class NetarchiveSolrClient {
 
   private static final Logger log = LoggerFactory.getLogger(NetarchiveSolrClient.class);
-  private static SolrClient solrServer;
-  private static NetarchiveSolrClient instance = null;
-  private static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
+  protected static SolrClient solrServer;
+  protected  static NetarchiveSolrClient instance = null;
+  protected  static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
 
-  private static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location";
+  protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location";
 
-  private NetarchiveSolrClient() { // private. Singleton
+  protected NetarchiveSolrClient() { // private. Singleton
   }
 
   // Example url with more than 1000 rewrites: http://belinda:9721/webarchivemimetypeservlet/services/wayback?waybackdata=20140119010303%2Fhttp%3A%2F%2Fbillige-skilte.dk%2F%3Fp%3D35
@@ -63,16 +61,6 @@ public class NetarchiveSolrClient {
 
     instance = new NetarchiveSolrClient();
     log.info("SolrClient initialized with solr server url:" + solrServerUrl);
-  }
-
-
-  /*
-   * Called from unittest   
-   */
-  public static void initializeOverLoadUnitTest(EmbeddedSolrServer server) {
-    solrServer=server;
-    instance = new NetarchiveSolrClient();
-    log.info("SolrClient initialized with embedded solr for unittest");
   }
 
   
