@@ -1,6 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.logging.LogFactory;
 import org.archive.wayback.util.url.AggressiveUrlCanonicalizer;
 import org.apache.commons.logging.Log;
