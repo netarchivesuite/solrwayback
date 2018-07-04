@@ -204,7 +204,7 @@ Vue.component('facet-box', {
 
 /* Component shows hit count, pager and download menu. Has method to download search result */
 Vue.component('pager-box', {
-    props: ['setupSearch', 'totalHits', 'totalHitsDuplicates','start','isBottom','myQuery','filters','imageSearch'],
+    props: ['setupSearch', 'totalHits', 'totalHitsDuplicates','start','isBottom','myQuery','filters','imageSearch','grouping'],
     template: `
     <div class="counterBox" :class="{bottom : isBottom}" v-if="totalHits > 0">
         <div class="selectDownload" v-if="!isBottom">
@@ -221,8 +221,14 @@ Vue.component('pager-box', {
         </div>      
 
         <div v-if="totalHits > 0 && !imageSearch" class="resultCount">
-            <h3 v-if="parseInt(start) + 20 < totalHits" ><span title="Hit count with unique URLs">Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits | thousandsSeperator }}</span>  unique hits <span class="discrete" title="Hit count with duplicate URLs">(total hits: {{ totalHitsDuplicates | thousandsSeperator }}).</span></h3> 
-            <h3  v-else><span title="Hit count with unique URLs">Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits | thousandsSeperator }}</span> unique hits  <span class="discrete" title="Hit count with duplicate URLs">  (total hits:{{ totalHitsDuplicates | thousandsSeperator }}).</span></h3>
+            <template v-if="grouping">
+                <h3 v-if="parseInt(start) + 20 < totalHits" ><span title="Hit count with unique URLs">Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits | thousandsSeperator }}</span>  unique hits <span class="discrete" title="Hit count with duplicate URLs">(total hits: {{ totalHitsDuplicates | thousandsSeperator }}).</span></h3> 
+                <h3  v-else><span title="Hit count with unique URLs">Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits | thousandsSeperator }}</span> unique hits  <span class="discrete" title="Hit count with duplicate URLs">  (total hits:{{ totalHitsDuplicates | thousandsSeperator }}).</span></h3>
+            </template>
+            <template v-else>
+                <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits | thousandsSeperator }} hits</h3>
+            <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits | thousandsSeperator }} hits</h3>
+            </template>
         </div>
 
         <div class="pagerBox" v-if="totalHits > 21 && !imageSearch">
@@ -444,6 +450,7 @@ var app = new Vue({
         totalHits: 0,
         totalHitsDuplicates: 0,
         start: 0,
+        grouping: false,
         imageSearch: false,
         imageGeoSearch: false,
         urlSearch: false,
@@ -480,7 +487,7 @@ var app = new Vue({
                 this.filters = ''; //resetting filters on new search
                 this.myQuery = query;
                 this.start = 0;
-                console.log("type, query, param3, param4, imagegeosearch", type, query, param3, param4, imagegeosearch)
+                console.log("type, query, param3, param4, imagegeosearch:", type, query, param3, param4, imagegeosearch)
                 if (param3) {
                     this.urlSearch = true;
                     this.imageSearch = false; // deselecting image search when URL search
@@ -573,7 +580,7 @@ var app = new Vue({
                     '&latitude=' + this.markerPosition.lat + '&longitude=' + this.markerPosition.lng + '&d=' + this.markerPosition.radius / 1000;
             } else {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
-                    '&start=' + parseInt(this.start) + '&fq=' + this.filters;
+                    '&start=' + parseInt(this.start) + '&fq=' + this.filters + "&grouping=" + this.grouping;
             }
             this.facetFields = []; //resetting facet fields before building them from query params
             if (this.filters) {
@@ -592,7 +599,7 @@ var app = new Vue({
             /* Starting search if there's a query using the search URL set up above */
             if(this.myQuery && this.myQuery.trim() != ''){
                 this.showSpinner();
-                //console.log('this.searchUrl: ', this.searchUrl);
+                console.log('this.searchUrl: ', this.searchUrl);
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
                     console.log('response.body: ', response.body);
@@ -602,13 +609,14 @@ var app = new Vue({
                         return;
                     }
                     if(!this.imageSearch){
-                        this.searchResult = response.body.grouped.url.doclist.docs;
-                        /* Adding empty fullpost to searchResult to make vue reactive to changes to the full post
-                        for(i= 0; i < this.searchResult.length;i++){
-                            //this.searchResult[i].fullpost = [{id:""}];
-                            app.searchResult[i].fullpost = [{id:""}];
+                        if(response.body.grouped){
+                            this.searchResult = response.body.grouped.url.doclist.docs;
+                            this.totalHits = response.body.grouped.url.doclist.numFound;// response.body.stats.stats_fields.url.cardinality;
+                            this.totalHitsDuplicates = response.body.grouped.url.matches;
+                        }else{
+                            this.searchResult = response.body.response.docs;
+                            this.totalHits = response.body.response.numFound;
                         }
-                        console.log('this.searchResult with empty full post',this.searchResult)*/
                         if(response.body.highlighting){
                             var highlights = response.body.highlighting;
                         }
@@ -633,9 +641,6 @@ var app = new Vue({
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
-                        //this.totalHits = response.body.grouped.url.doclist.numFound;
-                        this.totalHits = response.body.grouped.url.matches;// response.body.stats.stats_fields.url.cardinality;
-                        this.totalHitsDuplicates = response.body.grouped.url.matches;
                     }else{
                         this.geoImageInfo = []; // Resetting image positions array
                         this.searchResult = response.body;

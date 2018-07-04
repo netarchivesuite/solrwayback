@@ -1,3 +1,29 @@
+/* APP overview
+
+Filter:
+thousandsSeperator: Tusindtalsseperator som bruges i tabellen for mere overskuelige tal
+
+Components:
+header-comtainer: Simple HTML header
+searchbox-container: search-box, error-box og link tilbage til KB
+--search-box: Viser Søgeboks og kanpper
+--error-box: Viser fejlbeskeder
+frontpage: Forside vises, når der hverken er data eller fejl.
+chart-container: Simple HTML component, der sætter canvas op til Chart.js
+table-container: Hjemmebygget HTML tabel baseret på samme dataarray, som bruges til chart.js
+footer-container: Simple HTML footer
+
+Metoder (Alle metoder ligger i roden):
+setTags: Tags sættes og normaliseres. Max antal tags sættes her.
+getData: Request laves for hvert tag og samles i et promise array. Alle promises fyres på en gang, og når data er tilbage
+          masseres de til chart.js format.
+drawChart: Initiere, konfigurerer og fylder data på chart.js
+clearTags: Nulstiller tags, charts, tabeller og fejlbeskeder
+showSpinner: Viser spinner ved start af søgning
+hideSpinner: Skjuler spinner ved afslutning af søgning
+
+*/
+
 Vue.filter('thousandsSeperator', function(value) {
     if (value === 0) return 0; // to keep zero's in table
     if (!value) return '';
