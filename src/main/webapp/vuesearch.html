@@ -24,7 +24,7 @@
         <h1>SOLR Wayback Search</h1>
 
         <search-box :setup-search="setupSearch" :my-query="myQuery" :image-search="imageSearch"  :url-search="urlSearch"
-                    :image-geo-search="imageGeoSearch" :clear-search="clearSearch"></search-box>
+                    :image-geo-search="imageGeoSearch" :clear-search="clearSearch":grouping="grouping" :set-grouping="setGrouping"></search-box>
 
         <map-box v-if="imageGeoSearch" :marker-position="markerPosition" :place-marker="placeMarker" :do-search="doSearch"
                  :total-hits="totalHits"></map-box>

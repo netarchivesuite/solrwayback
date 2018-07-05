@@ -13,7 +13,7 @@ Vue.filter('thousandsSeperator', function(value) {
 
 /* Component with search field, check boxes to decide searchtype and relevant links */
 Vue.component('search-box', {
-    props: ['setupSearch','myQuery','imageSearch','imageGeoSearch','urlSearch','clearSearch'],
+    props: ['setupSearch','myQuery','imageSearch','imageGeoSearch','urlSearch','clearSearch','grouping','setGrouping'],
     template: `
     <div>
         <div id="searchbox">
@@ -22,6 +22,11 @@ Vue.component('search-box', {
                 v-model='queryModel' type="text" placeholder="search" autofocus />
                 <button class="btn" 
                 v-on:click="setupSearch('search', queryModel, urlSearchModel, urlSearchModel, imageSearchModel, imageGeoSearchModel);searchByFile = false">Search</button>
+                <label class="groupingCheckLabel">
+                <input class="groupingCheck" v-model="groupingModel" type="checkbox"
+                     v-on:change="setGrouping(groupingModel);setupSearch('search', queryModel, urlSearchModel, urlSearchModel, imageSearchModel, imageGeoSearchModel);
+                     searchByFile = false"> Grouping (slower response)
+                </label>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = false">Clear search</span>
                 <br>
                 <label>
@@ -51,6 +56,7 @@ Vue.component('search-box', {
             imageSearchModel: this.imageSearch,
             urlSearchModel: this.urlSearch,
             imageGeoSearchModel: this.imageGeoSearch,
+            groupingModel: this.grouping,
             searchByFile: false,
         };
     },
@@ -481,6 +487,12 @@ var app = new Vue({
         this.setupUrl();
     },
     methods: {
+        /* Method to toggle grouping. Quick fix instead of adding it to the already way too long list of parameters
+         * to the setupSearch() method below.  */
+        setGrouping: function(grouping){
+            this.grouping = grouping;
+        },
+
         /* Setting up search. Checking if it's an ordinary search, URL search, image search, paging, facet delimit */
         setupSearch: function(type, query, param3, param4, imagegeosearch) {
             if (type == "search") {
@@ -546,6 +558,7 @@ var app = new Vue({
                     filter: this.filters,
                     imgsearch: this.imageSearch,
                     imggeosearch: this.imageGeoSearch,
+                    grouping: this.grouping,
                     //urlsearch: this.urlSearch,
                 }
             });
