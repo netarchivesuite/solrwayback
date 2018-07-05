@@ -176,7 +176,7 @@ public class WaybackToolbarInjecter {
             "position:fixed; text-align:left !important; top: 25%; width: 900px; z-index: 500;" +
     "       transition: left 0.4s, opacity 0.3s, padding 0.3s, top 0.4s, width 0.3s;}" +
             "#tegModal p, #tegModal div{color: black !important; font-family: Arial, Helvetica, sans-serif; font-size: 12px !important}" +
-    "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.8; padding:1em 1em 0 0; top: 3px; width: 15px; text-orientation: upright; writing-mode: vertical-rl;}" +
+    "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.8; padding:0.7em; top: 3px; width: 15px; text-orientation: upright; writing-mode: vertical-rl;}" +
     "       #toggleToolbar, #closeToolbar{float: right; margin: -.8em -.5em 2em 2em;}" +
     "       #toggleToolbar{margin-left: 1em;}" +
     "       #tegModal.closed #tegContent,#tegModal.closed #closeToolbar{display: none}" +
