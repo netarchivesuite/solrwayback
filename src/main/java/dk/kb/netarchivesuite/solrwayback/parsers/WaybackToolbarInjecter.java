@@ -114,9 +114,9 @@ public class WaybackToolbarInjecter {
     log.info(stats.toString());
     String inject = 
     "<!-- BEGIN WAYBACK TOOLBAR INSERT -->" +
-    "   <div class=\"open\" id=\"tegModal\" style=\"\">" +
-    "       <div><a onclick=\"toggleModal();return false\" id=\"toggleSpinner\" href=\"#\">Hide</a></div>" +
-    "       <div><a onclick=\"closeModal();return false\" id=\"closeSpinner\" href=\"#\">Close</a></div>" +
+    "   <div class=\"closed\" id=\"tegModal\" style=\"\">" +
+    "       <div><a onclick=\"toggleModal();return false\" id=\"toggleToolbar\" href=\"#\">Hide</a></div>" +
+    "       <div><a onclick=\"closeModal();return false\" id=\"closeToolbar\" href=\"#\">Close</a></div>" +
     "       <div id=\"tegContent\">" +
     "           <div class=\"infoLine\">" +
     "               <span class=\"label\">Harvest date:</span>" +
@@ -176,10 +176,10 @@ public class WaybackToolbarInjecter {
             "position:fixed; text-align:left !important; top: 25%; width: 900px; z-index: 500;" +
     "       transition: left 0.4s, opacity 0.3s, padding 0.3s, top 0.4s, width 0.3s;}" +
             "#tegModal p, #tegModal div{color: black !important; font-family: Arial, Helvetica, sans-serif; font-size: 12px !important}" +
-    "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.5; padding:1em 1em 0 0; top: 3px; width: 30px; text-orientation: upright; writing-mode: vertical-rl;}" +
-    "       #toggleSpinner, #closeSpinner{float: right; margin: -.8em -.5em 2em 2em;}" +
-    "       #toggleSpinner{margin-left: 1em;}" +
-    "       #tegModal.closed #tegContent,#tegModal.closed #closeSpinner{display: none}" +
+    "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.8; padding:1em 1em 0 0; top: 3px; width: 15px; text-orientation: upright; writing-mode: vertical-rl;}" +
+    "       #toggleToolbar #closeToolbar{float: right; margin: -.8em -.5em 2em 2em;}" +
+    "       #toggleToolbar{margin-left: 1em;}" +
+    "       #tegModal.closed #tegContent,#tegModal.closed #closeToolbar{display: none}" +
     "       #tegModal .infoLine{margin-bottom: .5em;}" +
     "       #tegModal a img {display: inline-block; margin: 2em 3em 2em 0; max-height: 60px; }" +        
     "       #tegModal a {color: #003399; font-size: 14px; text-decoration: none}" +
@@ -196,10 +196,10 @@ public class WaybackToolbarInjecter {
     "           function toggleModal(){" +
     "               if(document.getElementById(\"tegModal\").className == \"open\"){" +
     "                   document.getElementById(\"tegModal\").className = \"closed\";" +
-    "                   document.getElementById(\"toggleSpinner\").innerHTML = \"Open\";" +
+    "                   document.getElementById(\"toggleToolbar\").innerHTML = \"Toolbar\";" +
     "               }else{" +
     "                   document.getElementById(\"tegModal\").className = \"open\";" +
-    "                   document.getElementById(\"toggleSpinner\").innerHTML = \"Hide\";" +
+    "                   document.getElementById(\"toggleToolbar\").innerHTML = \"Hide\";" +
     "               }" +
     "           }           " +
     "           function closeModal(){" +
