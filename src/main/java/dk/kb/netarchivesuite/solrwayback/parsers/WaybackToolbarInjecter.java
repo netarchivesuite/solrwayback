@@ -115,7 +115,7 @@ public class WaybackToolbarInjecter {
     String inject = 
     "<!-- BEGIN WAYBACK TOOLBAR INSERT -->" +
     "   <div class=\"closed\" id=\"tegModal\" style=\"\">" +
-    "       <div><a onclick=\"toggleModal();return false\" id=\"toggleToolbar\" href=\"#\">Hide</a></div>" +
+    "       <div><a onclick=\"toggleModal();return false\" id=\"toggleToolbar\" href=\"#\">Toolbar</a></div>" +
     "       <div><a onclick=\"closeModal();return false\" id=\"closeToolbar\" href=\"#\">Close</a></div>" +
     "       <div id=\"tegContent\">" +
     "           <div class=\"infoLine\">" +
@@ -177,7 +177,7 @@ public class WaybackToolbarInjecter {
     "       transition: left 0.4s, opacity 0.3s, padding 0.3s, top 0.4s, width 0.3s;}" +
             "#tegModal p, #tegModal div{color: black !important; font-family: Arial, Helvetica, sans-serif; font-size: 12px !important}" +
     "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.8; padding:1em 1em 0 0; top: 3px; width: 15px; text-orientation: upright; writing-mode: vertical-rl;}" +
-    "       #toggleToolbar #closeToolbar{float: right; margin: -.8em -.5em 2em 2em;}" +
+    "       #toggleToolbar, #closeToolbar{float: right; margin: -.8em -.5em 2em 2em;}" +
     "       #toggleToolbar{margin-left: 1em;}" +
     "       #tegModal.closed #tegContent,#tegModal.closed #closeToolbar{display: none}" +
     "       #tegModal .infoLine{margin-bottom: .5em;}" +
