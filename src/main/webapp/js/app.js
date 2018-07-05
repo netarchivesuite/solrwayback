@@ -625,7 +625,7 @@ var app = new Vue({
                     if(!this.imageSearch){
                         if(response.body.grouped){
                             this.searchResult = response.body.grouped.url.doclist.docs;
-                            this.totalHits = response.body.grouped.url.doclist.numFound;// response.body.stats.stats_fields.url.cardinality;
+                            this.totalHits = response.body.stats.stats_fields.url.cardinality;
                             this.totalHitsDuplicates = response.body.grouped.url.matches;
                         }else{
                             this.searchResult = response.body.response.docs;
@@ -687,22 +687,6 @@ var app = new Vue({
             var fullpostUrl = 'http://' + location.host + '/solrwayback/services/solr/idlookup?id=' + encodeURIComponent(id);
             this.$http.get(fullpostUrl).then((response) => {
                 this.fullpost = response.body.response.docs;
-                /* Merging full post into searchresult
-                for( i= 0; i < this.searchResult.length;i++){
-                    if(id === this.searchResult[i].id){
-                        console.log('this.searchResult[i].id',this.searchResult[i].id)
-                        console.log('match på id i post fraroden', i + 1)
-                        //this.searchResult[i].fullpost = fullpost;
-                        //this.$set(this.searchResult[i].fullpost[0], "id", fullpost[0].id)
-                        //vm.items[indexOfItem] = newValue
-                        app.searchResult[i].fullpost = fullpost
-                        //Vue.set( target, key, value )
-                        //Vue.set( this.searchResult[i].fullpost, key, value )
-                    }
-
-                }
-                console.log('this.searchResult after merge ', this.searchResult)
-                */
             }, (response) => {
                 console.log('error: ', response);
             });
