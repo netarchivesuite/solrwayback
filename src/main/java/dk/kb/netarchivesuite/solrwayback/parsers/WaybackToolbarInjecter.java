@@ -178,6 +178,7 @@ public class WaybackToolbarInjecter {
             "#tegModal p, #tegModal div{color: black !important; font-family: Arial, Helvetica, sans-serif; font-size: 12px !important}" +
     "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.8; padding:0.7em; top: 3px; width: 15px; text-orientation: upright; writing-mode: vertical-rl;}" +
     "       #toggleToolbar, #closeToolbar{float: right; margin: -.8em -.5em 2em 2em;}" +
+    "       #tegModal.closed #toggleToolbar{float: none; margin: 0;}" +
     "       #toggleToolbar{margin-left: 1em;}" +
     "       #tegModal.closed #tegContent,#tegModal.closed #closeToolbar{display: none}" +
     "       #tegModal .infoLine{margin-bottom: .5em;}" +
