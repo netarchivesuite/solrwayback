@@ -633,7 +633,6 @@ public class Facade {
         	return arc;
         	
         }
-
 		log.info("skipping html url rewrite for contentype:"+arc.getContentType());
     	return arc; //dont parse
                 
@@ -664,8 +663,8 @@ public class Facade {
       params.add("wt", "json");
       params.add("hl", "on");
       params.add("q.op", "AND");
-      params.add("indent", "true");                  
-      //params.add( "fq","{!collapse%20field=url}")   //Only 1 hit from each URL, does not work in cloud
+      params.add("indent", "true");
+      params.add("f.crawl_year.facet.limit", "100"); //Show all crawl_years. Maybe remove limit to property file as well
       if (grouping){
         //Both group and stats must be enabled at same time                
         params.add( "group","true");
