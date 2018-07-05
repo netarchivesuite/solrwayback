@@ -643,10 +643,9 @@ public class Facade {
     public static HashMap<String,String> getPropertiesWeb() throws Exception{         
         HashMap<String,String> props = new HashMap<String,String>();
         props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.WAYBACK_SERVER);
+        props.put(PropertiesLoaderWeb.GOOGLE_API_KEY_PROPERTY,PropertiesLoaderWeb.GOOGLE_API_KEY);
         return props;
     }
-    
-    
     
     public static String proxySolr( String query, String fq, boolean grouping, boolean revisits, Integer start) {
       log.info("query "+query +" grouping:"+grouping +" revisits:"+revisits);

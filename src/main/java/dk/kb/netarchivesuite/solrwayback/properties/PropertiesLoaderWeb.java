@@ -17,7 +17,9 @@ public class PropertiesLoaderWeb {
 	private static final String PROPERTY_FILE = "solrwaybackweb.properties";
 
 	public static final String WAYBACK_SERVER_PROPERTY="wayback.baseurl";
+	public static final String GOOGLE_API_KEY_PROPERTY="google.api.key";
 	private static final String FACETS_PROPERTY = "facets";
+    public static String GOOGLE_API_KEY=null;
 	public static String WAYBACK_SERVER = null;
 	private static Properties serviceProperties = null;
 	//Default values.
@@ -40,8 +42,11 @@ public class PropertiesLoaderWeb {
 
 			WAYBACK_SERVER =serviceProperties.getProperty(WAYBACK_SERVER_PROPERTY);
 		    FACETS = Arrays.asList(getProperty(FACETS_PROPERTY, StringUtils.join(FACETS, ",")).split(", *"));
-						
+		    GOOGLE_API_KEY =serviceProperties.getProperty(GOOGLE_API_KEY_PROPERTY);
+		    
+		    
 			log.info("Property:"+ WAYBACK_SERVER_PROPERTY +" = " + WAYBACK_SERVER);
+			log.info("Property:"+ GOOGLE_API_KEY_PROPERTY+" = " + GOOGLE_API_KEY);
 			log.info("Property:"+ FACETS_PROPERTY +" = " + FACETS);
 		}
 		catch (Exception e) {
