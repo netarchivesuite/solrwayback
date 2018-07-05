@@ -5,7 +5,7 @@
 from appearing multiple times in the result set.
 3) When exporting a resultset to WARC-format there is an option to 'expand' HTML documents so all their resources are exported as well.
 127.0.0.1 to solrwayback.properties 
- 
+ Domain statistics moved to search interface
  
 
 3.1
