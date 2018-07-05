@@ -42,7 +42,8 @@ Vue.component('search-box', {
                     v-on:change="searchUrl(urlSearchModel)"> URL search
                 </label>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span> 
-                <span class="link clearSearchLink"><a href="./tags.html">Search for HTML-tags</a></span>              
+                <span class="link clearSearchLink"><a href="./tags.html">Search for HTML-tags</a></span>
+                <span class="link clearSearchLink"><a href="./domaingrowth.html">Domain stats</a></span>               
             </div>
         </div>
         <div v-if="searchByFile" id="uploadfilesContainer" class="box">
@@ -749,6 +750,7 @@ var app = new Vue({
             this.filters = this.$route.query.filter;
             this.imageSearch = this.$route.query.imgsearch;
             this.imageGeoSearch = this.$route.query.imggeosearch;
+            this.grouping = this.$route.query.grouping;
             //converting possible string value from query param to boolean
             if(!this.imageSearch || this.imageSearch == 'false' ){
                 this.imageSearch = false
@@ -759,6 +761,11 @@ var app = new Vue({
                 this.imageGeoSearch = false
             }else{
                 this.imageGeoSearch = true
+            }
+            if(!this.grouping || this.grouping == 'false' ){
+                this.grouping = false
+            }else{
+                this.grouping = true
             }
             if(!this.urlSearch || this.urlSearch == 'false' ){
                 this.urlSearch = false
