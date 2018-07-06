@@ -190,18 +190,16 @@ public class HtmlParserUrlRewriter {
 				//List<String> urlList = new ArrayList<String>();
 		HashSet<String> urlSet = new HashSet<String>();
 
-
 		
 		collectRewriteUrlsForElement(urlSet, doc, "img", "src");
+		collectRewriteUrlsForImgSrcset(urlSet, doc);
 		collectRewriteUrlsForElement(urlSet,doc, "body", "background");
 		collectRewriteUrlsForElement(urlSet,doc, "link", "href");
 		collectRewriteUrlsForElement(urlSet,doc, "script", "src");
 		collectRewriteUrlsForElement(urlSet,doc, "td", "background");
 		collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
 		collectRewriteUrlsForElement(urlSet,doc, "iframe", "src");
-		collectStyleBackgroundRewrite(urlSet,doc, "a", "style",url);
-		
-		
+		collectStyleBackgroundRewrite(urlSet,doc, "a", "style",url);				
 		collectRewriteUrlsForStyleImport(urlSet,doc, url);
 		
 		log.info("#unique urlset to resolve:"+urlSet.size());
@@ -222,10 +220,10 @@ public class HtmlParserUrlRewriter {
 	    replaceUrlForFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
 	    replaceUrlForIFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
 	    replaceUrlsForImgSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);
+        replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
 	    replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
-		replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
-		
 
+		
 		//This are not resolved until clicked
 		rewriteUrlForElement(doc, "a" ,"href",arc.getWaybackDate());
 		rewriteUrlForElement(doc, "area" ,"href",arc.getWaybackDate());		
@@ -305,6 +303,7 @@ public class HtmlParserUrlRewriter {
       collectRewriteUrlsForElement(urlSet, doc, "td", "background");
       collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
       collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
+      collectRewriteUrlsForImgSrcset(urlSet, doc);
       collectRewriteUrlsForStyleImport(urlSet, doc,url);
             
      return urlSet;
