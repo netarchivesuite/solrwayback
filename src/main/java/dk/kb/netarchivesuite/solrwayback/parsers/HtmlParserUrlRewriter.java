@@ -494,8 +494,10 @@ public class HtmlParserUrlRewriter {
 	            for (String current : urlList){
 	              current=current.trim();	              
 	             String url =current.split(" ")[0].trim();
-	             System.out.println("img urlset part:"+url);
-	             set.add(Normalisation.canonicaliseURL(url)); 	             
+	             String url_norm= Normalisation.canonicaliseURL(url);
+	             
+	             //log.info("Collect srcset url:"+url_norm);	             
+	             set.add(url_norm); 	             
 	            }	            	            
 	                                        
 	        }
@@ -521,7 +523,6 @@ public class HtmlParserUrlRewriter {
     // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
     // comma seperated, size is optional.
     public static void replaceUrlsForImgSrcset(HashMap<String,IndexDoc>  map,Document doc, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
-
          for (Element e : doc.select("img")) {
              String urls = e.attr("abs:srcset");
              String urlsReplaced = urls; //They will be changed one at a time
@@ -533,24 +534,21 @@ public class HtmlParserUrlRewriter {
              String[] urlList = urls.split(",");
              for (String current : urlList){
               current=current.trim();                 
-              String url =current.split(" ")[0].trim();
-              
-              System.out.println("img urlset part:"+url);
-              
-              //URL base = new URL(baseUrl);
-              //String resolvedUrl = new URL( base ,urlUnresolved).toString();                    
-              
-              IndexDoc indexDoc = map.get(map.get(Normalisation.canonicaliseURL(url)));   
+              String urlUnresolved =current.split(" ")[0].trim();
+                            
+              String url_norm = Normalisation.canonicaliseURL(urlUnresolved);
+              //log.info("Replace srcset url part:'"+url_norm+"'");
+              IndexDoc indexDoc = map.get(url_norm);   
               if (indexDoc!=null){                             
                   String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();                           
-                  urlsReplaced = urlsReplaced.replace(url, newUrl);                                                         
-                  log.info("replaced srcset url:" + url +" by "+newUrl);
+                  urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                                                         
+                  log.info("replaced srcset url:" + urlUnresolved +" by "+newUrl);
                   numberOfLinksReplaced.getAndIncrement();
               }
               else{
                 String newUrl=NOT_FOUND_LINK;                           
-                urlsReplaced = urlsReplaced.replace(url, newUrl);                
-                log.info("No harvest found srcseturl:"+url);
+                urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                
+                log.info("No harvest found srcset url:"+urlUnresolved);
                 numberOfLinksNotFound.getAndIncrement();
                }
 
