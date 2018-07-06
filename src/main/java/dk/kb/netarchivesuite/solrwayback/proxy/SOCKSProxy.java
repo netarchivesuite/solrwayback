@@ -168,7 +168,7 @@ public class SOCKSProxy implements Runnable {
         synchronized (clients) {
             clients.add(cl);
         }
-        log.debug("Added new SocksClient. Total live clients " + clients.size());
+        //log.debug("Added new SocksClient. Total live clients " + clients.size());
         return cl;
     }
 
