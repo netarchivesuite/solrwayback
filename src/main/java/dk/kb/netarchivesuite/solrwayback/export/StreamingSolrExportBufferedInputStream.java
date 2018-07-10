@@ -26,7 +26,7 @@ public class StreamingSolrExportBufferedInputStream extends InputStream {
     }
 
     if (inputBuffer.isEmpty()) {
-      System.out.println("empty");
+      //System.out.println("empty");
       return -1;
     }
 
@@ -42,7 +42,6 @@ public class StreamingSolrExportBufferedInputStream extends InputStream {
       index = 0;
       // TODO: Replace this hack with a proper line counter (check for line break or something like that)
       linesRead = linesRead + solrPagingBufferSize;
-      System.out.println(linesRead);
     }
     return result;
   }
