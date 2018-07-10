@@ -192,6 +192,7 @@ public class HtmlParserUrlRewriter {
 
 		
 		collectRewriteUrlsForElement(urlSet, doc, "img", "src");
+	    collectRewriteUrlsForElement(urlSet, doc, "embed", "src");		
 		collectRewriteUrlsForImgSrcset(urlSet, doc);
 		collectRewriteUrlsForElement(urlSet,doc, "body", "background");
 		collectRewriteUrlsForElement(urlSet,doc, "link", "href");
@@ -213,6 +214,7 @@ public class HtmlParserUrlRewriter {
 		}
 
 		replaceUrlForElement(urlReplaceMap,doc, "img", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
+		replaceUrlForElement(urlReplaceMap,doc, "embed", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "body", "background", "downloadRaw" ,  numberOfLinksReplaced ,  numberOfLinksNotFound);             	     	 
 		replaceUrlForElement(urlReplaceMap,doc, "link", "href", "view",  numberOfLinksReplaced ,  numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "script", "src", "downloadRaw",  numberOfLinksReplaced,  numberOfLinksNotFound);
@@ -257,6 +259,7 @@ public class HtmlParserUrlRewriter {
 
       collectRewriteUrlsForElement(urlSet,doc, "area", "href");
       collectRewriteUrlsForElement(urlSet, doc, "img", "src");
+      collectRewriteUrlsForElement(urlSet, doc, "embed", "src");
       collectRewriteUrlsForImgSrcset(urlSet, doc);
       collectRewriteUrlsForElement(urlSet,doc, "body", "background");
       collectRewriteUrlsForElement(urlSet, doc, "link", "href");
@@ -297,6 +300,7 @@ public class HtmlParserUrlRewriter {
 
       collectRewriteUrlsForElement(urlSet,doc, "area", "href");
       collectRewriteUrlsForElement(urlSet, doc, "img", "src");
+      collectRewriteUrlsForElement(urlSet, doc, "embed", "src");
       collectRewriteUrlsForElement(urlSet,doc, "body", "background");
       collectRewriteUrlsForElement(urlSet, doc, "link", "href");
       collectRewriteUrlsForElement(urlSet , doc, "script", "src");
@@ -319,7 +323,7 @@ public class HtmlParserUrlRewriter {
 			if (url == null  || url.trim().length()==0){
 				continue;
 			}
-			
+
 			IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(url));   
 			if (indexDoc!=null){    		    			 
 				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset();    			 
@@ -329,7 +333,7 @@ public class HtmlParserUrlRewriter {
 			else{
 			     e.attr(attribute,NOT_FOUND_LINK);
 				log.info("No harvest found for:"+url);
-			    numberOfLinksNotFound.getAndIncrement();;
+				numberOfLinksNotFound.getAndIncrement();;
 			 }
 
 		}
@@ -470,10 +474,11 @@ public class HtmlParserUrlRewriter {
 
 		for (Element e : doc.select(element)) {
 			String url = e.attr("abs:"+attribute);
-
+                 if ("embed".equals(element)) {System.out.println("embed url found:"+url);}
 			if (url == null  || url.trim().length()==0){
 				continue;
-			}    		     		
+			}
+			System.out.println("adding url:"+(Normalisation.canonicaliseURL(url)));
 			set.add(Normalisation.canonicaliseURL(url));   		    		 		
 		}
 	}
