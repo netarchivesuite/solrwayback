@@ -48,6 +48,7 @@ public class PropertiesLoaderWeb {
 		    OPENWAYBACK_SERVER= serviceProperties.getProperty(OPENWAYBACK_SERVER_PROPERTY);
 		    
 		    
+		    log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
 			log.info("Property:"+ WAYBACK_SERVER_PROPERTY +" = " + WAYBACK_SERVER);
 			log.info("Property:"+ GOOGLE_API_KEY_PROPERTY+" = " + GOOGLE_API_KEY);
 			log.info("Property:"+ FACETS_PROPERTY +" = " + FACETS);
