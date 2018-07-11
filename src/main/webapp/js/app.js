@@ -253,7 +253,7 @@ Vue.component('pager-box', {
 
 /* Component shows search result when not image search*/
 Vue.component('result-box', {
-    props: ['searchResult','imageObjects','setupSearch','clearFacets','baseUrl','getFullpost','fullpost'],
+    props: ['searchResult','imageObjects','setupSearch','clearFacets','baseUrl','getFullpost','fullpost','openbaseUrl'],
     template: `
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
@@ -264,6 +264,11 @@ Vue.component('result-box', {
                     <span v-else>No title available</span>
                 </a>
                 </h3>
+                <span v-if="openbaseUrl">
+                    <a v-bind:href="openbaseUrl + 'services/viewForward?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
+                    <img src="./images/newwindow.png" alt="Playback in Openwayback"  title="Playback in Openwayback"/>
+                    </a>
+                </span>
             </div>
             <div v-if="doc.content_type" class="item">
                 <div class="label">Content type:</div>
@@ -465,6 +470,7 @@ var app = new Vue({
         errorMsg: '',
         imageObjects: [],
         baseUrl: '',
+        openbaseUrl: null,
         markerPosition: {radius: 200000, lat: "", lng: ""},
         geoImageInfo : [],
         resultMarkers: [],
@@ -478,7 +484,9 @@ var app = new Vue({
     },
     created: function() { // getting applications base URL on creation
         this.$http.get( "http://" + location.host +  "/solrwayback/services/properties/solrwaybackweb").then((response) => {
+            console.log('properties response',response);
             this.baseUrl = response.body['wayback.baseurl'];
+            this.openbaseUrl = response.body['openwayback.baseurl'];
         }, (response) => {
             console.log('error: ', response);
             this.errorMsg = response.statusText;
@@ -500,7 +508,7 @@ var app = new Vue({
                 this.filters = ''; //resetting filters on new search
                 this.myQuery = query;
                 this.start = 0;
-                console.log("type, query, param3, param4, imagegeosearch:", type, query, param3, param4, imagegeosearch)
+                //console.log("type, query, param3, param4, imagegeosearch:", type, query, param3, param4, imagegeosearch)
                 if (param3) {
                     this.urlSearch = true;
                     this.imageSearch = false; // deselecting image search when URL search
@@ -613,7 +621,7 @@ var app = new Vue({
             /* Starting search if there's a query using the search URL set up above */
             if(this.myQuery && this.myQuery.trim() != ''){
                 this.showSpinner();
-                console.log('this.searchUrl: ', this.searchUrl);
+                //console.log('this.searchUrl: ', this.searchUrl);
                 this.$http.get(this.searchUrl).then((response) => {
                     this.errorMsg = "";
                     console.log('response.body: ', response.body);

@@ -50,7 +50,7 @@
                        :filters="filters" :image-search="imageSearch" :grouping="grouping"></pager-box>
 
             <result-box v-if="totalHits > 0" :search-result="searchResult" :fullpost="fullpost" :image-objects="imageObjects" :base-url="baseUrl"
-                        :setup-search="setupSearch" :clear-facets="clearFacets" :get-fullpost="getFullpost"></result-box>
+                        :setup-search="setupSearch" :clear-facets="clearFacets" :get-fullpost="getFullpost" :openbase-url="openbaseUrl"></result-box>
 
 
             <pager-box  v-if="totalHits > 21 && !spinner" :setup-search="setupSearch" :total-hits="totalHits" :total-hits-duplicates="totalHitsDuplicates"
