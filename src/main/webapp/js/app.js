@@ -258,7 +258,7 @@ Vue.component('result-box', {
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
-                <h3>
+                <h3 title="Playback in SOLR Wayback">
                 <a v-bind:href=" baseUrl + 'services/viewForward?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
@@ -266,7 +266,7 @@ Vue.component('result-box', {
                 </h3>
                 <span v-if="openbaseUrl">
                     <a v-bind:href="openbaseUrl + 'services/viewForward?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
-                    <img src="./images/newwindow.png" alt="Playback in Openwayback"  title="Playback in Openwayback"/>
+                    <img src="./images/newwindow.png" alt="Playback in Open Wayback"  title="Playback in Openwayback"/>
                     </a>
                 </span>
             </div>
@@ -302,7 +302,7 @@ Vue.component('result-box', {
                     <h3>Click value to perform a field search</h3>
                     <template v-for="(value, key) in fullpost[0]">
                         <div class="item">
-                            <div class="label">{{ key | facetName }}</div>
+                            <div class="label">{{ key }}</div>
                             <div v-if="value.constructor !== Array" class="text link" v-on:click="setupSearch('search', key + ':&quot;' + value + '&quot;');clearFacets()" >{{ value }}</div>
                             <div v-else >
                                 <div v-for="item in value" v-on:click="setupSearch('search', key + ':&quot;' + item + '&quot;');clearFacets()" class="text link">{{item}}</div>
@@ -334,64 +334,25 @@ Vue.component('result-box', {
                 <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + doc.url_norm + '&quot;');clearFacets()">Pages linking to image</span>
             </div>
               
-            <!-- Images in HTML pages -->  
-            <div v-if="doc.content_type_norm && doc.content_type_norm == 'html'" class="item">
-                
-                    <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
-                        <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
-                            <template  v-for="(imageUrl, index) in image.imageUrls" >
-                                <div class="thumb thumbSearch" v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
-                                    <a :href="image.downloadUrls[index]" target="_blank">
-                                        <span v-html="imageUrl"></span> 
-                                    </a>
-                                    <br/>  
-                                    <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
-                                    <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
-                                </div>
-                                <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
-                            </template>
-                        </div> 
-                    </template>
-            </div>         
-            
-             <!-- Images in TWITTER, same as for HTML. I dont know how to use OR clause... NIG! Denne block skal slettes og ind i den ovenfor -->  
-            <div v-if="doc.type && doc.type == 'Twitter Tweet'" class="item">
-                    <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
-                        <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
-                            <template  v-for="(imageUrl, index) in image.imageUrls" >
-                                <div class="thumb thumbSearch" v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
-                                    <a :href="image.downloadUrls[index]" target="_blank">
-                                        <span v-html="imageUrl"></span> 
-                                    </a>
-                                    <br/>  
-                                    <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
-                                    <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
-                                </div>
-                                <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
-                            </template>
-                        </div> 
-                    </template>
-            </div>         
-            
-              <!-- Images in TWITTER, same as for HTML. I dont know how to use OR clause... NIG! Denne block skal slettes og ind i den ovenfor -->  
-            <div v-if="doc.type && doc.type == 'Jodel Post'" class="item">
-                    <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
-                        <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
-                            <template  v-for="(imageUrl, index) in image.imageUrls" >
-                                <div class="thumb thumbSearch" v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
-                                    <a :href="image.downloadUrls[index]" target="_blank">
-                                        <span v-html="imageUrl"></span> 
-                                    </a>
-                                    <br/>  
-                                    <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
-                                    <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
-                                </div>
-                                <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
-                            </template>
-                        </div> 
-                    </template>
-            </div>         
-            
+            <!-- Images in HTML pages, Twitter Tweets and Jodel posts  -->  
+            <div v-if="(doc.content_type_norm && doc.content_type_norm == 'html') || 
+            (doc.type && doc.type == 'Twitter Tweet') || (doc.type && doc.type == 'Jodel Post')" class="item">               
+                 <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
+                     <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
+                         <template  v-for="(imageUrl, index) in image.imageUrls" >
+                             <div class="thumb thumbSearch" v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
+                                 <a :href="image.downloadUrls[index]" target="_blank">
+                                      <span v-html="imageUrl"></span> 
+                                 </a>
+                                 <br/>  
+                                 <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
+                                 <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
+                             </div>
+                             <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
+                         </template>
+                     </div> 
+                 </template>
+            </div>                                            
         </div>
     </div>    
     `,
@@ -643,18 +604,14 @@ var app = new Vue({
                             var highlights = response.body.highlighting;
                         }
 
-                        /* Nyt objektet med image URL'er ved content type HTML */
+                        /* Nyt objektet med image URL'er ved content type HTML, Twitter og Jodel */
                         for(var i=0; i<this.searchResult.length;i++){
-                            if(this.searchResult[i].content_type_norm && this.searchResult[i].content_type_norm == 'html'){
+                            if((this.searchResult[i].content_type_norm && this.searchResult[i].content_type_norm == 'html') ||
+                                (this.searchResult[i].type && this.searchResult[i].type == 'Twitter Tweet') ||
+                                (this.searchResult[i].type && this.searchResult[i].type == 'Jodel Post')){
                             	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
                             }
-                            if(this.searchResult[i].type && this.searchResult[i].type == 'Twitter Tweet'){ //double logic again. TODO NIG, see above
-                            	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
-                            }
-                            if(this.searchResult[i].type && this.searchResult[i].type == 'Jodel Post'){ //double logic again. TODO NIG, see above
-                            	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
-                            }
-                            
+
                             /* Adding property highlight to search result object */
                             for (var key in highlights){
                                 if(this.searchResult[i].id === key){

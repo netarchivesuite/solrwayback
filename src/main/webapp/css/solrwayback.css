@@ -282,7 +282,8 @@ input.imageSearchCheck{
 }
 
 .searchResultItem h3 {
-    margin: 0 0 .5em;
+    float:left;
+    margin: 0 1em .7em 0;
 }
 .item .image{
     margin-top: 1em;
