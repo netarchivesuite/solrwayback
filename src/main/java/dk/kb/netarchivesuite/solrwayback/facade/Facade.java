@@ -663,7 +663,7 @@ public class Facade {
       params.add("rows", "20"); //Hardcoded pt.
       params.add("start", startStr);
       params.add("q", query);
-      params.add("fl", "id,score,title,hash,source_file_path,source_file_offset,url,domain,content_type,crawl_date,content_type_norm,type");
+      params.add("fl", "id,score,title,hash,source_file_path,source_file_offset,url,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
       params.add("wt", "json");
       params.add("hl", "on");
       params.add("q.op", "AND");

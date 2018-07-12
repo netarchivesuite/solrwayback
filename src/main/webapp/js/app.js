@@ -265,7 +265,7 @@ Vue.component('result-box', {
                 </a>
                 </h3>
                 <span v-if="openbaseUrl">
-                    <a v-bind:href="openbaseUrl + 'services/viewForward?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
+                    <a v-bind:href="openbaseUrl  + doc.wayback_date + '/' + doc.url" target="_blank">
                     <img src="./images/newwindow.png" alt="Playback in Open Wayback"  title="Playback in Openwayback"/>
                     </a>
                 </span>
