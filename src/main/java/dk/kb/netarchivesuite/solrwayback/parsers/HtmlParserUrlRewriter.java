@@ -188,21 +188,7 @@ public class HtmlParserUrlRewriter {
 		Document doc = Jsoup.parse(html,url); //TODO baseURI?
 
 				//List<String> urlList = new ArrayList<String>();
-		HashSet<String> urlSet = new HashSet<String>();
-
-		
-		collectRewriteUrlsForElement(urlSet, doc, "img", "src");
-	    collectRewriteUrlsForElement(urlSet, doc, "embed", "src");		
-		collectRewriteUrlsForImgSrcset(urlSet, doc);
-		collectRewriteUrlsForElement(urlSet,doc, "body", "background");
-		collectRewriteUrlsForElement(urlSet,doc, "link", "href");
-		collectRewriteUrlsForElement(urlSet,doc, "script", "src");
-		collectRewriteUrlsForElement(urlSet,doc, "td", "background");
-		collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
-		collectRewriteUrlsForElement(urlSet,doc, "iframe", "src");
-		collectStyleBackgroundRewrite(urlSet,doc, "a", "style",url);				
-		collectRewriteUrlsForStyleImport(urlSet,doc, url);
-		
+		HashSet<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
 		log.info("#unique urlset to resolve:"+urlSet.size());
 
 		ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
@@ -224,7 +210,6 @@ public class HtmlParserUrlRewriter {
 	    replaceUrlsForImgSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);
         replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
 	    replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
-
 		
 		//This are not resolved until clicked
 		rewriteUrlForElement(doc, "a" ,"href",arc.getWaybackDate());
@@ -254,21 +239,9 @@ public class HtmlParserUrlRewriter {
 
       Document doc = Jsoup.parse(html,url); //TODO baseURI?
 
-              //List<String> urlList = new ArrayList<String>();
-      HashSet<String> urlSet = new HashSet<String>();
-
-      collectRewriteUrlsForElement(urlSet,doc, "area", "href");
-      collectRewriteUrlsForElement(urlSet, doc, "img", "src");
-      collectRewriteUrlsForElement(urlSet, doc, "embed", "src");
-      collectRewriteUrlsForImgSrcset(urlSet, doc);
-      collectRewriteUrlsForElement(urlSet,doc, "body", "background");
-      collectRewriteUrlsForElement(urlSet, doc, "link", "href");
-      collectRewriteUrlsForElement(urlSet , doc, "script", "src");
-      collectRewriteUrlsForElement(urlSet, doc, "td", "background");
-      collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
-      collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
-      collectRewriteUrlsForStyleImport(urlSet, doc,url);
-      
+     
+       HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
+           
       log.info("#unique urlset to resolve:"+urlSet.size());
 
       ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
@@ -295,21 +268,9 @@ public class HtmlParserUrlRewriter {
 
       Document doc = Jsoup.parse(html,url); //TODO baseURI?
 
-              //List<String> urlList = new ArrayList<String>();
-      HashSet<String> urlSet = new HashSet<String>();      
-
-      collectRewriteUrlsForElement(urlSet,doc, "area", "href");
-      collectRewriteUrlsForElement(urlSet, doc, "img", "src");
-      collectRewriteUrlsForElement(urlSet, doc, "embed", "src");
-      collectRewriteUrlsForElement(urlSet,doc, "body", "background");
-      collectRewriteUrlsForElement(urlSet, doc, "link", "href");
-      collectRewriteUrlsForElement(urlSet , doc, "script", "src");
-      collectRewriteUrlsForElement(urlSet, doc, "td", "background");
-      collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
-      collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
-      collectRewriteUrlsForImgSrcset(urlSet, doc);
-      collectRewriteUrlsForStyleImport(urlSet, doc,url);
-            
+      
+      HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
+                 
      return urlSet;
     }
 	
@@ -615,6 +576,22 @@ public class HtmlParserUrlRewriter {
 
 	
 
+	public static HashSet<String> getUrlResourcesForHtmlPage( Document doc, String url) throws Exception{
+	  HashSet<String> urlSet = new HashSet<String>();
+      collectRewriteUrlsForElement(urlSet,doc, "area", "href");
+      collectRewriteUrlsForElement(urlSet, doc, "img", "src");
+      collectRewriteUrlsForElement(urlSet, doc, "embed", "src");
+      collectRewriteUrlsForImgSrcset(urlSet, doc);
+      collectRewriteUrlsForElement(urlSet,doc, "body", "background");
+      collectRewriteUrlsForElement(urlSet, doc, "link", "href");
+      collectRewriteUrlsForElement(urlSet , doc, "script", "src");
+      collectRewriteUrlsForElement(urlSet, doc, "td", "background");
+      collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
+      collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
+      collectRewriteUrlsForStyleImport(urlSet, doc,url);            
+      return urlSet;	  
+	}
+	
 	public static HashMap<String,String> test(String html,String url) throws Exception{
 		HashMap<String,String> imagesSet = new HashMap<String,String>();  // To remove duplicates
 		Document doc = Jsoup.parse(html,url); //TODO baseURI?
