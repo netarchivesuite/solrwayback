@@ -258,13 +258,13 @@ Vue.component('result-box', {
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
-                <h3 title="Playback in SOLR Wayback">
+                <h3 title="Playback in SOLR Wayback" v-bind:class="doc.type">
                 <a v-bind:href=" baseUrl + 'services/viewForward?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
                 </a>
                 </h3>
-                <span v-if="openbaseUrl">
+                <span v-if="openbaseUrl && (doc.content_type_norm === 'html' || doc.content_type_norm === 'text')">
                     <a v-bind:href="openbaseUrl  + doc.wayback_date + '/' + doc.url" target="_blank">
                     <img src="./images/newwindow.png" alt="Playback in Open Wayback"  title="Playback in Openwayback"/>
                     </a>
