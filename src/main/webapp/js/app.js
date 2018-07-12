@@ -295,7 +295,7 @@ Vue.component('result-box', {
             
             <!-- Full post -->
             <div class="item" @click="getFullpost(doc.id);toggleFullpost(doc.id)">
-                <div class="link fullPost" >Toggle full post</div>
+                <div class="link fullPost" :id="'fullpostLink_' + doc.id" >Show full post</div>
             </div>
             <div class="fullpost" v-bind:id="doc.id">
                 <div v-if="fullpost">
@@ -358,12 +358,15 @@ Vue.component('result-box', {
     `,
     methods: {
         toggleFullpost: function(id){
-            console.log('toggle full post ID', id);
+            //console.log('toggle full post ID', id);
             if(document.getElementById(id).style.display === "block"){
                 document.getElementById(id).style.display = "none";
+                document.getElementById("fullpostLink_" + id).innerHTML = "Show full post";
             }else{
                 $('.fullpost').hide();
+                $('.link.fullPost').html("Show full post");
                 document.getElementById(id).style.display = "block";
+                document.getElementById("fullpostLink_" + id).innerHTML = "Hide full post";
             }
         }
     }
