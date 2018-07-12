@@ -153,19 +153,19 @@ public class WaybackToolbarInjecter {
     "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
-    "                   <span class=\"inlineLabel\">First:</span>"+ generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl_norm(), stats.getFirstHarvestDate()) +
+    "                   <span class=\"inlineLabel\">First:</span>"+ generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl(), stats.getFirstHarvestDate()) +
    
     "               </div> " +
     "               <div class=\"pagingBlock\">" +
-    "                   <span class=\"inlineLabel\">Previous:</span> " + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl_norm(), stats.getPreviousHarvestDate()) +
+    "                   <span class=\"inlineLabel\">Previous:</span> " + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl(), stats.getPreviousHarvestDate()) +
 
     "               </div> " +
     "               <div class=\"pagingBlock\">" +
-    "                   <span class=\"inlineLabel\">Next:</span> " + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl_norm(), stats.getNextHarvestDate()) +
+    "                   <span class=\"inlineLabel\">Next:</span> " + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl(), stats.getNextHarvestDate()) +
     
     "                   </div> " +
     "               <div class=\"pagingBlock\">" +
-    "                   <span class=\"inlineLabel\">Last:</span>" + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl_norm(), stats.getLastHarvestDate()) + 
+    "                   <span class=\"inlineLabel\">Last:</span>" + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl(), stats.getLastHarvestDate()) + 
     
     "               </div>" +
     "           </div>" +
@@ -212,19 +212,20 @@ public class WaybackToolbarInjecter {
   return inject;
   }
   
-  private static String generateWaybackLinkFromCrawlDateAndUrl(String url_norm, String crawlDate) throws Exception{
+  private static String generateWaybackLinkFromCrawlDateAndUrl(String url, String crawlDate) throws Exception{
     
     if (crawlDate != null){
       
 
       DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
       Date d = dateFormat.parse(crawlDate);
-                
-      SimpleDateFormat longFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");      
-      String dateFormatted = longFormat.format(d);
-            
-      String urlEncoded=URLEncoder.encode(url_norm, "UTF-8");  
-      return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/viewhref?url="+urlEncoded+"&crawlDate="+crawlDate+"\" title=\""+dateFormatted+"\">"+dateFormatted+"</a>";
+      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");      
+      String dateFormatted = waybackDateFormat.format(d);
+
+      SimpleDateFormat presentationFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");      
+      String datePresentation= presentationFormat.format(d);
+  
+      return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/web/"+dateFormatted+"/"+url+"\"" + " title=\""+datePresentation+"\">"+datePresentation+"</a>";
     }
     else{
       return ("none");
