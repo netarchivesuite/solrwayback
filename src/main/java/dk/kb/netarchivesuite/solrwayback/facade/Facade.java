@@ -571,7 +571,7 @@ public class Facade {
     	if(doc.getType().equals("Twitter Tweet")){    	      	  
     	  log.debug(" Generate twitter webpage from FilePath:" + source_file_path + " offset:" + offset);
     	  //Fake html into arc.
-          encoding="UTF-8";  //Text is loaded from index and not warc-file. Text in index is always UTF-8
+          encoding="UTF-8"; //Why does encoding say ISO ? This seems to fix the bug
     	  
           String json = new String(arc.getBinary(), encoding);
           String html = Twitter2Html.twitter2Html(json,arc.getCrawlDate());
