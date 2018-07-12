@@ -571,7 +571,8 @@ public class Facade {
     	if(doc.getType().equals("Twitter Tweet")){    	      	  
     	  log.debug(" Generate twitter webpage from FilePath:" + source_file_path + " offset:" + offset);
     	  //Fake html into arc.
-    	                      
+          encoding="UTF-8";  //Text is loaded from index and not warc-file. Text in index is always UTF-8
+    	  
           String json = new String(arc.getBinary(), encoding);
           String html = Twitter2Html.twitter2Html(json,arc.getCrawlDate());
           arc.setBinary(html.getBytes());               
@@ -584,6 +585,7 @@ public class Facade {
           if (showToolbar!=Boolean.FALSE ){ //If true or null.
               textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced, false);
           }
+          arc.setContentEncoding(encoding);
           arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
     	}
 
