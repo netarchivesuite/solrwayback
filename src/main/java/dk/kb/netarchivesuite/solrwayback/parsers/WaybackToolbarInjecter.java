@@ -171,7 +171,8 @@ public class WaybackToolbarInjecter {
     "           </div>" +
     "      </div>" +
     "       <style>" +
-    "       #tegModal *{background: white; border:0;box-sizing: content-box; color: black;margin: 0; opacity: 1; padding: 0;}" +
+    "       #tegModal *{background: white; border:0;box-sizing: content-box; color: black;margin: 0;font-family: arial, Helvetica,sans-serif; " +
+    "       font-size: 14px; opacity: 1; padding: 0; width: auto}" +
     "       #tegModal p, #tegModal div{display: block}" +
     "       #tegModal span, #tegModal a{display: inline}" +
     "       #tegModal{z-index: 999999 !important; color: black; font-size: 14px;" + "font-family: arial, Helvetica,sans-serif;background: #ffffff; border: 1px solid black;border-radius: 4px; " +
