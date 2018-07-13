@@ -258,7 +258,7 @@ Vue.component('result-box', {
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
-                <h3 title="Playback in SOLR Wayback" v-bind:class="doc.type">
+                <h3 title="Playback in SOLR Wayback">
                 <a v-bind:href=" baseUrl + 'services/viewForward?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
