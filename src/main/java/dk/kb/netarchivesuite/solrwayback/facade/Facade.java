@@ -646,6 +646,7 @@ public class Facade {
         HashMap<String,String> props = new HashMap<String,String>();
         props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.WAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.OPENWAYBACK_SERVER);
+        props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
         props.put(PropertiesLoaderWeb.GOOGLE_API_KEY_PROPERTY,PropertiesLoaderWeb.GOOGLE_API_KEY);
         props.put(PropertiesLoaderWeb.GOOGLE_MAPS_LATITUDE_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_LATITUDE);
         props.put(PropertiesLoaderWeb.GOOGLE_MAPS_LONGITUDE_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_LONGITUDE);

@@ -399,10 +399,10 @@ public class SolrWaybackResource {
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
   public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
    
-    if (true){
+    //This is also required even if the option is removed on the web-page.
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
       throw new InvalidArgumentServiceException("Export to warc not allowed!");
-   }
-    
+    }    
     return exportWarcImpl(q, fq, false, false);
   }
 
@@ -410,6 +410,10 @@ public class SolrWaybackResource {
   @Path("/export/warcExpanded")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
   public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+    //This is also required even if the option is removed on the web-page.
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
+      throw new InvalidArgumentServiceException("Export to warc not allowed!");
+    }        
     return exportWarcImpl(q, fq, true, true);
   }
   
