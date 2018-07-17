@@ -40,6 +40,7 @@ import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
@@ -397,6 +398,11 @@ public class SolrWaybackResource {
   @Path("/export/warc")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
   public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+   
+    if (true){
+      throw new InvalidArgumentServiceException("Export to warc not allowed!");
+   }
+    
     return exportWarcImpl(q, fq, false, false);
   }
 

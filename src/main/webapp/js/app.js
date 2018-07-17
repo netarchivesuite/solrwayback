@@ -229,8 +229,8 @@ Vue.component('pager-box', {
             <ul id="downloadMenu">
                 <li><a :href="exportResult('brief')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download brief result</a></li>
                 <li><a :href="exportResult('full')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download full result</a></li>
-                <li><a :href="exportResult('warc')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc</a></li>                
-                <li><a :href="exportResult('warcExpanded')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc with resources</a></li>
+                <li><a v-if="$data.allowExportWarc" :href="exportResult('warc')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc</a></li>                
+                <li><a v-if="$data.allowExportWarc" :href="exportResult('warcExpanded')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc with resources</a></li>
             </ul>           
         </div>      
 
@@ -251,12 +251,20 @@ Vue.component('pager-box', {
         </div>
     </div>
     `,
+     data: function() {
+        return {           
+            allowExportWarc: app.$data.allowExportWarc,
+        };
+    },
     methods:{
         exportResult: function(downloadType){
             return 'http://' + location.host + '/solrwayback/services/export/' + downloadType + '?query=' + this.myQuery + '&fq=' + this.filters;
         }
     },
 })
+
+
+
 
 /* Component shows search result when not image search*/
 Vue.component('result-box', {
@@ -428,7 +436,8 @@ var app = new Vue({
         fullpost: null,
         googleMapLatitude: 0.0,
         googleMapLongitude: 0.0,
-        googleMapRadius: 0.0,
+        googleMapRadius: 0.0,        
+        allowExportWarc: true,
         myFacets: '',
         myQuery: '',
         facetFields: [],
@@ -461,9 +470,10 @@ var app = new Vue({
             console.log('properties response',response);
             this.baseUrl = response.body['wayback.baseurl'];
             this.openbaseUrl = response.body['openwayback.baseurl'];
+            this.allowExportWarc =  ('true' == response.body['allow.export.warc']); 
             this.googleMapLatitude = response.body['google.maps.latitude'];
             this.googleMapLongitude= response.body['google.maps.longitude'];
-            this.markerPosition.radius =  parseInt(response.body['google.maps.radius']);                                    
+            this.markerPosition.radius =  parseInt(response.body['google.maps.radius']);                                                        
         }, (response) => {
             console.log('error: ', response);
             this.errorMsg = response.statusText;

@@ -23,6 +23,8 @@ public class PropertiesLoaderWeb {
 	public static final String GOOGLE_MAPS_LATITUDE_PROPERTY = "google.maps.latitude";
 	public static final String GOOGLE_MAPS_LONGITUDE_PROPERTY = "google.maps.longitude";
 	public static final String GOOGLE_MAPS_RADIUS_PROPERTY = "google.maps.radius";
+	public static final String ALLOW_EXPORT_WARC_PROPERTY = "allow.export.warc";
+	
 	
 	
 	public static String OPENWAYBACK_SERVER;
@@ -31,6 +33,8 @@ public class PropertiesLoaderWeb {
     public static String GOOGLE_MAPS_LATITUDE;
     public static String GOOGLE_MAPS_LONGITUDE;
     public static String GOOGLE_MAPS_RADIUS;
+    public static boolean ALLOW_EXPORT_WARC;
+    
 		
 	private static Properties serviceProperties = null;
 	//Default values.
@@ -58,8 +62,10 @@ public class PropertiesLoaderWeb {
 		    GOOGLE_MAPS_LATITUDE = serviceProperties.getProperty(GOOGLE_MAPS_LATITUDE_PROPERTY);
 		    GOOGLE_MAPS_LONGITUDE = serviceProperties.getProperty(GOOGLE_MAPS_LONGITUDE_PROPERTY);
 		    GOOGLE_MAPS_RADIUS = serviceProperties.getProperty(GOOGLE_MAPS_RADIUS_PROPERTY);
+		    ALLOW_EXPORT_WARC = Boolean.parseBoolean(serviceProperties.getProperty(ALLOW_EXPORT_WARC_PROPERTY));
 		    
 		    log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
+			log.info("Property:"+ ALLOW_EXPORT_WARC_PROPERTY +" = " + ALLOW_EXPORT_WARC);
 			log.info("Property:"+ WAYBACK_SERVER_PROPERTY +" = " + WAYBACK_SERVER);
 			log.info("Property:"+ GOOGLE_API_KEY_PROPERTY+" = " + GOOGLE_API_KEY);
 			log.info("Property:"+ GOOGLE_MAPS_LATITUDE_PROPERTY+" = " +GOOGLE_MAPS_LATITUDE);
