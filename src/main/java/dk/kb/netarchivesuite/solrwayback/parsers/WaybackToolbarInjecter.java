@@ -114,9 +114,9 @@ public class WaybackToolbarInjecter {
     log.info(stats.toString());
     String inject = 
     "<!-- BEGIN WAYBACK TOOLBAR INSERT -->" +
-    "   <div class=\"open\" id=\"tegModal\" style=\"\">" +
-    "       <div><a onclick=\"toggleModal();return false\" id=\"toggleSpinner\" href=\"#\">Hide</a></div>" +
-    "       <div><a onclick=\"closeModal();return false\" id=\"closeSpinner\" href=\"#\">Close</a></div>" +
+    "   <div class=\"closed\" id=\"tegModal\" style=\"\">" +
+    "       <div><a onclick=\"toggleModal();return false\" id=\"toggleToolbar\" href=\"#\">Toolbar</a></div>" +
+    "       <div><a onclick=\"closeModal();return false\" id=\"closeToolbar\" href=\"#\">Close</a></div>" +
     "       <div id=\"tegContent\">" +
     "           <div class=\"infoLine\">" +
     "               <span class=\"label\">Harvest date:</span>" +
@@ -153,33 +153,38 @@ public class WaybackToolbarInjecter {
     "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
-    "                   <span class=\"inlineLabel\">First:</span>"+ generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl_norm(), stats.getFirstHarvestDate()) +
+    "                   <span class=\"inlineLabel\">First:</span>"+ generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl(), stats.getFirstHarvestDate()) +
    
     "               </div> " +
     "               <div class=\"pagingBlock\">" +
-    "                   <span class=\"inlineLabel\">Previous:</span> " + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl_norm(), stats.getPreviousHarvestDate()) +
+    "                   <span class=\"inlineLabel\">Previous:</span> " + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl(), stats.getPreviousHarvestDate()) +
 
     "               </div> " +
     "               <div class=\"pagingBlock\">" +
-    "                   <span class=\"inlineLabel\">Next:</span> " + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl_norm(), stats.getNextHarvestDate()) +
+    "                   <span class=\"inlineLabel\">Next:</span> " + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl(), stats.getNextHarvestDate()) +
     
     "                   </div> " +
     "               <div class=\"pagingBlock\">" +
-    "                   <span class=\"inlineLabel\">Last:</span>" + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl_norm(), stats.getLastHarvestDate()) + 
+    "                   <span class=\"inlineLabel\">Last:</span>" + generateWaybackLinkFromCrawlDateAndUrl(stats.getUrl(), stats.getLastHarvestDate()) + 
     
     "               </div>" +
     "           </div>" +
     "      </div>" +
     "       <style>" +
+    "       #tegModal *{background: white; border:0;box-sizing: content-box; color: black;margin: 0;font-family: arial, Helvetica,sans-serif; " +
+    "       font-size: 14px; opacity: 1; padding: 0; width: auto}" +
+    "       #tegModal p, #tegModal div{display: block}" +
+    "       #tegModal span, #tegModal a{display: inline}" +
     "       #tegModal{z-index: 999999 !important; color: black; font-size: 14px;" + "font-family: arial, Helvetica,sans-serif;background: #ffffff; border: 1px solid black;border-radius: 4px; " +
     "       box-shadow: 0 0 5px 5px #ccc; display: block; left: calc(50% - 450px); opacity: 1; padding: 1.5em 1.5em .5em;" +
-            "position:fixed; text-align:left !important; top: 25%; width: 900px; z-index: 500;" +
+            "position:fixed; text-align:left !important; top: 25%; width: 900px; z-index: 500; box-sizing: content-box;" +
     "       transition: left 0.4s, opacity 0.3s, padding 0.3s, top 0.4s, width 0.3s;}" +
             "#tegModal p, #tegModal div{color: black !important; font-family: Arial, Helvetica, sans-serif; font-size: 12px !important}" +
-    "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.5; padding:1em 1em 0 0; top: 3px; width: 30px; text-orientation: upright; writing-mode: vertical-rl;}" +
-    "       #toggleSpinner, #closeSpinner{float: right; margin: -.8em -.5em 2em 2em;}" +
-    "       #toggleSpinner{margin-left: 1em;}" +
-    "       #tegModal.closed #tegContent,#tegModal.closed #closeSpinner{display: none}" +
+    "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.8; padding:0.5em; top: 3px; width: auto; text-orientation: upright; writing-mode: vertical-rl;}" +
+    "       #toggleToolbar, #closeToolbar{float: right; margin: -.8em -.5em 2em 2em;}" +
+    "       #tegModal.closed #toggleToolbar{float: none; margin: 0;}" +
+    "       #toggleToolbar{margin-left: 1em;}" +
+    "       #tegModal.closed #tegContent,#tegModal.closed #closeToolbar{display: none}" +
     "       #tegModal .infoLine{margin-bottom: .5em;}" +
     "       #tegModal a img {display: inline-block; margin: 2em 3em 2em 0; max-height: 60px; }" +        
     "       #tegModal a {color: #003399; font-size: 14px; text-decoration: none}" +
@@ -196,10 +201,10 @@ public class WaybackToolbarInjecter {
     "           function toggleModal(){" +
     "               if(document.getElementById(\"tegModal\").className == \"open\"){" +
     "                   document.getElementById(\"tegModal\").className = \"closed\";" +
-    "                   document.getElementById(\"toggleSpinner\").innerHTML = \"Open\";" +
+    "                   document.getElementById(\"toggleToolbar\").innerHTML = \"Toolbar\";" +
     "               }else{" +
     "                   document.getElementById(\"tegModal\").className = \"open\";" +
-    "                   document.getElementById(\"toggleSpinner\").innerHTML = \"Hide\";" +
+    "                   document.getElementById(\"toggleToolbar\").innerHTML = \"Hide\";" +
     "               }" +
     "           }           " +
     "           function closeModal(){" +
@@ -211,19 +216,20 @@ public class WaybackToolbarInjecter {
   return inject;
   }
   
-  private static String generateWaybackLinkFromCrawlDateAndUrl(String url_norm, String crawlDate) throws Exception{
+  private static String generateWaybackLinkFromCrawlDateAndUrl(String url, String crawlDate) throws Exception{
     
     if (crawlDate != null){
       
 
       DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
       Date d = dateFormat.parse(crawlDate);
-                
-      SimpleDateFormat longFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");      
-      String dateFormatted = longFormat.format(d);
-            
-      String urlEncoded=URLEncoder.encode(url_norm, "UTF-8");  
-      return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/viewhref?url="+urlEncoded+"&crawlDate="+crawlDate+"\" title=\""+dateFormatted+"\">"+dateFormatted+"</a>";
+      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");      
+      String dateFormatted = waybackDateFormat.format(d);
+
+      SimpleDateFormat presentationFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");      
+      String datePresentation= presentationFormat.format(d);
+  
+      return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/web/"+dateFormatted+"/"+url+"\"" + " title=\""+datePresentation+"\">"+datePresentation+"</a>";
     }
     else{
       return ("none");

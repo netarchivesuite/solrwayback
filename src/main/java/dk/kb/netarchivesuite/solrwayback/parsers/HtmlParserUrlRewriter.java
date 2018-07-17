@@ -61,7 +61,7 @@ public class HtmlParserUrlRewriter {
 		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
 
 //		System.out.println(css);
-
+/*
 		String[] result = css.split("\n", 100);
 		//Get the lines starting with @import until you find one that does not. 
 		int index = 0;
@@ -81,7 +81,7 @@ public class HtmlParserUrlRewriter {
 
 		System.out.println("done");
 		System.exit(1);
-
+*/
 		String html="<?xml version=\"1.1\" encoding=\"iso-8859-1\"?>"+
 				"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"da\">"+
 				"<head>"+
@@ -97,6 +97,7 @@ public class HtmlParserUrlRewriter {
                 "<style type=\"text/css\" media=\"screen\">@import url(http://en.statsbiblioteket.dk/portal_css/SB%20Theme/resourceplonetheme.sbtheme.stylesheetsmain-cachekey-7e976fa2b125f18f45a257c2d1882e00.css);</style> "+
                 "<a class=\"toplink\" href=\"test\" class=\"button\" style=\"background:url(img/homeico.png) no-repeat ; width:90px; margin:0px 0px 0px 16px;\">kimse.rovfisk.dk  </a><a class=\"toplink\" href=\"/katte/\">katte / </a><br /><br /><table cellspacing=\"8\"><tr><td></td><td class=\"itemw\"><a href=\"/katte/?browse=DSC00175.JPG\"><img class=\"lo\" src=\"/cache/katte/DSC00175.JPG\" /></a></td>"+
                 "<td></td><td class=\"itemw\"><a href=\"/katte/?browse=DSC00209.JPG\"><img class=\"lo\" src=\"/cache/katte/DSC00209.JPG\" /></a></td>"+
+                " <img  src=\"http://belinda.statsbiblioteket.dk:9721/solrwayback/services/downloadRaw?source_file_path=/netarkiv/0122/filedir/285330-279-20180113095114447-00002-kb-prod-har-001.kb.dk.warc.gz&amp;offset=685207223\" srcset=\"http://skraedderiet.dk/wp-content/uploads/2018/01/saks_watermark-001_transparent.jpg 477w, http://skraedderiet.dk/wp-content/uploads/2018/01/saks_watermark-001_transparent-150x150.jpg 150w, http://skraedderiet.dk/wp-content/uploads/2018/01/saks_watermark-001_transparent-298x300.jpg 298w\" sizes=\"(max-width: 235px) 100vw, 235px\">"+              
                 "</table><br />  </body>"+
                 "</html>";
 
@@ -104,7 +105,7 @@ public class HtmlParserUrlRewriter {
 		
 		Document doc = Jsoup.parse(html,"http:/test.dk"); //TODO baseURI?
 		
-		collectRewriteUrlsForStyleImport(urlSet,doc, "http://test.dk");
+		collectRewriteUrlsForImgSrcset(urlSet,doc);
 	     
 	       
 	       
@@ -187,22 +188,7 @@ public class HtmlParserUrlRewriter {
 		Document doc = Jsoup.parse(html,url); //TODO baseURI?
 
 				//List<String> urlList = new ArrayList<String>();
-		HashSet<String> urlSet = new HashSet<String>();
-
-
-		
-		collectRewriteUrlsForElement(urlSet, doc, "img", "src");
-		collectRewriteUrlsForElement(urlSet,doc, "body", "background");
-		collectRewriteUrlsForElement(urlSet,doc, "link", "href");
-		collectRewriteUrlsForElement(urlSet,doc, "script", "src");
-		collectRewriteUrlsForElement(urlSet,doc, "td", "background");
-		collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
-		collectRewriteUrlsForElement(urlSet,doc, "iframe", "src");
-		collectStyleBackgroundRewrite(urlSet,doc, "a", "style",url);
-		
-		
-		collectRewriteUrlsForStyleImport(urlSet,doc, url);
-		
+		HashSet<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
 		log.info("#unique urlset to resolve:"+urlSet.size());
 
 		ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
@@ -214,16 +200,17 @@ public class HtmlParserUrlRewriter {
 		}
 
 		replaceUrlForElement(urlReplaceMap,doc, "img", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
+		replaceUrlForElement(urlReplaceMap,doc, "embed", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "body", "background", "downloadRaw" ,  numberOfLinksReplaced ,  numberOfLinksNotFound);             	     	 
 		replaceUrlForElement(urlReplaceMap,doc, "link", "href", "view",  numberOfLinksReplaced ,  numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "script", "src", "downloadRaw",  numberOfLinksReplaced,  numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "td", "background", "downloadRaw",  numberOfLinksReplaced ,  numberOfLinksNotFound);    	 
 	    replaceUrlForFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
 	    replaceUrlForIFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
+	    replaceUrlsForImgSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);
+        replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
 	    replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
-		replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
 		
-
 		//This are not resolved until clicked
 		rewriteUrlForElement(doc, "a" ,"href",arc.getWaybackDate());
 		rewriteUrlForElement(doc, "area" ,"href",arc.getWaybackDate());		
@@ -252,19 +239,9 @@ public class HtmlParserUrlRewriter {
 
       Document doc = Jsoup.parse(html,url); //TODO baseURI?
 
-              //List<String> urlList = new ArrayList<String>();
-      HashSet<String> urlSet = new HashSet<String>();
-
-      collectRewriteUrlsForElement(urlSet,doc, "area", "href");
-      collectRewriteUrlsForElement(urlSet, doc, "img", "src");
-      collectRewriteUrlsForElement(urlSet,doc, "body", "background");
-      collectRewriteUrlsForElement(urlSet, doc, "link", "href");
-      collectRewriteUrlsForElement(urlSet , doc, "script", "src");
-      collectRewriteUrlsForElement(urlSet, doc, "td", "background");
-      collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
-      collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
-      collectRewriteUrlsForStyleImport(urlSet, doc,url);
-      
+     
+       HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
+           
       log.info("#unique urlset to resolve:"+urlSet.size());
 
       ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
@@ -272,7 +249,7 @@ public class HtmlParserUrlRewriter {
       StringBuffer buf = new StringBuffer();
       for (IndexDoc indexDoc: docs){
           buf.append("<part>\n");        
-          buf.append("pwid:netarkivet.dk:"+indexDoc.getCrawlDate()+":part:"+indexDoc.getUrl() +"\n");
+          buf.append("urn:pwid:netarkivet.dk:"+indexDoc.getCrawlDate()+":part:"+indexDoc.getUrl() +"\n");
           buf.append("</part>\n");
           //pwid:netarkivet.dk:time:part:url
       
@@ -291,19 +268,9 @@ public class HtmlParserUrlRewriter {
 
       Document doc = Jsoup.parse(html,url); //TODO baseURI?
 
-              //List<String> urlList = new ArrayList<String>();
-      HashSet<String> urlSet = new HashSet<String>();      
-
-      collectRewriteUrlsForElement(urlSet,doc, "area", "href");
-      collectRewriteUrlsForElement(urlSet, doc, "img", "src");
-      collectRewriteUrlsForElement(urlSet,doc, "body", "background");
-      collectRewriteUrlsForElement(urlSet, doc, "link", "href");
-      collectRewriteUrlsForElement(urlSet , doc, "script", "src");
-      collectRewriteUrlsForElement(urlSet, doc, "td", "background");
-      collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
-      collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
-      collectRewriteUrlsForStyleImport(urlSet, doc,url);
-            
+      
+      HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
+                 
      return urlSet;
     }
 	
@@ -317,7 +284,7 @@ public class HtmlParserUrlRewriter {
 			if (url == null  || url.trim().length()==0){
 				continue;
 			}
-			
+
 			IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(url));   
 			if (indexDoc!=null){    		    			 
 				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset();    			 
@@ -327,7 +294,7 @@ public class HtmlParserUrlRewriter {
 			else{
 			     e.attr(attribute,NOT_FOUND_LINK);
 				log.info("No harvest found for:"+url);
-			    numberOfLinksNotFound.getAndIncrement();;
+				numberOfLinksNotFound.getAndIncrement();;
 			 }
 
 		}
@@ -468,15 +435,40 @@ public class HtmlParserUrlRewriter {
 
 		for (Element e : doc.select(element)) {
 			String url = e.attr("abs:"+attribute);
-
+                 if ("embed".equals(element)) {System.out.println("embed url found:"+url);}
 			if (url == null  || url.trim().length()==0){
 				continue;
-			}    		     		
+			}
+			System.out.println("adding url:"+(Normalisation.canonicaliseURL(url)));
 			set.add(Normalisation.canonicaliseURL(url));   		    		 		
 		}
 	}
 
+	
+       // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
+	   // comma seperated, size is optional.
+	   public static void collectRewriteUrlsForImgSrcset(HashSet<String> set,Document doc) throws Exception{
 
+	        for (Element e : doc.select("img")) {
+	            String urls = e.attr("abs:srcset");
+
+	            if (urls == null  || urls.trim().length()==0){
+	                continue;
+	            }
+	            // split.
+	            String[] urlList = urls.split(",");
+	            for (String current : urlList){
+	              current=current.trim();	              
+	             String url =current.split(" ")[0].trim();
+	             String url_norm= Normalisation.canonicaliseURL(url);
+	             
+	             //log.info("Collect srcset url:"+url_norm);	             
+	             set.add(url_norm); 	             
+	            }	            	            
+	                                        
+	        }
+	    }
+	
 	//<style type="text/css" media="screen">@import url(http://en.statsbiblioteket.dk/portal_css/SB%20Theme/resourceplonetheme.sbtheme.stylesheetsmain-cachekey-7e976fa2b125f18f45a257c2d1882e00.css);</style> 
 	public static void collectRewriteUrlsForStyleImport(HashSet<String> set, Document doc, String baseUrl) throws Exception{
 
@@ -494,6 +486,45 @@ public class HtmlParserUrlRewriter {
   }
 
 
+    // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
+    // comma seperated, size is optional.
+    public static void replaceUrlsForImgSrcset(HashMap<String,IndexDoc>  map,Document doc, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
+         for (Element e : doc.select("img")) {
+             String urls = e.attr("abs:srcset");
+             String urlsReplaced = urls; //They will be changed one at a time
+
+             if (urls == null  || urls.trim().length()==0){
+                 continue;
+             }
+             // split.
+             String[] urlList = urls.split(",");
+             for (String current : urlList){
+              current=current.trim();                 
+              String urlUnresolved =current.split(" ")[0].trim();
+                            
+              String url_norm = Normalisation.canonicaliseURL(urlUnresolved);
+              //log.info("Replace srcset url part:'"+url_norm+"'");
+              IndexDoc indexDoc = map.get(url_norm);   
+              if (indexDoc!=null){                             
+                  String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();                           
+                  urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                                                         
+                  log.info("replaced srcset url:" + urlUnresolved +" by "+newUrl);
+                  numberOfLinksReplaced.getAndIncrement();
+              }
+              else{
+                String newUrl=NOT_FOUND_LINK;                           
+                urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                
+                log.info("No harvest found srcset url:"+urlUnresolved);
+                numberOfLinksNotFound.getAndIncrement();
+               }
+
+                
+             } 
+             e.attr("srcset",urlsReplaced);  
+                                         
+         }
+     }
+	
 	
 	public static void replaceUrlsForStyleImport( HashMap<String,IndexDoc>  map, Document doc, String type, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
 	
@@ -545,6 +576,22 @@ public class HtmlParserUrlRewriter {
 
 	
 
+	public static HashSet<String> getUrlResourcesForHtmlPage( Document doc, String url) throws Exception{
+	  HashSet<String> urlSet = new HashSet<String>();
+      collectRewriteUrlsForElement(urlSet,doc, "area", "href");
+      collectRewriteUrlsForElement(urlSet, doc, "img", "src");
+      collectRewriteUrlsForElement(urlSet, doc, "embed", "src");
+      collectRewriteUrlsForImgSrcset(urlSet, doc);
+      collectRewriteUrlsForElement(urlSet,doc, "body", "background");
+      collectRewriteUrlsForElement(urlSet, doc, "link", "href");
+      collectRewriteUrlsForElement(urlSet , doc, "script", "src");
+      collectRewriteUrlsForElement(urlSet, doc, "td", "background");
+      collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
+      collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
+      collectRewriteUrlsForStyleImport(urlSet, doc,url);            
+      return urlSet;	  
+	}
+	
 	public static HashMap<String,String> test(String html,String url) throws Exception{
 		HashMap<String,String> imagesSet = new HashMap<String,String>();  // To remove duplicates
 		Document doc = Jsoup.parse(html,url); //TODO baseURI?

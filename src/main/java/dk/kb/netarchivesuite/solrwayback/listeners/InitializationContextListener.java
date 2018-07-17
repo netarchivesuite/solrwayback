@@ -89,8 +89,9 @@ public class InitializationContextListener implements ServletContextListener {
     // this is called by the web-container at shutdown. (defined in web.xml)
     public void contextDestroyed(ServletContextEvent sce) {
         try {
-          if ( socksProxy != null){
+          if ( socksProxy != null){ 
             socksProxy.stopProxy();
+            proxyThread.stop();
           }
           log.info("solrwayback shutting down...");
         } catch (Exception e) {

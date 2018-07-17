@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
@@ -17,6 +18,7 @@ import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
@@ -56,7 +58,8 @@ public class SolrClientTest {
 	          //testFacetLinks();
 	          //testSolrDate();
 	       //   testHarvestPreviewsForUrl();
-	  domainStatistics();
+	  //domainStatistics();
+	        testGroup();
 	}
 	
 	public static void testWaybackStats() throws Exception{
@@ -318,12 +321,48 @@ public static void testIngoingLinks() throws Exception{
          
          
                   
-
-
-                  
        
        
    }
+	public static void testGroup() throws Exception{
+
+	  SolrClient solrServer;
+
+      
+      solrServer =  new HttpSolrClient.Builder("http://localhost:8983/solr/netarchivebuilder/").build();
+	  
+	    //Generate URL string: (url_norm:"A" OR url_norm:"B" OR ....)
+	    StringBuffer buf = new StringBuffer();
+	    buf.append("url_norm:test OR url_norm:\"http://opasia.dk/kultur/boeger/mestervaerker/glasnoeglen.shtml\"");    
+
+
+	    String  query = buf.toString();     
+	    SolrQuery solrQuery = new SolrQuery();
+	    solrQuery.setQuery(query);
+
+	    solrQuery.setRows(10);
+	    solrQuery.add("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+	    solrQuery.add("sort","abs(sub(ms('2012-08-18T23:18:10Z'), crawl_date)) asc");            
+	    solrQuery.add("group","true"); //Default only 1 value
+	    solrQuery.add("group.field","url_norm");
+	    solrQuery.add("group.format","simple");
+	    
+	    solrQuery.setRows(1000);
+	    solrQuery.setFilterQueries("record_type:response OR record_type:arc"); //No binary for revists. 
+
+	    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
+
+	    ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
+	        SolrDocumentList docs = rsp.getGroupResponse().getValues().get(0).getValues().get(0).getResult();
+	       
+	       for (SolrDocument current:docs){
+	      System.out.println("doc found");
+	                                     
+	    }                    
+	    	 
+	  
+	}
+	
 	
 }
 

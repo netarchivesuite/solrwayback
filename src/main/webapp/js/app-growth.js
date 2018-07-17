@@ -107,7 +107,8 @@ var app = new Vue({
             if(this.domain){
                 this.showSpinner();
                 this.hasResults = true;
-                this.domain = this.domain.replace(/http.*:\/\//i,""); //Get domain from URL, using replace and regex to trim domain
+                this.domain = this.domain.replace(/http.*:\/\//i,"").trim(); //Get domain from URL, using replace and regex to trim domain
+                this.domain = this.domain.replace(/www./i,""); //Get domain from URL, using replace and regex to trim domain
                 if( this.domain.slice(-1) === "/"){ // if trailing slash on domain it's removed
                     this.domain = this.domain.slice(0, -1)
                 }

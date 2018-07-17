@@ -91,6 +91,7 @@ a:hover, .link:hover{
 
 .discrete{
     color: #999999;
+    font-weight: normal;
 }
 
 .clickable{
@@ -120,7 +121,7 @@ a:hover, .link:hover{
 
 #searchbox #queryInput{
     margin-right: .5em;
-    width: 70%;
+    width: 60%;
 }
 
 #searchbox button, #tagSearch button{
@@ -136,6 +137,11 @@ a:hover, .link:hover{
 
 #searchbox label{
     margin-right: 1em;
+}
+
+#searchbox label.groupingCheckLabel{
+    margin-right: 0em;
+    margin-left: 1em;
 }
 
 input.imageSearchCheck{
@@ -276,7 +282,8 @@ input.imageSearchCheck{
 }
 
 .searchResultItem h3 {
-    margin: 0 0 .5em;
+    float:left;
+    margin: 0 1em .7em 0;
 }
 .item .image{
     margin-top: 1em;
@@ -370,14 +377,6 @@ input.imageSearchCheck{
 .link.fullPost{
     font-weight: bold;
     margin-top: .8em;
-}
-
-.link.fullPost:before{
-    content: 'Show';
-}
-
-.active > .link.fullPost:before{
-    content: 'Hide';
 }
 
 .fullpost{

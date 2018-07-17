@@ -36,7 +36,7 @@
 
 
   <welcome-file-list>
-    <welcome-file>vuesearch.html</welcome-file>
+    <welcome-file>vuesearch.jsp</welcome-file>
   </welcome-file-list>
 
 

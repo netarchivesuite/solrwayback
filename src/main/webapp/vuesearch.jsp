@@ -1,3 +1,5 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8"%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +15,7 @@
     <script type="text/javascript" src="js/vue-router.js"></script>
 
     <script
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvDPa9HT46xFx4Z8Ue9csRruo_CiM9zWw">
+            src="https://maps.googleapis.com/maps/api/js?key=<%=dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb.GOOGLE_API_KEY %>">
     </script>
 
 
@@ -48,7 +50,7 @@
                        :filters="filters" :image-search="imageSearch" :grouping="grouping"></pager-box>
 
             <result-box v-if="totalHits > 0" :search-result="searchResult" :fullpost="fullpost" :image-objects="imageObjects" :base-url="baseUrl"
-                        :setup-search="setupSearch" :clear-facets="clearFacets" :get-fullpost="getFullpost"></result-box>
+                        :setup-search="setupSearch" :clear-facets="clearFacets" :get-fullpost="getFullpost" :openbase-url="openbaseUrl"></result-box>
 
 
             <pager-box  v-if="totalHits > 21 && !spinner" :setup-search="setupSearch" :total-hits="totalHits" :total-hits-duplicates="totalHitsDuplicates"

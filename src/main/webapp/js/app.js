@@ -13,7 +13,7 @@ Vue.filter('thousandsSeperator', function(value) {
 
 /* Component with search field, check boxes to decide searchtype and relevant links */
 Vue.component('search-box', {
-    props: ['setupSearch','myQuery','imageSearch','imageGeoSearch','urlSearch','clearSearch'],
+    props: ['setupSearch','myQuery','imageSearch','imageGeoSearch','urlSearch','clearSearch','grouping','setGrouping'],
     template: `
     <div>
         <div id="searchbox">
@@ -22,6 +22,11 @@ Vue.component('search-box', {
                 v-model='queryModel' type="text" placeholder="search" autofocus />
                 <button class="btn" 
                 v-on:click="setupSearch('search', queryModel, urlSearchModel, urlSearchModel, imageSearchModel, imageGeoSearchModel);searchByFile = false">Search</button>
+                <label class="groupingCheckLabel">
+                <input class="groupingCheck" v-model="groupingModel" type="checkbox"
+                     v-on:change="setGrouping(groupingModel);setupSearch('search', queryModel, urlSearchModel, urlSearchModel, imageSearchModel, imageGeoSearchModel);
+                     searchByFile = false"> Grouping (slower response)
+                </label>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = false">Clear search</span>
                 <br>
                 <label>
@@ -37,7 +42,8 @@ Vue.component('search-box', {
                     v-on:change="searchUrl(urlSearchModel)"> URL search
                 </label>
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span> 
-                <span class="link clearSearchLink"><a href="./tags.html">Search for HTML-tags</a></span>              
+                <span class="link clearSearchLink"><a href="./tags.html">Search for HTML-tags</a></span>
+                <span class="link clearSearchLink"><a href="./domaingrowth.html">Domain stats</a></span>               
             </div>
         </div>
         <div v-if="searchByFile" id="uploadfilesContainer" class="box">
@@ -51,6 +57,7 @@ Vue.component('search-box', {
             imageSearchModel: this.imageSearch,
             urlSearchModel: this.urlSearch,
             imageGeoSearchModel: this.imageGeoSearch,
+            groupingModel: this.grouping,
             searchByFile: false,
         };
     },
@@ -204,7 +211,7 @@ Vue.component('facet-box', {
 
 /* Component shows hit count, pager and download menu. Has method to download search result */
 Vue.component('pager-box', {
-    props: ['setupSearch', 'totalHits', 'start','isBottom','myQuery','filters','imageSearch'],
+    props: ['setupSearch', 'totalHits', 'totalHitsDuplicates','start','isBottom','myQuery','filters','imageSearch','grouping'],
     template: `
     <div class="counterBox" :class="{bottom : isBottom}" v-if="totalHits > 0">
         <div class="selectDownload" v-if="!isBottom">
@@ -221,8 +228,14 @@ Vue.component('pager-box', {
         </div>      
 
         <div v-if="totalHits > 0 && !imageSearch" class="resultCount">
-            <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits | thousandsSeperator }} hits</h3>
+            <template v-if="grouping">
+                <h3 v-if="parseInt(start) + 20 < totalHits" ><span title="Hit count with unique URLs">Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits | thousandsSeperator }}</span>  unique hits <span class="discrete" title="Hit count with duplicate URLs">(total hits: {{ totalHitsDuplicates | thousandsSeperator }}).</span></h3> 
+                <h3  v-else><span title="Hit count with unique URLs">Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits | thousandsSeperator }}</span> unique hits  <span class="discrete" title="Hit count with duplicate URLs">  (total hits:{{ totalHitsDuplicates | thousandsSeperator }}).</span></h3>
+            </template>
+            <template v-else>
+                <h3 v-if="parseInt(start) + 20 < totalHits" >Showing  {{ parseInt(start) + 1 }}-{{ parseInt(start) + 20 }} of {{ totalHits | thousandsSeperator }} hits</h3>
             <h3  v-else>Showing {{ parseInt(start) + 1 }}-{{ totalHits }} of {{ totalHits | thousandsSeperator }} hits</h3>
+            </template>
         </div>
 
         <div class="pagerBox" v-if="totalHits > 21 && !imageSearch">
@@ -240,25 +253,22 @@ Vue.component('pager-box', {
 
 /* Component shows search result when not image search*/
 Vue.component('result-box', {
-    props: ['searchResult','imageObjects','setupSearch','clearFacets','baseUrl'],
+    props: ['searchResult','imageObjects','setupSearch','clearFacets','baseUrl','getFullpost','fullpost','openbaseUrl'],
     template: `
     <div class="searchResults">
         <div v-for="doc in searchResult" class="searchResultItem">
             <div class="item">
-                <h3>
+                <h3 title="Playback in SOLR Wayback">
                 <a v-bind:href=" baseUrl + 'services/viewForward?source_file_path=' + doc.source_file_path + '&offset=' + doc.source_file_offset" target="_blank">
                     <span v-if="doc.title">{{ doc.title }}</span>
                     <span v-else>No title available</span>
                 </a>
                 </h3>
-            </div>
-            <div v-if="doc.arc_harvesttime" class="item">
-                <div class="label">Harvest time:</div>
-                <div class="text">{{ doc.arc_harvesttime }}</div>
-            </div>  
-            <div v-if="doc.last_modified" class="item">
-                <div class="label">Last modified:</div>
-                <div class="text">{{ doc.last_modified }}</div>
+                <span v-if="openbaseUrl && (doc.content_type_norm === 'html' || doc.content_type_norm === 'text')">
+                    <a v-bind:href="openbaseUrl  + doc.wayback_date + '/' + doc.url" target="_blank">
+                    <img src="./images/newwindow.png" alt="Playback in Open Wayback"  title="Playback in Openwayback"/>
+                    </a>
+                </span>
             </div>
             <div v-if="doc.content_type" class="item">
                 <div class="label">Content type:</div>
@@ -266,11 +276,11 @@ Vue.component('result-box', {
             </div>
             <div v-if="doc.domain" class="item">
                 <div class="label">Domain:</div>
-                <div class="text"><a v-bind:href="'http://' + doc.domain"  target="_blank">{{ doc.domain }}</a></div>
+                <div class="text">{{ doc.domain }}</div>
             </div>
             <div v-if="doc.url" class="item">
                 <div class="label">Url:</div>
-                <div class="text"><a v-bind:href="doc.url" target="_blank">{{ doc.url }}</a></div>
+                <div class="text">{{ doc.url }}</div>
             </div>
             <div v-if="doc.score" class="item">
                 <div class="label">Score:</div>
@@ -281,27 +291,28 @@ Vue.component('result-box', {
                      <div class="label">Highlighted content:</div>
                      <div class="text" v-html="doc.highlights.content[0]"></div>
                 </div>
-            </template>
-            <div v-if="doc.content" class="item">
-                <div class="label">Full content:</div>
-                <div v-if="doc.content.length > 120" class="text long clickable" onclick="$(this).toggleClass('active')"> {{ doc.content }}</div>
-            </div>              
+            </template>             
             
             <!-- Full post -->
-            <div class="item" onclick="$(this).next().toggle();$(this).toggleClass('active')">
-                <div class="link fullPost" > full post</div>
+            <div class="item" @click="getFullpost(doc.id);toggleFullpost(doc.id)">
+                <div class="link fullPost" :id="'fullpostLink_' + doc.id" >Show full post</div>
             </div>
-            <div class="fullpost">
-                <h3>Click value to perform a field search</h3>
-                <template v-for="(value, key) in doc" v-if="key !== 'content'">
-                    <div class="item">
-                        <div class="label">{{ key | facetName }}</div>
-                        <div v-if="value.constructor !== Array" class="text link" v-on:click="setupSearch('search', key + ':&quot;' + value + '&quot;');clearFacets()" >{{ value }}</div>
-                        <div v-else >
-                            <div v-for="item in value" v-on:click="setupSearch('search', key + ':&quot;' + item + '&quot;');clearFacets()" class="text link">{{item}}</div>
+            <div class="fullpost" v-bind:id="doc.id">
+                <div v-if="fullpost">
+                    <h3>Click value to perform a field search</h3>
+                    <template v-for="(value, key) in fullpost[0]">
+                        <div class="item">
+                            <div class="label">{{ key }}</div>
+                            <div v-if="value.constructor !== Array" class="text link" v-on:click="setupSearch('search', key + ':&quot;' + value + '&quot;');clearFacets()" >{{ value }}</div>
+                            <div v-else >
+                                <div v-for="item in value" v-on:click="setupSearch('search', key + ':&quot;' + item + '&quot;');clearFacets()" class="text link">{{item}}</div>
+                            </div>
                         </div>
-                    </div>
-                </template>    
+                    </template> 
+                </div> 
+                <div v-else>
+                    <p>Retrieving data...</p>
+                </div>  
             </div> 
             
             <!-- Download PDF's, Word docs etc. -->
@@ -323,67 +334,42 @@ Vue.component('result-box', {
                 <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + doc.url_norm + '&quot;');clearFacets()">Pages linking to image</span>
             </div>
               
-            <!-- Images in HTML pages -->  
-            <div v-if="doc.content_type_norm && doc.content_type_norm == 'html'" class="item">
-                
-                    <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
-                        <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
-                            <template  v-for="(imageUrl, index) in image.imageUrls" >
-                                <div class="thumb thumbSearch" v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
-                                    <a :href="image.downloadUrls[index]" target="_blank">
-                                        <span v-html="imageUrl"></span> 
-                                    </a>
-                                    <br/>  
-                                    <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
-                                    <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
-                                </div>
-                                <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
-                            </template>
-                        </div> 
-                    </template>
-            </div>         
-            
-             <!-- Images in TWITTER, same as for HTML. I dont know how to use OR clause... NIG! Denne block skal slettes og ind i den ovenfor -->  
-            <div v-if="doc.type && doc.type == 'Twitter Tweet'" class="item">
-                    <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
-                        <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
-                            <template  v-for="(imageUrl, index) in image.imageUrls" >
-                                <div class="thumb thumbSearch" v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
-                                    <a :href="image.downloadUrls[index]" target="_blank">
-                                        <span v-html="imageUrl"></span> 
-                                    </a>
-                                    <br/>  
-                                    <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
-                                    <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
-                                </div>
-                                <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
-                            </template>
-                        </div> 
-                    </template>
-            </div>         
-            
-              <!-- Images in TWITTER, same as for HTML. I dont know how to use OR clause... NIG! Denne block skal slettes og ind i den ovenfor -->  
-            <div v-if="doc.type && doc.type == 'Jodel Post'" class="item">
-                    <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
-                        <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
-                            <template  v-for="(imageUrl, index) in image.imageUrls" >
-                                <div class="thumb thumbSearch" v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
-                                    <a :href="image.downloadUrls[index]" target="_blank">
-                                        <span v-html="imageUrl"></span> 
-                                    </a>
-                                    <br/>  
-                                    <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
-                                    <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
-                                </div>
-                                <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
-                            </template>
-                        </div> 
-                    </template>
-            </div>         
-            
+            <!-- Images in HTML pages, Twitter Tweets and Jodel posts  -->  
+            <div v-if="(doc.content_type_norm && doc.content_type_norm == 'html') || 
+            (doc.type && doc.type == 'Twitter Tweet') || (doc.type && doc.type == 'Jodel Post')" class="item">               
+                 <template v-for="(image, index) in imageObjects" v-if="doc.id == image.imageID">
+                     <div class="thumbs" v-if="imageObjects[index].imageUrls.length > 0">
+                         <template  v-for="(imageUrl, index) in image.imageUrls" >
+                             <div class="thumb thumbSearch" v-bind:class="{ 'show': index < 10, 'hide extra': index >9 }">
+                                 <a :href="image.downloadUrls[index]" target="_blank">
+                                      <span v-html="imageUrl"></span> 
+                                 </a>
+                                 <br/>  
+                                 <span class="link" v-on:click="setupSearch('search', 'hash:&quot;' + image.hashes[index] + '&quot;');clearFacets()">Search for image</span><br>
+                                 <span class="link" v-on:click="setupSearch('search', 'links_images:&quot;' + image.urlNorm[index] + '&quot;');clearFacets()">Pages linking to image</span>
+                             </div>
+                             <div class="link moreThumbs" v-if="index == 9 && image.imageUrls.length > 10" onclick="$(this).nextAll().toggleClass('hide');$(this).toggleClass('active')"> thumbs</div>
+                         </template>
+                     </div> 
+                 </template>
+            </div>                                            
         </div>
     </div>    
-    `
+    `,
+    methods: {
+        toggleFullpost: function(id){
+            //console.log('toggle full post ID', id);
+            if(document.getElementById(id).style.display === "block"){
+                document.getElementById(id).style.display = "none";
+                document.getElementById("fullpostLink_" + id).innerHTML = "Show full post";
+            }else{
+                $('.fullpost').hide();
+                $('.link.fullPost').html("Show full post");
+                document.getElementById(id).style.display = "block";
+                document.getElementById("fullpostLink_" + id).innerHTML = "Hide full post";
+            }
+        }
+    }
 })
 
 /* Component shows search result for images */
@@ -432,12 +418,15 @@ var app = new Vue({
     el: '#app',
     data: {
         searchResult: null,
+        fullpost: null,
         myFacets: '',
         myQuery: '',
         facetFields: [],
         filters: '',
         totalHits: 0,
+        totalHitsDuplicates: 0,
         start: 0,
+        grouping: false,
         imageSearch: false,
         imageGeoSearch: false,
         urlSearch: false,
@@ -445,6 +434,7 @@ var app = new Vue({
         errorMsg: '',
         imageObjects: [],
         baseUrl: '',
+        openbaseUrl: null,
         markerPosition: {radius: 200000, lat: "", lng: ""},
         geoImageInfo : [],
         resultMarkers: [],
@@ -458,7 +448,9 @@ var app = new Vue({
     },
     created: function() { // getting applications base URL on creation
         this.$http.get( "http://" + location.host +  "/solrwayback/services/properties/solrwaybackweb").then((response) => {
+            console.log('properties response',response);
             this.baseUrl = response.body['wayback.baseurl'];
+            this.openbaseUrl = response.body['openwayback.baseurl'];
         }, (response) => {
             console.log('error: ', response);
             this.errorMsg = response.statusText;
@@ -468,13 +460,19 @@ var app = new Vue({
         this.setupUrl();
     },
     methods: {
+        /* Method to toggle grouping. Quick fix instead of adding it to the already way too long list of parameters
+         * to the setupSearch() method below.  */
+        setGrouping: function(grouping){
+            this.grouping = grouping;
+        },
+
         /* Setting up search. Checking if it's an ordinary search, URL search, image search, paging, facet delimit */
         setupSearch: function(type, query, param3, param4, imagegeosearch) {
             if (type == "search") {
                 this.filters = ''; //resetting filters on new search
                 this.myQuery = query;
                 this.start = 0;
-                console.log("type, query, param3, param4, imagegeosearch", type, query, param3, param4, imagegeosearch)
+                //console.log("type, query, param3, param4, imagegeosearch:", type, query, param3, param4, imagegeosearch)
                 if (param3) {
                     this.urlSearch = true;
                     this.imageSearch = false; // deselecting image search when URL search
@@ -533,6 +531,7 @@ var app = new Vue({
                     filter: this.filters,
                     imgsearch: this.imageSearch,
                     imggeosearch: this.imageGeoSearch,
+                    grouping: this.grouping,
                     //urlsearch: this.urlSearch,
                 }
             });
@@ -567,7 +566,7 @@ var app = new Vue({
                     '&latitude=' + this.markerPosition.lat + '&longitude=' + this.markerPosition.lng + '&d=' + this.markerPosition.radius / 1000;
             } else {
                 this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
-                    '&start=' + parseInt(this.start) + '&fq=' + this.filters;
+                    '&start=' + parseInt(this.start) + '&fq=' + this.filters + "&grouping=" + this.grouping;
             }
             this.facetFields = []; //resetting facet fields before building them from query params
             if (this.filters) {
@@ -596,25 +595,26 @@ var app = new Vue({
                         return;
                     }
                     if(!this.imageSearch){
-                        this.searchResult = response.body.response.docs;
-                        if(response.body.highlighting){
-                            var highlights = response.body.highlighting;
+                        if(response.body.grouped){
+                            this.searchResult = response.body.grouped.url.doclist.docs;
+                            this.totalHits = response.body.stats.stats_fields.url.cardinality;
+                            this.totalHitsDuplicates = response.body.grouped.url.matches;
                         }else{
+                            this.searchResult = response.body.response.docs;
+                            this.totalHits = response.body.response.numFound;
+                        }
+                        if(response.body.highlighting){
                             var highlights = response.body.highlighting;
                         }
 
-                        /* Nyt objektet med image URL'er ved content type HTML */
+                        /* Nyt objektet med image URL'er ved content type HTML, Twitter og Jodel */
                         for(var i=0; i<this.searchResult.length;i++){
-                            if(this.searchResult[i].content_type_norm && this.searchResult[i].content_type_norm == 'html'){
+                            if((this.searchResult[i].content_type_norm && this.searchResult[i].content_type_norm == 'html') ||
+                                (this.searchResult[i].type && this.searchResult[i].type == 'Twitter Tweet') ||
+                                (this.searchResult[i].type && this.searchResult[i].type == 'Jodel Post')){
                             	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
                             }
-                            if(this.searchResult[i].type && this.searchResult[i].type == 'Twitter Tweet'){ //double logic again. TODO NIG, see above
-                            	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
-                            }
-                            if(this.searchResult[i].type && this.searchResult[i].type == 'Jodel Post'){ //double logic again. TODO NIG, see above
-                            	this.getImages(this.searchResult[i].id,this.searchResult[i].source_file_path, this.searchResult[i].source_file_offset);
-                            }
-                            
+
                             /* Adding property highlight to search result object */
                             for (var key in highlights){
                                 if(this.searchResult[i].id === key){
@@ -623,7 +623,6 @@ var app = new Vue({
                             }
                         }
                         this.myFacets=response.body.facet_counts.facet_fields;
-                        this.totalHits = response.body.response.numFound;
                     }else{
                         this.geoImageInfo = []; // Resetting image positions array
                         this.searchResult = response.body;
@@ -652,13 +651,22 @@ var app = new Vue({
             }
         },
 
+        getFullpost: function(id){
+            var fullpostUrl = 'http://' + location.host + '/solrwayback/services/solr/idlookup?id=' + encodeURIComponent(id);
+            this.$http.get(fullpostUrl).then((response) => {
+                this.fullpost = response.body.response.docs;
+            }, (response) => {
+                console.log('error: ', response);
+            });
+        },
+
         getImages: function(id,source_file_path, offset){
             var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_path=" + source_file_path +"&offset="+offset;
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = ""; // Url in the netarchive
                 var downloadUrl = ""; // Url in the netarchive
                 var hash = "";
-                var urlNorm = ""; // // Url in real life
+                var urlNorm = ""; // Url in real life
                 var imageUrlArray = [];
                 var downloadArray = [];
                 var hashArray = [];
@@ -694,6 +702,7 @@ var app = new Vue({
             this.filters = this.$route.query.filter;
             this.imageSearch = this.$route.query.imgsearch;
             this.imageGeoSearch = this.$route.query.imggeosearch;
+            this.grouping = this.$route.query.grouping;
             //converting possible string value from query param to boolean
             if(!this.imageSearch || this.imageSearch == 'false' ){
                 this.imageSearch = false
@@ -704,6 +713,11 @@ var app = new Vue({
                 this.imageGeoSearch = false
             }else{
                 this.imageGeoSearch = true
+            }
+            if(!this.grouping || this.grouping == 'false' ){
+                this.grouping = false
+            }else{
+                this.grouping = true
             }
             if(!this.urlSearch || this.urlSearch == 'false' ){
                 this.urlSearch = false

@@ -28,7 +28,8 @@ public class SOCKSProxy implements Runnable {
 
     private final Set<String> allowedHosts;
     private final int port;
-
+    private ServerSocketChannel socks;
+    
     private final ArrayList <SocksClient> clients = new ArrayList<>();
     private boolean running = true;
     private final ExecutorService executor = Executors.newFixedThreadPool(16, new ThreadFactory() {
@@ -58,7 +59,7 @@ public class SOCKSProxy implements Runnable {
         try{
             log.info("Starting up SocksProxy on port " + port);
 
-            ServerSocketChannel socks = ServerSocketChannel.open();
+            socks = ServerSocketChannel.open();
             socks.socket().bind(new InetSocketAddress(port));
             socks.configureBlocking(false);
             Selector select = Selector.open();
@@ -168,7 +169,7 @@ public class SOCKSProxy implements Runnable {
         synchronized (clients) {
             clients.add(cl);
         }
-        log.debug("Added new SocksClient. Total live clients " + clients.size());
+        //log.debug("Added new SocksClient. Total live clients " + clients.size());
         return cl;
     }
 
@@ -196,6 +197,14 @@ public class SOCKSProxy implements Runnable {
 
     public void stopProxy(){
         running = false;
+        try{
+          socks.close();
+          log.info("Socks proxy closed.");
+        }
+        catch(Exception e){
+          log.warn("Failed closing socks proxy");
+        }               
+        
     }
 
     /*
@@ -206,7 +215,7 @@ public class SOCKSProxy implements Runnable {
         Thread proxy = new Thread(new SOCKSProxy(9002, "belinda.statsbiblioteket.dk", "172.16.206.19"));
         proxy.setDaemon(true);
         proxy.start();
-        System.out.println("Started proxy");
+        log.info("Started proxy");
         Thread.sleep(100000000000L); //Keep alive
     }
 }

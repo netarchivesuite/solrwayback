@@ -141,10 +141,12 @@ class SocksClient {
         } else {
             // TODO: Why do we get all these IP lookups with Chrome? Is the check for host too picky?
             if (allowedHosts.contains(remoteAddr.getHostAddress())) {
-                log.info("Allowing connection to IP-address " + remoteAddr.getHostAddress());
+                //log.info("Allowing connection to IP-address " + remoteAddr.getHostAddress());
             } else {
-                log.info("Leaking prevented for IP-address " + remoteAddr.getHostAddress());
-                failConnectionToHost(remoteAddr, port);
+               //Only enable this is production. If the user has other tabs open, this will reveal the sites they are contacting.
+              //  log.info("Leaking prevented for IP-address " + remoteAddr.getHostAddress()); 
+                  log.info("Leaking prevented to not allowed IP adress. (Not logging the address)");  
+              failConnectionToHost(remoteAddr, port);
                 return;
             }
         }
@@ -232,11 +234,10 @@ class SocksClient {
                 total += flush(destination, buf, bufSize);
             }
             if (total != 0) {
-                message("Copied buffer size " + total + " bytes in " +
-                        (System.nanoTime() - startTime) / 1000000 + " ms");
+                //message("Copied buffer size " + total + " bytes in " +    (System.nanoTime() - startTime) / 1000000 + " ms");
             }
             if (bufSize == -1) {
-                message("Closing SOCKS client as EOS (-1) was received");
+                //message("Closing SOCKS client as EOS (-1) was received");
                 eos = true;
             }
             lastData = System.currentTimeMillis(); // Even if total == 0 to keep alive

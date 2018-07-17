@@ -7,12 +7,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.IDN;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.*;
@@ -33,11 +38,14 @@ import dk.kb.netarchivesuite.solrwayback.solr.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.CharMatcher;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
@@ -52,8 +60,13 @@ public class Facade {
         return result;
     }
     
-    public static String solrSearch(String query, String filterQuery,boolean revisits, int start) throws Exception {
-      return proxySolr(query, filterQuery , revisits, start);
+    public static String solrSearch(String query, String filterQuery,boolean grouping, boolean revisits, int start) throws Exception {
+      return proxySolr(query, filterQuery , grouping, revisits, start);
+  }
+    
+    
+    public static String solrIdLookup(String id) throws Exception {
+      return proxySolrIdLookup(id);
   }
     
 
@@ -75,7 +88,7 @@ public class Facade {
     }
         
         
-    public static  ArrayList<ImageUrl> imagesLocationSearch(String searchText,String filter, String results, double latitude, double longitude, int radius) throws Exception {
+    public static  ArrayList<ImageUrl> imagesLocationSearch(String searchText,String filter, String results, double latitude, double longitude, double radius) throws Exception {
       int resultInt=500;
       if (results != null){
         resultInt=Integer.parseInt(results);        
@@ -237,6 +250,33 @@ public class Facade {
     }
     
 
+    public static String punyCodeAndNormaliseUrl(String url) throws Exception {     
+      if (!url.startsWith("http://")){ 
+        throw new Exception("Url not starting with http://");
+      }
+      
+      URL uri = new URL(url);
+      String hostName = uri.getHost();
+      String hostNameEncoded = IDN.toASCII(hostName);
+      
+      String path = uri.getPath();
+      if ("".equals(path)){
+        path="/";
+      }
+      String urlQueryPath =  uri.getQuery();
+      if(urlQueryPath == null){
+        urlQueryPath="";
+      }
+                
+      String urlPunied = "http://"+hostNameEncoded + path +urlQueryPath;
+      String urlPuniedAndNormalized = Normalisation.canonicaliseURL(urlPunied);     
+      
+      log.info("normalizing url:"+url +" url_norm:"+urlPuniedAndNormalized );
+       return urlPuniedAndNormalized;        
+    }
+      
+     
+    
     /*
      * Find images on a HTML page.
      * 1) Find the doc in solr from source_file_path and offset. (fast)
@@ -447,7 +487,7 @@ public class Facade {
       StringBuffer parts = new StringBuffer();
       //the original page
       parts.append("<part>\n");
-      parts.append("pwid:netarkivet.dk:"+arc.getCrawlDate()+":part:"+arc.getUrl() +"\n");
+      parts.append("urn:pwid:netarkivet.dk:"+arc.getCrawlDate()+":part:"+arc.getUrl() +"\n");
       parts.append("</part>\n");      
       String xmlIncludes = HtmlParserUrlRewriter.generatePwid(arc);//all sub elements            
       parts.append(xmlIncludes);
@@ -483,10 +523,8 @@ public class Facade {
       ts.setPagePreviewUrl(previewUrl);      
       
       //the original page REMEMBER      
-      HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
-      for (String c : resources){
-        System.out.println("looking for resource:"+c);
-      }
+                                                        
+      HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);      
       
       ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(resources,arc.getCrawlDate());
           
@@ -533,7 +571,8 @@ public class Facade {
     	if(doc.getType().equals("Twitter Tweet")){    	      	  
     	  log.debug(" Generate twitter webpage from FilePath:" + source_file_path + " offset:" + offset);
     	  //Fake html into arc.
-    	                      
+          encoding="UTF-8"; //Why does encoding say ISO ? This seems to fix the bug
+    	  
           String json = new String(arc.getBinary(), encoding);
           String html = Twitter2Html.twitter2Html(json,arc.getCrawlDate());
           arc.setBinary(html.getBytes());               
@@ -546,6 +585,7 @@ public class Facade {
           if (showToolbar!=Boolean.FALSE ){ //If true or null.
               textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced, false);
           }
+          arc.setContentEncoding(encoding);
           arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
     	}
 
@@ -595,77 +635,102 @@ public class Facade {
         	return arc;
         	
         }
-
 		log.info("skipping html url rewrite for contentype:"+arc.getContentType());
     	return arc; //dont parse
-            
+                
     }
     
     //For fronted
     public static HashMap<String,String> getPropertiesWeb() throws Exception{         
         HashMap<String,String> props = new HashMap<String,String>();
         props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.WAYBACK_SERVER);
+        props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.OPENWAYBACK_SERVER);
+        props.put(PropertiesLoaderWeb.GOOGLE_API_KEY_PROPERTY,PropertiesLoaderWeb.GOOGLE_API_KEY);
+
         return props;
     }
     
-    
-    
-    public static String proxySolr( String query, String fq, boolean revisits, Integer start) {
+    public static String proxySolr( String query, String fq, boolean grouping, boolean revisits, Integer start) {
+      log.info("query "+query +" grouping:"+grouping +" revisits:"+revisits);
       
       String startStr ="0";
       if (start != null){
         startStr=start.toString();
       }
 
-      log.info("query "+query +" revisits:"+revisits);
+      //Build all query params in map
+      MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+      params.add("rows", "20"); //Hardcoded pt.
+      params.add("start", startStr);
+      params.add("q", query);
+      params.add("fl", "id,score,title,hash,source_file_path,source_file_offset,url,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
+      params.add("wt", "json");
+      params.add("hl", "on");
+      params.add("q.op", "AND");
+      params.add("indent", "true");
+      params.add("f.crawl_year.facet.limit", "100"); //Show all crawl_years. Maybe remove limit to property file as well
+      if (grouping){
+        //Both group and stats must be enabled at same time                
+        params.add( "group","true");
+        params.add( "group.field","url");
+        params.add("stats",  "true");
+        params.add("stats.field",  "{!cardinality=0.1}url");
+        params.add( "group.format","simple");
+        params.add( "group.limit","1"); 
+      }
+            
+      if (!revisits){
+        params.add("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
+      }
+      if ( fq != null && fq.length() > 0){
+        params.add("fq",fq);                        
+      }
+      if (!PropertiesLoaderWeb.FACETS.isEmpty()) {
+        params.add("facet", "true");
+        for (String facet: PropertiesLoaderWeb.FACETS) {
+          params.add("facet.field", facet);
+        }
+     }
+                
+      String solrUrl =PropertiesLoader.SOLR_SERVER;  
+      ClientConfig config = new DefaultClientConfig();
+      Client client = Client.create(config);
+      WebResource service = client.resource(UriBuilder.fromUri(solrUrl).build());
+           
+      WebResource queryWs= service.path("select").queryParams(params);                                                                                            
+                                                                   
+      ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+      String responseStr= response.getEntity(String.class);
+
+      log.debug(responseStr.substring(0, Math.min(800, responseStr.length()-1)));            
+      return responseStr;      
+  }
+        
+    
+ public static String proxySolrIdLookup(String id) throws Exception{                                
+   log.debug("id lookup:"+id);
       String solrUrl =PropertiesLoader.SOLR_SERVER;  
       ClientConfig config = new DefaultClientConfig();
       Client client = Client.create(config);
       WebResource service = client.resource(UriBuilder.fromUri(solrUrl).build());
       WebResource queryWs= service.path("select")                                    
-                                  .queryParam("rows", "20") //Hardcoded pt.
-                                  .queryParam("start", startStr)
-                                  .queryParam("q", query) 
-                                  .queryParam("wt", "json")
-                                  .queryParam("hl", "on")
-                                  .queryParam("q.op", "AND")
+                                  .queryParam("rows", "1") 
+                                  .queryParam("q", "id:\"" +id +"\"") 
+                                  .queryParam("wt", "json")                                  
                                   .queryParam("indent", "true")                      
-          .queryParam("f.crawl_year.facet.sort","index");
-        
-      if (!PropertiesLoader.FACETS.isEmpty()) {
-          queryWs = queryWs.queryParam("facet", "true");
-          for (String facet: PropertiesLoader.FACETS) {
-              queryWs = queryWs.queryParam("facet.field", facet);
-          }
-      }
-
-      if ( fq != null && fq.length() > 0){
-        queryWs = queryWs.queryParam("fq",fq);                        
-       }
-      
-      if (!revisits){
-        queryWs = queryWs.queryParam("fq", "record_type:response OR record_type:arc"); //Not very smart to have arc as a value here... Maybe Toke can fix
-      }
-                 
+                                  .queryParam("facet", "false");                                   
       ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
       String responseStr= response.getEntity(String.class);
-
-      log.info(responseStr.substring(0, Math.min(800, responseStr.length()-1)));
-      
-      
-      return responseStr;
-      
+      log.debug(responseStr.substring(0, Math.min(800, responseStr.length()-1)));            
+      return responseStr;      
   }
-    
-    
-    
+            
     /*
      * Temp solution, make generic query properties
      * 
      */
 public static String proxyBackendResources(String source_file_path, String offset, String serviceName) throws Exception{                    
       
-
       String backendServer= PropertiesLoaderWeb.WAYBACK_SERVER;
   
         
