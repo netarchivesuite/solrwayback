@@ -1,18 +1,15 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.archive.wayback.util.url.AggressiveUrlCanonicalizer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -236,7 +233,7 @@ public class HtmlParserUrlRewriter {
       String html = new String(arc.getBinary(),arc.getContentEncoding());
       String url=arc.getUrl();
 
-
+       String collectionName = PropertiesLoader.PID_COLLECTION_NAME;
       Document doc = Jsoup.parse(html,url); //TODO baseURI?
 
      
@@ -249,10 +246,9 @@ public class HtmlParserUrlRewriter {
       StringBuffer buf = new StringBuffer();
       for (IndexDoc indexDoc: docs){
           buf.append("<part>\n");        
-          buf.append("urn:pwid:netarkivet.dk:"+indexDoc.getCrawlDate()+":part:"+indexDoc.getUrl() +"\n");
+          buf.append("urn:pwid:"+collectionName+":"+indexDoc.getCrawlDate()+":part:"+indexDoc.getUrl() +"\n");
           buf.append("</part>\n");
-          //pwid:netarkivet.dk:time:part:url
-      
+          //pwid:netarkivet.dk:time:part:url      
       }
      return buf.toString();
 	}

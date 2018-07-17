@@ -19,10 +19,19 @@ public class PropertiesLoaderWeb {
 	public static final String WAYBACK_SERVER_PROPERTY="wayback.baseurl";
 	public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";
 	public static final String GOOGLE_API_KEY_PROPERTY="google.api.key";
-	private static final String FACETS_PROPERTY = "facets";
+	private static final String FACETS_PROPERTY = "facets";	
+	public static final String GOOGLE_MAPS_LATITUDE_PROPERTY = "google.maps.latitude";
+	public static final String GOOGLE_MAPS_LONGITUDE_PROPERTY = "google.maps.longitude";
+	public static final String GOOGLE_MAPS_RADIUS_PROPERTY = "google.maps.radius";
+	
+	
 	public static String OPENWAYBACK_SERVER;
 	public static String GOOGLE_API_KEY=null;
 	public static String WAYBACK_SERVER = null;
+    public static String GOOGLE_MAPS_LATITUDE;
+    public static String GOOGLE_MAPS_LONGITUDE;
+    public static String GOOGLE_MAPS_RADIUS;
+		
 	private static Properties serviceProperties = null;
 	//Default values.
 	public static List<String> FACETS = Arrays.asList("domain", "content_type_norm", "type", "crawl_year", "status_code", "public_suffix"); 
@@ -45,13 +54,19 @@ public class PropertiesLoaderWeb {
 			WAYBACK_SERVER =serviceProperties.getProperty(WAYBACK_SERVER_PROPERTY);
 		    FACETS = Arrays.asList(getProperty(FACETS_PROPERTY, StringUtils.join(FACETS, ",")).split(", *"));
 		    GOOGLE_API_KEY =serviceProperties.getProperty(GOOGLE_API_KEY_PROPERTY);
-		    OPENWAYBACK_SERVER= serviceProperties.getProperty(OPENWAYBACK_SERVER_PROPERTY);
-		    
+		    OPENWAYBACK_SERVER = serviceProperties.getProperty(OPENWAYBACK_SERVER_PROPERTY);
+		    GOOGLE_MAPS_LATITUDE = serviceProperties.getProperty(GOOGLE_MAPS_LATITUDE_PROPERTY);
+		    GOOGLE_MAPS_LONGITUDE = serviceProperties.getProperty(GOOGLE_MAPS_LONGITUDE_PROPERTY);
+		    GOOGLE_MAPS_RADIUS = serviceProperties.getProperty(GOOGLE_MAPS_RADIUS_PROPERTY);
 		    
 		    log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
 			log.info("Property:"+ WAYBACK_SERVER_PROPERTY +" = " + WAYBACK_SERVER);
 			log.info("Property:"+ GOOGLE_API_KEY_PROPERTY+" = " + GOOGLE_API_KEY);
+			log.info("Property:"+ GOOGLE_MAPS_LATITUDE_PROPERTY+" = " +GOOGLE_MAPS_LATITUDE);
+			log.info("Property:"+ GOOGLE_MAPS_LONGITUDE_PROPERTY+" = " +GOOGLE_MAPS_LONGITUDE);
+			log.info("Property:"+ GOOGLE_MAPS_RADIUS_PROPERTY+" = " + GOOGLE_MAPS_RADIUS);
 			log.info("Property:"+ FACETS_PROPERTY +" = " + FACETS);
+		
 		}
 		catch (Exception e) {
 			e.printStackTrace();

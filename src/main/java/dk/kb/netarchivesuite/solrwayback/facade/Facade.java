@@ -484,10 +484,11 @@ public class Facade {
     public static String generatePid(String source_file_path, long offset) throws Exception{      
       ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);           
       arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
+      String collectionName = PropertiesLoader.PID_COLLECTION_NAME;
       StringBuffer parts = new StringBuffer();
       //the original page
       parts.append("<part>\n");
-      parts.append("urn:pwid:netarkivet.dk:"+arc.getCrawlDate()+":part:"+arc.getUrl() +"\n");
+      parts.append("urn:pwid:"+collectionName+":"+arc.getCrawlDate()+":part:"+arc.getUrl() +"\n");
       parts.append("</part>\n");      
       String xmlIncludes = HtmlParserUrlRewriter.generatePwid(arc);//all sub elements            
       parts.append(xmlIncludes);
@@ -646,7 +647,10 @@ public class Facade {
         props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.WAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.OPENWAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.GOOGLE_API_KEY_PROPERTY,PropertiesLoaderWeb.GOOGLE_API_KEY);
-
+        props.put(PropertiesLoaderWeb.GOOGLE_MAPS_LATITUDE_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_LATITUDE);
+        props.put(PropertiesLoaderWeb.GOOGLE_MAPS_LONGITUDE_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_LONGITUDE);
+        props.put(PropertiesLoaderWeb.GOOGLE_MAPS_RADIUS_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_RADIUS);
+                        
         return props;
     }
     
