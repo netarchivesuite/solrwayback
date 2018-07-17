@@ -12,6 +12,7 @@ Playback improvements. (img srcset tag, embed url etc.)
 Google API key extracted to property file.
 Search by entering URL option in search interface. This will also convert the URL from IDN to puny code, making seach by URL easier.
 Faster search but only loading the fields showing in the short record presentation. Only load all fields when showing them for a record. For index-size > 300GB this is a factor 2 or more.   
+Domain growth stats graph also included in search-frontend and not only playback toolbar.
 
 3.1
 -----
