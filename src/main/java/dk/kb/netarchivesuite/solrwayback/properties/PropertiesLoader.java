@@ -25,6 +25,9 @@ public class PropertiesLoader {
     private static final String CHROME_COMMAND_PROPERTY="chrome.command";
     private static final String SCREENSHOT_TEMP_IMAGEDIR_PROPERTY="screenshot.temp.imagedir";
     private static final String PID_COLLECTION_NAME_PROPERTY="pid.collection.name";
+    private static final String SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY="screenshot.preview.timeout";
+    
+    
     
     
     private static Properties serviceProperties = null;
@@ -37,6 +40,7 @@ public class PropertiesLoader {
     public static String PROXY_ALLOW_HOSTS= null;
     public static String WARC_FILE_RESOLVER_CLASS = null;
     public static String PID_COLLECTION_NAME = null;
+    public static int SCREENSHOT_PREVIEW_TIMEOUT = 10;//default
     
 
     public static void initProperties() {
@@ -60,15 +64,23 @@ public class PropertiesLoader {
             PROXY_ALLOW_HOSTS = serviceProperties.getProperty(PROXY_ALLOW_HOSTS_PROPERTY);
             WARC_FILE_RESOLVER_CLASS = serviceProperties.getProperty(WARC_FILE_RESOLVER_CLASS_PROPERTY);
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
-
+            String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
+            if (timeout != null){
+              SCREENSHOT_PREVIEW_TIMEOUT = Integer.parseInt(timeout);
+            }
+            
+            
             log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
             log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);
             log.info("Property:"+ PROXY_PORT_PROPERTY +" = " + PROXY_PORT);
             log.info("Property:"+ PROXY_ALLOW_HOSTS_PROPERTY +" = " + PROXY_ALLOW_HOSTS);
             log.info("Property:"+ CHROME_COMMAND_PROPERTY +" = " + CHROME_COMMAND);
             log.info("Property:"+ SCREENSHOT_TEMP_IMAGEDIR_PROPERTY +" = " + SCREENSHOT_TEMP_IMAGEDIR);
+            log.info("Property:"+ SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY +" = " +  SCREENSHOT_PREVIEW_TIMEOUT);
             log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);            
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
+            
+            
             
         }
         catch (Exception e) {

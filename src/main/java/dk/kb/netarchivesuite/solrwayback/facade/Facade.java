@@ -167,7 +167,9 @@ public class Facade {
       String proxyUrl = getProxySocksUrl();
         
       
-      log.info("proxyUrl:"+proxyUrl);      
+      
+           
+      int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT*1000;
       
       ///temp hack for CentOS.
       if(!useChrome){
@@ -177,14 +179,15 @@ public class Facade {
         pb = new ProcessBuilder("phantomjs", scriptFile,url,filename,"1280px*1024px");
            log.info("phantomjs"+" "+scriptFile +" "+"\""+url+"\""+" "+filename +"\"1280px*1024px\"");
       }
-      else{           
+      else{
+        
          log.info("generate temp preview file:"+filename);
-          pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=5000","--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
-         log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=5000 --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
+          pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=5000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
+         log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=5000 --timeout="+timeoutMillis+" --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
       }
     // chromium-browser --headless  --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024   --proxy-server="socks4://localhost:9000" https://www.google.com/        
       Process start = pb.start();      
-      if(!start.waitFor(10000, TimeUnit.MILLISECONDS)) {
+      if(!start.waitFor(timeoutMillis+1000, TimeUnit.MILLISECONDS)) { // timeout + 1 second before killing.
         //timeout - kill the process. 
         log.info("Timeout generating preview.");
         start.destroyForcibly(); 
