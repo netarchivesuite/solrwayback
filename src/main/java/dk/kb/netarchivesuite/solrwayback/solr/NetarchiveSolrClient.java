@@ -47,7 +47,7 @@ public class NetarchiveSolrClient {
   private static final Logger log = LoggerFactory.getLogger(NetarchiveSolrClient.class);
   protected static SolrClient solrServer;
   protected  static NetarchiveSolrClient instance = null;
-  protected  static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
+  protected  static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
 
   protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location";
 
@@ -655,7 +655,7 @@ return docs;
 
   public HashMap<Integer, Long> getYearHtmlFacets(String query) throws Exception {
     //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
-    if (!TAGS_VALID_PATTERn.matcher(query).matches()) {
+    if (!TAGS_VALID_PATTERN.matcher(query).matches()) {
       throw new InvalidArgumentServiceException("Tag syntax not accepted:"+query);        
     }
 
