@@ -27,7 +27,7 @@ public class WordCloudImageGenerator {
      InputStream in = IOUtils.toInputStream(text, "UTF-8");
      
      final FrequencyAnalyzer frequencyAnalyzer = new FrequencyAnalyzer(); //this has the normalizers, but too many bugs in them. Write one that both lower case, remove non letters and trim's corrext
-     frequencyAnalyzer.setWordFrequenciesToReturn(200); //If more than 250 withs 800*600 resolution/scale 20/100, , most of the longer more frequent words will not be plottet!
+     frequencyAnalyzer.setWordFrequenciesToReturn(250); //If more than 250 withs 800*600 resolution/scale 20/100, , most of the longer more frequent words will not be plottet!
      frequencyAnalyzer.setMinWordLength(4); 
      frequencyAnalyzer.setStopWords(getStopWords()); //hard coded danish. Will move to property and text file if this stays
            
@@ -38,7 +38,7 @@ public class WordCloudImageGenerator {
      wordCloud.setPadding(2);       
      //wordCloud.setBackground(new PixelBoundryBackground("backgrounds/whale_small.png"));
      wordCloud.setColorPalette(new ColorPalette(new Color(0x4055F1), new Color(0x408DF1), new Color(0x40AAF1), new Color(0x40C5F1), new Color(0x40D3F1), new Color(0xFFFFFF)));
-     wordCloud.setFontScalar(new LinearFontScalar(20, 100));   
+     wordCloud.setFontScalar(new LinearFontScalar(14, 80));   
      wordCloud.build(wordFrequencies);
                    
      BufferedImage bufferedImage = wordCloud.getBufferedImage();
