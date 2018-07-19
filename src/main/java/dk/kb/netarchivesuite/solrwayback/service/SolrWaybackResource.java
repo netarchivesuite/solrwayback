@@ -4,6 +4,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -244,9 +245,20 @@ public class SolrWaybackResource {
       throw handleServiceExceptions(e);
     }
   }
+  
 
-
-
+  @GET
+  @Path("/wordcloundfordomain")
+  @Produces("image/png")
+  public Response  wordCloudForDomain(@QueryParam("domain") String domain) throws ServiceException {
+    try {                        
+        BufferedImage image = Facade.wordCloudForDomain(domain);           
+        return Response.ok(image).build();     
+    } catch (Exception e) {           
+      throw handleServiceExceptions(e);
+    }
+  }
+  
   /*
    *    
    * Example call:
@@ -328,7 +340,7 @@ public class SolrWaybackResource {
 
   @GET
   @Path("/image")
-  @Produces("image/jpeg")
+  @Produces("image/png")
   public Response getImage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("height") int height, @QueryParam("width") int width)
       throws ServiceException {
     try {

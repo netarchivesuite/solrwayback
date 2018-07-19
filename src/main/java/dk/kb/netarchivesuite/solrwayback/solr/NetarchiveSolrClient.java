@@ -344,6 +344,29 @@ public class NetarchiveSolrClient {
   }
 
 
+  
+
+  public String getTextForDomain(String domain) throws Exception {    
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery = new SolrQuery("(domain:\""+domain+"\"");     
+
+    solrQuery.add("fl","id, content_text_length, content" );        
+    solrQuery.setFilterQueries("content_type_norm:html" , "content_text_length:[1000 TO *]"); //only html pages and pages with many words.
+    solrQuery.setRows(10000);
+
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+    StringBuilder b= new StringBuilder();
+    long totaltLength=0;
+    for (SolrDocument doc : docs){
+      b.append(doc.getFieldValue("content"));
+      b.append(doc.getFieldValue(" "));//Space between next document.
+      totaltLength +=  ((int)  doc.getFieldValue("content_text_length"));
+    }    
+    log.info("Add content length for wordCloud:"+totaltLength);
+    return b.toString();
+  }
+  
   public ArrayList<IndexDoc> getHarvestPreviewsForUrl(String url) throws Exception {
 
     String urlNormFixed = normalizeUrl(url);    
