@@ -19,21 +19,16 @@ import com.kennycason.kumo.nlp.FrequencyAnalyzer;
 import com.kennycason.kumo.palette.ColorPalette;
 
 
-import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
-
 public class WordCloudImageGenerator {
 
   private static final Logger log = LoggerFactory.getLogger(WordCloudImageGenerator.class);
   
-  public static BufferedImage wordCloudForDomain(String domain) throws Exception {
-    log.info("getting wordcloud for url:"+domain);
-
-     String text = NetarchiveSolrClient.getInstance().getTextForDomain(domain); // Only contains the required fields for this method       
+  public static BufferedImage wordCloudForDomain(String text) throws Exception {
      InputStream in = IOUtils.toInputStream(text, "UTF-8");
      
-     final FrequencyAnalyzer frequencyAnalyzer = new FrequencyAnalyzer(); //this has the normalizers
+     final FrequencyAnalyzer frequencyAnalyzer = new FrequencyAnalyzer(); //this has the normalizers, but too many bugs in them. Write one that both lower case, remove non letters and trim's corrext
      frequencyAnalyzer.setWordFrequenciesToReturn(200); //If more than 250 withs 800*600 resolution/scale 20/100, , most of the longer more frequent words will not be plottet!
-     frequencyAnalyzer.setMinWordLength(3);
+     frequencyAnalyzer.setMinWordLength(4); 
      frequencyAnalyzer.setStopWords(getStopWords()); //hard coded danish. Will move to property and text file if this stays
            
      final List<WordFrequency> wordFrequencies = frequencyAnalyzer.load(in);

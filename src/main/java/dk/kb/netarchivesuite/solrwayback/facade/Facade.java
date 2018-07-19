@@ -236,24 +236,22 @@ public class Facade {
          previews.add(pp);
        }
               
-       return previews;
-            
+       return previews;            
     }
      
-    public static BufferedImage wordCloudForDomain(String domain) throws Exception {
-      log.info("getting wordcloud for url:"+domain);
-       BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(domain);
+    public static BufferedImage wordCloudForDomain(String domain) throws Exception {    
+       log.info("getting wordcloud for url:"+domain);
+       String text = NetarchiveSolrClient.getInstance().getTextForDomain(domain); // Only contains the required fields for this method       
+       BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(text);
        return bufferedImage;       
     }    
     
     public static ArrayList<ImageUrl> getImagesForHtmlPageNew(String source_file_path,long offset) throws Exception {            
       ArrayList<ArcEntryDescriptor> arcs = getImagesForHtmlPageNewThreaded(source_file_path,offset);       
 
-      return arcEntrys2Images(arcs);
-      
+      return arcEntrys2Images(arcs);     
     }
     
-
     public static String punyCodeAndNormaliseUrl(String url) throws Exception {     
       if (!url.startsWith("http://")){ 
         throw new Exception("Url not starting with http://");
