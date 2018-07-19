@@ -1,31 +1,31 @@
 package dk.kb.netarchivesuite.solrwayback.facade;
 
 
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.IDN;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.*;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
@@ -40,31 +40,12 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServic
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
-
 import dk.kb.netarchivesuite.solrwayback.solr.*;
-
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
-import com.kennycason.kumo.CollisionMode;
-import com.kennycason.kumo.nlp.normalize.TrimToEmptyNormalizer;
-import com.kennycason.kumo.WordCloud;
-import com.kennycason.kumo.WordFrequency;
-import com.kennycason.kumo.font.scale.LinearFontScalar;
-import com.kennycason.kumo.nlp.FrequencyAnalyzer;
-import com.kennycason.kumo.palette.ColorPalette;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-
+import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
+
 
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
@@ -261,29 +242,9 @@ public class Facade {
      
     public static BufferedImage wordCloudForDomain(String domain) throws Exception {
       log.info("getting wordcloud for url:"+domain);
-  
-       String text = NetarchiveSolrClient.getInstance().getTextForDomain(domain); // Only contains the required fields for this method       
-       InputStream in = IOUtils.toInputStream(text, "UTF-8");
-       
-       final FrequencyAnalyzer frequencyAnalyzer = new FrequencyAnalyzer(); //this has the normalizers
-       frequencyAnalyzer.setWordFrequenciesToReturn(200); //If more than 200 withs 800*600 resolution, most of the longer more frequent words will not be plottet!
-       frequencyAnalyzer.setMinWordLength(4);
-       //frequencyAnalyzer.setStopWords(loadStopWords());
-             
-       final List<WordFrequency> wordFrequencies = frequencyAnalyzer.load(in);
-       
-       final Dimension dimension = new Dimension(800, 600);
-       final WordCloud wordCloud = new WordCloud(dimension, CollisionMode.PIXEL_PERFECT);
-       wordCloud.setPadding(2);       
-       //wordCloud.setBackground(new PixelBoundryBackground("backgrounds/whale_small.png"));
-       wordCloud.setColorPalette(new ColorPalette(new Color(0x4055F1), new Color(0x408DF1), new Color(0x40AAF1), new Color(0x40C5F1), new Color(0x40D3F1), new Color(0xFFFFFF)));
-       wordCloud.setFontScalar(new LinearFontScalar(20, 100));   
-       wordCloud.build(wordFrequencies);
-                     
-       BufferedImage bufferedImage = wordCloud.getBufferedImage();
+       BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(domain);
        return bufferedImage;       
-    }
-    
+    }    
     
     public static ArrayList<ImageUrl> getImagesForHtmlPageNew(String source_file_path,long offset) throws Exception {            
       ArrayList<ArcEntryDescriptor> arcs = getImagesForHtmlPageNewThreaded(source_file_path,offset);       
