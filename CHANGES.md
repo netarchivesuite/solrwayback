@@ -17,6 +17,7 @@ For image GPS search the google maps start location parameters extracted to prop
 For PID export the collection name has been extracted to property file.
 For screenshot preview using headless chrome, the timeout parameter has been extraced to property-file. Optional, 10 seconds is default
 Facets are now  defined in the property file (solrwaybackweb.properties). This is optional. They were hardcoded in 3.1
+If solrwayback is deployed in the tomcat under another contextname that solrwayback, it will try load a property file with that context name before defaulting to solrwayback.properties 
  
 
 3.1
