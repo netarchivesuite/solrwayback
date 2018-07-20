@@ -363,7 +363,7 @@ public class NetarchiveSolrClient {
       b.append(doc.getFieldValue(" "));//Space between next document.
       totaltLength +=  ((int)  doc.getFieldValue("content_text_length"));
     }    
-    log.info("Add content length for wordCloud:"+totaltLength);
+    log.info("Total extracted content length for wordCloud:"+totaltLength +" total hits:"+rsp.getResults().getNumFound()  +" only using first 10000 hits");
     return b.toString();
   }
   
