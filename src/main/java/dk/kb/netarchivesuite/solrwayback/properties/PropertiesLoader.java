@@ -54,7 +54,7 @@ public class PropertiesLoader {
                log.info("Could not find contextroot specific propertyfile:"+propertyFile +". Using default:"+DEFAULT_PROPERTY_FILE);
                propertyFile=DEFAULT_PROPERTY_FILE;                                 
              }                        
-            log.info("Load properties: Using user.home folder:" + user_home +" and propertyFile:"+propertyFile);
+            log.info("Load backend-properties: Using user.home folder:" + user_home +" and propertyFile:"+propertyFile);
             InputStreamReader isr = new InputStreamReader(new FileInputStream(new File(user_home,propertyFile)), "ISO-8859-1");
 
             serviceProperties = new Properties();

@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 public class PropertiesLoaderWeb {
 
 	private static final Logger log = LoggerFactory.getLogger(PropertiesLoaderWeb.class);
-	private static final String PROPERTY_FILE = "solrwaybackweb.properties";
+	private static final String DEFAULT_PROPERTY_WEB_FILE = "solrwaybackweb.properties";
 
 	public static final String WAYBACK_SERVER_PROPERTY="wayback.baseurl";
 	public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";
@@ -40,16 +40,26 @@ public class PropertiesLoaderWeb {
 	//Default values.
 	public static List<String> FACETS = Arrays.asList("domain", "content_type_norm", "type", "crawl_year", "status_code", "public_suffix"); 
 
+	  public static void initProperties() {
+	      initProperties(DEFAULT_PROPERTY_WEB_FILE);      
+	    }
+	    
 	
-	
-	public static void initProperties() {
+	public static void initProperties(String propertyFile) {
 		try {
 
 			log.info("Initializing solrwaybackweb-properties");
+	        String user_home=System.getProperty("user.home");
 
-			String user_home=System.getProperty("user.home");
-			log.info("Load properties: Using user.home folder:" + user_home);
-			InputStreamReader isr = new InputStreamReader(new FileInputStream(new File(user_home,PROPERTY_FILE)), "ISO-8859-1");
+			File f = new File(user_home,propertyFile);
+            if (!f.exists()) {
+              log.info("Could not find contextroot specific propertyfile:"+propertyFile +". Using default:"+DEFAULT_PROPERTY_WEB_FILE);
+              propertyFile=DEFAULT_PROPERTY_WEB_FILE;                                 
+            }                        
+           log.info("Load web-properties: Using user.home folder:" + user_home +" and propertyFile:"+propertyFile);
+			
+			
+			InputStreamReader isr = new InputStreamReader(new FileInputStream(new File(user_home,propertyFile)), "ISO-8859-1");
 
 			serviceProperties = new Properties();
 			serviceProperties.load(isr);
@@ -76,7 +86,7 @@ public class PropertiesLoaderWeb {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			log.error("Could not load property file:"+ PROPERTY_FILE);
+			log.error("Could not load property file:"+ propertyFile);
 		}
 	}
 
