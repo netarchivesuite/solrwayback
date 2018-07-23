@@ -14,7 +14,8 @@ public class WaybackStatistics {
   private String previousHarvestDate;
   private String lastHarvestDate;
   private String harvestDate;
-     
+  private int statusCode;
+  
  
   public String getUrl() {
     return url;
@@ -82,13 +83,21 @@ public class WaybackStatistics {
   public void setDomainHarvestTotalContentLength(long domainHarvestTotalContentLength) {
     this.domainHarvestTotalContentLength = domainHarvestTotalContentLength;
   }
+    
+  public int getStatusCode() {
+    return statusCode;
+  }
+  public void setStatusCode(int statusCode) {
+    this.statusCode = statusCode;
+  }
   @Override
   public String toString() {
-    return "WaybackStatistics [url_norm=" + url_norm + ", numberOfHarvest=" + numberOfHarvest
+    return "WaybackStatistics [url_norm=" + url_norm + ", url=" + url + ", numberOfHarvest=" + numberOfHarvest
         + ", domainHarvestTotalContentLength=" + domainHarvestTotalContentLength + ", numberHarvestDomain="
         + numberHarvestDomain + ", domain=" + domain + ", firstHarvestDate=" + firstHarvestDate + ", nextHarvestDate="
         + nextHarvestDate + ", previousHarvestDate=" + previousHarvestDate + ", lastHarvestDate=" + lastHarvestDate
-        + ", harvestDate=" + harvestDate + "]";
+        + ", harvestDate=" + harvestDate + ", statusCode=" + statusCode + "]";
   }
+
      
 }
