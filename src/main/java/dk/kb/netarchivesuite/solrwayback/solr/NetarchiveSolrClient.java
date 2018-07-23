@@ -860,8 +860,10 @@ return docs;
     indexDoc.setContentEncoding((String) doc.get("content_encoding"));
     indexDoc.setType((String) doc.get("type"));
     indexDoc.setExifLocation((String) doc.get("exif_location"));
-    indexDoc.setStatusCode((Integer) doc.get("status_code"));
-    
+    Object statusCodeObj = doc.get("status_code");
+    if (statusCodeObj != null){         
+      indexDoc.setStatusCode((Integer) statusCodeObj);     
+    }
     String hash = (String) doc.get("hash");
     indexDoc.setHash((String) hash);      
 
