@@ -198,6 +198,7 @@ public class HtmlParserUrlRewriter {
 
 		replaceUrlForElement(urlReplaceMap,doc, "img", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "embed", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
+	    replaceUrlForElement(urlReplaceMap,doc, "source", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "body", "background", "downloadRaw" ,  numberOfLinksReplaced ,  numberOfLinksNotFound);             	     	 
 		replaceUrlForElement(urlReplaceMap,doc, "link", "href", "view",  numberOfLinksReplaced ,  numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "script", "src", "downloadRaw",  numberOfLinksReplaced,  numberOfLinksNotFound);
@@ -577,6 +578,7 @@ public class HtmlParserUrlRewriter {
       collectRewriteUrlsForElement(urlSet,doc, "area", "href");
       collectRewriteUrlsForElement(urlSet, doc, "img", "src");
       collectRewriteUrlsForElement(urlSet, doc, "embed", "src");
+      collectRewriteUrlsForElement(urlSet, doc, "source", "src");
       collectRewriteUrlsForImgSrcset(urlSet, doc);
       collectRewriteUrlsForElement(urlSet,doc, "body", "background");
       collectRewriteUrlsForElement(urlSet, doc, "link", "href");
