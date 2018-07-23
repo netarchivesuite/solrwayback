@@ -613,7 +613,7 @@ public class Facade {
           arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
     	  }
     	 
-    	else if ("Web Page".equals(doc.getType())){
+    	else if ("Web Page".equals(doc.getType()) || (300<=doc.getStatusCode() &&  arc.getContentType().equals("text/html") ) ){ // We still want the toolbar to show for http moved (302 etc.)
     		long start = System.currentTimeMillis();
         	log.debug(" Generate webpage from FilePath:" + source_file_path + " offset:" + offset);
         	  HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);   	 
