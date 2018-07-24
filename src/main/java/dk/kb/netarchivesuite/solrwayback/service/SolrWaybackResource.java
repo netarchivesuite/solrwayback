@@ -520,7 +520,7 @@ public class SolrWaybackResource {
    */
   @GET
   @Path("/web/{var:.*?}")
-  public Response testUrl(@Context UriInfo uriInfo, @PathParam("var") String path) throws ServiceException {
+  public Response waybackAPIResolver(@Context UriInfo uriInfo, @PathParam("var") String path) throws ServiceException {
     try {        
       //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
       log.info("/web/ called with data:"+path);
