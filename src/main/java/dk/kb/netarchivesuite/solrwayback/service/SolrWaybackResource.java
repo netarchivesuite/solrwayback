@@ -393,9 +393,13 @@ public class SolrWaybackResource {
       }
             
       if (arcEntry.getFileName() != null){
-        response.header("Content-Disposition", "filename=\"" + arcEntry.getFileName() +"\"");
+        response.header("Content-Disposition", "filename=\"" + arcEntry.getFileName() +"\"");      
       }
-
+      
+      if (arcEntry.getContentEncoding() != null){
+        response.header("Content-Encoding", arcEntry.getContentEncoding());      
+      }
+      
       log.debug("Download from source_file_path:" + source_file_path + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());
       return response.build();
 
@@ -649,9 +653,13 @@ public class SolrWaybackResource {
      contentType= "text/plain";
      log.warn("no contenttype, setting:text/plain");
    }
-    
-    
+        
     ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
+    
+    if (arcEntry.getContentEncoding() != null){
+      response.header("Content-Encoding", arcEntry.getContentEncoding()); 
+    }
+    
     return response.build();
 
   }
