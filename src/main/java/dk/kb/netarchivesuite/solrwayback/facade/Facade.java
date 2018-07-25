@@ -560,8 +560,10 @@ public class Facade {
     	
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
         IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
-    	String encoding = arc.getContentEncoding();
-    	if (encoding == null){
+    	
+        String encoding = arc.getContentEncoding();
+           
+        if (encoding == null){
     	  encoding =Facade.getEncoding(source_file_path, ""+offset); //Ask the index
     	}    	
     	if (encoding == null){
@@ -628,15 +630,15 @@ public class Facade {
             log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start));
         	return arc;
     		 
-        }else if (("text/css".equals(arc.getContentType()))){ 
+        } //TODO, if zipped, I am not parsing CSS for url replaces
+    	else if ("text/css".equals(arc.getContentType()) && arc.getContentEncoding()!= null &&  arc.getContentEncoding().toLowerCase().indexOf("gzip")== -1 ){ 
     		long start = System.currentTimeMillis();
         	log.debug(" Generate css from FilePath:" + source_file_path + " offset:" + offset);
         	String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);        
         	
         	arc.setBinary(textReplaced.getBytes(encoding));    	
             log.debug("Generating css total processing:"+(System.currentTimeMillis()-start));
-        	return arc;
-        	
+        	return arc;        	
         }
 		log.info("skipping html url rewrite for contentype:"+arc.getContentType());
     	return arc; //dont parse
