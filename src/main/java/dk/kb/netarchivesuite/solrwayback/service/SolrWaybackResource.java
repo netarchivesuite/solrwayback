@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -602,6 +603,34 @@ public class SolrWaybackResource {
   }
 
 
+  
+  @GET
+  @Path("/viewFromLeakedResource")
+  public Response viewFromLeakedResource(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("urlPart") String urlPart) throws ServiceException {
+    //this method is only called from the tomcat solrwaybackrootproxy if that proxy mode is used.
+    try {
+
+      log.info("viewFromLeakedResource called:");
+      log.info("source_file_path:"+source_file_path);
+      log.info("offset:"+offset);
+      log.info("urlPath:"+urlPart);
+
+      //This is from the URL where the leak came from      
+      IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
+      String orgUrl=arcEntry.getUrl();
+      
+      URL base = new URL(orgUrl);
+      String resolvedUrl = new URL(base ,urlPart).toString();
+      log.info("Resource should be located at:"+resolvedUrl);          
+      return viewhref(resolvedUrl, arcEntry.getCrawlDate(), false);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw handleServiceExceptions(e);
+    }
+  }
+  
+  
   @GET
   @Path("/view")
   public Response view(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws ServiceException {
