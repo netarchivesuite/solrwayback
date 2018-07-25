@@ -436,7 +436,7 @@ public class HtmlParserUrlRewriter {
 			if (url == null  || url.trim().length()==0){
 				continue;
 			}
-			System.out.println("adding url:"+(Normalisation.canonicaliseURL(url)));
+//			System.out.println("adding url:"+(Normalisation.canonicaliseURL(url)));
 			set.add(Normalisation.canonicaliseURL(url));   		    		 		
 		}
 	}
