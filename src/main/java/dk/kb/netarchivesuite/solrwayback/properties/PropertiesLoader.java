@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.properties;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -30,6 +31,8 @@ public class PropertiesLoader {
 
     public static String SOLR_SERVER = null;
     public static String WAYBACK_BASEURL = null;
+    public static String WAYBACK_HOST = null; //Taken from WAYBACK_BASEURL
+    public static int WAYBACK_SERVER_PORT = 0; //Taken from WAYBACK_BASEURL
     public static String CHROME_COMMAND= null;
     public static String SCREENSHOT_TEMP_IMAGEDIR = null;
     public static String PROXY_PORT= null;
@@ -70,12 +73,17 @@ public class PropertiesLoader {
             WARC_FILE_RESOLVER_CLASS = serviceProperties.getProperty(WARC_FILE_RESOLVER_CLASS_PROPERTY);
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
+            
+            URL waybacksURL = new URL (WAYBACK_BASEURL);
+            WAYBACK_SERVER_PORT =  waybacksURL.getPort();
+            WAYBACK_HOST =  waybacksURL.getHost();    
+            
             if (timeout != null){
               SCREENSHOT_PREVIEW_TIMEOUT = Integer.parseInt(timeout);
             }
                         
             log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
-            log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);
+            log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);           
             log.info("Property:"+ PROXY_PORT_PROPERTY +" = " + PROXY_PORT);
             log.info("Property:"+ PROXY_ALLOW_HOSTS_PROPERTY +" = " + PROXY_ALLOW_HOSTS);
             log.info("Property:"+ CHROME_COMMAND_PROPERTY +" = " + CHROME_COMMAND);
