@@ -11,6 +11,8 @@ package dk.kb.netarchivesuite.solrwayback.proxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -105,7 +107,7 @@ class SocksClient {
         }
 
         // Port number
-        final int port = inbuf.getShort();
+         int port = inbuf.getShort();
 
         // IP address
         final byte ip[] = new byte[4];
@@ -126,39 +128,37 @@ class SocksClient {
             String host = readString("host", inbuf);
 
             if (allowedHosts.contains(host.toLowerCase(Locale.ENGLISH))) {
-                message("Allowing connection to host " + host);
+                log.info("Allowing connection to host " + host +" port:"+port);
             } else {
-                message("Leaking prevented for host " + host);
-                failConnectionToHost(remoteAddr, port);
-                return;
+                log.info("Leaking prevented for host " + host +" port:"+port);  
+                host=PropertiesLoader.WAYBACK_HOST;
+                port=PropertiesLoader.WAYBACK_SERVER_PORT;                
+                //failConnectionToHost(remoteAddr, port); //this was used before trying to redirect to a harvested url
+                //return;
             }
 
             try {
                 remoteAddr = InetAddress.getByName(host);
             } catch (Exception e) {
-                throw new IOException("Unable to get IP for allowed host " + host);
+                throw new IOException("Unable to get IP for allowed host " + host +" port:"+port);
             }
         } else {
             // TODO: Why do we get all these IP lookups with Chrome? Is the check for host too picky?
             if (allowedHosts.contains(remoteAddr.getHostAddress())) {
-                //log.info("Allowing connection to IP-address " + remoteAddr.getHostAddress());
-            } else {
-               //Only enable this is production. If the user has other tabs open, this will reveal the sites they are contacting.
-              //  log.info("Leaking prevented for IP-address " + remoteAddr.getHostAddress()); 
-                  log.info("Leaking prevented to not allowed IP adress. (Not logging the address)");  
-              failConnectionToHost(remoteAddr, port);
-                return;
+                log.info("Allowing connection to IP-address " + remoteAddr.getHostAddress());
+            } else {                
+                  log.info("Leaking prevented to remote address: "+remoteAddr +" port:"+port);  
+                  remoteAddr=  InetAddress.getByName(PropertiesLoader.WAYBACK_HOST);                  
+                  
+                  //failConnectionToHost(remoteAddr, port); //this was used before trying to redirect to a harvested url
+                  // return;
             }
         }
-
+        log.info("redirected to:"+remoteAddr +" port:"+port);
         connectToRemote(selector, port, remoteAddr);
     }
 
-    private void message(String message) {
-        log.info(message);
-        //System.out.println(message);
-    }
-
+    
     public boolean isFailed() {
         return failed;
     }
@@ -185,8 +185,7 @@ class SocksClient {
     }
 
     private void connectToRemote(Selector selector, int port, InetAddress remoteAddr) throws IOException {
-        message("Establishing connection to IP " + remoteAddr +
-                " (total accepted connections for this SOCKS client: " + ++acceptedCount + ")");
+        log.debug("Establishing connection to IP " + remoteAddr +" (total accepted connections for this SOCKS client: " + ++acceptedCount + ")");
         remote = SocketChannel.open(new InetSocketAddress(remoteAddr, port));
 
         ByteBuffer out = ByteBuffer.allocate(20);
@@ -207,7 +206,7 @@ class SocksClient {
         remote.register(selector, SelectionKey.OP_READ);
         connected = true;
     }
-
+    
     private void failConnectionToHost(InetAddress remoteAddr, int port) throws IOException {
         blockedCount++;
         ByteBuffer out = ByteBuffer.allocate(20);
@@ -234,10 +233,10 @@ class SocksClient {
                 total += flush(destination, buf, bufSize);
             }
             if (total != 0) {
-                //message("Copied buffer size " + total + " bytes in " +    (System.nanoTime() - startTime) / 1000000 + " ms");
+                //log.info("Copied buffer size " + total + " bytes in " +    (System.nanoTime() - startTime) / 1000000 + " ms");
             }
             if (bufSize == -1) {
-                //message("Closing SOCKS client as EOS (-1) was received");
+                //log.info("Closing SOCKS client as EOS (-1) was received");
                 eos = true;
             }
             lastData = System.currentTimeMillis(); // Even if total == 0 to keep alive
@@ -246,12 +245,12 @@ class SocksClient {
             failed = true;
         }
         // else if (bufSize == -1) {
-//            message("Logic error during copyData: Got -1 as only result. Client disconnected?");
+//           log.info("Logic error during copyData: Got -1 as only result. Client disconnected?");
   //      }
     }
 
-    private long flush(SocketChannel destination, ByteBuffer buf, int bufSize) throws IOException {
-        int written = 0;
+    private long flush(SocketChannel destination, ByteBuffer buf, int bufSize) throws IOException {  
+      int written = 0;
         while (written < bufSize) {
             int current = destination.write(buf);
             written += current;
