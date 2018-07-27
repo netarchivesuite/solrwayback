@@ -529,13 +529,13 @@ public class SolrWaybackResource {
   public Response waybackProxyAPIResolver(@Context UriInfo uriInfo, @PathParam("var") String path) throws ServiceException {
     try {        
       //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
-      log.info("/web/ called with data:"+path);
+      log.info("/webProxy/ called with data:"+path);
       String fullUrl = uriInfo.getRequestUri().toString();
       log.info("full url:"+fullUrl);
      
-      int dataStart=fullUrl.indexOf("/web/");
+      int dataStart=fullUrl.indexOf("/webProxy/");
       
-      String waybackDataObject = fullUrl.substring(dataStart+5);
+      String waybackDataObject = fullUrl.substring(dataStart+10);
       log.info("Waybackdata object:"+waybackDataObject);
 
       int indexFirstSlash = waybackDataObject.indexOf("/");  
