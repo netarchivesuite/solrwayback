@@ -519,6 +519,55 @@ public class SolrWaybackResource {
 
 
   /*
+   * Almost the same as the '/web/' method.
+   * But this method is only called from proxy direct. Do not include toolbar.
+   * Also knowing it is from proxy can be used to improve playback even more. (TODO)  
+   * 
+   */
+  @GET
+  @Path("/webProxy/{var:.*?}")
+  public Response waybackProxyAPIResolver(@Context UriInfo uriInfo, @PathParam("var") String path) throws ServiceException {
+    try {        
+      //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
+      log.info("/web/ called with data:"+path);
+      String fullUrl = uriInfo.getRequestUri().toString();
+      log.info("full url:"+fullUrl);
+     
+      int dataStart=fullUrl.indexOf("/web/");
+      
+      String waybackDataObject = fullUrl.substring(dataStart+5);
+      log.info("Waybackdata object:"+waybackDataObject);
+
+      int indexFirstSlash = waybackDataObject.indexOf("/");  
+             
+      String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
+      String url = waybackDataObject.substring(indexFirstSlash+1);
+
+      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");          
+      Date date = waybackDateFormat.parse(waybackDate);
+
+      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new                   
+      String solrDate = dateFormat.format(date)+"Z";
+
+      //log.info("solrDate="+solrDate +" , url="+url);
+      IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
+      if (doc == null){
+        log.info("Url has never been harvested:"+url);
+        throw new NotFoundServiceException("Url has never been harvested:"+url);
+      }
+      //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
+      log.info("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
+      return viewImpl(doc.getSource_file_path() , doc.getOffset(),false); //NO TOOLBAR!        
+      
+                     
+    } catch (Exception e) {
+      //e.printStackTrace();
+      throw handleServiceExceptions(e);
+    }
+
+  }
+
+  /*
    * '/web/' is the same as wayback machine uses. 
    * 
    * Jersey syntax to match all after /web/.
@@ -566,6 +615,8 @@ public class SolrWaybackResource {
 
   }
 
+  
+  
   
 /*
  * Showtoolbarnot working here.
