@@ -155,7 +155,7 @@ public class Facade {
       String filename = PropertiesLoader.SCREENSHOT_TEMP_IMAGEDIR+now+"_"+offset +".png"; //Include offset to avoid hitting same time.
       String chromeCommand = PropertiesLoader.CHROME_COMMAND;
                                  
-      log.info("preview for url:"+url);
+      log.info("Generating preview-image for url:"+url);
       boolean useChrome=true;
       ProcessBuilder pb  =  null;
       
@@ -587,7 +587,7 @@ public class Facade {
           String textReplaced=htmlReplaced.getHtmlReplaced(); //TODO count linkes found, replaced
           
             //Inject tooolbar
-          if (showToolbar!=Boolean.FALSE ){ //If true or null.
+          if (showToolbar){ //If true or null.
               textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced, false);
           }
           arc.setContentEncoding(encoding);
@@ -607,7 +607,7 @@ public class Facade {
           String textReplaced=htmlReplaced.getHtmlReplaced(); //TODO count linkes found, replaced          
           
           //Inject tooolbar
-          if (showToolbar!=Boolean.FALSE ){ //If true or null.
+          if (showToolbar){ //If true or null.
              textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced, false);
           }
           encoding="UTF-8"; // hack, since the HTML was generated as UTF-8.
@@ -622,7 +622,8 @@ public class Facade {
         	  String textReplaced=htmlReplaced.getHtmlReplaced();        	  
         	  boolean xhtml =doc.getContentType().toLowerCase().indexOf("application/xhtml") > -1;        	  
         	//Inject tooolbar
-        	if (showToolbar!=Boolean.FALSE ){ //If true or null. 
+        	if (showToolbar ){ //If true or null. 
+        	  System.out.println("GENERATE TOOLBAR FOR:"+source_file_path +": "+offset);
         	   textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced , xhtml);
         	}
             
