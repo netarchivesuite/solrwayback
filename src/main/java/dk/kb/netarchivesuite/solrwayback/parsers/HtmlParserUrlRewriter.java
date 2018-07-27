@@ -152,7 +152,6 @@ public class HtmlParserUrlRewriter {
 						
 				IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getCrawlDate());		         
 				if (indexDoc!=null){    		    			 
-				  log.info("resolved CSS import url:"+resolvedUrl);
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset(); 					
 					css=css.replace(cssUrl, newUrl);					
 				}else{
@@ -569,7 +568,7 @@ public class HtmlParserUrlRewriter {
               if (indexDoc!=null){                             
                   String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();                           
                   urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                                                         
-                  log.info("replaced srcset url:" + urlUnresolved +" by "+newUrl);
+                  //log.info("replaced srcset url:" + urlUnresolved +" by "+newUrl);
                   numberOfLinksReplaced.getAndIncrement();
               }
               else{
