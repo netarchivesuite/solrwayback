@@ -154,7 +154,7 @@ The bundle contains Solr, the warc-indexer tool and Solrwayback installed on a T
 Just unzip the bundle and copy two files to your home directory and explore your warc files. 
 
 ## Download
-Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.1/solrwayback_package_3.1.zip  
+Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.1/solrwayback_package.zip  
 Unzip and follow the instructions below.
  
 
