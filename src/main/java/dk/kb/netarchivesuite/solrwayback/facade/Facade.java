@@ -156,31 +156,16 @@ public class Facade {
       String chromeCommand = PropertiesLoader.CHROME_COMMAND;
                                  
       log.info("Generating preview-image for url:"+url);
-      boolean useChrome=true;
+
       ProcessBuilder pb  =  null;
       
       //Use proxy. Construct proxy URL from base url and proxy port.
       String proxyUrl = getProxySocksUrl();
-        
-      
-      
-           
-      int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT*1000;
-      
-      ///temp hack for CentOS.
-      if(!useChrome){
-       String scriptFile = "/home/summanet/scripts/rasterize.js";
-        
-        log.info("generate temp preview file:"+filename);
-        pb = new ProcessBuilder("phantomjs", scriptFile,url,filename,"1280px*1024px");
-           log.info("phantomjs"+" "+scriptFile +" "+"\""+url+"\""+" "+filename +"\"1280px*1024px\"");
-      }
-      else{
-        
-         log.info("generate temp preview file:"+filename);
-          pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=5000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
-         log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=5000 --timeout="+timeoutMillis+" --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
-      }
+                              
+      int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT*1000;            
+      log.info("generate temp preview file:"+filename);
+      pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=5000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
+      log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=5000 --timeout="+timeoutMillis+" --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
     // chromium-browser --headless  --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024   --proxy-server="socks4://localhost:9000" https://www.google.com/        
       Process start = pb.start();      
       if(!start.waitFor(timeoutMillis+1000, TimeUnit.MILLISECONDS)) { // timeout + 1 second before killing.
@@ -615,7 +600,7 @@ public class Facade {
           arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
     	  }
     	 
-    	else if ("Web Page".equals(doc.getType()) || (300<=doc.getStatusCode() &&  arc.getContentType().equals("text/html") ) ){ // We still want the toolbar to show for http moved (302 etc.)
+    	else if ("Web Page".equals(doc.getType()) ||  ( (300<=doc.getStatusCode() && arc.getContentType()!= null && arc.getContentType().equals("text/html") ) ) ){ // We still want the toolbar to show for http moved (302 etc.)
     		long start = System.currentTimeMillis();
         	log.debug(" Generate webpage from FilePath:" + source_file_path + " offset:" + offset);
         	  HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);   	 
