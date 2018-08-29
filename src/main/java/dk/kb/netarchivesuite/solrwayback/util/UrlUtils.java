@@ -13,7 +13,7 @@ public class UrlUtils {
    * 
    */
   public static boolean isUrlWithDomain(String url){
-    if (!url.startsWith("http://")){ 
+    if (!(url.startsWith("http://") || url.startsWith("https://")) ){ 
      return false;
     }
     String[] tokens= url.split("/");
