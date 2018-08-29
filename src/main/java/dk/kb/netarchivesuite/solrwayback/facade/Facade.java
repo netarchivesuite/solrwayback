@@ -164,8 +164,8 @@ public class Facade {
                               
       int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT*1000;            
       log.info("generate temp preview file:"+filename);
-      pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=5000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
-      log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=5000 --timeout="+timeoutMillis+" --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
+      pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=10000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
+      log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=10000 --timeout="+timeoutMillis+" --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
     // chromium-browser --headless  --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024   --proxy-server="socks4://localhost:9000" https://www.google.com/        
       Process start = pb.start();      
       if(!start.waitFor(timeoutMillis+1000, TimeUnit.MILLISECONDS)) { // timeout + 1 second before killing.
@@ -541,8 +541,48 @@ public class Facade {
     }
     
     
+    public static IndexDoc resolveRelativUrlForResource(String source_file_path, long offset, String leakUrl) throws Exception{
+      if (!leakUrl.startsWith("/solrwayback")){
+        log.warn("resolveRelativeLeak does not start with /solrwayback:"+leakUrl);
+       throw new InvalidArgumentServiceException("resolveRelativeLeak does not start with: /solrwayback");
+      }
+      //remove the start, and everyting until second / 
+      leakUrl=leakUrl.substring(12);
+      leakUrl=leakUrl.substring(leakUrl.indexOf("/")+1);
+      
+      
+      IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); 
+       URL originalURL = new URL(doc.getUrl());
+      String resolvedUrl = new URL(originalURL,leakUrl).toString();
+     
+      log.info("stipped leakUrl:"+leakUrl);
+      log.info("url origin:"+doc.getUrl());      
+      log.info("resolved URL:"+ resolvedUrl);
+
+      
+      //First see if we have the given URL as excact match.
+      IndexDoc docFound = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl,doc.getCrawlDate());
+      if (docFound != null){
+        return docFound;
+      }
+      String[] tokens= leakUrl.split("/");
+      String leakResourceName=tokens[tokens.length-1];
+      
+      //else just try to lookup resourcename (last part of the url) for that domain. 
+      ArrayList<IndexDoc> matches = NetarchiveSolrClient.getInstance().findNearestForResourceNameAndDomain(doc.getDomain(), leakResourceName,doc.getCrawlDate()); 
+      for (IndexDoc m : matches){
+        if (m.getUrl().endsWith(leakUrl)){        
+          return m;          
+        }
+      }
+      log.info("Could not find relative resource:"+leakUrl);
+      throw new NotFoundServiceException("Could not find relative resource:"+leakUrl);      
+    }
+        
     public static ArcEntry viewHtml(String source_file_path, long offset, Boolean showToolbar) throws Exception{         
-    	
+    	if (showToolbar==null){
+    	   showToolbar=false;
+    	}      
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
         IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
     	

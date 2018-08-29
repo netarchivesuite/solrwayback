@@ -19,6 +19,7 @@ public class IndexDoc {
     private String mimeType;
     private String contentTypeNorm;
     private String contentType;
+    private String domain;
     private String type;
     private String crawlDate; // format 2009-12-09T05:32:50Z    
     private long crawlDateLong;
@@ -168,6 +169,14 @@ public class IndexDoc {
 
   public void setStatusCode(int statusCode) {
     this.statusCode = statusCode;
+  }
+
+  public String getDomain() {
+    return domain;
+  }
+
+  public void setDomain(String domain) {
+    this.domain = domain;
   }
 
     

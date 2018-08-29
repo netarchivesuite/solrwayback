@@ -49,7 +49,7 @@ public class NetarchiveSolrClient {
   protected  static NetarchiveSolrClient instance = null;
   protected  static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
 
-  protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location, status_code";
+  protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location, status_code";
 
   protected NetarchiveSolrClient() { // private. Singleton
   }
@@ -621,10 +621,7 @@ return docs;
     }
 
     String urlNormFixed = normalizeUrl(url);
-    String query = "url_norm:\""+ urlNormFixed +"\"";    
-    log.info("search for url_norm:"+urlNormFixed);
-    
-    
+    String query = "url_norm:\""+ urlNormFixed +"\"";                
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
  
@@ -770,6 +767,20 @@ return docs;
   }
 
 
+  public ArrayList<IndexDoc> findNearestForResourceNameAndDomain(String domain, String resourcename,String timeStamp) throws Exception{    
+    String searchString="domain:\""+domain+"\" AND resourcename:\""+resourcename+"\"";
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.setQuery(searchString); 
+    solrQuery.set("facet", "false"); 
+    solrQuery.set("group", "true");
+    solrQuery.set("group.field", "domain");
+    solrQuery.set("group.size", "10");
+    solrQuery.set("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
+    solrQuery.add("fl", indexDocFieldList);
+    QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+    SolrDocumentList docs = groupsToDoc(rsp);
+    return solrDocList2IndexDoc(docs);    
+  }
   
   /*
    * Uses the stats component and hyperloglog for ultra fast performance instead of grouping, which does not work well over many shards.
@@ -852,6 +863,7 @@ return docs;
     indexDoc.setTitle((String) doc.get("title"));
     indexDoc.setSource_file_path((String) doc.get("source_file_path"));
     indexDoc.setResourceName((String) doc.get("resourcename"));        
+    indexDoc.setDomain((String) doc.get("domain"));
     indexDoc.setUrl((String) doc.get("url"));
     indexDoc.setUrl_norm((String) doc.get("url_norm"));
     indexDoc.setOffset(getOffset(doc));
