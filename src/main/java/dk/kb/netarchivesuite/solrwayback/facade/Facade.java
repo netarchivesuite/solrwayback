@@ -279,9 +279,8 @@ public class Facade {
         return  new ArrayList<ArcEntryDescriptor> ();
       }
       String queryStr = queryStringForImages(imageLinks);
-      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, doc.getCrawlDate());
-      log.info("images found:"+imagesFromHtmlPage.size());              
-       return imagesFromHtmlPage;                
+      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, doc.getCrawlDate());             
+      return imagesFromHtmlPage;                
     }
 
    public static String queryStringForImages(ArrayList<String> imageLinks) {

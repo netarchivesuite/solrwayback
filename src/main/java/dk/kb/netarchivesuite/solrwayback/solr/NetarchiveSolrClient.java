@@ -40,6 +40,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
 
 public class NetarchiveSolrClient {
@@ -99,8 +100,8 @@ public class NetarchiveSolrClient {
   public  List<FacetCount> getDomainFacetsIngoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception{
 
 
-    String dateStart= getSolrTimeStamp(crawlDateStart);
-    String dateEnd = getSolrTimeStamp(crawlDateEnd);
+    String dateStart= DateUtils.getSolrDate(crawlDateStart);
+    String dateEnd = DateUtils.getSolrDate(crawlDateEnd);
 
 
     SolrQuery solrQuery = new SolrQuery();
@@ -131,8 +132,8 @@ public class NetarchiveSolrClient {
   public  List<FacetCount> getDomainFacetsOutgoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception{
 
 
-    String dateStart= getSolrTimeStamp(crawlDateStart);
-    String dateEnd = getSolrTimeStamp(crawlDateEnd);
+    String dateStart= DateUtils.getSolrDate(crawlDateStart);
+    String dateEnd = DateUtils.getSolrDate(crawlDateEnd);
 
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery("domain:\""+domain+"\"");  
@@ -199,8 +200,8 @@ public class NetarchiveSolrClient {
       domain=  (String) rsp.getResults().get(0).getFieldValue("domain");
       final FieldStatsInfo fieldStats = rsp.getFieldStatsInfo().get(statsField);       
       if (fieldStats!= null){
-        stats.setLastHarvestDate(getSolrTimeStamp((Date)fieldStats.getMax()));        
-        String next = getSolrTimeStamp((Date)fieldStats.getMin());            
+        stats.setLastHarvestDate(DateUtils.getSolrDate((Date)fieldStats.getMax()));        
+        String next = DateUtils.getSolrDate((Date)fieldStats.getMin());            
         if (!crawlDate.equals(next)){
           stats.setNextHarvestDate(next);//Dont want same as next          
         }        
@@ -222,8 +223,8 @@ public class NetarchiveSolrClient {
       domain=  (String) rsp.getResults().get(0).getFieldValue("domain");
       final FieldStatsInfo fieldStats = rsp.getFieldStatsInfo().get(statsField);       
       if (fieldStats != null){
-        stats.setFirstHarvestDate( getSolrTimeStamp((Date)fieldStats.getMin()));        
-        String previous =  getSolrTimeStamp((Date)fieldStats.getMax());
+        stats.setFirstHarvestDate( DateUtils.getSolrDate((Date)fieldStats.getMin()));        
+        String previous =  DateUtils.getSolrDate((Date)fieldStats.getMax());
         if (!crawlDate.equals(previous)){ //Dont want same as previous
           stats.setPreviousHarvestDate(previous);
         }        
@@ -881,7 +882,7 @@ return docs;
 
     Date date = (Date) doc.get("crawl_date");        
     indexDoc.setCrawlDateLong(date.getTime());
-    indexDoc.setCrawlDate(getSolrTimeStamp(date));  //HACK! demo must be ready for lunch
+    indexDoc.setCrawlDate(DateUtils.getSolrDate(date));
 
     indexDoc.setMimeType((String) doc.get("content_type"));         
 
@@ -898,14 +899,6 @@ return docs;
   //TO, remove method and inline 
   public static long getOffset(SolrDocument doc){
     return  (Long) doc.get("source_file_offset");
-
-  }
-
-
-  private static String getSolrTimeStamp(Date date){
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new         
-    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));    
-    return dateFormat.format(date)+"Z";
 
   }
 

@@ -57,6 +57,7 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServic
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.ServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 
 //No path except the context root+servletpath for the application. Example http://localhost:8080/officemood/services 
@@ -290,18 +291,10 @@ public class SolrWaybackResource {
         log.info("urldecoded wayback dataobject:"+waybackDataObject);
         indexFirstSlash = waybackDataObject.indexOf("/");          
       }
-
-
       String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
       String url = waybackDataObject.substring(indexFirstSlash+1);
-
-      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");            
-      Date date = waybackDateFormat.parse(waybackDate);
-
-      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new                 
-      String solrDate = dateFormat.format(date)+"Z";
-
-      //log.info("solrDate="+solrDate +" , url="+url);
+      String solrDate = DateUtils.convertWaybackDate2SolrDate(waybackDate);
+      
       IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
       if (doc == null){
         log.info("Url has never been harvested:"+url);
@@ -542,11 +535,7 @@ public class SolrWaybackResource {
       String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
       String url = waybackDataObject.substring(indexFirstSlash+1);
 
-      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");          
-      Date date = waybackDateFormat.parse(waybackDate);
-
-      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new                   
-      String solrDate = dateFormat.format(date)+"Z";
+      String solrDate = DateUtils.convertWaybackDate2SolrDate(waybackDate);
 
       //log.info("solrDate="+solrDate +" , url="+url);
       IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
@@ -593,24 +582,16 @@ public class SolrWaybackResource {
       //Validate this is a URL with domain (can be releative leak).
       //etc. http://images/horse.png.
       //use referer to match the correct url
-    
-      
-      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");          
-      Date date = waybackDateFormat.parse(waybackDate);
-
-      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new                   
-      String solrDate = dateFormat.format(date)+"Z";
+                       
+      String solrDate = DateUtils.convertWaybackDate2SolrDate(waybackDate);
 
       //Move some logic below to facade
       boolean urlOK = UrlUtils.isUrlWithDomain(url);
       if (!urlOK){
         String refererUrl = httpRequest.getHeader("referer");
-        log.info("url not with domain:"+url +" referer:"+refererUrl);
-         
+        log.info("url not with domain:"+url +" referer:"+refererUrl);         
         String orgDomain=UrlUtils.getDomainFromWebApiParameters(refererUrl);
-        String resourceLeaked= url;
-        String[] tokens = url.split("/");
-        String resourceName = tokens[tokens.length-1];
+        String resourceName = UrlUtils.getResourceNameFromWebApiParameters(url);
         //resourceLeaked
         //TODO use crawltime from refererUrl
         ArrayList<IndexDoc> matches = NetarchiveSolrClient.getInstance().findNearestForResourceNameAndDomain(orgDomain, resourceName ,solrDate); 
