@@ -28,6 +28,10 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.*;
+import dk.kb.netarchivesuite.solrwayback.playback.CssPlayback;
+import dk.kb.netarchivesuite.solrwayback.playback.HtmlPlayback;
+import dk.kb.netarchivesuite.solrwayback.playback.JodelPlayback;
+import dk.kb.netarchivesuite.solrwayback.playback.TwitterPlayback;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.*;
@@ -624,76 +628,24 @@ public class Facade {
     	arc.setContentEncoding(encoding);
     	
     	if(doc.getType().equals("Twitter Tweet")){    	      	  
-    	  log.debug(" Generate twitter webpage from FilePath:" + source_file_path + " offset:" + offset);
-    	  //Fake html into arc.
-          encoding="UTF-8"; //Why does encoding say ISO ? This seems to fix the bug
-    	  
-          String json = new String(arc.getBinary(), encoding);
-          String html = Twitter2Html.twitter2Html(json,arc.getCrawlDate());
-          arc.setBinary(html.getBytes());               
-          arc.setContentType("text/html");
-    	  HtmlParseResult htmlReplaced = new HtmlParseResult(); //Do not parse.
-    	  htmlReplaced.setHtmlReplaced(html);
-          String textReplaced=htmlReplaced.getHtmlReplaced(); //TODO count linkes found, replaced
-          
-            //Inject tooolbar
-          if (showToolbar){ //If true or null.
-              textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced, false);
-          }
-          arc.setContentEncoding(encoding);
-          arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
+          TwitterPlayback twitterPlayback = new TwitterPlayback(arc, doc, showToolbar);
+          return twitterPlayback.playback();
     	}
-
     	else if(doc.getType().equals("Jodel Post") || doc.getType().equals("Jodel Thread")){
-          log.debug(" Generate jodel post from FilePath:" + source_file_path + " offset:" + offset);
-          //Fake html into arc.
-                  
-          String json = new String(arc.getBinary(), encoding);
-          String html = Jodel2Html.render(json, arc.getCrawlDate());
-          arc.setBinary(html.getBytes());        
-          arc.setContentType("text/html");
-          HtmlParseResult htmlReplaced = new HtmlParseResult(); //Do not parse.
-          htmlReplaced.setHtmlReplaced(html);
-          String textReplaced=htmlReplaced.getHtmlReplaced(); //TODO count linkes found, replaced          
-          
-          //Inject tooolbar
-          if (showToolbar){ //If true or null.
-             textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced, false);
-          }
-          encoding="UTF-8"; // hack, since the HTML was generated as UTF-8.
-          arc.setContentEncoding(encoding);
-          arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
-    	  }
-    	 
+    	  JodelPlayback jodelPlayback = new JodelPlayback(arc, doc, showToolbar);
+          return jodelPlayback.playback();    	      	  
+    	}    	
     	else if ("Web Page".equals(doc.getType()) ||  ( (300<=doc.getStatusCode() && arc.getContentType()!= null && arc.getContentType().equals("text/html") ) ) ){ // We still want the toolbar to show for http moved (302 etc.)
-    		long start = System.currentTimeMillis();
-        	log.debug(" Generate webpage from FilePath:" + source_file_path + " offset:" + offset);
-        	  HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);   	 
-        	  String textReplaced=htmlReplaced.getHtmlReplaced();        	  
-        	  boolean xhtml =doc.getContentType().toLowerCase().indexOf("application/xhtml") > -1;        	  
-        	//Inject tooolbar
-        	if (showToolbar ){ //If true or null. 
-        	  System.out.println("GENERATE TOOLBAR FOR:"+source_file_path +": "+offset);
-        	   textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced , xhtml);
-        	}
-            
-        	  arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1  	
-            log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start));
-        	return arc;
-    		 
-        } //TODO, if zipped, I am not parsing CSS for url replaces
-    	else if ("text/css".equals(arc.getContentType()) && arc.getContentEncoding()!= null &&  arc.getContentEncoding().toLowerCase().indexOf("gzip")== -1 ){ 
-    		long start = System.currentTimeMillis();
-        	log.debug(" Generate css from FilePath:" + source_file_path + " offset:" + offset);
-        	String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);        
-        	
-        	arc.setBinary(textReplaced.getBytes(encoding));    	
-            log.debug("Generating css total processing:"+(System.currentTimeMillis()-start));
-        	return arc;        	
-        }
-		log.info("skipping html url rewrite for contentype:"+arc.getContentType());
-    	return arc; //dont parse
-                
+    	  HtmlPlayback htmlPlayback = new HtmlPlayback(arc, doc, showToolbar);
+          return htmlPlayback.playback();    		 
+        } //if zipped, I am not parsing CSS for url replaces - hopeful the leaks will be catched.
+    	else if ("text/css".equals(arc.getContentType()) && arc.getContentEncoding()!= null &&  arc.getContentEncoding().toLowerCase().indexOf("gzip")== -1 ){     	        
+    	  CssPlayback cssPlayback = new CssPlayback(arc, doc, showToolbar); //toolbar us never shown anyway.
+          return cssPlayback.playback();    	  
+        }		
+		else{ //Serve as it is. (Javascript, images, pdfs etc.)
+		  return arc; //dont parse
+		}
     }
     
     //For fronted

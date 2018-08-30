@@ -66,21 +66,24 @@ public class WaybackToolbarInjecter {
   
   
   
-  public static String injectWaybacktoolBar(String source_file_path, long offset, HtmlParseResult htmlParsedResult, boolean xhtml) throws Exception{       
+public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htmlParsedResult, boolean xhtml) throws Exception{       
     
-    try{                
-    IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);    
-    WaybackStatistics stats = NetarchiveSolrClient.getInstance().getWayBackStatistics(arcEntry.getStatusCode(),arcEntry.getUrl(),arcEntry.getUrl_norm(), arcEntry.getCrawlDate());            
-    stats.setHarvestDate(arcEntry.getCrawlDate());        
+    try{                   
+    WaybackStatistics stats = NetarchiveSolrClient.getInstance().getWayBackStatistics(indexDoc.getStatusCode(),indexDoc.getUrl(),indexDoc.getUrl_norm(), indexDoc.getCrawlDate());            
+    stats.setHarvestDate(indexDoc.getCrawlDate());        
     
-    String injectedHtml =injectInHmtl( htmlParsedResult, stats, source_file_path,offset, xhtml);
+    String injectedHtml =injectInHmtl( htmlParsedResult, stats, indexDoc.getSource_file_path(),indexDoc.getOffset(), xhtml);
     return injectedHtml;
    }catch (Exception e){
      log.error("error injecting waybacktoolbar", e);
     return htmlParsedResult.getHtmlReplaced();// no injection (should not happen). 
-   }
-
-    
+   }    
+  }
+  
+  
+  public static String injectWaybacktoolBar(String source_file_path, long offset, HtmlParseResult htmlParsedResult, boolean xhtml) throws Exception{                           
+    IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);    
+    return injectWaybacktoolBar(indexDoc, htmlParsedResult, xhtml);    
   }
   
   public static String injectInHmtl(HtmlParseResult htmlParsed, WaybackStatistics stats,String source_file_path, long offset, boolean xhtml) throws Exception{
