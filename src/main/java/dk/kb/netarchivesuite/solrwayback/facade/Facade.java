@@ -8,17 +8,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.IDN;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.*;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
@@ -33,23 +40,13 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServic
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
-
 import dk.kb.netarchivesuite.solrwayback.solr.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.CharMatcher;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.WebResource.Builder;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-
+import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
+import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
+
 
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
@@ -159,32 +156,20 @@ public class Facade {
       String filename = PropertiesLoader.SCREENSHOT_TEMP_IMAGEDIR+now+"_"+offset +".png"; //Include offset to avoid hitting same time.
       String chromeCommand = PropertiesLoader.CHROME_COMMAND;
                                  
-      log.info("preview for url:"+url);
-      boolean useChrome=true;
+      log.info("Generating preview-image for url:"+url);
+
       ProcessBuilder pb  =  null;
       
       //Use proxy. Construct proxy URL from base url and proxy port.
       String proxyUrl = getProxySocksUrl();
-        
-      
-      log.info("proxyUrl:"+proxyUrl);      
-      
-      ///temp hack for CentOS.
-      if(!useChrome){
-       String scriptFile = "/home/summanet/scripts/rasterize.js";
-        
-        log.info("generate temp preview file:"+filename);
-        pb = new ProcessBuilder("phantomjs", scriptFile,url,filename,"1280px*1024px");
-           log.info("phantomjs"+" "+scriptFile +" "+"\""+url+"\""+" "+filename +"\"1280px*1024px\"");
-      }
-      else{           
-         log.info("generate temp preview file:"+filename);
-          pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=5000","--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
-         log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=5000 --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
-      }
+                              
+      int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT*1000;            
+      log.info("generate temp preview file:"+filename);
+      pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=10000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
+      log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=10000 --timeout="+timeoutMillis+" --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
     // chromium-browser --headless  --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024   --proxy-server="socks4://localhost:9000" https://www.google.com/        
       Process start = pb.start();      
-      if(!start.waitFor(10000, TimeUnit.MILLISECONDS)) {
+      if(!start.waitFor(timeoutMillis+1000, TimeUnit.MILLISECONDS)) { // timeout + 1 second before killing.
         //timeout - kill the process. 
         log.info("Timeout generating preview.");
         start.destroyForcibly(); 
@@ -237,19 +222,22 @@ public class Facade {
          previews.add(pp);
        }
               
-       return previews;
-            
+       return previews;            
     }
      
+    public static BufferedImage wordCloudForDomain(String domain) throws Exception {    
+       log.info("getting wordcloud for url:"+domain);
+       String text = NetarchiveSolrClient.getInstance().getTextForDomain(domain); // Only contains the required fields for this method       
+       BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(text);
+       return bufferedImage;       
+    }    
     
     public static ArrayList<ImageUrl> getImagesForHtmlPageNew(String source_file_path,long offset) throws Exception {            
       ArrayList<ArcEntryDescriptor> arcs = getImagesForHtmlPageNewThreaded(source_file_path,offset);       
 
-      return arcEntrys2Images(arcs);
-      
+      return arcEntrys2Images(arcs);     
     }
     
-
     public static String punyCodeAndNormaliseUrl(String url) throws Exception {     
       if (!url.startsWith("http://")){ 
         throw new Exception("Url not starting with http://");
@@ -292,9 +280,8 @@ public class Facade {
         return  new ArrayList<ArcEntryDescriptor> ();
       }
       String queryStr = queryStringForImages(imageLinks);
-      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, doc.getCrawlDate());
-      log.info("images found:"+imagesFromHtmlPage.size());              
-       return imagesFromHtmlPage;                
+      ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, doc.getCrawlDate());             
+      return imagesFromHtmlPage;                
     }
 
    public static String queryStringForImages(ArrayList<String> imageLinks) {
@@ -484,10 +471,11 @@ public class Facade {
     public static String generatePid(String source_file_path, long offset) throws Exception{      
       ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);           
       arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
+      String collectionName = PropertiesLoader.PID_COLLECTION_NAME;
       StringBuffer parts = new StringBuffer();
       //the original page
       parts.append("<part>\n");
-      parts.append("urn:pwid:netarkivet.dk:"+arc.getCrawlDate()+":part:"+arc.getUrl() +"\n");
+      parts.append("urn:pwid:"+collectionName+":"+arc.getCrawlDate()+":part:"+arc.getUrl() +"\n");
       parts.append("</part>\n");      
       String xmlIncludes = HtmlParserUrlRewriter.generatePwid(arc);//all sub elements            
       parts.append(xmlIncludes);
@@ -553,12 +541,79 @@ public class Facade {
     }
     
     
+    public static IndexDoc resolveRelativUrlForResource(String source_file_path, long offset, String leakUrl) throws Exception{
+      if (!leakUrl.startsWith("/solrwayback")){
+        log.warn("resolveRelativeLeak does not start with /solrwayback:"+leakUrl);
+       throw new InvalidArgumentServiceException("resolveRelativeLeak does not start with: /solrwayback");
+      }
+      //remove the start, and everyting until second / 
+      leakUrl=leakUrl.substring(12);
+      leakUrl=leakUrl.substring(leakUrl.indexOf("/")+1);
+      
+      
+      IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); 
+       URL originalURL = new URL(doc.getUrl());
+      String resolvedUrl = new URL(originalURL,leakUrl).toString();
+     
+      log.info("stipped leakUrl:"+leakUrl);
+      log.info("url origin:"+doc.getUrl());      
+      log.info("resolved URL:"+ resolvedUrl);
+
+      
+      //First see if we have the given URL as excact match.
+      IndexDoc docFound = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl,doc.getCrawlDate());
+      if (docFound != null){
+        return docFound;
+      }
+      String[] tokens= leakUrl.split("/");
+      String leakResourceName=tokens[tokens.length-1];
+      
+      //else just try to lookup resourcename (last part of the url) for that domain.       
+      ArrayList<IndexDoc> matches = NetarchiveSolrClient.getInstance().findNearestForResourceNameAndDomain(doc.getDomain(), leakResourceName,doc.getCrawlDate()); 
+      for (IndexDoc m : matches){
+        if (m.getUrl().endsWith(leakUrl)){        
+          return m;          
+        }
+      }
+      log.info("Could not find relative resource:"+leakUrl);
+      throw new NotFoundServiceException("Could not find relative resource:"+leakUrl);      
+    }
+        
+    /*
+     * This is called then a relative url fails. Try to match the relative url for that domain. (qualified guessing...)
+     * 
+     */
+    public static IndexDoc matchRelativeUrlForDomain(String refererUrl,String url,String solrDate) throws Exception{
+      
+      log.info("url not with domain:"+url +" referer:"+refererUrl);         
+      String orgDomain=UrlUtils.getDomainFromWebApiParameters(refererUrl);
+      String resourceName = UrlUtils.getResourceNameFromWebApiParameters(url);
+      //resourceLeaked
+      //TODO use crawltime from refererUrl
+      ArrayList<IndexDoc> matches = NetarchiveSolrClient.getInstance().findNearestForResourceNameAndDomain(orgDomain, resourceName ,solrDate); 
+      //log.info("********* org domain:"+orgDomain);
+      //log.info("********* resourceLeaked "+resourceName );
+     //log.info("********* matches:"+matches.size());
+      for (IndexDoc m : matches){        
+        if (m.getUrl().endsWith(resourceName)){        
+          log.info("found leaked resource for:"+url);
+          return m;          
+        }
+      }
+      throw new NotFoundServiceException("Could not find resource for leak:"+url);
+    }
+
+    
     public static ArcEntry viewHtml(String source_file_path, long offset, Boolean showToolbar) throws Exception{         
-    	
+    	if (showToolbar==null){
+    	   showToolbar=false;
+    	}      
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
         IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
-    	String encoding = arc.getContentEncoding();
-    	if (encoding == null){
+    	
+        String encoding = arc.getContentEncoding();
+           
+        if (encoding == null){
     	  encoding =Facade.getEncoding(source_file_path, ""+offset); //Ask the index
     	}    	
     	if (encoding == null){
@@ -582,7 +637,7 @@ public class Facade {
           String textReplaced=htmlReplaced.getHtmlReplaced(); //TODO count linkes found, replaced
           
             //Inject tooolbar
-          if (showToolbar!=Boolean.FALSE ){ //If true or null.
+          if (showToolbar){ //If true or null.
               textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced, false);
           }
           arc.setContentEncoding(encoding);
@@ -602,7 +657,7 @@ public class Facade {
           String textReplaced=htmlReplaced.getHtmlReplaced(); //TODO count linkes found, replaced          
           
           //Inject tooolbar
-          if (showToolbar!=Boolean.FALSE ){ //If true or null.
+          if (showToolbar){ //If true or null.
              textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced, false);
           }
           encoding="UTF-8"; // hack, since the HTML was generated as UTF-8.
@@ -610,14 +665,15 @@ public class Facade {
           arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
     	  }
     	 
-    	else if ("Web Page".equals(doc.getType())){
+    	else if ("Web Page".equals(doc.getType()) ||  ( (300<=doc.getStatusCode() && arc.getContentType()!= null && arc.getContentType().equals("text/html") ) ) ){ // We still want the toolbar to show for http moved (302 etc.)
     		long start = System.currentTimeMillis();
         	log.debug(" Generate webpage from FilePath:" + source_file_path + " offset:" + offset);
         	  HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);   	 
         	  String textReplaced=htmlReplaced.getHtmlReplaced();        	  
         	  boolean xhtml =doc.getContentType().toLowerCase().indexOf("application/xhtml") > -1;        	  
         	//Inject tooolbar
-        	if (showToolbar!=Boolean.FALSE ){ //If true or null. 
+        	if (showToolbar ){ //If true or null. 
+        	  System.out.println("GENERATE TOOLBAR FOR:"+source_file_path +": "+offset);
         	   textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(source_file_path,offset,htmlReplaced , xhtml);
         	}
             
@@ -625,15 +681,15 @@ public class Facade {
             log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start));
         	return arc;
     		 
-        }else if (("text/css".equals(arc.getContentType()))){ 
+        } //TODO, if zipped, I am not parsing CSS for url replaces
+    	else if ("text/css".equals(arc.getContentType()) && arc.getContentEncoding()!= null &&  arc.getContentEncoding().toLowerCase().indexOf("gzip")== -1 ){ 
     		long start = System.currentTimeMillis();
         	log.debug(" Generate css from FilePath:" + source_file_path + " offset:" + offset);
         	String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);        
         	
         	arc.setBinary(textReplaced.getBytes(encoding));    	
             log.debug("Generating css total processing:"+(System.currentTimeMillis()-start));
-        	return arc;
-        	
+        	return arc;        	
         }
 		log.info("skipping html url rewrite for contentype:"+arc.getContentType());
     	return arc; //dont parse
@@ -645,8 +701,12 @@ public class Facade {
         HashMap<String,String> props = new HashMap<String,String>();
         props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.WAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.OPENWAYBACK_SERVER);
+        props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
         props.put(PropertiesLoaderWeb.GOOGLE_API_KEY_PROPERTY,PropertiesLoaderWeb.GOOGLE_API_KEY);
-
+        props.put(PropertiesLoaderWeb.GOOGLE_MAPS_LATITUDE_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_LATITUDE);
+        props.put(PropertiesLoaderWeb.GOOGLE_MAPS_LONGITUDE_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_LONGITUDE);
+        props.put(PropertiesLoaderWeb.GOOGLE_MAPS_RADIUS_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_RADIUS);
+                        
         return props;
     }
     

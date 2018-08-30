@@ -138,8 +138,15 @@ Vue.component('map-box', {
     `,
     mounted: function(){
         /* Initialising map when component is mounted, not when app is mounted */
-        var center = {lat: 56.17, lng: 10.20};
-        this.map = new google.maps.Map(document.getElementById('map'), {
+        //latitude and longitude are loaded from the properties
+    	
+    	
+    	
+    	
+        //var center = {lat: 56.17, lng: 10.20};
+    	var center = {lat:  parseFloat(app.$data.googleMapLatitude), lng: parseFloat(app.$data.googleMapLongitude)}; 	    	    	
+    	var radius = parseInt(app.$data.googleMapRadius);
+    	this.map = new google.maps.Map(document.getElementById('map'), {
             zoom: 5,
             center: center,
             streetViewControl: false,
@@ -222,8 +229,8 @@ Vue.component('pager-box', {
             <ul id="downloadMenu">
                 <li><a :href="exportResult('brief')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download brief result</a></li>
                 <li><a :href="exportResult('full')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download full result</a></li>
-                <li><a :href="exportResult('warc')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc</a></li>                
-                <li><a :href="exportResult('warcExpanded')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc with resources</a></li>
+                <li><a v-if="$data.allowExportWarc" :href="exportResult('warc')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc</a></li>                
+                <li><a v-if="$data.allowExportWarc" :href="exportResult('warcExpanded')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc with resources</a></li>
             </ul>           
         </div>      
 
@@ -244,12 +251,20 @@ Vue.component('pager-box', {
         </div>
     </div>
     `,
+     data: function() {
+        return {           
+            allowExportWarc: app.$data.allowExportWarc,
+        };
+    },
     methods:{
         exportResult: function(downloadType){
             return 'http://' + location.host + '/solrwayback/services/export/' + downloadType + '?query=' + this.myQuery + '&fq=' + this.filters;
         }
     },
 })
+
+
+
 
 /* Component shows search result when not image search*/
 Vue.component('result-box', {
@@ -419,6 +434,10 @@ var app = new Vue({
     data: {
         searchResult: null,
         fullpost: null,
+        googleMapLatitude: 0.0,
+        googleMapLongitude: 0.0,
+        googleMapRadius: 0.0,        
+        allowExportWarc: true,
         myFacets: '',
         myQuery: '',
         facetFields: [],
@@ -435,7 +454,7 @@ var app = new Vue({
         imageObjects: [],
         baseUrl: '',
         openbaseUrl: null,
-        markerPosition: {radius: 200000, lat: "", lng: ""},
+        markerPosition: {radius: 0, lat: "", lng: ""},
         geoImageInfo : [],
         resultMarkers: [],
         map:{}
@@ -451,6 +470,10 @@ var app = new Vue({
             console.log('properties response',response);
             this.baseUrl = response.body['wayback.baseurl'];
             this.openbaseUrl = response.body['openwayback.baseurl'];
+            this.allowExportWarc =  ('true' == response.body['allow.export.warc']); 
+            this.googleMapLatitude = response.body['google.maps.latitude'];
+            this.googleMapLongitude= response.body['google.maps.longitude'];
+            this.markerPosition.radius =  parseInt(response.body['google.maps.radius']);                                                        
         }, (response) => {
             console.log('error: ', response);
             this.errorMsg = response.statusText;

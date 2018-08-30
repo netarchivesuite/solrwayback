@@ -40,6 +40,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
 
 public class NetarchiveSolrClient {
@@ -47,9 +48,9 @@ public class NetarchiveSolrClient {
   private static final Logger log = LoggerFactory.getLogger(NetarchiveSolrClient.class);
   protected static SolrClient solrServer;
   protected  static NetarchiveSolrClient instance = null;
-  protected  static Pattern TAGS_VALID_PATTERn = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
+  protected  static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
 
-  protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location";
+  protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location, status_code";
 
   protected NetarchiveSolrClient() { // private. Singleton
   }
@@ -99,8 +100,8 @@ public class NetarchiveSolrClient {
   public  List<FacetCount> getDomainFacetsIngoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception{
 
 
-    String dateStart= getSolrTimeStamp(crawlDateStart);
-    String dateEnd = getSolrTimeStamp(crawlDateEnd);
+    String dateStart= DateUtils.getSolrDate(crawlDateStart);
+    String dateEnd = DateUtils.getSolrDate(crawlDateEnd);
 
 
     SolrQuery solrQuery = new SolrQuery();
@@ -131,8 +132,8 @@ public class NetarchiveSolrClient {
   public  List<FacetCount> getDomainFacetsOutgoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception{
 
 
-    String dateStart= getSolrTimeStamp(crawlDateStart);
-    String dateEnd = getSolrTimeStamp(crawlDateEnd);
+    String dateStart= DateUtils.getSolrDate(crawlDateStart);
+    String dateEnd = DateUtils.getSolrDate(crawlDateEnd);
 
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery("domain:\""+domain+"\"");  
@@ -166,8 +167,9 @@ public class NetarchiveSolrClient {
   /*
    * The logic for getting the 4 dates in 2 queries is too complicated, and only gives small performance boost... 
    */
-  public WaybackStatistics getWayBackStatistics(String url, String url_norm, String crawlDate)  throws Exception{    
+  public WaybackStatistics getWayBackStatistics(int statusCode, String url, String url_norm, String crawlDate)  throws Exception{    
     WaybackStatistics stats = new  WaybackStatistics();
+    stats.setStatusCode(statusCode); //this is know when calling the method, so no need to extract it from Solr.
     stats.setUrl(url);
     stats.setUrl_norm(url_norm);
     //These will only be set if they are different from input (end points). So set them below
@@ -198,10 +200,10 @@ public class NetarchiveSolrClient {
       domain=  (String) rsp.getResults().get(0).getFieldValue("domain");
       final FieldStatsInfo fieldStats = rsp.getFieldStatsInfo().get(statsField);       
       if (fieldStats!= null){
-        stats.setLastHarvestDate(getSolrTimeStamp((Date)fieldStats.getMax()));        
-        String next = getSolrTimeStamp((Date)fieldStats.getMin());            
+        stats.setLastHarvestDate(DateUtils.getSolrDate((Date)fieldStats.getMax()));        
+        String next = DateUtils.getSolrDate((Date)fieldStats.getMin());            
         if (!crawlDate.equals(next)){
-          stats.setNextHarvestDate(next);//Dont want same as next
+          stats.setNextHarvestDate(next);//Dont want same as next          
         }        
       }
     }
@@ -221,8 +223,8 @@ public class NetarchiveSolrClient {
       domain=  (String) rsp.getResults().get(0).getFieldValue("domain");
       final FieldStatsInfo fieldStats = rsp.getFieldStatsInfo().get(statsField);       
       if (fieldStats != null){
-        stats.setFirstHarvestDate( getSolrTimeStamp((Date)fieldStats.getMin()));        
-        String previous =  getSolrTimeStamp((Date)fieldStats.getMax());
+        stats.setFirstHarvestDate( DateUtils.getSolrDate((Date)fieldStats.getMin()));        
+        String previous =  DateUtils.getSolrDate((Date)fieldStats.getMax());
         if (!crawlDate.equals(previous)){ //Dont want same as previous
           stats.setPreviousHarvestDate(previous);
         }        
@@ -344,6 +346,29 @@ public class NetarchiveSolrClient {
   }
 
 
+  
+
+  public String getTextForDomain(String domain) throws Exception {    
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery = new SolrQuery("(domain:\""+domain+"\"");     
+
+    solrQuery.add("fl","id, content_text_length, content" );        
+    solrQuery.setFilterQueries("content_type_norm:html" , "content_text_length:[1000 TO *]"); //only html pages and pages with many words.
+    solrQuery.setRows(10000);
+
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    SolrDocumentList docs = rsp.getResults();
+    StringBuilder b= new StringBuilder();
+    long totaltLength=0;
+    for (SolrDocument doc : docs){
+      b.append(doc.getFieldValue("content"));
+      b.append(doc.getFieldValue(" "));//Space between next document.
+      totaltLength +=  ((int)  doc.getFieldValue("content_text_length"));
+    }    
+    log.info("Total extracted content length for wordCloud:"+totaltLength +" total hits:"+rsp.getResults().getNumFound()  +" only using first 10000 hits");
+    return b.toString();
+  }
+  
   public ArrayList<IndexDoc> getHarvestPreviewsForUrl(String url) throws Exception {
 
     String urlNormFixed = normalizeUrl(url);    
@@ -597,10 +622,7 @@ return docs;
     }
 
     String urlNormFixed = normalizeUrl(url);
-    String query = "url_norm:\""+ urlNormFixed +"\"";    
-    log.info("search for url_norm:"+urlNormFixed);
-    
-    
+    String query = "url_norm:\""+ urlNormFixed +"\"";                
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
  
@@ -655,7 +677,7 @@ return docs;
 
   public HashMap<Integer, Long> getYearHtmlFacets(String query) throws Exception {
     //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
-    if (!TAGS_VALID_PATTERn.matcher(query).matches()) {
+    if (!TAGS_VALID_PATTERN.matcher(query).matches()) {
       throw new InvalidArgumentServiceException("Tag syntax not accepted:"+query);        
     }
 
@@ -746,6 +768,20 @@ return docs;
   }
 
 
+  public ArrayList<IndexDoc> findNearestForResourceNameAndDomain(String domain, String resourcename,String timeStamp) throws Exception{    
+    String searchString="domain:\""+domain+"\" AND resourcename:\""+resourcename+"\"";
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.setQuery(searchString); 
+    solrQuery.set("facet", "false"); 
+    solrQuery.set("group", "true");
+    solrQuery.set("group.field", "domain");
+    solrQuery.set("group.size", "10");
+    solrQuery.set("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
+    solrQuery.add("fl", indexDocFieldList);
+    QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+    SolrDocumentList docs = groupsToDoc(rsp);
+    return solrDocList2IndexDoc(docs);    
+  }
   
   /*
    * Uses the stats component and hyperloglog for ultra fast performance instead of grouping, which does not work well over many shards.
@@ -828,6 +864,7 @@ return docs;
     indexDoc.setTitle((String) doc.get("title"));
     indexDoc.setSource_file_path((String) doc.get("source_file_path"));
     indexDoc.setResourceName((String) doc.get("resourcename"));        
+    indexDoc.setDomain((String) doc.get("domain"));
     indexDoc.setUrl((String) doc.get("url"));
     indexDoc.setUrl_norm((String) doc.get("url_norm"));
     indexDoc.setOffset(getOffset(doc));
@@ -836,13 +873,16 @@ return docs;
     indexDoc.setContentEncoding((String) doc.get("content_encoding"));
     indexDoc.setType((String) doc.get("type"));
     indexDoc.setExifLocation((String) doc.get("exif_location"));
-
+    Object statusCodeObj = doc.get("status_code");
+    if (statusCodeObj != null){         
+      indexDoc.setStatusCode((Integer) statusCodeObj);     
+    }
     String hash = (String) doc.get("hash");
     indexDoc.setHash((String) hash);      
 
     Date date = (Date) doc.get("crawl_date");        
     indexDoc.setCrawlDateLong(date.getTime());
-    indexDoc.setCrawlDate(getSolrTimeStamp(date));  //HACK! demo must be ready for lunch
+    indexDoc.setCrawlDate(DateUtils.getSolrDate(date));
 
     indexDoc.setMimeType((String) doc.get("content_type"));         
 
@@ -859,14 +899,6 @@ return docs;
   //TO, remove method and inline 
   public static long getOffset(SolrDocument doc){
     return  (Long) doc.get("source_file_offset");
-
-  }
-
-
-  private static String getSolrTimeStamp(Date date){
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new         
-    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));    
-    return dateFormat.format(date)+"Z";
 
   }
 

@@ -5,14 +5,16 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Random;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -36,10 +38,9 @@ import com.sun.jersey.multipart.FormDataParam;
 import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
-import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
-import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
@@ -56,6 +57,8 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServic
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.ServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 
 //No path except the context root+servletpath for the application. Example http://localhost:8080/officemood/services 
 
@@ -63,7 +66,7 @@ import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 public class SolrWaybackResource {
 
   private static final Logger log = LoggerFactory.getLogger(SolrWaybackResource.class);
-
+  
   @GET
   @Path("/images/search")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
@@ -116,7 +119,7 @@ public class SolrWaybackResource {
   @Produces(MediaType.APPLICATION_JSON)
   public UrlWrapper waybackgraph(@QueryParam("url") String url) throws ServiceException {
     try{
-      String urlDecoded = java.net.URLDecoder.decode(url, "UTF-8"); //frontend sending this encocefd
+      String urlDecoded = java.net.URLDecoder.decode(url, "UTF-8"); //frontend sending this encoded
       
       log.info("url:"+urlDecoded);
       //also rewrite to puny code
@@ -243,9 +246,20 @@ public class SolrWaybackResource {
       throw handleServiceExceptions(e);
     }
   }
+  
 
-
-
+  @GET
+  @Path("/wordcloundfordomain")
+  @Produces("image/png")
+  public Response  wordCloudForDomain(@QueryParam("domain") String domain) throws ServiceException {
+    try {                        
+        BufferedImage image = Facade.wordCloudForDomain(domain);           
+        return Response.ok(image).build();     
+    } catch (Exception e) {           
+      throw handleServiceExceptions(e);
+    }
+  }
+  
   /*
    *    
    * Example call:
@@ -277,18 +291,10 @@ public class SolrWaybackResource {
         log.info("urldecoded wayback dataobject:"+waybackDataObject);
         indexFirstSlash = waybackDataObject.indexOf("/");          
       }
-
-
       String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
       String url = waybackDataObject.substring(indexFirstSlash+1);
-
-      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");            
-      Date date = waybackDateFormat.parse(waybackDate);
-
-      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new                 
-      String solrDate = dateFormat.format(date)+"Z";
-
-      //log.info("solrDate="+solrDate +" , url="+url);
+      String solrDate = DateUtils.convertWaybackDate2SolrDate(waybackDate);
+      
       IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
       if (doc == null){
         log.info("Url has never been harvested:"+url);
@@ -327,7 +333,7 @@ public class SolrWaybackResource {
 
   @GET
   @Path("/image")
-  @Produces("image/jpeg")
+  @Produces("image/png")
   public Response getImage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("height") int height, @QueryParam("width") int width)
       throws ServiceException {
     try {
@@ -380,9 +386,13 @@ public class SolrWaybackResource {
       }
             
       if (arcEntry.getFileName() != null){
-        response.header("Content-Disposition", "filename=\"" + arcEntry.getFileName() +"\"");
+        response.header("Content-Disposition", "filename=\"" + arcEntry.getFileName() +"\"");      
       }
-
+      
+      if (arcEntry.getContentEncoding() != null){
+        response.header("Content-Encoding", arcEntry.getContentEncoding());      
+      }
+      
       log.debug("Download from source_file_path:" + source_file_path + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());
       return response.build();
 
@@ -397,6 +407,11 @@ public class SolrWaybackResource {
   @Path("/export/warc")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
   public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+   
+    //This is also required even if the option is removed on the web-page.
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
+      throw new InvalidArgumentServiceException("Export to warc not allowed!");
+    }    
     return exportWarcImpl(q, fq, false, false);
   }
 
@@ -404,6 +419,10 @@ public class SolrWaybackResource {
   @Path("/export/warcExpanded")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
   public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+    //This is also required even if the option is removed on the web-page.
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
+      throw new InvalidArgumentServiceException("Export to warc not allowed!");
+    }        
     return exportWarcImpl(q, fq, true, true);
   }
   
@@ -492,13 +511,58 @@ public class SolrWaybackResource {
 
 
   /*
+   * Almost the same as the '/web/' method.
+   * But this method is only called from proxy direct. Do not include toolbar.
+   * Also knowing it is from proxy can be used to improve playback even more. (TODO)  
+   * 
+   */
+  @GET
+  @Path("/webProxy/{var:.*?}")
+  public Response waybackProxyAPIResolver(@Context UriInfo uriInfo, @PathParam("var") String path) throws ServiceException {
+    try {        
+      //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
+      log.info("/webProxy/ called with data:"+path);
+      String fullUrl = uriInfo.getRequestUri().toString();
+      log.info("full url:"+fullUrl);
+     
+      int dataStart=fullUrl.indexOf("/webProxy/");
+      
+      String waybackDataObject = fullUrl.substring(dataStart+10);
+      log.info("Waybackdata object:"+waybackDataObject);
+
+      int indexFirstSlash = waybackDataObject.indexOf("/");  
+             
+      String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
+      String url = waybackDataObject.substring(indexFirstSlash+1);
+
+      String solrDate = DateUtils.convertWaybackDate2SolrDate(waybackDate);
+
+      //log.info("solrDate="+solrDate +" , url="+url);
+      IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
+      if (doc == null){
+        log.info("Url has never been harvested:"+url);
+        throw new NotFoundServiceException("Url has never been harvested:"+url);
+      }
+      //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
+      log.info("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
+      return viewImpl(doc.getSource_file_path() , doc.getOffset(),false); //NO TOOLBAR!        
+      
+                     
+    } catch (Exception e) {
+      //e.printStackTrace();
+      throw handleServiceExceptions(e);
+    }
+
+  }
+
+  /*
    * '/web/' is the same as wayback machine uses. 
    * 
    * Jersey syntax to match all after /web/.
    */
   @GET
   @Path("/web/{var:.*?}")
-  public Response testUrl(@Context UriInfo uriInfo, @PathParam("var") String path) throws ServiceException {
+  public Response waybackAPIResolver(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("var") String path) throws ServiceException {
     try {        
       //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
       log.info("/web/ called with data:"+path);
@@ -515,23 +579,28 @@ public class SolrWaybackResource {
       String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
       String url = waybackDataObject.substring(indexFirstSlash+1);
 
-      SimpleDateFormat waybackDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");          
-      Date date = waybackDateFormat.parse(waybackDate);
+      //Validate this is a URL with domain (can be releative leak).
+      //etc. http://images/horse.png.
+      //use referer to match the correct url
+                       
+      String solrDate = DateUtils.convertWaybackDate2SolrDate(waybackDate);
 
-      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new                   
-      String solrDate = dateFormat.format(date)+"Z";
-
+      boolean urlOK = UrlUtils.isUrlWithDomain(url);
+      if (!urlOK){        
+        String refererUrl = httpRequest.getHeader("referer");       
+        log.info("url not with domain:"+url +" referer:"+refererUrl);         
+        IndexDoc doc = Facade.matchRelativeUrlForDomain(refererUrl,url,solrDate);           
+        return downloadRaw(doc.getSource_file_path(),doc.getOffset());      
+      }      
+            
       //log.info("solrDate="+solrDate +" , url="+url);
       IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
       if (doc == null){
         log.info("Url has never been harvested:"+url);
         throw new NotFoundServiceException("Url has never been harvested:"+url);
-      }
-      //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
+      }        
       log.info("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
-      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);        
-      
-                     
+      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);                                   
     } catch (Exception e) {
       //e.printStackTrace();
       throw handleServiceExceptions(e);
@@ -539,6 +608,8 @@ public class SolrWaybackResource {
 
   }
 
+  
+  
   
 /*
  * Showtoolbarnot working here.
@@ -576,6 +647,34 @@ public class SolrWaybackResource {
   }
 
 
+  
+  @GET
+  @Path("/viewFromLeakedResource")
+  public Response viewFromLeakedResource(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("urlPart") String urlPart) throws ServiceException {
+    //this method is only called from the tomcat solrwaybackrootproxy if that proxy mode is used.
+    try {
+
+      log.info("viewFromLeakedResource called:");
+      log.info("source_file_path:"+source_file_path);
+      log.info("offset:"+offset);
+      log.info("urlPath:"+urlPart);
+
+      //This is from the URL where the leak came from      
+      IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
+      String orgUrl=arcEntry.getUrl();
+      
+      URL base = new URL(orgUrl);
+      String resolvedUrl = new URL(base ,urlPart).toString();
+      log.info("Resource should be located at:"+resolvedUrl);          
+      return viewhref(resolvedUrl, arcEntry.getCrawlDate(), false);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw handleServiceExceptions(e);
+    }
+  }
+  
+  
   @GET
   @Path("/view")
   public Response view(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws ServiceException {
@@ -627,9 +726,13 @@ public class SolrWaybackResource {
      contentType= "text/plain";
      log.warn("no contenttype, setting:text/plain");
    }
-    
-    
+        
     ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
+    
+    if (arcEntry.getContentEncoding() != null){
+      response.header("Content-Encoding", arcEntry.getContentEncoding()); 
+    }
+    
     return response.build();
 
   }
@@ -708,6 +811,51 @@ public class SolrWaybackResource {
 
   }
 
+
+  
+  /*
+   * Some leaks refers to the contextroot of the webapplication(/solrwayback). Etc. /solrwayback/images/horse.png
+   * This page does not exist and the tomcat error page will forward to this method.
+   * Both the original url and the resource (warc+offset) are known, so the correct relative url can be constructed.  
+   */
+  
+  @GET
+  @Path("/resolveLeak")
+  public Response proxy(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) throws Exception {
+    try {
+      
+      // refererUrl="http://teg-desktop.sb.statsbiblioteket.dk:8080/solrwayback/services/view?source_file_path=/media/teg/1200GB_SSD/netarkiv/warcs/solrwayback_2018-08-27-13-29-21.warc&offset=1226957110";
+      // leakUrl= "http://localhost:8080/images/leaked.png?test=123";      
+            
+      String leakUrl = httpRequest.getParameter("url");
+      String refererUrl = httpRequest.getHeader("referer");
+      Map<String, String> queryMap = getQueryMap(refererUrl);
+      String source_file_path = queryMap.get("source_file_path");
+      long offset = Long.parseLong(queryMap.get("offset"));                 
+      IndexDoc doc = Facade.resolveRelativUrlForResource(source_file_path, offset, leakUrl);
+      log.info("relative leak resolved:"+leakUrl);      
+      return downloadRaw(doc.getSource_file_path(), doc.getOffset());
+    }
+    catch(Exception e){
+      throw handleServiceExceptions(e);
+    }
+    
+    }
+      
+  public static Map<String, String> getQueryMap(String url)
+  {    
+      url =url.substring(url.indexOf("?")+1);
+      String[] params = url.split("&");
+      Map<String, String> map = new HashMap<String, String>();
+      for (String param : params)
+      {       
+         String name = param.split("=")[0];
+         String value = param.split("=")[1];
+         map.put(name, value);
+      }
+      return map;
+  }
+  
   private ServiceException handleServiceExceptions(Exception e) {
     if (e instanceof ServiceException) {
       log.info("Handling serviceException:" + e.getMessage());

@@ -254,7 +254,7 @@ public class WarcParser {
                  String charset = part2[1].trim();
                  if (charset.startsWith("charset=")){
                    String headerEncoding=charset.substring(8);
-                   warcEntry.setContentEncoding(headerEncoding);
+                   warcEntry.setContentEncoding(headerEncoding);                                      
                  }                                   
                }
                
@@ -264,7 +264,11 @@ public class WarcParser {
             String[] contentLine = headerLine.split(" ");
               int totalSize = Integer.parseInt(contentLine[1].trim());               
               warcEntry.setContentLength(totalSize);                       
-          }                         
+          }
+          else if (headerLine.toLowerCase().startsWith("content-encoding:")) {
+            String[] contentLine = headerLine.split(":");               
+            warcEntry.setContentEncoding(contentLine[1].trim());                       
+          }      
       }
      
      public static String readLine(BufferedInputStream  bis) throws Exception{

@@ -11,6 +11,7 @@ public class IndexDoc {
     private long offset;
     private String source_file_path;
     private String resourceName;
+    private int statusCode;
     private String title;
     private String id;    
     private String url;
@@ -18,6 +19,7 @@ public class IndexDoc {
     private String mimeType;
     private String contentTypeNorm;
     private String contentType;
+    private String domain;
     private String type;
     private String crawlDate; // format 2009-12-09T05:32:50Z    
     private long crawlDateLong;
@@ -159,7 +161,23 @@ public class IndexDoc {
 
   public void setType(String type) {
     this.type = type;
-  }  
+  }
 
-       
+  public int getStatusCode() {
+    return statusCode;
+  }
+
+  public void setStatusCode(int statusCode) {
+    this.statusCode = statusCode;
+  }
+
+  public String getDomain() {
+    return domain;
+  }
+
+  public void setDomain(String domain) {
+    this.domain = domain;
+  }
+
+    
 }

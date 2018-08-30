@@ -13,6 +13,7 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.proxy.SOCKSProxy;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
@@ -29,11 +30,12 @@ public class InitializationContextListener implements ServletContextListener {
         log.info("solrwayback starting up...");
         Properties props = new Properties();
         try {
+          
+            String webbAppContext = event.getServletContext().getContextPath();                    
             props.load(InitializationContextListener.class.getResourceAsStream("/build.properties"));
-
             version = props.getProperty("APPLICATION.VERSION");
-            PropertiesLoader.initProperties(); //backend
-            PropertiesLoaderWeb.initProperties(); //frontend
+            PropertiesLoader.initProperties(webbAppContext+".properties"); //backend. If contextroot is not solrwayback, it will first look for that context specific propertyfile                                  
+            PropertiesLoaderWeb.initProperties(webbAppContext+"web.properties"); //frontend
 
             // initialise the solrclient
             NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
