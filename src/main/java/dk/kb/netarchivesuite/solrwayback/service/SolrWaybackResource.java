@@ -119,7 +119,7 @@ public class SolrWaybackResource {
   @Produces(MediaType.APPLICATION_JSON)
   public UrlWrapper waybackgraph(@QueryParam("url") String url) throws ServiceException {
     try{
-      String urlDecoded = java.net.URLDecoder.decode(url, "UTF-8"); //frontend sending this encocefd
+      String urlDecoded = java.net.URLDecoder.decode(url, "UTF-8"); //frontend sending this encoded
       
       log.info("url:"+urlDecoded);
       //also rewrite to puny code
