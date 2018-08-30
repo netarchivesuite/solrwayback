@@ -585,26 +585,12 @@ public class SolrWaybackResource {
                        
       String solrDate = DateUtils.convertWaybackDate2SolrDate(waybackDate);
 
-      //Move some logic below to facade
       boolean urlOK = UrlUtils.isUrlWithDomain(url);
-      if (!urlOK){
-        String refererUrl = httpRequest.getHeader("referer");
+      if (!urlOK){        
+        String refererUrl = httpRequest.getHeader("referer");       
         log.info("url not with domain:"+url +" referer:"+refererUrl);         
-        String orgDomain=UrlUtils.getDomainFromWebApiParameters(refererUrl);
-        String resourceName = UrlUtils.getResourceNameFromWebApiParameters(url);
-        //resourceLeaked
-        //TODO use crawltime from refererUrl
-        ArrayList<IndexDoc> matches = NetarchiveSolrClient.getInstance().findNearestForResourceNameAndDomain(orgDomain, resourceName ,solrDate); 
-        //log.info("********* org domain:"+orgDomain);
-        //log.info("********* resourceLeaked "+resourceName );
-       //log.info("********* matches:"+matches.size());
-        for (IndexDoc m : matches){        
-          if (m.getUrl().endsWith(resourceName)){        
-            log.info("found leaked resource for:"+url);
-            return downloadRaw(m.getSource_file_path(),m.getOffset());          
-          }
-        }
-        throw new NotFoundServiceException("Could not find resource for leak:"+url);
+        IndexDoc doc = Facade.matchRelativeUrlForDomain(refererUrl,url,solrDate);           
+        return downloadRaw(doc.getSource_file_path(),doc.getOffset());      
       }      
             
       //log.info("solrDate="+solrDate +" , url="+url);
@@ -612,12 +598,9 @@ public class SolrWaybackResource {
       if (doc == null){
         log.info("Url has never been harvested:"+url);
         throw new NotFoundServiceException("Url has never been harvested:"+url);
-      }
-      //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
+      }        
       log.info("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
-      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);        
-      
-                     
+      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);                                   
     } catch (Exception e) {
       //e.printStackTrace();
       throw handleServiceExceptions(e);

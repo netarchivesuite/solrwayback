@@ -41,6 +41,7 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceExcept
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 import dk.kb.netarchivesuite.solrwayback.solr.*;
+import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
@@ -567,7 +568,7 @@ public class Facade {
       String[] tokens= leakUrl.split("/");
       String leakResourceName=tokens[tokens.length-1];
       
-      //else just try to lookup resourcename (last part of the url) for that domain. 
+      //else just try to lookup resourcename (last part of the url) for that domain.       
       ArrayList<IndexDoc> matches = NetarchiveSolrClient.getInstance().findNearestForResourceNameAndDomain(doc.getDomain(), leakResourceName,doc.getCrawlDate()); 
       for (IndexDoc m : matches){
         if (m.getUrl().endsWith(leakUrl)){        
@@ -578,6 +579,31 @@ public class Facade {
       throw new NotFoundServiceException("Could not find relative resource:"+leakUrl);      
     }
         
+    /*
+     * This is called then a relative url fails. Try to match the relative url for that domain. (qualified guessing...)
+     * 
+     */
+    public static IndexDoc matchRelativeUrlForDomain(String refererUrl,String url,String solrDate) throws Exception{
+      
+      log.info("url not with domain:"+url +" referer:"+refererUrl);         
+      String orgDomain=UrlUtils.getDomainFromWebApiParameters(refererUrl);
+      String resourceName = UrlUtils.getResourceNameFromWebApiParameters(url);
+      //resourceLeaked
+      //TODO use crawltime from refererUrl
+      ArrayList<IndexDoc> matches = NetarchiveSolrClient.getInstance().findNearestForResourceNameAndDomain(orgDomain, resourceName ,solrDate); 
+      //log.info("********* org domain:"+orgDomain);
+      //log.info("********* resourceLeaked "+resourceName );
+     //log.info("********* matches:"+matches.size());
+      for (IndexDoc m : matches){        
+        if (m.getUrl().endsWith(resourceName)){        
+          log.info("found leaked resource for:"+url);
+          return m;          
+        }
+      }
+      throw new NotFoundServiceException("Could not find resource for leak:"+url);
+    }
+
+    
     public static ArcEntry viewHtml(String source_file_path, long offset, Boolean showToolbar) throws Exception{         
     	if (showToolbar==null){
     	   showToolbar=false;
