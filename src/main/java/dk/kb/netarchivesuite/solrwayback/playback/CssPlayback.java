@@ -20,11 +20,9 @@ public class CssPlayback  extends PlaybackHandler{
   @Override
   public ArcEntry playback() throws Exception{    
     //Never show the toolbar.
-    long start = System.currentTimeMillis();
-    log.debug("Generate css from FilePath:" + doc.getSource_file_path() + " offset:" +doc.getOffset());
+    long start = System.currentTimeMillis();    
     String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);            
     arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));     
-    log.debug("Generating css total processing:"+(System.currentTimeMillis()-start));
     return arc;
   }
   
