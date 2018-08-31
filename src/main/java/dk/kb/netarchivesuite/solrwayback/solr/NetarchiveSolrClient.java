@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrClient;
@@ -33,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
@@ -657,7 +655,19 @@ return docs;
     long bestMatchDifference = 9999999999999L;
     
     for (int i =0 ;i<indexDocs.size() ;i++){           
+            
       IndexDoc doc = indexDocs.get(i);
+
+      //small hack to make sure http/https not are mixed. Protocol is not into the schema yet. Would be nice if protocol was a field in schema
+      if ( (url.startsWith("http://") && doc.getUrl().startsWith("http://")) ||  (url.startsWith("https://") && doc.getUrl().startsWith("https://") ) ) {       
+        //log.info("same protocol:"+url + ":"+doc.getUrl());        
+      }
+      else{        
+        //Not a problem just need to see how often it happens for now.
+        log.info("Same url has been harvests for both HTTP and HTTPS: "+url + " and "+doc.getUrl());
+        continue; //Skip
+      }      
+      
       String crawlDateDoc = doc.getCrawlDate();      
       long crawlDateForDocument=  dateFormat.parse(crawlDateDoc).getTime();  //For this document      
       long thisMatch = Math.abs(inputCrawlDate - crawlDateForDocument);
