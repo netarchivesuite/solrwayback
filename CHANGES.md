@@ -1,4 +1,4 @@
-3.2
+3.2-SNAPSHOT
 -----
 
 Search option to group by URL, unchecked as default since it makes search slower. This prevents the same result (url_norm)
@@ -19,6 +19,7 @@ For screenshot preview using headless chrome, the timeout parameter has been ext
 Facets are now  defined in the property file (solrwaybackweb.properties). This is optional. They were hardcoded in 3.1
 If solrwayback is deployed in the tomcat under another contextname that solrwayback, it will try load a property file with that context name before defaulting to solrwayback.properties 
 Showing HTTP status code in toolbar. Also show toolbar for empty responses (301,302 etc.) 
+Apache2 license added.
 
 3.1
 -----
