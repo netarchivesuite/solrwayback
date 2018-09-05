@@ -652,7 +652,7 @@ return docs;
     
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); 
     long inputCrawlDate= dateFormat.parse(timeStamp).getTime(); //From the input
-    long bestMatchDifference = 9999999999999L;
+    long bestMatchDifference = Long.MAX_VALUE;
     
     for (int i =0 ;i<indexDocs.size() ;i++){           
             
