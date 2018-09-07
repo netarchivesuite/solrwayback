@@ -706,7 +706,10 @@ public class Facade {
         props.put(PropertiesLoaderWeb.GOOGLE_MAPS_LATITUDE_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_LATITUDE);
         props.put(PropertiesLoaderWeb.GOOGLE_MAPS_LONGITUDE_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_LONGITUDE);
         props.put(PropertiesLoaderWeb.GOOGLE_MAPS_RADIUS_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_RADIUS);
-                        
+        
+        props.put(PropertiesLoaderWeb.LEAFLET_SOURCE_PROPERTY,PropertiesLoaderWeb.LEAFLET_SOURCE);
+        props.put(PropertiesLoaderWeb.LEAFLET_ATTRIBUTION_PROPERTY,PropertiesLoaderWeb.LEAFLET_ATTRIBUTION);
+        
         return props;
     }
     
