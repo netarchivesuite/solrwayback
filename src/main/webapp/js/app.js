@@ -149,9 +149,13 @@ Vue.component('map-box', {
     	
     	this.map = L.map('map').setView(center, 5);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        L.tileLayer((app.$data.leafletSource, {
+        attribution: app.$data.leafletAttribution
         }).addTo(this.map);
+
+        //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        //attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        //}).addTo(this.map);
 
     	//this.map = new google.maps.Map(document.getElementById('map'), {
         //    zoom: 5,
