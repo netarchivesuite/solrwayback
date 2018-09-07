@@ -149,7 +149,7 @@ Vue.component('map-box', {
     	
     	this.map = L.map('map').setView(center, 5);
 
-        L.tileLayer((app.$data.leafletSource, {
+        L.tileLayer(app.$data.leafletSource, {
         attribution: app.$data.leafletAttribution
         }).addTo(this.map);
 
