@@ -884,7 +884,7 @@ var app = new Vue({
 
                 var marker = L.marker(latLng).addTo(_this.map);
                 //marker.SWtitle = item.resourceName;
-                marker.SWinfo = "<h5>"+item.resourceName+"</h5><p class='imageNameHover' title='" + item.resourceName + "'>" + item.resourceName + "</p>" +
+                marker.SWinfo = "<p class='imageNameHover' title='" + item.resourceName + "'>" + item.resourceName + "</p>" +
                             "<a href='"+ item.downloadUrl + "' target='_blank'>" +
                                 "<img class='mapsHoverImage' src='" + item.downloadUrl + "'>" +
                             "</a>";
