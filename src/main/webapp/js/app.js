@@ -486,7 +486,7 @@ var app = new Vue({
         }
     },
     created: function() { // getting applications base URL on creation
-        this.$http.get( "solrwayback/services/properties/solrwaybackweb").then((response) => {
+        this.$http.get( "services/properties/solrwaybackweb").then((response) => {
             console.log('properties response',response);
             this.baseUrl = response.body['wayback.baseurl'];
             this.openbaseUrl = response.body['openwayback.baseurl'];
