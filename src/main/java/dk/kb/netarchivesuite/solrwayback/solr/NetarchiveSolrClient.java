@@ -323,16 +323,15 @@ public class NetarchiveSolrClient {
 
 
   public ArrayList<Date> getHarvestTimesForUrl(String url) throws Exception {
-    System.out.println("harvesttimes for url:"+url);
     ArrayList<Date> dates = new ArrayList<Date>();
     String urlNormFixed = normalizeUrl(url);    
     SolrQuery solrQuery = new SolrQuery();
     solrQuery = new SolrQuery("url_norm:\""+urlNormFixed+"\"");     
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl","id, crawl_date");    
+    solrQuery.add("fl","id,crawl_date");    
     solrQuery.setRows(1000000);
 
-
+    log.info("HarvestTimeForUrl query:"+solrQuery);
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
     SolrDocumentList docs = rsp.getResults();
 
