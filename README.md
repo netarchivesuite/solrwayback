@@ -133,7 +133,6 @@ you only need to change to property pointing from the wayback server to the Solr
 
 ## Contact
 * Thomas Egense (thomas.egense@gmail.com) 
-* Niels Gamborg (nig@kb.dk) 
 
 Feel free to send emails with comments and questions.
 
