@@ -149,8 +149,8 @@ Vue.component('map-box', {
     	
     	this.map = L.map('map').setView(center, 5);
 
-        L.tileLayer(app.$data.leafletSource, {
-        attribution: app.$data.leafletAttribution
+        L.tileLayer(app.leafletSource, {
+        attribution: app.leafletAttribution
         }).addTo(this.map);
 
         //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -486,7 +486,7 @@ var app = new Vue({
         }
     },
     created: function() { // getting applications base URL on creation
-        this.$http.get( "http://" + location.host +  "/solrwayback/services/properties/solrwaybackweb").then((response) => {
+        this.$http.get( "solrwayback/services/properties/solrwaybackweb").then((response) => {
             console.log('properties response',response);
             this.baseUrl = response.body['wayback.baseurl'];
             this.openbaseUrl = response.body['openwayback.baseurl'];
@@ -494,6 +494,8 @@ var app = new Vue({
             this.googleMapLatitude = response.body['google.maps.latitude'];
             this.googleMapLongitude= response.body['google.maps.longitude'];
             this.markerPosition.radius =  parseInt(response.body['google.maps.radius']);                                                        
+            this.leafletSource = response.body['leaflet.source'];
+            this.leafletAttribution = response.body['leaflet.source'];
         }, (response) => {
             console.log('error: ', response);
             this.errorMsg = response.statusText;
