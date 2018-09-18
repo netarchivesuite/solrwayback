@@ -94,7 +94,7 @@ public class Facade {
       if (results != null){
         resultInt=Integer.parseInt(results);        
       }
-      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().imagesLocationSearch(searchText,filter, resultInt, latitude, longitude, radius); //only search these two types            
+      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().imagesLocationSearchWithSort(searchText,filter, resultInt, latitude, longitude, radius, null); //only search these two types            
       return indexDoc2Images(docs);            
     }
     
