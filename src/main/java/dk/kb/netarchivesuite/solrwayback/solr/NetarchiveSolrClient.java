@@ -439,39 +439,42 @@ public class NetarchiveSolrClient {
 
    */
 
+/*
+ * Sort can be null. Also define order for sort, example: sort = "crawl_date asc";
+ */
+  
+   public ArrayList<IndexDoc> imagesLocationSearchWithSort(String searchText, String filterQuery,int results,double latitude, double longitude, double radius, String sort) throws Exception {
+     log.info("imagesLocationSearch:" + searchText +" coordinates:"+latitude+","+longitude +" radius:"+radius);
+     SolrQuery solrQuery = new SolrQuery();
+     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
+     solrQuery.add("fl", indexDocFieldList);
+     solrQuery.add("group","true");       
+     solrQuery.add("group.field","hash"); //Notice not using url_norm. We want really unique images.
+     solrQuery.add("group.format","simple");
+     solrQuery.add("group.limit","1");    
+     if (sort != null){
+       solrQuery.add("sort",sort);
+     }
+     solrQuery.setRows(results);
+     //The 3 lines defines geospatial search. The ( ) are required if you want to AND with another query
+     solrQuery.setQuery("({!geofilt sfield=exif_location}) AND "+searchText);       
+     solrQuery.setParam("pt", latitude+","+longitude);
+     solrQuery.setParam("d", ""+radius);
 
+     if (filterQuery != null){
+       solrQuery.setFilterQueries(filterQuery);
+     }
 
+     QueryResponse rsp = solrServer.query(solrQuery);
 
-  public ArrayList<IndexDoc> imagesLocationSearch(String searchText, String filterQuery,int results,double latitude, double longitude, double radius) throws Exception {
-    log.info("imagesLocationSearch:" + searchText +" coordinates:"+latitude+","+longitude +" radius:"+radius);
-
-    SolrQuery solrQuery = new SolrQuery();
-    solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
-    solrQuery.add("fl", indexDocFieldList);
-    solrQuery.add("group","true");       
-    solrQuery.add("group.field","hash"); //Notice not using url_norm. We want really unique images.
-    solrQuery.add("group.format","simple");
-    solrQuery.add("group.limit","1");    
-    solrQuery.setRows(results);
-    //The 3 lines defines geospatial search. The ( ) are required if you want to AND with another query
-    solrQuery.setQuery("({!geofilt sfield=exif_location}) AND "+searchText);       
-    solrQuery.setParam("pt", latitude+","+longitude);
-    solrQuery.setParam("d", ""+radius);
-
-    if (filterQuery != null){
-      solrQuery.setFilterQueries(filterQuery);
-    }
-
-    QueryResponse rsp = solrServer.query(solrQuery);
-
-
-    //SolrDocumentList docs = rsp.getResults();
-    SolrDocumentList docs =  rsp.getGroupResponse().getValues().get(0).getValues().get(0).getResult();     
-    ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
+     //SolrDocumentList docs = rsp.getResults();
+     SolrDocumentList docs =  rsp.getGroupResponse().getValues().get(0).getValues().get(0).getResult();     
+     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
+    
+     return indexDocs;
+   }
    
-    return indexDocs;
-  }
-
+   
 
   public SearchResult search(String searchString, String filterQuery, int results) throws Exception {
     SearchResult result = new SearchResult();
