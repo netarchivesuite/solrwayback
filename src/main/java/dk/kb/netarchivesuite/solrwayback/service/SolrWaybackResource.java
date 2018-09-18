@@ -83,8 +83,9 @@ public class SolrWaybackResource {
   @GET
   @Path("/images/search/location")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public  ArrayList<ImageUrl> imagesLocationSearch(@QueryParam("query") String query, @QueryParam("fq") String fq, @QueryParam("results") String results,@QueryParam("latitude") double latitude, @QueryParam("longitude") double longitude, @QueryParam("d") double d) throws ServiceException {
-     if(d <=0 || d>5001){
+  public  ArrayList<ImageUrl> imagesLocationSearch(@QueryParam("query") String query, @QueryParam("fq") String fq, @QueryParam("results") String results,@QueryParam("latitude") double latitude, @QueryParam("longitude") double longitude, @QueryParam("d") double d,@QueryParam("sort") String sort) throws ServiceException {
+//sort is optional
+    if(d <=0 || d>5001){
       throw new InvalidArgumentServiceException("d parameter must be between 1 and 5000 (radius in km)");
     }
 
