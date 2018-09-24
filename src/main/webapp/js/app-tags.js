@@ -151,7 +151,7 @@ var app = new Vue({
             this.showSpinner();
             var promises = [];
             for( var i = 0; i < this.tags.length; i++ ){
-                var tagsUrl = 'http://' + location.host + '/solrwayback/services/smurf/tags?tag=' + this.tags[i] + "&startyear=2006";
+                var tagsUrl =  location.protocol +'//' + location.host + '/solrwayback/services/smurf/tags?tag=' + this.tags[i] + "&startyear=2006";
                 promises.push(this.$http.get(tagsUrl));
             }
             Promise.all(promises).then((response) => {

@@ -113,7 +113,7 @@ var app = new Vue({
                     this.domain = this.domain.slice(0, -1)
                 }
 
-                var domainGrowthUrl = 'http://' + location.host + '/solrwayback/services/statistics/domain?domain=' + this.domain;
+                var domainGrowthUrl =  location.protocol +'//' + location.host + '/solrwayback/services/statistics/domain?domain=' + this.domain;
 
                 this.$http.get(domainGrowthUrl).then((response) => {
                     this.errorMsg = "";

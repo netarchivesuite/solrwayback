@@ -183,7 +183,7 @@ var app = new Vue({
     },
     created: function() {
         this.spinner = true;
-        var serviceUrl = 'http://' + location.host + '/solrwayback/services/pagepreviews?url=' + encodeURIComponent(url);
+        var serviceUrl =  location.protocol +'//' + location.host + '/solrwayback/services/pagepreviews?url=' + encodeURIComponent(url);
         this.url = url;
         this.$http.get(serviceUrl).then((response) => {
             this.harvestData = response.body;

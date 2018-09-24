@@ -91,7 +91,7 @@ var app = new Vue({
         },
         getTimestamps: function(){
             this.showSpinner();
-            this.resourceUrl = "http://" + location.host + "/solrwayback/services/frontend/timestampsforpage?source_file_path=" + this.source_file_path + '&offset=' + this.offset;
+            this.resourceUrl =  location.protocol +"//" + location.host + "/solrwayback/services/frontend/timestampsforpage?source_file_path=" + this.source_file_path + '&offset=' + this.offset;
             this.$http.get(this.resourceUrl).then((response) => {
                 this.resourceObj = response.body;
                 console.log('response.body: ', response.body);

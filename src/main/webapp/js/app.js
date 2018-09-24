@@ -79,7 +79,7 @@ Vue.component('search-box', {
         /* Method that uses SOLRWayback hashes to perfom search*/
         searchHash: function(event){
             var file = event.target.files[0];
-            var url = "http://" + location.host + "/solrwayback/services/upload/gethash";
+            var url = location.protocol +"//" + location.host + "/solrwayback/services/upload/gethash";
             var data = new FormData();
             data.append('file', file);
             this.$http.post(url,data).then((response) => {
@@ -93,7 +93,7 @@ Vue.component('search-box', {
         /* Method to set up searchfield for dedicated URL search*/
         searchUrl: function(start){
             if(start){
-                this.queryModel = "http://"; //helping user writing "http://" in search field
+                this.queryModel =  location.protocol +"//"; //helping user writing "http://" in search field
                 this.imageSearchModel = false;
                 this.imageGeoSearchModel = false;
             }else{
@@ -258,7 +258,7 @@ Vue.component('pager-box', {
     },
     methods:{
         exportResult: function(downloadType){
-            return 'http://' + location.host + '/solrwayback/services/export/' + downloadType + '?query=' + this.myQuery + '&fq=' + this.filters;
+            return  location.protocol +'//' + location.host + '/solrwayback/services/export/' + downloadType + '?query=' + this.myQuery + '&fq=' + this.filters;
         }
     },
 })
@@ -466,7 +466,7 @@ var app = new Vue({
         }
     },
     created: function() { // getting applications base URL on creation
-        this.$http.get( "http://" + location.host +  "/solrwayback/services/properties/solrwaybackweb").then((response) => {
+        this.$http.get( location.protocol +"//" + location.host +  "/solrwayback/services/properties/solrwaybackweb").then((response) => {
             console.log('properties response',response);
             this.baseUrl = response.body['wayback.baseurl'];
             this.openbaseUrl = response.body['openwayback.baseurl'];
@@ -564,12 +564,12 @@ var app = new Vue({
             this.imageObjects = []; //resetting imageObjecs on new search
             this.searchResult = []; //resetting search result on new search
             if (this.urlSearch && this.myQuery) {
-                var tempUrl = 'http://' + location.host + '/solrwayback/services/util/normalizeurl?url='
+                var tempUrl =  location.protocol +'//' + location.host + '/solrwayback/services/util/normalizeurl?url='
                     + encodeURI(encodeURI(this.myQuery.trim()));
                 this.showSpinner();
                 this.$http.get(tempUrl).then((response) => {
                     var url_norm = response.body.url;
-                    this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=url_norm:"' +
+                    this.searchUrl =  location.protocol +'//' + location.host + '/solrwayback/services/solr/search?query=url_norm:"' +
                         url_norm + '"&start=' + parseInt(this.start) + '&fq=' + this.filters;
                     this.doSearch();
 
@@ -578,17 +578,17 @@ var app = new Vue({
                 });
                 return; // returning if URL search, because we're waiting for service to generate URL
             } else if (this.imageSearch && !this.imageGeoSearch) {
-                this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
+                this.searchUrl =  location.protocol +'//' + location.host + '/solrwayback/services/images/search?query=' + this.myQuery +
                     '&start=' + this.start + '&fq=' + this.filters;
             } else if (this.imageGeoSearch) {
                 if (!this.markerPosition.lat || !this.markerPosition.lng) {
                     return //leaving search if latítude or longitude isn't set
                 }
-                this.searchUrl = 'http://' + location.host + '/solrwayback/services/images/search/location?query=' + this.myQuery +
+                this.searchUrl =  location.protocol +'//' + location.host + '/solrwayback/services/images/search/location?query=' + this.myQuery +
                     //'&latitude=' + this.latitude + '&longitude=' + this.longitude + '&d=' + this.markerPosition.radius / 1000;
                     '&latitude=' + this.markerPosition.lat + '&longitude=' + this.markerPosition.lng + '&d=' + this.markerPosition.radius / 1000;
             } else {
-                this.searchUrl = 'http://' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
+                this.searchUrl =  location.protocol +'//' + location.host + '/solrwayback/services/solr/search?query=' + this.myQuery +
                     '&start=' + parseInt(this.start) + '&fq=' + this.filters + "&grouping=" + this.grouping;
             }
             this.facetFields = []; //resetting facet fields before building them from query params
@@ -675,7 +675,7 @@ var app = new Vue({
         },
 
         getFullpost: function(id){
-            var fullpostUrl = 'http://' + location.host + '/solrwayback/services/solr/idlookup?id=' + encodeURIComponent(id);
+            var fullpostUrl =  location.protocol +'//'+ location.host + '/solrwayback/services/solr/idlookup?id=' + encodeURIComponent(id);
             this.$http.get(fullpostUrl).then((response) => {
                 this.fullpost = response.body.response.docs;
             }, (response) => {
@@ -684,7 +684,7 @@ var app = new Vue({
         },
 
         getImages: function(id,source_file_path, offset){
-            var imageInfoUrl = "http://" + location.host + "/solrwayback/services/images/htmlpage?source_file_path=" + source_file_path +"&offset="+offset;
+            var imageInfoUrl =  location.protocol +"//" +location.host + "/solrwayback/services/images/htmlpage?source_file_path=" + source_file_path +"&offset="+offset;
             this.$http.get(imageInfoUrl).then((response) => {
                 var imageUrl = ""; // Url in the netarchive
                 var downloadUrl = ""; // Url in the netarchive
