@@ -90,7 +90,7 @@ public class SolrWaybackResource {
     }
 
     try {                                          
-      ArrayList<ImageUrl> images = Facade.imagesLocationSearch(query,fq, results, latitude, longitude, d);
+      ArrayList<ImageUrl> images = Facade.imagesLocationSearch(query,fq, results, latitude, longitude, d,sort);
       return images;                                                            
     } catch (Exception e) {           
       throw handleServiceExceptions(e);
