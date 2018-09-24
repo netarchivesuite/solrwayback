@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
 
-    <title>SOLR Wayback Search</title>
+    <title>SolrWayback Search</title>
     <link rel="stylesheet" type="text/css" media="all" href="./css/solrwayback.css">
 
     <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
