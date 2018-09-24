@@ -89,12 +89,12 @@ public class Facade {
     }
         
         
-    public static  ArrayList<ImageUrl> imagesLocationSearch(String searchText,String filter, String results, double latitude, double longitude, double radius) throws Exception {
+    public static  ArrayList<ImageUrl> imagesLocationSearch(String searchText,String filter, String results, double latitude, double longitude, double radius, String sort) throws Exception {
       int resultInt=500;
       if (results != null){
         resultInt=Integer.parseInt(results);        
       }
-      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().imagesLocationSearchWithSort(searchText,filter, resultInt, latitude, longitude, radius, null); //only search these two types            
+      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().imagesLocationSearchWithSort(searchText,filter, resultInt, latitude, longitude, radius, sort); //only search these two types            
       return indexDoc2Images(docs);            
     }
     
@@ -806,6 +806,8 @@ public static String proxyBackendResources(String source_file_path, String offse
         imageUrl.setDownloadUrl(downloadLink);             
         imageUrl.setHash(entry.getHash());
         imageUrl.setUrlNorm(entry.getUrl_norm());
+                
+        imageUrl.setLastModified(entry.getLastModifiedLong());
         String exifLocation = entry.getExifLocation();
         if (exifLocation != null){
           String[] split = exifLocation.split(",");
@@ -869,12 +871,14 @@ public static String proxyBackendResources(String source_file_path, String offse
     String baseUrl = PropertiesLoader.WAYBACK_BASEURL;
     System.out.println(baseUrl);
     int serverStart = baseUrl.indexOf("://");
-    System.out.println(serverStart);
+    System.out.println("index:"+serverStart);
     baseUrl = baseUrl.substring(serverStart+3);
+    System.out.println("baseUrl cut:"+baseUrl);
     
-    int portStart = baseUrl.indexOf(":");
     
+    int portStart = baseUrl.indexOf(":");            
     String proxyUrl = "socks4://"+baseUrl.substring(0,portStart)+":"+PropertiesLoader.PROXY_PORT;
+
     return  proxyUrl;
     
   }
