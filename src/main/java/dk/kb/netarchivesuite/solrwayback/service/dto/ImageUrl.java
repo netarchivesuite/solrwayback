@@ -12,12 +12,22 @@ public class ImageUrl {
   private Double latitude;
   private Double longitude;
   private String resourceName;
+  private long lastModified;
   
   public ImageUrl(){    
   }
 
   public String getDownloadUrl() {
     return downloadUrl;
+  }
+  
+
+  public long getLastModified() {
+    return lastModified;
+  }
+
+  public void setLastModified(long lastModified) {
+    this.lastModified = lastModified;
   }
 
   public void setDownloadUrl(String downloadUrl) {

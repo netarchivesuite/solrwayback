@@ -18,6 +18,7 @@ public class IndexDoc {
     private String url_norm;
     private String mimeType;
     private String contentTypeNorm;
+    private long lastModifiedLong;
     private String contentType;
     private String domain;
     private String type;
@@ -32,6 +33,14 @@ public class IndexDoc {
     public IndexDoc(){        
     }
     
+    public long getLastModifiedLong() {
+      return lastModifiedLong;
+    }
+
+    public void setLastModifiedLong(long lastModifiedLong) {
+      this.lastModifiedLong = lastModifiedLong;
+    }
+
     public String getTitle() {
         return title;
     }
