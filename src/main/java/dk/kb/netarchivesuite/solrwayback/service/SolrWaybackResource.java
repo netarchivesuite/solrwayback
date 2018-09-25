@@ -346,7 +346,7 @@ public class SolrWaybackResource {
 
       if (image== null){
         // java does not support ico format. Just serve it RAW...
-        if (arcEntry.getUrl().toLowerCase().endsWith(".ico") || arcEntry.getUrl().toLowerCase().endsWith(".icon")){
+        if (arcEntry.getUrl().toLowerCase().indexOf("/favicon.ico") >0){ // There can be query params also
            log.info("image is ico-image, serving it raw");
            return downloadRaw(source_file_path, offset);          
         }
