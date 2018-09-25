@@ -345,8 +345,13 @@ public class SolrWaybackResource {
       BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
 
       if (image== null){
-        log.error("image is null, source_file_path:"+source_file_path +" offset:"+offset);
-        throw new IllegalArgumentException("image is null, source_file_path:"+source_file_path +" offset:"+offset);                
+        // java does not support ico format. Just serve it RAW...
+        if (arcEntry.getUrl().toLowerCase().endsWith(".ico") || arcEntry.getUrl().toLowerCase().endsWith(".icon")){
+           log.info("image is ico-image, serving it raw");
+           return downloadRaw(source_file_path, offset);          
+        }
+        log.warn("image is null and not .ico file, source_file_path:"+source_file_path +" offset:"+offset);
+        throw new IllegalArgumentException("image is null and not .ico image, source_file_path:"+source_file_path +" offset:"+offset);                
       }
 
       int sourceWidth = image.getWidth();
