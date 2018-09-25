@@ -5,16 +5,13 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.zip.GZIPInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
 public class ArcParser {
 
@@ -58,7 +55,7 @@ public class ArcParser {
             arcEntry.setFileName(getArcLastUrlPart(line));            
             
             String waybackDate = getWaybackDate(line);                    
-            arcEntry.setCrawlDate(waybackdate2crawldate(waybackDate));          
+            arcEntry.setCrawlDate(DateUtils.convertWaybackDate2SolrDate(waybackDate));          
             arcEntry.setWaybackDate(waybackDate);                       
             arcEntry.setUrl(getArcUrl(line));
             arcEntry.setIp(getIp(line));
@@ -122,7 +119,7 @@ public class ArcParser {
           
           arcEntry.setFileName(getArcLastUrlPart(line));                    
           String waybackDate = getWaybackDate(line);                    
-          arcEntry.setCrawlDate(waybackdate2crawldate(waybackDate));          
+          arcEntry.setCrawlDate(DateUtils.convertWaybackDate2SolrDate(waybackDate));          
           arcEntry.setWaybackDate(waybackDate);
           arcEntry.setUrl(getArcUrl(line));
           arcEntry.setIp(getIp(line));            
@@ -235,24 +232,6 @@ public class ArcParser {
 
     
     
- 
-    
-    
-    private static String  waybackdate2crawldate(String waybackdate) throws Exception {
-        SimpleDateFormat dForm = new SimpleDateFormat("yyyyMMddHHmmss");    
-        DateFormat solrDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");    
-
-        try {
-
-        Date d = dForm.parse(waybackdate);
-        String format = solrDateFormat.format(d);
-        
-        return format+"Z";         
-        } 
-        catch(Exception e){        
-            throw new RuntimeException("Could not parse waybackdate from:"+waybackdate,e);
-        }
-    }
     
     
     private static String getWaybackDate(String arcHeaderLine) throws Exception {
