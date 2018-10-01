@@ -104,6 +104,7 @@ Vue.component('search-box', {
 })
 
 /* Component shows Google map with results plugged in */
+/* OSM */
 Vue.component('map-box', {
     props: ['markerPosition',"placeMarker","doSearch","totalHits"],
     data: function() {
@@ -136,29 +137,48 @@ Vue.component('map-box', {
         </div>
     </div>    
     `,
+
+    /* OSM */
     mounted: function(){
         /* Initialising map when component is mounted, not when app is mounted */
         //latitude and longitude are loaded from the properties
-    	
-    	
-    	
-    	
+    	    	
         //var center = {lat: 56.17, lng: 10.20};
     	var center = {lat:  parseFloat(app.$data.googleMapLatitude), lng: parseFloat(app.$data.googleMapLongitude)}; 	    	    	
     	var radius = parseInt(app.$data.googleMapRadius);
-    	this.map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 5,
-            center: center,
-            streetViewControl: false,
-            mapTypeId: 'terrain'
-        });
+    	
+    	this.map = L.map('map').setView(center, 5);
+
+        L.tileLayer(app.leafletSource, {
+        attribution: app.leafletAttribution
+        }).addTo(this.map);
+
+        //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        //attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        //}).addTo(this.map);
+
+    	//this.map = new google.maps.Map(document.getElementById('map'), {
+        //    zoom: 5,
+        //    center: center,
+        //    streetViewControl: false,
+        //    mapTypeId: 'terrain'
+        //});
         var _this = this;
-        this.position = new google.maps.LatLng(center);
+        
+        this.position = center;
+        //this.position = new google.maps.LatLng(center);
+        
         this.placeMarker(this.position, this.map, this.markers, this.markerCircles, this.radiusModel)
-        this.map.addListener('click', function(e) {
-            _this.position = e.latLng;
+        
+         this.map.on('click',function(e){
+            _this.position=e.latlng;
             _this.placeMarker(_this.position, _this.map, _this.markers, _this.markerCircles, _this.radiusModel);
         });
+
+        //this.map.addListener('click', function(e) {
+        //    _this.position = e.latLng;
+        //    _this.placeMarker(_this.position, _this.map, _this.markers, _this.markerCircles, _this.radiusModel);
+        //});
     }
 })
 
@@ -466,7 +486,7 @@ var app = new Vue({
         }
     },
     created: function() { // getting applications base URL on creation
-        this.$http.get( "http://" + location.host +  "/solrwayback/services/properties/solrwaybackweb").then((response) => {
+        this.$http.get( "services/properties/solrwaybackweb").then((response) => {
             console.log('properties response',response);
             this.baseUrl = response.body['wayback.baseurl'];
             this.openbaseUrl = response.body['openwayback.baseurl'];
@@ -474,6 +494,8 @@ var app = new Vue({
             this.googleMapLatitude = response.body['google.maps.latitude'];
             this.googleMapLongitude= response.body['google.maps.longitude'];
             this.markerPosition.radius =  parseInt(response.body['google.maps.radius']);                                                        
+            this.leafletSource = response.body['leaflet.source'];
+            this.leafletAttribution = response.body['leaflet.source'];
         }, (response) => {
             console.log('error: ', response);
             this.errorMsg = response.statusText;
@@ -771,79 +793,141 @@ var app = new Vue({
         },
 
         /* Google Maps function to place and erase markers*/
+ 
+        /* OSM must rewrite this to use leaflet.js with openstreetmap */
+        /* creates a marker and a marker circle on the screen and saves them */
+        /* so later they are easier to remove */
         placeMarker: function(position, map, markers, markerCircles, radius){
             this.map = map;
             var position = position;
             for (var i = 0; i < markers.length; i++) { //deleting previous markers and circles
-                markers[i].setMap(null);
-                markerCircles[i].setMap(null);
+                markers[i].remove();
+                markerCircles[i].remove();
             }
-            var marker = new google.maps.Marker({
-                position: position,
-                map: map,
-                title: "Center of your search",
-                icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
-            });
-            /* Draving circle on map */
-            var markerCircle = new google.maps.Circle({
-                strokeColor: '#00cc00',
-                strokeOpacity: 0.8,
-                strokeWeight: 2,
+            
+            
+            var marker = L.popup().setLatLng(position).setContent("Center of your search").openOn(map);
+            
+            //var marker = new google.maps.Marker({
+            //    position: position,
+            //    map: map,
+            //    title: "Center of your search",
+            //    icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+            //});
+            
+            var markerCircle = L.circle(position, {
+                radius: radius*1000,
+                color: '#00cc00',
+                opacity: 0.8,
+                weight: 2,
                 fillColor: '#00cc00',
-                fillOpacity: 0.35,
-                map: map,
-                center: position,
-                radius: radius * 1000
-            });
+                fillOpacity: 0.35
+                }).addTo(map);
+             
+            
+            /* Drawing circle on map */
+            //var markerCircle = new google.maps.Circle({
+            //    strokeColor: '#00cc00',
+            //    strokeOpacity: 0.8,
+            //    strokeWeight: 2,
+            //    fillColor: '#00cc00',
+            //    fillOpacity: 0.35,
+            //    map: map,
+            //    center: position,
+            //    radius: radius * 1000
+            //});
             //adding click event to circles to get new position clicking circle overlay
             var _this = this;
-            markerCircle.addListener('click', function(e) {
+            
+            markerCircle.on('click',function(e){
                 var newPosition = e.latLng;
-                _this.placeMarker(newPosition, map, markers, markerCircles, radius)
+                _this.placeMarker(newPosition, map, markers, markerCircles, radius);
                 return;
             });
+            
+            //markerCircle.addListener('click', function(e) {
+            //    var newPosition = e.latLng;
+            //    _this.placeMarker(newPosition, map, markers, markerCircles, radius)
+            //    return;
+            //});
+            
+            
+            
+            
             markers.push(marker);
             markerCircles.push( markerCircle);
             /* Building marker info object */
             this.markerPosition = {
                 radius: radius*1000,
-                lat: marker.getPosition().lat(),
-                lng: marker.getPosition().lng(),
+                lat: marker.getLatLng().lat,
+                lng: marker.getLatLng().lng,
             };
+            
+            //OSM works the same way as google map
             map.panTo(position);
             this.setupUrl();
         },
 
            /* Method that place result markers on Google map and setting hover info and link to image */
+
+           /* OSM must rewrite this to use leaflet.js */
+           /* Must check the google.maps.InfoWindow documentation to see what it does */
+           /* https://developers.google.com/maps/documentation/javascript/examples/infowindow-simple  */
+           /* it shows a large window with html text at a given map position */
+           /* need to find a leaflet.js alternative for this one */
+           
+           /* a simple leaflet.js popup is really near in functionality */
+
         setResultMarkers: function(){
             for (var i = 0; i < this.resultMarkers.length; i++) { //deleting previous markers and circles
-                this.resultMarkers[i].setMap(null);
+                this.resultMarkers[i].remove();
             }
             this.resultMarkers = [];
             for (var i = 0; i < this.geoImageInfo.length; i++) {
                 var item = this.geoImageInfo[i]
-                var latLng = new google.maps.LatLng(item.lat,item.lng);
+                var latLng = [item.lat,item.lng];
                 var _this = this;
-                var marker = new google.maps.Marker({
-                    downloadUrl: item.downloadUrl,
-                    position: latLng,
-                    map: _this.map,
-                    title: item.resourceName,
-                    info:   "<p class='imageNameHover' title='" + item.resourceName + "'>" + item.resourceName + "</p>" +
+
+                var marker = L.marker(latLng).addTo(_this.map);
+                //marker.SWtitle = item.resourceName;
+                marker.SWinfo = "<p class='imageNameHover' title='" + item.resourceName + "'>" + item.resourceName + "</p>" +
                             "<a href='"+ item.downloadUrl + "' target='_blank'>" +
                                 "<img class='mapsHoverImage' src='" + item.downloadUrl + "'>" +
-                            "</a>"
+                            "</a>";
+
+                marker.SWdownloadUrl=item.downloadUrl;
+                //var marker = new google.maps.Marker({
+                //    downloadUrl: item.downloadUrl,
+                //    position: latLng,
+                //    map: _this.map,
+                //    title: item.resourceName,
+                //    info:   "<p class='imageNameHover' title='" + item.resourceName + "'>" + item.resourceName + "</p>" +
+                //            "<a href='"+ item.downloadUrl + "' target='_blank'>" +
+                //                "<img class='mapsHoverImage' src='" + item.downloadUrl + "'>" +
+                //            "</a>"
+                //});
+
+                //var infowindow = new google.maps.InfoWindow();
+                /* "this." refers to the marker params and not Vue in the event listeners below */
+                
+                marker.on('click', function() {
+                    window.open(this.SWdownloadUrl, '_blank');
                 });
 
-                var infowindow = new google.maps.InfoWindow();
-                /* "this." refers to the marker params and not Vue in the event listeners below */
-                marker.addListener('click', function() {
-                    window.open(this.downloadUrl, '_blank');
+                //marker.addListener('click', function() {
+                //    window.open(this.downloadUrl, '_blank');
+                //});
+                
+                marker.on('mouseover',function(){
+                    //L.popup().setLatLng(this.getLatLng()).setContent(this.SWinfo).openOn(map);
+                    marker.bindPopup(this.SWinfo).openPopup(this.getLatLng());
                 });
-                marker.addListener('mouseover', function() {
-                    infowindow.setContent(this.info);
-                    infowindow.open(_this.map, this);
-                });
+                
+                
+                //marker.addListener('mouseover', function() {
+                //    infowindow.setContent(this.info);
+                //    infowindow.open(_this.map, this);
+                //});
                 this.resultMarkers.push(marker);
             }
 
