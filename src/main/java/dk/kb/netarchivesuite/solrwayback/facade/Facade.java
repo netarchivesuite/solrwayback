@@ -867,20 +867,17 @@ public static String proxyBackendResources(String source_file_path, String offse
   
   //takes the wayback_base url and create the proxy url
   // http://localhost:8080/solrwayback/ -> socks4://localhost:9000 
-  private static String getProxySocksUrl(){
-    String baseUrl = PropertiesLoader.WAYBACK_BASEURL;
-    System.out.println(baseUrl);
-    int serverStart = baseUrl.indexOf("://");
-    System.out.println("index:"+serverStart);
-    baseUrl = baseUrl.substring(serverStart+3);
-    System.out.println("baseUrl cut:"+baseUrl);
-    
-    
-    int portStart = baseUrl.indexOf(":");            
-    String proxyUrl = "socks4://"+baseUrl.substring(0,portStart)+":"+PropertiesLoader.PROXY_PORT;
+  private static String getProxySocksUrl() throws Exception{
 
-    return  proxyUrl;
-    
+    String baseUrl = PropertiesLoader.WAYBACK_BASEURL;
+    String socksPort = PropertiesLoader.PROXY_PORT;    
+    URL url = new URL(baseUrl);
+    String host = url.getHost();
+    String part =url.getPath();        
+    String socksUrl= "socks4://"+host+":"+socksPort;
+    log.info("socks url:"+socksUrl);
+    return socksUrl;
+   
   }
   
    
