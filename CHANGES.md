@@ -12,7 +12,6 @@ Playback improvements. (img srcset tag, embed url,  video/audio having nested so
 Search by entering URL option in search interface. This will also convert the URL from IDN to puny code, making search by URL easier.
 Faster search but only loading the fields showing in the short record presentation. Only load all fields when showing them for a record. For index-size > 300GB this is a factor 2 or more.   
 Domain growth stats graph also included in search-frontend and not only playback toolbar.
-Google API key extracted to property file. It is required you use your own API key.
 For image GPS search the google maps start location parameters extracted to property-file
 For PID export the collection name has been extracted to property file.
 For screenshot preview using headless chrome, the timeout parameter has been extraced to property-file. Optional, 10 seconds is default
@@ -21,7 +20,8 @@ If solrwayback is deployed in the tomcat under another contextname that solrwayb
 Showing HTTP status code in toolbar. Also show toolbar for empty responses (301,302 etc.) 
 Apache2 license added.
 GPS image search. Replace google maps with leaflet. So no google API key is needed anymore. The property in solrwayback.properties has been remove also.
-leaflet javascript/css included
+leaflet javascript/css included in WAR fiile
+
 
 3.1
 -----
