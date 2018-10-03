@@ -157,12 +157,7 @@ Vue.component('map-box', {
         //attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         //}).addTo(this.map);
 
-    	//this.map = new google.maps.Map(document.getElementById('map'), {
-        //    zoom: 5,
-        //    center: center,
-        //    streetViewControl: false,
-        //    mapTypeId: 'terrain'
-        //});
+    	
         var _this = this;
         
         this.position = center;
@@ -175,10 +170,7 @@ Vue.component('map-box', {
             _this.placeMarker(_this.position, _this.map, _this.markers, _this.markerCircles, _this.radiusModel);
         });
 
-        //this.map.addListener('click', function(e) {
-        //    _this.position = e.latLng;
-        //    _this.placeMarker(_this.position, _this.map, _this.markers, _this.markerCircles, _this.radiusModel);
-        //});
+      
     }
 })
 
@@ -792,9 +784,9 @@ var app = new Vue({
             this.spinner = false;
         },
 
-        /* Google Maps function to place and erase markers*/
+
  
-        /* OSM must rewrite this to use leaflet.js with openstreetmap */
+        /* leaflet.js with openstreetmap */
         /* creates a marker and a marker circle on the screen and saves them */
         /* so later they are easier to remove */
         placeMarker: function(position, map, markers, markerCircles, radius){
@@ -807,14 +799,7 @@ var app = new Vue({
             
             
             var marker = L.popup().setLatLng(position).setContent("Center of your search").openOn(map);
-            
-            //var marker = new google.maps.Marker({
-            //    position: position,
-            //    map: map,
-            //    title: "Center of your search",
-            //    icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
-            //});
-            
+                        
             var markerCircle = L.circle(position, {
                 radius: radius*1000,
                 color: '#00cc00',
@@ -824,19 +809,7 @@ var app = new Vue({
                 fillOpacity: 0.35
                 }).addTo(map);
              
-            
-            /* Drawing circle on map */
-            //var markerCircle = new google.maps.Circle({
-            //    strokeColor: '#00cc00',
-            //    strokeOpacity: 0.8,
-            //    strokeWeight: 2,
-            //    fillColor: '#00cc00',
-            //    fillOpacity: 0.35,
-            //    map: map,
-            //    center: position,
-            //    radius: radius * 1000
-            //});
-            //adding click event to circles to get new position clicking circle overlay
+           
             var _this = this;
             
             markerCircle.on('click',function(e){
@@ -844,14 +817,6 @@ var app = new Vue({
                 _this.placeMarker(newPosition, map, markers, markerCircles, radius);
                 return;
             });
-            
-            //markerCircle.addListener('click', function(e) {
-            //    var newPosition = e.latLng;
-            //    _this.placeMarker(newPosition, map, markers, markerCircles, radius)
-            //    return;
-            //});
-            
-            
             
             
             markers.push(marker);
@@ -867,14 +832,6 @@ var app = new Vue({
             map.panTo(position);
             this.setupUrl();
         },
-
-           /* Method that place result markers on Google map and setting hover info and link to image */
-
-           /* OSM must rewrite this to use leaflet.js */
-           /* Must check the google.maps.InfoWindow documentation to see what it does */
-           /* https://developers.google.com/maps/documentation/javascript/examples/infowindow-simple  */
-           /* it shows a large window with html text at a given map position */
-           /* need to find a leaflet.js alternative for this one */
            
            /* a simple leaflet.js popup is really near in functionality */
 
@@ -896,27 +853,10 @@ var app = new Vue({
                             "</a>";
 
                 marker.SWdownloadUrl=item.downloadUrl;
-                //var marker = new google.maps.Marker({
-                //    downloadUrl: item.downloadUrl,
-                //    position: latLng,
-                //    map: _this.map,
-                //    title: item.resourceName,
-                //    info:   "<p class='imageNameHover' title='" + item.resourceName + "'>" + item.resourceName + "</p>" +
-                //            "<a href='"+ item.downloadUrl + "' target='_blank'>" +
-                //                "<img class='mapsHoverImage' src='" + item.downloadUrl + "'>" +
-                //            "</a>"
-                //});
-
-                //var infowindow = new google.maps.InfoWindow();
-                /* "this." refers to the marker params and not Vue in the event listeners below */
                 
                 marker.on('click', function() {
                     window.open(this.SWdownloadUrl, '_blank');
                 });
-
-                //marker.addListener('click', function() {
-                //    window.open(this.downloadUrl, '_blank');
-                //});
                 
                 marker.on('mouseover',function(){
                     //L.popup().setLatLng(this.getLatLng()).setContent(this.SWinfo).openOn(map);
@@ -924,10 +864,6 @@ var app = new Vue({
                 });
                 
                 
-                //marker.addListener('mouseover', function() {
-                //    infowindow.setContent(this.info);
-                //    infowindow.open(_this.map, this);
-                //});
                 this.resultMarkers.push(marker);
             }
 

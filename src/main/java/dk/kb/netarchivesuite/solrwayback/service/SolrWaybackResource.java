@@ -250,7 +250,7 @@ public class SolrWaybackResource {
   
 
   @GET
-  @Path("/wordcloundfordomain")
+  @Path("/wordcloud/domain")
   @Produces("image/png")
   public Response  wordCloudForDomain(@QueryParam("domain") String domain) throws ServiceException {
     try {                        

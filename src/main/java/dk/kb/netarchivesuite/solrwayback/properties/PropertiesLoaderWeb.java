@@ -17,8 +17,7 @@ public class PropertiesLoaderWeb {
 	private static final String DEFAULT_PROPERTY_WEB_FILE = "solrwaybackweb.properties";
 
 	public static final String WAYBACK_SERVER_PROPERTY="wayback.baseurl";
-	public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";
-	public static final String GOOGLE_API_KEY_PROPERTY="google.api.key";
+	public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";	
 	private static final String FACETS_PROPERTY = "facets";	
 	public static final String GOOGLE_MAPS_LATITUDE_PROPERTY = "google.maps.latitude";
 	public static final String GOOGLE_MAPS_LONGITUDE_PROPERTY = "google.maps.longitude";
@@ -31,7 +30,6 @@ public class PropertiesLoaderWeb {
 	
 	
 	public static String OPENWAYBACK_SERVER;
-	public static String GOOGLE_API_KEY=null;
 	public static String WAYBACK_SERVER = null;
     public static String GOOGLE_MAPS_LATITUDE;
     public static String GOOGLE_MAPS_LONGITUDE;
@@ -73,21 +71,19 @@ public class PropertiesLoaderWeb {
 			isr.close();
 
 			WAYBACK_SERVER =serviceProperties.getProperty(WAYBACK_SERVER_PROPERTY);
-		    FACETS = Arrays.asList(getProperty(FACETS_PROPERTY, StringUtils.join(FACETS, ",")).split(", *"));
-		    GOOGLE_API_KEY =serviceProperties.getProperty(GOOGLE_API_KEY_PROPERTY);
+		    FACETS = Arrays.asList(getProperty(FACETS_PROPERTY, StringUtils.join(FACETS, ",")).split(", *"));		   
 		    OPENWAYBACK_SERVER = serviceProperties.getProperty(OPENWAYBACK_SERVER_PROPERTY);
 		    GOOGLE_MAPS_LATITUDE = serviceProperties.getProperty(GOOGLE_MAPS_LATITUDE_PROPERTY);
 		    GOOGLE_MAPS_LONGITUDE = serviceProperties.getProperty(GOOGLE_MAPS_LONGITUDE_PROPERTY);
 		    GOOGLE_MAPS_RADIUS = serviceProperties.getProperty(GOOGLE_MAPS_RADIUS_PROPERTY);
 		    ALLOW_EXPORT_WARC = Boolean.parseBoolean(serviceProperties.getProperty(ALLOW_EXPORT_WARC_PROPERTY));
 		    
-                    LEAFLET_SOURCE = serviceProperties.getProperty(LEAFLET_SOURCE_PROPERTY);
+            LEAFLET_SOURCE = serviceProperties.getProperty(LEAFLET_SOURCE_PROPERTY);
 		    LEAFLET_ATTRIBUTION = serviceProperties.getProperty(LEAFLET_ATTRIBUTION_PROPERTY);
 		    
 		    log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
 			log.info("Property:"+ ALLOW_EXPORT_WARC_PROPERTY +" = " + ALLOW_EXPORT_WARC);
-			log.info("Property:"+ WAYBACK_SERVER_PROPERTY +" = " + WAYBACK_SERVER);
-			log.info("Property:"+ GOOGLE_API_KEY_PROPERTY+" = " + GOOGLE_API_KEY);
+			log.info("Property:"+ WAYBACK_SERVER_PROPERTY +" = " + WAYBACK_SERVER);			
 			log.info("Property:"+ GOOGLE_MAPS_LATITUDE_PROPERTY+" = " +GOOGLE_MAPS_LATITUDE);
 			log.info("Property:"+ GOOGLE_MAPS_LONGITUDE_PROPERTY+" = " +GOOGLE_MAPS_LONGITUDE);
 			log.info("Property:"+ GOOGLE_MAPS_RADIUS_PROPERTY+" = " + GOOGLE_MAPS_RADIUS);

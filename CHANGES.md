@@ -20,6 +20,8 @@ Facets are now  defined in the property file (solrwaybackweb.properties). This i
 If solrwayback is deployed in the tomcat under another contextname that solrwayback, it will try load a property file with that context name before defaulting to solrwayback.properties 
 Showing HTTP status code in toolbar. Also show toolbar for empty responses (301,302 etc.) 
 Apache2 license added.
+GPS image search. Replace google maps with leaflet. So no google API key is needed anymore. The property in solrwayback.properties has been remove also.
+leaflet javascript/css included
 
 3.1
 -----

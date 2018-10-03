@@ -8,19 +8,8 @@
     <title>SolrWayback Search</title>
     <link rel="stylesheet" type="text/css" media="all" href="./css/solrwayback.css">
 
-
-
-    <!-- leaflet.css -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css"
-     integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
-     crossorigin=""/>
-
-    <!-- leaflet.js must come after leaflet.css -->
-    <script src="https://unpkg.com/leaflet@1.3.3/dist/leaflet.js"
-     integrity="sha512-tAGcCfR4Sc5ZP5ZoVz0quoZDYX5aCtEm/eu1KhSLj2c9eFrylXZknQYmxUssFaVJKvvc0dJQixhGjG2yXWiV9Q=="
-     crossorigin=""></script>
-
-
+    <link rel="stylesheet" href="js/leaflet/leaflet.css" />  
+    <script type="text/javascript" src="js/leaflet/leaflet.js"></script>
 
     <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
 
@@ -34,7 +23,7 @@
 </head>
 <body>
     <div class="wrapper" id="app">
-        <h1>SOLR Wayback Search</h1>
+        <h1>SolrWayback Search</h1>
 
         <search-box :setup-search="setupSearch" :my-query="myQuery" :image-search="imageSearch"  :url-search="urlSearch"
                     :image-geo-search="imageGeoSearch" :clear-search="clearSearch":grouping="grouping" :set-grouping="setGrouping"></search-box>
