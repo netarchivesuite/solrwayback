@@ -93,7 +93,7 @@ function jsonCall(url){
 // var query = "last_modified:[2016-06-24T00:00:00Z TO 2016-07-01T00:00:00Z]";
 var query = "last_modified:[2007-01-01T00:00:00.000Z TO *] AND content_length:[40000 TO *]";
 
- var url ="http://belinda.statsbiblioteket.dk:9721/solrwayback/services/images/search/location?query="+query+"&d="+distanceQueryParam+"&latitude="+latitudeQueryParam+"&longitude="+longitudeQueryParam+"&results="+results+"&sort=last_modified asc";
+ var url ="services/images/search/location?query="+query+"&d="+distanceQueryParam+"&latitude="+latitudeQueryParam+"&longitude="+longitudeQueryParam+"&results="+results+"&sort=last_modified asc";
 console.log("query url:"+url);
 //var url ="http://localhost:8080/solrwayback/services/images/search/location?query="+query+"&d=50&latitude=56.819&longitude=8.721";
 
