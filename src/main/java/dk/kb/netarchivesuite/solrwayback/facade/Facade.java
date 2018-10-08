@@ -608,12 +608,12 @@ public class Facade {
     }
 
     
-    public static ArcEntry viewHtml(String source_file_path, long offset, Boolean showToolbar) throws Exception{         
+    public static ArcEntry viewHtml(String source_file_path, long offset, IndexDoc doc, Boolean showToolbar) throws Exception{         
     	if (showToolbar==null){
     	   showToolbar=false;
     	}      
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
-        IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
+       
     	
         String encoding = arc.getContentEncoding();
            

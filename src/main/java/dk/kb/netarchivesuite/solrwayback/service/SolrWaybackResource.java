@@ -724,13 +724,15 @@ public class SolrWaybackResource {
 
   private Response viewImpl(String source_file_path, long offset,Boolean showToolbar) throws Exception{    	    	
     log.debug("View from FilePath:" + source_file_path + " offset:" + offset);
-    ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset,showToolbar);
+    IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
+    ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset, doc, showToolbar);
 
     InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
    String contentType = arcEntry.getContentType();
    if (contentType ==  null){
-     contentType= "text/plain";
-     log.warn("no contenttype, setting:text/plain");
+     
+     log.warn("no contenttype, using content_type from tika:"+doc.getContentType());
+     contentType=doc.getContentType();
    }
         
     ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
