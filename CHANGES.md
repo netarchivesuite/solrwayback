@@ -11,14 +11,14 @@ Playback improvements. (img srcset tag, embed url,  video/audio having nested so
 Search by entering URL option in search interface. This will also convert the URL from IDN to puny code, making search by URL easier.
 Faster search but only loading the fields showing in the short record presentation. Only load all fields when showing them for a record. For index-size > 300GB this is a factor 2 or more.   
 Domain growth stats graph also included in search-frontend and not only playback toolbar.
-For image GPS search the google maps start location parameters extracted to property-file.
+GPS image search. Replaced google maps with leaflet.js - Leaflet javascript/css included in WAR file.
+For image GPS search the start location parameters extracted to property-file.
 For PID export the collection name has been extracted to property file.
 For screenshot preview using headless chrome, the timeout parameter has been extraced to property-file. Optional, 10 seconds is default
 Facets are now  defined in the property file (solrwaybackweb.properties), optional property.
-If solrwayback is deployed in the tomcat under another contextname that solrwayback, it will try load a property file with that context name before defaulting to solrwayback.properties.
+If SolrWayback is deployed in the tomcat under another contextname than solrwayback, it will try load a property file with that context name before defaulting to solrwayback.properties.
 Showing HTTP status code in toolbar. Also show toolbar for empty responses (301,302 etc.) 
-GPS image search. Replaced google maps with leaflet.js - Leaflet javascript/css included in WAR file.
-
+Rewrite of frontend urls so SolrWayback can run as HTTPS.
 
 3.1
 -----
