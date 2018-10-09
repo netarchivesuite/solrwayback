@@ -253,7 +253,7 @@ public class WarcParser {
                if (part2.length == 2){
                  String charset = part2[1].trim();
                  if (charset.startsWith("charset=")){
-                   String headerEncoding=charset.substring(8);
+                   String headerEncoding=charset.substring(8).replace("\"", ""); ////Some times Content-Type: text/html; charset="utf-8" instead of Content-Type: text/html; charset=utf-8
                    warcEntry.setContentEncoding(headerEncoding);                                      
                  }                                   
                }
@@ -267,7 +267,7 @@ public class WarcParser {
           }
           else if (headerLine.toLowerCase().startsWith("content-encoding:")) {
             String[] contentLine = headerLine.split(":");               
-            warcEntry.setContentEncoding(contentLine[1].trim());                       
+            warcEntry.setContentEncoding(contentLine[1].trim().replace("\"", "")); //Some times Content-Type: text/html; charset="utf-8" instead of Content-Type: text/html; charset=utf-8                       
           }      
       }
      
