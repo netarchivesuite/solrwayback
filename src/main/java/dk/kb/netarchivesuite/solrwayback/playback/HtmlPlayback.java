@@ -29,7 +29,14 @@ public class HtmlPlayback  extends PlaybackHandler{
         textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(doc.getSource_file_path(),doc.getOffset(),htmlReplaced , xhtml);
      }
     
-      arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));        
+     try{
+      arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));
+     }
+     catch(Exception e){       
+       log.warn("unknown encoding, defaulting to utf-8:'"+arc.getContentEncoding()+"' . file:"+doc.getSource_file_path() +" offset:"+doc.getOffset());
+       arc.setBinary(textReplaced.getBytes("utf-8"));
+     }
+     
      log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start));
     return arc;
   }
