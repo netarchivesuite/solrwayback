@@ -19,6 +19,8 @@ Facets are now  defined in the property file (solrwaybackweb.properties), option
 If SolrWayback is deployed in the tomcat under another contextname than solrwayback, it will try load a property file with that context name before defaulting to solrwayback.properties.
 Showing HTTP status code in toolbar. Also show toolbar for empty responses (301,302 etc.) 
 Rewrite of frontend urls so SolrWayback can run as HTTPS.
+API for generating Wordcloud image generator for domain: http://server:port/solrwayback/services/wordcloud/domain?domain=test.dk
+
 
 3.1
 -----
