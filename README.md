@@ -111,7 +111,7 @@ The API for linking to and browsing archived webpages is the same as for Interne
 Internet Archive:https://web.archive.org/web/20080213093319/http://www.statsbiblioteket.dk/ <br>
 SolrWayback: http://server/solrwayback/services/web/20140515140841/http://statsbiblioteket.dk/ <br>
 
-If using a Solr search based web archive such as Shine (https://github.com/netarchivesuite/shine) or Blacklight (https://github.com/projectblacklight/blacklight)
+If using a Solr search based web archive such as Shine (https://github.com/netarchivesuite/shine) or Warclight (https://github.com/archivesunleashed/warclight)
 you only need to change to property pointing from the wayback server to the SolrWayback server.
  
  
