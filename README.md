@@ -1,6 +1,6 @@
 # SolrWayback
 
-# SolrWayback 3.2 software bundle released
+## SolrWayback 3.2 software bundle released
 Scroll down to the install guide below and follow the instructions.
 
 
