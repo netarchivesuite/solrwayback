@@ -96,6 +96,15 @@ You can still connect to solrwayback without SOCKS mode to the normal port 8080.
 This useful so the page can be seen both with and without leaking, using two different browsers with 1 using SOCKS v.4 mode.
 
 
+## Root servlet. Catching and forwarding live leaks.
+Installing the root-servlet will improve playback of sites that are leaking urls. The root-servlet will
+catch relative leaks (same domain) even without using proxy mode. Live leakes that are absolute (http://...) will
+only be catch if running proxy mode. The leaks will then be redirected back into SolrWayback to the correct URL and crawltime.
+The root-servlet is included in the bundle install. In Tomcat it must be named ROOT.war.
+Link to SolrWayback root proxy:
+https://github.com/netarchivesuite/solrwaybackrootproxy
+
+
 ## API
 The API for linking to and browsing archived webpages is the same as for Internet Archive:<br>
 
