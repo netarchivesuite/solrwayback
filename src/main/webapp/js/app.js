@@ -483,9 +483,9 @@ var app = new Vue({
             this.baseUrl = response.body['wayback.baseurl'];
             this.openbaseUrl = response.body['openwayback.baseurl'];
             this.allowExportWarc =  ('true' == response.body['allow.export.warc']); 
-            this.googleMapLatitude = response.body['google.maps.latitude'];
-            this.googleMapLongitude= response.body['google.maps.longitude'];
-            this.markerPosition.radius =  parseInt(response.body['google.maps.radius']);                                                        
+            this.googleMapLatitude = response.body['maps.latitude'];
+            this.googleMapLongitude= response.body['maps.longitude'];
+            this.markerPosition.radius =  parseInt(response.body['maps.radius']);                                                        
             this.leafletSource = response.body['leaflet.source'];
             this.leafletAttribution = response.body['leaflet.attribution'];
         }, (response) => {

@@ -654,9 +654,9 @@ public class Facade {
         props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.WAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.OPENWAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
-        props.put(PropertiesLoaderWeb.GOOGLE_MAPS_LATITUDE_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_LATITUDE);
-        props.put(PropertiesLoaderWeb.GOOGLE_MAPS_LONGITUDE_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_LONGITUDE);
-        props.put(PropertiesLoaderWeb.GOOGLE_MAPS_RADIUS_PROPERTY,PropertiesLoaderWeb.GOOGLE_MAPS_RADIUS);        
+        props.put(PropertiesLoaderWeb.MAPS_LATITUDE_PROPERTY,PropertiesLoaderWeb.MAPS_LATITUDE);
+        props.put(PropertiesLoaderWeb.MAPS_LONGITUDE_PROPERTY,PropertiesLoaderWeb.MAPS_LONGITUDE);
+        props.put(PropertiesLoaderWeb.MAPS_RADIUS_PROPERTY,PropertiesLoaderWeb.MAPS_RADIUS);        
         props.put(PropertiesLoaderWeb.LEAFLET_SOURCE_PROPERTY,PropertiesLoaderWeb.LEAFLET_SOURCE);
         props.put(PropertiesLoaderWeb.LEAFLET_ATTRIBUTION_PROPERTY,PropertiesLoaderWeb.LEAFLET_ATTRIBUTION);
         
