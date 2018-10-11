@@ -137,10 +137,9 @@ Feel free to send emails with comments and questions.
 
 ## Warc-indexer/Solr 
 All entries from the arc/warc files are indexed as separate documents using the WARC-Indexer and using the lucene schema required by the WARCIndexer.
+
 A document is Solr can be html, image, video, audio, js etc. (content_type_norm)
-All document contains a field with arcfilename and offset, this is so  the binary from
-the arc/warc file can be loaded again - not through solr but by IO read on the disk where the 
-arc/warc file is stored.
+The filename and offset in the file is stored in solr and used during playback to load the documents from the Warc files.
  
 
 
