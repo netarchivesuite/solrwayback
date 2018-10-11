@@ -242,7 +242,7 @@ For more info on all additional features, see https://github.com/netarchivesuite
 
 ### 5) TO CREATE YOUR OWN WARCS - HARVESTING WITH WGET  
 How to do your own web harvest websites (Linux/MacOS only):  
-Using the wget command is an easy way to harvest websites compared to using Heritrix. The warc-files can then be indexed into solrwayback.  
+Using the wget command is an easy way to harvest websites compared to using Heritrix. The warc-files can then be indexed into SolrWayback.  
 Create a new folder since there will be several files written in this folder. Navigate to that folder in a prompt.  
 Create a text file call url_list.txt with one URL pr. line in that folder.  
 Type the following in a prompt:  
