@@ -139,19 +139,18 @@ Feel free to send emails with comments and questions.
 All entries from the arc/warc files are indexed as separate documents using the WARC-Indexer and using the lucene schema required by the WARCIndexer.
 
 A document is Solr can be html, image, video, audio, js etc. (content_type_norm)
-The filename and offset in the file is stored in solr and used during playback to load the documents from the Warc files.
+Filename and offset of a document in warc files is stored in solr and will be used and loaded during playback.
  
 
+# SolrWayback software bundle 3.2 install guide
 
-# SolrWayback software bundle 3.1 install guide
 
- 
 With this download you will be able to index, search and playback web pages from your warc-files.
 The bundle contains Solr, the warc-indexer tool and Solrwayback installed on a Tomcat webserver.
 Just unzip the bundle and copy two files to your home directory and explore your warc files. 
 
 ## Download
-Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.1/solrwayback_package.zip  
+Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.2/solrwayback_package.zip  
 Unzip and follow the instructions below.
  
 
@@ -183,9 +182,9 @@ To see Tomcat is running open: http://localhost:8080/solrwayback/
 This is the search interface frontpage  
 
 Solr:  
-Start solr: solrwayback_package/solr-7.1.0/bin/solr start  
-Stop solr: solrwayback_package/solr-7.1.0/bin/solr stop  
-(For windows navigate to solrwayback_package/solr-7.1.0/bin/ and type solr.cmd start or solr.cmd stop)    
+Start solr: solrwayback_package/solr-7.3.1/bin/solr start  
+Stop solr: solrwayback_package/solr-7.3.1/bin/solr stop  
+(For windows navigate to solrwayback_package/solr-7.3.1/bin/ and type solr.cmd start or solr.cmd stop)    
 To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
 ### 3) INDEXING
@@ -203,7 +202,7 @@ Deleting an Index:
 If you want to index a new collection into solr and remove the old index.  
 1) stop solr  
 2) delete the folder:   
-solr-7.1.0/server/solr/netarchivebuilder/netarchivebuilder_data/index  
+solr-7.3.1/server/solr/netarchivebuilder/netarchivebuilder_data/index  
 (or rename to index1 etc, you if later want to switch back)  
 3) start solr  
 4) start the indexing script. 
