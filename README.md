@@ -177,6 +177,8 @@ Copy the two files solrwayback.properties and solrwaybackweb.properties to your 
 Optional: For screenshot previews to work you may have to edit solrwayback.properties and change the value of the last two properties : chrome.command  and screenshot.temp.imagedir. 
 Chrome(Chromium) must has to be installed for screenshot preview images.  
 
+Optional: For socks proxy mode to work optimal, add the host-name and IP for the server to the whitelist in solrwayback.properties
+
 If there are errors when running a script, try change the permissions for the file (startup.sh etc). Linux: chmod +x filename.sh
 
 ### 2) STARTING SOLRWAYBACK  
