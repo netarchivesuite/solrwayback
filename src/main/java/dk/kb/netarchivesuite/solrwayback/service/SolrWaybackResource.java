@@ -615,7 +615,41 @@ public class SolrWaybackResource {
   }
 
   
-  
+  /*
+   * This happens for leaks to solrwayback/services/  
+   * The proxy will handle it
+   */
+  @GET
+  @Path("/{var:.*?}")
+  public Response waybackAPIResolverRoot(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("var") String path) throws ServiceException {
+    try {
+      String leakUrlStr = uriInfo.getRequestUri().toString();
+      String refererUrl = httpRequest.getHeader("referer");
+                           
+      Map<String, String> queryMap = getQueryMap(refererUrl);
+      String source_file_path = queryMap.get("source_file_path");      
+      String offsetStr = queryMap.get("offset");
+     
+      if (source_file_path == null || offsetStr ==  null){
+        log.warn("Need to fix leak, no source_file/offset:"+refererUrl);        
+        return Response.status(Response.Status.NOT_FOUND).build();
+      }
+      int leakUrlIndex=leakUrlStr.indexOf("/services/");
+      String leakUrlPart=leakUrlStr.substring(leakUrlIndex+10);
+      long offset=Long.parseLong(offsetStr);      
+      log.info("leakurlStr:"+leakUrlStr);
+      log.info("leakurlParth:"+leakUrlPart);      
+      log.info("forwaring to view From leakedResource:"+source_file_path +" offset:"+offset +" leakPart:"+leakUrlPart);
+      return viewFromLeakedResource(source_file_path, offset, leakUrlPart);
+      
+
+    } catch (Exception e) {
+      log.error("Error resolving leak:"+uriInfo.toString());
+      e.printStackTrace();
+      return Response.ok().build();
+    }
+  }
+
   
 /*
  * Showtoolbarnot working here.
