@@ -129,7 +129,6 @@ public class SolrWaybackResource {
       wrapper.setUrl(url_norm);      
       return wrapper;
     } catch (Exception e) {
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
@@ -309,7 +308,6 @@ public class SolrWaybackResource {
       return Response.ok(image).build();   
     } catch (Exception e) {
       log.error("error thumbnail html image:" +uriInfo.getRequestUri().toString());  
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
@@ -327,7 +325,6 @@ public class SolrWaybackResource {
       return Response.ok(image).build();                       
     } catch (Exception e) {
       log.error("error thumbnail html image:"+source_file_path +" offset:"+offset);  
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
@@ -367,7 +364,6 @@ public class SolrWaybackResource {
       }
     } catch (Exception e) {
       log.error("error getImage:"+source_file_path +" offset:"+offset +" height:"+height +" width:"+width); //Java can not read all images. 
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
@@ -404,7 +400,6 @@ public class SolrWaybackResource {
 
     } catch (Exception e) {
       log.error("Error download from source_file_path:"+ source_file_path + " offset:" + offset,e);
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
@@ -446,7 +441,6 @@ public class SolrWaybackResource {
 
     } catch (Exception e) {
       log.error("Error in export warc",e);
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
@@ -466,7 +460,6 @@ public class SolrWaybackResource {
 
     } catch (Exception e) {
       log.error("Error in export brief",e);
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
@@ -483,8 +476,7 @@ public class SolrWaybackResource {
       return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
 
     } catch (Exception e) {
-      log.error("Error in export full",e);
-      e.printStackTrace();
+      log.error("Error in export full",e);      
       throw handleServiceExceptions(e);
     }
 
@@ -509,7 +501,6 @@ public class SolrWaybackResource {
     try {               
       return Facade.getEncoding(source_file_path, ""+offset);       
     } catch (Exception e) {
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
 
@@ -555,7 +546,6 @@ public class SolrWaybackResource {
       
                      
     } catch (Exception e) {
-      //e.printStackTrace();
       throw handleServiceExceptions(e);
     }
 
@@ -608,7 +598,6 @@ public class SolrWaybackResource {
       log.info("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
       return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);                                   
     } catch (Exception e) {
-      //e.printStackTrace();
       throw handleServiceExceptions(e);
     }
 
@@ -645,7 +634,6 @@ public class SolrWaybackResource {
 
     } catch (Exception e) {
       log.error("Error resolving leak:"+uriInfo.toString());
-      e.printStackTrace();
       return Response.ok().build();
     }
   }
@@ -681,7 +669,6 @@ public class SolrWaybackResource {
       return Response.seeOther( uri ).build(); //Jersey way to forward response.
            
     } catch (Exception e) {
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
@@ -709,7 +696,6 @@ public class SolrWaybackResource {
       return viewhref(resolvedUrl, arcEntry.getCrawlDate(), false);
 
     } catch (Exception e) {
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
@@ -723,7 +709,6 @@ public class SolrWaybackResource {
       return viewImpl(source_file_path, offset,showToolbar);
 
     } catch (Exception e) {
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
   }
@@ -847,7 +832,6 @@ public class SolrWaybackResource {
       return Facade.waybackgraph(domain, fLimit,in,dateStart,dateEnd);        
 
     } catch (Exception e) {
-      e.printStackTrace();
       throw handleServiceExceptions(e);
     }
 
