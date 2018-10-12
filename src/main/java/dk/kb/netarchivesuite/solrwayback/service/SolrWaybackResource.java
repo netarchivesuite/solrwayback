@@ -889,7 +889,7 @@ public class SolrWaybackResource {
     } else if (e instanceof IllegalArgumentException) {
       log.error("ServiceException(HTTP 400) in Service:", e.getMessage());
       return new InvalidArgumentServiceException(e.getMessage());
-    } else {// SQL and other unforseen exceptions.... should not happen.
+    } else {// unforseen exceptions.... should not happen.
       log.error("ServiceException(HTTP 500) in Service:", e);
       return new InternalServiceException(e.getMessage());
     }
