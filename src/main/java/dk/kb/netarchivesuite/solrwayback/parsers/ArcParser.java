@@ -27,6 +27,7 @@ public class ArcParser {
      *Date: Wed, 10 Jun 2009 09:45:54 GMT
      *Content-Length: 35025
      *Content-Type: text/html
+     *Content-Encoding: gzip 
      *Server: Microsoft-IIS/6.0
      *MicrosoftOfficeWebServer: 5.0_Pub
      *X-Powered-By: ASP.NET
@@ -250,7 +251,11 @@ public class ArcParser {
             String[] part2= part1[1].split(";");                                  
            arcEntry.setContentType(part2[0].trim());
         }
-       
+     else if (headerLine.toLowerCase().startsWith("content-encoding:")) {
+      //text/html; charset=
+      String[] contentHeader = headerLine.split(":");                                  
+        arcEntry.setContentEncoding(contentHeader[1].trim());
+     } 
         
     }
 }
