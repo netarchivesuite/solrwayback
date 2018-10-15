@@ -627,7 +627,7 @@ public class SolrWaybackResource {
       String offsetStr = queryMap.get("offset");
      
       if (source_file_path == null || offsetStr ==  null){
-        log.warn("Need to fix leak, no source_file/offset:"+refererUrl);        
+        log.warn("Need to fix leak, no source_file/offset for refererUrl:"+refererUrl);        
         return Response.status(Response.Status.NOT_FOUND).build();
       }
       int leakUrlIndex=leakUrlStr.indexOf("/services/");
@@ -871,9 +871,14 @@ public class SolrWaybackResource {
       String leakUrl = httpRequest.getParameter("url");
       String refererUrl = httpRequest.getHeader("referer");
       Map<String, String> queryMap = getQueryMap(refererUrl);
-      String source_file_path = queryMap.get("source_file_path");
-      long offset = Long.parseLong(queryMap.get("offset"));                 
-      IndexDoc doc = Facade.resolveRelativUrlForResource(source_file_path, offset, leakUrl);
+      String source_file_path = queryMap.get("source_file_path");      
+      String offsetStr = queryMap.get("offset");
+           
+      if (source_file_path == null || offsetStr ==  null){
+        log.warn("Need to fix leak, no source_file/offset for refererUrl:"+refererUrl);        
+        return Response.status(Response.Status.NOT_FOUND).build();
+      }      
+      IndexDoc doc = Facade.resolveRelativUrlForResource(source_file_path, Long.parseLong(offsetStr), leakUrl);
       log.info("relative leak resolved:"+leakUrl);      
       return downloadRaw(doc.getSource_file_path(), doc.getOffset());
     }
@@ -885,7 +890,13 @@ public class SolrWaybackResource {
       
   public static Map<String, String> getQueryMap(String url)
   {    
-      url =url.substring(url.indexOf("?")+1);
+      int index = url.indexOf("?");
+       if(index == -1){
+         log.warn("no paramters for url:"+url);         
+         return new HashMap<String, String>();
+       }
+       
+      url =url.substring(index+1);
       String[] params = url.split("&");
       Map<String, String> map = new HashMap<String, String>();
       for (String param : params)
