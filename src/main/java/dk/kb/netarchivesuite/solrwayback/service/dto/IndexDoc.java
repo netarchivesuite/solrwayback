@@ -29,6 +29,7 @@ public class IndexDoc {
     private String contentEncoding;
     private ArrayList<String> imageUrls = new ArrayList<String>(); //This field is not normally set.
     private String exifLocation;
+    private String redirectToNorm;
     
     public IndexDoc(){        
     }
@@ -186,6 +187,14 @@ public class IndexDoc {
 
   public void setDomain(String domain) {
     this.domain = domain;
+  }
+
+  public String getRedirectToNorm() {
+    return redirectToNorm;
+  }
+
+  public void setRedirectToNorm(String redirectToNorm) {
+    this.redirectToNorm = redirectToNorm;
   }
 
     

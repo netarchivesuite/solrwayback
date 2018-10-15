@@ -376,13 +376,20 @@ public class SolrWaybackResource {
       log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
       ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
       
+      //TODO performance tuning. Loading this every time will cost performance
+      IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); 
+      Response responseRedirect = isRedirect(indexDoc);
+      if (responseRedirect != null){
+        return responseRedirect;
+      }
+      
       InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
       ResponseBuilder response = null;
       try{
         response= Response.ok((Object) in).type(arcEntry.getContentType());          
       }
       catch (Exception e){         
-         IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);         
+         
          log.warn("Error setting HTTP header Content-Type:'"+arcEntry.getContentType() +"' using index Content-Type:'"+indexDoc.getContentType()+"'");
          response = Response.ok((Object) in).type(indexDoc.getContentType()); 
       }
@@ -744,6 +751,12 @@ public class SolrWaybackResource {
   private Response viewImpl(String source_file_path, long offset,Boolean showToolbar) throws Exception{    	    	
     log.debug("View from FilePath:" + source_file_path + " offset:" + offset);
     IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
+   
+    Response redirect = isRedirect(doc);
+    if (redirect != null){
+      return redirect;
+    }
+    
     ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset, doc, showToolbar);
 
     InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
@@ -754,6 +767,8 @@ public class SolrWaybackResource {
      contentType=doc.getContentType();
    }
         
+   
+   
     ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
     
     if (arcEntry.getContentEncoding() != null){
@@ -880,6 +895,34 @@ public class SolrWaybackResource {
          map.put(name, value);
       }
       return map;
+  }
+  
+  
+  /*
+   * This will set the correct status and redirect 
+   */
+  private static Response isRedirect (IndexDoc doc) throws Exception{
+    int status = doc.getStatusCode();
+    
+    if (status>= 300 && status <=399){ //Redirects.
+      ResponseBuilder response = Response.status(status);
+      
+      response.status(status); // jersey require a legal status code.
+      String redirectNorm = doc.getRedirectToNorm();
+      if (redirectNorm != null){
+        //build the new redirect url.
+        String crawlDate = doc.getCrawlDate();
+        Instant instant = Instant.parse (crawlDate);  //JAVA 8
+        Date date = java.util.Date.from( instant );      
+        String waybackDate = WarcParser.date2waybackdate(date);
+        String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+redirectNorm;
+        log.info("Setting redirectUrl:"+newUrl);
+        response.header("location", newUrl);
+        return response.build();        
+      }      
+    }
+    return null;
+    
   }
   
   private ServiceException handleServiceExceptions(Exception e) {

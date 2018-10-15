@@ -48,7 +48,7 @@ public class NetarchiveSolrClient {
   protected  static NetarchiveSolrClient instance = null;
   protected  static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
 
-  protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location,status_code,last_modified";
+  protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_norm,hash,type,crawl_date,content_encoding,exif_location,status_code,last_modified,redirect_to_norm";
 
   protected NetarchiveSolrClient() { // private. Singleton
   }
@@ -884,9 +884,8 @@ return docs;
     indexDoc.setContentTypeNorm((String) doc.get("content_type_norm"));
     indexDoc.setContentEncoding((String) doc.get("content_encoding"));
     indexDoc.setType((String) doc.get("type"));
-    indexDoc.setExifLocation((String) doc.get("exif_location"));
-    
-    
+    indexDoc.setExifLocation((String) doc.get("exif_location"));        
+    indexDoc.setRedirectToNorm((String) doc.get("redirect_to_norm"));
     Date dateModified = (Date) doc.get("last_modified");
     if (dateModified != null){    
       indexDoc.setLastModifiedLong(dateModified.getTime());

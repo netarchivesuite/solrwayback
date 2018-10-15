@@ -559,7 +559,7 @@ public class Facade {
        URL originalURL = new URL(doc.getUrl());
       String resolvedUrl = new URL(originalURL,leakUrl).toString();
      
-      log.info("stipped leakUrl:"+leakUrl);
+      log.info("stripped leakUrl:"+leakUrl);
       log.info("url origin:"+doc.getUrl());      
       log.info("resolved URL:"+ resolvedUrl);
 
