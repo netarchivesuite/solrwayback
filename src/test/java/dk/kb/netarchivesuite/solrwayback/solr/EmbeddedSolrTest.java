@@ -77,7 +77,7 @@ public class EmbeddedSolrTest {
          document.addField( "url", url);
          document.addField( "url_norm", url);
          document.addField("record_type","response");
-         document.addField("source_file", "some.warc");
+         document.addField("source_file_path", "some.warc");
          document.setField("crawl_date", crawl); 
          embeddedServer.add(document);
          
