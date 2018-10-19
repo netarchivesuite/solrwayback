@@ -31,7 +31,7 @@ This schema is for Solr 7+ and will not work under Solr 6.
         <field name="index_time" type="date" default="NOW" />
 
         <field name="access_terms"         type="string" multiValued="true" />
-        <field name="author"               type="string" />
+        <field name="author"               type="string" multiValued="true" />
         <field name="category"             type="text_general" />
         <field name="collection"           type="string" multiValued="true" /> <!-- Why is this multi-valued? -->
         <field name="collections"          type="string" multiValued="true" />

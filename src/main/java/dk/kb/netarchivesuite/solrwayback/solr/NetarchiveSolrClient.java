@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
+import dk.kb.netarchivesuite.solrwayback.parsers.NormalisationWWWremove;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
@@ -394,9 +396,9 @@ public class NetarchiveSolrClient {
     String query = null;
         
     //This is due to windows path in solr field source_file_offset. For linux the escape does nothing
-    String pathEscaped= ClientUtils.escapeQueryChars(source_file_path);
+    //String pathEscaped= ClientUtils.escapeQueryChars(source_file_path); This is done by the warc-indexer now
     
-    query = "source_file_path:\""+pathEscaped+"\" AND source_file_offset:"+offset ;         
+    query = "source_file_path:\""+source_file_path+"\" AND source_file_offset:"+offset ;         
     log.info("getArcEntry query:"+ query);    
     solrQuery.setQuery(query) ;
     solrQuery.setRows(1);
@@ -917,14 +919,17 @@ return docs;
   //TO, remove method and inline 
   public static long getOffset(SolrDocument doc){
     return  (Long) doc.get("source_file_offset");
-
   }
 
 
   private static String normalizeUrl(String url){
-    return Normalisation.canonicaliseURL(url);          
+    if (PropertiesLoader.WARC_INDEXER_URL_NORMALIZER_LEGACY){
+      return Normalisation.canonicaliseURL(url);  
+    }    
+    else{
+      return NormalisationWWWremove.canonicaliseURL(url);  
+    }
+                   
   }
-
   
-
 }

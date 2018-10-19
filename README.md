@@ -192,9 +192,9 @@ To see Tomcat is running open: http://localhost:8080/solrwayback/
 This is the search interface frontpage  
 
 Solr:  
-Start solr: solrwayback_package/solr-7.3.1/bin/solr start  
-Stop solr: solrwayback_package/solr-7.3.1/bin/solr stop  
-(For windows navigate to solrwayback_package/solr-7.3.1/bin/ and type solr.cmd start or solr.cmd stop)    
+Start solr: solrwayback_package/solr-7.5.0/bin/solr start  
+Stop solr: solrwayback_package/solr-7.5.0/bin/solr stop  
+(For windows navigate to solrwayback_package/solr-7.5.0/bin/ and type solr.cmd start or solr.cmd stop)    
 To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
 ### 3) INDEXING
@@ -212,7 +212,7 @@ Deleting an Index:
 If you want to index a new collection into solr and remove the old index.  
 1) stop solr  
 2) delete the folder:   
-solr-7.3.1/server/solr/netarchivebuilder/netarchivebuilder_data/index  
+solr-7.5.0/server/solr/netarchivebuilder/netarchivebuilder_data/index  
 (or rename to index1 etc, you if later want to switch back)  
 3) start solr  
 4) start the indexing script. 
