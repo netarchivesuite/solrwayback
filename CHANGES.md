@@ -1,3 +1,10 @@
+3.2.1
+-----
+Fix issued with warc-indexer 3.0.0 -> 3.0.1 broke backwards solr schema compatibility. Also some url normalization bugs was fixed. 
+A property in solrwayback.properties can enable using the old schema if you dont want to reindex with warc-indexer 3.0.1.
+ 
+
+
 3.2.0
 -----
 Apache2 license added.
