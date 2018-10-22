@@ -29,13 +29,13 @@ Faster search but only loading the fields showing in the short record presentati
    
 Domain growth stats graph also included in search-frontend and not only playback toolbar.
 
-GPS image search. Replaced google maps with leaflet.js - Leaflet javascript/css included in WAR file.
+GPS image search. Replaced google maps with leaflet.js - Leaflet javascript/css included in WAR file. Map properties in solrwaybackweb.properties renamed, google prefix removed.
 
 For image GPS search the start location parameters extracted to property-file.
 
 For PID export the collection name has been extracted to property file.
 
-For screenshot preview using headless chrome, the timeout parameter has been extraced to property-file. Optional, 10 seconds is default
+For screenshot preview using headless chrome, the timeout parameter has been extracted to property-file. Optional, 10 seconds is default
 
 Facets are now  defined in the property file (solrwaybackweb.properties), optional property.
 
