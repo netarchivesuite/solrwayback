@@ -170,6 +170,11 @@ Any version 1.8+ will be compatible.
 
 ## Install instructions:
 
+### 1) Upgrade from 3.1
+
+To update from 3.1 add the new additional properties in solrwaybackweb.properties and solrwayback.properties. Download the release and to see the new properties. Also the map properties has been renamed.
+Replace the war-file in tomcat with this release and the add new root servlet (ROOT.WAR) and restart tomcat. Both war-files are attachments to this release to be downloaded (apache-tomcat-8.5.29/webapps/ folder)
+
 ### 1) INITIAL SETUP  
 Properties:  
 Copy the two files solrwayback.properties and solrwaybackweb.properties to your HOME folder.
