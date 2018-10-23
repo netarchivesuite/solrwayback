@@ -5,12 +5,12 @@ Scroll down to the install guide below and follow the instructions.
 
 
 ## About SolrWayback
-Solrwayback will only work with warc-indexer version 3.0+
+SolrWayback will only work with warc-indexer version 3.0+
 
 SolrWayback is web-application for browsing historical harvested ARC/WARC files similar
 to the Internet Archive Wayback Machine. The SolrWayback depends on a Solr server where
-Arc/Warc files have been indexed using the British Library WARC-Indexer. The Netsearch application is just a simple book keeping application on top of the WARC-Indexer that also
-controls the indexing. Unlike the Wayback Machine the SolrWayback does not need the
+Arc/Warc files have been indexed using the British Library WARC-Indexer. 
+Unlike the Wayback Machine the SolrWayback does not need the
 CDX-server with meta data for the harvest. It only uses the Solr server and the raw
 Arc/Warc files.
 
