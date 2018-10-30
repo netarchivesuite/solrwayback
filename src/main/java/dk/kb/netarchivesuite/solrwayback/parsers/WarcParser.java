@@ -1,26 +1,22 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.nio.CharBuffer;
 import java.nio.channels.Channels;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 public class WarcParser {
 
@@ -53,20 +49,18 @@ public class WarcParser {
      *Content-Length: 7178
      */
     public static ArcEntry getWarcEntry(String warcFilePath, long warcEntryPosition) throws Exception {
-        RandomAccessFile raf=null;
-        try{
-        
-          if (warcFilePath.endsWith(".gz")){ //It is zipped
-             return getWarcEntryZipped(warcFilePath, warcEntryPosition);                       
-          }
-         
+        if (warcFilePath.endsWith(".gz")) { //It is zipped
+            return getWarcEntryZipped(warcFilePath, warcEntryPosition);
+        }
+    
+        try( RandomAccessFile raf = new RandomAccessFile(new File(warcFilePath), "r");){
           ArcEntry warcEntry = new ArcEntry();
-          StringBuffer headerLinesBuffer = new StringBuffer();
-            raf = new RandomAccessFile(new File(warcFilePath), "r");
+            List<String> headerLinesBuffer = new ArrayList<>();
+            
             raf.seek(warcEntryPosition);
-                        
+            
             String line = raf.readLine(); // First line
-            headerLinesBuffer.append(line+newLineChar);
+            headerLinesBuffer.add(line);
             
             if  (!(line.startsWith("WARC/"))) //No version check yet
             {            
@@ -74,122 +68,100 @@ public class WarcParser {
             }            
             
             while (!"".equals(line)) { // End of warc first header block is an empty line                
-                line = raf.readLine();                
-                headerLinesBuffer.append(line+newLineChar);
-                populateWarcFirstHeader(warcEntry, line);                
+                line = raf.readLine();
+                headerLinesBuffer.add(line);
+                populateWarcFirstHeader(warcEntry, line);
             }
+    
+            //Now we need to count bytes to ensure that we do not read to far.
+            int byteCount=0; //Bytes of second header
             
-            long afterFirst = raf.getFilePointer(); //Now we are past the WARC header and back to the ARC standard 
-            line = raf.readLine();     
-            headerLinesBuffer.append(line+newLineChar);
-            while (!"".equals(line)) { // End of warc second header block is an empty line
-                line = raf.readLine();                  
-                headerLinesBuffer.append(line+"\r\n");
+            do {
+                LineAndByteCount lc =readLineCount(raf);
+                line=lc.getLine();
+                headerLinesBuffer.add(line);
+                byteCount +=lc.getByteCount();
                 populateWarcSecondHeader(warcEntry, line);
-            }
+                if (byteCount >= (int) warcEntry.getWarcEntryContentLength()){
+                    //After second header, we have an empty line, and then the contents
+                    //And after contents, we have two empty lines and then the next entry
+                    //But if there is no content, we are about to read into the two empty lines here.
+                    //So if we get to the end of the content as noted, stop and do not read the empty line
+                    break;
+                }
+    
+            } while (!"".equals(line)); // End of warc second header block is an empty line
+    
+            int totalSize= (int) warcEntry.getWarcEntryContentLength();
+            int binarySize = totalSize-byteCount;
+    
+            //log.debug("Warc entry : totalsize:{} headersize:{} binary size:{}",totalSize,byteCount,binarySize);
 
-            int totalSize= (int) warcEntry.getWarcEntryContentLength();            
-            
-            // Load the binary blog. We are now right after the header. Rest will be the binary
-            long headerSize = raf.getFilePointer() - afterFirst;
-            long binarySize = totalSize - headerSize;
-
-            //log.debug("Warc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);
-                        
-            byte[] bytes = new byte[(int) binarySize];
-            raf.read(bytes);
-            raf.close();
-            warcEntry.setBinary(bytes);
-            warcEntry.setHeader(headerLinesBuffer.toString());
+            byte[] chars = new byte[binarySize];
+            IOUtils.readFully(Channels.newInputStream(raf.getChannel()), chars);
+    
+            warcEntry.setBinary(chars);
+            warcEntry.setHeader(String.join(newLineChar,headerLinesBuffer));
             return warcEntry;
-        }
-        catch(Exception e){
-            throw e;
-        }
-        finally {
-            if (raf!= null){
-                raf.close();
-             }
         }
     }
 
     
     public static ArcEntry getWarcEntryZipped(String warcFilePath, long warcEntryPosition) throws Exception {
-      RandomAccessFile raf=null;
-      try{
-           StringBuffer headerLinesBuffer = new StringBuffer();
-            ArcEntry warcEntry = new ArcEntry();
-            raf = new RandomAccessFile(new File(warcFilePath), "r");
-            raf.seek(warcEntryPosition);
-          
-          //  log.info("file is zipped:"+warcFilePath);
-            InputStream is = Channels.newInputStream(raf.getChannel());                           
-            GZIPInputStream stream = new GZIPInputStream(is);             
-           
-            BufferedInputStream  bis= new BufferedInputStream(stream);
-   
-          String line = readLine(bis); // First line
-          headerLinesBuffer.append(line+newLineChar);
-          
-          if  (!(line.startsWith("WARC/"))) //No version check yet
-          {            
-              throw new IllegalArgumentException("WARC header is not WARC/'version', instead it is : "+line);
-          }            
-          
-          while (!"".equals(line)) { // End of warc first header block is an empty line
-              line = readLine(bis);                
-              headerLinesBuffer.append(line+newLineChar);
-              populateWarcFirstHeader(warcEntry, line);             
-              
+      try (RandomAccessFile raf = new RandomAccessFile(new File(warcFilePath), "r");) {
+          List<String> headerLinesBuffer = new ArrayList<>();
+          ArcEntry warcEntry = new ArcEntry();
+    
+          raf.seek(warcEntryPosition);
+    
+          try (DataInputStream bis = new DataInputStream(new GZIPInputStream(Channels.newInputStream(raf.getChannel())))) {
+        
+              String line = readLine(bis); // First line
+              headerLinesBuffer.add(line);
+        
+              if (!(line.startsWith("WARC/"))) //No version check yet
+              {
+                  throw new IllegalArgumentException("WARC header is not WARC/'version', instead it is : " + line);
+              }
+        
+              while (!"".equals(line)) { // End of warc first header block is an empty line
+                  line = readLine(bis);
+                  headerLinesBuffer.add(line);
+                  populateWarcFirstHeader(warcEntry, line);
+            
+              }
+        
+              int byteCount = 0; //Bytes of second header
+        
+              LineAndByteCount lc = readLineCount(bis);
+              line = lc.getLine();
+              headerLinesBuffer.add(line);
+              byteCount += lc.getByteCount();
+        
+              while (!"".equals(line)) { // End of warc second header block is an empty line
+            
+                  lc = readLineCount(bis);
+                  line = lc.getLine();
+                  headerLinesBuffer.add(line);
+                  byteCount += lc.getByteCount();
+            
+                  populateWarcSecondHeader(warcEntry, line);
+            
+              }
+        
+              int totalSize = (int) warcEntry.getWarcEntryContentLength();
+              int binarySize = totalSize - byteCount;
+        
+        
+              byte[] chars = new byte[binarySize];
+              IOUtils.readFully(bis, chars);
+        
+              warcEntry.setBinary(chars);
+              warcEntry.setHeader(String.join(newLineChar,headerLinesBuffer));
+              return warcEntry;
           }
-
-          int byteCount=0; //Bytes of second header
-          
-          LineAndByteCount lc =readLineCount(bis);
-          line=lc.getLine();
-          headerLinesBuffer.append(line+newLineChar);
-          byteCount +=lc.getByteCount();                    
-
-          while (!"".equals(line)) { // End of warc second header block is an empty line
-              
-            lc =readLineCount(bis);
-            line=lc.getLine();
-            headerLinesBuffer.append(line+newLineChar);
-            byteCount +=lc.getByteCount();                    
-                      
-              populateWarcSecondHeader(warcEntry, line);
-          
-          }
-          
-          int totalSize= (int) warcEntry.getWarcEntryContentLength();
-          int binarySize = totalSize-byteCount;
-          
-                    
-                      
-          //System.out.println("Warc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);          
-          byte[] chars = new byte[binarySize];           
-          bis.read(chars);
-          
-          raf.close();
-          bis.close();
-          warcEntry.setBinary(chars); 
-          warcEntry.setHeader(headerLinesBuffer.toString());
-          /*
-          System.out.println("-------- binary start");
-          System.out.println(new String(chars));
-          System.out.println("-------- slut");
-  */
-          return warcEntry;
       }
-      catch(Exception e){
-          throw e;
-      }
-      finally {
-          if (raf!= null){
-              raf.close();
-           }
-      }
-  }
+    }
 
     
     
@@ -271,41 +243,34 @@ public class WarcParser {
           }      
       }
      
-     public static String readLine(BufferedInputStream  bis) throws Exception{
-       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-       int current = 0; // CRLN || LN
-       while ((current = bis.read()) != '\r' && current != '\n') {             
-         baos.write((byte) current);  
-       }
-       if (current == '\r') {
-        bis.read(); // line ends with 10 13        
-       }
-              
-       return baos.toString(WARC_HEADER_ENCODING);
+     public static String readLine(DataInput  bis) throws Exception{
+        return readLineCount(bis).getLine();
      }
-     
-     public static LineAndByteCount readLineCount(BufferedInputStream  bis) throws Exception{
-       int count = 0;
-       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-              
-       int current = 0; // CRLN || LN
-       
-       count++; //Also count linefeed
-       while ((current = bis.read()) != '\r' && current != '\n') {             
-         baos.write((byte)current);       
-         count++;
-       }
-       if (current == '\r') {
-        bis.read(); // line ends with 10 13
-        count++;
-       }       
-       LineAndByteCount lc = new LineAndByteCount();
-       lc.setLine(baos.toString(WARC_HEADER_ENCODING));
-       lc.setByteCount(count);
-
-       return lc;
-       
-     }
+    
+    public static LineAndByteCount readLineCount(DataInput bis) throws Exception {
+        int count = 0;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        
+        byte current = 0; // CRLN || LN
+        
+        final byte r = '\r';
+        final byte n = '\n';
+        while ((current = bis.readByte()) != r && current != n) {
+            baos.write(current);
+            count++;
+        }
+        count++; //Also count linefeed
+        if (current == r) {
+            bis.readByte(); // line ends with 10 13
+            count++;
+        }
+        LineAndByteCount lc = new LineAndByteCount();
+        lc.setLine(baos.toString(WARC_HEADER_ENCODING));
+        lc.setByteCount(count);
+        
+        return lc;
+        
+    }
     
      
      
