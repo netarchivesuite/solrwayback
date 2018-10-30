@@ -133,21 +133,21 @@ public class WarcParser {
         
               int byteCount = 0; //Bytes of second header
         
-              LineAndByteCount lc = readLineCount(bis);
-              line = lc.getLine();
-              headerLinesBuffer.add(line);
-              byteCount += lc.getByteCount();
-        
-              while (!"".equals(line)) { // End of warc second header block is an empty line
-            
-                  lc = readLineCount(bis);
-                  line = lc.getLine();
+              do {
+                  LineAndByteCount lc =readLineCount(bis);
+                  line=lc.getLine();
                   headerLinesBuffer.add(line);
-                  byteCount += lc.getByteCount();
-            
+                  byteCount +=lc.getByteCount();
                   populateWarcSecondHeader(warcEntry, line);
-            
-              }
+                  if (byteCount >= (int) warcEntry.getWarcEntryContentLength()){
+                      //After second header, we have an empty line, and then the contents
+                      //And after contents, we have two empty lines and then the next entry
+                      //But if there is no content, we are about to read into the two empty lines here.
+                      //So if we get to the end of the content as noted, stop and do not read the empty line
+                      break;
+                  }
+        
+              } while (!"".equals(line)); // End of warc second header block is an empty line
         
               int totalSize = (int) warcEntry.getWarcEntryContentLength();
               int binarySize = totalSize - byteCount;
