@@ -376,26 +376,28 @@ public class SolrWaybackResource {
       log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
       ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
       
-      //TODO performance tuning. Loading this every time will cost performance
-      IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); 
-      Response responseRedirect = isRedirect(indexDoc);
-      if (responseRedirect != null){
-        return responseRedirect;
-      }
+      ////TODO performance tuning. Loading this every time will cost performance
+      //IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
+      //Response responseRedirect = isRedirect(indexDoc);
+      //if (responseRedirect != null){
+      //  return responseRedirect;
+      //}
       
       InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
       ResponseBuilder response = null;
-      try{
-        response= Response.ok((Object) in).type(arcEntry.getContentType());          
-      }
-      catch (Exception e){         
-         
-         log.warn("Error setting HTTP header Content-Type:'"+arcEntry.getContentType() +"' using index Content-Type:'"+indexDoc.getContentType()+"'");
-         response = Response.ok((Object) in).type(indexDoc.getContentType()); 
+      response= Response.ok((Object) in).type(MediaType.APPLICATION_OCTET_STREAM_TYPE);
+      
+      if (arcEntry.getContentType() != null) {
+        try {
+          MediaType contentType = MediaType.valueOf(arcEntry.getContentType());
+          response.type(contentType);
+        } catch (IllegalArgumentException e) {
+          log.warn("Error setting HTTP header Content-Type:'{}'", arcEntry.getContentType(), e);
+        }
       }
             
       if (arcEntry.getFileName() != null){
-        response.header("Content-Disposition", "filename=\"" + arcEntry.getFileName() +"\"");      
+        response.header("Content-Disposition", "filename=\"" + arcEntry.getFileName() +"\"");
       }
       
       if (arcEntry.getContentEncoding() != null){
