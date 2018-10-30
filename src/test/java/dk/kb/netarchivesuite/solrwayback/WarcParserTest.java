@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 
+import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
 import org.junit.Test;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
@@ -16,7 +17,15 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 
 public class WarcParserTest extends UnitTestUtils{
-       
+    
+    @Test
+    public void testNegativeSize() throws Exception {
+        File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc");
+        WarcParser.getWarcEntry(file.getAbsolutePath(),738);
+        //This test would previously fail with exception about negative array size, as we read 2 bytes more from header than we
+        //should
+    }
+    
     @Test
     public void testWarcParser() throws Exception {
         
