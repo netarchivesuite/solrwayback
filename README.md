@@ -5,12 +5,12 @@ Scroll down to the install guide below and follow the instructions.
 
 
 ## About SolrWayback
-Solrwayback will only work with warc-indexer version 3.0+
+SolrWayback will only work with warc-indexer version 3.0+
 
 SolrWayback is web-application for browsing historical harvested ARC/WARC files similar
 to the Internet Archive Wayback Machine. The SolrWayback depends on a Solr server where
-Arc/Warc files have been indexed using the British Library WARC-Indexer. The Netsearch application is just a simple book keeping application on top of the WARC-Indexer that also
-controls the indexing. Unlike the Wayback Machine the SolrWayback does not need the
+Arc/Warc files have been indexed using the British Library WARC-Indexer. 
+Unlike the Wayback Machine the SolrWayback does not need the
 CDX-server with meta data for the harvest. It only uses the Solr server and the raw
 Arc/Warc files.
 
@@ -169,6 +169,11 @@ To check java is installed, type the following from a prompt: java -version
 Any version 1.8+ will be compatible.  
 
 ## Install instructions:
+
+### 1) Upgrade from 3.1
+
+To update from 3.1 add the new additional properties in solrwaybackweb.properties and solrwayback.properties. Download the release and to see the new properties. Also the map properties has been renamed.
+Replace the war-file in tomcat with this release and the add new root servlet (ROOT.WAR) and restart tomcat. Both war-files are attachments to this release to be downloaded (apache-tomcat-8.5.29/webapps/ folder)
 
 ### 1) INITIAL SETUP  
 Properties:  
