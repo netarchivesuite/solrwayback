@@ -30,9 +30,11 @@ public class ArcParserTest extends UnitTestUtils{
         BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
         assertEquals(300,image.getWidth());
         assertEquals(116,image.getHeight());
+        assertEquals(200,arcEntry.getStatus_code());        
         System.out.println(arcEntry.getUrl());
         System.out.println(arcEntry.getWaybackDate());;
         System.out.println(arcEntry.getCrawlDate());
+     
         
     }
     /*

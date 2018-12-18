@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
-public class WarcParser {
+public class WarcParser extends  ArcWarcFileParserAbstract {
 
     private static final Logger log = LoggerFactory.getLogger(WarcParser.class);
     private static final String newLineChar ="\r\n";
@@ -80,7 +80,8 @@ public class WarcParser {
             }
             
             long afterFirst = raf.getFilePointer(); //Now we are past the WARC header and back to the ARC standard 
-            line = raf.readLine();     
+            line = raf.readLine();  
+            warcEntry.setStatus_code(getStatusCode(line));            
             headerLinesBuffer.append(line+newLineChar);
             while (!"".equals(line)) { // End of warc second header block is an empty line
                 line = raf.readLine();                  
@@ -147,6 +148,7 @@ public class WarcParser {
           
           LineAndByteCount lc =readLineCount(bis);
           line=lc.getLine();
+          warcEntry.setStatus_code(getStatusCode(line));
           headerLinesBuffer.append(line+newLineChar);
           byteCount +=lc.getByteCount();                    
 
@@ -245,8 +247,8 @@ public class WarcParser {
      private static void populateWarcSecondHeader(ArcEntry warcEntry, String headerLine) {
         //  log.debug("parsing warc headerline(part 2):"+headerLine);                
           //Content-Type: image/jpeg
-         // or Content-Type: text/html; charset=windows-1252       
-          if (headerLine.toLowerCase().startsWith("content-type:")) {            
+         // or Content-Type: text/html; charset=windows-1252          
+       if (headerLine.toLowerCase().startsWith("content-type:")) {            
             String[] part1 = headerLine.split(":");
                String[] part2= part1[1].split(";");                        
                warcEntry.setContentType(part2[0].trim());          
@@ -268,7 +270,9 @@ public class WarcParser {
           else if (headerLine.toLowerCase().startsWith("content-encoding:")) {
             String[] contentLine = headerLine.split(":");               
             warcEntry.setContentEncoding(contentLine[1].trim().replace("\"", "")); //Some times Content-Type: text/html; charset="utf-8" instead of Content-Type: text/html; charset=utf-8                       
-          }      
+          }
+                 
+          
       }
      
      public static String readLine(BufferedInputStream  bis) throws Exception{

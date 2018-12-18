@@ -376,10 +376,11 @@ public class SolrWaybackResource {
       log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
       ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
       
-      //TODO performance tuning. Loading this every time will cost performance
-      IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); 
-      Response responseRedirect = isRedirect(indexDoc);
-      if (responseRedirect != null){
+      //Only solr lookup if redirect.
+      if (arcEntry.getStatus_code() >= 300 &&  arcEntry.getStatus_code() <= 399 ){
+        IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);         
+        Response responseRedirect = getRedirect(indexDoc);
+        log.debug("Redirecting. status code from arc:"+arcEntry.getStatus_code() + " vs index " +indexDoc.getStatusCode()); 
         return responseRedirect;
       }
       
@@ -389,7 +390,7 @@ public class SolrWaybackResource {
         response= Response.ok((Object) in).type(arcEntry.getContentType());          
       }
       catch (Exception e){         
-         
+        IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); 
          log.warn("Error setting HTTP header Content-Type:'"+arcEntry.getContentType() +"' using index Content-Type:'"+indexDoc.getContentType()+"'");
          response = Response.ok((Object) in).type(indexDoc.getContentType()); 
       }
@@ -752,7 +753,7 @@ public class SolrWaybackResource {
     log.debug("View from FilePath:" + source_file_path + " offset:" + offset);
     IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
    
-    Response redirect = isRedirect(doc);
+    Response redirect = getRedirect(doc);
     if (redirect != null){
       return redirect;
     }
@@ -766,8 +767,6 @@ public class SolrWaybackResource {
      log.warn("no contenttype, using content_type from tika:"+doc.getContentType());
      contentType=doc.getContentType();
    }
-        
-   
    
     ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
     
@@ -912,7 +911,7 @@ public class SolrWaybackResource {
   /*
    * This will set the correct status and redirect 
    */
-  private static Response isRedirect (IndexDoc doc) throws Exception{
+  private static Response getRedirect (IndexDoc doc) throws Exception{
     int status = doc.getStatusCode();
     
     if (status>= 300 && status <=399){ //Redirects.
@@ -927,7 +926,6 @@ public class SolrWaybackResource {
         Date date = java.util.Date.from( instant );      
         String waybackDate = WarcParser.date2waybackdate(date);
         String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+redirectNorm;
-        log.info("Setting redirectUrl:"+newUrl);
         response.header("location", newUrl);
         return response.build();        
       }      

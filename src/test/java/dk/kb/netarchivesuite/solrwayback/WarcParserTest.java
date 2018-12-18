@@ -27,7 +27,8 @@ public class WarcParserTest extends UnitTestUtils{
         assertEquals("hewlett.jpg", arcEntry.getFileName());
         assertEquals(7812, arcEntry.getWarcEntryContentLength());
         assertEquals(7510, arcEntry.getContentLength());
-                        
+        assertEquals(200,arcEntry.getStatus_code());
+        
         BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
         assertEquals(300,image.getWidth());
         assertEquals(116,image.getHeight());        

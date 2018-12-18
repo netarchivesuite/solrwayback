@@ -7,6 +7,7 @@ package dk.kb.netarchivesuite.solrwayback.service.dto;
 public class ArcEntry {
 
   private byte[] binary;
+  private int status_code;
   private String header;//Both headers for WARC.
   private String ip;
   private String url;
@@ -93,6 +94,12 @@ public class ArcEntry {
   }
   public void setIp(String ip) {
     this.ip = ip;
+  }
+  public int getStatus_code() {
+    return status_code;
+  }
+  public void setStatus_code(int status_code) {
+    this.status_code = status_code;
   }	
 
 }

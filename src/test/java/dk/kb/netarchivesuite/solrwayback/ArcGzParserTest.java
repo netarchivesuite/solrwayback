@@ -20,7 +20,7 @@ public class ArcGzParserTest extends UnitTestUtils {
         assertEquals("www.archive.org", arcEntry.getFileName());
         assertEquals(366, arcEntry.getContentLength()); //From header        
         assertEquals(366,arcEntry.getBinary().length); //Actually loaded in binary
-    
+        assertEquals(200,arcEntry.getStatus_code());
        //System.out.println(new String(arcEntry.getBinary())); //from <html> to </html>
     }
      
