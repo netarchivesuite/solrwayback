@@ -69,7 +69,10 @@ public class SolrWaybackResource {
   
   
 
-  
+  /*
+   * Only for debugging/error finding. Not called from SolrWayback frontend.
+   * Can be improved to not also load binary which are not shown. 
+   */
   @GET
   @Path("warc/header")
   @Produces({ MediaType.TEXT_PLAIN})
