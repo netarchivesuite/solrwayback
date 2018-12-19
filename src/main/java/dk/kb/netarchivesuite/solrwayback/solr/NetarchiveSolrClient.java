@@ -668,7 +668,7 @@ return docs;
       }
       else{        
         //Not a problem just need to see how often it happens for now.
-        log.info("Same url has been harvests for both HTTP and HTTPS: "+url + " and "+doc.getUrl());
+        //log.info("Same url has been harvests for both HTTP and HTTPS: "+url + " and "+doc.getUrl());
         continue; //Skip
       }      
       
