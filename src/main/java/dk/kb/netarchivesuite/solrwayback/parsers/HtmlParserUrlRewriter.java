@@ -185,7 +185,7 @@ public class HtmlParserUrlRewriter {
 
 				//List<String> urlList = new ArrayList<String>();
 		HashSet<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
-		log.info("#unique urlset to resolve:"+urlSet.size());
+		log.info("#unique urlset to resolve for arc-url:"+arc.getUrl() +" :"+urlSet.size());
 
 		ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
 
