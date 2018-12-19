@@ -67,6 +67,22 @@ public class SolrWaybackResource {
 
   private static final Logger log = LoggerFactory.getLogger(SolrWaybackResource.class);
   
+  
+
+  
+  @GET
+  @Path("warc/header")
+  @Produces({ MediaType.TEXT_PLAIN})
+  public String getWarcHeader( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws ServiceException {
+      try {                                                                                      
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+        return arcEntry.getHeader();                              
+      } catch (Exception e) {         
+          throw handleServiceExceptions(e);
+      }
+  }
+  
+  
   @GET
   @Path("/images/search")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
