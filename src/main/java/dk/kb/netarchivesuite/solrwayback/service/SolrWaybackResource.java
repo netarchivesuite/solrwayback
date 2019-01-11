@@ -38,6 +38,7 @@ import com.sun.jersey.multipart.FormDataParam;
 import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
+import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
@@ -398,7 +399,7 @@ public class SolrWaybackResource {
       //Only solr lookup if redirect.
       if (arcEntry.getStatus_code() >= 300 &&  arcEntry.getStatus_code() <= 399 ){
         IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);         
-        Response responseRedirect = getRedirect(indexDoc);
+        Response responseRedirect = getRedirect(indexDoc,arcEntry);
         log.debug("Redirecting. status code from arc:"+arcEntry.getStatus_code() + " vs index " +indexDoc.getStatusCode()); 
         return responseRedirect;
       }
@@ -772,7 +773,7 @@ public class SolrWaybackResource {
     log.debug("View from FilePath:" + source_file_path + " offset:" + offset);
     IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
    
-    Response redirect = getRedirect(doc);
+    Response redirect = getRedirect(doc, null);
     if (redirect != null){
       return redirect;
     }
@@ -930,21 +931,26 @@ public class SolrWaybackResource {
   /*
    * This will set the correct status and redirect 
    */
-  private static Response getRedirect (IndexDoc doc) throws Exception{
+  private static Response getRedirect (IndexDoc doc, ArcEntry arc) throws Exception{
     int status = doc.getStatusCode();
     
     if (status>= 300 && status <=399){ //Redirects.
       ResponseBuilder response = Response.status(status);
       
+      if(arc == null){
+        arc = Facade.getArcEntry(doc.getSource_file_path(), doc.getOffset());
+      }      
       response.status(status); // jersey require a legal status code.
-      String redirectNorm = doc.getRedirectToNorm();
-      if (redirectNorm != null){
+
+      String redirectUrl = Normalisation.resolveRelative(arc.getUrl(), arc.getRedirectUrl(), false);
+      log.info("Redirect url resolved to:"+redirectUrl);      
+      if (redirectUrl != null){
         //build the new redirect url.
         String crawlDate = doc.getCrawlDate();
         Instant instant = Instant.parse (crawlDate);  //JAVA 8
         Date date = java.util.Date.from( instant );      
         String waybackDate = WarcParser.date2waybackdate(date);
-        String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+redirectNorm;
+        String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+redirectUrl;
         response.header("location", newUrl);
         return response.build();        
       }      

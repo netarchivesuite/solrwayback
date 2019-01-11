@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
+import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 
@@ -34,9 +35,32 @@ public class ArcParserTest extends UnitTestUtils{
         System.out.println(arcEntry.getUrl());
         System.out.println(arcEntry.getWaybackDate());;
         System.out.println(arcEntry.getCrawlDate());
-     
-        
+        System.out.println(arcEntry.getRedirectUrl());
+                     
     }
+    @Test
+    public void testArcParserRedirect() throws Exception {
+      
+      File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc");
+      
+      ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 280750 ); //redirect
+
+      
+      String url=arcEntry.getUrl();
+      System.out.println(url);
+      String redirect = arcEntry.getRedirectUrl();
+      
+      String finalUrl = Normalisation.resolveRelative(url, redirect, false);
+
+      System.out.println(finalUrl);
+      //
+  
+                      
+    }
+   
+    
+
+    
     /*
     @Test
     public void testArcParser1() throws Exception {        

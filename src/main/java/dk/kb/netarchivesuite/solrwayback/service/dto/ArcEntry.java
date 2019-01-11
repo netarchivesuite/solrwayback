@@ -19,7 +19,8 @@ public class ArcEntry {
   private String crawlDate; // format 2009-12-09T05:32:50Z
   private String contentEncoding;
   private String waybackDate; // format 20080331193532
-
+  private String redirectUrl; //null if not redirect
+  
   public byte[] getBinary() {
     return binary;
   }
@@ -100,6 +101,13 @@ public class ArcEntry {
   }
   public void setStatus_code(int status_code) {
     this.status_code = status_code;
+  }
+  public String getRedirectUrl() {
+    return redirectUrl;
+  }
+  public void setRedirectUrl(String redirectUrl) {
+    this.redirectUrl = redirectUrl;
   }	
+  
 
 }
