@@ -271,6 +271,9 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
             String[] contentLine = headerLine.split(":");               
             warcEntry.setContentEncoding(contentLine[1].trim().replace("\"", "")); //Some times Content-Type: text/html; charset="utf-8" instead of Content-Type: text/html; charset=utf-8                       
           }
+          else if (headerLine.toLowerCase().startsWith("location:")) {                                      
+            warcEntry.setRedirectUrl(headerLine.substring(9).trim());
+          }
                  
           
       }

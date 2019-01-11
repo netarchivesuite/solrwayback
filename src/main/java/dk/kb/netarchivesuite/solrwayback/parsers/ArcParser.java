@@ -228,22 +228,15 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
     return fullUrl;
   }
 
-
-
   private static String getIp(String arcHeaderLine) {
     String[] split = arcHeaderLine.split(" ");
     return split[1];
   }
 
-
-
-
-
   private static String getWaybackDate(String arcHeaderLine) throws Exception {
     String[] split = arcHeaderLine.split(" ");
     return split[2];                                
   }
-
 
   private static void populateArcHeader(ArcEntry arcEntry, String headerLine) {
     if (headerLine.toLowerCase().startsWith("content-length:")) {
@@ -260,6 +253,11 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
       String[] contentHeader = headerLine.split(":");                                  
       arcEntry.setContentEncoding(contentHeader[1].trim());
     }
+    else if (headerLine.toLowerCase().startsWith("location:")) {                                      
+      arcEntry.setRedirectUrl(headerLine.substring(9).trim());
+    }
+    
+    
     
   }  
   
