@@ -192,7 +192,8 @@ public class HtmlParserUrlRewriter {
         //Rewriting to url_norm, so it can be matched when replacing.
 		HashMap<String,IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
 		for (IndexDoc indexDoc: docs){
-			urlReplaceMap.put(indexDoc.getUrl_norm(),indexDoc);     		     		 
+//			log.info("warn: url:"+indexDoc.getUrl() +" url_norm:"+indexDoc.getUrl_norm());
+		  urlReplaceMap.put(indexDoc.getUrl_norm(),indexDoc);      		     		 
 		}
 
 		replaceUrlForElement(urlReplaceMap,doc, "img", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
@@ -290,7 +291,7 @@ public class HtmlParserUrlRewriter {
 			}
 			else{
 			     e.attr(attribute,NOT_FOUND_LINK);
-				log.info("No harvest found for:"+url);
+				log.info("No harvest found for(image):"+url);
 				numberOfLinksNotFound.getAndIncrement();;
 			 }
 
@@ -373,7 +374,7 @@ public class HtmlParserUrlRewriter {
 				URL base = new URL(baseUrl);
 				String resolvedUrl = new URL( base ,urlUnresolved).toString();			
 				
-				IndexDoc indexDoc = map.get(map.get(Normalisation.canonicaliseURL(resolvedUrl)));   
+				IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(resolvedUrl));   
 				if (indexDoc!=null){    		    			 
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();    			     		
 					String styleFixed=style.replaceAll(urlUnresolved,newUrl);    			     
@@ -383,7 +384,7 @@ public class HtmlParserUrlRewriter {
 				else{
 				  String styleFixed=style.replaceAll(urlUnresolved,NOT_FOUND_LINK);                    
                   e.attr(attribute,styleFixed); 				  			     
-                  log.info("No harvest found for:"+resolvedUrl);
+                  log.info("No harvest found for(style):"+resolvedUrl);
                   numberOfLinksNotFound.getAndIncrement();
 				}
 
