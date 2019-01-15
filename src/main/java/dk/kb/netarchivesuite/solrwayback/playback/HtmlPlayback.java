@@ -36,8 +36,8 @@ public class HtmlPlayback  extends PlaybackHandler{
        log.warn("unknown encoding, defaulting to utf-8:'"+arc.getContentEncoding()+"' . file:"+doc.getSource_file_path() +" offset:"+doc.getOffset());
        arc.setBinary(textReplaced.getBytes("utf-8"));
      }
-     
-     log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start));
+
+     log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start) + " "+doc.getSource_file_path()+ " "+ doc.getOffset() +" "+arc.getUrl());
     return arc;
   }
   
