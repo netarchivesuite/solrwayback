@@ -170,21 +170,19 @@ public class Facade {
       int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT*1000;            
       log.info("generate temp preview file:"+filename);
       pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=10000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
+      //no socks proxy
+      //pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=10000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024",  url);
       log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=10000 --timeout="+timeoutMillis+" --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
     // chromium-browser --headless  --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024   --proxy-server="socks4://localhost:9000" https://www.google.com/        
       Process start = pb.start();      
-      if(!start.waitFor(timeoutMillis+1000, TimeUnit.MILLISECONDS)) { // timeout + 1 second before killing.
-        //timeout - kill the process. 
-        log.info("Timeout generating preview.");
-        start.destroyForcibly(); 
-        throw new NotFoundServiceException("Timeout generating page preview"); // Just give a nice 404.
-      }else{
-        InputStream is = start.getInputStream();
+      
+      //return image even if timeout.
+      InputStream is = start.getInputStream();
         String conlog= getStringFromInputStream(is);
         //log.info("conlog:"+conlog); No need to log this, can be spammy. But usefull when debugging                    
        BufferedImage image =  ImageIO.read(new File(filename));
        return image;  
-      }
+      
             
     }
 

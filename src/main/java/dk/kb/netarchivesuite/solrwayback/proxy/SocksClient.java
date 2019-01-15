@@ -149,7 +149,7 @@ class SocksClient {
             } else {                
                   log.info("Leaking prevented to remote address: "+remoteAddr +" port:"+port);  
                   remoteAddr=  InetAddress.getByName(PropertiesLoader.WAYBACK_HOST);                  
-                  
+                  port=PropertiesLoader.WAYBACK_SERVER_PORT;    
                   //failConnectionToHost(remoteAddr, port); //this was used before trying to redirect to a harvested url
                   // return;
             }
