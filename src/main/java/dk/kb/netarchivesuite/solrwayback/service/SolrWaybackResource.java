@@ -661,7 +661,7 @@ public class SolrWaybackResource {
       
 
     } catch (Exception e) {
-      log.error("Error resolving leak:"+uriInfo.toString());
+      log.error("Error resolving leak:"+uriInfo.toString(), e);
       return Response.ok().build();
     }
   }
