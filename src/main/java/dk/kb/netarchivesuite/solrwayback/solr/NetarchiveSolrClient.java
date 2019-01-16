@@ -665,13 +665,22 @@ return docs;
       //small hack to make sure http/https not are mixed. Protocol is not into the schema yet. Would be nice if protocol was a field in schema
       if ( (url.startsWith("http://") && doc.getUrl().startsWith("http://")) ||  (url.startsWith("https://") && doc.getUrl().startsWith("https://") ) ) {       
         //log.info("same protocol:"+url + ":"+doc.getUrl());        
-      }
+      }                        
       else{        
         //Not a problem just need to see how often it happens for now.
         //log.info("Same url has been harvests for both HTTP and HTTPS: "+url + " and "+doc.getUrl());
         continue; //Skip
       }      
       
+      //If redirect, do not return the same url as this will give endless redirect. 
+      //This can happen due to the http://www.test.dk http://test.dk is normalized to the same. 
+      if(doc.getStatusCode() >= 300 && doc.getStatusCode() < 400){ 
+        if (doc.getUrl().equals(url)){ //Do not return the same for redirect. 
+          log.info("Stopping endless direct for url:"+url +" and found url:"+doc.getUrl());
+          continue; //skip
+        }       
+      }
+                        
       String crawlDateDoc = doc.getCrawlDate();      
       long crawlDateForDocument=  dateFormat.parse(crawlDateDoc).getTime();  //For this document      
       long thisMatch = Math.abs(inputCrawlDate - crawlDateForDocument);
