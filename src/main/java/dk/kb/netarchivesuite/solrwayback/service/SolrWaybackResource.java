@@ -479,6 +479,10 @@ public class SolrWaybackResource {
   @Path("/export/brief")    
   @Produces(MediaType.TEXT_PLAIN)
   public Response exportBrief(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
+      throw new InvalidArgumentServiceException("Export to csv not allowed!");
+    }
+    
     try {              
       log.debug("Export brief. query:"+q +" filterquery:"+fq);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                              
@@ -496,6 +500,9 @@ public class SolrWaybackResource {
   @GET
   @Path("/export/full")    
   public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
+      throw new InvalidArgumentServiceException("Export to csv not allowed!");
+    }
     try {               
       log.debug("Export full. query:"+q +" filterquery:"+fq);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                                                                                                         

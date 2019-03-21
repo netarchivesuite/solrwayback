@@ -239,8 +239,8 @@ Vue.component('pager-box', {
                 <span class="downloadArrow" style="display:none;">&#9650;</span>
             </span>
             <ul id="downloadMenu">
-                <li><a :href="exportResult('brief')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download brief result</a></li>
-                <li><a :href="exportResult('full')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download full result</a></li>
+                <li><a v-if="$data.allowExportCsv" :href="exportResult('brief')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download brief result</a></li>
+                <li><a v-if="$data.allowExportCsv" :href="exportResult('full')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download full result</a></li>
                 <li><a v-if="$data.allowExportWarc" :href="exportResult('warc')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc</a></li>                
                 <li><a v-if="$data.allowExportWarc" :href="exportResult('warcExpanded')" onclick="$('#downloadMenu,.downloadArrow').toggle()">Download as warc with resources</a></li>
             </ul>           
@@ -266,6 +266,7 @@ Vue.component('pager-box', {
      data: function() {
         return {           
             allowExportWarc: app.$data.allowExportWarc,
+            allowExportCsv: app.$data.allowExportCsv,
         };
     },
     methods:{
@@ -450,6 +451,7 @@ var app = new Vue({
         googleMapLongitude: 0.0,
         googleMapRadius: 0.0,        
         allowExportWarc: true,
+        allowExportCsv: true,
         myFacets: '',
         myQuery: '',
         facetFields: [],
@@ -483,6 +485,7 @@ var app = new Vue({
             this.baseUrl = response.body['wayback.baseurl'];
             this.openbaseUrl = response.body['openwayback.baseurl'];
             this.allowExportWarc =  ('true' == response.body['allow.export.warc']); 
+            this.allowExportCsv =  ('true' == response.body['allow.export.csv']);
             this.googleMapLatitude = response.body['maps.latitude'];
             this.googleMapLongitude= response.body['maps.longitude'];
             this.markerPosition.radius =  parseInt(response.body['maps.radius']);                                                        

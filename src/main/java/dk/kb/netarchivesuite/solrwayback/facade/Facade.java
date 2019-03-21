@@ -659,6 +659,7 @@ public class Facade {
         props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.WAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.OPENWAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
+        props.put(PropertiesLoaderWeb.ALLOW_EXPORT_CSV_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_CSV);
         props.put(PropertiesLoaderWeb.MAPS_LATITUDE_PROPERTY,PropertiesLoaderWeb.MAPS_LATITUDE);
         props.put(PropertiesLoaderWeb.MAPS_LONGITUDE_PROPERTY,PropertiesLoaderWeb.MAPS_LONGITUDE);
         props.put(PropertiesLoaderWeb.MAPS_RADIUS_PROPERTY,PropertiesLoaderWeb.MAPS_RADIUS);        
