@@ -5,6 +5,7 @@ New property allow.export.csv=false in solrwaybackweb.properties
 Various playback fixed when redirecting. Fixed a bug with redirect http -> https as only difference in URL.
 Block redirect cycles early when detected to prevent browser going for maximum redirects.
 Backend method to see the arc/warc header, not implemented in frontend yet.
+Updated log-frame(slf4j) to 1.7.21
   
 
 3.2.1
