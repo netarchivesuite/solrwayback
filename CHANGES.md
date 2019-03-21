@@ -1,3 +1,11 @@
+3.2.2
+-----
+Property to also disable CSV export of result. Was already implemented for warc-export
+Various playback fixed when redirecting. Fixed a bug with redirect http -> https as only difference in URL.
+Block redirect cycles early when detected to prevent browser going for maximum redirects.
+Backend method to see the arc/warc header, not implemented in frontend yet.
+  
+
 3.2.1
 -----
 Fix issued with warc-indexer 3.0.0 -> 3.0.1 broke backwards solr schema compatibility. Also some url normalization bugs was fixed. 
