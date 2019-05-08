@@ -623,6 +623,10 @@ return docs;
       throw new IllegalArgumentException("harvestUrl or timeStamp is null"); // Can happen for url-rewrites that are not corrected       
     }
 
+    //normalize will remove last slash if not slashpage
+    boolean slashLast =url.endsWith("/");
+    
+    
     String urlNormFixed = normalizeUrl(url);
     String query = "url_norm:\""+ urlNormFixed +"\"";                
     SolrQuery solrQuery = new SolrQuery();
@@ -661,16 +665,22 @@ return docs;
     for (int i =0 ;i<indexDocs.size() ;i++){           
             
       IndexDoc doc = indexDocs.get(i);
-
+    boolean docHasSlashLast = doc.getUrl().endsWith("/");
       //small hack to make sure http/https not are mixed. Protocol is not into the schema yet. Would be nice if protocol was a field in schema
       if ( (url.startsWith("http://") && doc.getUrl().startsWith("http://")) ||  (url.startsWith("https://") && doc.getUrl().startsWith("https://") ) ) {       
         //log.info("same protocol:"+url + ":"+doc.getUrl());        
-      }                        
+      }  
       else{        
         //Not a problem just need to see how often it happens for now.
         //log.info("Same url has been harvests for both HTTP and HTTPS: "+url + " and "+doc.getUrl());
         continue; //Skip
       }      
+
+       if(slashLast && !docHasSlashLast ){ // url_norm will be same with and without / last. But they are different pages
+        log.info("Ignoring URL due to '/' as end of url:"+url +" found:"+doc.getUrl_norm());
+        continue;
+      }        
+      
       
       //If redirect, do not return the same url as this will give endless redirect. 
       //This can happen due to the http://www.test.dk http://test.dk is normalized to the same. 
