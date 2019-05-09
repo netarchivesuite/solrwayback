@@ -15,7 +15,11 @@ import org.slf4j.LoggerFactory;
 public class TwitterParser {
 
   private static final Logger log = LoggerFactory.getLogger(TwitterParser.class);
-  
+
+  public static final JSONUtil.JSONSingleValueRule CONTENT = JSONUtil.getSingleMatcher(".extended_tweet.full_text", ".text")
+          .setDefault("SolrWayback error: No text could be extracted");;
+
+
   private String author;
   private Date createDate;
   private ArrayList<String> imageUrlsList;
@@ -44,8 +48,8 @@ public class TwitterParser {
     }
     
     
-    this.text="";
-
+    this.text= CONTENT.match(full);
+/*
     if (full.has("full_text") ){
       //System.out.println("fulltext case");
       this.text = full.getString("full_text");
@@ -56,7 +60,7 @@ public class TwitterParser {
       //System.out.println("text case");
       this.text =full.getString("text"); //legacy 
     }
-
+  */
     //Text can be overruled again under retweet
 
     //Likes
@@ -78,7 +82,7 @@ public class TwitterParser {
      this.retweet=true;
       log.info("has retweeted_status");
       JSONObject retweet = full.getJSONObject("retweeted_status");
-      this.text= retweet.getString("text");
+//      this.text= retweet.getString("text");
       if (retweet.has("extended_entities")){
         entities = retweet.getJSONObject("extended_entities");
         log.info("retweet extended entities");
