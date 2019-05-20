@@ -7,7 +7,7 @@ import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 
 public class TestGenerateCSV {
 
-    private static final String NARC10 = "http://narcana-data10.statsbiblioteket.dk:9000/solr/netarchivebuilder";
+    private static final String NARC10 = "http://belinda:8983/solr/netarchivebuilder";
 
     public static void main(String[] args) throws Exception{
     
@@ -19,7 +19,7 @@ public class TestGenerateCSV {
      SolrStreamingExportClient solr =  SolrStreamingExportClient.createExporter(NARC10, true, query, filter);
 
      StreamingSolrExportBufferedInputStream streamExport = new StreamingSolrExportBufferedInputStream(
-             solr, 50000,1000000);
+             solr, 20,100);
     
      PrintWriter writer = new PrintWriter("export.txt", "UTF-8");
             
@@ -30,7 +30,7 @@ public class TestGenerateCSV {
       read=streamExport.read();
     }
     writer.close();
-   
+    streamExport.close();
     
   }
 
