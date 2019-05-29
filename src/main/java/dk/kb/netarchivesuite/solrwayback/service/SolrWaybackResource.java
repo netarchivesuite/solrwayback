@@ -698,7 +698,7 @@ public class SolrWaybackResource {
       String offsetStr = queryMap.get("offset");
      
       if (source_file_path == null || offsetStr ==  null){
-        log.warn("Need to fix leak, no source_file/offset for refererUrl:"+refererUrl);        
+        log.warn("Need to fix leak, no source_file/offset for refererUrl:"+refererUrl + "url:"+leakUrlStr);        
         return Response.status(Response.Status.NOT_FOUND).build();
       }
       int leakUrlIndex=leakUrlStr.indexOf("/services/");
@@ -944,7 +944,7 @@ public class SolrWaybackResource {
       String offsetStr = queryMap.get("offset");
            
       if (source_file_path == null || offsetStr ==  null){
-        log.warn("Need to fix leak, no source_file/offset for refererUrl:"+refererUrl);        
+        log.warn("Need to fix leak, no source_file/offset for refererUrl:"+refererUrl +" request url:"+leakUrl);        
         return Response.status(Response.Status.NOT_FOUND).build();
       }      
       IndexDoc doc = Facade.resolveRelativUrlForResource(source_file_path, Long.parseLong(offsetStr), leakUrl);
@@ -958,7 +958,12 @@ public class SolrWaybackResource {
     }
       
   public static Map<String, String> getQueryMap(String url)
-  {    
+  {        
+      Map<String, String> map = new HashMap<String, String>();
+      if (url == null){
+        return map;
+      } 
+    
       int index = url.indexOf("?");
        if(index == -1){
          log.warn("no paramters for url:"+url);         
@@ -967,7 +972,7 @@ public class SolrWaybackResource {
        
       url =url.substring(index+1);
       String[] params = url.split("&");
-      Map<String, String> map = new HashMap<String, String>();
+    
       for (String param : params)
       {       
          String name = param.split("=")[0];
