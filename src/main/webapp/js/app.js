@@ -44,6 +44,7 @@ Vue.component('search-box', {
                 <span class="link clearSearchLink"  v-on:click="clearSearch();searchByFile = !searchByFile">Search with uploaded file</span> 
                 <span class="link clearSearchLink"><a href="./tags.html">Search for HTML-tags</a></span>
                 <span class="link clearSearchLink"><a href="./domaingrowth.html">Domain stats</a></span>               
+                <span class="link clearSearchLink"><a href="./linkgraph_gephi_export.jsp">Link graphs</a></span>
             </div>
         </div>
         <div v-if="searchByFile" id="uploadfilesContainer" class="box">

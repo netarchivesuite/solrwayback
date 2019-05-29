@@ -371,19 +371,23 @@ public class Facade {
       return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000); //1M max. results just for now
     }
  
+    public static InputStream exportLinkGraphStreaming(String q) {        
+      SolrStreamingLinkGraphCSVExportClient solr= SolrStreamingLinkGraphCSVExportClient.createExporter(PropertiesLoader.SOLR_SERVER, q);      
+      return new StreamingSolrExportBufferedInputStream(solr, 1000000); //1 MIL
+    }
 
     public static InputStream exportBriefStreaming(String q, String fq) throws Exception {
       SolrStreamingExportClient solr = SolrStreamingExportClient.createExporter(
               PropertiesLoader.SOLR_SERVER, true, q, fq);
-      return new StreamingSolrExportBufferedInputStream(solr, 50000, 1000000);
+      return new StreamingSolrExportBufferedInputStream(solr, 1000000);
     }
-     
-    
+       
+
     
     public static InputStream exportFullStreaming(String q, String fq) throws Exception{                           
         SolrStreamingExportClient solr = SolrStreamingExportClient.createExporter(
                 PropertiesLoader.SOLR_SERVER, false, q, fq);
-        return new StreamingSolrExportBufferedInputStream(solr, 50000, 1000000);
+        return new StreamingSolrExportBufferedInputStream(solr, 1000000);
     }
     
     

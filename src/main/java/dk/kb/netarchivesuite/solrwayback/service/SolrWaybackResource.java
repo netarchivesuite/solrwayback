@@ -445,6 +445,27 @@ public class SolrWaybackResource {
   }
 
   @GET
+  @Path("/export/linkgraph")    
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)    
+  public Response exportLinkGraph(@QueryParam("query") String q) throws ServiceException {
+   
+    //This is also required even if the option is removed on the web-page.
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
+      throw new InvalidArgumentServiceException("Export to csv not allowed!");
+    }        
+    try {
+      log.debug("Export linkgraph. query:"+q);
+      DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+      String dateStr = formatOut.format(new Date());
+      InputStream is = Facade.exportLinkGraphStreaming(q);
+      return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_linkgraph_"+dateStr+".csv\"").build();
+    } catch (Exception e) {
+      log.error("Error in export linkgraph",e);
+      throw handleServiceExceptions(e);
+    }    
+  }
+  
+  @GET
   @Path("/export/warcExpanded")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
   public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
@@ -496,6 +517,27 @@ public class SolrWaybackResource {
     }
   }
 
+  
+  @GET
+  @Path("/linkgraph/csv")    
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response linkgraphCsv(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+    
+    try {              
+      log.debug("Export brief. query:"+q +" filterquery:"+fq);
+      DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                              
+      String dateStr = formatOut.format(new Date());                        
+      InputStream is = Facade.exportBriefStreaming(q, fq);
+      return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
+
+    } catch (Exception e) {
+      log.error("Error in generating linkgraph csv",e);
+      throw handleServiceExceptions(e);
+    }
+  }
+
+  
+  
 
   @GET
   @Path("/export/full")    
@@ -647,6 +689,7 @@ public class SolrWaybackResource {
   @Path("/{var:.*?}")
   public Response waybackAPIResolverRoot(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("var") String path) throws ServiceException {
     try {
+      
       String leakUrlStr = uriInfo.getRequestUri().toString();
       String refererUrl = httpRequest.getHeader("referer");
                            

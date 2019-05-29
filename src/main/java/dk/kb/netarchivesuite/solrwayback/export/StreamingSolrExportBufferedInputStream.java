@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLineBasedExportClientInterface;
 
 public class StreamingSolrExportBufferedInputStream extends InputStream {
 
@@ -12,7 +13,7 @@ public class StreamingSolrExportBufferedInputStream extends InputStream {
   private List<byte[]> inputBuffer = new ArrayList<>();
   private final int maxLines;
   private int linesRead;
-  private SolrStreamingExportClient solrClient;
+  private  SolrStreamingLineBasedExportClientInterface solrClient;
   private final int solrPagingBufferSize;
 
   @Override
@@ -46,11 +47,10 @@ public class StreamingSolrExportBufferedInputStream extends InputStream {
     return result;
   }
 
-  public StreamingSolrExportBufferedInputStream(
-          SolrStreamingExportClient solrClient, int solrPagingBufferSize, int maxLines) {
+  public StreamingSolrExportBufferedInputStream(SolrStreamingLineBasedExportClientInterface solrClient, int maxLines) {
     this.solrClient = solrClient;
     this.maxLines = maxLines;
-    this.solrPagingBufferSize = solrPagingBufferSize;
+    this.solrPagingBufferSize = solrClient.getPageSize();
   }
 
   private void loadMore() {

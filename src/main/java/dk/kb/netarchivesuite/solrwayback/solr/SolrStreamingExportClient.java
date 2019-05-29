@@ -1,7 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
@@ -11,7 +9,7 @@ import dk.kb.netarchivesuite.solrwayback.export.GenerateCSV;
 
 import java.util.Arrays;
 
-public class SolrStreamingExportClient {
+public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportClientInterface{
 
   public static final String BRIEF_FL = "title,url,source_file_path,crawl_date,wayback_date";
   public static final String BRIEF_CSV = "title,crawl_date,waybackurl";
@@ -84,5 +82,9 @@ public class SolrStreamingExportClient {
     System.out.println("return size: " + export.length());
     return export.toString();
   }
-
+  
+  @Override
+  public int getPageSize() {
+    return DEFAULT_PAGE_SIZE;
+  }
 }

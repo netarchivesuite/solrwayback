@@ -129,6 +129,7 @@ public class SolrGenericStreaming {
         }
       }
     }
+    
     solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
     return solrQuery;
   }
