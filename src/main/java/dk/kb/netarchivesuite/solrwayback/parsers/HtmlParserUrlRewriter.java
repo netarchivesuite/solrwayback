@@ -35,7 +35,12 @@ public class HtmlParserUrlRewriter {
 	//TODO use for more CSS replacement
 	private static Pattern urlPattern = Pattern.compile("[: ,]url\\([\"']?([^\"')]*)[\"']?\\)");
 	
-	private static Pattern backgroundUrlPattern = Pattern.compile(".*background:url\\((.*)\\).*");
+	private static Pattern backgroundUrlPattern_OLD = Pattern.compile(".*background:url\\((.*)\\).*");
+	
+	// See explanation where it is used.
+	private static Pattern backgroundUrlPattern = Pattern.compile(".*background(-image)?:\\s*url\\((.*)\\).*");
+	
+	
 	private static final String CSS_IMPORT_PATTERN_STRING = 
 			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css[^'\") ]*)['\"]?\\s*[)]?.*";
 	private static Pattern  CSS_IMPORT_PATTERN = Pattern.compile(CSS_IMPORT_PATTERN_STRING);
@@ -208,8 +213,10 @@ public class HtmlParserUrlRewriter {
 	    replaceUrlsForImgSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);
 	    replaceUrlsForSourceSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);	    
         replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
-	    replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
-		
+        replaceStyleBackground(urlReplaceMap,doc, "div", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
+        replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
+	    
+	    
 		//This are not resolved until clicked
 		rewriteUrlForElement(doc, "a" ,"href",arc.getWaybackDate());
 		rewriteUrlForElement(doc, "area" ,"href",arc.getWaybackDate());		
@@ -418,14 +425,30 @@ public class HtmlParserUrlRewriter {
 	}
 
 	/*
-	 * background:url(img/homeico.png) no-repeat ; width:90px ... ->  img/homeico.png
+	 * 
+	 * background:url(img/homeico.png) no-repeat ; width:90px
+	 * result:  ... ->  img/homeico.png
+	 * 
+	 * For div-tag:
+	 * background-image:url('https://www.proscenium.dk/wp-content/uploads/2018/12/StatensKunstfond-PR-300x169.jpg');
+	 * result: https://www.proscenium.dk/wp-content/uploads/2018/12/StatensKunstfond-PR-300x169.jpg
+	 * 
+	 * Dont know if " is allowed instead of '
 	 */
 	private static String getStyleMatch(String style){
-		Matcher m = backgroundUrlPattern.matcher(style);
+		//log.info("matching style:"+style);
+	  Matcher m = backgroundUrlPattern.matcher(style);
 		if (m.matches()){
-			String url= m.group(1);
-			return url;
+
+		  String url= m.group(2); 
+		  if (url.startsWith("'") && url.endsWith("'")){
+           url=url.substring(1, url.length()-1);		    
+		  }
+	      //log.info("style found:"+url);
+
+          return url;
 		}
+        //log.info("style not found");
 		return null;    	
 	}
 
@@ -652,6 +675,7 @@ public class HtmlParserUrlRewriter {
       collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
       collectRewriteUrlsForElement(urlSet,doc, "iframe", "src");
       collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
+      collectStyleBackgroundRewrite(urlSet , doc, "div", "style",url);
       collectRewriteUrlsForStyleImport(urlSet, doc,url);            
       return urlSet;	  
 	}
