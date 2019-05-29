@@ -1,3 +1,11 @@
+3.2.3
+-----
+Link graph export to cvs-format that can be loaded by Gephi. Export is streaming and can extract million of domains.
+Implemented temporary web-page for the link graph export. (New menu link added)
+Improved Playback for twitter-API harvest. (missing images in some situations)
+Various minor playback improvements. background-image for div tags most important fix. 
+
+
 3.2.2
 -----
 Property to also disable CSV export of result. Was already implemented for warc-export.
@@ -6,8 +14,6 @@ Various playback fixed when redirecting. Fixed a bug with redirect http -> https
 Block redirect cycles early when detected to prevent browser going for maximum redirects.
 Backend method to see the arc/warc header, not implemented in frontend yet.
 Updated log-frame(slf4j) to 1.7.21
-Link graph export to cvs-format that can be loaded by Gephi. Export is streaming and can extract million of domains.
-Implemented temporary web-page for the link graph export. (New menu link added)
   
 
 3.2.1
