@@ -14,7 +14,7 @@ public class SolrStreamingLinkGraphCSVExportClient implements SolrStreamingLineB
 
   public static final String LINKGRAPH_FL = "id,domain,links_domains";
   
-  public static final int DEFAULT_PAGE_SIZE = 10000;
+  public static final int DEFAULT_PAGE_SIZE = 25000;
   private static final String filters = "content_type_norm:html AND links_domains:* AND url_type:slashpage";
   
   // to see how many distinct domains, from solr admin: stats=true&stats.field=domain&f.domain.stats.cardinality=true
@@ -62,6 +62,7 @@ public class SolrStreamingLinkGraphCSVExportClient implements SolrStreamingLineB
    * 
    */
   public String next() throws Exception {
+    log.info("Next called for link graph export:"+query);
     if (inner.hasFinished()) {
       return "";
     }
@@ -94,6 +95,13 @@ public class SolrStreamingLinkGraphCSVExportClient implements SolrStreamingLineB
       }
       
     }
+    //if none added, reload. Simple fix to avoid returning empty string when extraction not completed
+    if(export.toString().length() == 0){
+      log.info("Empty resultset for buffer but more documents to load, automatic reload");
+      return next();
+    }
+    
+    
     //System.out.println(export.toString());
     return export.toString();
   }
