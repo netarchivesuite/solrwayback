@@ -117,7 +117,7 @@ you only need to change to property pointing from the wayback server to the Solr
  
  
 ## Requirements
- * JDK 1.8+ 
+ * JDK 8/9/10. (Not working on Java 11) 
  * Some Arc/Warc files 
  * Tomcat 8+  or another J2EE server for deploying the WAR-file
  * A Solr 7.1+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.0
@@ -164,9 +164,10 @@ Unzip and follow the instructions below.
 
 ## Requirements:
 Works on MacOs/Linux/Windows.  
-For the Solrwayback software bundle you only need to have Java 8 (64 bit) installed. 
+For the Solrwayback software bundle you only need to have Java  (64 bit) installed. 
+Any Java version 8/9/10 will be compatible.  (Not Java 11)
 To check java is installed, type the following from a prompt: java -version  
-Any version 1.8+ will be compatible.  
+
 
 ## Install instructions:
 
