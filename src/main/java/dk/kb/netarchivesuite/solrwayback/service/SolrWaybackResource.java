@@ -735,7 +735,7 @@ public class SolrWaybackResource {
                                              
      //Format is: /web/20080331193533/http://ekstrabladet.dk/112/article990050.ece 
       String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+url;
-      
+      newUrl = newUrl.replace("|", "%7C");//For some unknown reason Java does not accept |, must encode.
       //Below is for Open wayback at KB
     // String newUrl="http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url="+url+"&time="+waybackDate;
       //http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url=http%3A%2F%2Fwww.stiften.dk%2F&time=20120328044226
