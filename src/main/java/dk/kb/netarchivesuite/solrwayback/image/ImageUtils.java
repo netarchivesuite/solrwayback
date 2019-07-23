@@ -7,14 +7,16 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import dk.kb.netarchivesuite.solrwayback.util.InputStreamUtils;
+
 public class ImageUtils {
 
     
     public static BufferedImage getImageFromBinary(byte[] bytes) throws Exception{
 
         InputStream in = new ByteArrayInputStream(bytes);
-        BufferedImage image = ImageIO.read(in);
-        
+        InputStream maybeDecompress = InputStreamUtils.maybeDecompress(in);        
+        BufferedImage image = ImageIO.read(maybeDecompress);        
         return image;        
     }
     
