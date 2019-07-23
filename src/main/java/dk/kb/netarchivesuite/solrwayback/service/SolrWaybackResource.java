@@ -375,13 +375,14 @@ public class SolrWaybackResource {
       BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
 
       if (image== null){
-        // java does not support ico format. Just serve it RAW...
-        if (arcEntry.getUrl().toLowerCase().indexOf("/favicon.ico") >0){ // There can be query params also
-           log.info("image is ico-image, serving it raw");
+        // java does not support ico format. Just serve it RAW... 
+        // Also SVG scaling bugs too much in java
+        if (arcEntry.getUrl().toLowerCase().indexOf("/favicon.ico") >0 || arcEntry.getContentType().indexOf("image/svg+xml") >=0){ 
+           log.info("image is ico-image or SVG serving it raw");
            return downloadRaw(source_file_path, offset);          
         }
         log.warn("image is null and not .ico file, source_file_path:"+source_file_path +" offset:"+offset);
-        throw new IllegalArgumentException("image is null and not .ico image, source_file_path:"+source_file_path +" offset:"+offset);                
+        throw new IllegalArgumentException("image is null and not .ico image, source_file_path:"+source_file_path +" offset:"+offset +" contentType:"+arcEntry.getContentType());                
       }
 
       int sourceWidth = image.getWidth();
@@ -398,6 +399,10 @@ public class SolrWaybackResource {
     } catch (Exception e) {
       log.error("error getImage:"+source_file_path +" offset:"+offset +" height:"+height +" width:"+width); //Java can not read all images. 
       throw handleServiceExceptions(e);
+    }
+    catch (Throwable e) { //Can happen due to the batik dependency. Sometimes SVG scaling failes. Also weird image formats can fail
+      log.error("Throwable error in getImage:"+source_file_path +" offset:"+offset +" height:"+height +" width:"+width + " error:"+e.getMessage()); //Java can not read all images. 
+      throw handleServiceExceptions(new NotFoundServiceException());
     }
   }
 
@@ -789,9 +794,7 @@ public class SolrWaybackResource {
     //this method is only called from the tomcat solrwaybackrootproxy if that proxy mode is used.
     try {
 
-      log.info("viewFromLeakedResource called:");
-      log.info("source_file_path:"+source_file_path);
-      log.info("offset:"+offset);
+      log.info("viewFromLeakedResource called: source_file_path:"+source_file_path +" offset:"+offset);      
       log.info("urlPath:"+urlPart);
 
       //This is from the URL where the leak came from      

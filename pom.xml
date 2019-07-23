@@ -123,7 +123,27 @@
      <artifactId>dec</artifactId>
      <version>0.1.2</version>
   </dependency>
-
+ 
+ 
+ <!-- Support for SVG and other image types. -->
+ <!-- Can render some SVG (and scale them), but causes a lot more trouble that it is worth for now.
+   <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-batik</artifactId>
+        <version>3.2.1</version>
+    </dependency>
+    <dependency>
+        <groupId>batik</groupId>
+        <artifactId>batik-transcoder</artifactId>
+        <version>1.6-1</version>    
+       <exclusions>
+            <exclusion>
+                <artifactId>fop</artifactId>
+                <groupId>fop</groupId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+ -->
 		<!-- used when uploading -->
 		<dependency>
 			<groupId>commons-fileupload</groupId>
