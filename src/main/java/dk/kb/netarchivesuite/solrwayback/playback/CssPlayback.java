@@ -21,8 +21,14 @@ public class CssPlayback  extends PlaybackHandler{
   public ArcEntry playback() throws Exception{    
     //Never show the toolbar.
     long start = System.currentTimeMillis();    
-    String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);            
-    arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));     
+    String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);                
+    if (!"gzip".equalsIgnoreCase(arc.getContentEncoding())){ //TODO x-gzip brotli
+      arc.setBinary(textReplaced.getBytes(arc.getContentCharset()));
+      }
+      else{
+       arc.setBinary(textReplaced.getBytes("UTF-8"));  
+      }
+    arc.setHasBeenDecompressed(true);
     return arc;
   }
   

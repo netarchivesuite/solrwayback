@@ -29,6 +29,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +51,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
-import dk.kb.netarchivesuite.solrwayback.service.dto.graph.*;
+import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
@@ -81,6 +82,18 @@ public class SolrWaybackResource {
       try {                                                                                      
         ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
         return arcEntry.getHeader();                              
+      } catch (Exception e) {         
+          throw handleServiceExceptions(e);
+      }
+  }
+  
+  @GET
+  @Path("warc/parsed")
+  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+  public ArcEntry getWarcParsed( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws ServiceException {
+      try {                                                                                      
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+         return arcEntry;                              
       } catch (Exception e) {         
           throw handleServiceExceptions(e);
       }
@@ -404,14 +417,29 @@ public class SolrWaybackResource {
         return responseRedirect;
       }
       
-      InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
+      //temp dirty hack to see if it fixes brotli
+      InputStream in;
+      if ("br".equalsIgnoreCase(arcEntry.getContentEncoding())){
+      log.warn("br (brotli) encoding not supported");    
+      in = new BrotliInputStream(new ByteArrayInputStream(arcEntry.getBinary()));
+      arcEntry.setContentEncoding(null); //Clear encoding.
+      arcEntry.setHasBeenDecompressed(true);
+      }
+      else{      
+       in = new ByteArrayInputStream(arcEntry.getBinary());
+       
+      }
       ResponseBuilder response = null;
       try{
-        response= Response.ok((Object) in).type(arcEntry.getContentType());          
+        String contentType = arcEntry.getContentType();
+        if (arcEntry.getContentCharset() != null){
+          contentType = contentType +"; charset="+arcEntry.getContentCharset();
+        }        
+        response= Response.ok((Object) in).type(contentType);          
       }
       catch (Exception e){         
         IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); 
-         log.warn("Error setting HTTP header Content-Type:'"+arcEntry.getContentType() +"' using index Content-Type:'"+indexDoc.getContentType()+"'");
+         log.warn("Error setting HTTP header Content-Type:'"+arcEntry.getContentType() +"' using index Content-Type:'"+indexDoc.getContentType()+"'");         
          response = Response.ok((Object) in).type(indexDoc.getContentType()); 
       }
             
@@ -561,7 +589,7 @@ public class SolrWaybackResource {
 
 
   /*
-   *  This will be called from solrwayback page views, when resources can not be resolved (not harvested)  
+//   *  This will be called from solrwayback page views, when resources can not be resolved (not harvested)  
    */    
   @GET
   @Path("/notfound")    
@@ -693,6 +721,8 @@ public class SolrWaybackResource {
       String leakUrlStr = uriInfo.getRequestUri().toString();
       String refererUrl = httpRequest.getHeader("referer");
                            
+      
+      //Referer: http://teg-desktop.sb.statsbiblioteket.dk:8080/solrwayback/services/view?source_file_path=/media/teg/1200GB_SSD/solrwayback_package_3.2_webrecorder/indexing/warcs/thomas_egense_dk.warc&offset=9485066
       Map<String, String> queryMap = getQueryMap(refererUrl);
       String source_file_path = queryMap.get("source_file_path");      
       String offsetStr = queryMap.get("offset");
@@ -830,22 +860,40 @@ public class SolrWaybackResource {
     
     ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset, doc, showToolbar);
 
+    //temporary hack.
     InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
-   String contentType = arcEntry.getContentType();
-   if (contentType ==  null){
-     
-     log.warn("no contenttype, using content_type from tika:"+doc.getContentType());
-     contentType=doc.getContentType();
+    if ("br".equalsIgnoreCase(arcEntry.getContentEncoding())){         
+      in = new BrotliInputStream(new ByteArrayInputStream(arcEntry.getBinary()));
+      arcEntry.setContentEncoding(null); //Clear encoding.
+      arcEntry.setHasBeenDecompressed(true);
+      }
+      else{      
+       in = new ByteArrayInputStream(arcEntry.getBinary());
+      }
+    
+    String contentType = arcEntry.getContentType();
+   if (contentType ==  null){    
+    log.warn("no contenttype, using content_type from tika:"+doc.getContentType());
+    contentType=doc.getContentType(); 
+   }   
+   if (arcEntry.getContentCharset() != null){
+     contentType = contentType +"; charset="+arcEntry.getContentCharset();
    }
-   
-    ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
-    
-    if (arcEntry.getContentEncoding() != null){
-      response.header("Content-Encoding", arcEntry.getContentEncoding()); 
-    }
-    
-    return response.build();
+   else{
+     contentType=doc.getContent_type_full();     
+   }     
+    //ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
+    //log.info("seting contentype:"+ contentType+"; charset="+arcEntry.getContentEncoding());
+//          
+   ResponseBuilder response = Response.ok((Object) in).type(contentType );                    
 
+    if (arcEntry.isHasBeenDecompressed()){     
+      response.header("Content-Encoding", doc.getContentEncoding()); 
+    }else {      
+      response.header("Content-Encoding", arcEntry.getContentEncoding());
+    }
+          
+    return response.build();
   }
 
 
@@ -948,7 +996,8 @@ public class SolrWaybackResource {
         return Response.status(Response.Status.NOT_FOUND).build();
       }      
       IndexDoc doc = Facade.resolveRelativUrlForResource(source_file_path, Long.parseLong(offsetStr), leakUrl);
-      log.info("relative leak resolved:"+leakUrl);      
+      log.info("Resolved leak to doc url:"+doc.getUrl());  
+      log.info("Resolved leak to doc offset:"+doc.getOffset());      
       return downloadRaw(doc.getSource_file_path(), doc.getOffset());
     }
     catch(Exception e){

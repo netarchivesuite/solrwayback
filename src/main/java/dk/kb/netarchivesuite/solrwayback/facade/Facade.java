@@ -512,7 +512,7 @@ public class Facade {
       ts.setResources(pageResources);
             
       ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);
-      arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
+      // TODO WHY ? arc.setContentEncoding(Facade.getEncoding(source_file_path, ""+offset));
       
       IndexDoc docPage = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
             
@@ -584,7 +584,8 @@ public class Facade {
       //else just try to lookup resourcename (last part of the url) for that domain.       
       ArrayList<IndexDoc> matches = NetarchiveSolrClient.getInstance().findNearestForResourceNameAndDomain(doc.getDomain(), leakResourceName,doc.getCrawlDate()); 
       for (IndexDoc m : matches){
-        if (m.getUrl().endsWith(leakUrl)){        
+        if (m.getUrl().endsWith(leakUrl) ){        
+        log.info("found leak url:"+m.getUrl());
           return m;          
         }
       }
@@ -624,17 +625,16 @@ public class Facade {
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
        
     	
-        String encoding = arc.getContentEncoding();
+        String encoding = arc.getContentCharset();
            
         if (encoding == null){
     	  encoding =Facade.getEncoding(source_file_path, ""+offset); //Ask the index
     	}    	
-    	if (encoding == null){
-    	  log.warn("Encoding not found for:"+source_file_path +" and offset:"+offset);    	  
+    	if (encoding == null){    	    	  
            encoding="ISO-8859-1"; //Is UTF-8 a better default? 
     	}    	
-    	log.info("encoding detected:"+encoding  +" type:"+doc.getType());
-    	arc.setContentEncoding(encoding);
+    	
+        arc.setContentCharset(encoding); //Need to help read the binary.
     	
     	if(doc.getType().equals("Twitter Tweet")){    	      	  
           TwitterPlayback twitterPlayback = new TwitterPlayback(arc, doc, showToolbar);
@@ -647,12 +647,13 @@ public class Facade {
     	else if ("Web Page".equals(doc.getType()) ||  ( (300<=doc.getStatusCode() && arc.getContentType()!= null && arc.getContentType().equals("text/html") ) ) ){ // We still want the toolbar to show for http moved (302 etc.)
     	  HtmlPlayback htmlPlayback = new HtmlPlayback(arc, doc, showToolbar);
           return htmlPlayback.playback();    		 
-        } //if zipped, I am not parsing CSS for url replaces - hopeful the leaks will be catched.
-    	else if ("text/css".equals(arc.getContentType()) && arc.getContentEncoding()!= null &&  arc.getContentEncoding().toLowerCase().indexOf("gzip")== -1 ){     	        
-    	  CssPlayback cssPlayback = new CssPlayback(arc, doc, showToolbar); //toolbar us never shown anyway.
+        } 
+    	else if ("text/css".equals(arc.getContentType()) && arc.getContentEncoding()!= null  && !("br".equalsIgnoreCase(arc.getContentEncoding())) ) {     	        
+    	  CssPlayback cssPlayback = new CssPlayback(arc, doc, showToolbar); //toolbar is never shown anyway.
           return cssPlayback.playback();    	  
         }		
 		else{ //Serve as it is. (Javascript, images, pdfs etc.)
+		  
 		  return arc; //dont parse
 		}
     }

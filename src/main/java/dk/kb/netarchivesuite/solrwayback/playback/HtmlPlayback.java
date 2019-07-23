@@ -19,10 +19,11 @@ public class HtmlPlayback  extends PlaybackHandler{
 
   @Override
   public ArcEntry playback() throws Exception{    
-    log.debug(" Generate webpage from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset());
+    log.debug(" Generate webpage from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset() +" content encoding:"+arc.getContentEncoding());
     long start = System.currentTimeMillis();
     HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);        
-      String textReplaced=htmlReplaced.getHtmlReplaced();             
+      String textReplaced=htmlReplaced.getHtmlReplaced();
+
       boolean xhtml =doc.getContentType().toLowerCase().indexOf("application/xhtml") > -1;            
     //Inject tooolbar
      if (showToolbar ){ //If true or null. 
@@ -30,15 +31,22 @@ public class HtmlPlayback  extends PlaybackHandler{
      }
     
      try{
-      arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));
+     if (!"gzip".equalsIgnoreCase(arc.getContentEncoding())){ //TODO x-gzip brotli
+       arc.setBinary(textReplaced.getBytes(arc.getContentCharset()));
+       }
+       else{
+        arc.setBinary(textReplaced.getBytes("UTF-8"));  
+       }
+      
      }
      catch(Exception e){       
        log.warn("unknown encoding, defaulting to utf-8:'"+arc.getContentEncoding()+"' . file:"+doc.getSource_file_path() +" offset:"+doc.getOffset());
-       arc.setBinary(textReplaced.getBytes("utf-8"));
+       arc.setBinary(textReplaced.getBytes("UTF-8"));
      }
 
      log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start) + " "+doc.getSource_file_path()+ " "+ doc.getOffset() +" "+arc.getUrl());
-    return arc;
+     arc.setHasBeenDecompressed(true);
+     return arc;
   }
   
 }

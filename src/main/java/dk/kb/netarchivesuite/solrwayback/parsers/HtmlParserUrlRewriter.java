@@ -133,13 +133,8 @@ public class HtmlParserUrlRewriter {
 
 	public static String replaceLinksCss(ArcEntry arc) throws Exception{
 
-		String type="downloadRaw"; //not supporting nested @imports...
-         String encoding = arc.getContentEncoding();
-         if (encoding == null){
-           encoding ="UTF-8";   
-         }
-		
-		String css = new String(arc.getBinary(),encoding);
+		String type="downloadRaw"; //not supporting nested @imports...        		
+		String css = arc.getBinaryContentAsStringUnCompressed();		
 		String url=arc.getUrl();
 
 		String[] result = css.split("\n", 100); //Doubt there will be more than 100 of these.
@@ -154,7 +149,7 @@ public class HtmlParserUrlRewriter {
 				String cssUrl= m.group(1);		   
 				URL base = new URL(url);
 				String resolvedUrl = new URL( base ,cssUrl).toString();
-						
+				 resolvedUrl =  resolvedUrl.replace("/../", "/");
 				IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getCrawlDate());		         
 				if (indexDoc!=null){    		    			 
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset(); 					
@@ -175,14 +170,10 @@ public class HtmlParserUrlRewriter {
 	public static HtmlParseResult replaceLinks(ArcEntry arc) throws Exception{
 	  AtomicInteger numberOfLinksReplaced = new  AtomicInteger();
 	  AtomicInteger numberOfLinksNotFound = new  AtomicInteger(); 
-	  
+
 		long start = System.currentTimeMillis();
-		String encoding = arc.getContentEncoding();
-		if (encoding == null){
-		  encoding ="UTF-8";
-		}
-		
-		String html = new String(arc.getBinary(), encoding);
+			
+		String html = arc.getBinaryContentAsStringUnCompressed();
 		String url=arc.getUrl();
 
 
@@ -265,9 +256,9 @@ public class HtmlParserUrlRewriter {
   
 	public static HashSet<String> getResourceLinksForHtmlFromArc(ArcEntry arc) throws Exception{
 
-      long start = System.currentTimeMillis();
-      String charset = arc.getContentEncoding();
-      String html = new String(arc.getBinary(), charset == null ? "utf-8" : charset);
+      long start = System.currentTimeMillis();      
+      String html = arc.getBinaryContentAsStringUnCompressed();
+
       String url=arc.getUrl();
 
 
@@ -289,7 +280,8 @@ public class HtmlParserUrlRewriter {
 			if (url == null  || url.trim().length()==0){
 				continue;
 			}
-
+			url =  url.replace("/../", "/");
+			
 			IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(url));   
 			if (indexDoc!=null){    		    			 
 				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset();    			 
@@ -298,7 +290,7 @@ public class HtmlParserUrlRewriter {
 			}
 			else{
 			     e.attr(attribute,NOT_FOUND_LINK);
-				log.info("No harvest found for(image):"+url);
+				log.info("No harvest found for:"+url);
 				numberOfLinksNotFound.getAndIncrement();;
 			 }
 
@@ -318,7 +310,7 @@ public class HtmlParserUrlRewriter {
 	            if (url == null  || url.trim().length()==0){
 	                continue;
 	            }
-	            
+	            url =  url.replace("/../", "/");
 	            IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(url));   
 	            if (indexDoc!=null){                             
 	                String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset()+"&showToolbar=false";           
@@ -346,7 +338,7 @@ public class HtmlParserUrlRewriter {
 	                if (url == null  || url.trim().length()==0){
 	                    continue;
 	                }
-	                
+	                url =  url.replace("/../", "/");   
 	                IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(url));   
 	                if (indexDoc!=null){                             
 	                    String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset()+"&showToolbar=false";           
@@ -380,7 +372,7 @@ public class HtmlParserUrlRewriter {
 			if ( urlUnresolved != null){
 				URL base = new URL(baseUrl);
 				String resolvedUrl = new URL( base ,urlUnresolved).toString();			
-				
+				resolvedUrl =  resolvedUrl.replace("/../", "/");
 				IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(resolvedUrl));   
 				if (indexDoc!=null){    		    			 
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();    			     		
@@ -415,8 +407,10 @@ public class HtmlParserUrlRewriter {
 				continue;
 			}    		     		 
 			String unResolvedUrl = getStyleMatch(style);   		   		
+
 			if (unResolvedUrl != null){
-				URL base = new URL(baseUrl);
+	           unResolvedUrl =   unResolvedUrl.replace("/../", "/");
+			  URL base = new URL(baseUrl);
 				URL resolvedUrl = new URL( base , unResolvedUrl);			
 				set.add(Normalisation.canonicaliseURL(resolvedUrl.toString()));
 			}
@@ -445,7 +439,7 @@ public class HtmlParserUrlRewriter {
            url=url.substring(1, url.length()-1);		    
 		  }
 	      //log.info("style found:"+url);
-
+          url =   url.replace("/../", "/");
           return url;
 		}
         //log.info("style not found");
@@ -460,6 +454,7 @@ public class HtmlParserUrlRewriter {
 			if (url == null  || url.trim().length()==0){
 				continue;
 			}
+			url = url.replace("/../", "/");
 //			System.out.println("adding url:"+(Normalisation.canonicaliseURL(url)));
 			set.add(Normalisation.canonicaliseURL(url));   		    		 		
 		}
@@ -468,22 +463,32 @@ public class HtmlParserUrlRewriter {
 	
        // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
 	   // comma seperated, size is optional.
+	   // data-srcset is not html standard but widely used
 	   public static void collectRewriteUrlsForImgSrcset(HashSet<String> set,Document doc) throws Exception{
 
 	        for (Element e : doc.select("img")) {
-	            String urls = e.attr("abs:srcset");
-
+	          //Can be one of each, but only one for each img tab.  
+	            String urls1 = e.attr("abs:srcset");
+	            String urls2 = e.attr("abs:data-srcset");
+	            String urls = null;
+	            if ( urls1 != null && !urls1.trim().isEmpty()){
+	              urls = urls1;	              
+	            }
+	            else{
+	              urls = urls2;
+	            }	            	              
+	            
 	            if (urls == null  || urls.trim().length()==0){
 	                continue;
 	            }
+	            
 	            // split.
 	            String[] urlList = urls.split(",");
 	            for (String current : urlList){
 	              current=current.trim();	              
 	             String url =current.split(" ")[0].trim();
-	             String url_norm= Normalisation.canonicaliseURL(url);
-	             
-	             //log.info("Collect srcset url:"+url_norm);	             
+	             url = url.replace("/../", "/");
+	             String url_norm= Normalisation.canonicaliseURL(url);	                 
 	             set.add(url_norm); 	             
 	            }	            	            
 	                                        
@@ -505,6 +510,7 @@ public class HtmlParserUrlRewriter {
                 for (String current : urlList){
                   current=current.trim();                 
                  String url =current.split(" ")[0].trim();
+                 url = url.replace("/../", "/");
                  String url_norm= Normalisation.canonicaliseURL(url);
                  
                  //log.info("Collect srcset url:"+url_norm);                 
@@ -535,7 +541,20 @@ public class HtmlParserUrlRewriter {
     // comma seperated, size is optional.
     public static void replaceUrlsForImgSrcset(HashMap<String,IndexDoc>  map,Document doc, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
          for (Element e : doc.select("img")) {
-             String urls = e.attr("abs:srcset");
+             //Both srcset and data-srcset is alowed, but only one of them
+             String url1 = e.attr("abs:srcset");
+             String url2 = e.attr("abs:data-srcset");
+             String urls;
+             String type;
+              if (url1 != null && !url1.trim().isEmpty()){
+                urls = url1;
+                type="srcset";
+              }
+              else{                
+                urls = url2; //Can still be null
+                type="data-srcset";
+              }
+             
              String urlsReplaced = urls; //They will be changed one at a time
 
              if (urls == null  || urls.trim().length()==0){
@@ -552,20 +571,17 @@ public class HtmlParserUrlRewriter {
               IndexDoc indexDoc = map.get(url_norm);   
               if (indexDoc!=null){                             
                   String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();                           
-                  urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                                                         
-                  log.info("replaced srcset url:" + urlUnresolved +" by "+newUrl);
+                  urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                                                                           
                   numberOfLinksReplaced.getAndIncrement();
               }
               else{
                 String newUrl=NOT_FOUND_LINK;                           
                 urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                
-                log.info("No harvest found srcset url:"+urlUnresolved);
                 numberOfLinksNotFound.getAndIncrement();
-               }
-
-                
+               }               
              } 
-             e.attr("srcset",urlsReplaced);  
+             log.info("urls replaced for type:"+type+" urls:"+urlsReplaced);
+             e.attr(type,urlsReplaced);  
                                          
          }
      }
@@ -585,7 +601,7 @@ public class HtmlParserUrlRewriter {
              for (String current : urlList){
               current=current.trim();                 
               String urlUnresolved =current.split(" ")[0].trim();
-                            
+              urlUnresolved = urlUnresolved.replace("/../", "/");
               String url_norm = Normalisation.canonicaliseURL(urlUnresolved);
               //log.info("Replace srcset url part:'"+url_norm+"'");
               IndexDoc indexDoc = map.get(url_norm);   

@@ -239,7 +239,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
   }
 
   private static void populateArcHeader(ArcEntry arcEntry, String headerLine) {
-    if (headerLine.toLowerCase().startsWith("content-length:")) {
+    if (headerLine.toLowerCase().startsWith("content-length:")) {      
       String[] split = headerLine.split(":");
       //arcEntry.setContentLength(Integer.parseInt(split[1].trim())); //Dont trust server. Use binary size.        
     } else if (headerLine.toLowerCase().startsWith("content-type:")) {
@@ -247,11 +247,22 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
       String[] part1 = headerLine.split(":");
       String[] part2= part1[1].split(";");                                  
       arcEntry.setContentType(part2[0].trim());
+      
+      if (part2.length == 2){
+        String charsetString = part2[1].trim();
+        if (charsetString.toLowerCase().startsWith("charset=")){
+          String  charset= charsetString.substring(8).replace("\"", "");
+          arcEntry.setContentCharset( charset);
+        }                    
+      }
+      
     }
     else if (headerLine.toLowerCase().startsWith("content-encoding:")) {
       //text/html; charset=
       String[] contentHeader = headerLine.split(":");                                  
+      
       arcEntry.setContentEncoding(contentHeader[1].trim());
+      //log.info("setting content encoding:"+contentHeader[1].trim());
     }
     else if (headerLine.toLowerCase().startsWith("location:")) {                                      
       arcEntry.setRedirectUrl(headerLine.substring(9).trim());

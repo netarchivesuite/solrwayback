@@ -1,16 +1,31 @@
 package dk.kb.netarchivesuite.solrwayback.service.dto;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.apache.commons.io.IOUtils;
+import org.brotli.dec.BrotliInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //Notice this class is returned both by the ArcParser and WarcParser.
 //Could not think of a good common name...
+
+@XmlRootElement
 public class ArcEntry {
 
+  private static final Logger log = LoggerFactory.getLogger(ArcEntry.class);
+  
+  private boolean hasBeenDecompressed=false;
   private byte[] binary;
   private int status_code;
   private String header;//Both headers for WARC.
   private String ip;
   private String url;
+  private String contentCharset;
   private long contentLength;
   private long warcEntryContentLength; //From warc header#1. This does not exist for arc files
   private String contentType; //As returned by the webserver when harvested
@@ -25,6 +40,7 @@ public class ArcEntry {
     return binary;
   }
   public void setBinary(byte[] binary) {
+    //very dirty hack for now.          
     this.binary = binary;
   }
   public long getContentLength() {
@@ -83,6 +99,12 @@ public class ArcEntry {
     this.contentTypeExt = contentTypeExt;
   }
 
+  public String getContentCharset() {
+    return contentCharset;
+  }
+  public void setContentCharset(String contentCharset) {
+    this.contentCharset = contentCharset;
+  }
   public String getHeader() {
     return header;
   }
@@ -109,5 +131,38 @@ public class ArcEntry {
     this.redirectUrl = redirectUrl;
   }	
   
+  public boolean isHasBeenDecompressed() {
+    return hasBeenDecompressed;
+  }
+  public void setHasBeenDecompressed(boolean hasBeenDecompressed) {
+    this.hasBeenDecompressed = hasBeenDecompressed;
+  }
+  /*
+   * Will decompres if gzip.
+   */
+  public String getBinaryContentAsStringUnCompressed() throws Exception{
+    if ("br".equalsIgnoreCase(contentEncoding)){
+     log.warn("br (brotli) encoding not supported");    
+     InputStream brIs = new BrotliInputStream(new ByteArrayInputStream(binary));
+     String content = IOUtils.toString(brIs, "UTF-8");
+     return content;      
+    }
+    
+    else if ("gzip".equalsIgnoreCase(contentEncoding) || "x-gzip".equalsIgnoreCase(contentEncoding)){
+      log.info("gzip detected, decompressing");      
+      GZIPInputStream gzipStream = new GZIPInputStream (new ByteArrayInputStream(binary));                       
+      String content = IOUtils.toString(gzipStream, "UTF-8");      
+      return content;      
+    }
+    else{
+      String encoding = this.getContentCharset();
+      if (encoding == null){
+        encoding ="UTF-8";   
+      }
+     log.info("creating text string from encoding:"+encoding);
+     String text = new String(this.getBinary(),encoding);
+      return text;
+    }  
+  }
 
 }

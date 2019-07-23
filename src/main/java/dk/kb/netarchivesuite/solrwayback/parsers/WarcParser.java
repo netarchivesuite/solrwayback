@@ -254,9 +254,9 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
                warcEntry.setContentType(part2[0].trim());          
                if (part2.length == 2){
                  String charset = part2[1].trim();
-                 if (charset.startsWith("charset=")){
+                 if (charset.startsWith("charset=")){                                   
                    String headerEncoding=charset.substring(8).replace("\"", ""); ////Some times Content-Type: text/html; charset="utf-8" instead of Content-Type: text/html; charset=utf-8
-                   warcEntry.setContentEncoding(headerEncoding);                                      
+                   warcEntry.setContentCharset(charset.substring(8));
                  }                                   
                }
                

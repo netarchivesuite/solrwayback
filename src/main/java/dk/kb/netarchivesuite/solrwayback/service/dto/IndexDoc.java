@@ -17,6 +17,7 @@ public class IndexDoc {
     private String url;
     private String url_norm;
     private String mimeType;
+    private String content_type_full;
     private String contentTypeNorm;
     private long lastModifiedLong;
     private String contentType;
@@ -196,6 +197,16 @@ public class IndexDoc {
   public void setRedirectToNorm(String redirectToNorm) {
     this.redirectToNorm = redirectToNorm;
   }
+
+  public String getContent_type_full() {
+    return content_type_full;
+  }
+
+  public void setContent_type_full(String content_type_full) {
+    this.content_type_full = content_type_full;
+  }
+
+ 
 
     
 }
