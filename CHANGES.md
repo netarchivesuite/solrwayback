@@ -2,9 +2,10 @@
 -----
 Link graph export to cvs-format that can be loaded by Gephi. Export is streaming and can extract million of domains.
 Implemented temporary web-page for the link graph export. (New menu link added)
+Warc files made with WebRecorder can be now be indexed and gives better playback than with Heritrix3 warc-files. Fixes was mostly in the warc-indexer(Gzip support).
 Improved Playback for twitter-API harvest. (missing images in some situations)
 Various minor playback improvements. background-image for div tags most important fix. 
-
+Minor fix with SVG images, converting them to PNG and scaling caused all kind of java troubles with ImagesIO.
 
 3.2.2
 -----
