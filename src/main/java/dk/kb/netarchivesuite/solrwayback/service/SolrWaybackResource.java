@@ -425,7 +425,6 @@ public class SolrWaybackResource {
       //temp dirty hack to see if it fixes brotli
       InputStream in;
       if ("br".equalsIgnoreCase(arcEntry.getContentEncoding())){
-      log.warn("br (brotli) encoding not supported");    
       in = new BrotliInputStream(new ByteArrayInputStream(arcEntry.getBinary()));
       arcEntry.setContentEncoding(null); //Clear encoding.
       arcEntry.setHasBeenDecompressed(true);
@@ -862,17 +861,9 @@ public class SolrWaybackResource {
     }
     
     ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset, doc, showToolbar);
-
-    //temporary hack.
+    
+    
     InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
-    if ("br".equalsIgnoreCase(arcEntry.getContentEncoding())){         
-      in = new BrotliInputStream(new ByteArrayInputStream(arcEntry.getBinary()));
-      arcEntry.setContentEncoding(null); //Clear encoding.
-      arcEntry.setHasBeenDecompressed(true);
-      }
-      else{      
-       in = new ByteArrayInputStream(arcEntry.getBinary());
-      }
     
     String contentType = arcEntry.getContentType();
    if (contentType ==  null){    

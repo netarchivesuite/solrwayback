@@ -156,9 +156,10 @@ public class ArcEntry {
     }
     else{
       String encoding = this.getContentCharset();
-      if (encoding == null){
+      if (encoding == null || "utf-8".equals(encoding)){
         encoding ="UTF-8";   
       }
+      
      log.info("creating text string from encoding:"+encoding);
      String text = new String(this.getBinary(),encoding);
       return text;

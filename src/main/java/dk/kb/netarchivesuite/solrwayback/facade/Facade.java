@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.facade;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +18,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.io.IOUtils;
+import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -624,7 +627,19 @@ public class Facade {
     	}      
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
        
+    	//temporary hack.
+        
+        if ("br".equalsIgnoreCase(arc.getContentEncoding())){         
+          log.info("fixing br encoding");
+          InputStream in = new BrotliInputStream(new ByteArrayInputStream(arc.getBinary()));
+          arc.setContentEncoding(null); //Clear br encoding.
+          arc.setHasBeenDecompressed(true);
+          arc.setBinary(IOUtils.toByteArray(in)); //TODO charset?  
+        }
+          
     	
+    	
+        
         String encoding = arc.getContentCharset();
            
         if (encoding == null){
