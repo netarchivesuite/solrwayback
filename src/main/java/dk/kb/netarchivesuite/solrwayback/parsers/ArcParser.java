@@ -225,7 +225,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
   private static String getArcUrl(String arcHeaderLine) {
     String[] split = arcHeaderLine.split(" ");
     String fullUrl = split[0];
-    return fullUrl;
+    return fullUrl.trim();
   }
 
   private static String getIp(String arcHeaderLine) {

@@ -212,7 +212,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
         //Example:
         //WARC-Target-URI: http://www.boerkopcykler.dk/images/low_Trance-27.5-2-LTD-_20112013_151813.jpg
         String urlPath = warcHeaderLine.substring(16);                      
-        return urlPath;
+        return urlPath.trim();
     }
     
     private static void populateWarcFirstHeader(ArcEntry warcEntry, String headerLine) {
