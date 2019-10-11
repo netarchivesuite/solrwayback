@@ -714,6 +714,71 @@ public class SolrWaybackResource {
 
   
   /*
+   *  will be called with
+   *   pwid/web/urn:pwid:netarkivet.dk:2018-12-10T06:27:01Z:part:https://www.petdreams.dk/katteracer-siameser
+   * 
+   * Jersey syntax to match all after pwid/web/.
+   */
+  @GET
+  @Path("/pwid/web/{var:.*?}")
+  public Response waybackPwidAPIResolver(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("var") String path) throws ServiceException {
+    try {        
+      //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
+      log.info("/pwid/web/ called with data:"+path);
+      String fullUrl = uriInfo.getRequestUri().toString();
+      log.info("full url:"+fullUrl);
+      int pwidStart=fullUrl.indexOf("/pwid/web/"); //urn:pwid:netarkivet.dk:2018-12-10T06:27:01Z:part:https://www.petdreams.dk/katteracer-siameser
+      String pwid = fullUrl.substring(pwidStart+10);
+      System.out.println("Pwid object:"+pwid);
+      if (!(pwid.startsWith("urn:pwid:"))){
+        //syntax not correct
+         log.warn("pwid syntax not correct:"+pwid);
+        throw new InvalidArgumentServiceException("Pwid does not start with 'urn:pwid: , pwid= "+pwid);
+      }
+         String collectionStart = pwid.substring(9);         
+        int collectionEnd = collectionStart.indexOf(":");  
+        String thisCollectionName = PropertiesLoader.PID_COLLECTION_NAME;      
+        String urlCollectionName = collectionStart.substring(0,collectionEnd);
+             
+         //int indexFirstSlash = waybackDataObject.indexOf("/");  
+       if (!(urlCollectionName.equals(thisCollectionName))){
+         log.warn("Wrong collection. This collection has PWID:"+thisCollectionName +" requested collection name was:"+urlCollectionName);
+         throw new InvalidArgumentServiceException("Wrong collection. This collection has PWID:"+thisCollectionName +" requested collection name was:"+urlCollectionName);       
+       }
+       String utcStart =  collectionStart.substring(thisCollectionName.length()); // This now equals:  :part:https://www.petdreams.dk/katteracer-siameser
+       //validate first char is :
+       if (!(utcStart.startsWith(":"))){
+         log.warn("pwid syntax not correct:"+pwidStart);
+         throw new InvalidArgumentServiceException("pwid syntax not correct:"+pwidStart);
+       }       
+       utcStart = utcStart.substring(1); //  :2018-12-10T06:27:01Z:part:https://www.petdreams.dk/katteracer-siameser
+    
+       int utcEnd = utcStart.indexOf(":part:");
+       String onlyUTC= utcStart.substring(0,utcEnd);
+                     
+       String lastPartStart = utcStart.substring(utcEnd);    
+       if (!(lastPartStart.startsWith(":part:"))){
+         log.warn("pwid syntax not correct,  'part' not found:"+pwidStart);
+         throw new InvalidArgumentServiceException("'part' not found"+pwidStart);
+       }
+       String pwidUrl= lastPartStart.substring(6);// only the url
+   
+       //now we have url and UTZ, see if we have exact match in collection.
+       IndexDoc doc = Facade.findExactMatchPWID(pwidUrl, onlyUTC);
+       if (doc == null){
+         throw new NotFoundServiceException("URL:"+pwidUrl +" and time:"+onlyUTC + " is not found in collection:"+thisCollectionName);
+       }
+
+      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);                                   
+    } catch (Exception e) {
+      throw handleServiceExceptions(e);
+    }
+
+  }
+
+  
+  
+  /*
    * This happens for leaks to solrwayback/services/  
    * The proxy will handle it
    */

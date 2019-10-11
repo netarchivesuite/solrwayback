@@ -739,6 +739,30 @@ return docs;
     return allCount;  
   }
 
+  
+  public IndexDoc findExactMatchPWID(String url, String utc) throws Exception {
+    
+    String url_norm = normalizeUrl(url);
+    String pwidQuery = "url_norm:\""+url_norm +"\" AND crawl_date:\"" +utc+"\"";
+    log.info("pwidQuery"+pwidQuery);
+    SolrQuery solrQuery = new SolrQuery();
+    solrQuery.setQuery(pwidQuery);     
+    solrQuery.setRows(1); //1 page only
+
+    solrQuery.add("fl", indexDocFieldList);
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+        
+    SolrDocumentList docs = rsp.getResults();
+    if (docs.size() == 0){
+      return null;
+    }
+    
+    IndexDoc indexDoc = solrDocument2IndexDoc(docs.get(0));    
+    return indexDoc;          
+  }
+
+  
+  
   public HashMap<Integer, Long> getYearFacetsHtmlAll() throws Exception {
     //facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500    
 

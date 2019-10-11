@@ -1,3 +1,13 @@
+3.2.4
+-----
+Fixed white-space before url in PWID xml generation
+
+PWID service. Can query collection for a PWID.
+syntax is: (server)/services/pwid/web/urn:pwid:netarkivet.dk:2018-12-10T06:27:01Z:part:https://www.petdreams.dk/katteracer-siameser
+Will return the document is collection(netarkivet) is correct and the given url (https://www.petdreams.dk/katteracer-siameser) is harvest
+exactly on 2018-12-10T06:27:01Z.
+For HTML pages playback will be shown, for resources (images etc.) the binary will be returned.
+
 3.2.3
 -----
 Link graph export to cvs-format that can be loaded by Gephi. Export is streaming and can extract million of domains.

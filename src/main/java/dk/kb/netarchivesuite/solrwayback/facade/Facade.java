@@ -73,7 +73,11 @@ public class Facade {
       return proxySolrIdLookup(id);
   }
     
-
+public static IndexDoc findExactMatchPWID(String url, String utc) throws Exception {  
+     IndexDoc doc = NetarchiveSolrClient.getInstance().findExactMatchPWID(url, utc);
+     return doc;    
+}
+    
     public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {        
         SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types                        
         //multithreaded call solr to find arc file and offset
