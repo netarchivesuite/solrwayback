@@ -1,4 +1,4 @@
-package dk.kb.netarchivesuite.solrwayback.parsers;
+ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -163,13 +163,16 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
           
           }
           
-          int totalSize= (int) warcEntry.getWarcEntryContentLength();
-          int binarySize = totalSize-byteCount;
-          
-                    
-                      
+          long totalSize= warcEntry.getWarcEntryContentLength();
+          long binarySize = totalSize-byteCount;
+          if (binarySize > Integer.MAX_VALUE) {
+           
+            log.error("Binary size too large for java byte[]. Size:"+binarySize);
+            throw new Exception("Binary size too large for java byte[]. Size:"+binarySize);
+          }
+                                          
           //System.out.println("Warc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);          
-          byte[] chars = new byte[binarySize];           
+          byte[] chars = new byte[(int)binarySize];           
           bis.read(chars);
           
           raf.close();
@@ -226,7 +229,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
         //Content-Length: 31131
         else if (headerLine.startsWith("Content-Length:")) {
             String[] contentLine = headerLine.split(" ");
-            int totalSize = Integer.parseInt(contentLine[1].trim());               
+            long totalSize = Long.parseLong(contentLine[1].trim());               
             warcEntry.setWarcEntryContentLength(totalSize);                       
         }       
         
@@ -264,7 +267,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
           }  //Content-Length: 31131
           else if (headerLine.toLowerCase().startsWith("content-length:")) {
             String[] contentLine = headerLine.split(" ");
-              int totalSize = Integer.parseInt(contentLine[1].trim());               
+              long totalSize = Long.parseLong(contentLine[1].trim());               
               warcEntry.setContentLength(totalSize);                       
           }
           else if (headerLine.toLowerCase().startsWith("content-encoding:")) {
