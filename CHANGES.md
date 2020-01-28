@@ -1,3 +1,9 @@
+3.2.5
+-----
+Security/Vulnerability fix for all frontend dependencies.
+Minor playback improvements (special characters like \ in url)
+
+
 3.2.4
 -----
 Fixed white-space before url in PWID xml generation
