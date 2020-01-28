@@ -370,7 +370,8 @@ public class NetarchiveSolrClient {
   
   public ArrayList<IndexDoc> getHarvestPreviewsForUrl(String url) throws Exception {
 
-    String urlNormFixed = normalizeUrl(url);    
+    String urlNormFixed = normalizeUrl(url); 
+    urlNormFixed = urlNormFixed.replace("\\","\\\\");
     SolrQuery solrQuery = new SolrQuery();
     solrQuery = new SolrQuery("(url_norm:\""+urlNormFixed+"\"");     
     solrQuery.set("facet", "false"); //very important. Must overwrite to false. Facets are very slow and expensive.
@@ -549,7 +550,10 @@ if (urls.size() > chunkSize){
 }
 
 SolrQuery solrQuery = new SolrQuery();
-solrQuery.setQuery(urlQueryJoin("url_norm", "OR", urls));
+
+String urlOrQuery = urlQueryJoin("url_norm", "OR", urls);
+urlOrQuery = urlOrQuery.replace("\\", "\\\\"); //Solr encode
+solrQuery.setQuery(urlOrQuery);
 
 solrQuery.setFacet(false);
 solrQuery.setGetFieldStatistics(false);
@@ -628,7 +632,10 @@ return docs;
     
     
     String urlNormFixed = normalizeUrl(url);
+    urlNormFixed = urlNormFixed.replace("\\", "\\\\"); //Solr encoded
     String query = "url_norm:\""+ urlNormFixed +"\"";                
+    
+    log.info("query:"+query);
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(query);
  
