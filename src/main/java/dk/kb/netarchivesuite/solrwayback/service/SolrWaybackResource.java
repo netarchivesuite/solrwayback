@@ -685,8 +685,7 @@ public class SolrWaybackResource {
       String url = waybackDataObject.substring(indexFirstSlash+1);
 
       //Stupid fix, some webservices makes parameter http:// into http:/  ( removes a slash)
-      log.info("XX url:"+url); 
-
+ 
       //TODO into method
       if (url.startsWith("http:/") && !url.startsWith("http://")) {
         url = url.replaceFirst("http:/", "http://");
@@ -697,9 +696,8 @@ public class SolrWaybackResource {
       if (url.startsWith("https:/") && !url.startsWith("https://")) {
         url = url.replaceFirst("https:/", "https://");
       }
-      log.info("XX url fixed:"+url); 
-      
-      
+  
+           
       //Validate this is a URL with domain (can be releative leak).
       //etc. http://images/horse.png.
       //use referer to match the correct url
