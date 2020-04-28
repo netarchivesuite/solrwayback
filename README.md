@@ -124,19 +124,19 @@ you only need to change to property pointing from the wayback server to the Solr
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage
- * Build the application with: mvn package
- * Deploy the solrwayback.war file in a web-container. 
- * Copy resources/properties/solrwayback.properties and resources/properties/solrwaybackweb.properties 
-   to user/home/ folder for the J2EE server
- * Modify the property files. (default all urls http:://localhost:8080)
+ * Build the application with: `mvn package`
+ * Deploy the `target/solrwayback-*.war` file in a web-container
+ * Copy `src/test/resources/properties/solrwayback.properties` and `/src/test/resources/properties/solrwaybackweb.properties`
+   to `user/home/` folder for the J2EE server
+ * Modify the property files. (default all urls http://localhost:8080)
  * Optional: configure the log4j using the files in resources/tomcat
  * Restart tomcat.
- * Open search interface: localhost:8080/solrwayback
+ * Open search interface: http://localhost:8080/solrwayback
 
 ## Run using Docker
- * Copy resources/properties/solrwayback.properties to the project root directory and modify it to your needs.
+ * Copy `src/test/resources/properties/solrwayback.properties` to the project root directory and modify it to your needs.
  * Make sure Docker Engine is installed.
- * Run ./docker-run.sh from the project root.
+ * Run `./docker-run.sh` from the project root.
 
 ## Contact
 * Thomas Egense (thomas.egense@gmail.com) 
@@ -146,7 +146,7 @@ Feel free to send emails with comments and questions.
 ## Warc-indexer/Solr 
 All entries from the arc/warc files are indexed as separate documents using the WARC-Indexer and using the lucene schema required by the WARCIndexer.
 
-A document is Solr can be html, image, video, audio, js etc. (content_type_norm)
+A document is Solr can be html, image, video, audio, js etc. (`content_type_norm`)
 Filename and offset of a document in warc files is stored in solr and will be used and loaded during playback.
  
 
@@ -173,34 +173,34 @@ To check java is installed, type the following from a prompt: java -version
 
 ### 1) Upgrade from 3.1
 
-To update from 3.1 add the new additional properties in solrwaybackweb.properties and solrwayback.properties. Download the release and to see the new properties. Also the map properties has been renamed.
-Replace the war-file in tomcat with this release and the add new root servlet (ROOT.WAR) and restart tomcat. Both war-files are attachments to this release to be downloaded (apache-tomcat-8.5.29/webapps/ folder)
+To update from 3.1 add the new additional properties in `solrwaybackweb.properties` and `solrwayback.properties`. Download the release and to see the new properties. Also the map properties has been renamed.
+Replace the war-file in tomcat with this release and the add new root servlet (ROOT.WAR) and restart tomcat. Both war-files are attachments to this release to be downloaded (`apache-tomcat-8.5.29/webapps/` folder)
 
 ### 1) INITIAL SETUP  
 Properties:  
-Copy the two files solrwayback.properties and solrwaybackweb.properties to your HOME folder.
+Copy the two files `src/test/resources/properties/solrwayback.properties` and `/src/test/resources/properties/solrwaybackweb.properties` to your HOME folder.
 
-Optional: For screenshot previews to work you may have to edit solrwayback.properties and change the value of the last two properties : chrome.command  and screenshot.temp.imagedir. 
+Optional: For screenshot previews to work you may have to edit `solrwayback.properties` and change the value of the last two properties : `chrome.command`  and `screenshot.temp.imagedir`. 
 Chrome(Chromium) must has to be installed for screenshot preview images.  
 
-Optional: For socks proxy mode to work optimal, add the host-name and IP for the server to the whitelist in solrwayback.properties
+Optional: For socks proxy mode to work optimal, add the host-name and IP for the server to the whitelist in `solrwayback.properties`
 
-If there are errors when running a script, try change the permissions for the file (startup.sh etc). Linux: chmod +x filename.sh
+If there are errors when running a script, try change the permissions for the file (`startup.sh` etc). Linux: `chmod +x filename.sh`
 
 ### 2) STARTING SOLRWAYBACK  
 Solrwayback requires both Solr and Tomcat to be running. 
 
 Tomcat:  
-Start tomcat: apache-tomcat-8.5.29/bin/startup.sh  
-Stop tomcat:  apache-tomcat-8.5.29/bin/shutdown.sh  
-(For windows navigate to apache-tomcat-8.5.29/bin/ and type startup.bat or shutdown.bat )  
+Start tomcat: `apache-tomcat-8.5.29/bin/startup.sh`  
+Stop tomcat:  `apache-tomcat-8.5.29/bin/shutdown.sh`  
+(For windows navigate to `apache-tomcat-8.5.29/bin/` and type `startup.bat` or `shutdown.bat`)  
 To see Tomcat is running open: http://localhost:8080/solrwayback/  
 This is the search interface frontpage  
 
 Solr:  
-Start solr: solrwayback_package/solr-7.5.0/bin/solr start  
-Stop solr: solrwayback_package/solr-7.5.0/bin/solr stop  
-(For windows navigate to solrwayback_package/solr-7.5.0/bin/ and type solr.cmd start or solr.cmd stop)    
+Start solr: `solrwayback_package/solr-7.5.0/bin/solr start`  
+Stop solr: `solrwayback_package/solr-7.5.0/bin/solr stop`  
+(For windows navigate to `solrwayback_package/solr-7.5.0/bin/` and type `solr.cmd start` or `solr.cmd stop`)    
 To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
 ### 3) INDEXING
@@ -208,8 +208,8 @@ Solrwayback uses a Solr index of warc files and makes the archived webpages sear
 If you do not have existing warc files, see steps below on harvesting with wget.        
 
 Creating an index:
-Copy arc/warc files into folder: /solrwayback_package/indexing/warcs  
-Start indexing:  call indexing/batch_warc_folder.sh  
+Copy arc/warc files into folder: `/solrwayback_package/indexing/warcs`  
+Start indexing:  call `indexing/batch_warc_folder.sh`  
 Indexing can take up to 10 minutes/GB files. After indexing, the warc-files must stay in the same folder for solrwayback to work.  
 Having whitespace characters in warc file names can result in pagepreviews and playback not working on some OS.
 There can be up to 5 minutes delay before the indexed files are visible from search. Visit this url after index job have finished to commit them instantly: http://localhost:8983/solr/netarchivebuilder/update?commit=true  
@@ -218,13 +218,13 @@ Deleting an Index:
 If you want to index a new collection into solr and remove the old index.  
 1) stop solr  
 2) delete the folder:   
-solr-7.5.0/server/solr/netarchivebuilder/netarchivebuilder_data/index  
-(or rename to index1 etc, you if later want to switch back)  
+`solr-7.5.0/server/solr/netarchivebuilder/netarchivebuilder_data/index`  
+(or rename to `index1` etc, if you want to switch back later)  
 3) start solr  
 4) start the indexing script. 
 
 Faster indexing:  
-Copy batch_warc_folder.sh and rename to batch_warc1_folder.sh . Also create a warcs1 folder. Edit the batch_warc1_folder.sh script and change the foldername from warcs to warcs1.  
+Copy `batch_warc_folder.sh` and rename to `batch_warc1_folder.sh` . Also create a `warcs1` folder. Edit the `batch_warc1_folder.sh` script and change the foldername from `warcs` to `warcs1`.  
 This way you can start two index jobs running at the same time. A powerful laptop can handle up to 4 simultaneous indexing processes. 
 You can also just add more warc files to the index without having to index all content in the warc folder again.  
 Major solrwayback performance improvement for searching and playback by having the solrwayback_package folder on a SSD.  
@@ -232,9 +232,9 @@ Major solrwayback performance improvement for searching and playback by having t
 
 ### 4) SEARCHING AND ADDITIONAL FEATURES  
 Solrwayback provides a search interface to explore the content of the warc files that have been indexed.  
-The basic query in solrwayback will return all documents in the index: *:*  
+The basic query in solrwayback will return all documents in the index: `*:*`  
 Results can then be filtered by fields like Domain, Content Type Norm, Crawl Year, Status Code, Public Suffix (tld).  
-Advanced queries can be constructed using Boolean terms, and searching fields eg: domain:statsbiblioteket.dk AND title:"Aarhus University Library"  
+Advanced queries can be constructed using Boolean terms, and searching fields eg: `domain:statsbiblioteket.dk AND title:"Aarhus University Library"`  
 
 Additional features include:  
 - Image search similar to google images  
@@ -250,12 +250,12 @@ For more info on all additional features, see https://github.com/netarchivesuite
 How to do your own web harvest websites (Linux/MacOS only):  
 Using the wget command is an easy way to harvest websites compared to using Heritrix. The warc-files can then be indexed into SolrWayback.  
 Create a new folder since there will be several files written in this folder. Navigate to that folder in a prompt.  
-Create a text file call url_list.txt with one URL pr. line in that folder.  
+Create a text file call `url_list.txt` with one URL pr. line in that folder.  
 Type the following in a prompt:  
-wget  --level=0  --warc-cdx   --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt    
+`wget  --level=0  --warc-cdx   --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt`    
 (rename the warcfilename to your liking)  
-The script will harvest all pages in the url_list.txt file with all resources required for that page (images, css etc.) and be written to a warc file(s) called warcfilename.warc  
-Change --level=0 to --level=1 for following links. This will substantially increase the size of the warc file(s).  
+The script will harvest all pages in the `url_list.txt` file with all resources required for that page (images, css etc.) and be written to a warc file(s) called `warcfilename.warc`  
+Change `--level=0` to `--level=1` for following links. This will substantially increase the size of the warc file(s).  
 
 
 
