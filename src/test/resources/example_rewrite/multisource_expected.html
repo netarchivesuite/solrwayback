@@ -1,22 +1,14 @@
 <html>
-<head>
-    <title>Some page</title>
-    <link rel="stylesheet" type="text/css" href="styles/index.css" />
-</head>
-<h1>A very simple page</h1>
-
-<p>An <a href="http://example.com">absolute link</a> leading to example.com</p>
-<p>A <a href="subfolder/">relative link</a> leading to <tt>subfolder</tt>subfolder</tt></p>
-<p>A <a href="/otherpage.html">root-based link</a> leading to a parallel page <tt>otherpage.html</tt>.</p>
-
-<p>An absolute referenced image: <img src="http://example.com/image.jpg"/></p>
-<p>A relatively referenced image: <img src="subfolder/image.jpg"/></p>
-<p>A root referenced image: <img src="/image.jpg"/></p>
-
-<p>An image with absolute srcset: <img src="http://example.com/foo.jpg" srcset="http://example.com/fooF.jpg 1x, http://example.com/fooF2.jpg 2x"/></p>
-<p>An image with absolute srcset and substring trickery: <img src="http://example.com/foo.jpg" srcset="http://example.com/foo.jpg 1x, http://example.com/foo.jpg.bar.jpg 2x"/></p>
-<p>An image with relative srcset: <img src="fooB.jpg" srcset="fooB.jpg 1x, fooB2.jpg 2x"/></p>
-<p>An image with relative srcset and substring trickery: <img src="fooS.jpg" srcset="fooS.jpg 1x, barfooS.jpg 2x"/></p>
-<p>An image with root srcset: <img src="/fooC.jpg" srcset="/fooC.jpg 1x, /fooC2.jpg 2x"/></p>
-
+ <head>
+  <title>Some page</title>
+  <link rel="stylesheet" type="text/css" href="http://localhost:0000/solrwayback/services/view?source_file_path=somesourcefile&amp;offset=8486">
+ </head>
+ <body>
+  <h1>srcset testing</h1>
+  <p>An image with absolute srcset: <img src="http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=7496" srcset="http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=9110 1x, http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=2060 2x"></p>
+  <p>An image with absolute srcset and substring trickery: <img src="http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=7496" srcset="http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=7496 1x, http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=3680 2x"></p>
+  <p>An image with relative srcset: <img src="http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=1877" srcset="http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=1877 1x, unit_test_result_not_created_yet 2x"></p>
+  <p>An image with relative srcset and substring trickery: <img src="http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=6236" srcset="http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=6236 1x, unit_test_result_not_created_yet 2x"></p>
+  <p>An image with root srcset: <img src="http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=8873" srcset="http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&amp;offset=8873 1x, unit_test_result_not_created_yet 2x"></p>
+ </body>
 </html>

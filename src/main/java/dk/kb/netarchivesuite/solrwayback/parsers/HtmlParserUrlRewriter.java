@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -590,38 +591,78 @@ public class HtmlParserUrlRewriter {
                 type="data-srcset";
               }
              
-             String urlsReplaced = urls; //They will be changed one at a time
-
              if (urls == null  || urls.trim().length()==0){
                  continue;
              }
-             // split.
-             String[] urlList = urls.split(",");
-             for (String current : urlList){
-              current=current.trim();                 
-              String urlUnresolved =current.split(" ")[0].trim();
-                            
-              String url_norm = Normalisation.canonicaliseURL(urlUnresolved);
-              //log.info("Replace srcset url part:'"+url_norm+"'");
-              IndexDoc indexDoc = map.get(url_norm);   
-              if (indexDoc!=null){                             
-                  String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();                           
-                  urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                                                                           
-                  numberOfLinksReplaced.getAndIncrement();
-              }
-              else{
-                String newUrl=NOT_FOUND_LINK;                           
-                urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                
-                numberOfLinksNotFound.getAndIncrement();
-               }               
-             } 
+             // Unfortunately 'abs:srcset' is broken in Jsoup: In only converts the first URL to absolute.
+			 // We need to to the conversion explicitly.
+			 String urlsReplaced = lenientConvertURLs(urls, map, baseUrl, numberOfLinksReplaced, numberOfLinksNotFound);
              log.info("urls replaced for type:"+type+" urls:"+urlsReplaced);
              e.attr(type,urlsReplaced);  
-                                         
          }
      }
-	
-    // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
+
+	/**
+	 * Generic URL converter that supports multiple URLs and values after the URLs.
+ 	 * @param urls one or more URLs separated by {@code ,}. Each URL can be either a plain URL or an URL followed by
+	 *             a space and some text.
+	 * @param resolvedURLs a map with previously resolved URLs, used for replacing the URLs with links to archived
+	 *                     versions.
+	 * @param numberOfLinksReplaced when an URL is converted, this is incremented.
+	 * @param numberOfLinksNotFound when an URL could not be converted, this is incremented.
+	 * @return a String with the converted URLs.
+	 */
+	private static String lenientConvertURLs(
+			String urls, Map<String, IndexDoc> resolvedURLs, String baseURL,
+			AtomicInteger numberOfLinksReplaced, AtomicInteger numberOfLinksNotFound) {
+		URL base = null;
+		try {
+			base = new URL(baseURL);
+		} catch (MalformedURLException e) {
+			log.debug("lenientConvertURLs: Unable to parse baseURL '" + baseURL + "', which means all URLs in '" +
+					  urls + "' will be converted as-is");
+		}
+		StringBuilder sb = new StringBuilder();
+		for (String url: COMMA_SPLITTER.split(urls)) {
+			url = url.trim();
+			if (url.isEmpty()) {
+				continue;
+			}
+			String[] tokens = SPACE_SPLITTER.split(url, 2);
+			String abs = tokens[0];
+			try {
+				abs = new URL(base, abs).toString();
+			} catch (MalformedURLException e) {
+				log.debug("lenientConvertURLs: Unable to create an absolute URL using new URL('" + base + "', '" +
+						  abs + "'), the problematic URL will be passed as-is");
+			}
+			String norm = Normalisation.canonicaliseURL(abs);
+			IndexDoc indexDoc = resolvedURLs.get(norm);
+
+			if (sb.length() != 0) { // Separate by comma if there are more than 1 URL
+				sb.append(", ");
+			}
+
+			if (indexDoc != null){
+				String converted = PropertiesLoader.WAYBACK_BASEURL + "services/downloadRaw?source_file_path="+
+								   indexDoc.getSource_file_path() + "&offset="+indexDoc.getOffset();
+				sb.append(converted);
+				numberOfLinksReplaced.getAndIncrement();
+			} else{
+				sb.append(NOT_FOUND_LINK);
+				numberOfLinksNotFound.getAndIncrement();
+			}
+
+			if (tokens.length > 1) { // There might be something after the URL (from srcset or similar)
+				sb.append(" ").append(tokens[1]);
+			}
+		}
+		return sb.toString();
+	}
+	private static final Pattern COMMA_SPLITTER = Pattern.compile(", *");
+	private static final Pattern SPACE_SPLITTER = Pattern.compile(" +");
+
+	// srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w"
     // comma seperated, size is optional.
     public static void replaceUrlsForSourceSrcset(HashMap<String,IndexDoc>  map,Document doc, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) {
          for (Element e : doc.select("source")) {

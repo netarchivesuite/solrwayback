@@ -5,6 +5,9 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,6 +16,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -32,6 +36,7 @@ import static org.junit.Assert.*;
  *
  */
 public class HtmlParserUrlRewriterTest {
+    private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriterTest.class);
 
     @Before
     public void invalidateProperties() {
@@ -55,6 +60,20 @@ public class HtmlParserUrlRewriterTest {
     }
 
     @Test
+    public void testMultiSourceRewriting() throws Exception {
+        final String MULTI =
+                fetchUTF8("example_rewrite/multisource.html");
+        final String EXPECTED =
+                fetchUTF8("example_rewrite/multisource_expected.html").replaceAll(" +\n", "\n");
+
+        String rewritten = HtmlParserUrlRewriter.replaceLinks(
+                MULTI, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
+                getHtmlReplaced().replaceAll(" +\n", "\n");
+
+        assertEquals(EXPECTED, rewritten);
+    }
+
+    @Test
     public void testCSSRewriting() throws Exception {
         final String CSS =
                 fetchUTF8("example_rewrite/css.html");
@@ -68,20 +87,41 @@ public class HtmlParserUrlRewriterTest {
         assertEquals(EXPECTED, rewritten);
     }
 
+    // Disabled for now as it is under construction
+    public void testScriptRewriting() throws Exception {
+        final String SCRIPT =
+                fetchUTF8("example_rewrite/script.html");
+        final String EXPECTED =
+                fetchUTF8("example_rewrite/script_expected.html").replaceAll(" +\n", "\n");
+
+        String rewritten = HtmlParserUrlRewriter.replaceLinks(
+                SCRIPT, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
+                getHtmlReplaced().replaceAll(" +\n", "\n");
+
+        assertEquals(EXPECTED, rewritten);
+    }
+
     /* *************************************************************************************
      * Helpers below
      ************************************************************************************* */
 
     public static final HtmlParserUrlRewriter.NearestResolver mockNearestResolver =
-            (urls, timeStamp) -> urls.stream().map(url -> makeIndexDoc(url, timeStamp)).collect(Collectors.toList());
+            (urls, timeStamp) -> urls.stream().
+                    map(url -> makeIndexDoc(url, timeStamp)).
+                    filter(Objects::nonNull).
+                    collect(Collectors.toList());
 
     // Fake url_norm, url, source_file, source_file_offset
     private static IndexDoc makeIndexDoc(String url, String timeStamp) {
+        if (!url.startsWith("http")) {
+            log.warn("mockResolver is skipping '" + url + "' as it does not start with 'http'");
+            return null;
+        }
         IndexDoc doc = new IndexDoc();
         doc.setUrl(url);
         doc.setUrl_norm(Normalisation.canonicaliseURL(url));
         doc.setSource_file_path("somesourcefile");
-        doc.setOffset(123456);
+        doc.setOffset(Math.abs((url+timeStamp).hashCode() % 10000));
         return doc;
     }
 
