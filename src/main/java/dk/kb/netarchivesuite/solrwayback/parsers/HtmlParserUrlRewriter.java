@@ -179,8 +179,7 @@ public class HtmlParserUrlRewriter {
 	}
 
 	/**
-	 * Extracts the HTML from the ArcEntry and replaces links and other URLs with the archived versions that are
-	 * closest to the ArcEntry in time.
+	 * Replaces links and other URLs with the archived versions that are closest to the links in the html in time.
 	 * @param html the web page to use as basis for replacing links.
 	 * @param url the URL for the html (needed for resolving relative links).
 	 * @param crawlDate the ideal timestamp for the archived versions to link to.
@@ -501,7 +500,6 @@ public class HtmlParserUrlRewriter {
 	   // comma seperated, size is optional.
 	   // data-srcset is not html standard but widely used
 	   public static void collectRewriteUrlsForImgSrcset(HashSet<String> set,Document doc) {
-
 	        for (Element e : doc.select("img")) {
 	          //Can be one of each, but only one for each img tab.  
 	            String urls1 = e.attr("abs:srcset");
@@ -509,25 +507,10 @@ public class HtmlParserUrlRewriter {
 	            String urls = null;
 	            if ( urls1 != null && !urls1.trim().isEmpty()){
 	              urls = urls1;	              
-	            }
-	            else{
+	            } else {
 	              urls = urls2;
 	            }	            	              
-	            
-	            if (urls == null  || urls.trim().length()==0){
-	                continue;
-	            }
-	            
-	            // split.
-	            String[] urlList = urls.split(",");
-	            for (String current : urlList){
-	              current=current.trim();	              
-	             String url =current.split(" ")[0].trim();
-	             url = url.replace("/../", "/");
-	             String url_norm= Normalisation.canonicaliseURL(url);	                 
-	             set.add(url_norm); 	             
-	            }	            	            
-	                                        
+	            lenientAddURLs(urls, doc.baseUri(), set);
 	        }
 	    }
 	
@@ -603,6 +586,41 @@ public class HtmlParserUrlRewriter {
      }
 
 	/**
+	 * Parses the urls, ensures they are absolute and adds them to absURLs.
+ 	 * @param urls one or more URLs separated by {@code ,}. Each URL can be either a plain URL or an URL followed by
+	 *             a space and some text.
+	 * @param baseURL the base URL for the HTML page. Needed for relative URLs.
+	 * @param absURLs the absolute URLs will be added here.
+	 * @return a String with the converted URLs.
+	 */
+	private static void lenientAddURLs(String urls, String baseURL, Set<String> absURLs) {
+		if (urls == null) {
+			return;
+		}
+		URL base = null;
+		try {
+			base = new URL(baseURL);
+		} catch (MalformedURLException e) {
+			log.debug("lenientAddURLs: Unable to parse baseURL '" + baseURL + "', which means all URLs in '" +
+					  urls + "' will be converted as-is");
+		}
+		for (String url: COMMA_SPLITTER.split(urls)) {
+			String abs = SPACE_SPLITTER.split(url.trim(), 2)[0].replace("/../", "/");
+			if (abs.isEmpty()) {
+				continue;
+			}
+			try {
+				// TODO: Consider speeding up by checking if abs is prefixed with {@code https?://}
+				abs = base == null ? abs : new URL(base, abs).toString();
+			} catch (MalformedURLException e) {
+				log.debug("lenientAddURLs: Unable to create an absolute URL using new URL('" + base + "', '" +
+						  abs + "'), the problematic URL will be passed as-is");
+			}
+			absURLs.add(Normalisation.canonicaliseURL(abs));
+		}
+	}
+
+	/**
 	 * Generic URL converter that supports multiple URLs and values after the URLs.
  	 * @param urls one or more URLs separated by {@code ,}. Each URL can be either a plain URL or an URL followed by
 	 *             a space and some text.
@@ -629,9 +647,13 @@ public class HtmlParserUrlRewriter {
 				continue;
 			}
 			String[] tokens = SPACE_SPLITTER.split(url, 2);
-			String abs = tokens[0];
+			String abs = tokens[0].replace("/../", "/");
+			if (abs.isEmpty()) {
+				continue;
+			}
 			try {
-				abs = new URL(base, abs).toString();
+				// TODO: Consider speeding up by checking if abs is prefixed with {@code https?://}
+				abs = base == null ? abs : new URL(base, abs).toString();
 			} catch (MalformedURLException e) {
 				log.debug("lenientConvertURLs: Unable to create an absolute URL using new URL('" + base + "', '" +
 						  abs + "'), the problematic URL will be passed as-is");
