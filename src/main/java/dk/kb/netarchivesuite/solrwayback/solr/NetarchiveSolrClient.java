@@ -3,12 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrClient;
@@ -24,7 +19,6 @@ import org.apache.solr.client.solrj.response.Group;
 import org.apache.solr.client.solrj.response.GroupCommand;
 import org.apache.solr.client.solrj.response.QueryResponse;
 
-import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
@@ -39,7 +33,6 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
-import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
 
@@ -83,7 +76,7 @@ public class NetarchiveSolrClient {
   /*
    * Delegate 
    */
-  public  List<FacetCount> getDomainFacets(String domain, int facetLimit, boolean ingoing, Date crawlDateStart, Date crawlDateEnd) throws Exception{
+  public List<FacetCount> getDomainFacets(String domain, int facetLimit, boolean ingoing, Date crawlDateStart, Date crawlDateEnd) throws Exception{
 
     if (ingoing){
       return getDomainFacetsIngoing(domain, facetLimit, crawlDateStart,crawlDateEnd);
@@ -510,7 +503,7 @@ public class NetarchiveSolrClient {
   }
   
   
-  public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrls(HashSet<String> urls, String timeStamp) throws Exception{
+  public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrls(Collection<String> urls, String timeStamp) throws Exception{
     ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
     Iterable<List<String>> splitSets = Iterables.partition(urls, 1000); //split into sets of size max 1000;
     for (List<String> set : splitSets){
