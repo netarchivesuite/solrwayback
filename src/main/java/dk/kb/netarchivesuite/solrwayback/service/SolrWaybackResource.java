@@ -839,12 +839,10 @@ public class SolrWaybackResource {
   public Response viewForward(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws ServiceException {
     try {
       IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
-      
+      log.info("loading crawlDate:"+arcEntry.getCrawlDate());
       String url =  arcEntry.getUrl();
-      String crawlDate = arcEntry.getCrawlDate();
-      Instant instant = Instant.parse (crawlDate);  //JAVA 8
-      Date date = java.util.Date.from( instant );      
-      String waybackDate = WarcParser.date2waybackdate(date);
+      String crawlDate = arcEntry.getCrawlDate();           
+      String waybackDate = DateUtils.convertSolrDate2WaybackDate(crawlDate);      
                                              
      //Format is: /web/20080331193533/http://ekstrabladet.dk/112/article990050.ece 
       String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+url;
