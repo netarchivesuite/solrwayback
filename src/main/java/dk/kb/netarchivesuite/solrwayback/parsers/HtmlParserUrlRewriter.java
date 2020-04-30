@@ -3,9 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -167,66 +165,104 @@ public class HtmlParserUrlRewriter {
 		return css;
 	}
 
+	/**
+	 * Extracts the HTML from the ArcEntry and replaces links and other URLs with the archived versions that are
+	 * closest to the ArcEntry in time.
+	 * @param arc an arc-entry that is expected to be a HTML page.
+	 * @return the page with links to archived versions instead of live web version.
+	 * @throws Exception if link-resolving failed.
+	 */
 	public static HtmlParseResult replaceLinks(ArcEntry arc) throws Exception{
-	  AtomicInteger numberOfLinksReplaced = new  AtomicInteger();
-	  AtomicInteger numberOfLinksNotFound = new  AtomicInteger(); 
+		return replaceLinks(
+				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getWaybackDate(), solrNearestResolver);
+	}
+
+	/**
+	 * Extracts the HTML from the ArcEntry and replaces links and other URLs with the archived versions that are
+	 * closest to the ArcEntry in time.
+	 * @param html the web page to use as basis for replacing links.
+	 * @param url the URL for the html (needed for resolving relative links).
+	 * @param crawlDate the ideal timestamp for the archived versions to link to.
+	 * @param nearestResolver handles url -> archived-resource lookups based on smallest temporal distance to crawlDate.
+	 * @throws Exception if link resolving failed.
+	 */
+	public static HtmlParseResult replaceLinks(
+			String html, String url, String crawlDate, NearestResolver nearestResolver) throws Exception {
+		AtomicInteger numberOfLinksReplaced = new  AtomicInteger();
+		AtomicInteger numberOfLinksNotFound = new  AtomicInteger();
 
 		long start = System.currentTimeMillis();
-			
-		String html = arc.getBinaryContentAsStringUnCompressed();
-		String url=arc.getUrl();
 
+		Document doc = Jsoup.parse(html, url);
 
-		Document doc = Jsoup.parse(html,url); //TODO baseURI?
-
-				//List<String> urlList = new ArrayList<String>();
+		//List<String> urlList = new ArrayList<String>();
 		HashSet<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
-		log.info("#unique urlset to resolve for arc-url:"+arc.getUrl() +" :"+urlSet.size());
+		log.info("#unique urlset to resolve for arc-url '" + url + "' :" + urlSet.size());
 
-		ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
+		List<IndexDoc> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
 
-        //Rewriting to url_norm, so it can be matched when replacing.
-		HashMap<String,IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
+		//Rewriting to url_norm, so it can be matched when replacing.
+		HashMap<String, IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
 		for (IndexDoc indexDoc: docs){
 //			log.info("warn: url:"+indexDoc.getUrl() +" url_norm:"+indexDoc.getUrl_norm());
-		  urlReplaceMap.put(indexDoc.getUrl_norm(),indexDoc);      		     		 
+			urlReplaceMap.put(indexDoc.getUrl_norm(),indexDoc);
 		}
 
 		replaceUrlForElement(urlReplaceMap,doc, "img", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "embed", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
-	    replaceUrlForElement(urlReplaceMap,doc, "source", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
-		replaceUrlForElement(urlReplaceMap,doc, "body", "background", "downloadRaw" ,  numberOfLinksReplaced ,  numberOfLinksNotFound);             	     	 
+		replaceUrlForElement(urlReplaceMap,doc, "source", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
+		replaceUrlForElement(urlReplaceMap,doc, "body", "background", "downloadRaw" ,  numberOfLinksReplaced ,  numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "link", "href", "view",  numberOfLinksReplaced ,  numberOfLinksNotFound);
 		replaceUrlForElement(urlReplaceMap,doc, "script", "src", "downloadRaw",  numberOfLinksReplaced,  numberOfLinksNotFound);
-		replaceUrlForElement(urlReplaceMap,doc, "td", "background", "downloadRaw",  numberOfLinksReplaced ,  numberOfLinksNotFound);    	 
-	    replaceUrlForFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
-	    replaceUrlForIFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
-	    replaceUrlsForImgSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);
-	    replaceUrlsForSourceSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);	    
-        replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
-        replaceStyleBackground(urlReplaceMap,doc, "div", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
-        replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
-	    
-	    
-		//This are not resolved until clicked
-		rewriteUrlForElement(doc, "a" ,"href",arc.getWaybackDate());
-		rewriteUrlForElement(doc, "area" ,"href",arc.getWaybackDate());		
-		rewriteUrlForElement(doc, "form" ,"action",arc.getWaybackDate());
+		replaceUrlForElement(urlReplaceMap,doc, "td", "background", "downloadRaw",  numberOfLinksReplaced ,  numberOfLinksNotFound);
+		replaceUrlForFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
+		replaceUrlForIFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
+		replaceUrlsForImgSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);
+		replaceUrlsForSourceSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);
+		replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
+		replaceStyleBackground(urlReplaceMap,doc, "div", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
+		replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
 
-		log.info("Number of resolves:"+urlSet.size() +" total time:"+(System.currentTimeMillis()-start));    	 
-        log.info("numberOfReplaced:"+numberOfLinksReplaced + " numbernotfound:"+numberOfLinksNotFound);
-		
+
+		//This are not resolved until clicked
+		rewriteUrlForElement(doc, "a" ,"href",crawlDate);
+		rewriteUrlForElement(doc, "area" ,"href",crawlDate);
+		rewriteUrlForElement(doc, "form" ,"action",crawlDate);
+
+		log.info("Number of resolves:"+urlSet.size() +" total time:"+(System.currentTimeMillis()-start));
+		log.info("numberOfReplaced:"+numberOfLinksReplaced + " numbernotfound:"+numberOfLinksNotFound);
+
 		String html_output= doc.toString();
-		html_output=html_output.replaceAll(AMPERSAND_REPLACE, "&");		
-		
+		html_output=html_output.replaceAll(AMPERSAND_REPLACE, "&");
+
 		HtmlParseResult res = new HtmlParseResult();
 		res.setHtmlReplaced(html_output);
 		res.setNumberOfLinksReplaced(numberOfLinksReplaced.intValue());
-		res.setNumberOfLinksNotFound(numberOfLinksNotFound.intValue());		
+		res.setNumberOfLinksNotFound(numberOfLinksNotFound.intValue());
 		return res;
 	}
 
-	
+	/**
+	 * Resolves instances of documents based on time distance.
+	 */
+	public interface NearestResolver {
+		/**
+		 * Locates one instance of each url, as close to timeStamp as possible.
+		 * @param urls the URLs to resolve.
+		 * @param timeStamp a timestamp formatted as {@code TODO: state this}
+		 * @return  IndexDocs for the located URLs containing at least
+		 *          {@code url_norm, url, source_file, source_file_offset} for each document.
+		 */
+		List<IndexDoc> findNearestHarvestTime(Collection<String> urls, String timeStamp) throws Exception;
+	}
+	// Default Solr-index based NearestResolver.
+	private static NearestResolver solrNearestResolver = new NearestResolver() {
+		@Override
+		public List<IndexDoc> findNearestHarvestTime(Collection<String> urls, String timeStamp) throws Exception {
+			return NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp);
+		}
+	};
+
 	public static String generatePwid(ArcEntry arc) throws Exception{
 
       long start = System.currentTimeMillis();
@@ -256,7 +292,6 @@ public class HtmlParserUrlRewriter {
   
 	public static HashSet<String> getResourceLinksForHtmlFromArc(ArcEntry arc) throws Exception{
 
-      long start = System.currentTimeMillis();      
       String html = arc.getBinaryContentAsStringUnCompressed();
 
       String url=arc.getUrl();
@@ -272,7 +307,7 @@ public class HtmlParserUrlRewriter {
 	
 	
 
-	public static void replaceUrlForElement( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
+	public static void replaceUrlForElement( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) {
 
 		for (Element e : doc.select(element)) {    		 
 			String url = e.attr("abs:"+attribute);
@@ -300,7 +335,7 @@ public class HtmlParserUrlRewriter {
 	/*
 	 * Will not generate toolbar
 	 */
-	   public static void replaceUrlForFrame( HashMap<String,IndexDoc>  map,Document doc, String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
+	   public static void replaceUrlForFrame( HashMap<String,IndexDoc>  map,Document doc, String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) {
           String element="frame";
           String attribute="src";
 	     
@@ -328,7 +363,7 @@ public class HtmlParserUrlRewriter {
 	     /*
 	    * Will not generate toolbar
 	     */
-	       public static void replaceUrlForIFrame( HashMap<String,IndexDoc>  map,Document doc, String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
+	       public static void replaceUrlForIFrame( HashMap<String,IndexDoc>  map,Document doc, String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) {
 	          String element="iframe";
 	          String attribute="src";
 	         
@@ -397,7 +432,7 @@ public class HtmlParserUrlRewriter {
 	 * <a href="test" style="background:url(img/homeico.png) no-repeat ; width:90px; margin:0px 0px 0px 16px;">
 	 * 
 	 */
-	public static void collectStyleBackgroundRewrite(HashSet<String> set,Document doc,String element, String attribute ,  String baseUrl) throws Exception{
+	public static void collectStyleBackgroundRewrite(HashSet<String> set,Document doc,String element, String attribute ,  String baseUrl) throws Exception {
 
 		for (Element e : doc.select(element)) {
 
@@ -446,7 +481,7 @@ public class HtmlParserUrlRewriter {
 		return null;    	
 	}
 
-	public static void collectRewriteUrlsForElement(HashSet<String> set,Document doc,String element, String attribute ) throws Exception{
+	public static void collectRewriteUrlsForElement(HashSet<String> set,Document doc,String element, String attribute ) {
 
 		for (Element e : doc.select(element)) {
 			String url = e.attr("abs:"+attribute);
@@ -464,7 +499,7 @@ public class HtmlParserUrlRewriter {
        // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
 	   // comma seperated, size is optional.
 	   // data-srcset is not html standard but widely used
-	   public static void collectRewriteUrlsForImgSrcset(HashSet<String> set,Document doc) throws Exception{
+	   public static void collectRewriteUrlsForImgSrcset(HashSet<String> set,Document doc) {
 
 	        for (Element e : doc.select("img")) {
 	          //Can be one of each, but only one for each img tab.  
@@ -497,7 +532,7 @@ public class HtmlParserUrlRewriter {
 	
 	    // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
        // comma seperated, size is optional.
-       public static void collectRewriteUrlsForSourceSrcset(HashSet<String> set,Document doc) throws Exception{
+       public static void collectRewriteUrlsForSourceSrcset(HashSet<String> set,Document doc) {
 
             for (Element e : doc.select("source")) {
                 String urls = e.attr("abs:srcset");
@@ -539,7 +574,7 @@ public class HtmlParserUrlRewriter {
 
     // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
     // comma seperated, size is optional.
-    public static void replaceUrlsForImgSrcset(HashMap<String,IndexDoc>  map,Document doc, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
+    public static void replaceUrlsForImgSrcset(HashMap<String,IndexDoc>  map,Document doc, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) {
          for (Element e : doc.select("img")) {
              //Both srcset and data-srcset is alowed, but only one of them
              String url1 = e.attr("abs:srcset");
@@ -588,7 +623,7 @@ public class HtmlParserUrlRewriter {
 	
     // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
     // comma seperated, size is optional.
-    public static void replaceUrlsForSourceSrcset(HashMap<String,IndexDoc>  map,Document doc, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
+    public static void replaceUrlsForSourceSrcset(HashMap<String,IndexDoc>  map,Document doc, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) {
          for (Element e : doc.select("source")) {
              String urls = e.attr("abs:srcset");
              String urlsReplaced = urls; //They will be changed one at a time
@@ -661,7 +696,7 @@ public class HtmlParserUrlRewriter {
 	 * Only rewrite to new service, no need to resolve until clicked
 	 * 
 	 */
-	public static void rewriteUrlForElement(Document doc, String element, String attribute,  String waybackDate) throws Exception{      
+	public static void rewriteUrlForElement(Document doc, String element, String attribute,  String waybackDate) {
 		for (Element e : doc.select(element)) {
 			String url = e.attr("abs:"+attribute);
 			if (url == null  || url.trim().length()==0){
@@ -676,7 +711,7 @@ public class HtmlParserUrlRewriter {
 
 	
 
-	public static HashSet<String> getUrlResourcesForHtmlPage( Document doc, String url) throws Exception{
+	public static HashSet<String> getUrlResourcesForHtmlPage( Document doc, String url) throws Exception {
 	  HashSet<String> urlSet = new HashSet<String>();
       collectRewriteUrlsForElement(urlSet,doc, "area", "href");
       collectRewriteUrlsForElement(urlSet, doc, "img", "src");
@@ -696,7 +731,7 @@ public class HtmlParserUrlRewriter {
       return urlSet;	  
 	}
 	
-	public static HashMap<String,String> test(String html,String url) throws Exception{
+	public static HashMap<String,String> test(String html,String url) {
 		HashMap<String,String> imagesSet = new HashMap<String,String>();  // To remove duplicates
 		Document doc = Jsoup.parse(html,url); //TODO baseURI?
 		//System.out.println(doc);
