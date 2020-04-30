@@ -11,12 +11,8 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.tools.javac.util.Log;
-
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
-import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.WaybackStatistics;
 
