@@ -14,7 +14,7 @@ public class DateUtils {
 	public static void main(String[] args) throws Exception{
 		
      String solrDate="2020-04-28T08:19:41Z";
-      String d= convertSolrDate2WaybackDate(solrDate);
+      String d= convertUtcDate2WaybackDate(solrDate);
       System.out.println(d);
 
 	}
@@ -52,14 +52,17 @@ public class DateUtils {
 
   }
 
-  public static String convertSolrDate2WaybackDate(String solrDate) throws Exception{
-	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new         
+  public static String convertUtcDate2WaybackDate(String solrDate) throws RuntimeException{
+	  try {  
+	  SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new         
 	    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 	    Date date = dateFormat.parse(solrDate);	    
 	    final String NEW_FORMAT = "yyyyMMddHHmmss";
 	    dateFormat.applyPattern(NEW_FORMAT);	   	   
 	    return dateFormat.format(date);
 	  }
-
-
+      catch(Exception e) {
+	    throw new RuntimeException("Error parsing UTC date:"+solrDate,e);	
+      }
+  }
 }
