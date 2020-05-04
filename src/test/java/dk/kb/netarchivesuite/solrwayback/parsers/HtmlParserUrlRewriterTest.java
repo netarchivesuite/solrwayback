@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -46,7 +47,7 @@ public class HtmlParserUrlRewriterTest {
     }
 
     @Test
-    public void testBasicRewriting() throws Exception {
+    public void testSimpleRewriting() throws Exception {
         assertRewrite("simple");
     }
 
@@ -58,6 +59,11 @@ public class HtmlParserUrlRewriterTest {
     @Test
     public void testCSSRewriting() throws Exception {
         assertRewrite("css");
+    }
+
+    // Disabled for now as it is under construction
+    public void testCSSImportRewriting() throws Exception {
+        assertRewrite("css_import");
     }
 
     // Disabled for now as it is under construction
@@ -75,20 +81,22 @@ public class HtmlParserUrlRewriterTest {
                 replaceAll(" +\n", "\n");
 
         String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                input, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
+                input, "http://example.com/somefolder/", "2020043030700", createResolver()).
                 getHtmlReplaced().replaceAll(" +\n", "\n");
 
         assertEquals("The result should be as expected for test '" + testPrefix + "'", expected, rewritten);
     }
 
-    private static final HtmlParserUrlRewriter.NearestResolver mockNearestResolver =
-            (urls, timeStamp) -> urls.stream().
-                    map(url -> makeIndexDoc(url, timeStamp)).
-                    filter(Objects::nonNull).
-                    collect(Collectors.toList());
+    private static HtmlParserUrlRewriter.NearestResolver createResolver() {
+        final AtomicLong counter = new AtomicLong(0);
+        return (urls, timeStamp)-> urls.stream().
+                map(url -> makeIndexDoc(url, timeStamp, counter)).
+                filter(Objects::nonNull).
+                collect(Collectors.toList());
+    }
 
     // Fake url_norm, url, source_file, source_file_offset
-    private static IndexDoc makeIndexDoc(String url, String timeStamp) {
+    private static IndexDoc makeIndexDoc(String url, String timeStamp, AtomicLong counter) {
         if (!url.startsWith("http")) {
             log.warn("mockResolver is skipping '" + url + "' as it does not start with 'http'");
             return null;
@@ -97,7 +105,7 @@ public class HtmlParserUrlRewriterTest {
         doc.setUrl(url);
         doc.setUrl_norm(Normalisation.canonicaliseURL(url));
         doc.setSource_file_path("somesourcefile");
-        doc.setOffset(Math.abs((url+timeStamp).hashCode() % 10000));
+        doc.setOffset(counter.incrementAndGet());
         return doc;
     }
 
