@@ -18,6 +18,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -105,9 +107,22 @@ public class HtmlParserUrlRewriterTest {
         doc.setUrl(url);
         doc.setUrl_norm(Normalisation.canonicaliseURL(url));
         doc.setSource_file_path("somesourcefile");
-        doc.setOffset(counter.incrementAndGet());
+        // Offset is taken from the URL string in testing
+        Matcher offsetMatcher = OFFSET_PATTERN.matcher(url);
+        String match = null;
+        while (offsetMatcher.find()) { // We want the LAST match (so we can do substring tricks)
+            match = offsetMatcher.group(1);
+        }
+        if (match == null) {
+            throw new IllegalArgumentException(
+                    "This mock requires all URLs to contain a substring matching '" + OFFSET_PATTERN.pattern() + "'. " +
+                    "The URL with match was '" + url + "'. Please adjust unit test accordingly");
+
+        }
+        doc.setOffset(Long.parseLong(match));
         return doc;
     }
+    private static Pattern OFFSET_PATTERN = Pattern.compile(".*_o([0-9]+).*");
 
     public static String fetchUTF8(String resource) throws IOException {
         URL url = Thread.currentThread().getContextClassLoader().getResource(resource);
