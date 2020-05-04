@@ -301,11 +301,13 @@ public class HtmlParserUrlRewriter {
         processElement(doc, "embed",  "src",        collector);
         processElement(doc, "source", "src",        collector);
         processElement(doc, "body",   "background", collector);
-        processElement(doc, "link",   "href",       collector);
         processElement(doc, "script", "src",        collector);
-        processElement(doc, "td",     "background", collector);
-        processElement(doc, "area",   "href",       collector);
-        processElement(doc, "frame",  "src",        collector);
+		processElement(doc, "td",     "background", collector);
+		processElement(doc, "area",   "href",       collector); // Why is this collected? It is not replaced later on
+
+		processElement(doc, "link",   "href",       collector);
+
+		processElement(doc, "frame",  "src",        collector);
         processElement(doc, "iframe", "src",        collector);
         
 		processMultiElement(doc, "img",    "srcset",      collector);

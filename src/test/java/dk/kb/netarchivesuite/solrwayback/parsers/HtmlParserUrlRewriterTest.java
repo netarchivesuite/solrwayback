@@ -61,7 +61,7 @@ public class HtmlParserUrlRewriterTest {
         assertRewrite("css");
     }
 
-    // Disabled for now as it is under construction
+    @Test
     public void testCSSImportRewriting() throws Exception {
         assertRewrite("css_import");
     }
