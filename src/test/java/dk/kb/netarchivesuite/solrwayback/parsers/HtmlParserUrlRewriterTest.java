@@ -47,65 +47,41 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testBasicRewriting() throws Exception {
-        final String HTML =
-                fetchUTF8("example_rewrite/simple.html");
-        final String EXPECTED =
-                fetchUTF8("example_rewrite/simple_expected.html").replaceAll(" +\n", "\n");
-
-        String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                HTML, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
-                getHtmlReplaced().replaceAll(" +\n", "\n");
-
-        assertEquals(EXPECTED, rewritten);
+        assertRewrite("simple");
     }
 
     @Test
     public void testMultiSourceRewriting() throws Exception {
-        final String MULTI =
-                fetchUTF8("example_rewrite/multisource.html");
-        final String EXPECTED =
-                fetchUTF8("example_rewrite/multisource_expected.html").replaceAll(" +\n", "\n");
-
-        String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                MULTI, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
-                getHtmlReplaced().replaceAll(" +\n", "\n");
-
-        assertEquals(EXPECTED, rewritten);
+        assertRewrite("multisource");
     }
 
     @Test
     public void testCSSRewriting() throws Exception {
-        final String CSS =
-                fetchUTF8("example_rewrite/css.html");
-        final String EXPECTED =
-                fetchUTF8("example_rewrite/css_expected.html").replaceAll(" +\n", "\n");
-
-        String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                CSS, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
-                getHtmlReplaced().replaceAll(" +\n", "\n");
-
-        assertEquals(EXPECTED, rewritten);
+        assertRewrite("css");
     }
 
     // Disabled for now as it is under construction
     public void testScriptRewriting() throws Exception {
-        final String SCRIPT =
-                fetchUTF8("example_rewrite/script.html");
-        final String EXPECTED =
-                fetchUTF8("example_rewrite/script_expected.html").replaceAll(" +\n", "\n");
-
-        String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                SCRIPT, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
-                getHtmlReplaced().replaceAll(" +\n", "\n");
-
-        assertEquals(EXPECTED, rewritten);
+        assertRewrite("script");
     }
 
     /* *************************************************************************************
      * Helpers below
      ************************************************************************************* */
 
-    public static final HtmlParserUrlRewriter.NearestResolver mockNearestResolver =
+    private void assertRewrite(String testPrefix) throws Exception {
+        final String input = fetchUTF8("example_rewrite/" + testPrefix + ".html");
+        final String expected = fetchUTF8("example_rewrite/" + testPrefix + "_expected.html").
+                replaceAll(" +\n", "\n");
+
+        String rewritten = HtmlParserUrlRewriter.replaceLinks(
+                input, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
+                getHtmlReplaced().replaceAll(" +\n", "\n");
+
+        assertEquals("The result should be as expected for test '" + testPrefix + "'", expected, rewritten);
+    }
+
+    private static final HtmlParserUrlRewriter.NearestResolver mockNearestResolver =
             (urls, timeStamp) -> urls.stream().
                     map(url -> makeIndexDoc(url, timeStamp)).
                     filter(Objects::nonNull).
