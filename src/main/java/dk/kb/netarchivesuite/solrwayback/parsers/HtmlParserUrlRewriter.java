@@ -1,8 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
@@ -83,7 +81,7 @@ public class HtmlParserUrlRewriter {
 	 * @import url(slidearrows.css);
 	 * @import url(shadow_frames.css) print;
 	 */
-
+	// TODO: Switch to RegexpReplacer for this
 	public static String replaceLinksCss(ArcEntry arc) throws Exception{
 
 		String type="downloadRaw"; //not supporting nested @imports...        		
@@ -156,8 +154,8 @@ public class HtmlParserUrlRewriter {
 		List<IndexDoc> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
 		resolveMS += System.currentTimeMillis();
 
-		//Rewriting to url_norm, so it can be matched when replacing.
-		final HashMap<String, IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
+		// Rewriting to url_norm, so it can be matched when replacing.
+		final Map<String, IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
 		for (IndexDoc indexDoc: docs){
 			urlReplaceMap.put(indexDoc.getUrl_norm(), indexDoc);
 		}
@@ -260,7 +258,8 @@ public class HtmlParserUrlRewriter {
      * @return a Set of URLs found on the page.
      * @throws Exception if the content could not be processed.
      */
-	public static HashSet<String> getUrlResourcesForHtmlPage( Document doc, String url) throws Exception {
+    // TODO: url is not used (baseURL is taken from doc). Either remove the url-parameter or enforce its use
+	public static HashSet<String> getUrlResourcesForHtmlPage(Document doc, String url) {
         final HashSet<String> urlSet = new HashSet<>();
         UnaryOperator<String> collector = (String sourceURL) -> {
             urlSet.add(Normalisation.canonicaliseURL(sourceURL));
@@ -271,6 +270,7 @@ public class HtmlParserUrlRewriter {
         processElement(doc, "embed",  "abs:src", collector);
         processElement(doc, "source", "abs:src", collector);
 		processElement(doc, "script", "abs:src", collector);
+
 		processElement(doc, "body",   "abs:background", collector);
 		processElement(doc, "td",     "abs:background", collector);
 		processElement(doc, "table",  "abs:background", collector);
@@ -291,20 +291,6 @@ public class HtmlParserUrlRewriter {
 	}
 
 
-
-	/**
-	 * Resolves instances of documents based on time distance.
-	 */
-	public interface NearestResolver {
-		/**
-		 * Locates one instance of each url, as close to timeStamp as possible.
-		 * @param urls the URLs to resolve.
-		 * @param timeStamp a timestamp formatted as {@code TODO: state this}
-		 * @return  IndexDocs for the located URLs containing at least
-		 *          {@code url_norm, url, source_file, source_file_offset} for each document.
-		 */
-		List<IndexDoc> findNearestHarvestTime(Collection<String> urls, String timeStamp) throws Exception;
-	}
 
 	public static String generatePwid(ArcEntry arc) throws Exception{
 
@@ -347,6 +333,22 @@ public class HtmlParserUrlRewriter {
                  
      return urlSet;
     }
+
+
+	/**
+	 * Resolves instances of documents based on time distance.
+	 */
+	public interface NearestResolver {
+		/**
+		 * Locates one instance of each url, as close to timeStamp as possible.
+		 * @param urls the URLs to resolve.
+		 * @param timeStamp a timestamp formatted as {@code TODO: state this}
+		 * @return  IndexDocs for the located URLs containing at least
+		 *          {@code url_norm, url, source_file, source_file_offset} for each document.
+		 */
+		List<IndexDoc> findNearestHarvestTime(Collection<String> urls, String timeStamp) throws Exception;
+	}
+
 
 	/**
 	 * Iterates all matching element+attribute, then all outerRegexp {@code .group(1)}-matching content is applied to
@@ -394,20 +396,18 @@ public class HtmlParserUrlRewriter {
 	public static void processElement(
 	        Document doc, String element, String attribute, UnaryOperator<String> transformer) {
 		for (Element e : doc.select(element)) {
-			String content = attribute != null && !attribute.isEmpty() ?
-					e.attr(attribute) :
-					e.data();
+			String content = attribute == null || attribute.isEmpty() ? e.data() : e.attr(attribute);
 			if (content == null  || content.trim().isEmpty()){
 				continue;
 			}
             String newContent = transformer.apply(content);
 			if (newContent != null && !newContent.equals(content)) {
-				if (attribute != null && !attribute.isEmpty()) {
-					e.attr(attribute.replaceFirst("abs:", ""), newContent);
-				} else {
+				if (attribute == null || attribute.isEmpty()) {
 					e.html(newContent);
+				} else {
+					e.attr(attribute.replaceFirst("abs:", ""), newContent);
 				}
-            }
+			}
 		}
 	}
 
@@ -421,59 +421,16 @@ public class HtmlParserUrlRewriter {
      * @param transformer takes the sub-content of the attribute and provides the new content.
      *                    If null is returned, the content will not be changed.
      */
+
 	public static void processMultiAttribute(
 	        Document doc, String element, String attribute, UnaryOperator<String> transformer) {
 		URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri());
-		for (Element e : doc.select(element)) {
-			String urlString = e.attr(attribute);
-			if (urlString == null || urlString.isEmpty()){
-				continue;
-			}
-			// "foo.jpg 1x, bar.jpg 2x"
-
-			StringBuilder sb = new StringBuilder();
-			for (String urlPair: COMMA_SPLITTER.split(urlString)) {
-				if (sb.length() != 0) {
-					sb.append(", ");
-				}
-
-				// "foo.jpg 1x"
-				String[] tokens = SPACE_SPLITTER.split(urlPair, 2);
-				String abs = tokens[0].trim().replace("/../", "/");
-				if (abs.isEmpty()) {
-					sb.append(urlPair);
-					continue;
-				}
-
-				// "foo.jpg"
-				// Ensure the URL is absolute
-
-				abs = absoluter.apply(abs);
-
-				String newUrl = transformer.apply(abs);
-				sb.append(newUrl == null ? abs : newUrl);
-				if (tokens.length == 2) {
-					sb.append(" ").append(tokens[1]);
-				}
-			}
-
-			// Replace if changed
-			String newURLString = sb.toString();
-			if (!newURLString.equals(urlString)) {
-				e.attr(attribute.replaceFirst("abs:", ""), newURLString);
-			}
-		}
+		processElementRegexp(doc, element, attribute,
+							 url ->transformer.apply(absoluter.apply(url)),
+							 COMMA_SEPARATED_PATTERN, SPACE_SEPARATED_PATTERN);
 	}
-	private static final Pattern COMMA_SPLITTER =  Pattern.compile(", *");
-	private static final Pattern SPACE_SPLITTER =  Pattern.compile(" +");
+	private static final Pattern COMMA_SEPARATED_PATTERN = Pattern.compile("([^,]+),?");
+	private static final Pattern SPACE_SEPARATED_PATTERN = Pattern.compile("([^ ]+) ?.*");
 
-
-
-	public static HashMap<String,String> test(String html,String urlString) {
-		HashMap<String,String> imagesSet = new HashMap<String,String>();  // To remove duplicates
-		Document doc = Jsoup.parse(html,urlString); //TODO baseURI?
-		//System.out.println(doc);
-		return imagesSet;
-	}
 
 }
