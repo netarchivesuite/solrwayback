@@ -30,17 +30,6 @@ public class HtmlParserUrlRewriter {
 	//So it can not be set using JSOUP and must be replaced after.
 	private static final String AMPERSAND_REPLACE="_STYLE_AMPERSAND_REPLACE_";
 	
-	// private static Pattern backgroundUrlPattern = Pattern.compile(".*background:url\\([\"']?([^\"')]*)[\"']?\\).*"); is this better?
-	
-	//TODO use for more CSS replacement
-	private static Pattern urlPattern = Pattern.compile("[: ,]url\\([\"']?([^\"')]*)[\"']?\\)");
-	
-	private static Pattern backgroundUrlPattern_OLD = Pattern.compile(".*background:url\\((.*)\\).*");
-	
-	// See explanation where it is used.
-	private static Pattern backgroundUrlPattern = Pattern.compile(".*background(-image)?:\\s*url\\((.*)\\).*");
-	
-	
 	private static final String CSS_IMPORT_PATTERN_STRING =
 			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css[^'\") ]*)['\"]?\\s*[)]?.*";
 	private static Pattern  CSS_IMPORT_PATTERN = Pattern.compile(CSS_IMPORT_PATTERN_STRING);
@@ -50,7 +39,7 @@ public class HtmlParserUrlRewriter {
 	private static Pattern CSS_IMPORT_PATTERN2 = Pattern.compile(CSS_IMPORT_PATTERN_STRING2);
 
 	private static Pattern STYLE_ELEMENT_BACKGROUND_PATTERN = Pattern.compile(
-			"background(?:-image)?\\s*:([^;]*)");
+			"background(?:-image)?\\s*:([^;}]*)");
 	private static Pattern CSS_URL_PATTERN = Pattern.compile(
 			"url\\s*\\(\\s*[\"']?([^)\"']*)[\"']?\\s*\\)");
 
@@ -58,7 +47,7 @@ public class HtmlParserUrlRewriter {
     private static final String NOT_FOUND_LINK=PropertiesLoader.WAYBACK_BASEURL+"services/notfound/";
 	
 	public static void main(String[] args) throws Exception{
-		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
+//		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
 
 //		System.out.println(css);
 /*
@@ -82,14 +71,14 @@ public class HtmlParserUrlRewriter {
 		System.out.println("done");
 		System.exit(1);
 */
-	      System.exit(1);
+//	      System.exit(1);
 
 
 
 	}
 
 
-	/* CSS can start witht the following and need to be url rewritten also.
+	/* CSS can start with the following and need to be url rewritten also.
 	 * @import "mystyle.css";
 	 * @import url(slidearrows.css);
 	 * @import url(shadow_frames.css) print;
@@ -161,18 +150,21 @@ public class HtmlParserUrlRewriter {
 
 		// Collect URLs and resolve archived versions for them 
 		HashSet<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
-		log.info("#unique urlset to resolve for arc-url '" + url + "' :" + urlSet.size());
+		log.debug("#unique urlset to resolve for arc-url '" + url + "' :" + urlSet.size());
 
+		long resolveMS = -System.currentTimeMillis();
 		List<IndexDoc> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
+		resolveMS += System.currentTimeMillis();
 
 		//Rewriting to url_norm, so it can be matched when replacing.
 		final HashMap<String, IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
 		for (IndexDoc indexDoc: docs){
 			urlReplaceMap.put(indexDoc.getUrl_norm(), indexDoc);
 		}
-        UnaryOperator<String> rewriterRaw = createTransformer(urlReplaceMap, "downloadRaw", "", numberOfLinksReplaced, numberOfLinksNotFound);
 
         // Replace URLs in the document with URLs for archived versions.
+		UnaryOperator<String> rewriterRaw = createTransformer(
+				urlReplaceMap, "downloadRaw", "", numberOfLinksReplaced, numberOfLinksNotFound);
         processElement(doc, "img",    "abs:src", rewriterRaw);
         processElement(doc, "embed",  "abs:src", rewriterRaw);
         processElement(doc, "source", "abs:src", rewriterRaw);
@@ -182,16 +174,19 @@ public class HtmlParserUrlRewriter {
 		processElement(doc, "td",     "abs:background", rewriterRaw);
 
 		// link elements are mostly used to reference stylesheets, which must be transformed before use
-		UnaryOperator<String> rewriterView = createTransformer(urlReplaceMap, "view", "", numberOfLinksReplaced, numberOfLinksNotFound);
+		UnaryOperator<String> rewriterView = createTransformer(
+				urlReplaceMap, "view", "", numberOfLinksReplaced, numberOfLinksNotFound);
 		processElement(doc, "link", "abs:href", rewriterView);
 
 		// Don't show SolrWayback bar in frames
-		UnaryOperator<String> rewriterViewNoBar = createTransformer(urlReplaceMap, "view", "&showToolbar=false", numberOfLinksReplaced, numberOfLinksNotFound);
+		UnaryOperator<String> rewriterViewNoBar = createTransformer(
+				urlReplaceMap, "view", "&showToolbar=false", numberOfLinksReplaced, numberOfLinksNotFound);
 		processElement(doc, "frame",  "abs:src", rewriterViewNoBar);
         processElement(doc, "iframe", "abs:src", rewriterViewNoBar);
 
 		// Links to external resources are not resolved until clicked
-		UnaryOperator<String> rewriterRawNoResolve = (sourceURL) -> PropertiesLoader.WAYBACK_BASEURL + "services/web/" + crawlDate + "/" + sourceURL;
+		UnaryOperator<String> rewriterRawNoResolve = (sourceURL) ->
+				PropertiesLoader.WAYBACK_BASEURL + "services/web/" + crawlDate + "/" + sourceURL;
         processElement(doc, "a",    "abs:href", rewriterRawNoResolve);
         processElement(doc, "area", "abs:href", rewriterRawNoResolve);
         processElement(doc, "form", "abs:action", rewriterRawNoResolve);
@@ -209,12 +204,13 @@ public class HtmlParserUrlRewriter {
 		};
 		processElementRegexp(doc, "style", null, rewriterRawAmpersand, CSS_IMPORT_PATTERN2);
 
-
-		// TODO: Consider *#style
 		processElementRegexp(doc, "*", "style", rewriterRaw, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
 
-		log.info("Number of resolves:"+urlSet.size() +" total time:"+(System.currentTimeMillis()-start));
-		log.info("numberOfReplaced:"+numberOfLinksReplaced + " numbernotfound:"+numberOfLinksNotFound);
+		log.info(String.format(
+				"replaceLinks('%s', %s): Links unique=%d, replaced=%d, not_found=%d. " +
+				"Time total=%dms, nearest_query=%dms",
+	            url, crawlDate, urlSet.size(), numberOfLinksReplaced.get(), numberOfLinksNotFound.get(),
+				System.currentTimeMillis()-start, resolveMS));
 
 		String html_output= doc.toString();
 		html_output=html_output.replaceAll(AMPERSAND_REPLACE, "&");

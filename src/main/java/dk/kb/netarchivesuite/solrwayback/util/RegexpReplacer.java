@@ -50,10 +50,10 @@ public class RegexpReplacer implements UnaryOperator<String> {
      * @param processor processor for the content of the group.
      */
     public RegexpReplacer(Pattern pattern, UnaryOperator<String> processor) {
-        if ((pattern.flags() & Pattern.DOTALL) == 0 && !pattern.pattern().startsWith("(?s)")) {
-            log.debug("RegexpReplacer created with a pattern without DOT_ALL. This is most often an error. " +
-                      "The suspicious pattern was '" + pattern.pattern() + "'");
-        }
+//        if ((pattern.flags() & Pattern.DOTALL) == 0 && !pattern.pattern().startsWith("(?s)")) {
+//            log.debug("RegexpReplacer created with a pattern without DOT_ALL. This is most often an error. " +
+//                      "The suspicious pattern was '" + pattern.pattern() + "'");
+//        }
         this.pattern = pattern;
         this.processor = processor;
     }
