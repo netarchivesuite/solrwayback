@@ -41,7 +41,7 @@ public class HtmlParserUrlRewriter {
 	private static Pattern backgroundUrlPattern = Pattern.compile(".*background(-image)?:\\s*url\\((.*)\\).*");
 	
 	
-	private static final String CSS_IMPORT_PATTERN_STRING = 
+	private static final String CSS_IMPORT_PATTERN_STRING =
 			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css[^'\") ]*)['\"]?\\s*[)]?.*";
 	private static Pattern  CSS_IMPORT_PATTERN = Pattern.compile(CSS_IMPORT_PATTERN_STRING);
 
@@ -49,21 +49,13 @@ public class HtmlParserUrlRewriter {
 			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css[^'\") ]*)['\"]?\\s*[)]?";
 	private static Pattern CSS_IMPORT_PATTERN2 = Pattern.compile(CSS_IMPORT_PATTERN_STRING2);
 
+	private static Pattern STYLE_ELEMENT_BACKGROUND_PATTERN = Pattern.compile(
+			"background(-image)?:\\s*url\\([\"']?(.*)[\"']?\\)");
+
 	//replacing urls that points into the world outside solrwayback because they are never harvested
     private static final String NOT_FOUND_LINK=PropertiesLoader.WAYBACK_BASEURL+"services/notfound/";
 	
 	public static void main(String[] args) throws Exception{
-
-	   
-	  
-	  
-		  String css1="@import url('gamespot_white-1b5761d5e5bc48746b24cb1d708223cd-blessed1.css?z=1384381230968');#moderation .user-history div.icon div.approved;"+"\n"+
-                "@import url(slidearrows.css);\n"+
-                "@import url(shadow_frames.css);\n"+
-                "body {";
-
-
-
 		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
 
 //		System.out.println(css);
@@ -88,42 +80,9 @@ public class HtmlParserUrlRewriter {
 		System.out.println("done");
 		System.exit(1);
 */
-		String html="<?xml version=\"1.1\" encoding=\"iso-8859-1\"?>"+
-				"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"da\">"+
-				"<head>"+
-				"   <title>kimse.rovfisk.dk/katte/</title>"+
-				"   <style type=\"text/css\" media=\"screen\">@import \"/css/forum.css\";</style>"+ 
-				"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />"+         
-				"   <link rel=\"stylesheet\" href=\"/style.css\"  type=\"text/css\" media=\"screen\" />"+
-				" <link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS 2.0\" href=\"/rss2.php\" />"+
-				"</head>"+
-				"<body>"+
-				" <style type=\"text/css\" media=\"screen\">@import \"//www.dr.dk/drdkGlobal/spot/spotGlobal.css\";</style> "+
-				" <style type=\"text/css\" media=\"screen\">@import \"/design/www/global/css/globalPrint.css\";</style> "+
-                "<style type=\"text/css\" media=\"screen\">@import url(http://en.statsbiblioteket.dk/portal_css/SB%20Theme/resourceplonetheme.sbtheme.stylesheetsmain-cachekey-7e976fa2b125f18f45a257c2d1882e00.css);</style> "+
-                "<a class=\"toplink\" href=\"test\" class=\"button\" style=\"background:url(img/homeico.png) no-repeat ; width:90px; margin:0px 0px 0px 16px;\">kimse.rovfisk.dk  </a><a class=\"toplink\" href=\"/katte/\">katte / </a><br /><br /><table cellspacing=\"8\"><tr><td></td><td class=\"itemw\"><a href=\"/katte/?browse=DSC00175.JPG\"><img class=\"lo\" src=\"/cache/katte/DSC00175.JPG\" /></a></td>"+
-                "<td></td><td class=\"itemw\"><a href=\"/katte/?browse=DSC00209.JPG\"><img class=\"lo\" src=\"/cache/katte/DSC00209.JPG\" /></a></td>"+
-                " <img  src=\"http://belinda.statsbiblioteket.dk:9721/solrwayback/services/downloadRaw?source_file_path=/netarkiv/0122/filedir/285330-279-20180113095114447-00002-kb-prod-har-001.kb.dk.warc.gz&amp;offset=685207223\" srcset=\"http://skraedderiet.dk/wp-content/uploads/2018/01/saks_watermark-001_transparent.jpg 477w, http://skraedderiet.dk/wp-content/uploads/2018/01/saks_watermark-001_transparent-150x150.jpg 150w, http://skraedderiet.dk/wp-content/uploads/2018/01/saks_watermark-001_transparent-298x300.jpg 298w\" sizes=\"(max-width: 235px) 100vw, 235px\">"+              
-                "</table><br />  </body>"+
-                "</html>";
-
-		HashSet<String> urlSet = new HashSet<String>();
-		
-		Document doc = Jsoup.parse(html,"http:/test.dk"); //TODO baseURI?
-		
-//		collectRewriteUrlsForImgSrcset(urlSet,doc);
-	     
-	       
-	       
-		
-	      
 	      System.exit(1);
 		//collectStyleBackgroundRewrite(urlSet,doc, "a", "style", "http:/thomas.dk");
 
-
-		URL baseUrl = new URL("http:www.google.com/someFolder/");
-		URL url = new URL( baseUrl , "../test.html");
-		System.out.println(url.toString());
 
 
 	}
@@ -213,42 +172,47 @@ public class HtmlParserUrlRewriter {
         UnaryOperator<String> rewriterRaw = createTransformer(urlReplaceMap, "downloadRaw", "", numberOfLinksReplaced, numberOfLinksNotFound);
 
         // Replace URLs in the document with URLs for archived versions.
-        processElement(doc, "img",    "src",        rewriterRaw);
-        processElement(doc, "embed",  "src",        rewriterRaw);
-        processElement(doc, "source", "src",        rewriterRaw);
-		processElement(doc, "script", "src",        rewriterRaw);
-		processElement(doc, "body",   "background", rewriterRaw);
-		processElement(doc, "table",  "background", rewriterRaw);
-		processElement(doc, "td",     "background", rewriterRaw);
+        processElement(doc, "img", "src", rewriterRaw);
+        processElement(doc, "embed", "src", rewriterRaw);
+        processElement(doc, "source", "src", rewriterRaw);
+		processElement(doc, "script", "src", rewriterRaw);
+		processElement(doc, "body", "background", rewriterRaw);
+		processElement(doc, "table", "background", rewriterRaw);
+		processElement(doc, "td", "background", rewriterRaw);
 
 		// link elements are mostly used to reference stylesheets, which must be transformed before use
 		UnaryOperator<String> rewriterView = createTransformer(urlReplaceMap, "view", "", numberOfLinksReplaced, numberOfLinksNotFound);
-		processElement(doc, "link",   "href",       rewriterView);
+		processElement(doc, "link", "href", rewriterView);
 
 		// Don't show SolrWayback bar in frames
 		UnaryOperator<String> rewriterViewNoBar = createTransformer(urlReplaceMap, "view", "&showToolbar=false", numberOfLinksReplaced, numberOfLinksNotFound);
-		processElement(doc, "frame",  "src",        rewriterViewNoBar);
-        processElement(doc, "iframe",  "src",       rewriterViewNoBar);
+		processElement(doc, "frame", "src", rewriterViewNoBar);
+        processElement(doc, "iframe", "src", rewriterViewNoBar);
 
 		// Links to external resources are not resolved until clicked
 		UnaryOperator<String> rewriterRawNoResolve = (sourceURL) -> PropertiesLoader.WAYBACK_BASEURL + "services/web/" + crawlDate + "/" + sourceURL;
-        processElement(doc, "a",       "href",      rewriterRawNoResolve);
-        processElement(doc, "area",    "href",      rewriterRawNoResolve);
-        processElement(doc, "form",    "action",    rewriterRawNoResolve);
+        processElement(doc, "a", "href", rewriterRawNoResolve);
+        processElement(doc, "area", "href", rewriterRawNoResolve);
+        processElement(doc, "form", "action", rewriterRawNoResolve);
 
         // Multi value elements
-        processMultiElement(doc, "img",    "srcset",      rewriterRaw);
-        processMultiElement(doc, "img",    "data-srcset", rewriterRaw);
-		processMultiElement(doc, "source", "srcset",      rewriterRaw);
+        processMultiAttribute(doc, "img", "srcset", rewriterRaw);
+        processMultiAttribute(doc, "img", "data-srcset", rewriterRaw);
+		processMultiAttribute(doc, "source", "srcset", rewriterRaw);
 
 		// Full content processing
 		// TODO: Why the raw rewrite? Shouldn't this be view?
-		processElementRegexp(doc, "style", CSS_IMPORT_PATTERN2, true, rewriterRaw);
+		UnaryOperator<String> rewriterRawAmpersand = (sourceURL) -> {
+			sourceURL = rewriterRaw.apply(sourceURL);
+			return sourceURL == null ? null : sourceURL.replace("&", AMPERSAND_REPLACE);
+		};
+		processElementRegexp(doc, "style", CSS_IMPORT_PATTERN2, rewriterRawAmpersand);
+
+		processElementRegexp(doc, "style", STYLE_ELEMENT_BACKGROUND_PATTERN, rewriterRawAmpersand);
 
 		// TODO: Consider *#style
 		replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
 		replaceStyleBackground(urlReplaceMap,doc, "div", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
-		//replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
 
 		log.info("Number of resolves:"+urlSet.size() +" total time:"+(System.currentTimeMillis()-start));
 		log.info("numberOfReplaced:"+numberOfLinksReplaced + " numbernotfound:"+numberOfLinksNotFound);
@@ -261,22 +225,6 @@ public class HtmlParserUrlRewriter {
 		res.setNumberOfLinksReplaced(numberOfLinksReplaced.intValue());
 		res.setNumberOfLinksNotFound(numberOfLinksNotFound.intValue());
 		return res;
-	}
-
-	/**
-	 * Specific tranformer that uses a {@link RegexpReplacer} to handle {@link <style>@import url(...)</style>}.
-	 * @param baseURL base URL for the web page, used for making URLs absolute.
-	 */
-	private static void createStyleImportTransformer(
-			Map<String, IndexDoc> urlReplaceMap, String baseURL,
-			AtomicInteger numberOfLinksReplaced, AtomicInteger numberOfLinksNotFound) {
-		final URLAbsoluter absoluter = new URLAbsoluter(baseURL);
-		final RegexpReplacer styleImportReplacer = new RegexpReplacer(
-				"@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css[^'\") ]*)['\"]?\\s*[)]?",
-				(cssURL) -> {
-					return Normalisation.canonicaliseURL(absoluter.apply(cssURL));
-				}
-				);
 	}
 
 	/**
@@ -324,27 +272,27 @@ public class HtmlParserUrlRewriter {
             return null; // We don't want any changes when collecting
         };
 
-        processElement(doc, "img",    "src",        collector);
-        processElement(doc, "embed",  "src",        collector);
-        processElement(doc, "source", "src",        collector);
-		processElement(doc, "script", "src",        collector);
-		processElement(doc, "body",   "background", collector);
-		processElement(doc, "td",     "background", collector);
-		processElement(doc, "table",  "background", collector);
-		processElement(doc, "area",   "href",       collector); // Why is this collected? It is not replaced later on
+        processElement(doc, "img", "src", collector);
+        processElement(doc, "embed", "src", collector);
+        processElement(doc, "source", "src", collector);
+		processElement(doc, "script", "src", collector);
+		processElement(doc, "body", "background", collector);
+		processElement(doc, "td", "background", collector);
+		processElement(doc, "table", "background", collector);
+		processElement(doc, "area", "href", collector); // Why is this collected? It is not replaced later on
 
-		processElement(doc, "link",   "href",       collector);
+		processElement(doc, "link", "href", collector);
 
-		processElement(doc, "frame",  "src",        collector);
-        processElement(doc, "iframe", "src",        collector);
+		processElement(doc, "frame", "src", collector);
+        processElement(doc, "iframe", "src", collector);
         
-		processMultiElement(doc, "img",    "srcset",      collector);
-		processMultiElement(doc, "img",    "data-srcset", collector);
-		processMultiElement(doc, "source", "srcset",      collector);
+		processMultiAttribute(doc, "img", "srcset", collector);
+		processMultiAttribute(doc, "img", "data-srcset", collector);
+		processMultiAttribute(doc, "source", "srcset", collector);
 
         collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
         collectStyleBackgroundRewrite(urlSet , doc, "div", "style",url);
-		processElementRegexp(doc, "style", CSS_IMPORT_PATTERN2, true, collector);
+		processElementRegexp(doc, "style", CSS_IMPORT_PATTERN2, collector);
 //        collectRewriteUrlsForStyleImport(urlSet, doc,url);
         return urlSet;
 	}
@@ -497,130 +445,61 @@ public class HtmlParserUrlRewriter {
 		return null;    	
 	}
 
-	//<style type="text/css" media="screen">@import url(http://en.statsbiblioteket.dk/portal_css/SB%20Theme/resourceplonetheme.sbtheme.stylesheetsmain-cachekey-7e976fa2b125f18f45a257c2d1882e00.css);</style>
-	public static void collectRewriteUrlsForStyleImport(HashSet<String> set, Document doc, String baseUrl) throws Exception{
-
-      for (Element e : doc.select("style")) {         
-        String styleTagContent = e.data();          
-        Matcher m = CSS_IMPORT_PATTERN.matcher(styleTagContent);
-        if (m.matches()){
-            String cssUrl= m.group(1);         
-              URL base = new URL(baseUrl);
-              URL resolvedUrl = new URL( base , cssUrl);           
-                            
-              set.add(Normalisation.canonicaliseURL(resolvedUrl.toString()));
-        }                   
-      }
-  }
-
-
-
-	public static void replaceUrlsForStyleImport( HashMap<String,IndexDoc>  map, Document doc, String type, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
-	
-      for (Element e : doc.select("style")) {         
-        String styleTagContent = e.data();          
-        Matcher m = CSS_IMPORT_PATTERN.matcher(styleTagContent);
-        if (m.matches()){
-          String url = m.group(1);
-          URL base = new URL(baseUrl);
-          URL resolvedUrl = new URL( base , url);            
-          
-
-          IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(resolvedUrl.toString()));   
-          if (indexDoc!=null){                             
-              String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"_STYLE_AMPERSAND_REPLACE_offset="+indexDoc.getOffset();                 
-              log.info("replaced @import:"+e );
-              log.info("replaced with:"+newUrl );
-              e.html("@import url("+newUrl+");"); //e.text will be encoded                            
-              log.info("new tag (html):"+e);
-              numberOfLinksReplaced.incrementAndGet();
-          }
-          else{
-            e.html("@import url("+NOT_FOUND_LINK+");"); //e.text will be encoded
-              log.info("No harvest found for:"+resolvedUrl );
-              numberOfLinksNotFound.incrementAndGet();
-          }
-          
-        }                   
-      }
-  }
-
-
-    /**
-     * Iterates all matching elements and applies the transformer on the content.
-	 * Note1: URLs in the elements are not attempted to be made absolute.
-	 * Note2: Content returned from transformer will be entity encoded. If an ampersand {@code &} is to remain
-	 *        non-encoded, set escapeAmpersand to true.
-     * @param doc         a JSOUP document, representing part on a HTML page.
-     * @param element     an HTML element.
-	 * @param directAmpersand if true, ampersand {@code &} returned from the transformer will be replaced with
-	 *                        {@link #AMPERSAND_REPLACE}, ensuring it will be stated directly as a non-escaped
-	 *                        ampersand in the final output.
-	 * @param transformer takes the content of the attribute and provides the new content.
-	 *                    If null is returned, the content will not be changed.
-     */
-	public static void processElement(
-			Document doc, String element, boolean directAmpersand, UnaryOperator<String> transformer) {
-		for (Element e : doc.select(element)) {
-			String content = e.data();
-			if (content == null || content.isEmpty()) {
-				continue;
-			}
-			String newContent = transformer.apply(content);
-			if (newContent != null && !newContent.equals(content)) {
-				e.html(directAmpersand ?
-							   newContent.replace("&", AMPERSAND_REPLACE) :
-							   newContent); // Note: Text will be encoded
-            }
-		}
-	}
 
 	/**
-	 * Iterates all matching elements, then all regexp matching sub-content and applies the transformer on the content.
+	 * Iterates all matching element+attribute, then all regexp matching sub-content and applies the transformer on the
+	 * content.
 	 * Note1: The content of the matching regexp group 1 is expected to be an URL and will be made absolute before
 	 *        being transformed.
 	 * Note2: Content returned from transformer will be entity encoded by JSOUP. If an ampersand {@code &} is to remain
 	 *        non-encoded, replace it with {@link #AMPERSAND_REPLACE} in the content before returning it.
 	 * @param doc         a JSOUP document, representing part on a HTML page.
 	 * @param element     an HTML element.
+	 * @param attribute   an attribute for the HTML element.
+*                    If the attribute is null, the content of the element is used.
 	 * @param regexp      regular expression to be used with a {@link RegexpReplacer}. {@code .group(1)} from matches
 	 *                    will be processed by the transformer.
-	 * @param directAmpersand if true, ampersand {@code &} returned from the transformer will be replaced with
-	 *                        {@link #AMPERSAND_REPLACE}, ensuring it will be stated directly as a non-escaped
 	 *                        ampersand in the final output.
 	 * @param transformer takes the regexp matching content of the attribute and provides the new content.
 	 *                    If null is returned, the content will not be changed.
 	 */
 	public static void processElementRegexp(
-			Document doc, String element, Pattern regexp, boolean directAmpersand, UnaryOperator<String> transformer) {
+			Document doc, String element, String attribute, Pattern regexp, UnaryOperator<String> transformer) {
 		final URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri());
 		final RegexpReplacer replacer = new RegexpReplacer(regexp, url ->
 				// TODO: Should canonicalization not be the responsibility of the collector?
 				transformer.apply(Normalisation.canonicaliseURL(absoluter.apply(url))));
-		processElement(doc, element, directAmpersand, replacer);
+		processElement(doc, element, attribute, replacer);
 	}
 
     /**
      * Iterates all matching element+attribute and applies the transformer on the content.
 	 * Expects URLs extracted from the attribute to be delivered as absolute by JSOUP.
+	 * Note: If the attribute is null, the content of the element will be used. When assigning new content to the
+	 *       element, it will be entity escaped.
      * @param doc         a JSOUP document, representing part on a HTML page.
      * @param element     an HTML element.
      * @param attribute   an attribute for the HTML element.
+	 *                    If the attribute is null, the content of the element is used.
      * @param transformer takes the content of the attribute and provides the new content.
      *                    If null is returned, the content will not be changed.
      */
 	public static void processElement(
 	        Document doc, String element, String attribute, UnaryOperator<String> transformer) {
 		for (Element e : doc.select(element)) {
-			String url = e.attr("abs:"+attribute);
-			if (url == null  || url.trim().length()==0){
+			String content = attribute != null && !attribute.isEmpty() ?
+					e.attr("abs:"+attribute) :
+					e.data();
+			if (content == null  || content.trim().isEmpty()){
 				continue;
 			}
-       			//String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+"viewhref?url="+urlEncoded+"&crawlDate="+crawlDate;
-           //Format is: ?waybackdata=20080331193533/http://ekstrabladet.dk/112/article990050.ece
-            String newUrl = transformer.apply(url);
-			if (newUrl != null && !newUrl.equals(url)) {
-                e.attr(attribute, newUrl);
+            String newContent = transformer.apply(content);
+			if (newContent != null && !newContent.equals(content)) {
+				if (attribute != null && !attribute.isEmpty()) {
+					e.attr(attribute, newContent);
+				} else {
+					e.html(newContent);
+				}
             }
 		}
 	}
@@ -635,7 +514,7 @@ public class HtmlParserUrlRewriter {
      * @param transformer takes the sub-content of the attribute and provides the new content.
      *                    If null is returned, the content will not be changed.
      */
-	public static void processMultiElement(
+	public static void processMultiAttribute(
 	        Document doc, String element, String attribute, UnaryOperator<String> transformer) {
 		URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri());
 		for (Element e : doc.select(element)) {
@@ -681,20 +560,6 @@ public class HtmlParserUrlRewriter {
 	private static final Pattern COMMA_SPLITTER =  Pattern.compile(", *");
 	private static final Pattern SPACE_SPLITTER =  Pattern.compile(" +");
 
-
-	private class PatternReplacement {
-		public final Pattern pattern;
-		public final String replacement;
-
-		public PatternReplacement(Pattern pattern) {
-			this.pattern = pattern;
-			this.replacement = "$1";
-		}
-		public PatternReplacement(Pattern pattern, String replacement) {
-			this.pattern = pattern;
-			this.replacement = replacement;
-		}
-	}
 
 
 	public static HashMap<String,String> test(String html,String urlString) {
