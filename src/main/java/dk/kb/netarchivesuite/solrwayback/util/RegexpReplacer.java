@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * Applies a given pattern to a given content. For each match of the pattern, the content of the first group is
  * transformed using the processor.
  */
-public class RegexpReplacer {
+public class RegexpReplacer implements UnaryOperator<String> {
     private static Log log = LogFactory.getLog(RegexpReplacer.class);
 
     private final Pattern pattern;
@@ -44,10 +44,27 @@ public class RegexpReplacer {
     }
 
     /**
-     * Applies the given content to the pattern and the processor.
+     * Creates a replacer using the given pattern. For each match, the content of {@code group(1)} will be applied to
+     * the processor and the result will replace the original content.
+     * @param pattern   regular expression with at least 1 group.
+     * @param processor processor for the content of the group.
+     */
+    public RegexpReplacer(Pattern pattern, UnaryOperator<String> processor) {
+        if ((pattern.flags() & Pattern.DOTALL) == 0 && !pattern.pattern().startsWith("(?s)")) {
+            log.debug("RegexpReplacer created with a pattern without DOT_ALL. This is most often an error. " +
+                      "The suspicious pattern was '" + pattern.pattern() + "'");
+        }
+        this.pattern = pattern;
+        this.processor = processor;
+    }
+
+    /**
+     * Applies the given content to the pattern and the processor. If the processor returns null, the content is left
+     * unchanged.
      * @param content any String to regexp replace.
      * @return the transformed content.
      */
+    @Override
     public String apply(String content) {
         Matcher matcher = pattern.matcher(content);
         StringBuilder sb = new StringBuilder((int) (content.length() * 1.1));
@@ -56,7 +73,8 @@ public class RegexpReplacer {
         while (matcher.find()) {
             sb.append(content, lastEnd, matcher.start(1));
             lastEnd = matcher.end(1);
-            sb.append(processor.apply(matcher.group(1)));
+            String newContent = processor.apply(matcher.group(1));
+            sb.append(newContent == null ? matcher.group(1) : newContent);
         }
         sb.append(content, lastEnd, content.length());
         return sb.toString();

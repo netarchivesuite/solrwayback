@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  */
 public class HtmlParserUrlRewriterTest {
     private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriterTest.class);
-
+// TODO: Check canonicalization
     @Before
     public void invalidateProperties() {
         // We need this so that we know what the Solr server is set to
@@ -66,6 +66,11 @@ public class HtmlParserUrlRewriterTest {
     @Test
     public void testCSSImportRewriting() throws Exception {
         assertRewrite("css_import");
+    }
+
+    @Test
+    public void testStyleBackground() throws Exception {
+        assertRewrite("style_element");
     }
 
     // Disabled for now as it is under construction
