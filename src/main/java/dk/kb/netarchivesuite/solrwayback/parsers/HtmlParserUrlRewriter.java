@@ -126,9 +126,11 @@ public class HtmlParserUrlRewriter {
 	 * @throws Exception if link-resolving failed.
 	 */
 	public static HtmlParseResult replaceLinks(ArcEntry arc) throws Exception{
+		final long startMS = System.currentTimeMillis();
 		return replaceLinks(
 				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getWaybackDate(),
-				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp));
+				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp),
+				startMS);
 	}
 
 	/**
@@ -141,7 +143,14 @@ public class HtmlParserUrlRewriter {
 	 */
 	public static HtmlParseResult replaceLinks(
 			String html, String url, String crawlDate, NearestResolver nearestResolver) throws Exception {
-        long start = System.currentTimeMillis();
+		return replaceLinks(html, url, crawlDate, nearestResolver, System.currentTimeMillis());
+	}
+	// startMS used to measure total time, including resolving of the HTML
+	private static HtmlParseResult replaceLinks(
+			String html, String url, String crawlDate, NearestResolver nearestResolver, long startMS) throws Exception {
+		final long preReplaceMS = System.currentTimeMillis()-startMS;
+		long replaceMS = -System.currentTimeMillis();
+
 		AtomicInteger numberOfLinksReplaced = new  AtomicInteger();
 		AtomicInteger numberOfLinksNotFound = new  AtomicInteger();
 		Document doc = Jsoup.parse(html, url);
@@ -204,11 +213,12 @@ public class HtmlParserUrlRewriter {
 
 		processElementRegexp(doc, "*", "style", rewriterRaw, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
 
+		replaceMS += System.currentTimeMillis();
 		log.info(String.format(
 				"replaceLinks('%s', %s): Links unique=%d, replaced=%d, not_found=%d. " +
-				"Time total=%dms, nearest_query=%dms",
+				"Time total=%dms (resolveHTML=%dms, analysis+adjustment=%dms, resolveResources=%dms)",
 	            url, crawlDate, urlSet.size(), numberOfLinksReplaced.get(), numberOfLinksNotFound.get(),
-				System.currentTimeMillis()-start, resolveMS));
+				preReplaceMS+replaceMS, preReplaceMS, replaceMS-resolveMS, resolveMS));
 
 		String html_output= doc.toString();
 		html_output=html_output.replaceAll(AMPERSAND_REPLACE, "&");
