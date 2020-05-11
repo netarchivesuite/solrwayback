@@ -20,6 +20,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
+// TODO: Support https://www.w3schools.com/TAGs/tag_base.asp
 public class HtmlParserUrlRewriter {
 
 	private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriter.class);
@@ -125,7 +126,7 @@ public class HtmlParserUrlRewriter {
 	 * @return the page with links to archived versions instead of live web version.
 	 * @throws Exception if link-resolving failed.
 	 */
-	public static HtmlParseResult replaceLinks(ArcEntry arc) throws Exception{
+	public static ParseResult replaceLinks(ArcEntry arc) throws Exception{
 		final long startMS = System.currentTimeMillis();
 		return replaceLinks(
 				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getWaybackDate(),
@@ -141,12 +142,12 @@ public class HtmlParserUrlRewriter {
 	 * @param nearestResolver handles url -> archived-resource lookups based on smallest temporal distance to crawlDate.
 	 * @throws Exception if link resolving failed.
 	 */
-	public static HtmlParseResult replaceLinks(
+	public static ParseResult replaceLinks(
 			String html, String url, String crawlDate, NearestResolver nearestResolver) throws Exception {
 		return replaceLinks(html, url, crawlDate, nearestResolver, System.currentTimeMillis());
 	}
 	// startMS used to measure total time, including resolving of the HTML
-	private static HtmlParseResult replaceLinks(
+	private static ParseResult replaceLinks(
 			String html, String url, String crawlDate, NearestResolver nearestResolver, long startMS) throws Exception {
 		final long preReplaceMS = System.currentTimeMillis()-startMS;
 		long replaceMS = -System.currentTimeMillis();
@@ -156,7 +157,7 @@ public class HtmlParserUrlRewriter {
 		Document doc = Jsoup.parse(html, url);
 
 		// Collect URLs and resolve archived versions for them 
-		HashSet<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
+		Set<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
 		log.debug("#unique urlset to resolve for arc-url '" + url + "' :" + urlSet.size());
 
 		long resolveMS = -System.currentTimeMillis();
@@ -223,8 +224,8 @@ public class HtmlParserUrlRewriter {
 		String html_output= doc.toString();
 		html_output=html_output.replaceAll(AMPERSAND_REPLACE, "&");
 
-		HtmlParseResult res = new HtmlParseResult();
-		res.setHtmlReplaced(html_output);
+		ParseResult res = new ParseResult();
+		res.setReplaced(html_output);
 		res.setNumberOfLinksReplaced(numberOfLinksReplaced.intValue());
 		res.setNumberOfLinksNotFound(numberOfLinksNotFound.intValue());
 		return res;
