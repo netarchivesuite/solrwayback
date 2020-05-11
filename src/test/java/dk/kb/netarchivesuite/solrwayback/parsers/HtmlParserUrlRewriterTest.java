@@ -1,26 +1,11 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
-import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -40,7 +25,7 @@ import static org.junit.Assert.*;
  */
 public class HtmlParserUrlRewriterTest {
     private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriterTest.class);
-// TODO: Check canonicalization
+    // TODO: Check canonicalization
     @Before
     public void invalidateProperties() {
         // We need this so that we know what the Solr server is set to
@@ -83,71 +68,15 @@ public class HtmlParserUrlRewriterTest {
      ************************************************************************************* */
 
     private void assertRewrite(String testPrefix) throws Exception {
-        final String input = fetchUTF8("example_rewrite/" + testPrefix + ".html");
-        final String expected = fetchUTF8("example_rewrite/" + testPrefix + "_expected.html").
+        final String input = RewriteTestHelper.fetchUTF8("example_rewrite/" + testPrefix + ".html");
+        final String expected = RewriteTestHelper.fetchUTF8("example_rewrite/" + testPrefix + "_expected.html").
                 replaceAll(" +\n", "\n");
 
         String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                input, "http://example.com/somefolder/", "2020043030700", createResolver()).
+                input, "http://example.com/somefolder/", "2020043030700", RewriteTestHelper.createMockResolver()).
                 getReplaced().replaceAll(" +\n", "\n");
 
         assertEquals("The result should be as expected for test '" + testPrefix + "'", expected, rewritten);
     }
 
-    private static HtmlParserUrlRewriter.NearestResolver createResolver() {
-        final AtomicLong counter = new AtomicLong(0);
-        return (urls, timeStamp)-> urls.stream().
-                map(url -> makeIndexDoc(url, timeStamp, counter)).
-                filter(Objects::nonNull).
-                collect(Collectors.toList());
-    }
-
-    // Fake url_norm, url, source_file, source_file_offset
-    private static IndexDoc makeIndexDoc(String url, String timeStamp, AtomicLong counter) {
-        if (!url.startsWith("http")) {
-            log.warn("mockResolver is skipping '" + url + "' as it does not start with 'http'");
-            return null;
-        }
-        IndexDoc doc = new IndexDoc();
-        doc.setUrl(url);
-        doc.setUrl_norm(Normalisation.canonicaliseURL(url));
-        doc.setSource_file_path("somesourcefile");
-        // Offset is taken from the URL string in testing
-        Matcher offsetMatcher = OFFSET_PATTERN.matcher(url);
-        String match = null;
-        while (offsetMatcher.find()) { // We want the LAST match (so we can do substring tricks)
-            match = offsetMatcher.group(1);
-        }
-        if (match == null) {
-            throw new IllegalArgumentException(
-                    "This mock requires all URLs to contain a substring matching '" + OFFSET_PATTERN.pattern() + "'. " +
-                    "The URL with match was '" + url + "'. Please adjust unit test accordingly");
-
-        }
-        doc.setOffset(Long.parseLong(match));
-        return doc;
-    }
-    private static Pattern OFFSET_PATTERN = Pattern.compile(".*_o([0-9]+).*");
-
-    public static String fetchUTF8(String resource) throws IOException {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(resource);
-        if (url == null) {
-            Path path = Paths.get(resource);
-            if (!Files.exists(path)) {
-                throw new FileNotFoundException("Unable to locate '" + resource + "'");
-            }
-            url = path.toUri().toURL();
-        }
-
-        try (InputStream in = url.openStream();
-             ByteArrayOutputStream out = new ByteArrayOutputStream(1024);) {
-            byte[] buffer = new byte[1024];
-            int len = in.read(buffer);
-            while (len != -1) {
-                out.write(buffer, 0, len);
-                len = in.read(buffer);
-            }
-            return out.toString("utf-8");
-        }
-    }
 }
