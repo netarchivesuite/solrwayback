@@ -22,7 +22,8 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 /**
- * Ensures that URLs are  absolute, relative to a proviced base URL.
+ * Ensures that URLs are  absolute, relative to a provided base URL.
+ * If the base URL is null, the input URLs are returned unmodified.
  */
 public class URLAbsoluter {
     private static final Logger log = LoggerFactory.getLogger(URLAbsoluter.class);
@@ -56,8 +57,8 @@ public class URLAbsoluter {
      * @return an absolute URL.
      */
     public String apply(String url) {
-        if (url == null) {
-            return null;
+        if (url == null || baseURL == null) {
+            return url;
         }
         url = url.trim().replace("/../", "/");
         if (url.isEmpty()) {
