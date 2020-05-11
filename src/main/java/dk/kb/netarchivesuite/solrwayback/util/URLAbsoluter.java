@@ -57,7 +57,7 @@ public class URLAbsoluter {
      * @return an absolute URL.
      */
     public String apply(String url) {
-        if (url == null || baseURL == null) {
+        if (url == null || getBaseURL() == null) {
             return url;
         }
         url = url.trim().replace("/../", "/");
@@ -74,5 +74,9 @@ public class URLAbsoluter {
                       url + "'), the problematic URL will be passed as-is");
         }
         return url;
+    }
+
+    public String toString() {
+        return "URLAbsoluter(base='" + baseURLString + "')";
     }
 }
