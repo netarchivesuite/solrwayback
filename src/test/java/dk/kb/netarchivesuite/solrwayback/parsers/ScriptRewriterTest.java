@@ -4,6 +4,8 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static org.junit.Assert.*;
 
 /*
@@ -22,6 +24,8 @@ import static org.junit.Assert.*;
  */
 public class ScriptRewriterTest {
 
+    public final String MOCK_DATE = "20200511132200";
+
     @Before
     public void invalidateProperties() {
         // We need this so that we know what the Solr server is set to
@@ -39,9 +43,20 @@ public class ScriptRewriterTest {
         ScriptRewriter rewriter = new ScriptRewriter();
         String actual = rewriter.replaceLinks(
                 SCRIPT, RewriterBase.PACKAGING.attribute,
-                "http://example.com", "20200511132200",
+                "http://example.com", MOCK_DATE,
                 RewriteTestHelper.createMockResolver()).getReplaced();
         assertEquals(EXPECTED, actual);
+    }
+
+    @Test
+    public void testExternalScript() throws IOException {
+        final String input = RewriteTestHelper.fetchUTF8("example_rewrite/script_external.js");
+        final String expected = RewriteTestHelper.fetchUTF8("example_rewrite/script_external_expected.js").
+                replaceAll(" +\n", "\n");
+        String rewritten = ScriptRewriter.getInstance().replaceLinks(
+                input, RewriterBase.PACKAGING.identity, "http://example.com", MOCK_DATE,
+                RewriteTestHelper.createMockResolver()).getReplaced();
+        assertEquals(expected, rewritten);
     }
 
 }
