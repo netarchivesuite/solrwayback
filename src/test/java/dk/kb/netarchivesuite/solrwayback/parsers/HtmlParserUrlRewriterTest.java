@@ -58,7 +58,7 @@ public class HtmlParserUrlRewriterTest {
         assertRewrite("style_element");
     }
 
-    // Disabled for now as it is under construction
+    @Test
     public void testScriptRewriting() throws Exception {
         assertRewrite("script");
     }

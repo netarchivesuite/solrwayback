@@ -73,6 +73,7 @@ public abstract class RewriterBase {
 		downloadRaw
 	}
 
+
 	/**
 	 * If no explicit {@link PACKAGING} is stated for the method calls, use this.
  	 * @return
@@ -122,13 +123,20 @@ public abstract class RewriterBase {
 	 * @param crawlDate the ideal timestamp for the archived versions to link to.
 	 * @param nearestResolver handles url -> archived-resource lookups based on smallest temporal distance to crawlDate.
 	 * @return the content with links to archived versions instead of live web version.
-	 * @throws Exception if link-resolving failed.
+	 * @throws RuntimeException if link-resolving failed.
 	 */
 	// TODO: Read and apply https://www.w3schools.com/Tags/tag_script.asp
 	public ParseResult replaceLinks(
 			String content, PACKAGING packaging, String baseURL, String crawlDate,
-			HtmlParserUrlRewriter.NearestResolver nearestResolver) throws Exception {
-		ParseResult result = replaceLinks(content, packaging, baseURL, crawlDate, nearestResolver, new ParseResult());
+			HtmlParserUrlRewriter.NearestResolver nearestResolver) {
+		ParseResult result;
+		try {
+			result = replaceLinks(content, packaging, baseURL, crawlDate, nearestResolver, new ParseResult());
+		} catch (Exception e) {
+			throw new RuntimeException(String.format(
+					"replaceLinks.%s(<content of length %d bytes>, packaging=%s, base='%s', date=%s) failed",
+					getClass().getSimpleName(), content.length(), packaging, baseURL, crawlDate), e);
+		}
 		log.info(String.format(
 				"replaceLinks.%s(<content of length %d bytes>, packaging=%s, base='%s', date=%s) completed: %s",
 				getClass().getSimpleName(), content.length(), packaging, baseURL, crawlDate, result));
@@ -226,11 +234,15 @@ public abstract class RewriterBase {
 			default: throw new UnsupportedOperationException("PACKAGING '" + packaging + "' is unsupported");
 		}
 		// Always replace special placeholder for &
-		parseResult.setReplaced(parseResult.getReplaced().replace(AMPERSAND_REPLACE, "&"));
+		parseResult.setReplaced(parseResult.getReplaced().
+				replace(AMPERSAND_REPLACE, "&").
+				replace(NEWLINE_REPLACE, "\n"));
 	}
 	static final String AMPERSAND_REPLACE="_STYLE_AMPERSAND_REPLACE_";
+	static final String NEWLINE_REPLACE = "_REWRITER_NEWLINE_REPLACE_";
+
 	static final Pattern SLASH_PATTERN = Pattern.compile("(\\\\)?/");
-	static final String SLASH_REPLACEMENT = "\\/";
+	static final String SLASH_REPLACEMENT = "\\\\/";
 	static Pattern LT_PATTERN = Pattern.compile("<");
 	static final String LT_REPLACEMENT = "\\u003C";
 
@@ -280,16 +292,38 @@ public abstract class RewriterBase {
 
 	/**
 	 * Takes zero or more ordered patterns and creates a chain of {@link RegexpReplacer}s based on the patterns,
-	 * ending in the provided processor.
+	 * where each pattern must match the result from the previous pattern, ending in the provided processor.
 	 * @param processor the inner handler for the {@code .group(1)}-matches from the patterns.
 	 * @param patterns  zero or more patterns, used for building a {@link RegexpReplacer} chain.
 	 * @return a {@link RegexpReplacer} chain ending in the provided processor.
 	 */
-	public static UnaryOperator<String> wrapMultiRegexp(UnaryOperator<String> processor, Pattern... patterns) {
+	public static UnaryOperator<String> wrapInnerRegexp(UnaryOperator<String> processor, Pattern... patterns) {
 		for (int i = patterns.length-1 ; i >= 0 ; i--) {
 			processor = new RegexpReplacer(patterns[i], processor);
 		}
 		return processor;
+	}
+
+	/**
+	 * Takes zero or more patterns and creates a list of {@link RegexpReplacer}s based on the patterns.
+	 * The input is processed by each entry in the list with calls to processor for each {@code .group(1)}.
+	 * @param processor the inner handler for the {@code .group(1)}-matches from the patterns.
+	 * @param patterns  zero or more patterns, used for building a {@link RegexpReplacer} list.
+	 * @return a compound operator that iterates {@link RegexpReplacer}s and calls processor.
+	 */
+	public static UnaryOperator<String> wrapIndependentRegexp(
+			final UnaryOperator<String> processor, Pattern... patterns) {
+		final List<RegexpReplacer> replacers = Arrays.stream(patterns).
+				map(pattern -> new RegexpReplacer(pattern, processor)).collect(Collectors.toList());
+		return content -> {
+			for (RegexpReplacer replacer: replacers) {
+				String newContent = replacer.apply(content);
+				if (newContent != null) {
+					content = newContent;
+				}
+			}
+			return content;
+		};
 	}
 
 	/**

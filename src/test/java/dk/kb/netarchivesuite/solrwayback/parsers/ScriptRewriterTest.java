@@ -4,10 +4,6 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-
 import static org.junit.Assert.*;
 
 /*
@@ -38,7 +34,7 @@ public class ScriptRewriterTest {
     public void testAttributeScript() throws Exception {
         // Espected to be enclosed in single pings {@code '}
         final String SCRIPT = "return {\"url\": \"\\/foo/bar_o1.jpg\" };";
-        final String EXPECTED = "return {&quot;url&quot;: &quot;http://localhost:0000/solrwayback/services/downloadRaw?source_file_path=somesourcefile&offset=1&quot; };";
+        final String EXPECTED = "return {&quot;url&quot;: &quot;http:\\/\\/localhost:0000\\/solrwayback\\/services\\/downloadRaw?source_file_path=somesourcefile&offset=1&quot; };";
 
         ScriptRewriter rewriter = new ScriptRewriter();
         String actual = rewriter.replaceLinks(

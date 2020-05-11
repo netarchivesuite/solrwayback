@@ -44,7 +44,7 @@ public class HtmlParserUrlRewriter {
 
 	//replacing urls that points into the world outside solrwayback because they are never harvested
     private static final String NOT_FOUND_LINK=PropertiesLoader.WAYBACK_BASEURL+"services/notfound/";
-	
+
 	public static void main(String[] args) throws Exception{
 //		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
 
@@ -210,6 +210,7 @@ public class HtmlParserUrlRewriter {
 			sourceURL = rewriterRaw.apply(sourceURL);
 			return sourceURL == null ? null : sourceURL.replace("&", AMPERSAND_REPLACE);
 		};
+		// TODO: Move this to ScriptRewriter
 		processElementRegexp(doc, "style", null, rewriterRawAmpersand, CSS_IMPORT_PATTERN2);
 
 		processElementRegexp(doc, "*", "style", rewriterRaw, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
@@ -221,14 +222,27 @@ public class HtmlParserUrlRewriter {
 	            url, crawlDate, urlSet.size(), numberOfLinksReplaced.get(), numberOfLinksNotFound.get(),
 				preReplaceMS+replaceMS, preReplaceMS, replaceMS-resolveMS, resolveMS));
 
+		handleInlineScripts(doc, crawlDate, nearestResolver, numberOfLinksReplaced, numberOfLinksNotFound);
+
 		String html_output= doc.toString();
-		html_output=html_output.replaceAll(AMPERSAND_REPLACE, "&");
+		html_output = html_output.
+				replace(AMPERSAND_REPLACE, "&").
+				// JSOUP replaces newlines with space
+				replace(RewriterBase.NEWLINE_REPLACE, "\n");
 
 		ParseResult res = new ParseResult();
 		res.setReplaced(html_output);
 		res.setNumberOfLinksReplaced(numberOfLinksReplaced.intValue());
 		res.setNumberOfLinksNotFound(numberOfLinksNotFound.intValue());
 		return res;
+	}
+
+	private static void handleInlineScripts(
+			Document doc, String crawlDate, NearestResolver nearestResolver,
+			AtomicInteger numberOfLinksReplaced, AtomicInteger numberOfLinksNotFound) {
+		// TODO: Integrate properly so that links resolving stats are preserved
+		processElement(doc, "script", null, (content) -> ScriptRewriter.getInstance().replaceLinks(
+				content, RewriterBase.PACKAGING.inline, doc.baseUri(), crawlDate, nearestResolver).getReplaced());
 	}
 
 	/**
@@ -414,7 +428,7 @@ public class HtmlParserUrlRewriter {
             String newContent = transformer.apply(content);
 			if (newContent != null && !newContent.equals(content)) {
 				if (attribute == null || attribute.isEmpty()) {
-					e.html(newContent);
+					e.html(newContent.replace("\n", RewriterBase.NEWLINE_REPLACE));
 				} else {
 					e.attr(attribute.replaceFirst("abs:", ""), newContent);
 				}
