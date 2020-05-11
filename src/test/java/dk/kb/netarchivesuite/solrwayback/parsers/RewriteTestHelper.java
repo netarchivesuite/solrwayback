@@ -38,6 +38,10 @@ import java.util.stream.Collectors;
 public class RewriteTestHelper {
     private static Log log = LogFactory.getLog(RewriteTestHelper.class);
 
+    /**
+     * Creates a mock resolver that resolves all input that contains {@code _oXXX}, where XXX is a number.
+     * @return a mock resolver.
+     */
     static HtmlParserUrlRewriter.NearestResolver createMockResolver() {
         final AtomicLong counter = new AtomicLong(0);
         return (urls, timeStamp)-> urls.stream().

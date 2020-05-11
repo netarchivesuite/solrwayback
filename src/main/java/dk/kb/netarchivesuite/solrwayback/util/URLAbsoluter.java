@@ -14,6 +14,7 @@
  */
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +34,11 @@ public class URLAbsoluter {
     final String baseURLString;
     URL baseURL = null; // Construction is lazy to spare unneeded overhead
     boolean isConstructed = false;
+    final boolean normalise;
 
-    public URLAbsoluter(String baseURL) {
+    public URLAbsoluter(String baseURL, boolean normalise) {
         this.baseURLString = baseURL;
+        this.normalise = normalise;
     }
 
     public URL getBaseURL() {
@@ -60,7 +63,9 @@ public class URLAbsoluter {
         if (url == null || getBaseURL() == null) {
             return url;
         }
-        url = url.trim().replace("/../", "/");
+        if (normalise) {
+            url = url.trim().replace("/../", "/");
+        }
         if (url.isEmpty()) {
             return url;
         }
@@ -72,6 +77,9 @@ public class URLAbsoluter {
         } catch (MalformedURLException ex) {
             log.debug("urlNormaliser: Unable to create an absolute URL using new URL('" + getBaseURL() + "', '" +
                       url + "'), the problematic URL will be passed as-is");
+        }
+        if (normalise) {
+            url = Normalisation.canonicaliseURL(url);
         }
         return url;
     }

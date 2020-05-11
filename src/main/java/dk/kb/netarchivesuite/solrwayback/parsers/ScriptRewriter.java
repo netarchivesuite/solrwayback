@@ -42,10 +42,12 @@ public class ScriptRewriter extends RewriterBase {
 
 	@Override
 	public String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDoc> urlMap) {
-		UnaryOperator<String> rawTransformer = wrapMultiRegexp(
-				createURLTransformer(baseURL, true, SOLRWAYBACK_SERVICE.downloadRaw, null, urlMap),
+		UnaryOperator<String> rawURLTransformer =
+				createURLTransformer(baseURL, true, SOLRWAYBACK_SERVICE.downloadRaw, null, urlMap);
+		UnaryOperator<String> rawProcessor = wrapMultiRegexp(
+				url -> rawURLTransformer.apply(unescapeURL(url)),
 				JSON_KEY_PATTERN);
-		return rawTransformer.apply(content);
+		return rawProcessor.apply(content);
 	}
 
 	@Override
@@ -53,11 +55,15 @@ public class ScriptRewriter extends RewriterBase {
 		final Set<String> urls = new HashSet<>();
 		UnaryOperator<String> collector = createProcessorChain(
 				url -> {
-					urls.add(url);
+					urls.add(unescapeURL(url));
 					return null;
 				});
 		collector.apply(content);
 		return urls;
+	}
+
+	private static String unescapeURL(String url) {
+		return SLASH_PATTERN.matcher(url).replaceAll("/");
 	}
 
 	private UnaryOperator<String> createProcessorChain(UnaryOperator<String> processor) {

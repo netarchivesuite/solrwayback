@@ -381,7 +381,7 @@ public class HtmlParserUrlRewriter {
 	 */
 	public static void processElementRegexp(
 			Document doc, String element, String attribute, UnaryOperator<String> transformer, Pattern... regexps) {
-		final URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri());
+		final URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri(), false);
 		UnaryOperator<String> processor = url ->
 				// TODO: Should canonicalization not be the responsibility of the collector?
 				transformer.apply(Normalisation.canonicaliseURL(absoluter.apply(url)));
@@ -435,7 +435,7 @@ public class HtmlParserUrlRewriter {
 
 	public static void processMultiAttribute(
 	        Document doc, String element, String attribute, UnaryOperator<String> transformer) {
-		URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri());
+		URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri(), false);
 		processElementRegexp(doc, element, attribute,
 							 url ->transformer.apply(absoluter.apply(url)),
 							 COMMA_SEPARATED_PATTERN, SPACE_SEPARATED_PATTERN);

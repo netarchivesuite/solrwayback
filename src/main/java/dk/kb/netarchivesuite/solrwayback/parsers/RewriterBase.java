@@ -31,6 +31,11 @@ import java.util.stream.Collectors;
 
 /**
  * Base class for rewrites of URLs in content to archived versions.
+ *
+ * Overall principle is that the content is processes in three steps:
+ * 1) First pass collects URLs
+ * 2) The collected URLs are recolved to archived versions, if possible
+ * 3) Second pass rewrites URLs to their archived versions
  */
 public abstract class RewriterBase {
     private static Log log = LogFactory.getLog(RewriterBase.class);
@@ -189,7 +194,7 @@ public abstract class RewriterBase {
 		}
 
 		long replaceStartMS = System.currentTimeMillis();
-		String replaced = replaceLinks(content, baseURL, crawlDate, countingUrlReplaceMap);
+		parseResult.setReplaced(replaceLinks(content, baseURL, crawlDate, countingUrlReplaceMap));
 		parseResult.addTiming("replaceURLs", System.currentTimeMillis()-replaceStartMS);
 
 		escapeContent(parseResult, packaging);
@@ -202,6 +207,9 @@ public abstract class RewriterBase {
 	 * @param packaging   how the content is to be represented.
 	 */
 	public static void escapeContent(ParseResult parseResult, PACKAGING packaging) {
+		if (parseResult.getReplaced() == null) {
+			return;
+		}
 		switch (packaging) {
 			case inline: {
 				parseResult.setReplaced(SLASH_PATTERN.matcher(parseResult.getReplaced()).replaceAll(SLASH_REPLACEMENT));
@@ -220,11 +228,11 @@ public abstract class RewriterBase {
 		// Always replace special placeholder for &
 		parseResult.setReplaced(parseResult.getReplaced().replace(AMPERSAND_REPLACE, "&"));
 	}
-	private static final String AMPERSAND_REPLACE="_STYLE_AMPERSAND_REPLACE_";
-	private static final Pattern SLASH_PATTERN = Pattern.compile("(\\\\)?/");
-	private static final String SLASH_REPLACEMENT = "\\/";
-	private static Pattern LT_PATTERN = Pattern.compile("<");
-	private static final String LT_REPLACEMENT = "\\u003C";
+	static final String AMPERSAND_REPLACE="_STYLE_AMPERSAND_REPLACE_";
+	static final Pattern SLASH_PATTERN = Pattern.compile("(\\\\)?/");
+	static final String SLASH_REPLACEMENT = "\\/";
+	static Pattern LT_PATTERN = Pattern.compile("<");
+	static final String LT_REPLACEMENT = "\\u003C";
 
 	/**
 	 * Replaces links and other URLs with the alternatives in urlMap.
@@ -251,15 +259,10 @@ public abstract class RewriterBase {
 	public static UnaryOperator<String> createURLTransformer(
 			String baseURL, boolean normalise, SOLRWAYBACK_SERVICE service, String extraParams,
 			Map<String, IndexDoc> urlReplaceMap) {
-		final URLAbsoluter absoluter = new URLAbsoluter(baseURL);
+		final URLAbsoluter absoluter = new URLAbsoluter(baseURL, normalise);
         return (String sourceURL) -> {
-        	if (sourceURL == null) {
-        		return null;
-			}
-        	sourceURL = absoluter.apply(sourceURL);
-        	if (normalise) {
-        		sourceURL = sourceURL.replace("/../", "/");
-        		sourceURL = Normalisation.canonicaliseURL(sourceURL);
+        	if ((sourceURL = absoluter.apply(sourceURL)) == null) {
+				return null;
 			}
 
 			IndexDoc indexDoc = urlReplaceMap.get(sourceURL);
@@ -282,7 +285,7 @@ public abstract class RewriterBase {
 	 * @param patterns  zero or more patterns, used for building a {@link RegexpReplacer} chain.
 	 * @return a {@link RegexpReplacer} chain ending in the provided processor.
 	 */
-	public static  UnaryOperator<String> wrapMultiRegexp(UnaryOperator<String> processor, Pattern... patterns) {
+	public static UnaryOperator<String> wrapMultiRegexp(UnaryOperator<String> processor, Pattern... patterns) {
 		for (int i = patterns.length-1 ; i >= 0 ; i--) {
 			processor = new RegexpReplacer(patterns[i], processor);
 		}
@@ -297,11 +300,11 @@ public abstract class RewriterBase {
 	 * @return the URLs in the content.
 	 */
 	public Set<String> getResourceURLs(String content, String baseURL) {
-		final URLAbsoluter absoluter = new URLAbsoluter(baseURL);
-		return getResourceURLs(content).stream().
-				filter(Objects::nonNull).
+		final URLAbsoluter absoluter = new URLAbsoluter(baseURL, true);
+		Set<String> rawURLs = getResourceURLs(content);
+		return rawURLs.stream().
 				map(absoluter::apply).
-				map(Normalisation::canonicaliseURL).
+				filter(Objects::nonNull).
 				collect(Collectors.toSet());
 	}
 
