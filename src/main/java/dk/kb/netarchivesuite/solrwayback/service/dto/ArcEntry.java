@@ -89,8 +89,14 @@ public class ArcEntry {
   public String getContentEncoding() {
     return contentEncoding;
   }
+
+  /**
+   * Lenient setter for content-encoding (compression).
+   * Will trim leading and trailing whitespace and remove {@code "}-characters.
+   * @param contentEncoding the encoding to use when retrieving content.
+   */
   public void setContentEncoding(String contentEncoding) {
-    this.contentEncoding = contentEncoding;
+    this.contentEncoding = contentEncoding == null ? null : contentEncoding.trim().replace("\"", "");
   }
   public String getContentTypeExt() {
     return contentTypeExt;
@@ -102,8 +108,14 @@ public class ArcEntry {
   public String getContentCharset() {
     return contentCharset;
   }
+
+  /**
+   * Lenient setter for content-charset. Will trim leading and trailing whitespace and remove {@code "}-characters.
+   * @param contentCharset the encoding to use when retrieving content as a String.
+   */
+  // TODO: How does this differ from contentEncoding?
   public void setContentCharset(String contentCharset) {
-    this.contentCharset = contentCharset;
+    this.contentCharset = contentCharset == null ? null : contentCharset.trim().replace("\"", "");
   }
   public String getHeader() {
     return header;
