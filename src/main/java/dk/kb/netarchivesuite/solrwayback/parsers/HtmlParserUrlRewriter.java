@@ -102,7 +102,7 @@ public class HtmlParserUrlRewriter {
 				URL base = new URL(url);
 				String resolvedUrl = new URL( base ,cssUrl).toString();
 				 resolvedUrl =  resolvedUrl.replace("/../", "/");
-				IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getCrawlDate());		         
+				IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getWaybackDate());
 				if (indexDoc!=null){    		    			 
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset(); 					
 					css=css.replace(cssUrl, newUrl);					
@@ -129,7 +129,7 @@ public class HtmlParserUrlRewriter {
 	public static ParseResult replaceLinks(ArcEntry arc) throws Exception{
 		final long startMS = System.currentTimeMillis();
 		return replaceLinks(
-				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getWaybackDate(),
+				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getWaybackDate(), arc.getCrawlDate(),
 				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp),
 				startMS);
 	}
@@ -142,13 +142,15 @@ public class HtmlParserUrlRewriter {
 	 * @param nearestResolver handles url -> archived-resource lookups based on smallest temporal distance to crawlDate.
 	 * @throws Exception if link resolving failed.
 	 */
+	// TODO: Really only have one date!
 	public static ParseResult replaceLinks(
-			String html, String url, String crawlDate, NearestResolver nearestResolver) throws Exception {
-		return replaceLinks(html, url, crawlDate, nearestResolver, System.currentTimeMillis());
+			String html, String url, String waybackDate, String crawlDate, NearestResolver nearestResolver) throws Exception {
+		return replaceLinks(html, url, waybackDate, crawlDate, nearestResolver, System.currentTimeMillis());
 	}
 	// startMS used to measure total time, including resolving of the HTML
 	private static ParseResult replaceLinks(
-			String html, String url, String crawlDate, NearestResolver nearestResolver, long startMS) throws Exception {
+			String html, String url, String waybackDate, String crawlDate,
+			NearestResolver nearestResolver, long startMS) throws Exception {
 		final long preReplaceMS = System.currentTimeMillis()-startMS;
 		long replaceMS = -System.currentTimeMillis();
 
@@ -194,7 +196,7 @@ public class HtmlParserUrlRewriter {
 
 		// Links to external resources are not resolved until clicked
 		UnaryOperator<String> rewriterRawNoResolve = (sourceURL) ->
-				PropertiesLoader.WAYBACK_BASEURL + "services/web/" + crawlDate + "/" + sourceURL;
+				PropertiesLoader.WAYBACK_BASEURL + "services/web/" + waybackDate + "/" + sourceURL;
         processElement(doc, "a",    "abs:href", rewriterRawNoResolve);
         processElement(doc, "area", "abs:href", rewriterRawNoResolve);
         processElement(doc, "form", "abs:action", rewriterRawNoResolve);

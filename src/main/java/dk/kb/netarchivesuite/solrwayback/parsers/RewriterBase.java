@@ -107,12 +107,12 @@ public abstract class RewriterBase {
    		parseResult.addTiming("getContent", System.currentTimeMillis()-startgetContentMS);
 
 		replaceLinks(
-				content, packaging, arc.getUrl(), arc.getWaybackDate(),
+				content, packaging, arc.getUrl(), arc.getCrawlDate(),
 				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp),
 				parseResult);
 		log.info(String.format(
 				"replaceLinks.%s(<arc-entry of length %d bytes>, packaging=%s, base='%s', date=%s) completed: %s",
-				getClass().getSimpleName(), content.length(), packaging, arc.getUrl(), arc.getWaybackDate(), parseResult));
+				getClass().getSimpleName(), content.length(), packaging, arc.getUrl(), arc.getCrawlDate(), parseResult));
 		return parseResult;
    	}
 	/**

@@ -73,8 +73,8 @@ public class HtmlParserUrlRewriterTest {
                 replaceAll(" +\n", "\n");
 
         String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                input, "http://example.com/somefolder/", "2020043030700", RewriteTestHelper.createMockResolver()).
-                getReplaced().replaceAll(" +\n", "\n");
+                input, "http://example.com/somefolder/", "20200430130700", "2020-04-30T13:07:00",
+                RewriteTestHelper.createMockResolver()).getReplaced().replaceAll(" +\n", "\n");
 
         assertEquals("The result should be as expected for test '" + testPrefix + "'", expected, rewritten);
     }
