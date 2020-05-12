@@ -23,6 +23,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
 // TODO: Support https://www.w3schools.com/TAGs/tag_base.asp
+// TODO: Refactor to extend RewriterBase for better re-use
 public class HtmlParserUrlRewriter {
 
 	private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriter.class);
