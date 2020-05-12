@@ -35,48 +35,52 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testSimpleRewriting() throws Exception {
-        assertRewrite("simple");
+        assertRewrite("simple", 11);
     }
 
     @Test
     public void testMultiSourceRewriting() throws Exception {
-        assertRewrite("multisource");
+        assertRewrite("multisource", 16);
     }
 
     @Test
     public void testCSSRewriting() throws Exception {
-        assertRewrite("css");
+        assertRewrite("css", 13);
     }
 
     @Test
     public void testCSSImportRewriting() throws Exception {
-        assertRewrite("css_import");
+        assertRewrite("css_import", 3);
     }
 
     @Test
-    public void testStyleBackground() throws Exception {
-        assertRewrite("style_element");
+    public void testStyleElement() throws Exception {
+        assertRewrite("style_element", 6);
     }
 
     @Test
     public void testScriptRewriting() throws Exception {
-        assertRewrite("script");
+        // TODO: Why is it not 7?
+        assertRewrite("script", 8);
     }
 
     /* *************************************************************************************
      * Helpers below
      ************************************************************************************* */
 
-    private void assertRewrite(String testPrefix) throws Exception {
+    private void assertRewrite(String testPrefix, int expectedReplaced) throws Exception {
         final String input = RewriteTestHelper.fetchUTF8("example_rewrite/" + testPrefix + ".html");
         final String expected = RewriteTestHelper.fetchUTF8("example_rewrite/" + testPrefix + "_expected.html").
                 replaceAll(" +\n", "\n");
 
-        String rewritten = HtmlParserUrlRewriter.replaceLinks(
+        ParseResult rewritten = HtmlParserUrlRewriter.replaceLinks(
                 input, "http://example.com/somefolder/", "2020-04-30T13:07:00",
-                RewriteTestHelper.createMockResolver()).getReplaced().replaceAll(" +\n", "\n");
+                RewriteTestHelper.createMockResolver());
 
-        assertEquals("The result should be as expected for test '" + testPrefix + "'", expected, rewritten);
+        assertEquals("The result should be as expected for test '" + testPrefix + "'",
+                     expected, rewritten.getReplaced().replaceAll(" +\n", "\n"));
+        assertEquals("The number of replaced links should be as expected",
+                     expectedReplaced, rewritten.getNumberOfLinksReplaced());
     }
 
 }

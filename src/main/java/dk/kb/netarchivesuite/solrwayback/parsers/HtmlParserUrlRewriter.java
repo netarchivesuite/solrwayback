@@ -7,6 +7,7 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import dk.kb.netarchivesuite.solrwayback.util.CountingMap;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.RegexpReplacer;
 import dk.kb.netarchivesuite.solrwayback.util.URLAbsoluter;
@@ -168,7 +169,7 @@ public class HtmlParserUrlRewriter {
 		resolveMS += System.currentTimeMillis();
 
 		// Rewriting to url_norm, so it can be matched when replacing.
-		final Map<String, IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
+		final Map<String, IndexDoc> urlReplaceMap = new CountingMap<>();
 		for (IndexDoc indexDoc: docs){
 			urlReplaceMap.put(indexDoc.getUrl_norm(), indexDoc);
 		}

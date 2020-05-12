@@ -47,4 +47,5 @@ public class CountingMap<K, V> extends HashMap<K, V> {
     public int getFailCount() {
         return fail;
     }
+
 }
