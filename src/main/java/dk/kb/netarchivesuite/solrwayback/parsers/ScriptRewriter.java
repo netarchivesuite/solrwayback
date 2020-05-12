@@ -50,7 +50,7 @@ public class ScriptRewriter extends RewriterBase {
 	}
 
 	@Override
-	public String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDoc> urlMap) {
+	protected String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDoc> urlMap) {
 		UnaryOperator<String> rawURLTransformer =
 				createURLTransformer(baseURL, true, SOLRWAYBACK_SERVICE.downloadRaw, null, urlMap);
 		UnaryOperator<String> rawProcessor = createProcessorChain(rawURLTransformer);

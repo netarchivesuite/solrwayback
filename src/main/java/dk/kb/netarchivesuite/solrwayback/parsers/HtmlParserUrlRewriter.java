@@ -217,6 +217,9 @@ public class HtmlParserUrlRewriter {
 
 		processElementRegexp(doc, "*", "style", rewriterRaw, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
 
+		// Script content is handled by ScriptRewriter
+		rewriteInlineScripts(doc, crawlDate, urlReplaceMap, numberOfLinksReplaced, numberOfLinksNotFound);
+
 		replaceMS += System.currentTimeMillis();
 		log.info(String.format(
 				"replaceLinks('%s', %s): Links unique=%d, replaced=%d, not_found=%d. " +
@@ -224,7 +227,6 @@ public class HtmlParserUrlRewriter {
 	            url, crawlDate, urlSet.size(), numberOfLinksReplaced.get(), numberOfLinksNotFound.get(),
 				preReplaceMS+replaceMS, preReplaceMS, replaceMS-resolveMS, resolveMS));
 
-		handleInlineScripts(doc, crawlDate, nearestResolver, numberOfLinksReplaced, numberOfLinksNotFound);
 
 		String html_output= doc.toString();
 		html_output = html_output.
@@ -239,12 +241,21 @@ public class HtmlParserUrlRewriter {
 		return res;
 	}
 
-	private static void handleInlineScripts(
-			Document doc, String crawlDate, NearestResolver nearestResolver,
+	private static void rewriteInlineScripts(
+			Document doc, String crawlDate, Map<String, IndexDoc> urlReplaceMap,
 			AtomicInteger numberOfLinksReplaced, AtomicInteger numberOfLinksNotFound) {
-		// TODO: Integrate properly so that links resolving stats are preserved
-		processElement(doc, "script", null, (content) -> ScriptRewriter.getInstance().replaceLinks(
-				content, RewriterBase.PACKAGING.inline, doc.baseUri(), crawlDate, nearestResolver).getReplaced());
+		processElement(doc, "script", null, (content) -> {
+			try {
+				ParseResult scriptResult = ScriptRewriter.getInstance().replaceLinks(
+						content, doc.baseUri(), crawlDate, urlReplaceMap, RewriterBase.PACKAGING.inline);
+				numberOfLinksReplaced.addAndGet(scriptResult.getNumberOfLinksReplaced());
+				numberOfLinksNotFound.addAndGet(scriptResult.getNumberOfLinksNotFound());
+				return scriptResult.getReplaced();
+			} catch (Exception e) {
+				log.warn("Exception while parsing inline script for " + doc.baseUri() + " " + crawlDate, e);
+				return content;
+			}
+		});
 	}
 
 	/**
@@ -281,15 +292,16 @@ public class HtmlParserUrlRewriter {
     /**
      * Collect URLs for resources on the page, intended for later replacement with links to archived versions.
      * @param doc a JSOUP document.
-     * @param url baseURL for the web page, used for resolving relative URLs. 
+     * @param baseURL baseURL for the web page, used for resolving relative URLs.
      * @return a Set of URLs found on the page.
      * @throws Exception if the content could not be processed.
      */
     // TODO: url is not used (baseURL is taken from doc). Either remove the url-parameter or enforce its use
-	public static HashSet<String> getUrlResourcesForHtmlPage(Document doc, String url) {
+	public static HashSet<String> getUrlResourcesForHtmlPage(Document doc, String baseURL) {
+		URLAbsoluter absoluter = new URLAbsoluter(baseURL, true);
         final HashSet<String> urlSet = new HashSet<>();
         UnaryOperator<String> collector = (String sourceURL) -> {
-            urlSet.add(Normalisation.canonicaliseURL(sourceURL));
+            urlSet.add(absoluter.apply(sourceURL));
             return null; // We don't want any changes when collecting
         };
 
@@ -314,6 +326,13 @@ public class HtmlParserUrlRewriter {
 
 		processElementRegexp(doc, "style", null, collector, CSS_IMPORT_PATTERN2);
 		processElementRegexp(doc, "*", "style", collector, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
+
+		// Get URLs from the ScriptRewriter
+		processElement(doc, "script", null, (content) -> {
+			urlSet.addAll(ScriptRewriter.getInstance().getResourceURLs(content, baseURL));
+			return null;
+		});
+
         return urlSet;
 	}
 

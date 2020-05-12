@@ -18,13 +18,13 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import dk.kb.netarchivesuite.solrwayback.util.CountingMap;
 import dk.kb.netarchivesuite.solrwayback.util.RegexpReplacer;
 import dk.kb.netarchivesuite.solrwayback.util.URLAbsoluter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -107,9 +107,8 @@ public abstract class RewriterBase {
    		parseResult.addTiming("getContent", System.currentTimeMillis()-startgetContentMS);
 
 		replaceLinks(
-				content, packaging, arc.getUrl(), arc.getCrawlDate(),
-				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp),
-				parseResult);
+				content, arc.getUrl(), arc.getCrawlDate(), (urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp), parseResult, packaging
+		);
 		log.info(String.format(
 				"replaceLinks.%s(<arc-entry of length %d bytes>, packaging=%s, base='%s', date=%s) completed: %s",
 				getClass().getSimpleName(), content.length(), packaging, arc.getUrl(), arc.getCrawlDate(), parseResult));
@@ -118,20 +117,20 @@ public abstract class RewriterBase {
 	/**
 	 * Replaces links and other URLs with the archived versions that are closest to the ArcEntry in time.
 	 * @param content JavaScript, CSS or similar resource, depending on the extending class.
-	 * @param packaging how the content was stated originally. This controls escaping.
 	 * @param baseURL the URL for the original content location (needed for resolving relative links).
 	 * @param crawlDate the ideal timestamp for the archived versions to link to.
 	 * @param nearestResolver handles url -> archived-resource lookups based on smallest temporal distance to crawlDate.
+	 * @param packaging how the content was stated originally. This controls escaping.
 	 * @return the content with links to archived versions instead of live web version.
 	 * @throws RuntimeException if link-resolving failed.
 	 */
 	// TODO: Read and apply https://www.w3schools.com/Tags/tag_script.asp
 	public ParseResult replaceLinks(
-			String content, PACKAGING packaging, String baseURL, String crawlDate,
-			HtmlParserUrlRewriter.NearestResolver nearestResolver) {
+			String content, String baseURL, String crawlDate, HtmlParserUrlRewriter.NearestResolver nearestResolver,
+			PACKAGING packaging) {
 		ParseResult result;
 		try {
-			result = replaceLinks(content, packaging, baseURL, crawlDate, nearestResolver, new ParseResult());
+			result = replaceLinks(content, baseURL, crawlDate, nearestResolver, new ParseResult(), packaging);
 		} catch (Exception e) {
 			throw new RuntimeException(String.format(
 					"replaceLinks.%s(<content of length %d bytes>, packaging=%s, base='%s', date=%s) failed",
@@ -147,56 +146,44 @@ public abstract class RewriterBase {
 	 * Replaces links and other URLs with the alternatives extracted using {@link #getResourceURLs} and resolved
 	 * to archived versions using nearestResolver.
 	 * @param content probably JavaScript, CSS or similar.
-	 * @param packaging how the content was stated originally. This controls escaping.
 	 * @param baseURL the URL for the content (needed for resolving relative links).
 	 * @param crawlDate the ideal timestamp for the archived versions to link to.
 	 * @param nearestResolver handles url -> archived-resource lookups based on smallest temporal distance to crawlDate.
+	 * @param packaging how the content was stated originally. This controls escaping.
 	 * @return the content with links to archived versions instead of live web version.
 	 * @throws Exception if the provided urlSet could not be translated to archived versions.
 	 */
 	public ParseResult replaceLinks(
-			String content, PACKAGING packaging, String baseURL, String crawlDate,
-			HtmlParserUrlRewriter.NearestResolver nearestResolver, ParseResult parseResult) throws Exception {
+			String content, String baseURL, String crawlDate, HtmlParserUrlRewriter.NearestResolver nearestResolver,
+			ParseResult parseResult, PACKAGING packaging) throws Exception {
 
 		final long startResourcesMS = System.currentTimeMillis();
 		Set<String> urlSet = getResourceURLs(content, baseURL);
 		parseResult.addTiming("getResourceURLs", System.currentTimeMillis()-startResourcesMS);
-		return replaceLinks(content, packaging, baseURL, crawlDate, nearestResolver, parseResult, urlSet);
+		return replaceLinks( content, baseURL, crawlDate, nearestResolver, parseResult, urlSet, packaging);
 	}
 
 	/**
 	 * Replaces links and other URLs with the alternatives in urlSet.
 	 * @param content probably JavaScript, CSS or similar.
-	 * @param packaging how the content was stated originally. This controls escaping.
 	 * @param baseURL the URL for the content (needed for resolving relative links).
 	 * @param crawlDate the ideal timestamp for the archived versions to link to.
 	 * @param nearestResolver handles url -> archived-resource lookups based on smallest temporal distance to crawlDate.
 	 * @param urlSet set of extracted resource URLs from content, normally retrieved with {@link #getResourceURLs}.
+	 * @param packaging how the content was stated originally. This controls escaping.
 	 * @return the content with links to archived versions instead of live web version.
 	 * @throws Exception if the provided urlSet could not be translated to archived versions.
 	 */
 	public ParseResult replaceLinks(
-			String content, PACKAGING packaging, String baseURL, String crawlDate,
-			HtmlParserUrlRewriter.NearestResolver nearestResolver, ParseResult parseResult, Set<String> urlSet)
-			throws Exception {
+			String content, String baseURL, String crawlDate, HtmlParserUrlRewriter.NearestResolver nearestResolver,
+			ParseResult parseResult, Set<String> urlSet, PACKAGING packaging) throws Exception {
 
 		long resolveStartMS = System.currentTimeMillis();
 		List<IndexDoc> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
 		parseResult.addTiming("findNearest", System.currentTimeMillis()-resolveStartMS);
 
 		// We keep track of whether a link resolves or not, so only call get once per URL!
-		final Map<String, IndexDoc> countingUrlReplaceMap = new HashMap<String, IndexDoc>() {
-			@Override
-			public IndexDoc get(Object o) {
-				IndexDoc indexDoc = super.get(o);
-				if (indexDoc == null) {
-					parseResult.incNotFound();
-				} else {
-					parseResult.incReplaced();
-				}
-				return indexDoc;
-			}
-		};
+		final CountingMap<String, IndexDoc> countingUrlReplaceMap = new CountingMap<>();
 		for (IndexDoc indexDoc: docs){
 			countingUrlReplaceMap.put(indexDoc.getUrl_norm(), indexDoc);
 		}
@@ -204,10 +191,31 @@ public abstract class RewriterBase {
 		long replaceStartMS = System.currentTimeMillis();
 		parseResult.setReplaced(replaceLinks(content, baseURL, crawlDate, countingUrlReplaceMap));
 		parseResult.addTiming("replaceURLs", System.currentTimeMillis()-replaceStartMS);
+		parseResult.addStats(countingUrlReplaceMap.getFoundCount(), countingUrlReplaceMap.getFailCount());
 
 		escapeContent(parseResult, packaging);
 		return parseResult;
 	}
+
+	/**
+	 * Replaces links and other URLs with the alternatives in urlMap.
+	 * @param content probably JavaScript, CSS or similar.
+	 * @param baseURL the URL for the content (needed for resolving relative links).
+	 * @param crawlDate the ideal timestamp for the archived versions to link to.
+	 * @param urlMap map from resource URLs to archived versions, normally retrieved with {@link #getResourceURLs}.
+	 * @param packaging how the content was stated originally. This controls escaping.
+	 * @return the content with links to archived versions instead of live web version.
+	 * @throws Exception generic Exception.
+	 */
+	public ParseResult replaceLinks(
+			String content, String baseURL, String crawlDate, Map<String, IndexDoc> urlMap, PACKAGING packaging)
+			throws Exception {
+
+		ParseResult result = new ParseResult(replaceLinks(content, baseURL, crawlDate, urlMap));
+		escapeContent(result, packaging);
+		return result;
+	}
+
 
 	/**
 	 * Escape the given content with regard to the packaging.
@@ -255,8 +263,8 @@ public abstract class RewriterBase {
 	 * @return the content with links to archived versions instead of live web version.
 	 * @throws Exception generic Exception.
 	 */
-	public abstract String replaceLinks(String content, String baseURL, String crawlDate,
-										   Map<String, IndexDoc> urlMap) throws Exception;
+	protected abstract String replaceLinks(
+			String content, String baseURL, String crawlDate, Map<String, IndexDoc> urlMap) throws Exception;
 
 	/**
 	 * Generic transformer creator that absolutes & normalises the incoming URL and return a link to an archived
