@@ -17,6 +17,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -37,7 +40,7 @@ import static org.junit.Assert.*;
  */
 public class HtmlParserUrlRewriterTest {
     private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriterTest.class);
-
+// TODO: Check canonicalization
     @Before
     public void invalidateProperties() {
         // We need this so that we know what the Solr server is set to
@@ -46,73 +49,61 @@ public class HtmlParserUrlRewriterTest {
     }
 
     @Test
-    public void testBasicRewriting() throws Exception {
-        final String HTML =
-                fetchUTF8("example_rewrite/simple.html");
-        final String EXPECTED =
-                fetchUTF8("example_rewrite/simple_expected.html").replaceAll(" +\n", "\n");
-
-        String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                HTML, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
-                getHtmlReplaced().replaceAll(" +\n", "\n");
-
-        assertEquals(EXPECTED, rewritten);
+    public void testSimpleRewriting() throws Exception {
+        assertRewrite("simple");
     }
 
     @Test
     public void testMultiSourceRewriting() throws Exception {
-        final String MULTI =
-                fetchUTF8("example_rewrite/multisource.html");
-        final String EXPECTED =
-                fetchUTF8("example_rewrite/multisource_expected.html").replaceAll(" +\n", "\n");
-
-        String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                MULTI, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
-                getHtmlReplaced().replaceAll(" +\n", "\n");
-
-        assertEquals(EXPECTED, rewritten);
+        assertRewrite("multisource");
     }
 
     @Test
     public void testCSSRewriting() throws Exception {
-        final String CSS =
-                fetchUTF8("example_rewrite/css.html");
-        final String EXPECTED =
-                fetchUTF8("example_rewrite/css_expected.html").replaceAll(" +\n", "\n");
+        assertRewrite("css");
+    }
 
-        String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                CSS, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
-                getHtmlReplaced().replaceAll(" +\n", "\n");
+    @Test
+    public void testCSSImportRewriting() throws Exception {
+        assertRewrite("css_import");
+    }
 
-        assertEquals(EXPECTED, rewritten);
+    @Test
+    public void testStyleBackground() throws Exception {
+        assertRewrite("style_element");
     }
 
     // Disabled for now as it is under construction
     public void testScriptRewriting() throws Exception {
-        final String SCRIPT =
-                fetchUTF8("example_rewrite/script.html");
-        final String EXPECTED =
-                fetchUTF8("example_rewrite/script_expected.html").replaceAll(" +\n", "\n");
-
-        String rewritten = HtmlParserUrlRewriter.replaceLinks(
-                SCRIPT, "http://example.com/somefolder/", "2020043030700", mockNearestResolver).
-                getHtmlReplaced().replaceAll(" +\n", "\n");
-
-        assertEquals(EXPECTED, rewritten);
+        assertRewrite("script");
     }
 
     /* *************************************************************************************
      * Helpers below
      ************************************************************************************* */
 
-    public static final HtmlParserUrlRewriter.NearestResolver mockNearestResolver =
-            (urls, timeStamp) -> urls.stream().
-                    map(url -> makeIndexDoc(url, timeStamp)).
-                    filter(Objects::nonNull).
-                    collect(Collectors.toList());
+    private void assertRewrite(String testPrefix) throws Exception {
+        final String input = fetchUTF8("example_rewrite/" + testPrefix + ".html");
+        final String expected = fetchUTF8("example_rewrite/" + testPrefix + "_expected.html").
+                replaceAll(" +\n", "\n");
+
+        String rewritten = HtmlParserUrlRewriter.replaceLinks(
+                input, "http://example.com/somefolder/", "2020043030700", createResolver()).
+                getHtmlReplaced().replaceAll(" +\n", "\n");
+
+        assertEquals("The result should be as expected for test '" + testPrefix + "'", expected, rewritten);
+    }
+
+    private static HtmlParserUrlRewriter.NearestResolver createResolver() {
+        final AtomicLong counter = new AtomicLong(0);
+        return (urls, timeStamp)-> urls.stream().
+                map(url -> makeIndexDoc(url, timeStamp, counter)).
+                filter(Objects::nonNull).
+                collect(Collectors.toList());
+    }
 
     // Fake url_norm, url, source_file, source_file_offset
-    private static IndexDoc makeIndexDoc(String url, String timeStamp) {
+    private static IndexDoc makeIndexDoc(String url, String timeStamp, AtomicLong counter) {
         if (!url.startsWith("http")) {
             log.warn("mockResolver is skipping '" + url + "' as it does not start with 'http'");
             return null;
@@ -121,9 +112,22 @@ public class HtmlParserUrlRewriterTest {
         doc.setUrl(url);
         doc.setUrl_norm(Normalisation.canonicaliseURL(url));
         doc.setSource_file_path("somesourcefile");
-        doc.setOffset(Math.abs((url+timeStamp).hashCode() % 10000));
+        // Offset is taken from the URL string in testing
+        Matcher offsetMatcher = OFFSET_PATTERN.matcher(url);
+        String match = null;
+        while (offsetMatcher.find()) { // We want the LAST match (so we can do substring tricks)
+            match = offsetMatcher.group(1);
+        }
+        if (match == null) {
+            throw new IllegalArgumentException(
+                    "This mock requires all URLs to contain a substring matching '" + OFFSET_PATTERN.pattern() + "'. " +
+                    "The URL with match was '" + url + "'. Please adjust unit test accordingly");
+
+        }
+        doc.setOffset(Long.parseLong(match));
         return doc;
     }
+    private static Pattern OFFSET_PATTERN = Pattern.compile(".*_o([0-9]+).*");
 
     public static String fetchUTF8(String resource) throws IOException {
         URL url = Thread.currentThread().getContextClassLoader().getResource(resource);

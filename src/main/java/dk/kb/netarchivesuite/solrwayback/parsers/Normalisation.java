@@ -53,6 +53,9 @@ public class Normalisation {
      */
    
     public static String canonicaliseURL(String url, boolean allowHighOrder, boolean createUnambiguous) {
+        if (url == null || url.isEmpty()) {
+            return url;
+        }
         // Basic normalisation, as shared with Heritrix, Wayback et al
         url = canon.canonicalize(url);
 
