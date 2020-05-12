@@ -7,6 +7,8 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import dk.kb.netarchivesuite.solrwayback.util.CountingMap;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.RegexpReplacer;
 import dk.kb.netarchivesuite.solrwayback.util.URLAbsoluter;
 import org.jsoup.Jsoup;
@@ -20,6 +22,8 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
+// TODO: Support https://www.w3schools.com/TAGs/tag_base.asp
+// TODO: Refactor to extend RewriterBase for better re-use
 public class HtmlParserUrlRewriter {
 
 	private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriter.class);
@@ -43,7 +47,7 @@ public class HtmlParserUrlRewriter {
 
 	//replacing urls that points into the world outside solrwayback because they are never harvested
     private static final String NOT_FOUND_LINK=PropertiesLoader.WAYBACK_BASEURL+"services/notfound/";
-	
+
 	public static void main(String[] args) throws Exception{
 //		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
 
@@ -101,7 +105,7 @@ public class HtmlParserUrlRewriter {
 				URL base = new URL(url);
 				String resolvedUrl = new URL( base ,cssUrl).toString();
 				 resolvedUrl =  resolvedUrl.replace("/../", "/");
-				IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getCrawlDate());		         
+				IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getWaybackDate());
 				if (indexDoc!=null){    		    			 
 					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset(); 					
 					css=css.replace(cssUrl, newUrl);					
@@ -125,10 +129,12 @@ public class HtmlParserUrlRewriter {
 	 * @return the page with links to archived versions instead of live web version.
 	 * @throws Exception if link-resolving failed.
 	 */
-	public static HtmlParseResult replaceLinks(ArcEntry arc) throws Exception{
+	public static ParseResult replaceLinks(ArcEntry arc) throws Exception{
+		final long startMS = System.currentTimeMillis();
 		return replaceLinks(
-				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getWaybackDate(),
-				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp));
+				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getCrawlDate(),
+				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp),
+				startMS);
 	}
 
 	/**
@@ -139,15 +145,24 @@ public class HtmlParserUrlRewriter {
 	 * @param nearestResolver handles url -> archived-resource lookups based on smallest temporal distance to crawlDate.
 	 * @throws Exception if link resolving failed.
 	 */
-	public static HtmlParseResult replaceLinks(
+	public static ParseResult replaceLinks(
 			String html, String url, String crawlDate, NearestResolver nearestResolver) throws Exception {
-        long start = System.currentTimeMillis();
+		return replaceLinks(html, url, crawlDate, nearestResolver, System.currentTimeMillis());
+	}
+	// startMS used to measure total time, including resolving of the HTML
+	private static ParseResult replaceLinks(
+			String html, String url, String crawlDate,
+			NearestResolver nearestResolver, long startMS) throws Exception {
+		final long preReplaceMS = System.currentTimeMillis()-startMS;
+		long replaceMS = -System.currentTimeMillis();
+
+		final String waybackDate = DateUtils.convertUtcDate2WaybackDate(crawlDate);
 		AtomicInteger numberOfLinksReplaced = new  AtomicInteger();
 		AtomicInteger numberOfLinksNotFound = new  AtomicInteger();
 		Document doc = Jsoup.parse(html, url);
 
 		// Collect URLs and resolve archived versions for them 
-		HashSet<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
+		Set<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
 		log.debug("#unique urlset to resolve for arc-url '" + url + "' :" + urlSet.size());
 
 		long resolveMS = -System.currentTimeMillis();
@@ -155,7 +170,7 @@ public class HtmlParserUrlRewriter {
 		resolveMS += System.currentTimeMillis();
 
 		// Rewriting to url_norm, so it can be matched when replacing.
-		final Map<String, IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
+		final Map<String, IndexDoc> urlReplaceMap = new CountingMap<>();
 		for (IndexDoc indexDoc: docs){
 			urlReplaceMap.put(indexDoc.getUrl_norm(), indexDoc);
 		}
@@ -184,7 +199,7 @@ public class HtmlParserUrlRewriter {
 
 		// Links to external resources are not resolved until clicked
 		UnaryOperator<String> rewriterRawNoResolve = (sourceURL) ->
-				PropertiesLoader.WAYBACK_BASEURL + "services/web/" + crawlDate + "/" + sourceURL;
+				PropertiesLoader.WAYBACK_BASEURL + "services/web/" + waybackDate + "/" + sourceURL;
         processElement(doc, "a",    "abs:href", rewriterRawNoResolve);
         processElement(doc, "area", "abs:href", rewriterRawNoResolve);
         processElement(doc, "form", "abs:action", rewriterRawNoResolve);
@@ -200,24 +215,50 @@ public class HtmlParserUrlRewriter {
 			sourceURL = rewriterRaw.apply(sourceURL);
 			return sourceURL == null ? null : sourceURL.replace("&", AMPERSAND_REPLACE);
 		};
+		// TODO: Move this to ScriptRewriter
 		processElementRegexp(doc, "style", null, rewriterRawAmpersand, CSS_IMPORT_PATTERN2);
 
 		processElementRegexp(doc, "*", "style", rewriterRaw, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
 
+		// Script content is handled by ScriptRewriter
+		rewriteInlineScripts(doc, crawlDate, urlReplaceMap, numberOfLinksReplaced, numberOfLinksNotFound);
+
+		replaceMS += System.currentTimeMillis();
 		log.info(String.format(
 				"replaceLinks('%s', %s): Links unique=%d, replaced=%d, not_found=%d. " +
-				"Time total=%dms, nearest_query=%dms",
+				"Time total=%dms (resolveHTML=%dms, analysis+adjustment=%dms, resolveResources=%dms)",
 	            url, crawlDate, urlSet.size(), numberOfLinksReplaced.get(), numberOfLinksNotFound.get(),
-				System.currentTimeMillis()-start, resolveMS));
+				preReplaceMS+replaceMS, preReplaceMS, replaceMS-resolveMS, resolveMS));
+
 
 		String html_output= doc.toString();
-		html_output=html_output.replaceAll(AMPERSAND_REPLACE, "&");
+		html_output = html_output.
+				replace(AMPERSAND_REPLACE, "&").
+				// JSOUP replaces newlines with space
+				replace(RewriterBase.NEWLINE_REPLACE, "\n");
 
-		HtmlParseResult res = new HtmlParseResult();
-		res.setHtmlReplaced(html_output);
+		ParseResult res = new ParseResult();
+		res.setReplaced(html_output);
 		res.setNumberOfLinksReplaced(numberOfLinksReplaced.intValue());
 		res.setNumberOfLinksNotFound(numberOfLinksNotFound.intValue());
 		return res;
+	}
+
+	private static void rewriteInlineScripts(
+			Document doc, String crawlDate, Map<String, IndexDoc> urlReplaceMap,
+			AtomicInteger numberOfLinksReplaced, AtomicInteger numberOfLinksNotFound) {
+		processElement(doc, "script", null, (content) -> {
+			try {
+				ParseResult scriptResult = ScriptRewriter.getInstance().replaceLinks(
+						content, doc.baseUri(), crawlDate, urlReplaceMap, RewriterBase.PACKAGING.inline);
+				numberOfLinksReplaced.addAndGet(scriptResult.getNumberOfLinksReplaced());
+				numberOfLinksNotFound.addAndGet(scriptResult.getNumberOfLinksNotFound());
+				return scriptResult.getReplaced();
+			} catch (Exception e) {
+				log.warn("Exception while parsing inline script for " + doc.baseUri() + " " + crawlDate, e);
+				return content;
+			}
+		});
 	}
 
 	/**
@@ -254,15 +295,14 @@ public class HtmlParserUrlRewriter {
     /**
      * Collect URLs for resources on the page, intended for later replacement with links to archived versions.
      * @param doc a JSOUP document.
-     * @param url baseURL for the web page, used for resolving relative URLs. 
+     * @param baseURL baseURL for the web page, used for resolving relative URLs.
      * @return a Set of URLs found on the page.
-     * @throws Exception if the content could not be processed.
      */
-    // TODO: url is not used (baseURL is taken from doc). Either remove the url-parameter or enforce its use
-	public static HashSet<String> getUrlResourcesForHtmlPage(Document doc, String url) {
+	public static HashSet<String> getUrlResourcesForHtmlPage(Document doc, String baseURL) {
+		URLAbsoluter absoluter = new URLAbsoluter(baseURL, true);
         final HashSet<String> urlSet = new HashSet<>();
         UnaryOperator<String> collector = (String sourceURL) -> {
-            urlSet.add(Normalisation.canonicaliseURL(sourceURL));
+            urlSet.add(absoluter.apply(sourceURL));
             return null; // We don't want any changes when collecting
         };
 
@@ -287,6 +327,13 @@ public class HtmlParserUrlRewriter {
 
 		processElementRegexp(doc, "style", null, collector, CSS_IMPORT_PATTERN2);
 		processElementRegexp(doc, "*", "style", collector, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
+
+		// Get URLs from the ScriptRewriter
+		processElement(doc, "script", null, (content) -> {
+			urlSet.addAll(ScriptRewriter.getInstance().getResourceURLs(content, baseURL));
+			return null;
+		});
+
         return urlSet;
 	}
 
@@ -299,7 +346,7 @@ public class HtmlParserUrlRewriter {
       String url=arc.getUrl();
 
        String collectionName = PropertiesLoader.PID_COLLECTION_NAME;
-      Document doc = Jsoup.parse(html,url); //TODO baseURI?
+      Document doc = Jsoup.parse(html,url);
 
      
        HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
@@ -326,7 +373,7 @@ public class HtmlParserUrlRewriter {
       String url=arc.getUrl();
 
 
-      Document doc = Jsoup.parse(html,url); //TODO baseURI?
+      Document doc = Jsoup.parse(html,url);
 
       
       HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
@@ -342,11 +389,11 @@ public class HtmlParserUrlRewriter {
 		/**
 		 * Locates one instance of each url, as close to timeStamp as possible.
 		 * @param urls the URLs to resolve.
-		 * @param timeStamp a timestamp formatted as {@code TODO: state this}
+		 * @param isoTime a timestamp formatted as {@code YYYY-MM-ddTHH:MM:SSZ}.
 		 * @return  IndexDocs for the located URLs containing at least
 		 *          {@code url_norm, url, source_file, source_file_offset} for each document.
 		 */
-		List<IndexDoc> findNearestHarvestTime(Collection<String> urls, String timeStamp) throws Exception;
+		List<IndexDoc> findNearestHarvestTime(Collection<String> urls, String isoTime) throws Exception;
 	}
 
 
@@ -370,10 +417,10 @@ public class HtmlParserUrlRewriter {
 	 */
 	public static void processElementRegexp(
 			Document doc, String element, String attribute, UnaryOperator<String> transformer, Pattern... regexps) {
-		final URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri());
+		final URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri(), true);
 		UnaryOperator<String> processor = url ->
 				// TODO: Should canonicalization not be the responsibility of the collector?
-				transformer.apply(Normalisation.canonicaliseURL(absoluter.apply(url)));
+				transformer.apply(absoluter.apply(url));
 		for (int i = regexps.length-1 ; i >= 0 ; i--) {
 			processor = new RegexpReplacer(regexps[i], processor);
 		}
@@ -403,7 +450,7 @@ public class HtmlParserUrlRewriter {
             String newContent = transformer.apply(content);
 			if (newContent != null && !newContent.equals(content)) {
 				if (attribute == null || attribute.isEmpty()) {
-					e.html(newContent);
+					e.html(newContent.replace("\n", RewriterBase.NEWLINE_REPLACE));
 				} else {
 					e.attr(attribute.replaceFirst("abs:", ""), newContent);
 				}
@@ -424,7 +471,7 @@ public class HtmlParserUrlRewriter {
 
 	public static void processMultiAttribute(
 	        Document doc, String element, String attribute, UnaryOperator<String> transformer) {
-		URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri());
+		URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri(), false);
 		processElementRegexp(doc, element, attribute,
 							 url ->transformer.apply(absoluter.apply(url)),
 							 COMMA_SEPARATED_PATTERN, SPACE_SEPARATED_PATTERN);

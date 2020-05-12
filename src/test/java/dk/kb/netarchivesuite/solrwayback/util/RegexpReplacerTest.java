@@ -1,8 +1,10 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import com.google.protobuf.Enum;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
@@ -32,5 +34,35 @@ public class RegexpReplacerTest {
                                                      number -> Integer.toString(counter.incrementAndGet()));
 
         assertEquals(EXPECTED, replacer.apply(TEST));
+    }
+
+    @Test
+    public void testMultiline() {
+        final String TEST = "foo(42), bar(87),\nfoo(99), zoo(43)";
+        final String EXPECTED = "foo(1), bar(87),\nfoo(2), zoo(43)";
+        AtomicInteger counter = new AtomicInteger(0);
+        RegexpReplacer replacer = new RegexpReplacer("foo\\(([0-9]+)\\)",
+                                                     number -> Integer.toString(counter.incrementAndGet()));
+
+        assertEquals(EXPECTED, replacer.apply(TEST));
+    }
+
+    @Test
+    public void testMultilineNotDotall() {
+        final String TEST = "foo(42), bar(87),\nfoo(99), zoo(43)";
+        final String EXPECTED = "foo(a), bar(87),\nfoo(a), zoo(43)";
+        Pattern pattern = Pattern.compile("foo\\(([0-9]+)\\)");
+        RegexpReplacer replacer = new RegexpReplacer(pattern, number -> "a");
+
+        assertEquals(EXPECTED, replacer.apply(TEST));
+    }
+
+    @Test
+    public void testScriptRegexp() {
+        final String INPUT =
+                "\"video\": \"\\u003CBaseURL>https:\\/\\/video.example.com\\/v88_n.mp4?_nc_cat=102&amp;_nc_sid=5aa_o3&amp;oe=50525\\u003C\\/BaseURL>\"";
+        Pattern pattern = Pattern.compile(
+                "(?s)(?:<|\\\\u003[cC]|&lt;)BaseURL(?:>|&gt;)(.+?)(?:<|\\\\u003[cC]|&lt;)\\\\?/BaseURL(?:>|&gt;)");
+        assertTrue(pattern.matcher(INPUT).find());
     }
 }

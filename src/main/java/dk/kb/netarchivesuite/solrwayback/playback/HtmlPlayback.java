@@ -3,7 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.playback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParseResult;
+import dk.kb.netarchivesuite.solrwayback.parsers.ParseResult;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.WaybackToolbarInjecter;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
@@ -21,8 +21,8 @@ public class HtmlPlayback  extends PlaybackHandler{
   public ArcEntry playback() throws Exception{    
     log.debug(" Generate webpage from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset() +" content encoding:"+arc.getContentEncoding());
     long start = System.currentTimeMillis();
-    HtmlParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);        
-      String textReplaced=htmlReplaced.getHtmlReplaced();
+    ParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);
+      String textReplaced=htmlReplaced.getReplaced();
 
       boolean xhtml =doc.getContentType().toLowerCase().indexOf("application/xhtml") > -1;            
     //Inject tooolbar

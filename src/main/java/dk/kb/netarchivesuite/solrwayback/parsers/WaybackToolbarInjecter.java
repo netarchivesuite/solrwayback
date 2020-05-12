@@ -51,8 +51,8 @@ public class WaybackToolbarInjecter {
     stats.setLastHarvestDate("2015-09-17T17:02:03Z");
     stats.setNumberOfHarvest(101);
 
-    HtmlParseResult htmlParsed = new HtmlParseResult();
-    htmlParsed.setHtmlReplaced(html);
+    ParseResult htmlParsed = new ParseResult();
+    htmlParsed.setReplaced(html);
     htmlParsed.setNumberOfLinksNotFound(1);
     htmlParsed.setNumberOfLinksReplaced(17);
         
@@ -62,7 +62,7 @@ public class WaybackToolbarInjecter {
   
   
   
-public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htmlParsedResult, boolean xhtml) throws Exception{       
+public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlParsedResult, boolean xhtml) throws Exception{
     
     try{                   
     WaybackStatistics stats = NetarchiveSolrClient.getInstance().getWayBackStatistics(indexDoc.getStatusCode(),indexDoc.getUrl(),indexDoc.getUrl_norm(), indexDoc.getCrawlDate());            
@@ -72,18 +72,18 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htm
     return injectedHtml;
    }catch (Exception e){
      log.error("error injecting waybacktoolbar", e);
-    return htmlParsedResult.getHtmlReplaced();// no injection (should not happen). 
+    return htmlParsedResult.getReplaced();// no injection (should not happen).
    }    
   }
   
   
-  public static String injectWaybacktoolBar(String source_file_path, long offset, HtmlParseResult htmlParsedResult, boolean xhtml) throws Exception{                           
+  public static String injectWaybacktoolBar(String source_file_path, long offset, ParseResult htmlParsedResult, boolean xhtml) throws Exception{
     IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);    
     return injectWaybacktoolBar(indexDoc, htmlParsedResult, xhtml);    
   }
   
-  public static String injectInHmtl(HtmlParseResult htmlParsed, WaybackStatistics stats,String source_file_path, long offset, boolean xhtml) throws Exception{
-    String orgHtml=htmlParsed.getHtmlReplaced();
+  public static String injectInHmtl(ParseResult htmlParsed, WaybackStatistics stats, String source_file_path, long offset, boolean xhtml) throws Exception{
+    String orgHtml=htmlParsed.getReplaced();
     Document doc = Jsoup.parse(orgHtml);
     if (xhtml){
       doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml); //Without this json will not terminate tags correct as xhtml 
@@ -101,7 +101,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htm
     return doc.toString();    
   }
   
-  private static String generateToolbarHtml(HtmlParseResult htmlParsed,WaybackStatistics stats, String source_file_path, long offset) throws Exception{
+  private static String generateToolbarHtml(ParseResult htmlParsed, WaybackStatistics stats, String source_file_path, long offset) throws Exception{
     
   
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
