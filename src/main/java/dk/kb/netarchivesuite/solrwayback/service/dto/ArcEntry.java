@@ -172,9 +172,17 @@ public class ArcEntry {
         encoding ="UTF-8";   
       }
       
-     log.info("creating text string from encoding:"+encoding);
-     String text = new String(this.getBinary(),encoding);
+      log.info("creating text string from encoding:"+encoding);
+      try {
+      String text = new String(this.getBinary(),encoding);
       return text;
+      }
+      catch(Exception e){
+    	  log.warn("Encoding error for encoding:"+encoding);    	  
+      }
+      return new String(this.getBinary()); //UNKOWN ENCODING!
+      
+
     }  
   }
 

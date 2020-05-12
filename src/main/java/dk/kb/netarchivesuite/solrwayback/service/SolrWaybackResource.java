@@ -842,7 +842,7 @@ public class SolrWaybackResource {
       log.info("loading crawlDate:"+arcEntry.getCrawlDate());
       String url =  arcEntry.getUrl();
       String crawlDate = arcEntry.getCrawlDate();           
-      String waybackDate = DateUtils.convertSolrDate2WaybackDate(crawlDate);      
+      String waybackDate = DateUtils.convertUtcDate2WaybackDate(crawlDate);      
                                              
      //Format is: /web/20080331193533/http://ekstrabladet.dk/112/article990050.ece 
       String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+url;
@@ -1120,11 +1120,9 @@ public class SolrWaybackResource {
       String redirectUrl = Normalisation.resolveRelative(arc.getUrl(), arc.getRedirectUrl(), false);
       log.info("Redirect url resolved to:"+redirectUrl);      
       if (redirectUrl != null){
-        //build the new redirect url.
-        String crawlDate = doc.getCrawlDate();
-        Instant instant = Instant.parse (crawlDate);  //JAVA 8
-        Date date = java.util.Date.from( instant );      
-        String waybackDate = WarcParser.date2waybackdate(date);
+        //build the new redirect url
+        String crawlDate = doc.getCrawlDate();        
+        String waybackDate = DateUtils.convertUtcDate2WaybackDate(crawlDate);
         String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+redirectUrl;
         response.header("location", newUrl);
         return response.build();        

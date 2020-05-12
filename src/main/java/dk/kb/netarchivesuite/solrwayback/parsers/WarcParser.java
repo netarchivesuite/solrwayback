@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
 public class WarcParser extends  ArcWarcFileParserAbstract {
 
@@ -235,12 +236,9 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
         
         else if (headerLine.startsWith("WARC-Date:")) {
             String[] contentLine = headerLine.split(" ");
-             String crawlDate =contentLine[1].trim();  //Zulu time                                      
-             warcEntry.setCrawlDate(crawlDate);
-                                        
-             Instant instant = Instant.parse (crawlDate);  //JAVA 8
-             Date date = java.util.Date.from( instant );
-             String waybackDate = date2waybackdate(date);             
+             String crawlDate =contentLine[1].trim();  //Zulu/UTC time   : 2020-04-28T08:17:36Z                                
+             warcEntry.setCrawlDate(crawlDate);                         
+             String waybackDate = DateUtils.convertUtcDate2WaybackDate(crawlDate);             
              warcEntry.setWaybackDate(waybackDate);                          
         }
         
@@ -318,18 +316,6 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
      }
     
      
-     
-     //TODO move to util class
-       public static String  date2waybackdate(Date date) { 
-       SimpleDateFormat dForm = new SimpleDateFormat("yyyyMMddHHmmss");        
-       try {
-       String waybackDate = dForm.format(date);
-       return waybackDate;                              
-       } 
-       catch(Exception e){        
-       log.error("Could not parse date:"+date,e);
-       return "20170101010101"; //Default, should never happen.
-       }
-   }
+        
     
 }
