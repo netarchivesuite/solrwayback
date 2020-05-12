@@ -7,6 +7,7 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.RegexpReplacer;
 import dk.kb.netarchivesuite.solrwayback.util.URLAbsoluter;
 import org.jsoup.Jsoup;
@@ -129,7 +130,7 @@ public class HtmlParserUrlRewriter {
 	public static ParseResult replaceLinks(ArcEntry arc) throws Exception{
 		final long startMS = System.currentTimeMillis();
 		return replaceLinks(
-				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getWaybackDate(), arc.getCrawlDate(),
+				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getCrawlDate(),
 				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp),
 				startMS);
 	}
@@ -142,18 +143,18 @@ public class HtmlParserUrlRewriter {
 	 * @param nearestResolver handles url -> archived-resource lookups based on smallest temporal distance to crawlDate.
 	 * @throws Exception if link resolving failed.
 	 */
-	// TODO: Really only have one date!
 	public static ParseResult replaceLinks(
-			String html, String url, String waybackDate, String crawlDate, NearestResolver nearestResolver) throws Exception {
-		return replaceLinks(html, url, waybackDate, crawlDate, nearestResolver, System.currentTimeMillis());
+			String html, String url, String crawlDate, NearestResolver nearestResolver) throws Exception {
+		return replaceLinks(html, url, crawlDate, nearestResolver, System.currentTimeMillis());
 	}
 	// startMS used to measure total time, including resolving of the HTML
 	private static ParseResult replaceLinks(
-			String html, String url, String waybackDate, String crawlDate,
+			String html, String url, String crawlDate,
 			NearestResolver nearestResolver, long startMS) throws Exception {
 		final long preReplaceMS = System.currentTimeMillis()-startMS;
 		long replaceMS = -System.currentTimeMillis();
 
+		final String waybackDate = DateUtils.convertUtcDate2WaybackDate(crawlDate);
 		AtomicInteger numberOfLinksReplaced = new  AtomicInteger();
 		AtomicInteger numberOfLinksNotFound = new  AtomicInteger();
 		Document doc = Jsoup.parse(html, url);
@@ -294,9 +295,7 @@ public class HtmlParserUrlRewriter {
      * @param doc a JSOUP document.
      * @param baseURL baseURL for the web page, used for resolving relative URLs.
      * @return a Set of URLs found on the page.
-     * @throws Exception if the content could not be processed.
      */
-    // TODO: url is not used (baseURL is taken from doc). Either remove the url-parameter or enforce its use
 	public static HashSet<String> getUrlResourcesForHtmlPage(Document doc, String baseURL) {
 		URLAbsoluter absoluter = new URLAbsoluter(baseURL, true);
         final HashSet<String> urlSet = new HashSet<>();
@@ -345,7 +344,7 @@ public class HtmlParserUrlRewriter {
       String url=arc.getUrl();
 
        String collectionName = PropertiesLoader.PID_COLLECTION_NAME;
-      Document doc = Jsoup.parse(html,url); //TODO baseURI?
+      Document doc = Jsoup.parse(html,url);
 
      
        HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
@@ -372,7 +371,7 @@ public class HtmlParserUrlRewriter {
       String url=arc.getUrl();
 
 
-      Document doc = Jsoup.parse(html,url); //TODO baseURI?
+      Document doc = Jsoup.parse(html,url);
 
       
       HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
@@ -388,11 +387,11 @@ public class HtmlParserUrlRewriter {
 		/**
 		 * Locates one instance of each url, as close to timeStamp as possible.
 		 * @param urls the URLs to resolve.
-		 * @param timeStamp a timestamp formatted as {@code TODO: state this}
+		 * @param isoTime a timestamp formatted as {@code YYYY-MM-ddTHH:MM:SSZ}.
 		 * @return  IndexDocs for the located URLs containing at least
 		 *          {@code url_norm, url, source_file, source_file_offset} for each document.
 		 */
-		List<IndexDoc> findNearestHarvestTime(Collection<String> urls, String timeStamp) throws Exception;
+		List<IndexDoc> findNearestHarvestTime(Collection<String> urls, String isoTime) throws Exception;
 	}
 
 
@@ -416,10 +415,10 @@ public class HtmlParserUrlRewriter {
 	 */
 	public static void processElementRegexp(
 			Document doc, String element, String attribute, UnaryOperator<String> transformer, Pattern... regexps) {
-		final URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri(), false);
+		final URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri(), true);
 		UnaryOperator<String> processor = url ->
 				// TODO: Should canonicalization not be the responsibility of the collector?
-				transformer.apply(Normalisation.canonicaliseURL(absoluter.apply(url)));
+				transformer.apply(absoluter.apply(url));
 		for (int i = regexps.length-1 ; i >= 0 ; i--) {
 			processor = new RegexpReplacer(regexps[i], processor);
 		}
