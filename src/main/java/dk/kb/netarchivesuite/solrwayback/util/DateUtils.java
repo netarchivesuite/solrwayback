@@ -8,17 +8,8 @@ import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class DateUtils {
-	
-	public static void main(String[] args) throws Exception{
-		
-     String solrDate="2020-04-28T08:19:41Z";
-      String d= convertUtcDate2WaybackDate(solrDate);
-      System.out.println(d);
 
-	}
-	
   private static final Logger log = LoggerFactory.getLogger(DateUtils .class);
   
    public static String  convertWaybackDate2SolrDate(String waybackdate) throws Exception {
