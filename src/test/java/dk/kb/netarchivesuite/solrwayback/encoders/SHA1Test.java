@@ -39,7 +39,7 @@ public class SHA1Test extends UnitTestUtils{
   			byte[] bytes = arcEntry.getBinary();    			
   		    InputStream is = new ByteArrayInputStream(bytes);                       
   		    String hash= Sha1Hash.createSha1(is);
-            assertEquals("sha1:5NAYYF4QDMNTCMGOQUJ6DQTCEIB7QKFS", hash); //This is the sha1 value in the warc file       
+            assertEquals("sha1:5NAYYF4QDMNTCMGOQUJ6DQTCEIB7QKFS", hash); //This is the sha1 value in the warc file. See warc header above     
   		  }
   		  catch(Exception e) {  			 
   			  e.printStackTrace();
