@@ -1,0 +1,334 @@
+{
+   "quote_count":0,
+   "contributors":null,
+   "truncated":false,
+   "text":"RT @Test: Test text with some encoding:\u00e5 \u00f8 \u2026  ",
+   "is_quote_status":false,
+   "in_reply_to_status_id":null,
+   "reply_count":0,
+   "id":1238344291094847489,
+   "favorite_count":0,
+   "entities":{
+      "user_mentions":[
+         {
+            "id":22695562,
+            "indices":[
+               3,
+               12
+            
+],
+            "id_str":"22695562",
+            "screen_name":"Egense",
+            "name":"Thomas Egense"
+         
+}
+      
+],
+      "symbols":[
+
+      
+],
+      "hashtags":[
+
+      
+],
+      "urls":[
+
+      
+]
+   
+},
+   "retweeted":false,
+   "coordinates":null,
+   "timestamp_ms":"1584079260978",
+   "source":"<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+   "in_reply_to_screen_name":null,
+   "id_str":"1238344291094847489",
+   "retweet_count":0,
+   "in_reply_to_user_id":null,
+   "favorited":false,
+   "retweeted_status":{
+      "quote_count":1,
+      "contributors":null,
+      "truncated":true,
+      "text":": Retweet text with some encoding and url:\u00e5c m\u00f8 \u2026 https://t.co/ABC",
+      "is_quote_status":false,
+      "in_reply_to_status_id":null,
+      "reply_count":11,
+      "id":1238232187549429760,
+      "favorite_count":220,
+      "entities":{
+         "user_mentions":[
+
+         
+],
+         "symbols":[
+
+         
+],
+         "hashtags":[
+
+         
+],
+         "urls":[
+            {
+               "url":"https://t.co/ABC",
+               "indices":[
+                  117,
+                  140
+               
+],
+               "expanded_url":"https://twitter.com/i/web/status/1234",
+               "display_url":"twitter.com/i/web/status/1\u2026"
+            
+}
+         
+]
+      
+},
+      "retweeted":false,
+      "coordinates":null,
+      "source":"<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+      "in_reply_to_screen_name":null,
+      "id_str":"1234",
+      "display_text_range":[
+         0,
+         140
+      
+],
+      "retweet_count":19,
+      "in_reply_to_user_id":null,
+      "favorited":false,
+      "user":{
+         "follow_request_sent":null,
+         "profile_use_background_image":true,
+         "default_profile_image":false,
+         "id":22695562,
+         "default_profile":false,
+         "verified":true,
+         "profile_image_url_https":"https://pbs.twimg.com/profile_images/12345/-SNh6awI_normal.jpg",
+         "profile_sidebar_fill_color":"DDEEF6",
+         "profile_text_color":"333333",
+         "followers_count":42081,
+         "profile_sidebar_border_color":"FFFFFF",
+         "id_str":"22695562",
+         "profile_background_color":"C0DEED",
+         "listed_count":359,
+         "profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png",
+         "utc_offset":null,
+         "statuses_count":12752,
+         "description":"Description text. Tweeting about om #math",
+         "friends_count":3089,
+         "location":null,
+         "profile_link_color":"0084B4",
+         "profile_image_url":"http://pbs.twimg.com/profile_images/12345/-SNh6awI_normal.jpg",
+         "following":null,
+         "geo_enabled":true,
+         "profile_banner_url":"https://pbs.twimg.com/profile_banners/1234/12345",
+         "profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png",
+         "name":"Thomas Egense",
+         "lang":null,
+         "profile_background_tile":false,
+         "favourites_count":24006,
+         "screen_name":"Egense",
+         "notifications":null,
+         "url":"http://thomas-egense.dk/",
+         "created_at":"Tue Mar 03 22:57:11 +0000 2009",
+         "contributors_enabled":false,
+         "time_zone":null,
+         "protected":false,
+         "translator_type":"none",
+         "is_translator":false
+      
+},
+      "geo":null,
+      "in_reply_to_user_id_str":null,
+      "possibly_sensitive":false,
+      "lang":"da",
+      "extended_tweet":{
+         "display_text_range":[
+            0,
+            279
+         
+],
+         "entities":{
+            "user_mentions":[
+
+            
+],
+            "symbols":[
+
+            
+],
+            "hashtags":[
+               {
+                  "indices":[
+                     273,
+                     279
+                  
+],
+                  "text":"math"
+               
+}
+            
+],
+            "urls":[
+
+            
+],
+            "media":[
+               {
+                  "expanded_url":"https://twitter.com/ThomasEgense/status/1234/photo/1",
+                  "display_url":"pic.twitter.com/dJo5JeESSh",
+                  "url":"https://t.co/dJo5JeESSh",
+                  "media_url_https":"https://pbs.twimg.com/media/ES8Vm7-X0AA61qZ.jpg",
+                  "id_str":"1238232181228687360",
+                  "sizes":{
+                     "small":{
+                        "h":680,
+                        "resize":"fit",
+                        "w":510
+                     
+},
+                     "large":{
+                        "h":2048,
+                        "resize":"fit",
+                        "w":1536
+                     
+},
+                     "medium":{
+                        "h":1200,
+                        "resize":"fit",
+                        "w":900
+                     
+},
+                     "thumb":{
+                        "h":150,
+                        "resize":"crop",
+                        "w":150
+                     
+}
+                  
+},
+                  "indices":[
+                     280,
+                     303
+                  
+],
+                  "type":"photo",
+                  "id":1238232181228687360,
+                  "media_url":"http://pbs.twimg.com/media/ABC.jpg"
+               
+}
+            
+]
+         
+},
+         "extended_entities":{
+            "media":[
+               {
+                  "expanded_url":"https://twitter.com/ThomasEgense/status/1234/photo/1",
+                  "display_url":"pic.twitter.com/ABC",
+                  "url":"https://t.co/ZYZ",
+                  "media_url_https":"https://pbs.twimg.com/media/ABC.jpg",
+                  "id_str":"1238232181228687360",
+                  "sizes":{
+                     "small":{
+                        "h":680,
+                        "resize":"fit",
+                        "w":510
+                     
+},
+                     "large":{
+                        "h":2048,
+                        "resize":"fit",
+                        "w":1536
+                     
+},
+                     "medium":{
+                        "h":1200,
+                        "resize":"fit",
+                        "w":900
+                     
+},
+                     "thumb":{
+                        "h":150,
+                        "resize":"crop",
+                        "w":150
+                     
+}
+                  
+},
+                  "indices":[
+                     280,
+                     303
+                  
+],
+                  "type":"photo",
+                  "id":1238232181228687360,
+                  "media_url":"http://pbs.twimg.com/media/ES8Vm7-X0AA61qZ.jpg"
+               
+}
+            
+]
+         
+},
+         "full_text":"Test full text with some encoding:\u00e5c m\u00f8 \u2026 and tag+link #math https://t.co/abc"
+      
+},
+      "created_at":"Thu Mar 12 22:35:33 +0000 2020",
+      "filter_level":"low",
+      "in_reply_to_status_id_str":null,
+      "place":null
+   
+},
+   "user":{
+      "follow_request_sent":null,
+      "profile_use_background_image":false,
+      "default_profile_image":false,
+      "id":2337958629,
+      "default_profile":false,
+      "verified":false,
+      "profile_image_url_https":"https://pbs.twimg.com/profile_images/1234/H0waTByu_normal.jpg",
+      "profile_sidebar_fill_color":"000000",
+      "profile_text_color":"000000",
+      "followers_count":740,
+      "profile_sidebar_border_color":"000000",
+      "id_str":"2337958629",
+      "profile_background_color":"000000",
+      "listed_count":15,
+      "profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png",
+      "utc_offset":null,
+      "statuses_count":2071,
+      "description":"Mathematician and beer drinker.",
+      "friends_count":635,
+      "location":null,
+      "profile_link_color":"157781",
+      "profile_image_url":"http://pbs.twimg.com/profile_images/ABC_normal.jpg",
+      "following":null,
+      "geo_enabled":true,
+      "profile_banner_url":"https://pbs.twimg.com/profile_banners/1234/12345",
+      "profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png",
+      "name":"Thomas2",
+      "lang":null,
+      "profile_background_tile":false,
+      "favourites_count":1381,
+      "screen_name":"thomas2",
+      "notifications":null,
+      "url":null,
+      "created_at":"Tue Feb 11 16:01:26 +0000 2014",
+      "contributors_enabled":false,
+      "time_zone":null,
+      "protected":false,
+      "translator_type":"none",
+      "is_translator":false
+   
+},
+   "geo":null,
+   "in_reply_to_user_id_str":null,
+   "lang":"da",
+   "created_at":"Fri Mar 13 06:01:00 +0000 2020",
+   "filter_level":"low",
+   "in_reply_to_status_id_str":null,
+   "place":null
+}

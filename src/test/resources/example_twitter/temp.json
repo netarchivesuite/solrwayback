@@ -1,0 +1,354 @@
+{
+   "quote_count":0,
+   "contributors":null,
+   "truncated":false,
+   "text":"RT @SSTProbst: I de nye retningslinjer til sundhedsv\u00e6senet er der et hurtigt overblik over patientens vej. Ved milde symptomer skal man bli\u2026",
+   "is_quote_status":false,
+   "in_reply_to_status_id":null,
+   "reply_count":0,
+   "id":1238376310587772934,
+   "favorite_count":0,
+   "entities":{
+      "user_mentions":[
+         {
+            "id":1173267355,
+            "indices":[
+               3,
+               13
+            
+],
+            "id_str":"1173267355",
+            "screen_name":"SSTProbst",
+            "name":"Helene Probst"
+         
+}
+      
+],
+      "symbols":[
+
+      
+],
+      "hashtags":[
+
+      
+],
+      "urls":[
+
+      
+]
+   
+},
+   "retweeted":false,
+   "coordinates":null,
+   "timestamp_ms":"1584086895020",
+   "source":"<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+   "in_reply_to_screen_name":null,
+   "id_str":"1238376310587772934",
+   "retweet_count":0,
+   "in_reply_to_user_id":null,
+   "favorited":false,
+   "retweeted_status":{
+      "quote_count":1,
+      "contributors":null,
+      "truncated":true,
+      "text":"I de nye retningslinjer til sundhedsv\u00e6senet er der et hurtigt overblik over patientens vej. Ved milde symptomer ska\u2026 https://t.co/scS9CrRZgd",
+      "is_quote_status":false,
+      "in_reply_to_status_id":null,
+      "reply_count":6,
+      "id":1238352274398871552,
+      "favorite_count":30,
+      "entities":{
+         "user_mentions":[
+
+         
+],
+         "symbols":[
+
+         
+],
+         "hashtags":[
+
+         
+],
+         "urls":[
+            {
+               "url":"https://t.co/scS9CrRZgd",
+               "indices":[
+                  117,
+                  140
+               
+],
+               "expanded_url":"https://twitter.com/i/web/status/1238352274398871552",
+               "display_url":"twitter.com/i/web/status/1\u2026"
+            
+}
+         
+]
+      
+},
+      "retweeted":false,
+      "coordinates":null,
+      "source":"<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+      "in_reply_to_screen_name":null,
+      "id_str":"1238352274398871552",
+      "display_text_range":[
+         0,
+         140
+      
+],
+      "retweet_count":20,
+      "in_reply_to_user_id":null,
+      "favorited":false,
+      "user":{
+         "follow_request_sent":null,
+         "profile_use_background_image":true,
+         "default_profile_image":false,
+         "id":1173267355,
+         "default_profile":true,
+         "verified":true,
+         "profile_image_url_https":"https://pbs.twimg.com/profile_images/741166090504548352/8R35_QvA_normal.jpg",
+         "profile_sidebar_fill_color":"DDEEF6",
+         "profile_text_color":"333333",
+         "followers_count":551,
+         "profile_sidebar_border_color":"C0DEED",
+         "id_str":"1173267355",
+         "profile_background_color":"C0DEED",
+         "listed_count":4,
+         "profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png",
+         "utc_offset":null,
+         "statuses_count":288,
+         "description":"Centerchef i Sundhedsstyrelsens center for planl\u00e6gning. Tweeter om #sundhedforalle med fokus p\u00e5 kvalitet og sammenh\u00e6ng i sundhedsv\u00e6senet.",
+         "friends_count":754,
+         "location":"Copenhagen, Denmark",
+         "profile_link_color":"1DA1F2",
+         "profile_image_url":"http://pbs.twimg.com/profile_images/741166090504548352/8R35_QvA_normal.jpg",
+         "following":null,
+         "geo_enabled":false,
+         "profile_banner_url":"https://pbs.twimg.com/profile_banners/1173267355/1540365798",
+         "profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png",
+         "name":"Helene Probst",
+         "lang":null,
+         "profile_background_tile":false,
+         "favourites_count":1127,
+         "screen_name":"SSTProbst",
+         "notifications":null,
+         "url":"http://sst.dk",
+         "created_at":"Tue Feb 12 22:35:33 +0000 2013",
+         "contributors_enabled":false,
+         "time_zone":null,
+         "protected":false,
+         "translator_type":"none",
+         "is_translator":false
+      
+},
+      "geo":null,
+      "in_reply_to_user_id_str":null,
+      "possibly_sensitive":false,
+      "lang":"da",
+      "extended_tweet":{
+         "display_text_range":[
+            0,
+            222
+         
+],
+         "entities":{
+            "user_mentions":[
+               {
+                  "id":952875552632864768,
+                  "indices":[
+                     211,
+                     222
+                  
+],
+                  "id_str":"952875552632864768",
+                  "screen_name":"SSTSundhed",
+                  "name":"Sundhedsstyrelsen"
+               
+}
+            
+],
+            "symbols":[
+
+            
+],
+            "hashtags":[
+               {
+                  "indices":[
+                     185,
+                     191
+                  
+],
+                  "text":"COVID"
+               
+},
+               {
+                  "indices":[
+                     195,
+                     210
+                  
+],
+                  "text":"sundhedforalle"
+               
+}
+            
+],
+            "urls":[
+
+            
+],
+            "media":[
+               {
+                  "expanded_url":"https://twitter.com/SSTProbst/status/1238352274398871552/photo/1",
+                  "display_url":"pic.twitter.com/szW4wAMy8r",
+                  "url":"https://t.co/szW4wAMy8r",
+                  "media_url_https":"https://pbs.twimg.com/media/ES-C0y4XQAAgFex.jpg",
+                  "id_str":"1238352266073161728",
+                  "sizes":{
+                     "large":{
+                        "h":993,
+                        "resize":"fit",
+                        "w":993
+                     
+},
+                     "small":{
+                        "h":680,
+                        "resize":"fit",
+                        "w":680
+                     
+},
+                     "medium":{
+                        "h":993,
+                        "resize":"fit",
+                        "w":993
+                     
+},
+                     "thumb":{
+                        "h":150,
+                        "resize":"crop",
+                        "w":150
+                     
+}
+                  
+},
+                  "indices":[
+                     223,
+                     246
+                  
+],
+                  "type":"photo",
+                  "id":1238352266073161728,
+                  "media_url":"http://pbs.twimg.com/media/ES-C0y4XQAAgFex.jpg"
+               
+}
+            
+]
+         
+},
+         "extended_entities":{
+            "media":[
+               {
+                  "expanded_url":"https://twitter.com/SSTProbst/status/1238352274398871552/photo/1",
+                  "display_url":"pic.twitter.com/szW4wAMy8r",
+                  "url":"https://t.co/szW4wAMy8r",
+                  "media_url_https":"https://pbs.twimg.com/media/ES-C0y4XQAAgFex.jpg",
+                  "id_str":"1238352266073161728",
+                  "sizes":{
+                     "large":{
+                        "h":993,
+                        "resize":"fit",
+                        "w":993
+                     
+},
+                     "small":{
+                        "h":680,
+                        "resize":"fit",
+                        "w":680
+                     
+},
+                     "medium":{
+                        "h":993,
+                        "resize":"fit",
+                        "w":993
+                     
+},
+                     "thumb":{
+                        "h":150,
+                        "resize":"crop",
+                        "w":150
+                     
+}
+                  
+},
+                  "indices":[
+                     223,
+                     246
+                  
+],
+                  "type":"photo",
+                  "id":1238352266073161728,
+                  "media_url":"http://pbs.twimg.com/media/ES-C0y4XQAAgFex.jpg"
+               
+}
+            
+]
+         
+},
+         "full_text":"I de nye retningslinjer til sundhedsv\u00e6senet er der et hurtigt overblik over patientens vej. Ved milde symptomer skal man blive hjemme. Ved behov skal man kontakte egen l\u00e6ge telefonisk. #COVID-19 #sundhedforalle @SSTSundhed https://t.co/szW4wAMy8r"
+      
+},
+      "created_at":"Fri Mar 13 06:32:44 +0000 2020",
+      "filter_level":"low",
+      "in_reply_to_status_id_str":null,
+      "place":null
+   
+},
+   "user":{
+      "follow_request_sent":null,
+      "profile_use_background_image":false,
+      "default_profile_image":false,
+      "id":87923613,
+      "default_profile":false,
+      "verified":false,
+      "profile_image_url_https":"https://pbs.twimg.com/profile_images/897783959962226688/HAKZPnRD_normal.jpg",
+      "profile_sidebar_fill_color":"000000",
+      "profile_text_color":"000000",
+      "followers_count":4445,
+      "profile_sidebar_border_color":"000000",
+      "id_str":"87923613",
+      "profile_background_color":"000000",
+      "listed_count":62,
+      "profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png",
+      "utc_offset":null,
+      "statuses_count":10381,
+      "description":"@Radikale medlem af @folketinget og @RegionH. Ordf\u00f8rer for forskning \ud83d\udc69\u200d\ud83d\udd2c sundhed \ud83c\udfe5 psykiatri \ud83e\udde0 ydre rum \ud83d\ude80 heavy metal \ud83e\udd18Evidensfetichist p\u00e5 @ScienceblogDK",
+      "friends_count":1380,
+      "location":"Danmark",
+      "profile_link_color":"E2007A",
+      "profile_image_url":"http://pbs.twimg.com/profile_images/897783959962226688/HAKZPnRD_normal.jpg",
+      "following":null,
+      "geo_enabled":true,
+      "profile_banner_url":"https://pbs.twimg.com/profile_banners/87923613/1533071198",
+      "profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png",
+      "name":"Stinus Lindgreen",
+      "lang":null,
+      "profile_background_tile":false,
+      "favourites_count":18384,
+      "screen_name":"stinuslindgreen",
+      "notifications":null,
+      "url":"https://www.facebook.com/StinusLindgreenRV",
+      "created_at":"Fri Nov 06 11:53:05 +0000 2009",
+      "contributors_enabled":false,
+      "time_zone":null,
+      "protected":false,
+      "translator_type":"none",
+      "is_translator":false
+   
+},
+   "geo":null,
+   "in_reply_to_user_id_str":null,
+   "lang":"da",
+   "created_at":"Fri Mar 13 08:08:15 +0000 2020",
+   "filter_level":"low",
+   "in_reply_to_status_id_str":null,
+   "place":null
+}
