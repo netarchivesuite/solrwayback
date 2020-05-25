@@ -54,13 +54,13 @@ public class TwitterParser2 {
 		
 
 		HashSet<String> hashTagsvalues = new HashSet<String>();
-		//JsonUtils.addAllValues(twitterJson, hashTagsvalues, "extended_tweet.entities.hashtags[].text");
-		//JsonUtils.addAllValues(twitterJson, hashTagsvalues, "entities.hashtags[].text");
+		JsonUtils.addAllValues(twitterJson, hashTagsvalues, "extended_tweet.entities.hashtags[].text");
+		JsonUtils.addAllValues(twitterJson, hashTagsvalues, "entities.hashtags[].text");
 		hashTags = hashTagsvalues;
 		
 		HashSet<String> media_urls = new HashSet<String>();
 		//TODO also HTTPs version?
-		JsonUtils.addAllValues(twitterJson,  media_urls , "rewteeted_status.extended_tweet.entities.media[].media_url");
+		JsonUtils.addAllValues(twitterJson,  media_urls , "retweeted_status.extended_tweet.entities.media[].media_url");
 		JsonUtils.addAllValues(twitterJson,  media_urls , "extended_tweet.entities.media[].media_url");
 		JsonUtils.addAllValues(twitterJson,  media_urls , "entities.media[].media_url");
 		imageUrlsList=media_urls;
