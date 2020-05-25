@@ -1,30 +1,73 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.junit.Test;
+
 public class TwitterParserTest {
   
+	
+
+	  @Test
+	     public void test2() throws Exception {    
+	     
+	    String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/temp.json")));
+	   
+	    TwitterParser2 p = new TwitterParser2(content);
+	    System.out.println("author:"+p.getAuthor());
+	    System.out.println("text:"+p.getText());
+	    System.out.println("images"+p.getImageUrlsList());
+	    
+	  }
   
-  public static void main(String[] args) throws Exception{
-    
-    /*
+	    
+	    
+	
+	  @Test
+	     public void testNotRetweet() throws Exception {    
+	     
+	    String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/twitter2.json")));
+	    
+	    
+	    TwitterParser tweet = new TwitterParser(content);
+
+	    assertEquals("Test full text with tag and link: #math https://t.co/ABCDE",tweet.getText());	    
+	    assertEquals("Thomas Egense",tweet.getAuthor());
+	    assertEquals(0,tweet.getNumberOfLikes());
+	    assertEquals(0,tweet.getNumberOfReplies());
+	    assertEquals(0,tweet.getNumberOfRetweets());
+	    assertEquals(false,tweet.isRetweet());
+	    
+	    assertEquals("Fri Mar 13 00:03:52 CET 2020",tweet.getCreateDate().toString());    
+	    System.out.println(tweet.getHashTagsList()); //TODO
+	    assertEquals(1,tweet.getImageUrlsList().size());
+	    assertEquals("http://pbs.twimg.com/media/ABCDE.jpg",tweet.getImageUrlsList().get(0));	    	   	    
+	  }
+	
+	  @Test
+     public void testIsRetweet() throws Exception {    
+     /*
      * This is just test code to load the json. When used only a single json document will be parsed at a time.
      * 
      */
-    String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/twitter/twitter6.txt")));
+    String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/twitter1.json")));
+    
     
     TwitterParser tweet = new TwitterParser(content);
-    System.out.println(tweet.getText());
+
+    assertEquals("RT @Test: Test text with some encoding:å ø …  ",tweet.getText());
+    assertEquals("Thomas2",tweet.getAuthor());
+    assertEquals(0,tweet.getNumberOfLikes());
+    assertEquals(0,tweet.getNumberOfReplies());
+    assertEquals(0,tweet.getNumberOfRetweets());
+    assertEquals(true,tweet.isRetweet());
+    assertEquals("Fri Mar 13 07:01:00 CET 2020",tweet.getCreateDate().toString());    
     System.out.println(tweet.getHashTagsList());
-    System.out.println(tweet.getImageUrlsList());
-    System.out.println(tweet.getAuthor());
-    System.out.println(tweet.getCreateDate());
-    System.out.println("likes:"+tweet.getNumberOfLikes());
-    System.out.println("retweets:"+tweet.getNumberOfRetweets());
-      
-    
-    
+    //System.out.println(tweet.getImageUrlsList());        
   }
 
 }

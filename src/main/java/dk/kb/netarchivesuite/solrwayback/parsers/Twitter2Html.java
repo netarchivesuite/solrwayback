@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.util.ArrayList;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +17,7 @@ public class Twitter2Html {
   private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
   public static String twitter2Html(String jsonString, String crawlDate) throws Exception{
     StringBuilder b = new StringBuilder();       
-    TwitterParser parser = new TwitterParser(jsonString);
+    TwitterParser2 parser = new TwitterParser2(jsonString);
     String image_icons = PropertiesLoader.WAYBACK_BASEURL+"images/twitter_sprite.png";
     
     
@@ -39,7 +41,7 @@ public class Twitter2Html {
    String queryStr = Facade.queryStringForImages(images_norm);
    ArrayList<ArcEntryDescriptor> images = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, crawlDate);
 
-   String user_image = parser.getUserImage();
+   String user_image = parser.getProfileImage();
    String user_image_norm =(Normalisation.canonicaliseURL(user_image));
    
    ArrayList<String> user_image_list = new ArrayList<String>();
@@ -119,12 +121,12 @@ public class Twitter2Html {
             "<h2>"+parser.getAuthor()+ type+"</h2>"+
           "</div>"+
           "<div class='item date'>"+
-            "<div>"+parser.getCreateDate()+"</div>"+
+            "<div>"+parser.getCreatedDate()+"</div>"+
           "</div>"+
           "<div class='item text'>"+
            newline2Br(parser.getText())+            
             "<span class='item hashtags'>"+
-             keyHashTagsHtml(parser.getHashTagsList())+         
+             keyHashTagsHtml(parser.getHashTags())+         
             "<span class='image'>"+
               imagesHtml(imageUrls)+
             "</span>"+
@@ -143,7 +145,7 @@ public class Twitter2Html {
      return html;
     }
   
-  public static String keyHashTagsHtml(ArrayList<String> tags){
+  public static String keyHashTagsHtml(Set<String> tags){
     StringBuilder b = new StringBuilder();
     for (String tag : tags){
       b.append("<span><a href=''>#"+tag+"</a></span>\n");
