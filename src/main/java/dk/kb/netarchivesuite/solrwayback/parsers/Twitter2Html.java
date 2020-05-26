@@ -22,6 +22,8 @@ public class Twitter2Html {
     String image_icons = PropertiesLoader.WAYBACK_BASEURL+"images/twitter_sprite.png";
     
     
+    String textReplaced = newline2Br(parser.getText());
+    textReplaced = replaceHashTags(textReplaced, parser.getHashTags());
     
     String title;
     String type;
@@ -125,7 +127,7 @@ public class Twitter2Html {
             "<div>"+parser.getCreatedDate()+"</div>"+
           "</div>"+
           "<div class='item text'>"+
-           newline2Br(parser.getText())+                     
+           textReplaced+                     
             "<span class='image'>"+
               imagesHtml(imageUrls)+
             "</span>"+
