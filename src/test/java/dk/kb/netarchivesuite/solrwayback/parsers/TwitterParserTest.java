@@ -5,25 +5,33 @@ import static org.junit.Assert.fail;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
 
 import org.junit.Test;
 
 public class TwitterParserTest {
-  
 	
-/*
 	  @Test
 	     public void test2() throws Exception {    
+	     String test ="Her er et test #math med et tag";
+	     System.out.println(test.replaceAll("#math",  "FIXED"));
 	     
+		  
+		  
 	    String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/delete.json")));
 	   
 	    TwitterParser2 p = new TwitterParser2(content);
-	    System.out.println("author:"+p.getAuthor());
+	    System.out.println("tags:"+p.getHashTags());
+
 	    System.out.println("text:"+p.getText());
-	    System.out.println("images"+p.getImageUrlsList());
+	    
+
+       
+	   
+	    
 	    
 	  }
-  */
+
 	    
 	    
 	
