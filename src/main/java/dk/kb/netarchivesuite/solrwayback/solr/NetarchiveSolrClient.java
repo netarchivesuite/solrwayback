@@ -509,10 +509,9 @@ public class NetarchiveSolrClient {
     if (filterQuery != null){
       solrQuery.setFilterQueries(filterQuery);
     }
-
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+        
+    QueryResponse rsp = loggedSolrQuery("search", solrQuery);
     SolrDocumentList docs = rsp.getResults();
-
 
     result.setNumberOfResults(docs.getNumFound());
     ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
