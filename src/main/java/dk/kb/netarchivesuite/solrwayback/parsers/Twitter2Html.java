@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 
@@ -155,15 +156,13 @@ public class Twitter2Html {
    * 
    */
   public static String replaceHashTags(String text, HashSet<String> tags) {
-	  
+	  String searchUrl = PropertiesLoaderWeb.WAYBACK_SERVER;
+	  String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false"; //TODO should be possible	  
 	  for (String tag : tags) {
-		  log.debug("replacing hashtag in tweet:"+tag);
-		  text=text.replaceAll(" #"+tag+" ", "<span><a href=''>#"+tag+"</a></span>");
-		  
+      String link = searchUrl+"?query=keywords%3A"+tag+otherSearchParams;	
+	  text=text.replaceAll(" #"+tag+" ", " <span><a href='"+link+"'>#"+tag+"</a></span> ");		  
 	  }
-	  return text;
-	  
-	  
+	  return text;	  	  
   }
     
   
