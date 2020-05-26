@@ -6,6 +6,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriBuilder;
+
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
@@ -25,10 +29,18 @@ import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
+import com.google.gson.Gson;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.parsers.NormalisationWWWremove;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
@@ -870,6 +882,57 @@ public class NetarchiveSolrClient {
     QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
     SolrDocumentList docs = groupsToDoc(rsp);
     return solrDocList2IndexDoc(docs);    
+  }
+  /*
+   * 
+   * 
+   */
+  public String searchJsonResponse( String query, String fq, boolean grouping, boolean revisits, Integer start) throws Exception {
+      log.info("query "+query +" grouping:"+grouping +" revisits:"+revisits);
+      
+      String startStr ="0";
+      if (start != null){
+        startStr=start.toString();
+      }
+
+      SolrQuery solrQuery = new SolrQuery();
+      
+      //Build all query params in map
+
+      solrQuery.set("rows", "20"); //Hardcoded pt.
+      solrQuery.set("start", startStr);
+      solrQuery.set("q", query);
+      solrQuery.set("fl", "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
+      solrQuery.set("wt", "json");
+      solrQuery.set("hl", "on");
+      solrQuery.set("q.op", "AND");
+      solrQuery.set("indent", "true");
+      solrQuery.set("f.crawl_year.facet.limit", "100"); //Show all crawl_years. Maybe remove limit to property file as well
+      if (grouping){
+        //Both group and stats must be enabled at same time                
+    	  solrQuery.set( "group","true");
+    	  solrQuery.set( "group.field","url");
+    	  solrQuery.set("stats",  "true");
+    	  solrQuery.set("stats.field",  "{!cardinality=0.1}url");
+    	  solrQuery.set( "group.format","simple");
+    	  solrQuery.set( "group.limit","1"); 
+      }
+            
+      if (!revisits){
+    	  solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
+      }
+      if ( fq != null && fq.length() > 0){
+    	  solrQuery.set("fq",fq);                        
+      }
+      if (!PropertiesLoaderWeb.FACETS.isEmpty()) {
+    	  solrQuery.set("facet", "true");
+        for (String facet: PropertiesLoaderWeb.FACETS) {
+        	solrQuery.add("facet.field", facet);
+        }
+     }
+      QueryResponse rsp = loggedSolrQuery("searchJsonResponse", solrQuery);          
+      Gson gson = new Gson();
+      return gson.toJson(rsp);              
   }
   
   /*

@@ -693,60 +693,10 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
         return props;
     }
     
-    public static String proxySolr( String query, String fq, boolean grouping, boolean revisits, Integer start) {
-      log.info("query "+query +" grouping:"+grouping +" revisits:"+revisits);
+    public static String proxySolr( String query, String fq, boolean grouping, boolean revisits, Integer start) throws Exception {
       
-      String startStr ="0";
-      if (start != null){
-        startStr=start.toString();
-      }
-
-      //Build all query params in map
-      MultivaluedMap<String, String> params = new MultivaluedMapImpl();
-      params.add("rows", "20"); //Hardcoded pt.
-      params.add("start", startStr);
-      params.add("q", query);
-      params.add("fl", "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
-      params.add("wt", "json");
-      params.add("hl", "on");
-      params.add("q.op", "AND");
-      params.add("indent", "true");
-      params.add("f.crawl_year.facet.limit", "100"); //Show all crawl_years. Maybe remove limit to property file as well
-      if (grouping){
-        //Both group and stats must be enabled at same time                
-        params.add( "group","true");
-        params.add( "group.field","url");
-        params.add("stats",  "true");
-        params.add("stats.field",  "{!cardinality=0.1}url");
-        params.add( "group.format","simple");
-        params.add( "group.limit","1"); 
-      }
-            
-      if (!revisits){
-        params.add("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
-      }
-      if ( fq != null && fq.length() > 0){
-        params.add("fq",fq);                        
-      }
-      if (!PropertiesLoaderWeb.FACETS.isEmpty()) {
-        params.add("facet", "true");
-        for (String facet: PropertiesLoaderWeb.FACETS) {
-          params.add("facet.field", facet);
-        }
-     }
-                
-      String solrUrl =PropertiesLoader.SOLR_SERVER;  
-      ClientConfig config = new DefaultClientConfig();
-      Client client = Client.create(config);
-      WebResource service = client.resource(UriBuilder.fromUri(solrUrl).build());
-           
-      WebResource queryWs= service.path("select").queryParams(params);                                                                                            
-                                                                   
-      ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
-      String responseStr= response.getEntity(String.class);
-
-      log.debug(responseStr.substring(0, Math.min(800, responseStr.length()-1)));            
-      return responseStr;      
+    	
+    	return NetarchiveSolrClient.getInstance().searchJsonResponse(query, fq, grouping, revisits, start);    	    	
   }
         
     
