@@ -154,6 +154,7 @@ public class Twitter2Html {
   public static String replaceHashTags(String text, HashSet<String> tags) {
 	  
 	  for (String tag : tags) {
+		  log.debug("replacing hashtag in tweet:"+tag);
 		  text.replaceAll(" #"+tag+" ", "<span><a href=''>#"+tag+"</a></span>");
 		  
 	  }
