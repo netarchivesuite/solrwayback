@@ -1,3 +1,10 @@
+3.2.6
+-----
+Twitter API playback updated and improved (require newer version of warc-indexer)
+Timing logs for solr query, both for Solr Qtime and total time seen from SolrClient.  
+Fixes UTC timing bug for some date conversion.
+General cleanup and refactoring.
+
 3.2.5
 -----
 Security/Vulnerability fix for all frontend dependencies.
