@@ -11,11 +11,11 @@ import org.junit.Test;
 public class TwitterParserTest {
   
 	
-
+/*
 	  @Test
 	     public void test2() throws Exception {    
 	     
-	    String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/temp.json")));
+	    String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/delete.json")));
 	   
 	    TwitterParser2 p = new TwitterParser2(content);
 	    System.out.println("author:"+p.getAuthor());
@@ -23,7 +23,7 @@ public class TwitterParserTest {
 	    System.out.println("images"+p.getImageUrlsList());
 	    
 	  }
-  
+  */
 	    
 	    
 	
