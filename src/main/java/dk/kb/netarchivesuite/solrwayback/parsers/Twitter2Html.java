@@ -1,6 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -124,9 +125,7 @@ public class Twitter2Html {
             "<div>"+parser.getCreatedDate()+"</div>"+
           "</div>"+
           "<div class='item text'>"+
-           newline2Br(parser.getText())+            
-            "<span class='item hashtags'>"+
-             keyHashTagsHtml(parser.getHashTags())+         
+           newline2Br(parser.getText())+                     
             "<span class='image'>"+
               imagesHtml(imageUrls)+
             "</span>"+
@@ -145,14 +144,22 @@ public class Twitter2Html {
      return html;
     }
   
-  public static String keyHashTagsHtml(Set<String> tags){
-    StringBuilder b = new StringBuilder();
-    for (String tag : tags){
-      b.append("<span><a href=''>#"+tag+"</a></span>\n");
-    }
-       
-    return b.toString();        
+  
+  /*HashTags are in clear text as #tag.
+   * Replace this with a link that search for the tag.
+   * 
+   */
+  public static String replaceHashTags(String text, HashSet<String> tags) {
+	  
+	  for (String tag : tags) {
+		  text.replaceAll(" #"+tag+" ", "<span><a href=''>#"+tag+"</a></span>");
+		  
+	  }
+	  return text;
+	  
+	  
   }
+    
   
   private static String newline2Br(String text){
     if (text==null){
