@@ -693,9 +693,7 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
         return props;
     }
     
-    public static String proxySolr( String query, String fq, boolean grouping, boolean revisits, Integer start) throws Exception {
-      
-    	
+    public static String proxySolr( String query, String fq, boolean grouping, boolean revisits, Integer start) throws Exception {          
     	return NetarchiveSolrClient.getInstance().searchJsonResponse(query, fq, grouping, revisits, start);    	    	
   }
         
