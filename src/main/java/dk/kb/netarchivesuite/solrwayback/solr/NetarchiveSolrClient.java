@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -37,8 +38,9 @@ import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
 
 public class NetarchiveSolrClient {
-
   private static final Logger log = LoggerFactory.getLogger(NetarchiveSolrClient.class);
+  private static final long M = 1000000; // ns -> ms
+  
   protected static SolrClient solrServer;
   protected  static NetarchiveSolrClient instance = null;
   protected  static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
@@ -83,7 +85,7 @@ public class NetarchiveSolrClient {
     }
     else{
       return getDomainFacetsOutgoing(domain, facetLimit, crawlDateStart,crawlDateEnd);
-    }       
+    }
   }
 
   /*
@@ -160,7 +162,8 @@ public class NetarchiveSolrClient {
   /*
    * The logic for getting the 4 dates in 2 queries is too complicated, and only gives small performance boost... 
    */
-  public WaybackStatistics getWayBackStatistics(int statusCode, String url, String url_norm, String crawlDate)  throws Exception{    
+  public WaybackStatistics getWayBackStatistics(int statusCode, String url, String url_norm, String crawlDate)  throws Exception{
+    final long startNS = System.nanoTime();
     WaybackStatistics stats = new  WaybackStatistics();
     stats.setStatusCode(statusCode); //this is know when calling the method, so no need to extract it from Solr.
     stats.setUrl(url);
@@ -171,9 +174,7 @@ public class NetarchiveSolrClient {
 
     //We query for 1 result to get the domain.
     String domain = null;
-     long start = System.currentTimeMillis();
     stats.setHarvestDate(crawlDate);
-    log.info("Getting wayback statistics for solrdate:"+crawlDate); 
     final String statsField= "crawl_date";
 
     int results=0;
@@ -186,8 +187,11 @@ public class NetarchiveSolrClient {
     solrQuery.setGetFieldStatistics(true);
     solrQuery.setGetFieldStatistics(statsField);
 
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);	  	  
-    log.info("Stats call part 1:"+(System.currentTimeMillis()-start));
+    long call1ns = -System.nanoTime();
+    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    call1ns += System.nanoTime();
+    final long call1nsSolr = rsp.getQTime();
+
     results += rsp.getResults().getNumFound();
     if (rsp.getResults().getNumFound() != 0 ){
       domain=  (String) rsp.getResults().get(0).getFieldValue("domain");
@@ -209,8 +213,11 @@ public class NetarchiveSolrClient {
     solrQuery.setGetFieldStatistics(statsField);
 
 
-    rsp = solrServer.query(solrQuery,METHOD.POST);          
-    log.info("Stats call part 2:"+(System.currentTimeMillis()-start));
+    long call2ns = -System.nanoTime();
+    rsp = solrServer.query(solrQuery,METHOD.POST);
+    call2ns += System.nanoTime();
+    final long call2nsSolr = rsp.getQTime();
+
     results += rsp.getResults().getNumFound();
     if (rsp.getResults().getNumFound() != 0 ){
       domain=  (String) rsp.getResults().get(0).getFieldValue("domain");
@@ -226,15 +233,20 @@ public class NetarchiveSolrClient {
 
     stats.setNumberOfHarvest(results+1); //The +1 is the input value that is not included in any of the two result sets.
 
-    if (domain == null){      
+    long callDomain = -1;
+    long callDomainSolr = -1;
+    if (domain == null){
       //This can happen if we only have 1 harvest. It will not be include in the {x,*] og [*,x } since x is not included
       solrQuery = new SolrQuery("url_norm:\""+url_norm+"\"");            
       solrQuery.setRows(1);
       solrQuery.setGetFieldStatistics(true);
       solrQuery.setGetFieldStatistics(statsField);
 
+      callDomain = -System.nanoTime();
       rsp = solrServer.query(solrQuery,METHOD.POST);
-      if (rsp.getResults().size() == 0){        
+      callDomain += System.nanoTime();
+      callDomainSolr = rsp.getQTime();
+      if (rsp.getResults().size() == 0){
         return stats; //url never found. 
       }
       domain=(String) rsp.getResults().get(0).getFieldValue("domain");    
@@ -245,9 +257,11 @@ public class NetarchiveSolrClient {
     solrQuery.setGetFieldStatistics(true);
     solrQuery.setGetFieldStatistics("content_length");
 
-
+    long call3ns = -System.nanoTime();
     rsp = solrServer.query(solrQuery,METHOD.POST);
-    log.info("Stats call part 3:"+(System.currentTimeMillis()-start));
+    call3ns += System.nanoTime();
+    final long call3nsSolr = rsp.getQTime();
+
     long numberHarvestDomain= rsp.getResults().getNumFound();
     stats.setNumberHarvestDomain(numberHarvestDomain);
     if (numberHarvestDomain != 0 ){    
@@ -257,7 +271,15 @@ public class NetarchiveSolrClient {
         stats.setDomainHarvestTotalContentLength((long) totalContentLength);         
       }      
     }
-    log.info("total time getting wayback statistics for solrdate:"+crawlDate +" was :"+(System.currentTimeMillis()-start)); 
+
+    log.info(String.format(
+            "Wayback statistics for url='%s', solrdate=%s extracted in %d ms " +
+            "(call_1=%d ms (qtime=%d ms), call_2=%d ms (qtime=%d ms), call_3=%d ms (qtime=%d ms), " +
+            "domain_call=%d ms (qtime=%d ms))",
+            url_norm.length() > 50 ? url_norm.substring(0, 50) + "..." : url_norm, crawlDate,
+            (System.nanoTime()-startNS)/M,
+            call1ns/M, call1nsSolr, call2ns/M, call2nsSolr, call3ns/M, call3nsSolr,
+            callDomain/M, callDomainSolr));
     return stats;
 
   }
@@ -326,8 +348,8 @@ public class NetarchiveSolrClient {
     solrQuery.add("fl","id,crawl_date");    
     solrQuery.setRows(1000000);
 
-    log.info("HarvestTimeForUrl query:"+solrQuery);
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    QueryResponse rsp = loggedSolrQuery("getHarvestTimeForUrl", solrQuery);
+
     SolrDocumentList docs = rsp.getResults();
 
     for (SolrDocument doc : docs) {
@@ -348,8 +370,11 @@ public class NetarchiveSolrClient {
     solrQuery.setFilterQueries("content_type_norm:html" , "content_text_length:[1000 TO *]"); //only html pages and pages with many words.
     solrQuery.setRows(10000);
 
+    long solrNS = -System.nanoTime();
     QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    solrNS += System.nanoTime();
     SolrDocumentList docs = rsp.getResults();
+    
     StringBuilder b= new StringBuilder();
     long totaltLength=0;
     for (SolrDocument doc : docs){
@@ -357,7 +382,10 @@ public class NetarchiveSolrClient {
       b.append(doc.getFieldValue(" "));//Space between next document.
       totaltLength +=  ((int)  doc.getFieldValue("content_text_length"));
     }    
-    log.info("Total extracted content length for wordCloud:"+totaltLength +" total hits:"+rsp.getResults().getNumFound()  +" only using first 10000 hits");
+    log.info(String.format(
+            "Total extracted content length for wordCloud:%d, total hits:%d only using first 10000 hits" +
+            "in %d ms (qtime=%d ms)",
+            totaltLength, rsp.getResults().getNumFound(), solrNS/M, rsp.getQTime()));
     return b.toString();
   }
   
@@ -393,11 +421,10 @@ public class NetarchiveSolrClient {
     //String pathEscaped= ClientUtils.escapeQueryChars(source_file_path); This is done by the warc-indexer now
     
     query = "source_file_path:\""+source_file_path+"\" AND source_file_offset:"+offset ;         
-    log.info("getArcEntry query:"+ query);    
     solrQuery.setQuery(query) ;
     solrQuery.setRows(1);
 
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    QueryResponse rsp = loggedSolrQuery("getArchEntry", solrQuery);
     SolrDocumentList docs = rsp.getResults();
 
     if (docs.getNumFound() == 0){
@@ -528,43 +555,47 @@ public class NetarchiveSolrClient {
   }
 
   public SolrDocumentList findNearestDocuments(HashSet<String> urls, String timeStamp, String fieldList)
-      throws SolrServerException, IOException {
-final int chunkSize = 1000;
+          throws SolrServerException, IOException {
+    final int chunkSize = 1000;
 
-if (urls.size() > chunkSize){
-  SolrDocumentList allDocs = new SolrDocumentList();
-  Iterable<List<String>> splitSets = Iterables.partition(urls, chunkSize); //split into sets of size max chunkSize;
-  for (List<String> chunk : splitSets){
-    SolrDocumentList chunkDocs = findNearestDocuments(new HashSet<>(chunk), timeStamp, fieldList);
-    mergeInto(allDocs, chunkDocs);
-    // What is allDocs.start and should we care?
+    if (urls.size() > chunkSize){
+      SolrDocumentList allDocs = new SolrDocumentList();
+      Iterable<List<String>> splitSets = Iterables.partition(urls, chunkSize); //split into sets of size max chunkSize;
+      for (List<String> chunk : splitSets){
+        SolrDocumentList chunkDocs = findNearestDocuments(new HashSet<>(chunk), timeStamp, fieldList);
+        mergeInto(allDocs, chunkDocs);
+        // What is allDocs.start and should we care?
+      }
+      return allDocs;
+    }
+
+    SolrQuery solrQuery = new SolrQuery();
+
+    String urlOrQuery = urlQueryJoin("url_norm", "OR", urls);
+    urlOrQuery = urlOrQuery.replace("\\", "\\\\"); //Solr encode
+    solrQuery.setQuery(urlOrQuery);
+
+    solrQuery.setFacet(false);
+    solrQuery.setGetFieldStatistics(false);
+    solrQuery.setRows(urls.size());
+    solrQuery.set("group", "true");
+    solrQuery.set("group.field", "url_norm");
+    solrQuery.set("group.size", "1");
+    solrQuery.set("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
+    solrQuery.add("fl", fieldList);
+
+    solrQuery.setFilterQueries("record_type:response OR record_type:arc"); //No binary for revists.
+
+    long solrNS = -System.nanoTime();
+    QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+    solrNS += System.nanoTime();
+
+    SolrDocumentList docs = groupsToDoc(rsp);
+    log.info(String.format(
+            "findNearestDocuments number URLS in search:%d, number of harvested url found:%d, time:%d ms (qtime=%d ms)",
+            urls.size(), docs.size(), solrNS/M, rsp.getQTime()));
+    return docs;
   }
-  return allDocs;
-}
-
-SolrQuery solrQuery = new SolrQuery();
-
-String urlOrQuery = urlQueryJoin("url_norm", "OR", urls);
-urlOrQuery = urlOrQuery.replace("\\", "\\\\"); //Solr encode
-solrQuery.setQuery(urlOrQuery);
-
-solrQuery.setFacet(false);
-solrQuery.setGetFieldStatistics(false);
-solrQuery.setRows(urls.size());
-solrQuery.set("group", "true");
-solrQuery.set("group.field", "url_norm");
-solrQuery.set("group.size", "1");
-solrQuery.set("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
-solrQuery.add("fl", fieldList);
-
-solrQuery.setFilterQueries("record_type:response OR record_type:arc"); //No binary for revists.
-
-QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
-SolrDocumentList docs = groupsToDoc(rsp);
-log.info("number URLS in search:" +urls.size() +" number of harvested url found:"  + docs.size() +
-         " time:"+rsp.getQTime());
-return docs;
-}
 
  
 
@@ -614,7 +645,6 @@ return docs;
    * Notice here do we not fix url_norm 
    */
   public IndexDoc findClosestHarvestTimeForUrl(String url,String timeStamp) throws Exception {
-    log.info("search for:" + url +" for crawldate:"+timeStamp);
 
     if (url == null || timeStamp == null){
       throw new IllegalArgumentException("harvestUrl or timeStamp is null"); // Can happen for url-rewrites that are not corrected       
@@ -644,7 +674,10 @@ return docs;
     solrQuery.setRows(10);
     
     
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);        
+    QueryResponse rsp = loggedSolrQuery(
+            String.format("findClosestHarvestTimeForUrl(url='%s', timestamp=%s)",
+                          url.length() > 50 ? url.substring(0, 50) + "..." : url, timeStamp),
+            solrQuery);
 
     SolrDocumentList docs = rsp.getResults();
     if (docs == null  || docs.size() ==0){
@@ -744,13 +777,12 @@ return docs;
     
     String url_norm = normalizeUrl(url);
     String pwidQuery = "url_norm:\""+url_norm +"\" AND crawl_date:\"" +utc+"\"";
-    log.info("pwidQuery"+pwidQuery);
     SolrQuery solrQuery = new SolrQuery();
     solrQuery.setQuery(pwidQuery);     
     solrQuery.setRows(1); //1 page only
 
     solrQuery.add("fl", indexDocFieldList);
-    QueryResponse rsp = solrServer.query(solrQuery,METHOD.POST);
+    QueryResponse rsp = loggedSolrQuery("pwidQuery", solrQuery);
         
     SolrDocumentList docs = rsp.getResults();
     if (docs.size() == 0){
@@ -976,5 +1008,26 @@ return docs;
     }
                    
   }
-  
+
+  /**
+   * Performs a Solr call, logging the time it took; both measured and reported QTime.
+   * @param caller    the method or logical entity that issued the call. This will be part of the log entry.
+   * @param solrQuery the query to issue.
+   * @return the result of the query.
+   * @throws SolrServerException if the query failed.
+   * @throws IOException if the query failed.
+   */
+  private QueryResponse loggedSolrQuery(String caller, SolrQuery solrQuery) throws SolrServerException, IOException {
+    long solrNS = -System.nanoTime();
+    QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+    solrNS += System.nanoTime();
+    String query = solrQuery.getQuery();
+    query = query == null ? null :
+            query.length() > 200 ? query.substring(0, 200) + "..." : query;
+    log.info(String.format("%s Solr response in %d ms (qtime=%d ms) with %d hits for query %s",
+                           caller, solrNS/M, rsp.getQTime(), rsp.getResults().getNumFound(), query));
+    return rsp;
+  }
+
+
 }
