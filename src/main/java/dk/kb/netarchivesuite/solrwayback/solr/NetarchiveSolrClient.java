@@ -16,6 +16,8 @@ import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.NoOpResponseParser;
+import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.*;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 
@@ -26,6 +28,8 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.util.NamedList;
+import org.noggit.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
@@ -930,9 +934,16 @@ public class NetarchiveSolrClient {
         	solrQuery.add("facet.field", facet);
         }
      }
-      QueryResponse rsp = loggedSolrQuery("searchJsonResponse", solrQuery);          
-      Gson gson = new Gson();
-      return gson.toJson(rsp);              
+      
+      NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
+      rawJsonResponseParser.setWriterType("json");
+
+      QueryRequest req = new QueryRequest(solrQuery);
+      req.setResponseParser(rawJsonResponseParser);
+
+      NamedList<Object> resp = solrServer.request(req);
+      String jsonResponse = (String) resp.get("response");
+      return jsonResponse;
   }
   
   /*
