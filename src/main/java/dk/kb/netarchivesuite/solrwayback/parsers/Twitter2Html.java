@@ -21,9 +21,12 @@ public class Twitter2Html {
     TwitterParser2 parser = new TwitterParser2(jsonString);
     String image_icons = PropertiesLoader.WAYBACK_BASEURL+"images/twitter_sprite.png";
     
+    log.info("text before tag replace:"+parser.getText());
+    
     
     String textReplaced = newline2Br(parser.getText());
     textReplaced = replaceHashTags(textReplaced, parser.getHashTags());
+    log.info("text after tag replace:"+parser.getText());
     
     String title;
     String type;
@@ -155,7 +158,7 @@ public class Twitter2Html {
 	  
 	  for (String tag : tags) {
 		  log.debug("replacing hashtag in tweet:"+tag);
-		  text.replaceAll(" #"+tag+" ", "<span><a href=''>#"+tag+"</a></span>");
+		  text=text.replaceAll(" #"+tag+" ", "<span><a href=''>#"+tag+"</a></span>");
 		  
 	  }
 	  return text;

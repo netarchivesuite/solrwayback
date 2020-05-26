@@ -24,7 +24,6 @@ public class JsonUtils {
 			String token = tokens[i];
 			parentJson = getSubObjectIfExists(parentJson, token);
 			if (parentJson == null) {
-				System.out.println("null reached");
 				return null; //
 			}
 		}
@@ -50,17 +49,12 @@ public class JsonUtils {
 		JSONObject parentJson = json;
 		for (int i = 0; i < tokens.length - 1; i++) { // Skip last
 			String token = tokens[i];
-			System.out.println("token:"+token);
 			if (isArrayPath(token)) {
 				//System.out.println("arrayfound:" + token);
 				//System.out.println("arrayfound, elementaname:" + elementName(token));
-				System.out.println("array token:"+token);
 				if (parentJson.has(elementName(token))) {
-					System.out.println("token:"+token +" found") ;
-				JSONArray jsonArray = parentJson.getJSONArray(elementName(token));
-				
+				JSONArray jsonArray = parentJson.getJSONArray(elementName(token));				
 				ArrayList<JSONObject> jsonObjectList = array2List(jsonArray);
-
 				// Create a sub-array from the full array.
 				String[] remainingTokens = Arrays.asList(tokens).subList(i + 1, tokens.length).toArray(new String[0]);
 				String remainingPath = String.join(". ", remainingTokens);
@@ -71,8 +65,7 @@ public class JsonUtils {
 				}
 			}
 
-			parentJson = getSubObjectIfExists(parentJson, token);
-			System.out.println("parent:"+parentJson);
+			parentJson = getSubObjectIfExists(parentJson, token);			
 			if (parentJson == null) {			
 				return values;
 			}

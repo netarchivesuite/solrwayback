@@ -28,7 +28,7 @@ public class JodelPlayback extends PlaybackHandler{
 
     String encoding=arc.getContentEncoding();
     String json = new String(arc.getBinary(), encoding);
-    String html = Jodel2Html.render(json, arc.getCrawlDate());
+    String html = "TODO";//Jodel2Html.render(json, arc.getCrawlDate());
     arc.setBinary(html.getBytes());        
     arc.setContentType("text/html");
     ParseResult htmlReplaced = new ParseResult(); //Do not parse.
