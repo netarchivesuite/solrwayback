@@ -33,7 +33,7 @@ public class TwitterParserTest {
 	    String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/twitter2.json")));
 	    
 	    
-	    TwitterParser tweet = new TwitterParser(content);
+	    TwitterParser2 tweet = new TwitterParser2(content);
 
 	    assertEquals("Test full text with tag and link: #math https://t.co/ABCDE",tweet.getText());	    
 	    assertEquals("Thomas Egense",tweet.getAuthor());
@@ -42,10 +42,10 @@ public class TwitterParserTest {
 	    assertEquals(0,tweet.getNumberOfRetweets());
 	    assertEquals(false,tweet.isRetweet());
 	    
-	    assertEquals("Fri Mar 13 00:03:52 CET 2020",tweet.getCreateDate().toString());    
-	    System.out.println(tweet.getHashTagsList()); //TODO
+	    assertEquals("Fri Mar 13 00:03:52 CET 2020",tweet.getCreatedDate().toString());    
+	    System.out.println(tweet.getHashTags()); //TODO
 	    assertEquals(1,tweet.getImageUrlsList().size());
-	    assertEquals("http://pbs.twimg.com/media/ABCDE.jpg",tweet.getImageUrlsList().get(0));	    	   	    
+	    assertEquals("http://pbs.twimg.com/media/ABCDE.jpg",tweet.getImageUrlsList().iterator().next());	    	   	    
 	  }
 	
 	  @Test
@@ -57,7 +57,7 @@ public class TwitterParserTest {
     String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/twitter1.json")));
     
     
-    TwitterParser tweet = new TwitterParser(content);
+    TwitterParser2 tweet = new TwitterParser2(content);
 
     assertEquals("RT @Test: Test text with some encoding:å ø …  ",tweet.getText());
     assertEquals("Thomas2",tweet.getAuthor());
@@ -65,8 +65,8 @@ public class TwitterParserTest {
     assertEquals(0,tweet.getNumberOfReplies());
     assertEquals(0,tweet.getNumberOfRetweets());
     assertEquals(true,tweet.isRetweet());
-    assertEquals("Fri Mar 13 07:01:00 CET 2020",tweet.getCreateDate().toString());    
-    System.out.println(tweet.getHashTagsList());
+    assertEquals("Fri Mar 13 07:01:00 CET 2020",tweet.getCreatedDate().toString());    
+    System.out.println(tweet.getHashTags());
     //System.out.println(tweet.getImageUrlsList());        
   }
 
