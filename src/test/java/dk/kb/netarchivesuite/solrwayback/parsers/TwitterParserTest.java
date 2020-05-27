@@ -9,25 +9,43 @@ import java.util.HashSet;
 
 import org.junit.Test;
 
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+import dk.kb.netarchivesuite.solrwayback.util.RegexpReplacer;
+
 public class TwitterParserTest {
 	
-	
 	/*
-	  @Test
-	     public void test2() throws Exception {    
-	     String test ="Her er et test #math med et tag";
-	     System.out.println(test.replaceAll("#math",  "FIXED"));
-	     		 		 
-	     String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/delete.json")));
-	   
-	     TwitterParser2 p = new TwitterParser2(content);
-	     System.out.println("tags:"+p.getHashTags());
 
-	     System.out.println("text:"+p.getText());
+	  @Test
+	     public void testSolrQTime() throws Exception {    	     
+	     		 		 
+	     String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/solr.json")));
+	     /*
+	
+	     String subStr = content.substring(qTimeStart);
+	     int qTimeEnd = 
+	
+	     
+
+	  }
+*/
+
+
+	
+	
+	  @Test
+	     public void test2() throws Exception {    	     		  
+	     String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/delete1.json")));
+	      TwitterParser2 p = new TwitterParser2(content);   	     
+	     
+
+	    System.out.println(replaceHashTags(p.getText(),p.getHashTags()));
+	      
+
 
 	  }
 
-	  */  
+	  
 	    
 	
 	  @Test
@@ -72,5 +90,23 @@ public class TwitterParserTest {
     System.out.println(tweet.getHashTags());
     //System.out.println(tweet.getImageUrlsList());        
   }
+	  
 
+	  public static String replaceHashTags(String text, HashSet<String> tags) {
+    	  String searchUrl = "http://localhost/";
+    	  String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false"; //TODO frontend fix so all other params not needed	  
+    	  for (String tag : tags) {
+            String link = searchUrl+"?query=keywords%3A"+tag+otherSearchParams;	
+    	    String replaceText = " <span><a href='"+link+"'>#"+tag+"</a></span> ";     
+            if (text.endsWith(tag)) {
+              text=text.replaceAll(" #"+tag, replaceText); //Replace if last in text. (no trailing white-space).
+            }
+            else {
+    	      text=text.replaceAll(" #"+tag+ " ", replaceText); //This will not find the tag if it is last. Need space not to replace within tags. Etc. #covid #covid19 
+            }	  
+    	  }
+    	  return text;	  	  
+      }
+        
+	  
 }
