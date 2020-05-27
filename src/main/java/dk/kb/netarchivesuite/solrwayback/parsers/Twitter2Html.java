@@ -151,16 +151,22 @@ public class Twitter2Html {
     }
   
   
-  /*HashTags are in clear text as #tag.
-   * Replace this with a link that search for the tag.
+   /*HashTags are in clear text without # in front.
+   * Replace this with a link that searches for the tag.
    * 
    */
   public static String replaceHashTags(String text, HashSet<String> tags) {
 	  String searchUrl = PropertiesLoaderWeb.WAYBACK_SERVER;
-	  String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false"; //TODO should be possible	  
+	  String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false"; //TODO frontend fix so all other params not needed	  
 	  for (String tag : tags) {
-      String link = searchUrl+"?query=keywords%3A"+tag+otherSearchParams;	
-	  text=text.replaceAll(" #"+tag+" ", " <span><a href='"+link+"'>#"+tag+"</a></span> ");		  
+        String link = searchUrl+"?query=keywords%3A"+tag+otherSearchParams;	
+	    String replaceText = " <span><a href='"+link+"'>#"+tag+"</a></span> ";     
+        if (text.endsWith(tag)) {
+          text=text.replaceAll(" #"+tag, replaceText); //Replace if last in text. (no trailing white-space).
+        }
+        else {
+	      text=text.replaceAll(" #"+tag+ " ", replaceText); //This will not find the tag if it is last. Need space not to replace within tags. Etc. #covid #covid19 
+        }	  
 	  }
 	  return text;	  	  
   }
