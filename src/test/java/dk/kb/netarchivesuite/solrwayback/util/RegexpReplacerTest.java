@@ -3,6 +3,8 @@ package dk.kb.netarchivesuite.solrwayback.util;
 import com.google.protobuf.Enum;
 import org.junit.Test;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
@@ -36,21 +38,69 @@ public class RegexpReplacerTest {
         assertEquals(EXPECTED, replacer.apply(TEST));
     }
 
+    // Derived from 144571 primarily Danish tweets
+    private final static String HASHTAG_PATTERN = "(#[\\p{L}][\\p{L}\\p{Digit}_ाोे]+)";
+
     @Test
     public void testHashtags() {
-        final String TEST = "Some text with #COVID and #COVID19 hashtags. Also comma #TAG1, #TAG2 and tag at #theend";
+        final String TEST = "Some text with #COVID and #COVID19 hashtags. #under_score " +
+                            "Also comma #TAG1, #TAG2 and tag at #theend";
         final String EXPECTED = "Some text with <a href=\"taglink:COVID\">#COVID</a> and " +
-                                "<a href=\"taglink:COVID19\">#COVID19</a> hashtags. Also comma " +
+                                "<a href=\"taglink:COVID19\">#COVID19</a> hashtags. " +
+                                "<a href=\"taglink:under_score\">#under_score</a> Also comma " +
                                 "<a href=\"taglink:TAG1\">#TAG1</a>, <a href=\"taglink:TAG2\">#TAG2</a> and tag at" +
                                 " <a href=\"taglink:theend\">#theend</a>";
 
-        RegexpReplacer replacer = new RegexpReplacer("(#[\\p{Alpha}][\\p{Alnum}]+)",
+        RegexpReplacer replacer = new RegexpReplacer(HASHTAG_PATTERN,
                                                      tag -> {
                                                          tag = tag.substring(1);
                                                          return  "<a href=\"taglink:" + tag + "\">#" + tag + "</a>";
                                                      });
 
         assertEquals(EXPECTED, replacer.apply(TEST));
+    }
+
+    @Test
+    public void testHashtagLetters() {
+        // Extracted letters in hashtags from 144571 primarily Danish tweets with
+        // zcat *.json.gz | jq -r '.extended_tweet.entities.hashtags[].text' 2> /dev/null | sed 's/\(.\)/\1\n/g' | sort | uniq -c | sort -rn | sed 's/[^0-9]*[0-9]\+[^0-9]//' | tr -d '\n' ; echo ""
+        final String LETTERS =
+                "edoiarknlstpmguchvbSyCDfAw1I9EOVUzKPTWjHFøMサBRNGL20_æıxYå4üqJ3ö6XZاğşQä5İ7с8íаοαλلéεرçиنоςιمØнσي" +
+                "ÖηδркρودóятπνهτعáувκحبšлдυίكفسŞñčΠΕΔقÆ黑警祐田桑料佳ाцμΜشختأÜÍâ質相無濫星問中सыРмжегωχΤΝθήέάةآəèÇāی香集鄭" +
+                "送贜説計観視衛結紀箱禍異留画理火港流法死欧次権査林更日新文散政插探捕打愛思布崩小家完安学嫁坂国図向名匿北化募全光値倍人交二" +
+                "ोेवलरभपजकСНјбώόΟΚΖγβΒΑغطضصجúãà\ucc87";
+        final RegexpReplacer replacer = new RegexpReplacer(HASHTAG_PATTERN, tag -> "Matched");
+
+        StringBuilder nonMatched = new StringBuilder(LETTERS.length());
+        for (Character c: LETTERS.toCharArray()) {
+            // We prepend 'a' as digit-only tags are not allowed
+            if (!"Matched".equals(replacer.apply("#a" + c))) {
+                nonMatched.append(c);
+            }
+        }
+
+        assertEquals("All letters extracted from Twitter JSON hashtags should match. Non-matching letters were: " +
+                     nonMatched.toString(), 0, nonMatched.length());
+    }
+
+    @Test
+    public void testIllegalHashtags() {
+        final String[] ILLEGALS = new String[] {
+                "#123",
+                "# ",
+                "#",
+                "#a-b",
+                "#a b",
+                "#a\u00a0b", // Non-breaking space
+                "#a!",
+                "#1a"
+        };
+        final RegexpReplacer replacer = new RegexpReplacer(HASHTAG_PATTERN, tag -> "Matched: ");
+
+        for (String illegal: ILLEGALS) {
+            // We prepend 'a' as digit-only tags are not allowed
+            assertNotSame("Matched: " + illegal, replacer.apply(illegal));
+        }
     }
 
     @Test
