@@ -23,9 +23,10 @@ public class Twitter2HtmlTest {
 	     assertEquals(expectedBefore,before);
 	     
 	     //Test replace hashtags with links
-	     String solrwaybackBaseUrl="http://solrwayback/";	     
-	     String replacedText= Twitter2Html.replaceHashTags(solrwaybackBaseUrl, p.getText(), p.getHashTags());
-	     String expectedAfter ="Test full text with tag and link: <span><a href='http://solrwayback/?query=keywords%3Amath AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false'>#math</a></span> https://t.co/ABCDE";
+	     String solrwaybackBaseUrl="http://solrwayback/";	 	     
+	     String otherSearchParam="&test=test123";
+	     String replacedText= Twitter2Html.replaceHashTags(solrwaybackBaseUrl, otherSearchParam,p.getText(), p.getHashTags());
+	     String expectedAfter ="Test full text with tag and link: <span><a href='http://solrwayback/?query=keywords%3Amath&test=test123'>#math</a></span> https://t.co/ABCDE";
 	     assertEquals(expectedAfter, replacedText);
 	      
 	  }
