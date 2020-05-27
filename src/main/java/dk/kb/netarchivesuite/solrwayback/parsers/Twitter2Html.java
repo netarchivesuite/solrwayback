@@ -21,13 +21,10 @@ public class Twitter2Html {
     StringBuilder b = new StringBuilder();       
     TwitterParser2 parser = new TwitterParser2(jsonString);
     String image_icons = PropertiesLoader.WAYBACK_BASEURL+"images/twitter_sprite.png";
-    
-    log.info("text before tag replace:"+parser.getText());
-    
+            
     
     String textReplaced = newline2Br(parser.getText());
-    textReplaced = replaceHashTags(textReplaced, parser.getHashTags());
-    log.info("text after tag replace:"+parser.getText());
+    textReplaced = replaceHashTags(textReplaced, parser.getHashTags());    
     
     String title;
     String type;
@@ -156,15 +153,19 @@ public class Twitter2Html {
    * 
    */
   public static String replaceHashTags(String text, HashSet<String> tags) {
+	  log.info("tags replace called for text: '"+text +"' with tags:"+tags);
 	  String searchUrl = PropertiesLoaderWeb.WAYBACK_SERVER;
 	  String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false"; //TODO frontend fix so all other params not needed	  
 	  for (String tag : tags) {
-        String link = searchUrl+"?query=keywords%3A"+tag+otherSearchParams;	
-	    String replaceText = " <span><a href='"+link+"'>#"+tag+"</a></span> ";     
-        if (text.endsWith(tag)) {
+		  log.info("replacing tag:"+tag);
+		  String link = searchUrl+"?query=keywords%3A"+tag+otherSearchParams;	
+	    String replaceText = " <span><a href='"+link+"'>#"+tag+"</a></span> ";             
+	    if (text.endsWith(tag)) {
+	    	log.info("tag found in end");
           text=text.replaceAll(" #"+tag, replaceText); //Replace if last in text. (no trailing white-space).
         }
         else {
+         log.info("tag found with trailing whitespace");
 	      text=text.replaceAll(" #"+tag+ " ", replaceText); //This will not find the tag if it is last. Need space not to replace within tags. Etc. #covid #covid19 
         }	  
 	  }
