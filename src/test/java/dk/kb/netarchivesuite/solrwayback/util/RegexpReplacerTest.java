@@ -44,7 +44,7 @@ public class RegexpReplacerTest {
                                 "<a href=\"taglink:TAG1\">#TAG1</a>, <a href=\"taglink:TAG2\">#TAG2</a> and tag at" +
                                 " <a href=\"taglink:theend\">#theend</a>";
 
-        RegexpReplacer replacer = new RegexpReplacer("(#[\\p{Alnum}]+)",
+        RegexpReplacer replacer = new RegexpReplacer("(#[\\p{Alpha}][\\p{Alnum}]+)",
                                                      tag -> {
                                                          tag = tag.substring(1);
                                                          return  "<a href=\"taglink:" + tag + "\">#" + tag + "</a>";
