@@ -37,6 +37,23 @@ public class RegexpReplacerTest {
     }
 
     @Test
+    public void testHashtags() {
+        final String TEST = "Some text with #COVID and #COVID19 hashtags. Also comma #TAG1, #TAG2 and tag at #theend";
+        final String EXPECTED = "Some text with <a href=\"taglink:COVID\">#COVID</a> and " +
+                                "<a href=\"taglink:COVID19\">#COVID19</a> hashtags. Also comma " +
+                                "<a href=\"taglink:TAG1\">#TAG1</a>, <a href=\"taglink:TAG2\">#TAG2</a> and tag at" +
+                                " <a href=\"taglink:theend\">#theend</a>";
+
+        RegexpReplacer replacer = new RegexpReplacer("(#[\\p{Alnum}]+)",
+                                                     tag -> {
+                                                         tag = tag.substring(1);
+                                                         return  "<a href=\"taglink:" + tag + "\">#" + tag + "</a>";
+                                                     });
+
+        assertEquals(EXPECTED, replacer.apply(TEST));
+    }
+
+    @Test
     public void testMultiline() {
         final String TEST = "foo(42), bar(87),\nfoo(99), zoo(43)";
         final String EXPECTED = "foo(1), bar(87),\nfoo(2), zoo(43)";
