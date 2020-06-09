@@ -4,6 +4,8 @@ Twitter API playback updated and improved (require newer version of warc-indexer
 Timing logs for solr query, both for Solr Qtime and total time seen from SolrClient.  
 Fixes UTC timing bug for some date conversion.
 General cleanup and refactoring.
+Few playback improvements (the 'utf-8' error fixed)
+Attempt to fixed pagination (20+20 = 2020 instead of 40 in javascript). Probably only happens in some browsers. 
 
 3.2.5
 -----
