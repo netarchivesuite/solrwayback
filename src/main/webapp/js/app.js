@@ -740,6 +740,9 @@ var app = new Vue({
         getQueryparams:function(){
             this.myQuery = this.$route.query.query;
             this.start= this.$route.query.start;
+            if (this.start) {
+            	this.start = parseInt(this.start);
+            }
             this.filters = this.$route.query.filter;
             this.imageSearch = this.$route.query.imgsearch;
             this.imageGeoSearch = this.$route.query.imggeosearch;
