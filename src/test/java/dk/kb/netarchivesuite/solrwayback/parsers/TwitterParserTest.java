@@ -31,7 +31,7 @@ public class TwitterParserTest {
 */
 
 
-	
+	/*
 	
 	  @Test
 	     public void test2() throws Exception {    	     		  
@@ -44,7 +44,7 @@ public class TwitterParserTest {
 
 
 	  }
-
+*/
 	  
 	    
 	
