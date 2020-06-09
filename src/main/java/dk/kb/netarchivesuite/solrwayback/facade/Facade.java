@@ -65,6 +65,9 @@ public class Facade {
     }
     
     public static String solrSearch(String query, String filterQuery,boolean grouping, boolean revisits, int start) throws Exception {
+    if (start >= 1001) {
+      throw new InvalidArgumentServiceException("Pagination (start) must be less than 1001");
+    }
       return proxySolr(query, filterQuery , grouping, revisits, start);
   }
     
