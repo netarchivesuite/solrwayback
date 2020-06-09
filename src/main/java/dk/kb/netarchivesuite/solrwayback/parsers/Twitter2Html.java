@@ -24,7 +24,9 @@ public class Twitter2Html {
             
     
     String textReplaced = newline2Br(parser.getText());
-    textReplaced = replaceHashTags(textReplaced, parser.getHashTags());    
+    //TODO frontend fix so all other params not needed
+    String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false";
+    textReplaced = replaceHashTags(PropertiesLoaderWeb.WAYBACK_SERVER,otherSearchParams,textReplaced, parser.getHashTags());    
     
     String title;
     String type;
@@ -152,13 +154,11 @@ public class Twitter2Html {
    * Replace this with a link that searches for the tag.
    * 
    */
-  public static String replaceHashTags(String text, HashSet<String> tags) {
-	  log.info("tags replace called for text: '"+text +"' with tags:"+tags);
-	  String searchUrl = PropertiesLoaderWeb.WAYBACK_SERVER;
-	  String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false"; //TODO frontend fix so all other params not needed	  
+  public static String replaceHashTags(String solrwaybackUrl, String otherSearchParams, String text, HashSet<String> tags) {
+	  log.info("tags replace called for text: '"+text +"' with tags:"+tags);	  	 
 	  for (String tag : tags) {
 		  log.info("replacing tag:"+tag);
-		  String link = searchUrl+"?query=keywords%3A"+tag+otherSearchParams;	
+		  String link = solrwaybackUrl+"?query=keywords%3A"+tag+otherSearchParams;	
 	    String replaceText = " <span><a href='"+link+"'>#"+tag+"</a></span> ";             
 	    if (text.endsWith(tag)) {
 	    	log.info("tag found in end");
