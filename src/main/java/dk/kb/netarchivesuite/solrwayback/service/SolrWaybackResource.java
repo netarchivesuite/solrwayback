@@ -194,49 +194,6 @@ public class SolrWaybackResource {
       }
   }
   
-  
-  
-  @GET
-  @Path("solr/search")
-  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public String  solrSearch(@QueryParam("query") String query, @QueryParam("fq") String filterQuery ,  @QueryParam("grouping") boolean grouping,  @QueryParam("revisits") boolean revisits , @QueryParam("start") int start) throws ServiceException {
-    try {
-      String res = Facade.solrSearch(query,filterQuery, grouping, revisits, start);          
-      return res;
-    } catch (Exception e) {
-      log.error("error for search:"+query, e);
-      throw handleServiceExceptions(e);
-    }
-  }
-  
-  
-  
-  @GET
-  @Path("solr/idlookup")
-  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public String  solrSearch(@QueryParam("id") String id) throws ServiceException {
-    try {                    
-      String res = Facade.solrIdLookup(id);          
-      return res;
-    } catch (Exception e) {
-      log.error("error id lookup:"+id, e);
-      throw handleServiceExceptions(e);
-    }
-  }
-  
-
-  @GET
-  @Path("properties/solrwaybackweb")
-  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public HashMap<String,String>  getPropertiesWeb() throws ServiceException {
-    try {                    
-      log.info("PropertiesWeb returned");
-      return Facade.getPropertiesWeb();          
-    } catch (Exception e) {
-      throw handleServiceExceptions(e);
-    }
-  }
-
 
   @GET
   @Path("images/htmlpage")
