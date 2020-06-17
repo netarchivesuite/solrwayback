@@ -595,7 +595,7 @@ public class NetarchiveSolrClient {
     solrQuery.setRows(urls.size());
     solrQuery.set("group", "true");
     solrQuery.set("group.field", "url_norm");
-    solrQuery.set("group.size", "1");
+    solrQuery.set("group.limit", "1");
     solrQuery.set("group.sort","abs(sub(ms("+timeStamp+"), crawl_date)) asc");
     solrQuery.add("fl", fieldList);
 
