@@ -1,4 +1,5 @@
 .idea
+.DS_Store
 solrwayback.iml
 solrwayback.properties
 target
@@ -11,3 +12,35 @@ target
 /temp/
 /bugs.txt
 /deployWindows.bat
+
+
+# Webapp
+
+src/js/.DS_Store
+src/js/node_modules
+src/js/dist
+
+# local env files
+src/js/.env.local
+src/js/.env.*.local
+
+# Log files
+src/js/npm-debug.log*
+src/js/yarn-debug.log*
+src/js/yarn-error.log*
+
+# Config
+src/js/vue.config.js
+
+#deployToTest
+src/js/deployToTest.sh
+
+# Editor directories and files
+src/js/.idea
+src/js/.vscode
+src/js/*.suo
+src/js/*.ntvs*
+src/js/*.njsproj
+src/js/*.sln
+src/js/*.sw?
+
