@@ -345,40 +345,52 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>9.4.11.v20180605</version>
-                <configuration>
-                    <httpConnector>
-                        <port>8080</port>
-                    </httpConnector>
-                    <scanIntervalSeconds>5</scanIntervalSeconds>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>catalina.base</name>
-                            <value>${project.build.directory}</value>
-                        </systemProperty>
-                    </systemProperties>
-                    <webApp>
-                        <contextPath>/${project.artifactId}</contextPath>
-                        <resourceBases>
-                            <resourceBase>src/main/webapp</resourceBase>
-                        </resourceBases>
-                    </webApp>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>catalina.base</name>
-                            <value>${project.build.directory}</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>catalina.home</name>
-                            <value>${project.build.directory}</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
-            </plugin>
-
+           <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/jetty-res</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/test/jetty</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.4.30.v20200611</version> <!-- Java 8 -->
+        <configuration>
+          <useTestScope>true</useTestScope>
+          <webApp>
+            <contextPath>/solrwayback/</contextPath>
+            <descriptor>${project.basedir}/src/main/webapp/WEB-INF/web.xml</descriptor>
+          </webApp>
+        </configuration>
+      </plugin>
+           
         </plugins>
 
     </build>
