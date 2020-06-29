@@ -8,6 +8,7 @@ target
 /.settings/
 /.project
 /deployBelindaTomcat.sh
+/deployTeg.sh
 /solrwayback.log
 /temp/
 /bugs.txt
@@ -43,4 +44,5 @@ src/js/*.ntvs*
 src/js/*.njsproj
 src/js/*.sln
 src/js/*.sw?
+
 
