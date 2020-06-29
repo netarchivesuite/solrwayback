@@ -171,7 +171,7 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
       ProcessBuilder pb  =  null;
       
       //Use proxy. Construct proxy URL from base url and proxy port.
-      String proxyUrl = getProxySocksUrl();
+      String proxyUrl = getPreviewUrl();
                               
       int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT*1000;            
       log.info("generate temp preview file:"+filename);
@@ -828,14 +828,14 @@ public static String proxyBackendResources(String source_file_path, String offse
   
   //takes the wayback_base url and create the proxy url
   // http://localhost:8080/solrwayback/ -> socks4://localhost:9000 
-  private static String getProxySocksUrl() throws Exception{
+  private static String getPreviewUrl() throws Exception{
 
     String baseUrl = PropertiesLoader.WAYBACK_BASEURL;
-    String socksPort = PropertiesLoader.PROXY_PORT;    
+    String port = "8080"; //TODO load   
     URL url = new URL(baseUrl);
     String host = url.getHost();
     String part =url.getPath();        
-    String socksUrl= "socks4://"+host+":"+socksPort;
+    String socksUrl= "http://"+host+":"+port; 
     log.info("socks url:"+socksUrl);
     return socksUrl;
    
