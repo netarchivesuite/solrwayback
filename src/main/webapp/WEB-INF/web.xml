@@ -13,28 +13,23 @@
    <listener>
       <listener-class>dk.kb.netarchivesuite.solrwayback.listeners.InitializationContextListener</listener-class>
    </listener>
-     
-  
+         
   <servlet>
     <servlet-name>SolrWayback Service</servlet-name>
-    <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+    <servlet-class>org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet</servlet-class>
     <init-param>
-      <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>dk.kb.netarchivesuite.solrwayback.service</param-value>
+      <param-name>javax.ws.rs.Application</param-name>
+      <param-value>dk.kb.netarchivesuite.solrwayback.service.SolrWaybackApplication</param-value>
     </init-param>
-    <init-param>
-      <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
-      <param-value>true</param-value>
-    </init-param> 
     <load-on-startup>1</load-on-startup>
   </servlet>
- 
+
   <servlet-mapping>
     <servlet-name>SolrWayback Service</servlet-name>
     <url-pattern>/services/*</url-pattern>
   </servlet-mapping>
 
-
+  
   <welcome-file-list>
     <welcome-file>vuesearch.jsp</welcome-file>
   </welcome-file-list>

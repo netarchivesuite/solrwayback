@@ -8,16 +8,12 @@ import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -33,14 +29,10 @@ import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataParam;
 
-import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
 import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
-import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
@@ -57,7 +49,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatis
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
-import dk.kb.netarchivesuite.solrwayback.service.exception.ServiceException;
+import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
@@ -78,7 +70,7 @@ public class SolrWaybackResource {
   @GET
   @Path("warc/header")
   @Produces({ MediaType.TEXT_PLAIN})
-  public String getWarcHeader( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws ServiceException {
+  public String getWarcHeader( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
       try {                                                                                      
         ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
         return arcEntry.getHeader();                              
@@ -90,7 +82,7 @@ public class SolrWaybackResource {
   @GET
   @Path("warc/parsed")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public ArcEntry getWarcParsed( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws ServiceException {
+  public ArcEntry getWarcParsed( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
       try {                                                                                      
         ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
          return arcEntry;                              
@@ -103,7 +95,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/images/search")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public  ArrayList<ImageUrl> imagesSearch(@QueryParam("query") String query) throws ServiceException {
+  public  ArrayList<ImageUrl> imagesSearch(@QueryParam("query") String query) throws SolrWaybackServiceException {
     try {                                          
       ArrayList<ArcEntryDescriptor> img = Facade.findImages(query);
       return Facade.arcEntrys2Images(img);                                                            
@@ -112,11 +104,12 @@ public class SolrWaybackResource {
     }
   }
   
+  
   // TODO https://wiki.apache.org/solr/SpatialSearch#How_to_boost_closest_results
   @GET
   @Path("/images/search/location")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public  ArrayList<ImageUrl> imagesLocationSearch(@QueryParam("query") String query, @QueryParam("fq") String fq, @QueryParam("results") String results,@QueryParam("latitude") double latitude, @QueryParam("longitude") double longitude, @QueryParam("d") double d,@QueryParam("sort") String sort) throws ServiceException {
+  public  ArrayList<ImageUrl> imagesLocationSearch(@QueryParam("query") String query, @QueryParam("fq") String fq, @QueryParam("results") String results,@QueryParam("latitude") double latitude, @QueryParam("longitude") double longitude, @QueryParam("d") double d,@QueryParam("sort") String sort) throws SolrWaybackServiceException {
 //sort is optional
     if(d <=0 || d>5001){
       throw new InvalidArgumentServiceException("d parameter must be between 1 and 5000 (radius in km)");
@@ -135,7 +128,7 @@ public class SolrWaybackResource {
   @GET
   @Path("smurf/tags")
   @Produces({ MediaType.APPLICATION_JSON})
-  public  SmurfYearBuckets smurfNetarchiveTags( @QueryParam("tag") String tag , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws ServiceException {
+  public  SmurfYearBuckets smurfNetarchiveTags( @QueryParam("tag") String tag , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
       try {                                                                                      
         
         if (startyear == null){
@@ -151,7 +144,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/util/normalizeurl")
   @Produces(MediaType.APPLICATION_JSON)
-  public UrlWrapper waybackgraph(@QueryParam("url") String url) throws ServiceException {
+  public UrlWrapper waybackgraph(@QueryParam("url") String url) throws SolrWaybackServiceException {
     try{
       String urlDecoded = java.net.URLDecoder.decode(url, "UTF-8"); //frontend sending this encoded
       
@@ -170,7 +163,7 @@ public class SolrWaybackResource {
   @GET
   @Path("statistics/domain")
   @Produces({ MediaType.APPLICATION_JSON})
-  public  ArrayList<DomainYearStatistics> statisticsDomain (@QueryParam("domain") String domain) throws ServiceException {
+  public  ArrayList<DomainYearStatistics> statisticsDomain (@QueryParam("domain") String domain) throws SolrWaybackServiceException {
       try {                                                                                                   
         return Facade.statisticsDomain(domain);
       } catch (Exception e) {         
@@ -183,7 +176,7 @@ public class SolrWaybackResource {
   @GET
   @Path("smurf/text")
   @Produces({ MediaType.APPLICATION_JSON})
-  public  SmurfYearBuckets smurfNetarchiveText( @QueryParam("q") String q , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws ServiceException {
+  public  SmurfYearBuckets smurfNetarchiveText( @QueryParam("q") String q , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
       try {                                                                                                
         if (startyear == null){
           startyear=1990;
@@ -198,7 +191,7 @@ public class SolrWaybackResource {
   @GET
   @Path("images/htmlpage")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public ArrayList<ImageUrl> imagesForPage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset ) throws ServiceException {
+  public ArrayList<ImageUrl> imagesForPage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset ) throws SolrWaybackServiceException {
 
  
     if (source_file_path == null || offset < 0){
@@ -218,7 +211,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/harvestDates")
   @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-  public HarvestDates harvestDates(@QueryParam("url") String url) throws ServiceException {
+  public HarvestDates harvestDates(@QueryParam("url") String url) throws SolrWaybackServiceException {
     try {                    
       return Facade.getHarvestTimesForUrl(url);
     } catch (Exception e) {           
@@ -229,7 +222,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/pagepreviews")
   @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-  public ArrayList<PagePreview> search(@QueryParam("url") String url) throws ServiceException {
+  public ArrayList<PagePreview> search(@QueryParam("url") String url) throws SolrWaybackServiceException {
     try {                    
       return Facade.getPagePreviewsForUrl(url);
     } catch (Exception e) {           
@@ -241,7 +234,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/wordcloud/domain")
   @Produces("image/png")
-  public Response  wordCloudForDomain(@QueryParam("domain") String domain) throws ServiceException {
+  public Response  wordCloudForDomain(@QueryParam("domain") String domain) throws SolrWaybackServiceException {
     try {                        
         BufferedImage image = Facade.wordCloudForDomain(domain);           
         return Response.ok(image).build();     
@@ -261,7 +254,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/image/pagepreviewurl")
   @Produces("image/png")    
-  public Response getHtmlPagePreviewForCrawltime (@Context UriInfo uriInfo) throws ServiceException {      
+  public Response getHtmlPagePreviewForCrawltime (@Context UriInfo uriInfo) throws SolrWaybackServiceException {      
     //Get the full request url and find the waybackdata object
 
     //Duplicate code below, refactor!
@@ -308,7 +301,7 @@ public class SolrWaybackResource {
   @Path("/image/pagepreview")
   @Produces("image/png")
   public Response getHtmlPagePreview(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset)
-      throws ServiceException {
+      throws SolrWaybackServiceException {
     try {
       log.debug("Getting thumbnail html image from source_file_path:" + source_file_path + " offset:" + offset);
       BufferedImage image = Facade.getHtmlPagePreview(source_file_path, offset);          
@@ -323,7 +316,7 @@ public class SolrWaybackResource {
   @Path("/image")
   @Produces("image/png")
   public Response getImage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("height") int height, @QueryParam("width") int width)
-      throws ServiceException {
+      throws SolrWaybackServiceException {
     try {
       log.debug("Getting image from source_file_path:" + source_file_path + " offset:" + offset + " targetWidth:" + width + " targetHeight:" + height);
 
@@ -365,7 +358,7 @@ public class SolrWaybackResource {
 
   @GET
   @Path("/downloadRaw")
-  public Response downloadRaw(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws ServiceException {
+  public Response downloadRaw(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
     try {
 
       log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
@@ -424,7 +417,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/export/warc")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
-  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
    
     //This is also required even if the option is removed on the web-page.
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
@@ -436,7 +429,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/export/linkgraph")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
-  public Response exportLinkGraph(@QueryParam("query") String q) throws ServiceException {
+  public Response exportLinkGraph(@QueryParam("query") String q) throws SolrWaybackServiceException {
    
     //This is also required even if the option is removed on the web-page.
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
@@ -457,7 +450,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/export/warcExpanded")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
-  public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+  public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
     //This is also required even if the option is removed on the web-page.
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
       throw new InvalidArgumentServiceException("Export to warc not allowed!");
@@ -469,7 +462,7 @@ public class SolrWaybackResource {
   private Response exportWarcImpl(@QueryParam("query") String q,
                                      @QueryParam("fq") String fq,
                                      @QueryParam("expand") boolean expandResources,
-                                     @QueryParam("deduplicate") boolean avoidDuplicates) throws ServiceException {
+                                     @QueryParam("deduplicate") boolean avoidDuplicates) throws SolrWaybackServiceException {
     try {
       log.debug("Export warc. query:"+q +" filterquery:"+fq);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
@@ -488,7 +481,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/export/brief")    
   @Produces(MediaType.TEXT_PLAIN)
-  public Response exportBrief(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+  public Response exportBrief(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
       throw new InvalidArgumentServiceException("Export to csv not allowed!");
     }
@@ -510,7 +503,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/linkgraph/csv")    
   @Produces(MediaType.TEXT_PLAIN)
-  public Response linkgraphCsv(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+  public Response linkgraphCsv(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
     
     try {              
       log.debug("Export brief. query:"+q +" filterquery:"+fq);
@@ -530,7 +523,7 @@ public class SolrWaybackResource {
 
   @GET
   @Path("/export/full")    
-  public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq) throws ServiceException {
+  public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
       throw new InvalidArgumentServiceException("Export to csv not allowed!");
     }
@@ -554,7 +547,7 @@ public class SolrWaybackResource {
    */    
   @GET
   @Path("/notfound")    
-  public Response notfound() throws ServiceException {                      
+  public Response notfound() throws SolrWaybackServiceException {                      
     log.info("not found called");
     throw new NotFoundServiceException("");                  
   }
@@ -563,7 +556,7 @@ public class SolrWaybackResource {
 
   @GET
   @Path("/getContentType")
-  public String getContentType(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws ServiceException {
+  public String getContentType(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
     try {               
       return Facade.getEncoding(source_file_path, ""+offset);       
     } catch (Exception e) {
@@ -580,8 +573,8 @@ public class SolrWaybackResource {
    * 
    */
   @GET
-  @Path("/webProxy/{var:.*?}")
-  public Response waybackProxyAPIResolver(@Context UriInfo uriInfo, @PathParam("var") String path) throws ServiceException {
+  @Path("/webProxy/{path:.+}")
+  public Response waybackProxyAPIResolver(@Context UriInfo uriInfo, @PathParam("path") String path) throws SolrWaybackServiceException {
     try {        
       //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
       log.info("/webProxy/ called with data:"+path);
@@ -623,8 +616,8 @@ public class SolrWaybackResource {
    * Jersey syntax to match all after /web/.
    */
   @GET
-  @Path("/web/{var:.*?}")
-  public Response waybackAPIResolver(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("var") String path) throws ServiceException {
+  @Path("/web/{path:.+}")      
+  public Response waybackAPIResolver(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("path") String path) throws SolrWaybackServiceException {
     try {        
       //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
       log.info("/web/ called with data:"+path);
@@ -676,14 +669,16 @@ public class SolrWaybackResource {
         throw new NotFoundServiceException("Url has never been harvested:"+url);
       }        
       log.info("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
-      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);                                   
+          
+      Response viewImpl = viewImpl(doc.getSource_file_path() , doc.getOffset(),true);                                   
+      
+      return viewImpl;
     } catch (Exception e) {
       throw handleServiceExceptions(e);
     }
 
   }
-
-  
+   
   /*
    *  will be called with
    *   pwid/web/urn:pwid:netarkivet.dk:2018-12-10T06:27:01Z:part:https://www.petdreams.dk/katteracer-siameser
@@ -691,8 +686,8 @@ public class SolrWaybackResource {
    * Jersey syntax to match all after pwid/web/.
    */
   @GET
-  @Path("/pwid/web/{var:.*?}")
-  public Response waybackPwidAPIResolver(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("var") String path) throws ServiceException {
+  @Path("/pwid/web/{path:.+}")
+  public Response waybackPwidAPIResolver(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("path") String path) throws SolrWaybackServiceException {
     try {        
       //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
       log.info("/pwid/web/ called with data:"+path);
@@ -754,8 +749,8 @@ public class SolrWaybackResource {
    * The proxy will handle it
    */
   @GET
-  @Path("/{var:.*?}")
-  public Response waybackAPIResolverRoot(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("var") String path) throws ServiceException {
+  @Path("/{path:.+}")
+  public Response waybackAPIResolverRoot(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("path") String path) throws SolrWaybackServiceException {
     try {
       
       String leakUrlStr = uriInfo.getRequestUri().toString();
@@ -793,7 +788,7 @@ public class SolrWaybackResource {
  */
   @GET
   @Path("/viewForward")
-  public Response viewForward(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws ServiceException {
+  public Response viewForward(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws SolrWaybackServiceException {
     try {
       IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
       log.info("loading crawlDate:"+arcEntry.getCrawlDate());
@@ -823,7 +818,7 @@ public class SolrWaybackResource {
   
   @GET
   @Path("/viewFromLeakedResource")
-  public Response viewFromLeakedResource(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("urlPart") String urlPart) throws ServiceException {
+  public Response viewFromLeakedResource(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("urlPart") String urlPart) throws SolrWaybackServiceException {
     //this method is only called from the tomcat solrwaybackrootproxy if that proxy mode is used.
     try {
 
@@ -847,7 +842,8 @@ public class SolrWaybackResource {
   
   @GET
   @Path("/view")
-  public Response view(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws ServiceException {
+  
+  public Response view(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws SolrWaybackServiceException {
     try {
 
       return viewImpl(source_file_path, offset,showToolbar);
@@ -876,6 +872,7 @@ public class SolrWaybackResource {
     return ts;
   }
 
+  /*
   @GET
   @Path("frontend/timestampsforpage")
   @Produces(MediaType.APPLICATION_JSON)
@@ -883,7 +880,7 @@ public class SolrWaybackResource {
     return Facade.proxyBackendResources(source_file_path, ""+offset, "timestampsforpage");      
 
   }
-
+*/
 
   private Response viewImpl(String source_file_path, long offset,Boolean showToolbar) throws Exception{    	    	
     log.debug("View from FilePath:" + source_file_path + " offset:" + offset);
@@ -896,10 +893,14 @@ public class SolrWaybackResource {
     
     ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset, doc, showToolbar);
     
-    
+    //System.out.println("trying to return html:"+arcEntry.getBinaryContentAsStringUnCompressed());
     InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
     
     String contentType = arcEntry.getContentType();
+    
+    
+    log.info("content charset from arc:"+arcEntry.getContentCharset());
+    log.info("content type from arc:"+arcEntry.getContentType());
    if (contentType ==  null){    
     log.warn("no contenttype, using content_type from tika:"+doc.getContentType());
     contentType=doc.getContentType(); 
@@ -911,23 +912,24 @@ public class SolrWaybackResource {
      contentType=doc.getContent_type_full();     
    }     
     //ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
-    //log.info("seting contentype:"+ contentType+"; charset="+arcEntry.getContentEncoding());
+   log.info("seting contentype:"+contentType);
 //          
-   ResponseBuilder response = Response.ok((Object) in).type(contentType );                    
+   ResponseBuilder response = Response.ok(in).type(contentType );                    
 
+   
     if (arcEntry.isHasBeenDecompressed()){     
       response.header("Content-Encoding", doc.getContentEncoding()); 
     }else {      
       response.header("Content-Encoding", arcEntry.getContentEncoding());
     }
-          
-    return response.build();
+          log.info("return before 0");
+          return response.build();
   }
 
 
   @GET
   @Path("/viewhref")
-  public Response viewhref(@QueryParam("url") String url, @QueryParam("crawlDate") String crawlDate,  @QueryParam("showToolbar") Boolean showToolbar  ) throws ServiceException {
+  public Response viewhref(@QueryParam("url") String url, @QueryParam("crawlDate") String crawlDate,  @QueryParam("showToolbar") Boolean showToolbar  ) throws SolrWaybackServiceException {
     try {
 
       // We have to remove anchor # from URL. Not part of the harvested url
@@ -952,7 +954,7 @@ public class SolrWaybackResource {
 
   }
 
-
+/*
   @POST
   @Path("/upload/gethash")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -972,11 +974,11 @@ public class SolrWaybackResource {
     }      
   }
 
-
+*/
   @GET
   @Path("/waybacklinkgraph")
   @Produces(MediaType.APPLICATION_JSON)
-  public D3Graph waybackgraph(@QueryParam("domain") String domain, @QueryParam("ingoing") Boolean ingoing, @QueryParam("facetLimit") Integer facetLimit, @QueryParam("dateStart") String dateStart, @QueryParam("dateEnd") String dateEnd) throws ServiceException {
+  public D3Graph waybackgraph(@QueryParam("domain") String domain, @QueryParam("ingoing") Boolean ingoing, @QueryParam("facetLimit") Integer facetLimit, @QueryParam("dateStart") String dateStart, @QueryParam("dateEnd") String dateEnd) throws SolrWaybackServiceException {
     try{        
       log.info("ingoing:"+ingoing +" facetLimit:"+facetLimit +" dateStart:"+dateStart +" dateEnd:"+dateEnd);
       int fLimit =10;//Default
@@ -1089,10 +1091,10 @@ public class SolrWaybackResource {
     
   }
   
-  private ServiceException handleServiceExceptions(Exception e) {
-    if (e instanceof ServiceException) {
+  private SolrWaybackServiceException handleServiceExceptions(Exception e) {
+    if (e instanceof SolrWaybackServiceException) {
       log.info("Handling serviceException:" + e.getMessage());
-      return (ServiceException) e; // Do nothing, exception already correct
+      return (SolrWaybackServiceException) e; // Do nothing, exception already correct
     } else if (e instanceof IllegalArgumentException) {
       log.error("ServiceException(HTTP 400) in Service:", e.getMessage());
       return new InvalidArgumentServiceException(e.getMessage());

@@ -23,12 +23,6 @@ import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.*;
 import dk.kb.netarchivesuite.solrwayback.playback.CssPlayback;
@@ -70,11 +64,13 @@ public class Facade {
     }
       return proxySolr(query, filterQuery , grouping, revisits, start);
   }
-    
-    
+        
+    /*
+     * returns json
+     */
     public static String solrIdLookup(String id) throws Exception {
-      return proxySolrIdLookup(id);
-  }
+      return NetarchiveSolrClient.getInstance().idLookupResponse(id);
+   }
     
 public static IndexDoc findExactMatchPWID(String url, String utc) throws Exception {  
      IndexDoc doc = NetarchiveSolrClient.getInstance().findExactMatchPWID(url, utc);
@@ -633,7 +629,7 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
     	   showToolbar=false;
     	}      
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
-       
+       log.info("from arch contenttype:"+arc.getContentType());
     	//temporary hack.
         
         if ("br".equalsIgnoreCase(arc.getContentEncoding())){         
@@ -701,28 +697,13 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
   }
         
     
- public static String proxySolrIdLookup(String id) throws Exception{                                
-   log.debug("id lookup:"+id);
-      String solrUrl =PropertiesLoader.SOLR_SERVER;  
-      ClientConfig config = new DefaultClientConfig();
-      Client client = Client.create(config);
-      WebResource service = client.resource(UriBuilder.fromUri(solrUrl).build());
-      WebResource queryWs= service.path("select")                                    
-                                  .queryParam("rows", "1") 
-                                  .queryParam("q", "id:\"" +id +"\"") 
-                                  .queryParam("wt", "json")                                  
-                                  .queryParam("indent", "true")                      
-                                  .queryParam("facet", "false");                                   
-      ClientResponse response = queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
-      String responseStr= response.getEntity(String.class);
-      log.debug(responseStr.substring(0, Math.min(800, responseStr.length()-1)));            
-      return responseStr;      
-  }
             
     /*
      * Temp solution, make generic query properties
      * 
      */
+    
+ /*
 public static String proxyBackendResources(String source_file_path, String offset, String serviceName) throws Exception{                    
       
       String backendServer= PropertiesLoaderWeb.WAYBACK_SERVER;
@@ -741,11 +722,9 @@ public static String proxyBackendResources(String source_file_path, String offse
       String responseStr= response.getEntity(String.class);
 
       return responseStr;
-                  
-      
       
   }
-    
+   */ 
     
     
  // convert InputStream to String

@@ -6,13 +6,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriBuilder;
-
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrRequest;
+
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -29,17 +25,10 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.util.NamedList;
-import org.noggit.JSONUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
-import com.google.gson.Gson;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.parsers.NormalisationWWWremove;
@@ -945,6 +934,28 @@ public class NetarchiveSolrClient {
       String jsonResponse = (String) resp.get("response");
       return jsonResponse;
   }
+  
+  
+  
+  public String idLookupResponse( String id) throws Exception {    
+    SolrQuery solrQuery = new SolrQuery();    
+    solrQuery.set("rows", "1");
+    solrQuery.set("q", "id:\"" +id +"\"");
+    solrQuery.set("wt", "json");
+    solrQuery.set("q.op", "AND");
+    solrQuery.set("indent", "true");
+    solrQuery.set("facet", "false");
+          
+    NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
+    rawJsonResponseParser.setWriterType("json");
+
+    QueryRequest req = new QueryRequest(solrQuery);
+    req.setResponseParser(rawJsonResponseParser);
+
+    NamedList<Object> resp = solrServer.request(req);
+    String jsonResponse = (String) resp.get("response");
+    return jsonResponse;
+}
   
   /*
    * Uses the stats component and hyperloglog for ultra fast performance instead of grouping, which does not work well over many shards.
