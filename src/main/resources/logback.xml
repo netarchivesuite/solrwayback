@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<included>
+    <jmxConfigurator/>
+    <appender name="R" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${catalina.home}/logs/solrwayback.log</File>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger\(%file:%line\) - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <maxIndex>10</maxIndex>
+            <FileNamePattern>${catalina.home}/logs/solrwayback.log.%i</FileNamePattern>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>10MB</MaxFileSize>
+        </triggeringPolicy>
+    </appender>
+    
+    <!--Shut them up-->    
+    <logger name="org" level="WARN"/>
+        
+    <root level="info">
+        <appender-ref ref="R"/>
+    </root>
+</included>

@@ -5,11 +5,7 @@
          version="3.0">
 
   <display-name>dk.kb.netarchivesuite.solrwayback.service</display-name>
-  
-  <listener>  
-      <listener-class>dk.kb.netarchivesuite.solrwayback.listeners.Log4JContextListener</listener-class>
-   </listener>
-  
+    
    <listener>
       <listener-class>dk.kb.netarchivesuite.solrwayback.listeners.InitializationContextListener</listener-class>
    </listener>
