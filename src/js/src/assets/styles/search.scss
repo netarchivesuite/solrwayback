@@ -1,0 +1,141 @@
+body {
+  background-color:white;
+  background-size:cover;
+}
+
+.contentContainer {
+  max-width:1200px;
+  margin:auto;
+  margin-top:120px;
+}
+
+.contentContainer h1 {
+  text-align: center;
+  text-transform:uppercase;
+  font-size:200%;
+  color:var(--main-text-color);
+}
+
+.contentContainer h1 span {
+font-weight: bold;
+color:var(--secondary-text-color);
+//border-bottom: 2px solid var(--secondary-highlight-color);
+}
+
+.searchForm {
+  margin-top:20px;
+  margin-bottom:20px;
+  width:680px;
+  margin-left: calc(50% - 300px);
+  margin-right: calc(50% - 300px);
+}
+
+.searchForm #query {
+  border-radius:0px;
+  border:1px solid var(--seethrough-black);
+  box-sizing: border-box;
+  width:600px;
+  padding-left:15px;
+  font-size: 120%;
+  color:var(--main-highlight-color);
+  height:50px;
+  box-shadow: inset 0 0 7px var(--seethrough-black);
+}
+
+.searchForm #querySubmit {
+  box-sizing: border-box;
+  width:60px;
+  float:right;
+  cursor:pointer;
+  height:50px;
+  position: relative;
+  background-color:var(--main-highlight-color);
+  box-shadow: inset 0 0 7px var(--seethrough-black);
+  right:80px;
+  border-radius:0% 0 0% 0;
+  border:1px solid transparent;
+  //border-color:var(--seethrough-black) var(--seethrough-black) var(--seethrough-black) transparent;
+}
+
+.searchForm #querySubmit:before {
+  content:'';
+  display:block;
+  width:20px;
+  height:20px;
+  transform:rotateZ(45deg);
+  background-color:var(--main-highlight-color);
+  position: absolute;
+  top:15px;
+  left:-10px;
+}
+
+.searchForm #magnifyingGlass {
+  position: relative;
+  left:7px;
+}
+
+.searchForm #magnifyingGlass:before {
+  content: '';
+	display: block;
+	width: 15px;
+	height: 15px;
+	top: 2px;
+	left: 3px;
+	position: relative;
+	border: 2px solid white;
+  border-radius: 180%;
+}
+
+.searchForm #magnifyingGlass:after {
+  content: '';
+	display: block;
+	width: 2px;
+	height: 15px;
+	background-color: white;
+	top: -4px;
+	left: 23px;
+	transform: rotateZ(-45deg);
+	position: relative;
+}
+
+.searchForm #clearSubmit {
+  width:60px;
+  height:50px;
+  background-color:white;
+  box-shadow: inset 0 0 7px var(--seethrough-black);
+  border-radius:0% 0 0% 0;
+  border:2px solid var(--main-highlight-color);
+  float:right;
+  position: relative;
+  top:-50px;
+  cursor:pointer;
+}
+.searchForm #clearSubmit:before {
+  content:"";
+  display:block;
+  width:3px;
+  height:30px;
+  position: absolute;
+  background-color:var(--main-highlight-color);
+  transform:rotateZ(45deg);
+  top:8px;
+  left:27px;
+}
+
+.searchForm #clearSubmit:after {
+  content:"";
+  display:block;
+  width:3px;
+  height:30px;
+  position: absolute;
+  background-color:var(--main-highlight-color);
+  transform:rotateZ(-45deg);
+  top:8px;
+  left:27px;
+}
+
+
+.searchForm #querySubmit:focus, .searchForm #query:focus, .searchForm #clearSubmit:focus {
+  outline:1px solid var(--seethrough-black);
+  border-radius:0;
+}

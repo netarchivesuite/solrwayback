@@ -1,14 +1,14 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Search from "../views/Search.vue";
+import SolrWayback from "../views/SolrWayback.vue";
 
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: "/",
-    name: "Search",
-    component: Search
+    name: "SolrWayback",
+    component: SolrWayback
   },
   {
     path: "/about",

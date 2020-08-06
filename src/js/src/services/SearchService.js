@@ -1,16 +1,10 @@
-// import { config } from '../config'
 import axios from 'axios'
 
-
-export const SearchService = {
-  search
+export const searchService = {
+  fireSearch
 }
 
-function search (query) {
-  //let query = `?q=${encodeURIComponent(params.searchTerm)}`
-  
-
-  //const url = `${config.apiUrl}` + '/searchsolr' + callParams
+function fireSearch (query) {
   // Split url and move to config
   const url = '/frontend/solr/search/results/' + `?query=${encodeURIComponent(query)}`
   return axios.get(url).then(response => {

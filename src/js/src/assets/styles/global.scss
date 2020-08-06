@@ -87,3 +87,13 @@ video {
   font: inherit;
   vertical-align: baseline;
 }
+
+body {
+  font-family: Trebuchet MS,Ubuntu;
+}
+
+.highlightText {
+  font-weight: bold;
+  color:var(--main-highlight-color);
+  border-bottom: 2px solid var(--secondary-highlight-color);
+}
