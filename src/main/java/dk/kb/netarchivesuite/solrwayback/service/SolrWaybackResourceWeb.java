@@ -32,30 +32,29 @@ public class SolrWaybackResourceWeb {
     }
     
     
-    
+    //No facets! Only results
     @GET
-    @Path("solr/search/results") //need to make solr/search/facets
+    @Path("solr/search/results") 
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
     public String  solrSearchResults(@QueryParam("query") String query, @QueryParam("fq") String filterQuery ,  @QueryParam("grouping") boolean grouping,  @QueryParam("revisits") boolean revisits , @QueryParam("start") int start) throws SolrWaybackServiceException {
       try {
-        String res = Facade.solrSearch(query,filterQuery, grouping, revisits, start);          
+        String res = Facade.solrSearchNoFacets(query,filterQuery, grouping, revisits, start);          
         return res;
       } catch (Exception e) {
-        log.error("error for search:"+query, e);
         throw handleServiceExceptions(e);
       }
     }
     
     
+    //No results, only facets
     @GET
     @Path("solr/search/facets") 
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
     public String  solrSearchFacets(@QueryParam("query") String query, @QueryParam("fq") String filterQuery , @QueryParam("revisits") boolean revisits) throws SolrWaybackServiceException {
       try {
-//        String res = Facade.solrSearch(query,filterQuery, grouping, revisits, start);          
-        return "TODO";
-      } catch (Exception e) {
-        log.error("error when facets:"+query, e);
+       String res = Facade.solrSearchFacetsOnly(query,filterQuery, revisits);          
+       return res;
+      } catch (Exception e) {        
         throw handleServiceExceptions(e);
       }
     }

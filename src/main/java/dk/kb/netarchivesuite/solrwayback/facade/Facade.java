@@ -58,13 +58,17 @@ public class Facade {
         return result;
     }
     
-    public static String solrSearch(String query, String filterQuery,boolean grouping, boolean revisits, int start) throws Exception {
+    public static String solrSearchNoFacets(String query, String filterQuery,boolean grouping, boolean revisits, int start) throws Exception {
     if (start >= 1001) {
       throw new InvalidArgumentServiceException("Pagination (start) must be less than 1001");
     }
-      return proxySolr(query, filterQuery , grouping, revisits, start);
+      return proxySolrNoFacets(query, filterQuery , grouping, revisits, start);
   }
-        
+   
+    public static String solrSearchFacetsOnly(String query, String filterQuery, boolean revisits) throws Exception {      
+      return proxySolrOnlyFacets(query, filterQuery, revisits);
+    }
+    
     /*
      * returns json
      */
@@ -692,10 +696,13 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
         return props;
     }
     
-    public static String proxySolr( String query, String fq, boolean grouping, boolean revisits, Integer start) throws Exception {          
-    	return NetarchiveSolrClient.getInstance().searchJsonResponse(query, fq, grouping, revisits, start);    	    	
-  }
+    public static String proxySolrNoFacets( String query, String fq, boolean grouping, boolean revisits, Integer start) throws Exception {          
+    	return NetarchiveSolrClient.getInstance().searchJsonResponseNoFacets(query, fq, grouping, revisits, start);    	    	
+   }
         
+    public static String proxySolrOnlyFacets( String query, String fq, boolean revisits) throws Exception {          
+      return NetarchiveSolrClient.getInstance().searchJsonResponseOnlyFacets(query, fq, revisits);             
+ }
     
             
     /*
