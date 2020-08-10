@@ -18,7 +18,6 @@ import { mapState, mapActions } from 'vuex'
 
 export default {
   components: {
-    
   },
   data () {
     return {    
@@ -49,7 +48,7 @@ export default {
       if (this.futureQuery !== this.query) {
         this.updateQuery(this.futureQuery)
         this.search(this.futureQuery)
-        this.$router.replace({ query: {query:this.query }});
+        this.$router.replace({ query: {q:this.query }});
       }
     },
     clearResultsAndSearch() {

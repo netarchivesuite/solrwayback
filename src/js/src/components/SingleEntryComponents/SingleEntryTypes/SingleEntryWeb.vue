@@ -1,17 +1,18 @@
 <template>
   <div class="SingleResultEntry">
-    {{ result.content_type }} // {{ result.type }}
-    <br>
-    {{ result }}
+    WEB
+    <single-entry-standard-info :result="result" />
   </div>
 </template>
 
 <script>
+import SingleEntryStandardInfo from "./../SingleEntryStandardInfo.vue";
 //import { mapState, mapActions } from 'vuex'
 
 export default {
-  name: "SingleEntry",
-  components: {  
+  name: "SingleEntryWeb",
+  components: { 
+    SingleEntryStandardInfo 
   },
   props: {
     result: {
