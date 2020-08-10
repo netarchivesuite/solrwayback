@@ -1,4 +1,67 @@
+.singleEntryResult {
+  -webkit-box-shadow: 0px 3px 6px 0px rgba(0,0,0,0.25);
+  -moz-box-shadow: 0px 3px 6px 0px rgba(0,0,0,0.25);
+  box-shadow: 0px 3px 6px 0px rgba(0,0,0,0.25);
+  margin-bottom:10px;
+  margin-top:5px;
+  padding:25px;
+  border-left:4px solid var(--secondary-bg-color);
+}
+
+.singleEntryResult:after {
+  content:'';
+  display:block;
+  position:absolute;
+  box-sizing: border-box;
+  height:15px;
+  width:15px;
+  border-top:15px solid transparent;
+  border-left:15px solid var(--secondary-bg-color);
+  border-bottom:15px solid var(--secondary-bg-color);
+  border-right:15px solid transparent;
+  margin-left:-29px;
+  margin-top:-5px;
+}
+
 .SingleResultEntry {
   padding-top:15px;
   padding-bottom:15px;
+}
+
+.SingleEntryStandardInfo .entryInfo {
+  padding-bottom:5px;
+}
+
+.SingleEntryStandardInfo .snippetHighlight {
+  padding:10px;
+}
+
+.SingleEntryStandardInfo .snippetContainer {
+  padding:5px;
+}
+
+.SingleEntryStandardInfo .titleInfo {
+  text-transform: uppercase;
+  font-size:130%;
+}
+
+.SingleEntryStandardInfo .domainInfo {
+  text-transform: lowercase;
+}
+
+.SingleEntryStandardInfo .titleInfo, .SingleEntryStandardInfo .domainInfo, .SingleEntryStandardInfo .typeInfo {
+  margin-right:3px;
+  margin-left:3px;
+
+}
+
+.SingleEntryStandardInfo .snippetHighlight {
+  font-style: italic;
+  display:inline-block;
+}
+
+.SingleEntryStandardInfo .snippetHighlight em {
+  font-weight:bold;
+  color:var(--main-highlight-color);
+  border-bottom: 2px solid var(--secondary-highlight-color);
 }

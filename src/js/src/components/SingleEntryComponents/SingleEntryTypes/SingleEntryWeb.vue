@@ -1,6 +1,5 @@
 <template>
-  <div class="SingleResultEntry">
-    WEB
+  <div class="singleEntryResult">
     <single-entry-standard-info :result="result" />
   </div>
 </template>

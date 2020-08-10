@@ -32,9 +32,10 @@ export default {
     })
   },
   mounted () {
-    if(this.query === '' && this.$router.history.current.query.query) {
-      this.updateQuery(this.$router.history.current.query.query)
-      this.search(this.$router.history.current.query.query)
+    if(this.query === "" && this.$router.history.current.query.q) {
+      this.futureQuery = this.$router.history.current.query.q;
+      this.updateQuery(this.$router.history.current.query.q)
+      this.search(this.$router.history.current.query.q)
       }
   },
   
