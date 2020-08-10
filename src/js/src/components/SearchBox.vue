@@ -33,6 +33,10 @@ export default {
     })
   },
   mounted () {
+    if(this.query === '' && this.$router.history.current.query.query) {
+      this.updateQuery(this.$router.history.current.query.query)
+      this.search(this.$router.history.current.query.query)
+      }
   },
   
   methods: {
@@ -45,6 +49,7 @@ export default {
       if (this.futureQuery !== this.query) {
         this.updateQuery(this.futureQuery)
         this.search(this.futureQuery)
+        this.$router.replace({ query: {query:this.query }});
       }
     },
     clearResultsAndSearch() {

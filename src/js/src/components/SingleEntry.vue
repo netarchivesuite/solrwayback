@@ -1,5 +1,7 @@
 <template>
   <div class="SingleResultEntry">
+    {{ result.content_type }} // {{ result.type }}
+    <br>
     {{ result }}
   </div>
 </template>
