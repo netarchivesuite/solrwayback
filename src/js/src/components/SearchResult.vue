@@ -2,7 +2,7 @@
   <div class="resultContainer" v-if="Object.keys(results).length > 0">
   <p>Found <span class="highlightText">{{ results.numFound }}</span> entries matching <span class="highlightText">{{ query }}</span></p>
     <div v-if="results && results !== {}" class="results">
-      <component v-bind:key="index" v-for="(result, index) in results.docs" :is="SingleEntryComponent(result.type)"  :result="result" />
+      <component v-bind:key="index" v-for="(result, index) in results.docs" :is="SingleEntryComponent(result.type)"  :result="result" ></component>
     </div>
   </div>
 </template>
