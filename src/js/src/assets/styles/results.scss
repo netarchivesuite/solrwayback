@@ -34,12 +34,21 @@
   padding-bottom:15px;
 }
 
-.SingleEntryAllData #table { 
+.SingleEntryAllData .table {
   display: table; 
+  margin-top:15px;
+}
+
+.SingleEntryAllData .tr { 
+  display: table-row;
 }
 
 .SingleEntryAllData .tr:nth-child(even) {
   background-color:rgba(30,30,30,0.05);
+}
+
+.SingleEntryAllData .tr:nth-child(odd) {
+  background-color:white;
 }
 
 .SingleEntryAllData .td { 
@@ -89,17 +98,22 @@
   border-bottom: 2px solid var(--secondary-highlight-color);
 }
 
+.SingleEntryAllData hr {
+  margin-top:15px;
+  margin-bottom:-5px;
+}
+
 .showAllButtonContainer {
   width:100%;
-  height:25px;
+  height:30px;
 }
 
 .showAllButtonContainer button {
   float:right;
   border:2px solid var(--secondary-bg-color);
   border-radius: 0;
-  background-color:var(--secondary-bg-color);
-  color:white;
+  background-color:white;
+  color:var(--secondary-bg-color);
   padding:5px 10px 5px 10px;
   box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.25);
   cursor:pointer;
@@ -109,7 +123,7 @@
 
 .showAllButtonContainer button:hover {
   border:2px solid var(--secondary-bg-color);
-  color:var(--secondary-bg-color);
-  background-color:white;
+  color:white;
+  background-color:var(--secondary-bg-color);
   transition:all 0.2s linear 0s;
 }

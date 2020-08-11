@@ -8,6 +8,7 @@ const state = {
   facets: {},
   error: "",
   loading:false,
+  facetLoading:false,
 }
 
 const actions = {
@@ -22,21 +23,31 @@ const actions = {
   },
   search ({ commit }, params) {
     commit('setLoadingStatus',true)
-    console.log(params)
     searchService
       .fireSearch(params)
       .then(result => commit('doSearchSuccess', result), error =>
         commit('doSearchError', error))
   },
+  facets( {commit}, params) {
+    commit('setFacetLoadingStatus')
+    searchService
+      .fireFacetRequest(params)
+      .then(result => commit('facetRequestSuccess', result), error =>
+        commit('facetRequestError', error))
+  },
 }
 
 const mutations = {
   updateQuerySuccess(state, param) {
-    console.log("we updating", param)
     state.query = param
   },
+  facetRequestSuccess(state, result) {
+    state.facets = result.response
+  },
+  facetRequestError(state, message) {
+    state.error = message;
+  },
   doSearchSuccess(state, result) {
-    //console.log("we got results", result.response)
     state.results = result.response
   },
   doSearchError(state, message) {
@@ -44,6 +55,9 @@ const mutations = {
   },
   setLoadingStatus(state, status) {
     state.loading = status
+  },
+  setFacetLoadingStatus(state, status) {
+    state.facetLoading = status
   },
   clearResultsSuccess(state) {
     state.results = {}

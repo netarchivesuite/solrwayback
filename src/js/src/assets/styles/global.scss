@@ -92,6 +92,11 @@ body {
   font-family: Trebuchet MS,Ubuntu;
 }
 
+button:focus {
+  outline:1px solid var(--seethrough-black);
+  border-radius:0;
+}
+
 .highlightText {
   font-weight: bold;
   color:var(--main-highlight-color);

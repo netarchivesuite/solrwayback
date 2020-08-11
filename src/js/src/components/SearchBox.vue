@@ -42,6 +42,7 @@ export default {
   methods: {
     ...mapActions('searchStore', {
       search: 'search',
+      facets: 'facets',
       updateQuery: 'updateQuery',
       clearResults: 'clearResults'
     }),
@@ -49,6 +50,7 @@ export default {
       if (this.futureQuery !== this.query) {
         this.updateQuery(this.futureQuery)
         this.search(this.futureQuery)
+        this.facets(this.futureQuery)
         this.$router.replace({ query: {q:this.query }});
       }
     },
