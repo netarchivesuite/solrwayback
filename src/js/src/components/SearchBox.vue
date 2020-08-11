@@ -33,33 +33,39 @@ export default {
     })
   },
   mounted () {
-    console.log("yea we mounted again")
+    console.log("yea we mounted again",this.$router.history.current.query)
     if(this.query === "" && this.$router.history.current.query.q) {
       this.futureQuery = this.$router.history.current.query.q;
       this.updateQuery(this.$router.history.current.query.q)
       this.search(this.$router.history.current.query.q)
-      this.facets(this.$router.history.current.query.q)
+      this.requestFacets(this.$router.history.current.query.q)
       }
   },
   
   methods: {
     ...mapActions('searchStore', {
       search: 'search',
-      facets: 'facets',
+      requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
-      clearResults: 'clearResults'
+      clearResults: 'clearResults',
+      updateFilters:'updateFilters',
     }),
     handleSubmit() {
       if (this.futureQuery !== this.query) {
         this.updateQuery(this.futureQuery)
         this.search({query:this.futureQuery, filters:this.filters})
-        this.facets({query:this.futureQuery, filters:this.filters})
+        this.requestFacets({query:this.futureQuery, filters:this.filters})
         this.$router.replace({ query: {q:this.query }});
       }
     },
     clearResultsAndSearch() {
-      this.futureQuery = ''
-      this.clearResults()
+      if(this.futureQuery !== "" && this.query !== "") {
+        this.$router.replace({ query: {}});
+      }
+      this.futureQuery = '';
+      this.updateQuery("");
+      this.clearResults();
+      this.updateFilters("");
     }
   }
 }

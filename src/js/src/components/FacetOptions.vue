@@ -17,6 +17,7 @@ export default {
     ...mapState({
       filters: state => state.searchStore.filters,
       facets: state => state.searchStore.facets,
+      query: state => state.searchStore.query
     }),
   },
   mounted () {
@@ -25,11 +26,15 @@ export default {
   methods: {
     ...mapActions('searchStore', {
       search: 'search',
-      facets: 'facets',
+      requestFacets: 'requestFacets',
       updateFilters:'updateFilters'
     }),
     filterFromFacet(facetCategory, facet) {
-      console.log(facetCategory, facet)
+      let newFilter = '&fq=' + facetCategory + ':"' + facet + '"';
+      this.updateFilters(this.filters + newFilter)
+      this.search({query:this.query, filters:this.filters})
+      this.requestFacets({query:this.query, filters:this.filters})
+      this.$router.replace({ query: {q:this.query + this.filters }});
     }
   }
 }

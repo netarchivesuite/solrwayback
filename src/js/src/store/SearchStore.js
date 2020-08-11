@@ -32,7 +32,7 @@ const actions = {
       .then(result => commit('doSearchSuccess', result), error =>
         commit('doSearchError', error))
   },
-  facets({commit}, params) {
+  requestFacets({commit}, params) {
     commit('setFacetLoadingStatus')
     searchService
       .fireFacetRequest(params.query, params.filters)

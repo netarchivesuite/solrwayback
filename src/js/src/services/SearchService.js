@@ -7,7 +7,7 @@ export const searchService = {
 
 function fireSearch (query, filters) {
   // Split url and move to config
-  const url = '/frontend/solr/search/results/' + `?query=${encodeURIComponent(query + filters)}`
+  const url = '/frontend/solr/search/results/' + `?query=${encodeURIComponent(query) + filters}`
   return axios.get(url).then(response => {
     console.log('results', response)
     return addHighlightDataToSearchResult(response.data)
@@ -19,7 +19,7 @@ function fireSearch (query, filters) {
 
 function fireFacetRequest (query, filters) {
   // Split url and move to config
-  const url = ' /frontend/solr/search/facets/' + `?query=${encodeURIComponent(query, filters)}`
+  const url = ' /frontend/solr/search/facets/' + `?query=${encodeURIComponent(query) + filters}`
   return axios.get(url).then(response => {
     console.log('facets', response.data.facet_counts)
     return response.data.facet_counts
