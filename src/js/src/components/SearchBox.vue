@@ -27,15 +27,18 @@ export default {
   computed: {
     ...mapState({
       query: state => state.searchStore.query,
+      filters: state => state.searchStore.filters,
       results: state => state.searchStore.results,
       loading: state => state.searchStore.loading,
     })
   },
   mounted () {
+    console.log("yea we mounted again")
     if(this.query === "" && this.$router.history.current.query.q) {
       this.futureQuery = this.$router.history.current.query.q;
       this.updateQuery(this.$router.history.current.query.q)
       this.search(this.$router.history.current.query.q)
+      this.facets(this.$router.history.current.query.q)
       }
   },
   
@@ -49,8 +52,8 @@ export default {
     handleSubmit() {
       if (this.futureQuery !== this.query) {
         this.updateQuery(this.futureQuery)
-        this.search(this.futureQuery)
-        this.facets(this.futureQuery)
+        this.search({query:this.futureQuery, filters:this.filters})
+        this.facets({query:this.futureQuery, filters:this.filters})
         this.$router.replace({ query: {q:this.query }});
       }
     },

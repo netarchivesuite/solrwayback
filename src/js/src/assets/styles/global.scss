@@ -92,6 +92,21 @@ body {
   font-family: Trebuchet MS,Ubuntu;
 }
 
+h2 {
+  font-weight: bold;
+  color:var(--main-highlight-color);
+  font-size:150%;
+  text-transform: uppercase;
+}
+
+.inline {
+  display:inline-block;
+}
+
+.margin-right-10 {
+  margin-right:10px;
+}
+
 button:focus {
   outline:1px solid var(--seethrough-black);
   border-radius:0;

@@ -4,9 +4,8 @@ body {
 }
 
 .contentContainer {
-  max-width:1200px;
+  max-width:100vw;
   margin:auto;
-  margin-top:120px;
 }
 
 .contentContainer h1 {
@@ -14,6 +13,7 @@ body {
   text-transform:uppercase;
   font-size:200%;
   color:var(--main-text-color);
+  padding-top:60px;
 }
 
 .contentContainer h1 span {

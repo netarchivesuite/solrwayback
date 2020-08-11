@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #TODO change this to point to webapps in the solrwayback folder
-deployFolder='...../solrwayback_package_3.2/apache-tomcat-8.5.29/webapps'
+deployFolder='../solrwayback_package_3.2/apache-tomcat-8.5.29/webapps'
 
 rm -r $deployFolder/solrwayback 
 mvn clean package -DskipTests
