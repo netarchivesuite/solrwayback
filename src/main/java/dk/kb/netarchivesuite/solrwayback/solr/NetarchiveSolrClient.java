@@ -876,41 +876,23 @@ public class NetarchiveSolrClient {
     SolrDocumentList docs = groupsToDoc(rsp);
     return solrDocList2IndexDoc(docs);    
   }
-  /*
-   * 
-   * 
-   */
-  public String searchJsonResponse( String query, String fq, boolean grouping, boolean revisits, Integer start) throws Exception {
-      log.info("query "+query +" grouping:"+grouping +" revisits:"+revisits);
-      
-      String startStr ="0";
-      if (start != null){
-        startStr=start.toString();
-      }
-
+ 
+    public String searchJsonResponseOnlyFacets( String query, String fq,  boolean revisits) throws Exception {
+      log.info("Solr query(only facets): "+query +" fg:"+fq+ "revisits:"+revisits);
+                 
       SolrQuery solrQuery = new SolrQuery();
       
       //Build all query params in map
 
-      solrQuery.set("rows", "20"); //Hardcoded pt.
-      solrQuery.set("start", startStr);
+      solrQuery.set("rows", "0"); //Only facets
       solrQuery.set("q", query);
       solrQuery.set("fl", "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
       solrQuery.set("wt", "json");
-      solrQuery.set("hl", "on");
+      solrQuery.set("hl", "off");
       solrQuery.set("q.op", "AND");
       solrQuery.set("indent", "true");
       solrQuery.set("f.crawl_year.facet.limit", "100"); //Show all crawl_years. Maybe remove limit to property file as well
-      if (grouping){
-        //Both group and stats must be enabled at same time                
-    	  solrQuery.set( "group","true");
-    	  solrQuery.set( "group.field","url");
-    	  solrQuery.set("stats",  "true");
-    	  solrQuery.set("stats.field",  "{!cardinality=0.1}url");
-    	  solrQuery.set( "group.format","simple");
-    	  solrQuery.set( "group.limit","1"); 
-      }
-            
+                  
       if (!revisits){
     	  solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
       }
@@ -935,6 +917,59 @@ public class NetarchiveSolrClient {
       return jsonResponse;
   }
   
+    public String searchJsonResponseNoFacets( String query, String fq, boolean grouping, boolean revisits, Integer start) throws Exception {
+      log.info("SolrQuery (no facets):"+query +" grouping:"+grouping +" revisits:"+revisits + " start:"+start);
+      
+      String startStr ="0";
+      if (start != null){
+        startStr=start.toString();
+      }
+
+      SolrQuery solrQuery = new SolrQuery();
+      
+      //Build all query params in map
+
+      solrQuery.set("rows", "20"); //Hardcoded pt.
+      solrQuery.set("start", startStr);
+      solrQuery.set("q", query);
+      solrQuery.set("fl", "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
+      solrQuery.set("wt", "json");
+      solrQuery.set("hl", "on");
+      solrQuery.set("q.op", "AND");
+      solrQuery.set("indent", "true");
+      solrQuery.set("facet", "false"); //No facets!
+      
+      if (grouping){
+        //Both group and stats must be enabled at same time                
+          solrQuery.set( "group","true");
+          solrQuery.set( "group.field","url");
+          solrQuery.set("stats",  "true");
+          solrQuery.set("stats.field",  "{!cardinality=0.1}url");
+          solrQuery.set( "group.format","simple");
+          solrQuery.set( "group.limit","1"); 
+      }
+            
+      if (!revisits){
+          solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
+      }
+      if ( fq != null && fq.length() > 0){
+          solrQuery.set("fq",fq);                        
+      }
+      
+      NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
+      rawJsonResponseParser.setWriterType("json");
+
+      QueryRequest req = new QueryRequest(solrQuery);
+      req.setResponseParser(rawJsonResponseParser);
+
+      NamedList<Object> resp = solrServer.request(req);
+      String jsonResponse = (String) resp.get("response");
+      return jsonResponse;
+  }
+
+
+    
+    
   
   
   public String idLookupResponse( String id) throws Exception {    
