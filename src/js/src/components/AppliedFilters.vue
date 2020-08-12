@@ -1,7 +1,7 @@
 <template>
-  <div class="filters">
+  <div v-if="filters.length !== 0" class="filters">
     <h2>Applied filters</h2>
-    <div class="displayedFilter" v-bind:key="index" v-for="(item, index) in breakFilters(filters)">{{ displayFilter(item) }}<button v-on:click="removeFilter(item)">X</button></div>
+    <div class="displayedFilter" v-bind:key="index" v-for="(item, index) in breakFilters(filters)"><span>{{ displayFilterName(item) }}</span><span>{{ displayFilterValue(item) }}</span><button v-on:click="removeFilter(item)">✕</button></div>
   </div>
 </template>
 
@@ -32,8 +32,11 @@ export default {
       dividedFilters.shift()
       return dividedFilters
     },
-    displayFilter(filter) {
-      return filter.replace(/"/g,'')
+    displayFilterName(filter) {
+      return filter.split(":")[0] + ": "
+    },
+    displayFilterValue(filter) {
+      return filter.split(":")[1].replace(/"/g,'')
     },
     removeFilter(filter) {
       console.log(filter, this.filters)

@@ -18,6 +18,7 @@
   margin-top:15px;
   padding:25px;
   border-left:4px solid var(--secondary-bg-color);
+  border-right: 2px solid var(--secondary-bg-color);
 }
 
 .singleEntryResult:after {
@@ -209,9 +210,15 @@
 
 .filters .displayedFilter button {
   box-sizing: border-box;
-  border: 1px solid var(--secondary-bg-color);
-	background-color: var(--secondary-bg-color);
-	color: white;
+	border: 2px solid var(--secondary-bg-color);
+	color: var(--secondary-bg-color);
+	background-color: white;
 	margin-left: 10px;
+	font-weight: bold;
 	cursor: pointer;
+}
+
+.filters .displayedFilter span:nth-of-type(2) {
+  color: var(--main-highlight-color);
+	font-weight: bold;
 }
