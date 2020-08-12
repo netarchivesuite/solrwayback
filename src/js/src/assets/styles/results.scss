@@ -194,3 +194,12 @@
   padding-top:5px;
   padding-bottom:5px;
 }
+
+.filters .displayedFilter {
+  display:inline-block;
+  margin:0px 5px 0px 5px;
+}
+
+.filters div:first-of-type {
+  margin-left:0px;
+}

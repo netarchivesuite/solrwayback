@@ -1,9 +1,7 @@
 <template>
-  <div class="facets">
-    <h2>Facets</h2>
-    <div v-bind:key="index" class="facetCategory" v-for="(facetCategory, index) in Object.entries(facets.facet_fields)"><div class="facetCategoryName">{{ facetCategory[0] }}</div> 
-      <div v-on:click="index % 2 === 0 ? applyFilter(facetCategory[0], facet) : null" v-bind:key="index" :class="index % 2 === 0 ? 'facetItem' : 'facetCount'" v-for="(facet, index) in facetCategory[1]"> {{ index % 2 === 0 ? facet || "Unknown" : "(" + facet + ")" }}</div>
-    </div>
+  <div class="filters">
+    <h3>Applied filters:</h3>
+    <div class="displayedFilter" v-bind:key="index" v-for="(item, index) in breakFilters(filters)">{{ displayFilter(item) }}<button v-on:click="removeFilter(item)">X</button></div>
   </div>
 </template>
 
@@ -12,7 +10,7 @@
 import { mapState, mapActions } from 'vuex'
 
 export default {
-  name: "FacetOptions",
+  name: "AppliedFilters",
   computed: {
     ...mapState({
       filters: state => state.searchStore.filters,
@@ -29,9 +27,18 @@ export default {
       requestFacets: 'requestFacets',
       updateFilters:'updateFilters'
     }),
-    applyFilter(facetCategory, facet) {
-      let newFilter = '&fq=' + facetCategory + ':"' + facet + '"';
-      this.updateFilters(this.filters + newFilter)
+    breakFilters(filters) {
+      let dividedFilters = filters.split('&fq=')
+      dividedFilters.shift()
+      return dividedFilters
+    },
+    displayFilter(filter) {
+      return filter.replace(/"/g,'')
+    },
+    removeFilter(filter) {
+      console.log(filter, this.filters)
+      this.updateFilters(this.filters.replace("&fq=" + filter,''))
+      console.log(this.filters)
       this.search({query:this.query, filters:this.filters})
       this.requestFacets({query:this.query, filters:this.filters})
       this.$router.replace({ query: {q:this.query + this.filters }});

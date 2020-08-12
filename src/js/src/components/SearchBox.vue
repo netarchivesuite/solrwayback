@@ -1,4 +1,5 @@
 <template>
+  <div class="searchBoxContainer">
   <form class="searchForm" @submit.prevent="handleSubmit">
     <input  id="query"
       v-model="futureQuery"
@@ -11,13 +12,17 @@
     </button>
     <button v-if="futureQuery !== ''" title="Clear search and results" id="clearSubmit" type="button" v-on:click="clearResultsAndSearch" />     
   </form>
+  <applied-filters />
+</div>
 </template> 
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import AppliedFilters from "./AppliedFilters.vue"
 
 export default {
   components: {
+    AppliedFilters
   },
   data () {
     return {    
