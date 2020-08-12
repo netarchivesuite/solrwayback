@@ -1,6 +1,6 @@
 <template>
   <div class="filters">
-    <h3>Applied filters:</h3>
+    <h2>Applied filters</h2>
     <div class="displayedFilter" v-bind:key="index" v-for="(item, index) in breakFilters(filters)">{{ displayFilter(item) }}<button v-on:click="removeFilter(item)">X</button></div>
   </div>
 </template>

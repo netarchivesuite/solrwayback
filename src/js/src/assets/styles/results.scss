@@ -195,11 +195,23 @@
   padding-bottom:5px;
 }
 
-.filters .displayedFilter {
-  display:inline-block;
-  margin:0px 5px 0px 5px;
-}
-
 .filters div:first-of-type {
   margin-left:0px;
+}
+
+.filters .displayedFilter {
+  padding: 5px 0px 5px 0px;
+  display:inline-block;
+  margin:0px 5px 0px 5px;
+  border-bottom: 2px solid var(--secondary-bg-color);
+  box-sizing: border-box;
+}
+
+.filters .displayedFilter button {
+  box-sizing: border-box;
+  border: 1px solid var(--secondary-bg-color);
+	background-color: var(--secondary-bg-color);
+	color: white;
+	margin-left: 10px;
+	cursor: pointer;
 }
