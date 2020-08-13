@@ -38,15 +38,13 @@ export default {
     })
   },
   mounted () {
-    console.log("yea we mounted again",this.$router.history.current.query)
+    console.log("NEW MOUNT, CHECK THE PARAMS FROM URL:",this.$router.history.current.query)
     if(this.query === "" && this.$router.history.current.query.q) {
-      let querySplit = this.$router.history.current.query.q.split('&fq=');
-      console.log(querySplit,"lololol")
-      this.updateQuery(querySplit[0])
-      if(querySplit.length > 1) {
-        this.updateFilters("&fq=" + querySplit[1]);
+      this.updateQuery(this.$router.history.current.query.q)
+      this.futureQuery = this.$router.history.current.query.q;
+      if(this.$router.history.current.query.filters) {
+        this.updateFilters(this.$router.history.current.query.filters)
       }
-      this.futureQuery = this.$router.history.current.query.q.split('&fq=')[0];
       this.search({query:this.query, filters:this.filters})
       this.requestFacets({query:this.query, filters:this.filters})
       }

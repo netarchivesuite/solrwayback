@@ -44,7 +44,7 @@ export default {
       console.log(this.filters)
       this.search({query:this.query, filters:this.filters})
       this.requestFacets({query:this.query, filters:this.filters})
-      this.$router.replace({ query: {q:this.query + this.filters }});
+      this.$router.replace({query: {q:this.query, filters:this.filters !== "" ?  this.filters : undefined }});
     }
   }
 }
