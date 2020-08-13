@@ -40,8 +40,12 @@ export default {
   mounted () {
     console.log("yea we mounted again",this.$router.history.current.query)
     if(this.query === "" && this.$router.history.current.query.q) {
-      this.updateQuery(this.$router.history.current.query.q.split('&fq=')[0])
-      this.updateFilters("&fq=" + this.$router.history.current.query.q.split('&fq=')[1]);
+      let querySplit = this.$router.history.current.query.q.split('&fq=');
+      console.log(querySplit,"lololol")
+      this.updateQuery(querySplit[0])
+      if(querySplit.length > 1) {
+        this.updateFilters("&fq=" + querySplit[1]);
+      }
       this.futureQuery = this.$router.history.current.query.q.split('&fq=')[0];
       this.search({query:this.query, filters:this.filters})
       this.requestFacets({query:this.query, filters:this.filters})
