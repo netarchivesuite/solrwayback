@@ -1,5 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.ws.rs.GET;
@@ -7,15 +10,22 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
 @Path("/frontend/")
 public class SolrWaybackResourceWeb {
@@ -85,6 +95,86 @@ public class SolrWaybackResourceWeb {
         log.info("PropertiesWeb returned");
         return Facade.getPropertiesWeb();          
       } catch (Exception e) {
+        throw handleServiceExceptions(e);
+      }
+    }
+
+    
+
+    @GET
+    @Path("/downloadRaw")
+    public Response downloadRaw(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
+      try {
+
+        log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+        
+        //Only solr lookup if redirect.
+        if (arcEntry.getStatus_code() >= 300 &&  arcEntry.getStatus_code() <= 399 ){
+          IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);         
+          Response responseRedirect = SolrWaybackResource.getRedirect(indexDoc,arcEntry);
+          log.debug("Redirecting. status code from arc:"+arcEntry.getStatus_code() + " vs index " +indexDoc.getStatusCode()); 
+          return responseRedirect;
+        }
+        
+        //temp dirty hack to see if it fixes brotli
+        InputStream in;
+        if ("br".equalsIgnoreCase(arcEntry.getContentEncoding())){
+        in = new BrotliInputStream(new ByteArrayInputStream(arcEntry.getBinary()));
+        arcEntry.setContentEncoding(null); //Clear encoding.
+        arcEntry.setHasBeenDecompressed(true);
+        }
+        else{      
+         in = new ByteArrayInputStream(arcEntry.getBinary());
+         
+        }
+        ResponseBuilder response = null;
+        try{
+          String contentType = arcEntry.getContentType();
+          if (arcEntry.getContentCharset() != null){
+            contentType = contentType +"; charset="+arcEntry.getContentCharset();
+          }        
+          response= Response.ok((Object) in).type(contentType);          
+        }
+        catch (Exception e){         
+          IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); 
+           log.warn("Error setting HTTP header Content-Type:'"+arcEntry.getContentType() +"' using index Content-Type:'"+indexDoc.getContentType()+"'");         
+           response = Response.ok((Object) in).type(indexDoc.getContentType()); 
+        }
+              
+        if (arcEntry.getFileName() != null){
+          response.header("Content-Disposition", "filename=\"" + arcEntry.getFileName() +"\"");      
+        }
+        
+        if (arcEntry.getContentEncoding() != null){
+          response.header("Content-Encoding", arcEntry.getContentEncoding());      
+        }
+        
+        log.debug("Download from source_file_path:" + source_file_path + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());
+        return response.build();
+
+      } catch (Exception e) {
+        log.error("Error download from source_file_path:"+ source_file_path + " offset:" + offset,e);
+        throw handleServiceExceptions(e);
+      }
+    }
+
+    
+    @GET
+    @Path("images/htmlpage")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public ArrayList<ImageUrl> imagesForPage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset ) throws SolrWaybackServiceException {
+
+      if (source_file_path == null || offset < 0){
+        log.error("source_file_path and offset queryparams missing");
+        throw new InvalidArgumentServiceException("source_file_path and offset queryparams missing");
+      }
+
+      try {    
+        ArrayList<ImageUrl> images = Facade.getImagesForHtmlPageNew(source_file_path, offset);
+        return images;     
+      }
+      catch (Exception e) {           
         throw handleServiceExceptions(e);
       }
     }

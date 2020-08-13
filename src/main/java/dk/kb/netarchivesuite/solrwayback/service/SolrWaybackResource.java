@@ -191,7 +191,7 @@ public class SolrWaybackResource {
       }
   }
   
-
+//Already removed to frontend. Keep until sure it is not used.
   @GET
   @Path("images/htmlpage")
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
@@ -367,6 +367,10 @@ public class SolrWaybackResource {
     }
   }
 
+  /*
+   * Moved to frontend
+   */
+  
   @GET
   @Path("/downloadRaw")
   public Response downloadRaw(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
@@ -1074,9 +1078,13 @@ public class SolrWaybackResource {
   
   
   /*
+   * Move to common top class for both services
+   */
+  
+  /*
    * This will set the correct status and redirect 
    */
-  private static Response getRedirect (IndexDoc doc, ArcEntry arc) throws Exception{
+  public static Response getRedirect (IndexDoc doc, ArcEntry arc) throws Exception{
     int status = doc.getStatusCode();
     
     if (status>= 300 && status <=399){ //Redirects.
