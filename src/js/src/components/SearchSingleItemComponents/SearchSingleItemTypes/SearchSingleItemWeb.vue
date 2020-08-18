@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import SingleEntryStandardInfo from "./../SingleEntryStandardInfo.vue";
-import SingleEntryAllData from "./../SingleEntryAllData.vue";
+import SingleEntryStandardInfo from "./../SearchSingleItemStandardInfo.vue";
+import SingleEntryAllData from "./../SearchSingleItemAllData.vue";
 
 //import { mapState, mapActions } from 'vuex'
 

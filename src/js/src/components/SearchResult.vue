@@ -22,9 +22,9 @@ import SearchFacetOptions from "./SearchFacetOptions.vue";
 export default {
   name: "SearchResult",
   components: {
-    SingleEntryDefault: () => import("./SingleEntryComponents/SingleEntryTypes/SingleEntryDefault"),
-    SingleEntryTweet: () => import("./SingleEntryComponents/SingleEntryTypes/SingleEntryTweet"),
-    SingleEntryWeb: () => import("./SingleEntryComponents/SingleEntryTypes/SingleEntryWeb"),
+    SingleEntryDefault: () => import("./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemDefault"),
+    SingleEntryTweet: () => import("./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemTweet"),
+    SingleEntryWeb: () => import("./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemWeb"),
     SearchFacetOptions
   },
   data () {
