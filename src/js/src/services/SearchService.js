@@ -24,7 +24,6 @@ function fireFacetRequest (query, facets) {
     console.log('facets', response.data.facet_counts)
     return response.data.facet_counts
   }).catch(error => {
-  
     return Promise.reject(error)
   })
 }
