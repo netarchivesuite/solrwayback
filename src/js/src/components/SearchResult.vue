@@ -1,7 +1,7 @@
 <template>
   <div class="resultAndFacetContainer" v-if="Object.keys(results).length > 0">
     <div class="facetContainer">
-      <facet-options />
+      <search-facet-options />
     </div>
     <div class="resultContainer">
       <h2>Results</h2><p>Found <span class="highlightText">{{ results.numFound }}</span> entries matching <span class="highlightText">{{ query }}</span></p>
@@ -17,7 +17,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import FacetOptions from "./FacetOptions.vue";
+import SearchFacetOptions from "./SearchFacetOptions.vue";
 
 export default {
   name: "SearchResult",
@@ -25,7 +25,7 @@ export default {
     SingleEntryDefault: () => import("./SingleEntryComponents/SingleEntryTypes/SingleEntryDefault"),
     SingleEntryTweet: () => import("./SingleEntryComponents/SingleEntryTypes/SingleEntryTweet"),
     SingleEntryWeb: () => import("./SingleEntryComponents/SingleEntryTypes/SingleEntryWeb"),
-    FacetOptions
+    SearchFacetOptions
   },
   data () {
     return {     

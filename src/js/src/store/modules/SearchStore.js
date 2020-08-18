@@ -1,10 +1,10 @@
 // Global search state.
 
-import { searchService } from '../services/SearchService'
+import { searchService } from '../../services/SearchService'
 
 const state = {
   query: "",
-  filters:"",
+  searchAppliedFacets:"",
   results: {},
   facets: {},
   error: "",
@@ -19,8 +19,8 @@ const actions = {
   updateQuery ( {commit}, param ) {
     commit('updateQuerySuccess', param)
   },
-  updateFilters ( {commit}, param ) {
-    commit('updateFiltersSuccess', param)
+  updateSearchAppliedFacets ( {commit}, param ) {
+    commit('updateSearchAppliedFacetsSuccess', param)
   },
   clearResults ( {commit} ) {
     commit('clearResultsSuccess')
@@ -28,14 +28,14 @@ const actions = {
   search ({ commit }, params) {
     commit('setLoadingStatus',true)
     searchService
-      .fireSearch(params.query, params.filters)
+      .fireSearchRequest(params.query, params.facets)
       .then(result => commit('doSearchSuccess', result), error =>
         commit('doSearchError', error))
   },
   requestFacets({commit}, params) {
     commit('setFacetLoadingStatus')
     searchService
-      .fireFacetRequest(params.query, params.filters)
+      .fireFacetRequest(params.query, params.facets)
       .then(result => commit('facetRequestSuccess', result), error =>
         commit('facetRequestError', error))
   },
@@ -45,8 +45,8 @@ const mutations = {
   updateQuerySuccess(state, param) {
     state.query = param
   },
-  updateFiltersSuccess(state, param) {
-    state.filters = param
+  updateSearchAppliedFacetsSuccess(state, param) {
+    state.searchAppliedFacets = param
   },
   facetRequestSuccess(state, result) {
     state.facets = result

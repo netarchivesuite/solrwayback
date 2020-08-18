@@ -12,17 +12,17 @@
     </button>
     <button v-if="futureQuery !== ''" title="Clear search and results" id="clearSubmit" type="button" v-on:click="clearResultsAndSearch" />     
   </form>
-  <applied-filters />
+  <applied-search-facets />
 </div>
 </template> 
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import AppliedFilters from "./AppliedFilters.vue"
+import AppliedSearchFacets from "./AppliedSearchFacets.vue"
 
 export default {
   components: {
-    AppliedFilters
+    AppliedSearchFacets
   },
   data () {
     return {    
@@ -32,7 +32,7 @@ export default {
   computed: {
     ...mapState({
       query: state => state.searchStore.query,
-      filters: state => state.searchStore.filters,
+      searchAppliedFacets: state => state.searchStore.searchAppliedFacets,
       results: state => state.searchStore.results,
       loading: state => state.searchStore.loading,
     })
@@ -42,11 +42,11 @@ export default {
     if(this.query === "" && this.$router.history.current.query.q) {
       this.updateQuery(this.$router.history.current.query.q)
       this.futureQuery = this.$router.history.current.query.q;
-      if(this.$router.history.current.query.filters) {
-        this.updateFilters(this.$router.history.current.query.filters)
+      if(this.$router.history.current.query.facets) {
+        this.updateSearchAppliedFacets(this.$router.history.current.query.facets)
       }
-      this.search({query:this.query, filters:this.filters})
-      this.requestFacets({query:this.query, filters:this.filters})
+      this.search({query:this.query, facets:this.searchAppliedFacets})
+      this.requestFacets({query:this.query, facets:this.searchAppliedFacets})
       }
   },
   
@@ -56,13 +56,13 @@ export default {
       requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
       clearResults: 'clearResults',
-      updateFilters:'updateFilters',
+      updateSearchAppliedFacets:'updateSearchAppliedFacets',
     }),
     handleSubmit() {
       if (this.futureQuery !== this.query) {
         this.updateQuery(this.futureQuery)
-        this.search({query:this.futureQuery, filters:this.filters})
-        this.requestFacets({query:this.futureQuery, filters:this.filters})
+        this.search({query:this.futureQuery, facets:this.searchAppliedFacets})
+        this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets})
         this.$router.replace({ query: {q:this.query }});
       }
     },
@@ -73,7 +73,7 @@ export default {
       this.futureQuery = '';
       this.updateQuery("");
       this.clearResults();
-      this.updateFilters("");
+      this.updateSearchAppliedFacets("");
     }
   }
 }
