@@ -8,6 +8,8 @@
 <script>
 
 import { mapState, mapActions } from 'vuex'
+import AppliedSearchFacetsUtils from "./../mixins/AppliedSearchFacetsUtils"
+
 
 export default {
   name: "AppliedSearchFacets",
@@ -20,23 +22,14 @@ export default {
   },
   mounted () {
   },
-  
+  mixins: [AppliedSearchFacetsUtils],
+
   methods: {
     ...mapActions('searchStore', {
       search: 'search',
       requestFacets: 'requestFacets',
       updateSearchAppliedFacets:'updateSearchAppliedFacets'
     }),
-    seperateFacets(facets) {
-      let dividedFacets = facets.split('&fq=').filter(Boolean)
-      return dividedFacets
-    },
-    displayFacetName(facet) {
-      return facet.split(":")[0] + ": "
-    },
-    displayFacetValue(facet) {
-      return facet.split(":")[1].replace(/"/g,'')
-    },
     removeFacet(facet) {
       console.log(facet, this.searchAppliedFacets)
       this.updateSearchAppliedFacets(this.searchAppliedFacets.replace("&fq=" + facet,''))
