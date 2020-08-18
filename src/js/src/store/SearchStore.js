@@ -1,6 +1,6 @@
 // Global search state.
 
-import { searchService } from '../services/SearchService'
+import { searchService } from '../services/searchService'
 
 const state = {
   query: "",
