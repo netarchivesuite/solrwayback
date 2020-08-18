@@ -1,6 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import { searchStore } from './SearchStore'
+import { searchStore } from './searchStore'
 
 
 Vue.use(Vuex);
