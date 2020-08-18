@@ -10,7 +10,7 @@
     <button title="Search" id="querySubmit" type="submit">
       <div id="magnifyingGlass"></div>
     </button>
-    <button v-if="futureQuery !== ''" title="Clear search and results" id="clearSubmit" type="button" v-on:click="clearResultsAndSearch" />     
+    <button v-if="futureQuery !== ''" title="Clear search and results" id="clearSubmit" type="button" @click="clearResultsAndSearch" />     
   </form>
   <applied-search-facets />
 </div>

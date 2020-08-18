@@ -1,7 +1,7 @@
 <template>
-  <div v-if="searchAppliedFacets !== ''" class="facets">
+  <div v-if="searchAppliedFacets !== ''" class="selectedFacets">
     <h2>Applied facets</h2>
-    <div class="displayedFacet" v-bind:key="index" v-for="(item, index) in seperateFacets(searchAppliedFacets)"><span>{{ displayFacetName(item) }}</span><span>{{ displayFacetValue(item) }}</span><button v-on:click="removeFacet(item)">✕</button></div>
+    <div class="displayedFacet" :key="index" v-for="(item, index) in seperateFacets(searchAppliedFacets)"><span>{{ displayFacetName(item) }}</span><span>{{ displayFacetValue(item) }}</span><button @click="removeFacet(item)">✕</button></div>
   </div>
 </template>
 
@@ -28,8 +28,7 @@ export default {
       updateSearchAppliedFacets:'updateSearchAppliedFacets'
     }),
     seperateFacets(facets) {
-      let dividedFacets = facets.split('&fq=')
-      dividedFacets.shift()
+      let dividedFacets = facets.split('&fq=').filter(Boolean)
       return dividedFacets
     },
     displayFacetName(facet) {

@@ -196,11 +196,11 @@
   padding-bottom:5px;
 }
 
-.facets div:first-of-type {
+.selectedFacets div:first-of-type {
   margin-left:0px;
 }
 
-.facets .displayedFacet {
+.selectedFacets .displayedFacet {
   padding: 5px 0px 5px 0px;
   display:inline-block;
   margin:0px 5px 0px 5px;
@@ -208,7 +208,7 @@
   box-sizing: border-box;
 }
 
-.facets .displayedFacet button {
+.selectedFacets .displayedFacet button {
   box-sizing: border-box;
 	border: 2px solid var(--secondary-bg-color);
 	color: var(--secondary-bg-color);
@@ -218,7 +218,7 @@
 	cursor: pointer;
 }
 
-.facets .displayedFacet span:nth-of-type(2) {
+.selectedFacets .displayedFacet span:nth-of-type(2) {
   color: var(--main-highlight-color);
 	font-weight: bold;
 }
