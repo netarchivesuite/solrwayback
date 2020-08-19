@@ -87,3 +87,43 @@ video {
   font: inherit;
   vertical-align: baseline;
 }
+
+body {
+  font-family: Trebuchet MS,Ubuntu;
+}
+
+h2 {
+  font-weight: bold;
+  color:var(--main-highlight-color);
+  font-size:120%;
+  text-transform: uppercase;
+}
+
+.inline {
+  display:inline-block;
+}
+
+.margin-right-10 {
+  margin-right:10px;
+}
+
+button:focus {
+  outline:1px solid var(--seethrough-black);
+  border-radius:0;
+}
+
+.highlightText {
+  font-weight: bold;
+  color:var(--main-highlight-color);
+}
+
+.highlightTextBold {
+  font-weight: bold;
+  color:var(--main-highlight-color);
+  border-bottom: 2px solid var(--secondary-highlight-color);
+}
+
+.downplayText {
+  font-weight: bold;
+  color:var(--seethrough-black);
+}

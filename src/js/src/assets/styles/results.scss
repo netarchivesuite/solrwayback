@@ -1,0 +1,224 @@
+.resultAndFacetContainer {
+  width:100%;
+  display: grid;
+  grid-template-columns: 20% 60% 20%;
+}
+
+.resultContainer, .facetContainer, .marginContainer {
+  padding:15px;
+  box-sizing: border-box;
+}
+
+
+.singleEntryResult {
+  -webkit-box-shadow: 0px 3px 6px 0px rgba(0,0,0,0.25);
+  -moz-box-shadow: 0px 3px 6px 0px rgba(0,0,0,0.25);
+  box-shadow: 0px 3px 6px 0px rgba(0,0,0,0.25);
+  margin-bottom:20px;
+  margin-top:15px;
+  padding:25px;
+  border-left:4px solid var(--secondary-bg-color);
+  border-right: 2px solid var(--secondary-bg-color);
+}
+
+.singleEntryResult:after {
+  content:'';
+  display:block;
+  position:absolute;
+  box-sizing: border-box;
+  height:15px;
+  width:15px;
+  border-top:15px solid transparent;
+  border-left:15px solid var(--secondary-bg-color);
+  border-bottom:15px solid var(--secondary-bg-color);
+  border-right:15px solid transparent;
+  margin-left:-29px;
+  margin-top:-5px;
+}
+
+.informationDivider {
+  width:100%;
+  border-color:transparent transparent #fff6c4 transparent;
+  height:1px;
+}
+
+.SingleResultEntry {
+  padding-top:15px;
+  padding-bottom:15px;
+}
+
+.SingleEntryAllData .table {
+  display: table; 
+  margin-top:15px;
+}
+
+.SingleEntryAllData .tr { 
+  display: table-row;
+}
+
+.SingleEntryAllData .tr:nth-child(even) {
+  background-color:rgba(30,30,30,0.05);
+}
+
+.SingleEntryAllData .tr:nth-child(odd) {
+  background-color:white;
+}
+
+.SingleEntryAllData .td { 
+  display: table-cell;
+  min-width:200px;
+  padding-top:10px;
+  padding-bottom:10px;
+  padding-left:5px;
+}
+
+.SingleEntryStandardInfo .scoreInfo {
+  float:right;
+  margin-left:10px;
+}
+
+.SingleEntryStandardInfo .entryInfo {
+  padding-bottom:5px;
+  padding-top:5px;
+}
+
+.SingleEntryStandardInfo .entryInfo.type {
+  text-transform: lowercase;
+}
+
+.SingleEntryStandardInfo .entryInfo .attri {
+  width:50px;
+  display:inline-block;
+}
+
+
+.SingleEntryStandardInfo .snippetContainer {
+  padding:5px;
+}
+
+.SingleEntryStandardInfo .titleInfo {
+  text-transform: uppercase;
+  font-size:130%;
+}
+
+.SingleEntryStandardInfo .titleInfo, .SingleEntryStandardInfo .domainInfo, .SingleEntryStandardInfo .typeInfo {
+  margin-right:3px;
+  margin-left:3px;
+
+}
+
+.SingleEntryStandardInfo .snippetHighlight {
+  font-style: italic;
+  display:inline-block;
+}
+
+.SingleEntryStandardInfo .snippetHighlight em {
+  font-weight:bold;
+  color:var(--main-highlight-color);
+  border-bottom: 2px solid var(--secondary-highlight-color);
+}
+
+.SingleEntryAllData hr {
+  margin-top:15px;
+  margin-bottom:-5px;
+}
+
+.showAllButtonContainer {
+  width:100%;
+  height:30px;
+}
+
+.showAllButtonContainer button {
+  float:right;
+  border:2px solid var(--secondary-bg-color);
+  border-radius: 0;
+  background-color:white;
+  color:var(--secondary-bg-color);
+  padding:5px 10px 5px 10px;
+  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.25);
+  cursor:pointer;
+  box-sizing: border-box;
+  transition:all 0.2s linear 0s;
+}
+
+.showAllButtonContainer button:hover {
+  border:2px solid var(--secondary-bg-color);
+  color:white;
+  background-color:var(--secondary-bg-color);
+  transition:all 0.2s linear 0s;
+}
+
+.facets {
+  flex-direction: column;
+	display: flex;
+}
+
+.facetCategoryName {
+  //display:block;
+  color:var(--secondary-bg-color);
+  font-weight: bold;
+}
+
+.facetCategory {
+  display: inline-block;
+	vertical-align: top;
+	-webkit-box-flex: 1;
+	-ms-flex: 1 1 0px;
+	flex: 1 1 0;
+}
+
+.facetItem {
+  float: left;
+  margin-right: 5px;
+  margin-left:15px;
+	white-space: nowrap;
+	overflow: hidden;
+	max-width: 85%;
+	text-overflow: ellipsis;
+  cursor: pointer;
+  text-transform: lowercase;
+}
+
+.facetItem:before {
+  content:'•';
+  color:var(--secondary-bg-color);
+}
+
+.facetCount {
+  //flex:0 1 auto;
+  //display:inline-block;
+  color: rgba(30, 30, 30, 0.5);
+  //font-weight: initial;
+}
+
+.facetItem, .facetCount {
+  padding-top:5px;
+  padding-bottom:5px;
+}
+
+.selectedFacets div:first-of-type {
+  margin-left:0px;
+}
+
+.selectedFacets .displayedFacet {
+  padding: 5px 0px 5px 0px;
+  display:inline-block;
+  margin:0px 5px 0px 5px;
+  border-bottom: 2px solid var(--secondary-bg-color);
+  box-sizing: border-box;
+}
+
+.selectedFacets .displayedFacet button {
+  box-sizing: border-box;
+	border: 2px solid var(--secondary-bg-color);
+	color: var(--secondary-bg-color);
+	background-color: white;
+	margin-left: 10px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.selectedFacets .displayedFacet span:nth-of-type(2) {
+  color: var(--main-highlight-color);
+	font-weight: bold;
+}
