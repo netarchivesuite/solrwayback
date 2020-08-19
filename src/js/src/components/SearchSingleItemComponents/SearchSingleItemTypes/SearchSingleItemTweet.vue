@@ -6,13 +6,13 @@
 </template>
 
 <script>
-import SingleEntryStandardInfo from "./../SearchSingleItemStandardInfo.vue";
-import SingleEntryAllData from "./../SearchSingleItemAllData.vue";
+import SingleEntryStandardInfo from './../SearchSingleItemStandardInfo.vue'
+import SingleEntryAllData from './../SearchSingleItemAllData.vue'
 
 //import { mapState, mapActions } from 'vuex'
 
 export default {
-  name: "SingleEntryTweet",
+  name: 'SingleEntryTweet',
   components: {  
     SingleEntryStandardInfo,
     SingleEntryAllData

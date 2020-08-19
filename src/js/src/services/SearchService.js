@@ -12,11 +12,11 @@ function fireSearchRequest (query, facets) {
     url, {
       transformResponse: [
         function(response) {
-          let returnObj = JSON.parse(response);
+          let returnObj = JSON.parse(response)
           for(let i = 0; i < returnObj.response.docs.length; i++) {
-            returnObj.response.docs[i].highlight = returnObj.highlighting[returnObj.response.docs[i].id];
+            returnObj.response.docs[i].highlight = returnObj.highlighting[returnObj.response.docs[i].id]
           }
-          return returnObj;
+          return returnObj
         }
       ]}).then(returnObj => {
     return returnObj.data

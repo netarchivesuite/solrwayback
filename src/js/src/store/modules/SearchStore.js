@@ -3,11 +3,11 @@
 import { searchService } from '../../services/SearchService'
 
 const state = {
-  query: "",
-  searchAppliedFacets:"",
+  query: '',
+  searchAppliedFacets:'',
   results: {},
   facets: {},
-  error: "",
+  error: '',
   loading:false,
   facetLoading:false,
 }
@@ -59,7 +59,7 @@ const mutations = {
     state.loading = false
   },
   doSearchError(state, message) {
-    state.error = message;
+    state.error = message
   },
   setLoadingStatus(state, status) {
     state.loading = status

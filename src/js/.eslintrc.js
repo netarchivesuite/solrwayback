@@ -4,7 +4,7 @@ module.exports = {
     node: true
   },
   'extends': [
-    'plugin:vue/essential'
+    'plugin:vue/recommended'
     
   ],
   rules: {
@@ -24,7 +24,10 @@ module.exports = {
         'allowFirstLine': true
       }
     }]
-  }
+  },
+  parserOptions: {
+    parser: "babel-eslint"
+  },
   
 }
 

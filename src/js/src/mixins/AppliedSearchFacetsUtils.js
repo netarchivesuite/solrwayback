@@ -7,10 +7,10 @@ export default {
       return dividedFacets
     },
     displayFacetName(facet) {
-      return facet.split(":")[0] + ": "
+      return facet.split(':')[0] + ': '
     },
     displayFacetValue(facet) {
-      return facet.split(":")[1].replace(/"/g,'')
+      return facet.split(':')[1].replace(/"/g,'')
     },
   }
 }
