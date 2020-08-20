@@ -2,7 +2,7 @@
 
 import { searchService } from '../../services/SearchService'
 
-const state = {
+const initialState = () => ({
   query: '',
   searchAppliedFacets:'',
   results: {},
@@ -10,7 +10,9 @@ const state = {
   error: '',
   loading:false,
   facetLoading:false,
-}
+})
+
+const state = initialState()
 
 const actions = {
   setLoadingStatus( {commit}, param) {
@@ -39,6 +41,9 @@ const actions = {
       .then(result => commit('facetRequestSuccess', result), error =>
         commit('facetRequestError', error))
   },
+  resetState({ commit }) {
+    commit('resetState')
+  }
 }
 
 const mutations = {
@@ -70,11 +75,17 @@ const mutations = {
   clearResultsSuccess(state) {
     state.results = {}
     state.facetLoading = false
-  }
+  },
+  resetState(state) {
+    const newState = initialState()
+    Object.keys(newState).forEach(key => {
+          state[key] = newState[key]
+    })
+  },
 
 }
 
-export const searchStore = {
+export default {
   namespaced: true,
   state,
   actions,
