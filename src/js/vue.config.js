@@ -2,9 +2,9 @@ process.env.VUE_APP_VERSION = process.env.NODE_ENV === 'production' ? require('.
 module.exports = {
   devServer: {
     proxy: {
-    '/frontend/solr/': {
+    '/services/frontend/solr/': {
       target: 'http://localhost:8080/solrwayback/services/frontend/solr/',
-      pathRewrite: { '^/frontend/solr/': '' },
+      pathRewrite: { '^/services/frontend/solr/': '' },
       changeOrigin: true
       },
     }
