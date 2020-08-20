@@ -27,7 +27,7 @@
 
   
   <welcome-file-list>
-    <welcome-file>vuesearch.jsp</welcome-file>
+    <welcome-file>solrwayback_index_page.html</welcome-file>
   </welcome-file-list>
    
    <error-page>
