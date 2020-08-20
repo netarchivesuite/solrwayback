@@ -49,14 +49,14 @@ export default {
       if(this.$router.history.current.query.facets) {
         this.updateSearchAppliedFacets(this.$router.history.current.query.facets)
       }
-      this.search({query:this.query, facets:this.searchAppliedFacets})
+      this.requestSearch({query:this.query, facets:this.searchAppliedFacets})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets})
       }
   },
   
   methods: {
     ...mapActions('searchStore', {
-      search: 'search',
+      requestSearch: 'requestSearch',
       requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
       clearResults: 'clearResults',
@@ -65,7 +65,7 @@ export default {
     handleSubmit() {
       if (this.futureQuery !== this.query) {
         this.updateQuery(this.futureQuery)
-        this.search({query:this.futureQuery, facets:this.searchAppliedFacets})
+        this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets})
         this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets})
         this.$router.replace({ query: {q:this.query }})
       }

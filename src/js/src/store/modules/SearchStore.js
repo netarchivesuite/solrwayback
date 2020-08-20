@@ -1,6 +1,6 @@
 // Global search state.
 
-import { searchService } from '../../services/SearchService'
+import { requestService } from '../../services/RequestService'
 
 const state = {
   query: '',
@@ -25,16 +25,16 @@ const actions = {
   clearResults ( {commit} ) {
     commit('clearResultsSuccess')
   },
-  search ({ commit }, params) {
+  requestSearch ({ commit }, params) {
     commit('setLoadingStatus',true)
-    searchService
+    requestService
       .fireSearchRequest(params.query, params.facets)
       .then(result => commit('doSearchSuccess', result), error =>
         commit('doSearchError', error))
   },
   requestFacets({commit}, params) {
     commit('setFacetLoadingStatus')
-    searchService
+    requestService
       .fireFacetRequest(params.query, params.facets)
       .then(result => commit('facetRequestSuccess', result), error =>
         commit('facetRequestError', error))

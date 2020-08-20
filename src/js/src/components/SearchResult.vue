@@ -23,9 +23,9 @@ import SearchFacetOptions from './SearchFacetOptions.vue'
 export default {
   name: 'SearchResult',
   components: {
-    SingleEntryDefault: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemDefault'),
-    SingleEntryTweet: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemTweet'),
-    SingleEntryWeb: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemWeb'),
+    SearchSingleItemDefault: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemDefault'),
+    SearchSingleItemTweet: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemTweet'),
+    SearchSingleItemWeb: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemWeb'),
     SearchFacetOptions
   },
   data () {
@@ -43,13 +43,13 @@ export default {
   
   methods: {
     ...mapActions('searchStore', {
-      search: 'search',
+      requestSearch: 'requestSearch',
     }),
     SingleEntryComponent(type) {
       switch(type) {   
-        case 'Web Page': return 'SingleEntryWeb'
-        case 'Twitter Tweet': return 'SingleEntryTweet'
-        default: return 'SingleEntryDefault'
+        case 'Web Page': return 'SearchSingleItemWeb'
+        case 'Twitter Tweet': return 'SearchSingleItemTweet'
+        default: return 'SearchSingleItemDefault'
       }
     }
   }

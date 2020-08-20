@@ -1,12 +1,12 @@
 import axios from 'axios'
 
-export const searchService = {
+export const requestService = {
   fireSearchRequest,
-  fireFacetRequest
+  fireFacetRequest,
+  fireImagesRequest
 }
 
 function fireSearchRequest (query, facets) {
-  // Split url and move to config
   const url = '/frontend/solr/search/results/' + `?query=${query + facets}`
   return axios.get(
     url, {
@@ -26,12 +26,21 @@ function fireSearchRequest (query, facets) {
 }
 
 function fireFacetRequest (query, facets) {
-  // Split url and move to config
   const url = ' /frontend/solr/search/facets/' + `?query=${query + facets}`
   return axios.get(
     url).then(response => {
     console.log('facets', response.data.facet_counts)
     return response.data.facet_counts
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function fireImagesRequest (source_file_path, offset) {
+  const url = '/services/images/htmlpage' + `?source_file_path=${source_file_path}&offset=${offset}`
+  return axios.get(
+    url).then(response => {
+    return response.data
   }).catch(error => {
     return Promise.reject(error)
   })

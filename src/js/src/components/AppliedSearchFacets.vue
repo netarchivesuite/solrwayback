@@ -32,7 +32,7 @@ export default {
  
   methods: {
     ...mapActions('searchStore', {
-      search: 'search',
+      requestSearch: 'requestSearch',
       requestFacets: 'requestFacets',
       updateSearchAppliedFacets:'updateSearchAppliedFacets'
     }),
@@ -40,7 +40,7 @@ export default {
       console.log(facet, this.searchAppliedFacets)
       this.updateSearchAppliedFacets(this.searchAppliedFacets.replace('&fq=' + facet,''))
       console.log(this.searchAppliedFacets)
-      this.search({query:this.query, facets:this.searchAppliedFacets})
+      this.requestSearch({query:this.query, facets:this.searchAppliedFacets})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets})
       this.$router.replace({query: {q:this.query, facets:this.searchAppliedFacets !== '' ?  this.searchAppliedFacets : undefined }})
     }

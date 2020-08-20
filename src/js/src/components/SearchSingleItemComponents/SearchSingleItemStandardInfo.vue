@@ -4,7 +4,7 @@
       score: <span class="highlightText">{{ result.score }}</span>
     </p>
     <p class="entryInfo">
-      <span class="highlightText titleInfo">{{ result.title }}</span>
+      <span class="highlightText titleInfo">{{ result.title || 'No title' }}</span>
     </p><p class="entryInfo type">
       <span class="attri">type:</span> <span class="val">{{ result.content_type_norm }}, {{ result.type }} @ {{ result.domain }}</span>
     </p>
@@ -32,7 +32,7 @@
 //import { mapState, mapActions } from 'vuex'
 
 export default {
-  name: 'SingleEntryStandardInfo',
+  name: 'SearchSingleItemStandardInfo',
   components: {  
   },
   props: {
