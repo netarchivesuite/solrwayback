@@ -30,8 +30,6 @@ src/js/npm-debug.log*
 src/js/yarn-debug.log*
 src/js/yarn-error.log*
 
-# Config
-
 
 #deployToTest
 src/js/deployToTest.sh
