@@ -7,7 +7,8 @@ export const requestService = {
 }
 
 function fireSearchRequest (query, facets) {
-  const url = '/frontend/solr/search/results/' + `?query=${query + facets}`
+  // Split url and move to config
+  const url = 'services/frontend/solr/search/results/' + `?query=${query + facets}`
   return axios.get(
     url, {
       transformResponse: [
@@ -26,7 +27,8 @@ function fireSearchRequest (query, facets) {
 }
 
 function fireFacetRequest (query, facets) {
-  const url = ' /frontend/solr/search/facets/' + `?query=${query + facets}`
+  // Split url and move to config
+  const url = 'services/frontend/solr/search/facets/' + `?query=${query + facets}`
   return axios.get(
     url).then(response => {
     console.log('facets', response.data.facet_counts)

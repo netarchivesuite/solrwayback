@@ -16,8 +16,6 @@
          class="previewImageContainer">
       <img
         loading="lazy"
-        width="100%"
-        height="200"
         class="previewImage"
         :src="item.downloadUrl"
         @click="toggleFullImage(index)">
@@ -59,7 +57,12 @@ export default {
   },
   computed: {
   },
-  mounted () {
+  watch: { 
+    source: function() { // watch it
+      requestService.fireImagesRequest(this.source, this.offset).then(result => (this.imageSrcs = result, this.imageSrcs === [] ? console.log('request successfull, no images!') : null), error => (console.log('Error in getting images'), this.imageSrc = []))
+    }
+  },
+  mounted() {
     requestService.fireImagesRequest(this.source, this.offset).then(result => (this.imageSrcs = result, this.imageSrcs === [] ? console.log('request successfull, no images!') : null), error => (console.log('Error in getting images'), this.imageSrc = []))
   },
   methods: {

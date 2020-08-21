@@ -34,15 +34,15 @@ export default {
   },
   computed: {
     ...mapState({
-      query: state => state.searchStore.query,
-      results: state => state.searchStore.results,
+      query: state => state.Search.query,
+      results: state => state.Search.results,
     }),
   },
   mounted () {
   },
   
   methods: {
-    ...mapActions('searchStore', {
+    ...mapActions('Search', {
       requestSearch: 'requestSearch',
     }),
     SingleEntryComponent(type) {

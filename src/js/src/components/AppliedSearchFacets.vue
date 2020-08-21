@@ -22,16 +22,16 @@ export default {
 
   computed: {
     ...mapState({
-      searchAppliedFacets: state => state.searchStore.searchAppliedFacets,
-      facets: state => state.searchStore.facets,
-      query: state => state.searchStore.query
+      searchAppliedFacets: state => state.Search.searchAppliedFacets,
+      facets: state => state.Search.facets,
+      query: state => state.Search.query
     }),
   },
   mounted () {
   },
  
   methods: {
-    ...mapActions('searchStore', {
+    ...mapActions('Search', {
       requestSearch: 'requestSearch',
       requestFacets: 'requestFacets',
       updateSearchAppliedFacets:'updateSearchAppliedFacets'
