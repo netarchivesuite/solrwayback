@@ -250,13 +250,18 @@
   width: calc(25% - 2em);
 }
 
+.singleEntryImages .previewImageHidden {
+  display:none;
+}
+
 .singleEntryImages img {
   object-fit: cover;
+  cursor: pointer;
   box-sizing: border-box;
   border:1px solid var(--secondary-bg-color);
   box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.15);
-  max-height: 200px;
-	max-width: 100%;
+  //max-height: 200px;
+	//max-width: 100%;
   //filter: saturate(0) sepia(1) hue-rotate(180deg) contrast(1.5);
 }
 

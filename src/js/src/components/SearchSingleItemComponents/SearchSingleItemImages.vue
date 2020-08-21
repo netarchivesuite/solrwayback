@@ -15,6 +15,8 @@
          :key="index"
          class="previewImageContainer">
       <img
+        width="100%"
+        height="200px"
         loading="lazy"
         class="previewImage"
         :src="item.downloadUrl"
