@@ -350,11 +350,21 @@ public class SolrWaybackResource {
       int sourceHeight = image.getHeight();
 
       if (sourceHeight <= height && sourceWidth <= width) { // No resize, image is smaller
-        ResponseBuilder response = Response.ok((Object) image);
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          ImageIO.write(image, "png", baos);
+          byte[] imageData = baos.toByteArray();
+          baos.flush();
+          baos.close();
+          ResponseBuilder response = Response.ok(new ByteArrayInputStream(imageData));
         return response.build();
       } else {
-        Image resizeImage = ImageUtils.resizeImage(image, sourceWidth, sourceHeight, width, height);
-        ResponseBuilder response = Response.ok((Object) resizeImage);
+        BufferedImage resizeImage = ImageUtils.resizeImage(image, sourceWidth, sourceHeight, width, height);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(resizeImage, "png", baos);
+        byte[] imageData = baos.toByteArray();
+        baos.flush();
+        baos.close();
+        ResponseBuilder response = Response.ok(new ByteArrayInputStream(imageData));               
         return response.build();
       }
     } catch (Exception e) {
