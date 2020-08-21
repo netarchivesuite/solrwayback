@@ -31,7 +31,7 @@ export default {
   },
  
   methods: {
-    ...mapActions('searchStore', {
+    ...mapActions('Search', {
       search: 'search',
       requestFacets: 'requestFacets',
       updateSearchAppliedFacets:'updateSearchAppliedFacets'
