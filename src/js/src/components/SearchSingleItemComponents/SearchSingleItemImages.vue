@@ -15,11 +15,10 @@
          :key="index"
          class="previewImageContainer">
       <img
-        width="100%"
-        height="200px"
+
         loading="lazy"
         class="previewImage"
-        :src="item.downloadUrl"
+        :src="item.imageUrl + '&height=200&width=200'"
         @click="toggleFullImage(index)">
       <search-single-item-focus-image v-if="showFullImage === index"
                                       :image="item.downloadUrl"
