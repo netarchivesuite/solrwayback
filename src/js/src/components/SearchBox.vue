@@ -35,10 +35,10 @@ export default {
   },
   computed: {
     ...mapState({
-      query: state => state.searchStore.query,
-      searchAppliedFacets: state => state.searchStore.searchAppliedFacets,
-      results: state => state.searchStore.results,
-      loading: state => state.searchStore.loading,
+      query: state => state.Search.query,
+      searchAppliedFacets: state => state.Search.searchAppliedFacets,
+      results: state => state.Search.results,
+      loading: state => state.Search.loading,
     })
   },
   mounted () {
@@ -55,12 +55,13 @@ export default {
   },
   
   methods: {
-    ...mapActions('searchStore', {
+    ...mapActions('Search', {
       search: 'search',
       requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
       clearResults: 'clearResults',
       updateSearchAppliedFacets:'updateSearchAppliedFacets',
+      resetSearchState:'resetState'
     }),
     handleSubmit() {
       if (this.futureQuery !== this.query) {
@@ -75,9 +76,10 @@ export default {
         this.$router.replace({ query: {}})
       }
       this.futureQuery = ''
-      this.updateQuery('')
-      this.clearResults()
-      this.updateSearchAppliedFacets('')
+      this.resetSearchState()
+     // this.updateQuery('')
+      //this.clearResults()
+      //this.updateSearchAppliedFacets('')
     }
   }
 }
