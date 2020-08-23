@@ -1,7 +1,7 @@
 <template>
   <div class="singleEntryResult">
     <single-entry-standard-info :result="result" />
-    <single-entry-all-data :result="result" />
+    <single-entry-all-data :id="result.id" />
   </div>
 </template>
 

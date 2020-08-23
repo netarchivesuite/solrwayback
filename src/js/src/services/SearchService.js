@@ -2,7 +2,8 @@ import axios from 'axios'
 
 export const searchService = {
   fireSearchRequest,
-  fireFacetRequest
+  fireFacetRequest,
+  fireLookupRequest
 }
 
 function fireSearchRequest (query, facets) {
@@ -32,6 +33,16 @@ function fireFacetRequest (query, facets) {
     url).then(response => {
     console.log('facets', response.data.facet_counts)
     return response.data.facet_counts
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function fireLookupRequest(id) {
+  const url = 'services/frontend/solr/idlookup/' + `?id=${id}`
+  return axios.get(
+    url).then(response => {
+    return response.data
   }).catch(error => {
     return Promise.reject(error)
   })

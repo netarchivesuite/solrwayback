@@ -5,7 +5,7 @@
         See all data
       </button>
     </div>
-    <div v-if="allDataShown">
+    <div v-if="allDataShown && result !== {}">
       <hr class="informationDivider">
       <div class="table">
         <div class="tr">
@@ -21,20 +21,23 @@
 
 <script>
 //import { mapState, mapActions } from 'vuex'
+import { searchService } from '../../services/SearchService'
 
 export default {
-  name: 'SingleEntryStandardInfo',
+  name: 'SearchSingleItemAllData',
   components: {  
   },
   props: {
-    result: {
-      type: Object,
+    id: {
+      type: String,
       required: true
     },
+
   },
   data () {
     return {
-      allDataShown:false,    
+      allDataShown:false, 
+      result: {}
     }
   },
   computed: {
@@ -44,6 +47,9 @@ export default {
   methods: {
     toggleAllDataShown() {
       this.allDataShown = !this.allDataShown
+      if(Object.keys(this.result).length === 0 && this.result.constructor === Object) {
+        searchService.fireLookupRequest(this.id).then(result => (this.result = result.response.docs[0], this.result === [] ? console.log('request successfull, no data!') : null), error => (console.log('Error in getting full post'), this.result = []))
+      }
     },
     divideString(text) {
      return text[0]
