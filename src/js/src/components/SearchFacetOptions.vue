@@ -1,5 +1,5 @@
 <template>
-  <div v-if="facets.length !== 0" class="facets">
+  <div v-if="facets.facet_fields" class="facets">
     <h2>Facets</h2>
     <div v-for="(facetCategory, index) in Object.entries(facets.facet_fields)" :key="index" class="facetCategory">
       <div class="facetCategoryName">
@@ -29,7 +29,6 @@ export default {
     }),
   },
   mounted () {
-    console.log(facets)
   },
   
   methods: {

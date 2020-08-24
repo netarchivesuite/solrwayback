@@ -13,8 +13,8 @@
         </div>
         <div v-for="(key, index) in Object.entries(result)"
              :key="index"
-             class="tr"
-             @click="searchFromAllValues(key[0], key[1])">
+             :class="key[0] !== 'content' ? 'tr clickAble' : 'tr'"
+             @click="key[0] !== 'content' ? searchFromAllValues(key[0], key[1]) : null">
           <span class="td">{{ key[0] }}</span> <span class="td">{{ key[1] }}</span>
         </div>
       </div>
@@ -23,7 +23,7 @@
 </template>
 
 <script>
-//import { mapState, mapActions } from 'vuex'
+import { mapState } from 'vuex'
 import { searchService } from '../../services/SearchService'
 
 export default {
@@ -35,13 +35,17 @@ export default {
       type: String,
       required: true
     },
-
   },
   data () {
     return {
       allDataShown:false, 
       result: {}
     }
+  },
+  computed: {
+    ...mapState({
+      results: state => state.Search.results,
+    }),
   },
   computed: {
   },
@@ -60,7 +64,8 @@ export default {
     searchFromAllValues(attribute, value) {
         console.log('yay')
         let searchString = attribute + ':"' + value + '"'
-        searchService.fireSearchRequest(searchString).then(result => (this.result = result.response.docs[0], this.result === [] ? console.log('request successfull, no data!') : null), error => (console.log('Error in getting full post'), this.result = []))
+        console.log(searchString)
+        //searchService.fireSearchRequest(searchString).then(result => (this.result = result.response.docs[0], this.result === [] ? console.log('request successfull, no data!') : null), error => (console.log('Error in getting full post'), this.result = []))
     } 
   }
 }

@@ -56,6 +56,10 @@
   display: table-row;
 }
 
+.SingleEntryAllData .tr.clickAble { 
+  cursor: pointer;
+}
+
 .SingleEntryAllData .tr:nth-child(even) {
   background-color:rgba(30,30,30,0.05);
 }
