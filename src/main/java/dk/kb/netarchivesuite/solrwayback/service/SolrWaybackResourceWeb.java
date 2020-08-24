@@ -61,9 +61,9 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("solr/search/facets") 
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public String  solrSearchFacets(@QueryParam("query") String query, @QueryParam("fq") String filterQuery , @QueryParam("revisits") boolean revisits) throws SolrWaybackServiceException {
+    public String  solrSearchFacets(@QueryParam("query") String query, @QueryParam("fq") List<String> fg , @QueryParam("revisits") boolean revisits) throws SolrWaybackServiceException {
       try {
-       String res = Facade.solrSearchFacetsOnly(query,filterQuery, revisits);          
+       String res = Facade.solrSearchFacetsOnly(query,fg, revisits);          
        return res;
       } catch (Exception e) {        
         throw handleServiceExceptions(e);
