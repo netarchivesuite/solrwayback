@@ -65,8 +65,8 @@ public class Facade {
       return proxySolrNoFacets(query, filterQueries , grouping, revisits, start);
   }
    
-    public static String solrSearchFacetsOnly(String query, String filterQuery, boolean revisits) throws Exception {      
-      return proxySolrOnlyFacets(query, filterQuery, revisits);
+    public static String solrSearchFacetsOnly(String query, List<String> filterQueries, boolean revisits) throws Exception {      
+      return proxySolrOnlyFacets(query, filterQueries, revisits);
     }
     
     /*
@@ -303,8 +303,12 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
       return imagesFromHtmlPage;                
     }
 
-   public static String queryStringForImages(ArrayList<String> imageLinks) {
-      StringBuilder query = new StringBuilder();
+   public static String queryStringForImages(List<String> imageLinks) {
+      if (imageLinks.size() > 1000) {
+           imageLinks = imageLinks.subList(0, 1000);
+      }
+       
+       StringBuilder query = new StringBuilder();
       query.append("(");
       for (String imageUrl : imageLinks ){         
         //fix https!
@@ -700,7 +704,7 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
     	return NetarchiveSolrClient.getInstance().searchJsonResponseNoFacets(query, fq, grouping, revisits, start);    	    	
    }
         
-    public static String proxySolrOnlyFacets( String query, String fq, boolean revisits) throws Exception {          
+    public static String proxySolrOnlyFacets( String query, List<String> fq, boolean revisits) throws Exception {          
       return NetarchiveSolrClient.getInstance().searchJsonResponseOnlyFacets(query, fq, revisits);             
  }
     
