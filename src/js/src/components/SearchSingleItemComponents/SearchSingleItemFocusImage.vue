@@ -1,6 +1,6 @@
 <template>
   <div class="searchSingleItemFocusImage" @click="closeImage">
-    <img :src="image" @click="stopCloseImage">
+    <img :src="image" @click.stop>
     <button @click="closeImage">
       ✕
     </button>
@@ -34,9 +34,6 @@ export default {
       console.log('WE EMITTING')
       this.$emit('close-window', this.index)
     },
-    stopCloseImage() {
-      event.stopPropagation()
-    }
   }
 }
 </script>
