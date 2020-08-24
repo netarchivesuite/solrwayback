@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -46,9 +47,9 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("solr/search/results") 
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public String  solrSearchResults(@QueryParam("query") String query, @QueryParam("fq") String filterQuery ,  @QueryParam("grouping") boolean grouping,  @QueryParam("revisits") boolean revisits , @QueryParam("start") int start) throws SolrWaybackServiceException {
+    public String  solrSearchResults(@QueryParam("query") String query, @QueryParam("fq") List<String> fq ,  @QueryParam("grouping") boolean grouping,  @QueryParam("revisits") boolean revisits , @QueryParam("start") int start) throws SolrWaybackServiceException {
       try {
-        String res = Facade.solrSearchNoFacets(query,filterQuery, grouping, revisits, start);          
+        String res = Facade.solrSearchNoFacets(query,fq, grouping, revisits, start);          
         return res;
       } catch (Exception e) {
         throw handleServiceExceptions(e);

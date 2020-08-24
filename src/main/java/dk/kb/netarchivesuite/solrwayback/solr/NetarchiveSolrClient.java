@@ -917,7 +917,7 @@ public class NetarchiveSolrClient {
       return jsonResponse;
   }
   
-    public String searchJsonResponseNoFacets( String query, String fq, boolean grouping, boolean revisits, Integer start) throws Exception {
+    public String searchJsonResponseNoFacets( String query, List<String> fq, boolean grouping, boolean revisits, Integer start) throws Exception {
       log.info("SolrQuery (no facets):"+query +" grouping:"+grouping +" revisits:"+revisits + " start:"+start);
       
       String startStr ="0";
@@ -952,8 +952,10 @@ public class NetarchiveSolrClient {
       if (!revisits){
           solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
       }
-      if ( fq != null && fq.length() > 0){
-          solrQuery.set("fq",fq);                        
+      if ( fq != null) {
+          for (String filter : fq) {
+             solrQuery.add("fq",filter);    
+          }                                                                   
       }
       
       NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();

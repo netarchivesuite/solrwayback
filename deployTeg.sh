@@ -1,6 +1,6 @@
 #!/bin/sh
 
-deployFolder='/media/teg/1200GB_SSD/solrwayback_package_3.2_webrecorder/apache-tomcat-8.5.29/webapps'
+deployFolder='/media/teg/1TB_SSD/solrwayback_package_3.2/apache-tomcat-8.5.29/webapps'
 
 rm -r $deployFolder/solrwayback 
 mvn clean package -DskipTests
