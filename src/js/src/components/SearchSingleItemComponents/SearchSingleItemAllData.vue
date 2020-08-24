@@ -11,7 +11,10 @@
         <div class="tr">
           <span class="td highlightText">Attribute</span><span class="td highlightText">Value</span>
         </div>
-        <div v-for="(key, index) in Object.entries(result)" :key="index" class="tr">
+        <div v-for="(key, index) in Object.entries(result)"
+             :key="index"
+             class="tr"
+             @click="searchFromAllValues(key[0], key[1])">
           <span class="td">{{ key[0] }}</span> <span class="td">{{ key[1] }}</span>
         </div>
       </div>
@@ -53,7 +56,12 @@ export default {
     },
     divideString(text) {
      return text[0]
-    }
+    },
+    searchFromAllValues(attribute, value) {
+        console.log('yay')
+        let searchString = attribute + ':"' + value + '"'
+        searchService.fireSearchRequest(searchString).then(result => (this.result = result.response.docs[0], this.result === [] ? console.log('request successfull, no data!') : null), error => (console.log('Error in getting full post'), this.result = []))
+    } 
   }
 }
 
