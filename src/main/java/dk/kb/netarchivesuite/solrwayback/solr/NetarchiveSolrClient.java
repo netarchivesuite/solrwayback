@@ -877,7 +877,7 @@ public class NetarchiveSolrClient {
     return solrDocList2IndexDoc(docs);    
   }
  
-    public String searchJsonResponseOnlyFacets( String query, String fq,  boolean revisits) throws Exception {
+    public String searchJsonResponseOnlyFacets( String query, List<String> fq,  boolean revisits) throws Exception {
       log.info("Solr query(only facets): "+query +" fg:"+fq+ "revisits:"+revisits);
                  
       SolrQuery solrQuery = new SolrQuery();
@@ -896,9 +896,11 @@ public class NetarchiveSolrClient {
       if (!revisits){
     	  solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
       }
-      if ( fq != null && fq.length() > 0){
-    	  solrQuery.set("fq",fq);                        
-      }
+      if ( fq != null) {
+          for (String filter : fq) {
+             solrQuery.add("fq",filter);    
+          }                                                                   
+      }      
       if (!PropertiesLoaderWeb.FACETS.isEmpty()) {
     	  solrQuery.set("facet", "true");
         for (String facet: PropertiesLoaderWeb.FACETS) {
