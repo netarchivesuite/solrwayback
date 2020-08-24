@@ -1,5 +1,5 @@
 <template>
-  <div v-if="facets.length !== 0" class="facets">
+  <div v-if="facets.facet_fields" class="facets">
     <h2>Facets</h2>
     <div v-for="(facetCategory, index) in Object.entries(facets.facet_fields)" :key="index" class="facetCategory">
       <div class="facetCategoryName">
@@ -29,19 +29,17 @@ export default {
     }),
   },
   mounted () {
-    console.log(facets)
   },
-  
   methods: {
     ...mapActions('Search', {
-      search: 'search',
+      requestSearch: 'requestSearch',
       requestFacets: 'requestFacets',
       updateSearchAppliedFacets:'updateSearchAppliedFacets'
     }),
     applyFacet(facetCategory, facet) {
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
       this.updateSearchAppliedFacets(this.searchAppliedFacets + newFacet)
-      this.search({query:this.query, facets:this.searchAppliedFacets})
+      this.requestSearch({query:this.query, facets:this.searchAppliedFacets})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets})
       // test with null!
       this.$router.replace({query: {q:this.query, facets:this.searchAppliedFacets !== '' ?  this.searchAppliedFacets : undefined }})

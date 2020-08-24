@@ -7,6 +7,11 @@ module.exports = {
       pathRewrite: { '^/services/frontend/solr/': '' },
       changeOrigin: true
       },
+    '/services/images/': {
+      target: 'http://localhost:8080/solrwayback/services/images/',
+      pathRewrite: { '^/services/images/': '' },
+      changeOrigin: true
+      },
     }
   },
 publicPath: process.env.NODE_ENV === 'production'

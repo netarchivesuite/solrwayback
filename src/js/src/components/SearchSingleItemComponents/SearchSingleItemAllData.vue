@@ -2,7 +2,7 @@
   <div class="SingleEntryAllData">
     <div class="showAllButtonContainer">
       <button class="allDataButton" @click="toggleAllDataShown">
-        See all data
+        {{ allDataButtonText }}
       </button>
     </div>
     <div v-if="allDataShown">
@@ -23,7 +23,7 @@
 //import { mapState, mapActions } from 'vuex'
 
 export default {
-  name: 'SingleEntryStandardInfo',
+  name: 'SearchSingleItemStandardInfo',
   components: {  
   },
   props: {
@@ -34,10 +34,13 @@ export default {
   },
   data () {
     return {
-      allDataShown:false,    
+      allDataShown:false,
     }
   },
   computed: {
+    allDataButtonText: function () {
+      return this.allDataShown ? 'Hide data ' : 'See data'
+    }
   },
   mounted () {
   },
