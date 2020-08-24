@@ -2,16 +2,16 @@
   <div class="SingleEntryAllData">
     <div class="showAllButtonContainer">
       <button class="allDataButton" @click="toggleAllDataShown">
-        See all data
+        {{ allDataButtonText }}
       </button>
     </div>
-    <div v-if="allDataShown && result !== {}">
+    <div v-if="allDataShown && results !== {}">
       <hr class="informationDivider">
       <div class="table">
         <div class="tr">
           <span class="td highlightText">Attribute</span><span class="td highlightText">Value</span>
         </div>
-        <div v-for="(key, index) in Object.entries(result)"
+        <div v-for="(key, index) in Object.entries(results)"
              :key="index"
              :class="key[0] !== 'content' ? 'tr clickAble' : 'tr'"
              @click="key[0] !== 'content' ? searchFromAllValues(key[0], key[1]) : null">
@@ -24,7 +24,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { searchService } from '../../services/SearchService'
+import { requestService } from '../../services/RequestService'
 
 export default {
   name: 'SearchSingleItemAllData',
@@ -38,24 +38,24 @@ export default {
   },
   data () {
     return {
-      allDataShown:false, 
-      result: {}
+      allDataShown:false,
     }
   },
   computed: {
     ...mapState({
       results: state => state.Search.results,
     }),
-  },
-  computed: {
+    allDataButtonText: function () {
+      return this.allDataShown ? 'Hide data ' : 'See data'
+    }
   },
   mounted () {
   },
   methods: {
     toggleAllDataShown() {
       this.allDataShown = !this.allDataShown
-      if(Object.keys(this.result).length === 0 && this.result.constructor === Object) {
-        searchService.fireLookupRequest(this.id).then(result => (this.result = result.response.docs[0], this.result === [] ? console.log('request successfull, no data!') : null), error => (console.log('Error in getting full post'), this.result = []))
+      if(Object.keys(this.results).length === 0 && this.results.constructor === Object) {
+        searchService.fireLookupRequest(this.id).then(result => (this.results = result.response.docs[0], this.results === [] ? console.log('request successfull, no data!') : null), error => (console.log('Error in getting full post'), this.results = []))
       }
     },
     divideString(text) {

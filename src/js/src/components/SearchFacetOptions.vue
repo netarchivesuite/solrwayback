@@ -30,17 +30,16 @@ export default {
   },
   mounted () {
   },
-  
   methods: {
     ...mapActions('Search', {
-      search: 'search',
+      requestSearch: 'requestSearch',
       requestFacets: 'requestFacets',
       updateSearchAppliedFacets:'updateSearchAppliedFacets'
     }),
     applyFacet(facetCategory, facet) {
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
       this.updateSearchAppliedFacets(this.searchAppliedFacets + newFacet)
-      this.search({query:this.query, facets:this.searchAppliedFacets})
+      this.requestSearch({query:this.query, facets:this.searchAppliedFacets})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets})
       // test with null!
       this.$router.replace({query: {q:this.query, facets:this.searchAppliedFacets !== '' ?  this.searchAppliedFacets : undefined }})

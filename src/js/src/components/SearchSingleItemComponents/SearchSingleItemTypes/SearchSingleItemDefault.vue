@@ -1,21 +1,25 @@
 <template>
   <div class="singleEntryResult">
-    <single-entry-standard-info :result="result" />
-    <single-entry-all-data :id="result.id" />
+    <search-single-item-standard-info :result="result" />
+    <search-single-item-images :source="result.source_file_path" :offset="result.source_file_offset" />
+    <search-single-item-all-data :id="result.id" />
   </div>
 </template>
 
 <script>
-import SingleEntryStandardInfo from './../SearchSingleItemStandardInfo.vue'
-import SingleEntryAllData from './../SearchSingleItemAllData.vue'
+import SearchSingleItemStandardInfo from './../SearchSingleItemStandardInfo.vue'
+import SearchSingleItemAllData from './../SearchSingleItemAllData.vue'
+import SearchSingleItemImages from './../SearchSingleItemImages.vue'
+
 
 //import { mapState, mapActions } from 'vuex'
 
 export default {
-  name: 'SingleEntryDefault',
+  name: 'SearchSingleItemDefault',
   components: {  
-    SingleEntryStandardInfo,
-    SingleEntryAllData
+    SearchSingleItemStandardInfo,
+    SearchSingleItemAllData,
+    SearchSingleItemImages
   },
   props: {
     result: {

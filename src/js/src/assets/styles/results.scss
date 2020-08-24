@@ -132,7 +132,7 @@
   height:30px;
 }
 
-.showAllButtonContainer button {
+.showAllButtonContainer button, .singleEntryImages button {
   float:right;
   border:2px solid var(--secondary-bg-color);
   border-radius: 0;
@@ -145,7 +145,7 @@
   transition:all 0.2s linear 0s;
 }
 
-.showAllButtonContainer button:hover {
+.showAllButtonContainer button:hover, .singleEntryImages button:hover {
   border:2px solid var(--secondary-bg-color);
   color:white;
   background-color:var(--secondary-bg-color);
@@ -225,4 +225,106 @@
 .selectedFacets .displayedFacet span:nth-of-type(2) {
   color: var(--main-highlight-color);
 	font-weight: bold;
+}
+
+.singleEntryImages {
+  width:100%;
+  height:auto;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.singleEntryImages .singleEntryImagesHeadline {
+  margin-top:20px;
+  width:100%;
+}
+
+.singleEntryImages .singleEntryImagesHeadline .imageHeadline {
+  margin-right:10px;
+}
+
+.singleEntryImagesHeadline p {
+  display:inline-block
+}
+
+.singleEntryImages .previewImageContainer {
+  display: inline-block;
+  margin: 10px 0em;
+  flex-grow: 0;
+  width: calc(25%);
+	border-left: 1px solid var(--secondary-highlight-color);
+  box-sizing: border-box;
+  height:200px;
+}
+
+.singleEntryImages .previewImageContainer:nth-child(4n - 2) {
+	border-left: 0px solid var(--secondary-highlight-color);
+}
+
+.singleEntryImages .previewImageHidden {
+  display:none;
+}
+
+.singleEntryImages .previewImage {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.singleEntryImages img {
+  object-fit: cover;
+  cursor: pointer;
+  box-sizing: border-box;
+  ////box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.15);
+  //test
+  display: block;
+	margin-left: auto;
+	margin-right: auto;
+  //max-height: 200px;
+	//max-width: 100%;
+  //filter: saturate(0) sepia(1) hue-rotate(180deg) contrast(1.5);
+}
+
+.searchSingleItemFocusImage {
+  position: fixed;
+  background-color:rgba(30,30,30,0.9);
+  width:100vw;
+  height:100vh;
+  top:0px;
+  left:0px;
+  z-index:1;
+  margin:0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.searchSingleItemFocusImage img {
+  position:relative;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  height:auto;
+  width:auto;
+  max-width: 100%;
+  max-height: calc(100% - 20px);
+  margin-top: 10px;
+  margin-bottom:10px;
+  z-index:100;
+}
+
+.singleEntryImages button {
+  float:initial;
+  margin-left:15px;
+}
+
+.searchSingleItemFocusImage button {
+  float:right;
+  position: absolute;
+  top:0px;
+  width:40px;
+  height:40px;
+  left:calc(100% - 80px);
+  margin-top:10px;
+  font-size:130%;
 }
