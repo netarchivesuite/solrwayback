@@ -52,11 +52,13 @@ export default {
     return {     
       imageSrcs:[],
       allImagesShown:false,
-      shownImagesButtonText: 'See all images',
       showFullImage:null
     }
   },
   computed: {
+    shownImagesButtonText: function () {
+      return this.allImagesShown ? 'See fewer images ' : 'See all images'
+    }
   },
   watch: { 
     source: function() { // watch it
@@ -81,7 +83,6 @@ export default {
     },
     toggleAllImagesShown() {
       this.allImagesShown = !this.allImagesShown
-      this.allImagesShown ?  this.shownImagesButtonText = 'See fever images' : this.shownImagesButtonText = 'See all images'
     },
     showNumberOfPictures(number) {
       if(this.allImagesShown) {

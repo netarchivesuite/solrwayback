@@ -35,17 +35,18 @@ export default {
   data () {
     return {
       allDataShown:false,
-      allDataButtonText:'See data'
     }
   },
   computed: {
+    allDataButtonText: function () {
+      return this.allDataShown ? 'Hide data ' : 'See data'
+    }
   },
   mounted () {
   },
   methods: {
     toggleAllDataShown() {
       this.allDataShown = !this.allDataShown
-      this.allDataShown ? this.allDataButtonText = 'Hide data' : this.allDataButtonText = 'See data'
     },
     divideString(text) {
      return text[0]
