@@ -7,9 +7,9 @@ module.exports = {
       pathRewrite: { '^/services/frontend/solr/': '' },
       changeOrigin: true
       },
-    '/services/images/': {
-      target: 'http://localhost:8080/solrwayback/services/images/',
-      pathRewrite: { '^/services/images/': '' },
+    '/services/frontend/images/htmlpage/': {
+      target: 'http://localhost:8080/solrwayback/services/frontend/images/htmlpage/',
+      pathRewrite: { '^/services/frontend/images/htmlpage/': '' },
       changeOrigin: true
       },
     }

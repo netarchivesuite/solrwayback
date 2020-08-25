@@ -39,7 +39,7 @@ function fireFacetRequest (query, facets) {
 }
 
 function fireImagesRequest (source_file_path, offset) {
-  const url = '/services/images/htmlpage' + `?source_file_path=${source_file_path}&offset=${offset}`
+  const url = '/services/frontend/images/htmlpage/' + `?source_file_path=${source_file_path}&offset=${offset}`
   return axios.get(
     url).then(response => {
     return response.data
