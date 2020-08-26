@@ -9,7 +9,7 @@ import './assets/styles/main.scss'
 
 Vue.config.productionTip = false
 
-Axios.get('/services/frontend/properties/solrwaybackweb/')
+Axios.get('services/frontend/properties/solrwaybackweb/')
     .then(response => {
         configs.playbackConfig.openwaybackBaseURL = response.data['openwayback.baseurl']
         configs.playbackConfig.solrwaybackBaseURL = response.data['wayback.baseurl']
