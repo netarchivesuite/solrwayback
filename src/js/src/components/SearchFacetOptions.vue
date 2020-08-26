@@ -42,7 +42,8 @@ export default {
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets})
       // test with null!
-      this.$router.replace({query: {q:this.query, facets:this.searchAppliedFacets !== '' ?  this.searchAppliedFacets : undefined }})
+      history.pushState({name: 'SolrWayback'}, 'SolrWayback', '?q=' + this.query + '&facets=' + encodeURIComponent(this.searchAppliedFacets))
+      //this.$router.replace({query: {q:this.query, facets:this.searchAppliedFacets !== '' ?  this.searchAppliedFacets : undefined }})
     }
   }
 }

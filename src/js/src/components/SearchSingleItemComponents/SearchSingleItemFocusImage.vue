@@ -31,7 +31,6 @@ export default {
   },
   methods: {
     closeImage() {
-      console.log('WE EMITTING')
       this.$emit('close-window', this.index)
     },
   }

@@ -17,7 +17,7 @@
     <div v-if="result.highlight.content">
       <hr class="informationDivider">
       <p class="highlightText entryInfo">
-        Content:
+        Highlighted content:
       </p>
       <div class="snippetContainer">
         <span>"</span>

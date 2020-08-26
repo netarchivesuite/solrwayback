@@ -60,6 +60,10 @@
   cursor: pointer;
 }
 
+.SingleEntryAllData .tr.clickAble:hover { 
+  background-color:var(--secondary-highlight-color)
+}
+
 .SingleEntryAllData .tr:nth-child(even) {
   background-color:rgba(30,30,30,0.05);
 }
