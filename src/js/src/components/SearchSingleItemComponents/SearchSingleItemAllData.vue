@@ -13,9 +13,29 @@
         </div>
         <div v-for="(key, index) in Object.entries(allData)"
              :key="index"
-             :class="key[0] !== 'content' ? 'tr clickAble' : 'tr'"
-             @click="key[0] !== 'content' ? searchFromAllValues(key[0], key[1]) : null">
-          <span class="td">{{ key[0] }}</span> <span class="td">{{ key[1] }}</span>
+             class="tr">
+          <span class="td">{{ key[0] }}</span>
+          <div v-if="key[1].constructor === Array"
+               :class="key[0] !== 'content' ? 'td content clickAble' : 'td content'">
+            <span v-for="(entry, newIndex) in key[1]"
+                  :key="newIndex"
+                  :class="index === currentDataShown ? 'singleEntry' : newIndex < arrayShownLimit ? 'singleEntry' : 'singleEntry hidden'"
+                  @click="key[0] !== 'content' ? searchFromAllValues(key[0], entry) : null">
+              {{ entry }} <br>
+            </span>
+            <button v-if="key[1].length > arrayShownLimit"
+                    :key="index + '-button' "
+                    class="attributeButton"
+                    @click="toggleShownData(index)">
+              {{ specificValueButtonText(index) }}
+            </button>
+          </div>
+          <div v-if="key[1].constructor !== Array" :class="key[0] !== 'content' ? 'td content clickAble' : 'td content'" @click="key[0] !== 'content' ? searchFromAllValues(key[0], key[1]) : null">
+            <span :class="key[0] === 'content' ? '' : 'singleEntry'"> {{ key[0] === 'content' ? displayContentValue(key[1]) : key[1] }}</span>
+          </div>
+          <button v-if="key[0] === 'content' && key[1].length > contentShownLength" class="contentButton" @click="allContentShownToggle()">
+            {{ contentButtonText }}
+          </button>
         </div>
       </div>
     </div>
@@ -39,7 +59,11 @@ export default {
   data () {
     return {
       allDataShown:false,
-      allData:{}
+      allData:{},
+      allContentShown:false,
+      currentDataShown:null,
+      contentShownLength:300,
+      arrayShownLimit:4
     }
   },
   computed: {
@@ -49,8 +73,11 @@ export default {
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
     }),
     allDataButtonText: function () {
-      return this.allDataShown ? 'Hide raw data ' : 'See raw data'
-    }
+      return this.allDataShown ? 'Hide raw data' : 'See raw data'
+    },
+    contentButtonText: function () {
+      return this.allContentShown ? 'Show less ↑' : 'Show all ↓'
+    },
   },
   mounted () {
   },
@@ -68,6 +95,9 @@ export default {
         requestService.fireLookupRequest(encodeURIComponent(this.id)).then(result => (this.allData = result.response.docs[0], this.allData === {} ? console.log('request successfull, no data!') : null), error => (console.log('Error in getting full post'), this.allData = {}))
       }
     },
+    specificValueButtonText(index) {
+      return index === this.currentDataShown ? 'Show less ↑' : 'Show all ↓'
+    },
     divideString(text) {
      return text[0]
     },
@@ -81,7 +111,16 @@ export default {
       //this.$router.push({ name:'SolrWayback', params:{query:searchString }})
       history.pushState({name: 'SolrWayback'}, 'SolrWayback', '?q=' + searchString)
       //this.$router.replace({ query: {q:searchString }})
-    } 
+    },
+    toggleShownData(index) {
+      index === this.currentDataShown ? this.currentDataShown = null : this.currentDataShown = index
+    },
+    allContentShownToggle() {
+      return this.allContentShown  = !this.allContentShown
+    },
+    displayContentValue(content) {
+      return this.allContentShown ? content : content.substring(0,this.contentShownLength)
+    }
   }
 }
 
