@@ -12,6 +12,16 @@ module.exports = {
       pathRewrite: { '^/services/frontend/images/htmlpage/': '' },
       changeOrigin: true
       },
+      '^/services/viewForward/': {
+        target: 'http://localhost:8080/solrwayback/services/viewForward/',
+        pathRewrite: { '^services/viewForward/': '' },
+        changeOrigin: true
+        },
+    '^/services/frontend/properties/solrwaybackweb/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/properties/solrwaybackweb',
+        pathRewrite: { '^/services/frontend/properties/solrwaybackweb/': '' },
+        changeOrigin: true
+        },
     }
   },
 publicPath: process.env.NODE_ENV === 'production'

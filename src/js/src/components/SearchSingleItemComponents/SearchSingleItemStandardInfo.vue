@@ -4,7 +4,9 @@
       score: <span class="highlightText">{{ result.score }}</span>
     </p>
     <p class="entryInfo">
-      <span class="highlightText titleInfo">{{ result.title || 'No title' }}</span>
+      <span class="highlightText titleInfo">
+        <a :href="getPlaybackURL(result.source_file_path, result.source_file_offset)" target="_blank"><span>{{ result.title || 'No title' }}</span></a>
+      </span>
     </p><p class="entryInfo type">
       <span class="attri">type:</span> <span class="val">{{ result.content_type_norm }}, {{ result.type }} @ {{ result.domain }}</span>
     </p>
@@ -29,30 +31,23 @@
 </template>
 
 <script>
-//import { mapState, mapActions } from 'vuex'
+import configs from '../../configs'
 
 export default {
   name: 'SearchSingleItemStandardInfo',
-  components: {  
-  },
   props: {
     result: {
       type: Object,
       required: true
-    },
-  },
-  data () {
-    return {     
     }
-  },
-  computed: {
-  },
-  mounted () {
   },
   methods: {
     refactoredDate(date) {
       date = date.toString()
       return date.substring(6,8) + '/' + date.substring(4,6) + '-' + date.substring(0,4)
+    },
+    getPlaybackURL(source_file_path, source_file_offset) {
+      return `${configs.playbackConfig.solrwaybackBaseURL}services/viewForward?source_file_path=${source_file_path}&offset=${source_file_offset}`    
     }
   }
 }
