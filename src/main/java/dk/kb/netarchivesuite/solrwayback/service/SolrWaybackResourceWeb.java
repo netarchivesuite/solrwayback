@@ -6,18 +6,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.activation.DataHandler;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
@@ -42,6 +49,29 @@ public class SolrWaybackResourceWeb {
         return "TEST";
     }
     
+    
+    @POST
+    @Path("/upload/gethash")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String uploadPdf(List<Attachment> attachments,@Context HttpServletRequest request) throws  SolrWaybackServiceException { 
+
+        log.info("upload called");          
+        if (attachments.size() != 1) {
+          log.info("upload most have 1 attachments, #attachments="+attachments.size());
+         throw new InvalidArgumentServiceException("Only 1 attachment allowed. #attachments="+attachments.size());   
+        }      
+     try {                             
+            Attachment attr= attachments.get(0);
+            DataHandler handler = attr.getDataHandler();     
+            InputStream uploadedInputStream = handler.getInputStream();
+            String sha1 = Sha1Hash.createSha1(uploadedInputStream);               
+            return sha1;
+
+      } catch (Exception e) {         
+        throw handleServiceExceptions(e);
+      }      
+    }
     
     //No facets! Only results
     @GET

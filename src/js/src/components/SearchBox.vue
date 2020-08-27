@@ -42,9 +42,13 @@ export default {
       loading: state => state.Search.loading,
     })
   },
+  watch: {
+    query: function (val) {
+      this.futureQuery  = val
+    },
+  },
   mounted () {
-    //console.log('NEW MOUNT, CHECK THE PARAMS FROM URL:',this.$router.history.current.query)
-    if(this.query === '' && this.$router.history.current.query.q) {
+    if(this.$router.history.current.query.q) {
       this.updateQuery(this.$router.history.current.query.q)
       this.futureQuery = this.$router.history.current.query.q
       if(this.$router.history.current.query.facets) {
@@ -69,19 +73,19 @@ export default {
         this.updateQuery(this.futureQuery)
         this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
         this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-        this.$router.replace({ query: {q:this.query }})
+        let newFacetUrl = this.searchAppliedFacets !== '' ? '&facets=' + encodeURIComponent(this.searchAppliedFacets) : ''
+        history.pushState({name: 'SolrWayback'}, 'SolrWayback', '?q=' + this.query + newFacetUrl)
+
       }
     },
     clearResultsAndSearch() {
-      if(this.futureQuery !== '' && this.query !== '') {
-        this.$router.replace({ query: {}})
-      }
+      history.pushState({name: 'SolrWayback'}, 'SolrWayback', '/')
       this.futureQuery = ''
       this.resetSearchState()
-     // this.updateQuery('')
+      //this.updateQuery('')
       //this.clearResults()
       //this.updateSearchAppliedFacets('')
-    }
+    },
   }
 }
 
