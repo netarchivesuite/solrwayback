@@ -145,3 +145,62 @@ color:var(--secondary-text-color);
   outline:1px solid var(--seethrough-black);
   border-radius:0;
 }
+
+.searchForm input[type="checkbox"] {
+  position: relative;
+  top: 2px;
+  height: 15px;
+	width: 15px;
+}
+
+.searchForm label {
+  cursor:pointer;
+}
+
+.searchForm .sortOptions {
+  margin-top:10px;
+  width: calc(100% - 80px);
+  padding-bottom:15px;
+  border-bottom: 1px solid var(--secondary-highlight-color);
+  text-transform: uppercase;
+	font-size: 80%;
+}
+
+.searchForm .tools {
+  margin-top: 17px;
+	width: calc(100% - 80px);
+	padding-bottom: 10px;
+	text-transform: uppercase;
+	margin-bottom: 10px;
+	display: flex;
+	cursor: pointer;
+	justify-content: space-between;
+	font-size: 80%;
+}
+
+.searchForm .tools span {
+  display:inline-block;
+  color: var(--main-highlight-color);
+  border-bottom:1px solid var(--secondary-highlight-color);
+}
+
+.searchForm .sortOptions .marginRight {
+  margin-right:15px;
+}
+
+.searchForm .sortOptions div {
+  display: inline-block;
+  color: var(--main-highlight-color);
+}
+
+.searchForm .sortOptions label {
+  user-select: none;
+}
+
+.searchForm #groupedSearch {
+  margin-left: 0px;
+}
+
+.searchForm .sortOptions .floatRight {
+  float:right;
+}

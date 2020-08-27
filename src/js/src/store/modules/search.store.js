@@ -10,6 +10,8 @@ const initialState = () => ({
   solrSettings:{
     grouping:false,
     offset:0,
+    imgSearch:false,
+    urlSearch:false
   },
   error: '',
   loading:false,
@@ -30,6 +32,12 @@ const actions = {
   },
   updateSolrSettingOffset ( {commit}, param ) {
     commit('updateSolrSettingOffsetSuccess', param)
+  },
+  updateSolrSettingImgSearch ( {commit}, param ) {
+    commit('updateSolrSettingImgSearchSuccess', param)
+  },
+  updateSolrSettingUrlSearch ( {commit}, param ) {
+    commit('updateSolrSettingUrlSearchSuccess', param)
   },
   updateSearchAppliedFacets ( {commit}, param ) {
     commit('updateSearchAppliedFacetsSuccess', param)
@@ -65,6 +73,12 @@ const mutations = {
   },
   updateSolrSettingOffsetSuccess(state, param) {
     state.solrSettings.offset = param
+  },
+  updateSolrSettingImgSearchSuccess(state, param) {
+    state.solrSettings.imgSearch = param
+  },
+  updateSolrSettingUrlSearchSuccess(state, param) {
+    state.solrSettings.urlSearch = param
   },
   updateSearchAppliedFacetsSuccess(state, param) {
     state.searchAppliedFacets = param
