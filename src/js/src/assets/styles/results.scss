@@ -77,6 +77,10 @@
   margin-left:10px;
 }
 
+.SingleEntryStandardInfo .scoreInfo .textAlignRight {
+  text-align: right;
+}
+
 .SingleEntryStandardInfo .entryInfo {
   padding-bottom:5px;
   padding-top:5px;
@@ -101,7 +105,12 @@
   font-size:130%;
 }
 
-.SingleEntryStandardInfo .titleInfo, .SingleEntryStandardInfo .domainInfo, .SingleEntryStandardInfo .typeInfo {
+.SingleEntryStandardInfo .titleInfo a {
+  color: var(--secondary-text-color);
+  text-decoration-color: var(--secondary-highlight-color);
+}
+
+.SingleEntryStandardInfo, .SingleEntryStandardInfo .domainInfo, .SingleEntryStandardInfo .typeInfo {
   margin-right:3px;
   margin-left:3px;
 
@@ -128,7 +137,7 @@
   height:30px;
 }
 
-.showAllButtonContainer button, .singleEntryImages button {
+.showAllButtonContainer button, .singleEntryImages button, .pagingContainer button {
   float:right;
   border:2px solid var(--secondary-bg-color);
   border-radius: 0;
@@ -141,7 +150,18 @@
   transition:all 0.2s linear 0s;
 }
 
-.showAllButtonContainer button:hover, .singleEntryImages button:hover {
+.pagingContainer button {
+  float:none;
+  margin-left:5px;
+  margin-right:5px;
+  width:100px;
+}
+
+.pagingContainer {
+  text-align: center;
+}
+
+.showAllButtonContainer button:hover, .singleEntryImages button:hover, .pagingContainer button:hover {
   border:2px solid var(--secondary-bg-color);
   color:white;
   background-color:var(--secondary-bg-color);
