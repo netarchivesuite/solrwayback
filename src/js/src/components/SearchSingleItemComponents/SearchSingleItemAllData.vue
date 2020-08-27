@@ -11,29 +11,35 @@
         <div class="tr">
           <span class="td highlightText">Attribute</span><span class="td highlightText">Value</span>
         </div>
-        <div v-for="(key, index) in Object.entries(allData)"
+        <div v-for="(singleObject, index) in Object.entries(allData)"
              :key="index"
              class="tr">
-          <span class="td">{{ key[0] }}</span>
-          <div v-if="key[1].constructor === Array"
-               :class="key[0] !== 'content' ? 'td content clickAble' : 'td content'">
-            <span v-for="(entry, newIndex) in key[1]"
+          <span class="td">{{ singleObject[0] }}</span>
+          <div v-if="singleObject[1].constructor === Array"
+               class="td content clickAble">
+            <span v-for="(singleLine, newIndex) in singleObject[1]"
                   :key="newIndex"
-                  :class="index === currentDataShown ? 'singleEntry' : newIndex < arrayShownLimit ? 'singleEntry' : 'singleEntry hidden'"
-                  @click="key[0] !== 'content' ? searchFromAllValues(key[0], entry) : null">
-              {{ entry }} <br>
+                  :class="determinePlaceAndVisiblity(index, newIndex)"
+                  @click="singleObject[0] !== 'content' ? searchFromAllValues(singleObject[0], singleLine) : null">
+              {{ singleLine }} <br>
             </span>
-            <button v-if="key[1].length > arrayShownLimit"
+            <button v-if="singleObject[1].length > arrayShownLimit"
                     :key="index + '-button' "
                     class="attributeButton"
                     @click="toggleShownData(index)">
               {{ specificValueButtonText(index) }}
             </button>
           </div>
-          <div v-if="key[1].constructor !== Array" :class="key[0] !== 'content' ? 'td content clickAble' : 'td content'" @click="key[0] !== 'content' ? searchFromAllValues(key[0], key[1]) : null">
-            <span :class="key[0] === 'content' ? '' : 'singleEntry'"> {{ key[0] === 'content' ? displayContentValue(key[1]) : key[1] }}</span>
+          <div v-if="singleObject[1].constructor !== Array" 
+               :class="singleObject[0] === 'content' ? 'td content' : 'td content clickAble'" 
+               @click="singleObject[0] === 'content' ? null : searchFromAllValues(singleObject[0], singleObject[1])">
+            <span :class="singleObject[0] === 'content' ? '' : 'singleEntry'">
+              {{ singleObject[0] === 'content' ? displayContentValue(singleObject[1]) : singleObject[1] }}
+            </span>
           </div>
-          <button v-if="key[0] === 'content' && key[1].length > contentShownLength" class="contentButton" @click="allContentShownToggle()">
+          <button v-if="singleObject[0] === 'content' && singleObject[1].length > contentShownLength" 
+                  class="contentButton" 
+                  @click="allContentShownToggle()">
             {{ contentButtonText }}
           </button>
         </div>
@@ -89,10 +95,16 @@ export default {
       updateSearchAppliedFacets:'updateSearchAppliedFacets',
 
     }),
+    determinePlaceAndVisiblity(place, lineNumber) {
+      return place === this.currentDataShown ? 'singleEntry' : lineNumber < this.arrayShownLimit ? 'singleEntry' : 'singleEntry hidden'
+    },
     toggleAllDataShown() {
       this.allDataShown = !this.allDataShown
-      if(Object.keys(this.allData).length === 0 && this.allData.constructor === Object) {
-        requestService.fireLookupRequest(encodeURIComponent(this.id)).then(result => (this.allData = result.response.docs[0], this.allData === {} ? console.log('request successfull, no data!') : null), error => (console.log('Error in getting full post'), this.allData = {}))
+      if(Object.keys(this.allData).length === 0) {
+        requestService.fireLookupRequest(encodeURIComponent(this.id))
+          .then(result => 
+            (this.allData = result.response.docs[0], this.allData === {} ? console.log('request successfull, no data!') : null),
+            error => (console.log('Error in getting full post'), this.allData = {}))
       }
     },
     specificValueButtonText(index) {
