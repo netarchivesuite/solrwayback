@@ -157,6 +157,19 @@
   width:100px;
 }
 
+.pagingContainer button:disabled {
+  color: rgba(30,30,30,0.5);
+	border: 2px solid rgba(30,30,30,0.5);
+}
+
+.pagingContainer button:disabled:hover {
+  color: rgba(30,30,30,0.5);
+  border: 2px solid rgba(30,30,30,0.5);
+  background-color:white;
+  cursor:default;
+}
+
+
 .pagingContainer {
   text-align: center;
 }
