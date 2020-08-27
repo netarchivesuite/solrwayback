@@ -1,10 +1,9 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
-import java.awt.Image;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -14,10 +13,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
+
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -32,7 +31,6 @@ import javax.ws.rs.core.UriInfo;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
@@ -979,27 +977,9 @@ public class SolrWaybackResource {
 
   }
 
-/*
-  @POST
-  @Path("/upload/gethash")
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @Produces(MediaType.TEXT_PLAIN)
-  public String uploadPdf(@FormDataParam("file") InputStream uploadedInputStream ,
-      @FormDataParam("file") FormDataContentDisposition fileDetail
-      ) throws  ServiceException { 
 
-    try {                  
-      log.info("upload called for file:"+fileDetail.getFileName());          
-      String sha1 = Sha1Hash.createSha1(uploadedInputStream);
-      log.info("uploaded file has sha1:"+sha1);
-      return sha1;
-
-    } catch (Exception e) {         
-      throw handleServiceExceptions(e);
-    }      
-  }
-
-*/
+  
+  
   @GET
   @Path("/waybacklinkgraph")
   @Produces(MediaType.APPLICATION_JSON)
