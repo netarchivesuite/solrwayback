@@ -4,12 +4,23 @@
       <search-facet-options />
     </div>
     <div class="resultContainer">
-      <h2>Results</h2><p>Found <span class="highlightText">{{ results.numFound }}</span> entries matching <span class="highlightText">{{ query }}</span></p>
+      <h2>Results</h2><span>Found <span class="highlightText">{{ results.numFound }}</span> entries matching <span class="highlightText">{{ query }}. </span>
+        <span>Showing {{ solrSettings.offset }}  - {{ solrSettings.offset + 20 > results.numFound ? results.numFound : solrSettings.offset + 20 }}.</span>
+      </span>
+      <div class="pagingContainer">
+        <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
+          Previous 20
+        </button>
+        <button :disabled="solrSettings.offset + 20 > results.numFound" @click="getNextResults()">
+          Next 20
+        </button>
+      </div>
       <div v-if="results && results !== {}" class="results">
         <component :is="SingleEntryComponent(result.type)"
                    v-for="(result, index) in results.docs"
                    :key="index"
-                   :result="result" />
+                   :result="result"
+                   :rank-number="index" />
       </div>
     </div>
     <div class="marginContainer" />
@@ -35,7 +46,9 @@ export default {
   computed: {
     ...mapState({
       query: state => state.Search.query,
+      searchAppliedFacets: state => state.Search.searchAppliedFacets,
       results: state => state.Search.results,
+      solrSettings: state => state.Search.solrSettings
     }),
   },
   mounted () {
@@ -44,7 +57,19 @@ export default {
   methods: {
     ...mapActions('Search', {
       requestSearch: 'requestSearch',
+      requestFacets: 'requestFacets',
+      updateSolrSettingOffset:'updateSolrSettingOffset'
     }),
+    getNextResults() {
+      this.updateSolrSettingOffset(this.solrSettings.offset + 20)
+      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+    },
+    getPreviousResults() {
+      this.updateSolrSettingOffset(this.solrSettings.offset - 20)
+      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+    },
     SingleEntryComponent(type) {
       switch(type) {   
         case 'Web Page': return 'SearchSingleItemWeb'

@@ -38,19 +38,20 @@ export default {
       query: state => state.Search.query,
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       results: state => state.Search.results,
+      solrSettings: state => state.Search.solrSettings,
       loading: state => state.Search.loading,
     })
   },
   mounted () {
-    console.log('NEW MOUNT, CHECK THE PARAMS FROM URL:',this.$router.history.current.query)
+    //console.log('NEW MOUNT, CHECK THE PARAMS FROM URL:',this.$router.history.current.query)
     if(this.query === '' && this.$router.history.current.query.q) {
       this.updateQuery(this.$router.history.current.query.q)
       this.futureQuery = this.$router.history.current.query.q
       if(this.$router.history.current.query.facets) {
         this.updateSearchAppliedFacets(this.$router.history.current.query.facets)
       }
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets})
+      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       }
   },
   
@@ -66,8 +67,8 @@ export default {
     handleSubmit() {
       if (this.futureQuery !== this.query) {
         this.updateQuery(this.futureQuery)
-        this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets})
-        this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets})
+        this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
+        this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
         this.$router.replace({ query: {q:this.query }})
       }
     },

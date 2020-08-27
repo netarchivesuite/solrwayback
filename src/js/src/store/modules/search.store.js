@@ -7,6 +7,10 @@ const initialState = () => ({
   searchAppliedFacets:'',
   results: {},
   facets: {},
+  solrSettings:{
+    grouping:false,
+    offset:0,
+  },
   error: '',
   loading:false,
   facetLoading:false,
@@ -21,6 +25,12 @@ const actions = {
   updateQuery ( {commit}, param ) {
     commit('updateQuerySuccess', param)
   },
+  updateSolrSettingGrouping ( {commit}, param ) {
+    commit('updateSolrSettingGroupingSuccess', param)
+  },
+  updateSolrSettingOffset ( {commit}, param ) {
+    commit('updateSolrSettingOffsetSuccess', param)
+  },
   updateSearchAppliedFacets ( {commit}, param ) {
     commit('updateSearchAppliedFacetsSuccess', param)
   },
@@ -30,14 +40,14 @@ const actions = {
   requestSearch ({ commit }, params) {
     commit('setLoadingStatus',true)
     requestService
-      .fireSearchRequest(params.query, params.facets)
+      .fireSearchRequest(params.query, params.facets, params.options)
       .then(result => commit('doSearchSuccess', result), error =>
         commit('doSearchError', error))
   },
   requestFacets({commit}, params) {
     commit('setFacetLoadingStatus')
     requestService
-      .fireFacetRequest(params.query, params.facets)
+      .fireFacetRequest(params.query, params.facets, params.options)
       .then(result => commit('facetRequestSuccess', result), error =>
         commit('facetRequestError', error))
   },
@@ -49,6 +59,12 @@ const actions = {
 const mutations = {
   updateQuerySuccess(state, param) {
     state.query = param
+  },
+  updateSolrSettingGroupingSuccess(state, param) {
+    state.solrSettings.grouping = param
+  },
+  updateSolrSettingOffsetSuccess(state, param) {
+    state.solrSettings.offset = param
   },
   updateSearchAppliedFacetsSuccess(state, param) {
     state.searchAppliedFacets = param
