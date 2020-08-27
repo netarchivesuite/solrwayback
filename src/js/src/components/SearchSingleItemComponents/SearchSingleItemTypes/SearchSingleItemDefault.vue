@@ -2,7 +2,7 @@
   <div class="singleEntryResult">
     <search-single-item-standard-info :result="result" />
     <search-single-item-images :source="result.source_file_path" :offset="result.source_file_offset" />
-    <search-single-item-all-data :result="result" />
+    <search-single-item-all-data :id="result.id" />
   </div>
 </template>
 

@@ -3,6 +3,7 @@ import axios from 'axios'
 export const requestService = {
   fireSearchRequest,
   fireFacetRequest,
+  fireLookupRequest,
   fireImagesRequest
 }
 
@@ -40,6 +41,16 @@ function fireFacetRequest (query, facets) {
 
 function fireImagesRequest (source_file_path, offset) {
   const url = 'services/frontend/images/htmlpage/' + `?source_file_path=${source_file_path}&offset=${offset}`
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function fireLookupRequest(id) {
+  const url = 'services/frontend/solr/idlookup/' + `?id=${id}`
   return axios.get(
     url).then(response => {
     return response.data

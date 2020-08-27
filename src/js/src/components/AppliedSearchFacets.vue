@@ -37,12 +37,12 @@ export default {
       updateSearchAppliedFacets:'updateSearchAppliedFacets'
     }),
     removeFacet(facet) {
-      console.log(facet, this.searchAppliedFacets)
       this.updateSearchAppliedFacets(this.searchAppliedFacets.replace('&fq=' + facet,''))
-      console.log(this.searchAppliedFacets)
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets})
-      this.$router.replace({query: {q:this.query, facets:this.searchAppliedFacets !== '' ?  this.searchAppliedFacets : undefined }})
+      let newFacetUrl = this.searchAppliedFacets !== '' ? '&facets=' + encodeURIComponent(this.searchAppliedFacets) : ''
+      history.pushState({name: 'SolrWayback'}, 'SolrWayback', '?q=' + this.query + newFacetUrl)
+      //this.$router.replace({query: {q:this.query, facets:this.searchAppliedFacets !== '' ?  this.searchAppliedFacets : undefined }})
     }
   }
 }
