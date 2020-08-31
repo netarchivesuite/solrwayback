@@ -258,8 +258,8 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
     }
     
     public static String punyCodeAndNormaliseUrl(String url) throws Exception {     
-      if (!url.startsWith("http://")){ 
-        throw new Exception("Url not starting with http://");
+      if (!url.startsWith("http://") || url.startsWith("https://")){ 
+        throw new Exception("Url not starting with http:// or https://");
       }
       
       URL uri = new URL(url);
