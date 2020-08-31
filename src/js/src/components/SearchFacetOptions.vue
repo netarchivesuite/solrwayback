@@ -18,14 +18,17 @@
 <script>
 
 import { mapState, mapActions } from 'vuex'
+import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
 
 export default {
   name: 'SearchFacetOptions',
+  mixins: [HistoryRoutingUtils],
   computed: {
     ...mapState({
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       facets: state => state.Search.facets,
-      query: state => state.Search.query
+      query: state => state.Search.query,
+      solrSettings: state => state.Search.solrSettings
     }),
   },
   mounted () {
@@ -39,10 +42,10 @@ export default {
     applyFacet(facetCategory, facet) {
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
       this.updateSearchAppliedFacets(this.searchAppliedFacets + newFacet)
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets})
-      // test with null!
-      history.pushState({name: 'SolrWayback'}, 'SolrWayback', '?q=' + this.query + '&facets=' + encodeURIComponent(this.searchAppliedFacets))
+      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options: this.solrSettings})
+      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options: this.solrSettings})
+      this.pushHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+      //history.pushState({name: 'SolrWayback'}, 'SolrWayback', '?q=' + this.query + '&facets=' + encodeURIComponent(this.searchAppliedFacets))
       //this.$router.replace({query: {q:this.query, facets:this.searchAppliedFacets !== '' ?  this.searchAppliedFacets : undefined }})
     }
   }

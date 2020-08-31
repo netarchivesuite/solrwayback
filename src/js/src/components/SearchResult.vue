@@ -4,14 +4,21 @@
       <search-facet-options />
     </div>
     <div class="resultContainer">
-      <h2>Results</h2><span>Found <span class="highlightText">{{ results.numFound }}</span> entries matching <span class="highlightText">{{ query }}. </span>
-        <span>Showing {{ solrSettings.offset }}  - {{ solrSettings.offset + 20 > results.numFound ? results.numFound : solrSettings.offset + 20 }}.</span>
+      <h2>Results</h2>
+      <span v-if="!results.cardinality">
+        <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span>  - <span class="highlightText">{{ solrSettings.offset + 20 > results.numFound ? results.numFound : solrSettings.offset + 20 }}</span> of </span>
+        <span class="highlightText">{{ results.numFound.toLocaleString("en") }}</span> entries matching <span class="highlightText">{{ query }}. </span>
+      </span>
+      <span v-if="results.cardinality">
+        <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span> - <span class="highlightText">{{ solrSettings.offset + 20 > results.cardinality ? results.cardinality : solrSettings.offset + 20 }}</span> of </span>
+        <span class="highlightText">{{ results.cardinality.toLocaleString("en") }}</span> unique entries matching <span class="highlightText">{{ query }} </span>
+        <span class="tonedDownText">(total hits: {{ results.numFound.toLocaleString("en") }})</span>.
       </span>
       <div class="pagingContainer">
         <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
           Previous 20
         </button>
-        <button :disabled="solrSettings.offset + 20 > results.numFound" @click="getNextResults()">
+        <button :disabled="results.cardinality ? solrSettings.offset + 20 > results.cardinality : solrSettings.offset + 20 > results.numFound" @click="getNextResults()">
           Next 20
         </button>
       </div>
@@ -30,6 +37,7 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import SearchFacetOptions from './SearchFacetOptions.vue'
+import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
 
 export default {
   name: 'SearchResult',
@@ -39,6 +47,7 @@ export default {
     SearchSingleItemWeb: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemWeb'),
     SearchFacetOptions
   },
+  mixins: [HistoryRoutingUtils],
   data () {
     return {     
     }
@@ -64,11 +73,13 @@ export default {
       this.updateSolrSettingOffset(this.solrSettings.offset + 20)
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.pushHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     getPreviousResults() {
       this.updateSolrSettingOffset(this.solrSettings.offset - 20)
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.pushHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     SingleEntryComponent(type) {
       switch(type) {   

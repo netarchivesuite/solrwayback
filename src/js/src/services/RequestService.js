@@ -16,9 +16,24 @@ function fireSearchRequest (query, facets, options) {
       transformResponse: [
         function(response) {
           let returnObj = JSON.parse(response)
-          for(let i = 0; i < returnObj.response.docs.length; i++) {
-            returnObj.response.docs[i].highlight = returnObj.highlighting[returnObj.response.docs[i].id]
+          if(options.grouping === false) {
+            for(let i = 0; i < returnObj.response.docs.length; i++) {
+              returnObj.response.docs[i].highlight = returnObj.highlighting[returnObj.response.docs[i].id]
+              }
           }
+          else {
+            returnObj.response = {}
+            returnObj.response.docs = []
+            returnObj.response.numFound = returnObj.grouped.url.doclist.numFound
+            returnObj.response.maxScore = returnObj.grouped.url.doclist.maxScore
+            returnObj.response.start = returnObj.grouped.url.doclist.start
+            returnObj.response.cardinality = returnObj.stats.stats_fields.url.cardinality
+            for(let i = 0; i < returnObj.grouped.url.doclist.docs.length; i++) {
+              returnObj.response.docs[i] = returnObj.grouped.url.doclist.docs[i]
+              returnObj.response.docs[i].highlight = returnObj.highlighting[returnObj.grouped.url.doclist.docs[i].id]
+            }
+          }
+          console.log(returnObj)
           return returnObj
         }
       ]}).then(returnObj => {
