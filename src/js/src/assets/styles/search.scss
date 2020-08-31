@@ -145,3 +145,17 @@ color:var(--secondary-text-color);
   outline:1px solid var(--seethrough-black);
   border-radius:0;
 }
+
+.searchBoxActionLink {
+  font-size:85%;
+}
+
+.searchBoxActionLink:hover {
+  border-bottom: 2px solid var(--secondary-text-color);
+  cursor: pointer;
+  
+}
+
+.fileUploader{
+  margin:20px 0 20px 0;
+}

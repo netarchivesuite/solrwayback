@@ -51,7 +51,7 @@ public class SolrWaybackResourceWeb {
     
     
     @POST
-    @Path("/upload/gethash")
+    @Path("upload/gethash")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.TEXT_PLAIN)
     public String uploadPdf(List<Attachment> attachments,@Context HttpServletRequest request) throws  SolrWaybackServiceException { 

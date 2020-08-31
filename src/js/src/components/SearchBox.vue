@@ -14,23 +14,31 @@
               id="clearSubmit"
               title="Clear search and results"
               type="button"
-              @click="clearResultsAndSearch" />     
+              @click="clearResultsAndSearch" />
     </form>
+    <div @click="showUploadFileSearch = !showUploadFileSearch">
+      <span class="searchBoxActionLink">Search with uploaded file</span>
+    </div>
     <applied-search-facets />
+    <search-upload-file v-if="showUploadFileSearch" />
   </div>
 </template> 
 
 <script>
 import { mapState, mapActions } from 'vuex'
 import AppliedSearchFacets from './AppliedSearchFacets.vue'
+import SearchUploadFile from './SearchUploadFile.vue'
 
 export default {
   components: {
-    AppliedSearchFacets
+    AppliedSearchFacets,
+    SearchUploadFile
   },
   data () {
     return {    
-      futureQuery:'' 
+      futureQuery:'',
+      showUploadFileSearch: false
+
     }
   },
   computed: {
@@ -81,9 +89,6 @@ export default {
       history.pushState({name: 'SolrWayback'}, 'SolrWayback', '/')
       this.futureQuery = ''
       this.resetSearchState()
-      //this.updateQuery('')
-      //this.clearResults()
-      //this.updateSearchAppliedFacets('')
     },
   }
 }
