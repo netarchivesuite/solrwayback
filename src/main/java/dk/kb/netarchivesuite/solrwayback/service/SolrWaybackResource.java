@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -463,7 +464,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/export/warc")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
-  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
+  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") List<String> fq) throws SolrWaybackServiceException {
    
     //This is also required even if the option is removed on the web-page.
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
@@ -475,7 +476,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/export/warcExpanded")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
-  public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
+  public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") List<String> fq) throws SolrWaybackServiceException {
     //This is also required even if the option is removed on the web-page.
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
       throw new InvalidArgumentServiceException("Export to warc not allowed!");
@@ -484,15 +485,18 @@ public class SolrWaybackResource {
   }
   
   
-  private Response exportWarcImpl(@QueryParam("query") String q,
-                                     @QueryParam("fq") String fq,
-                                     @QueryParam("expand") boolean expandResources,
-                                     @QueryParam("deduplicate") boolean avoidDuplicates) throws SolrWaybackServiceException {
+  private Response exportWarcImpl(String q,
+                                   List<String>  fqList,
+                                   boolean expandResources,
+                                   boolean avoidDuplicates) throws SolrWaybackServiceException {
     try {
-      log.debug("Export warc. query:"+q +" filterquery:"+fq);
+      log.debug("Export warc. query:"+q +" filterquery:"+fqList);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
       String dateStr = formatOut.format(new Date());
-      InputStream is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, q, fq);
+
+      //Map FQ List<String> to String[]
+      String[] fqArray = fqList.stream().toArray(String[]::new);
+      InputStream is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, q, fqArray);
       return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".warc\"").build();
 
     } catch (Exception e) {
