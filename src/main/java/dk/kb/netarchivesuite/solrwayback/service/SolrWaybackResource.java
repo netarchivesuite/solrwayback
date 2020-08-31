@@ -437,17 +437,7 @@ public class SolrWaybackResource {
     }
   }
 
-  @GET
-  @Path("/export/warc")    
-  @Produces(MediaType.APPLICATION_OCTET_STREAM)    
-  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
-   
-    //This is also required even if the option is removed on the web-page.
-    if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
-      throw new InvalidArgumentServiceException("Export to warc not allowed!");
-    }    
-    return exportWarcImpl(q, fq, false, false);
-  }
+  
 
   @GET
   @Path("/export/linkgraph")    
@@ -468,6 +458,18 @@ public class SolrWaybackResource {
       log.error("Error in export linkgraph",e);
       throw handleServiceExceptions(e);
     }    
+  }
+  
+  @GET
+  @Path("/export/warc")    
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)    
+  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
+   
+    //This is also required even if the option is removed on the web-page.
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
+      throw new InvalidArgumentServiceException("Export to warc not allowed!");
+    }    
+    return exportWarcImpl(q, fq, false, false);
   }
   
   @GET
