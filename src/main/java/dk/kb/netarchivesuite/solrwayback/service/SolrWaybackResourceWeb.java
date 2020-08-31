@@ -1,12 +1,15 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.activation.DataHandler;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -49,6 +52,23 @@ public class SolrWaybackResourceWeb {
     public String test() throws SolrWaybackServiceException {
         return "TEST";
     }
+    
+    @GET
+    @Path("/wordcloud/domain")
+    @Produces("image/png")
+    public Response  wordCloudForDomain(@QueryParam("domain") String domain) throws SolrWaybackServiceException {
+      try {                        
+          BufferedImage image = Facade.wordCloudForDomain(domain);           
+          //In jersey images could just be returned as bufferedimage class. in jax-res need to convert them manual-
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          ImageIO.write(image, "png", baos);
+          byte[] imageData = baos.toByteArray();        
+          return Response.ok(imageData).build();     
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
+
     
     
     @GET
