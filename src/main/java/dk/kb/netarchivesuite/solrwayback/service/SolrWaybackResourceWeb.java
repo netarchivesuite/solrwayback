@@ -29,6 +29,7 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
@@ -49,6 +50,24 @@ public class SolrWaybackResourceWeb {
         return "TEST";
     }
     
+    
+    @GET
+    @Path("/util/normalizeurl")
+    @Produces(MediaType.APPLICATION_JSON)
+    public UrlWrapper waybackgraph(@QueryParam("url") String url) throws SolrWaybackServiceException {
+      try{
+       
+        //also rewrite to puny code
+        String url_norm =  Facade.punyCodeAndNormaliseUrl(url);       
+        log.info("Normalize url"+url +" ->" +  url_norm);        
+        UrlWrapper wrapper = new UrlWrapper();
+        wrapper.setUrl(url_norm);      
+        return wrapper;
+      } catch (Exception e) {
+        throw handleServiceExceptions(e);
+      }
+    }
+        
     
     @POST
     @Path("/upload/gethash")

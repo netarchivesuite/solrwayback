@@ -145,25 +145,6 @@ public class SolrWaybackResource {
   
   
   @GET
-  @Path("/util/normalizeurl")
-  @Produces(MediaType.APPLICATION_JSON)
-  public UrlWrapper waybackgraph(@QueryParam("url") String url) throws SolrWaybackServiceException {
-    try{
-      String urlDecoded = java.net.URLDecoder.decode(url, "UTF-8"); //frontend sending this encoded
-      
-      log.info("url:"+urlDecoded);
-      //also rewrite to puny code
-      String url_norm =  Facade.punyCodeAndNormaliseUrl(urlDecoded);       
-      UrlWrapper wrapper = new UrlWrapper();
-      wrapper.setUrl(url_norm);      
-      return wrapper;
-    } catch (Exception e) {
-      throw handleServiceExceptions(e);
-    }
-  }
-  
-  
-  @GET
   @Path("statistics/domain")
   @Produces({ MediaType.APPLICATION_JSON})
   public  ArrayList<DomainYearStatistics> statisticsDomain (@QueryParam("domain") String domain) throws SolrWaybackServiceException {
