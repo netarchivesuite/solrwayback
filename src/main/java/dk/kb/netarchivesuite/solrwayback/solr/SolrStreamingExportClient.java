@@ -12,15 +12,13 @@ import java.util.Arrays;
 public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportClientInterface{
 
   public static final String BRIEF_FL = "title,url,source_file_path,crawl_date,wayback_date";
-  public static final String BRIEF_CSV = "title,crawl_date,waybackurl";
+  
 
   public static final String FULL_FL =
           "title, host, public_suffix, crawl_year, content_type, content_language, source_file_path,url," +
           "source_file_path,crawl_date,wayback_date";
-  public static final String FULL_CSV =
-          "title,host,public_suffix,crawl_year,content_type,content_language,crawl_date,url,wayback_date,waybackurl";
-
-  public static final int DEFAULT_PAGE_SIZE = 50000;
+  
+  public static final int DEFAULT_PAGE_SIZE = 1000; //TODO change is content is extracted
 
   private final Logger log = LoggerFactory.getLogger(SolrStreamingExportClient.class);
   private final SolrGenericStreaming inner;
@@ -50,12 +48,13 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
     //solrServer.setRequestWriter(new BinaryRequestWriter()); 
   }
 
-  public static SolrStreamingExportClient createExporter(
-          String solrServerUrl, boolean brief, String query, String... filterQueries) {
+  public static SolrStreamingExportClient createCvsExporter(String solrServerUrl, String query,String fields, String... filterQueries) {
     // TODO: It does not make sense to have 50000 as page size both for brief and full export
-    return new SolrStreamingExportClient(
-            solrServerUrl, DEFAULT_PAGE_SIZE, brief ? BRIEF_FL : FULL_CSV, brief ? BRIEF_CSV : FULL_CSV,
-            false, false, query, filterQueries);
+
+      //Remove spaces in fieldlist
+      fields = fields.replace(" ", "");
+      
+    return new SolrStreamingExportClient(solrServerUrl, DEFAULT_PAGE_SIZE, fields ,fields, false, false, query, filterQueries);
   }
 
   public String next() throws Exception {
@@ -65,8 +64,6 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
     StringBuffer export = new StringBuffer();
 
     if (first) {
-      GenerateCSV.generateFirstLineHeader(export);    //Add this to first cursor mark
-      GenerateCSV.generateSecondLineHeader(export, query, filters == null ? null : Arrays.toString(filters));
       GenerateCSV.addHeadlineFields(export, csvFieldsArray);
       first = false;
     }

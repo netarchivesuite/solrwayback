@@ -507,52 +507,12 @@ public class SolrWaybackResource {
 
 
   
-  @GET
-  @Path("/export/brief")    
-  @Produces(MediaType.TEXT_PLAIN)
-  public Response exportBrief(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
-    if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
-      throw new InvalidArgumentServiceException("Export to csv not allowed!");
-    }
-    
-    try {              
-      log.debug("Export brief. query:"+q +" filterquery:"+fq);
-      DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                              
-      String dateStr = formatOut.format(new Date());                        
-      InputStream is = Facade.exportBriefStreaming(q, fq);
-      return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
-
-    } catch (Exception e) {
-      log.error("Error in export brief",e);
-      throw handleServiceExceptions(e);
-    }
-  }
-
   
-  @GET
-  @Path("/linkgraph/csv")    
-  @Produces(MediaType.TEXT_PLAIN)
-  public Response linkgraphCsv(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
-    
-    try {              
-      log.debug("Export brief. query:"+q +" filterquery:"+fq);
-      DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                              
-      String dateStr = formatOut.format(new Date());                        
-      InputStream is = Facade.exportBriefStreaming(q, fq);
-      return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
-
-    } catch (Exception e) {
-      log.error("Error in generating linkgraph csv",e);
-      throw handleServiceExceptions(e);
-    }
-  }
-
-  
-  
+ 
 
   @GET
-  @Path("/export/full")    
-  public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
+  @Path("/export/cvs")    
+  public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq,@QueryParam("fields") String fields) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
       throw new InvalidArgumentServiceException("Export to csv not allowed!");
     }
@@ -560,7 +520,7 @@ public class SolrWaybackResource {
       log.debug("Export full. query:"+q +" filterquery:"+fq);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                                                                                                         
       String dateStr = formatOut.format(new Date());                        
-      InputStream is = Facade.exportFullStreaming(q, fq);
+      InputStream is = Facade.exportCvsStreaming(q, fq,fields);
       return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
 
     } catch (Exception e) {

@@ -385,24 +385,22 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
       return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000); //1M max. results just for now
     }
  
+   
+
     public static InputStream exportLinkGraphStreaming(String q) {        
       SolrStreamingLinkGraphCSVExportClient solr= SolrStreamingLinkGraphCSVExportClient.createExporter(PropertiesLoader.SOLR_SERVER, q);      
       return new StreamingSolrExportBufferedInputStream(solr, 1000000); //1 MIL
     }
 
-    public static InputStream exportBriefStreaming(String q, String fq) throws Exception {
-      SolrStreamingExportClient solr = SolrStreamingExportClient.createExporter(
-              PropertiesLoader.SOLR_SERVER, true, q, fq);
+    public static InputStream exportCvsStreaming(String q, String fq, String fields) throws Exception {
+    //TODO test only allowed fields are selected!
+        
+       SolrStreamingExportClient solr = SolrStreamingExportClient.createCvsExporter( PropertiesLoader.SOLR_SERVER, q, fields, fq );
       return new StreamingSolrExportBufferedInputStream(solr, 1000000);
     }
        
 
     
-    public static InputStream exportFullStreaming(String q, String fq) throws Exception{                           
-        SolrStreamingExportClient solr = SolrStreamingExportClient.createExporter(
-                PropertiesLoader.SOLR_SERVER, false, q, fq);
-        return new StreamingSolrExportBufferedInputStream(solr, 1000000);
-    }
     
     
     
