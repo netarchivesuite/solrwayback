@@ -16,14 +16,14 @@
               type="button"
               @click="clearResultsAndSearch" />
       <div class="sortOptions">
-        <div @click="updateSolrSettingGrouping(!solrSettings.grouping)">
+        <div @click.prevent="updateSolrSettingGrouping(!solrSettings.grouping)">
           <input id="groupedSearch"
                  :checked="solrSettings.grouping"
                  type="checkbox"
                  name="groupedSearch">
           <label for="groupedSearch">Grouped search <span class="buttonExplanation" title="Grouping results by URL, meaning you only seen an URL as one hit, even though it might have been a hit on several params.">[ ? ]</span></label>
         </div>
-        <div class="floatRight" @click="selectSearchMethod('urlSearch')">
+        <div class="floatRight" @click.prevent="selectSearchMethod('urlSearch')">
           <input id="urlSearch"
                  :checked="solrSettings.urlSearch"
                  type="checkbox"
@@ -31,7 +31,7 @@
                  @click.stop="selectSearchMethod('urlSearch')">
           <label for="urlSearch">URL search <span class="buttonExplanation" title="Explanation goes here.">[ ? ]</span></label>
         </div>
-        <div class="floatRight marginRight" @click="selectSearchMethod('imgSearch')">
+        <div class="floatRight marginRight" @click.prevent="selectSearchMethod('imgSearch')">
           <input id="imgSearch"
                  :checked="solrSettings.imgSearch"
                  type="checkbox"
@@ -124,13 +124,17 @@ export default {
       }
     },
     selectSearchMethod(selected) {
+      console.log(selected, 'heer!')
       if(selected === 'imgSearch') {
+        console.log('here!')
         this.solrSettings.urlSearch ? this.updateSolrSettingUrlSearch(!this.solrSettings.urlSearch) : null
         this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch)
+        return
       }
       if(selected === 'urlSearch') {
         this.solrSettings.imgSearch ? this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch) : null
         this.updateSolrSettingUrlSearch(!this.solrSettings.urlSearch)
+        return
       }
     },
     clearResultsAndSearch() {
