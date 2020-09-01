@@ -95,18 +95,6 @@ public class SolrWaybackResource {
   }
   
   
-  @GET
-  @Path("/images/search")
-  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public  ArrayList<ImageUrl> imagesSearch(@QueryParam("query") String query) throws SolrWaybackServiceException {
-    try {                                          
-      ArrayList<ArcEntryDescriptor> img = Facade.findImages(query);
-      return Facade.arcEntrys2Images(img);                                                            
-    } catch (Exception e) {           
-      throw handleServiceExceptions(e);
-    }
-  }
-  
   
   // TODO https://wiki.apache.org/solr/SpatialSearch#How_to_boost_closest_results
   @GET
