@@ -75,7 +75,7 @@ export default {
   computed: {
     ...mapState({
       results: state => state.Search.results,
-      results: state => state.Search.query,
+      query: state => state.Search.query,
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
     }),
     allDataButtonText: function () {

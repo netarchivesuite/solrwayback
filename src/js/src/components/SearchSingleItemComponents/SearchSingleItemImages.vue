@@ -15,7 +15,6 @@
          :key="index"
          class="previewImageContainer">
       <img
-
         loading="lazy"
         class="previewImage"
         :src="item.imageUrl + '&height=200&width=200'"
