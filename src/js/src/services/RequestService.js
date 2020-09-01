@@ -1,4 +1,5 @@
 import axios from 'axios'
+import dataTransformationHelper from './dataTransformationHelper'
 
 export const requestService = {
   fireSearchRequest,
@@ -17,23 +18,11 @@ function fireSearchRequest (query, facets, options) {
         function(response) {
           let returnObj = JSON.parse(response)
           if(options.grouping === false) {
-            for(let i = 0; i < returnObj.response.docs.length; i++) {
-              returnObj.response.docs[i].highlight = returnObj.highlighting[returnObj.response.docs[i].id]
-              }
+            returnObj = dataTransformationHelper.transformSearchResponse(returnObj)
           }
           else {
-            returnObj.response = {}
-            returnObj.response.docs = []
-            returnObj.response.numFound = returnObj.grouped.url.doclist.numFound
-            returnObj.response.maxScore = returnObj.grouped.url.doclist.maxScore
-            returnObj.response.start = returnObj.grouped.url.doclist.start
-            returnObj.response.cardinality = returnObj.stats.stats_fields.url.cardinality
-            for(let i = 0; i < returnObj.grouped.url.doclist.docs.length; i++) {
-              returnObj.response.docs[i] = returnObj.grouped.url.doclist.docs[i]
-              returnObj.response.docs[i].highlight = returnObj.highlighting[returnObj.grouped.url.doclist.docs[i].id]
-            }
+            returnObj = dataTransformationHelper.transformGroupedSearchResponse(returnObj)
           }
-          console.log(returnObj)
           return returnObj
         }
       ]}).then(returnObj => {

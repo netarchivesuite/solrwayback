@@ -21,7 +21,7 @@
                  :checked="solrSettings.grouping"
                  type="checkbox"
                  name="groupedSearch">
-          <label for="male">Grouped search <span class="buttonExplanation" title="Grouping results by URL, meaning you only seen an URL as one hit, even though it might have been a hit on several params.">[ ? ]</span></label>
+          <label for="groupedSearch">Grouped search <span class="buttonExplanation" title="Grouping results by URL, meaning you only seen an URL as one hit, even though it might have been a hit on several params.">[ ? ]</span></label>
         </div>
         <div class="floatRight" @click="selectSearchMethod('urlSearch')">
           <input id="urlSearch"
@@ -29,7 +29,7 @@
                  type="checkbox"
                  name="urlSearch"
                  @click.stop="selectSearchMethod('urlSearch')">
-          <label for="male">URL search <span class="buttonExplanation" title="Explanation goes here.">[ ? ]</span></label>
+          <label for="urlSearch">URL search <span class="buttonExplanation" title="Explanation goes here.">[ ? ]</span></label>
         </div>
         <div class="floatRight marginRight" @click="selectSearchMethod('imgSearch')">
           <input id="imgSearch"
@@ -37,7 +37,7 @@
                  type="checkbox"
                  name="imgSearch"
                  @click.stop="selectSearchMethod('imgSearch')">
-          <label for="male">Image search <span class="buttonExplanation" title="Explanation goes here">[ ? ]</span></label>
+          <label for="imgSearch">Image search <span class="buttonExplanation" title="Explanation goes here">[ ? ]</span></label>
         </div>
       </div>
       <div class="tools">
@@ -120,7 +120,7 @@ export default {
         this.futureImgSearch = this.solrSettings.imgSearch
         this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
         this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-        this.pushHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+        this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
       }
     },
     selectSearchMethod(selected) {

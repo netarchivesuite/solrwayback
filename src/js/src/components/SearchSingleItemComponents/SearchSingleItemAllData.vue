@@ -124,7 +124,7 @@ export default {
       this.requestSearch({query:searchString, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:searchString, facets:this.searchAppliedFacets, options:this.solrSettings})
       //this.$router.push({ name:'SolrWayback', params:{query:searchString }})
-      this.pushHistory('SolrWayback', searchString, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('SolrWayback', searchString, this.searchAppliedFacets, this.solrSettings)
       //this.$router.replace({ query: {q:searchString }})
     },
     toggleShownData(index) {
