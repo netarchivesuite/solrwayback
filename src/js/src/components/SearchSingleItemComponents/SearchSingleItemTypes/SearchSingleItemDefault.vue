@@ -1,7 +1,7 @@
 <template>
   <div class="singleEntryResult">
     <search-single-item-standard-info :rank="rankNumber" :result="result" />
-    <search-single-item-images :source="result.source_file_path" :offset="result.source_file_offset" />
+    <search-single-item-images :source="result.source_file_path" :offset="result.source_file_offset" input-type="multiple" />
     <search-single-item-all-data :id="result.id" />
   </div>
 </template>

@@ -8,7 +8,7 @@
     </div>
     <p class="entryInfo">
       <span class="highlightText titleInfo">
-        <a :href="getPlaybackURL(result.source_file_path, result.source_file_offset)" target="_blank"><span>{{ result.title || 'No title' }}</span></a>
+        <div :title="result.type.toLowerCase()" :class="'typePreview ' + getIconForType(result.type)" /><a :href="getPlaybackURL(result.source_file_path, result.source_file_offset)" target="_blank"><span>{{ result.title || `${result.content_type_norm} - no title` }}</span></a>
       </span>
     </p><p class="entryInfo type">
       <span class="attri">type:</span> <span class="val">{{ result.content_type_norm }}, {{ result.type }} @ {{ result.domain }}</span>
@@ -62,6 +62,14 @@ export default {
     },
     getPlaybackURL(source_file_path, source_file_offset) {
       return `${configs.playbackConfig.solrwaybackBaseURL}services/viewForward?source_file_path=${source_file_path}&offset=${source_file_offset}`    
+    },
+    getIconForType(type) {
+      switch(type) {   
+        case 'Web Page': return 'web'
+        case 'Image': return 'image'
+        case 'Twitter Tweet': return 'twitter'
+        default: return 'web'
+      }
     }
   }
 }
