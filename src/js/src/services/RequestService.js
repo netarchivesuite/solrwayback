@@ -5,7 +5,9 @@ export const requestService = {
   fireSearchRequest,
   fireFacetRequest,
   fireLookupRequest,
-  fireImagesRequest
+  fireImagesRequest,
+  uploadFileRequest
+
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -62,5 +64,17 @@ function fireLookupRequest(id) {
     return response.data
   }).catch(error => {
     return Promise.reject(error)
+  })
+}
+
+function uploadFileRequest(fileData) {
+ const url = 'services/frontend/upload/gethash/'
+ let formData = new FormData()
+ formData.append('file', fileData)
+  return axios.post(url, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }}).catch(error => {
+  return Promise.reject(error)
   })
 }

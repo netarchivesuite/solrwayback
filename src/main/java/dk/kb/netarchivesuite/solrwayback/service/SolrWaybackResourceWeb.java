@@ -1,12 +1,15 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.activation.DataHandler;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -27,11 +30,13 @@ import org.slf4j.LoggerFactory;
 import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
-import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
+
 import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
@@ -48,10 +53,58 @@ public class SolrWaybackResourceWeb {
     public String test() throws SolrWaybackServiceException {
         return "TEST";
     }
+   
+    @GET
+    @Path("/images/search")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public  ArrayList<ImageUrl> imagesSearch(@QueryParam("query") String query) throws SolrWaybackServiceException {
+      try {                                          
+        ArrayList<ArcEntryDescriptor> img = Facade.findImages(query);
+        return Facade.arcEntrys2Images(img);                                                            
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
     
+    
+    @GET
+    @Path("/wordcloud/domain")
+    @Produces("image/png")
+    public Response  wordCloudForDomain(@QueryParam("domain") String domain) throws SolrWaybackServiceException {
+      try {                        
+          BufferedImage image = Facade.wordCloudForDomain(domain);           
+          //In jersey images could just be returned as bufferedimage class. in jax-res need to convert them manual-
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          ImageIO.write(image, "png", baos);
+          byte[] imageData = baos.toByteArray();        
+          return Response.ok(imageData).build();     
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
+
+    
+    
+    @GET
+    @Path("/util/normalizeurl")
+    @Produces(MediaType.APPLICATION_JSON)
+    public UrlWrapper waybackgraph(@QueryParam("url") String url) throws SolrWaybackServiceException {
+      try{
+       
+        //also rewrite to puny code
+        String url_norm =  Facade.punyCodeAndNormaliseUrl(url);       
+        log.info("Normalize url"+url +" ->" +  url_norm);        
+        UrlWrapper wrapper = new UrlWrapper();
+        wrapper.setUrl(url_norm);      
+        return wrapper;
+      } catch (Exception e) {
+        throw handleServiceExceptions(e);
+      }
+    }
+        
     
     @POST
-    @Path("/upload/gethash")
+    @Path("upload/gethash")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.TEXT_PLAIN)
     public String uploadPdf(List<Attachment> attachments,@Context HttpServletRequest request) throws  SolrWaybackServiceException { 

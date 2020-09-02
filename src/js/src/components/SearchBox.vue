@@ -41,10 +41,11 @@
         </div>
       </div>
       <div class="tools">
-        <span>Search with uploaded file</span> <span>Search for HTML-tags</span> <span>Domain stats</span><span>Link graphs</span>
+        <span @click="showUploadFileSearch = !showUploadFileSearch">Search with uploaded file</span> <span>Search for HTML-tags</span> <span>Domain stats</span><span>Link graphs</span>
       </div>
     </form>
     <applied-search-facets />
+    <search-upload-file v-if="showUploadFileSearch" />
   </div>
 </template> 
 
@@ -52,10 +53,12 @@
 import { mapState, mapActions } from 'vuex'
 import AppliedSearchFacets from './AppliedSearchFacets.vue'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
+import SearchUploadFile from './SearchUploadFile.vue'
 
 export default {
   components: {
-    AppliedSearchFacets
+    AppliedSearchFacets,
+    SearchUploadFile
   },
   mixins: [HistoryRoutingUtils],
   data () {
@@ -64,6 +67,8 @@ export default {
       futureGrouped:false,
       futureUrlSearch:false,
       futureImgSearch:false,
+      showUploadFileSearch: false
+
     }
   },
   computed: {
@@ -124,9 +129,7 @@ export default {
       }
     },
     selectSearchMethod(selected) {
-      console.log(selected, 'heer!')
       if(selected === 'imgSearch') {
-        console.log('here!')
         this.solrSettings.urlSearch ? this.updateSolrSettingUrlSearch(!this.solrSettings.urlSearch) : null
         this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch)
         return
@@ -141,9 +144,6 @@ export default {
       history.pushState({name: 'SolrWayback'}, 'SolrWayback', '/')
       this.futureQuery = ''
       this.resetSearchState()
-      //this.updateQuery('')
-      //this.clearResults()
-      //this.updateSearchAppliedFacets('')
     },
   }
 }

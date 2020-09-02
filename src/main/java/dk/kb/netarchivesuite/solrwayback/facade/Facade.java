@@ -258,8 +258,8 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
     }
     
     public static String punyCodeAndNormaliseUrl(String url) throws Exception {     
-      if (!url.startsWith("http://")){ 
-        throw new Exception("Url not starting with http://");
+      if (!url.startsWith("http://") || url.startsWith("https://")){ 
+        throw new Exception("Url not starting with http:// or https://");
       }
       
       URL uri = new URL(url);
@@ -385,24 +385,22 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
       return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000); //1M max. results just for now
     }
  
+   
+
     public static InputStream exportLinkGraphStreaming(String q) {        
       SolrStreamingLinkGraphCSVExportClient solr= SolrStreamingLinkGraphCSVExportClient.createExporter(PropertiesLoader.SOLR_SERVER, q);      
       return new StreamingSolrExportBufferedInputStream(solr, 1000000); //1 MIL
     }
 
-    public static InputStream exportBriefStreaming(String q, String fq) throws Exception {
-      SolrStreamingExportClient solr = SolrStreamingExportClient.createExporter(
-              PropertiesLoader.SOLR_SERVER, true, q, fq);
+    public static InputStream exportCvsStreaming(String q, String fq, String fields) throws Exception {
+    //TODO test only allowed fields are selected!
+        
+       SolrStreamingExportClient solr = SolrStreamingExportClient.createCvsExporter( PropertiesLoader.SOLR_SERVER, q, fields, fq );
       return new StreamingSolrExportBufferedInputStream(solr, 1000000);
     }
        
 
     
-    public static InputStream exportFullStreaming(String q, String fq) throws Exception{                           
-        SolrStreamingExportClient solr = SolrStreamingExportClient.createExporter(
-                PropertiesLoader.SOLR_SERVER, false, q, fq);
-        return new StreamingSolrExportBufferedInputStream(solr, 1000000);
-    }
     
     
     
@@ -691,6 +689,7 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
         props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.OPENWAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_CSV_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_CSV);
+        props.put(PropertiesLoaderWeb.EXPORT_CSV_FIELDS_PROPERTY,""+PropertiesLoaderWeb.EXPORT_CSV_FIELDS);
         props.put(PropertiesLoaderWeb.MAPS_LATITUDE_PROPERTY,PropertiesLoaderWeb.MAPS_LATITUDE);
         props.put(PropertiesLoaderWeb.MAPS_LONGITUDE_PROPERTY,PropertiesLoaderWeb.MAPS_LONGITUDE);
         props.put(PropertiesLoaderWeb.MAPS_RADIUS_PROPERTY,PropertiesLoaderWeb.MAPS_RADIUS);        

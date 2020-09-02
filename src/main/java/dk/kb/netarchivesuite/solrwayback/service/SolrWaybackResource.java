@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -94,18 +95,6 @@ public class SolrWaybackResource {
   }
   
   
-  @GET
-  @Path("/images/search")
-  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public  ArrayList<ImageUrl> imagesSearch(@QueryParam("query") String query) throws SolrWaybackServiceException {
-    try {                                          
-      ArrayList<ArcEntryDescriptor> img = Facade.findImages(query);
-      return Facade.arcEntrys2Images(img);                                                            
-    } catch (Exception e) {           
-      throw handleServiceExceptions(e);
-    }
-  }
-  
   
   // TODO https://wiki.apache.org/solr/SpatialSearch#How_to_boost_closest_results
   @GET
@@ -140,25 +129,6 @@ public class SolrWaybackResource {
       } catch (Exception e) {         
           throw handleServiceExceptions(e);
       }
-  }
-  
-  
-  @GET
-  @Path("/util/normalizeurl")
-  @Produces(MediaType.APPLICATION_JSON)
-  public UrlWrapper waybackgraph(@QueryParam("url") String url) throws SolrWaybackServiceException {
-    try{
-      String urlDecoded = java.net.URLDecoder.decode(url, "UTF-8"); //frontend sending this encoded
-      
-      log.info("url:"+urlDecoded);
-      //also rewrite to puny code
-      String url_norm =  Facade.punyCodeAndNormaliseUrl(urlDecoded);       
-      UrlWrapper wrapper = new UrlWrapper();
-      wrapper.setUrl(url_norm);      
-      return wrapper;
-    } catch (Exception e) {
-      throw handleServiceExceptions(e);
-    }
   }
   
   
@@ -234,21 +204,6 @@ public class SolrWaybackResource {
   
   
   
-  @GET
-  @Path("/wordcloud/domain")
-  @Produces("image/png")
-  public Response  wordCloudForDomain(@QueryParam("domain") String domain) throws SolrWaybackServiceException {
-    try {                        
-        BufferedImage image = Facade.wordCloudForDomain(domain);           
-        //In jersey images could just be returned as bufferedimage class. in jax-res need to convert them manual-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", baos);
-        byte[] imageData = baos.toByteArray();        
-        return Response.ok(imageData).build();     
-    } catch (Exception e) {           
-      throw handleServiceExceptions(e);
-    }
-  }
   
   /*
    *    
@@ -437,17 +392,7 @@ public class SolrWaybackResource {
     }
   }
 
-  @GET
-  @Path("/export/warc")    
-  @Produces(MediaType.APPLICATION_OCTET_STREAM)    
-  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
-   
-    //This is also required even if the option is removed on the web-page.
-    if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
-      throw new InvalidArgumentServiceException("Export to warc not allowed!");
-    }    
-    return exportWarcImpl(q, fq, false, false);
-  }
+  
 
   @GET
   @Path("/export/linkgraph")    
@@ -471,9 +416,21 @@ public class SolrWaybackResource {
   }
   
   @GET
+  @Path("/export/warc")    
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)    
+  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") List<String> fq) throws SolrWaybackServiceException {
+   
+    //This is also required even if the option is removed on the web-page.
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
+      throw new InvalidArgumentServiceException("Export to warc not allowed!");
+    }    
+    return exportWarcImpl(q, fq, false, false);
+  }
+  
+  @GET
   @Path("/export/warcExpanded")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
-  public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
+  public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") List<String> fq) throws SolrWaybackServiceException {
     //This is also required even if the option is removed on the web-page.
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
       throw new InvalidArgumentServiceException("Export to warc not allowed!");
@@ -482,15 +439,18 @@ public class SolrWaybackResource {
   }
   
   
-  private Response exportWarcImpl(@QueryParam("query") String q,
-                                     @QueryParam("fq") String fq,
-                                     @QueryParam("expand") boolean expandResources,
-                                     @QueryParam("deduplicate") boolean avoidDuplicates) throws SolrWaybackServiceException {
+  private Response exportWarcImpl(String q,
+                                   List<String>  fqList,
+                                   boolean expandResources,
+                                   boolean avoidDuplicates) throws SolrWaybackServiceException {
     try {
-      log.debug("Export warc. query:"+q +" filterquery:"+fq);
+      log.debug("Export warc. query:"+q +" filterquery:"+fqList);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
       String dateStr = formatOut.format(new Date());
-      InputStream is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, q, fq);
+
+      //Map FQ List<String> to String[]
+      String[] fqArray = fqList.stream().toArray(String[]::new);
+      InputStream is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, q, fqArray);
       return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".warc\"").build();
 
     } catch (Exception e) {
@@ -501,52 +461,12 @@ public class SolrWaybackResource {
 
 
   
-  @GET
-  @Path("/export/brief")    
-  @Produces(MediaType.TEXT_PLAIN)
-  public Response exportBrief(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
-    if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
-      throw new InvalidArgumentServiceException("Export to csv not allowed!");
-    }
-    
-    try {              
-      log.debug("Export brief. query:"+q +" filterquery:"+fq);
-      DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                              
-      String dateStr = formatOut.format(new Date());                        
-      InputStream is = Facade.exportBriefStreaming(q, fq);
-      return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
-
-    } catch (Exception e) {
-      log.error("Error in export brief",e);
-      throw handleServiceExceptions(e);
-    }
-  }
-
   
-  @GET
-  @Path("/linkgraph/csv")    
-  @Produces(MediaType.TEXT_PLAIN)
-  public Response linkgraphCsv(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
-    
-    try {              
-      log.debug("Export brief. query:"+q +" filterquery:"+fq);
-      DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                              
-      String dateStr = formatOut.format(new Date());                        
-      InputStream is = Facade.exportBriefStreaming(q, fq);
-      return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
-
-    } catch (Exception e) {
-      log.error("Error in generating linkgraph csv",e);
-      throw handleServiceExceptions(e);
-    }
-  }
-
-  
-  
+ 
 
   @GET
-  @Path("/export/full")    
-  public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq) throws SolrWaybackServiceException {
+  @Path("/export/cvs")    
+  public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq,@QueryParam("fields") String fields) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
       throw new InvalidArgumentServiceException("Export to csv not allowed!");
     }
@@ -554,7 +474,7 @@ public class SolrWaybackResource {
       log.debug("Export full. query:"+q +" filterquery:"+fq);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                                                                                                         
       String dateStr = formatOut.format(new Date());                        
-      InputStream is = Facade.exportFullStreaming(q, fq);
+      InputStream is = Facade.exportCvsStreaming(q, fq,fields);
       return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
 
     } catch (Exception e) {
