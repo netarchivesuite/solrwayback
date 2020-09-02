@@ -1,4 +1,5 @@
 import axios from 'axios'
+import dataTransformationHelper from './dataTransformationHelper'
 
 export const requestService = {
   fireSearchRequest,
@@ -9,16 +10,20 @@ export const requestService = {
 
 }
 
-function fireSearchRequest (query, facets) {
+function fireSearchRequest (query, facets, options) {
+  let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
   // Split url and move to config
-  const url = 'services/frontend/solr/search/results/' + `?query=${query + facets}`
+  const url = 'services/frontend/solr/search/results/' + `?query=${query + facets + optionString}`
   return axios.get(
     url, {
       transformResponse: [
         function(response) {
           let returnObj = JSON.parse(response)
-          for(let i = 0; i < returnObj.response.docs.length; i++) {
-            returnObj.response.docs[i].highlight = returnObj.highlighting[returnObj.response.docs[i].id]
+          if(options.grouping === false) {
+            returnObj = dataTransformationHelper.transformSearchResponse(returnObj)
+          }
+          else {
+            returnObj = dataTransformationHelper.transformGroupedSearchResponse(returnObj)
           }
           return returnObj
         }
@@ -29,9 +34,10 @@ function fireSearchRequest (query, facets) {
   })
 }
 
-function fireFacetRequest (query, facets) {
+function fireFacetRequest (query, facets, options) {
+  let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
   // Split url and move to config
-  const url = 'services/frontend/solr/search/facets/' + `?query=${query + facets}`
+  const url = 'services/frontend/solr/search/facets/' + `?query=${query + facets + optionString}`
   return axios.get(
     url).then(response => {
     console.log('facets', response.data.facet_counts)

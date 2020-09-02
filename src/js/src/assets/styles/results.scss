@@ -124,6 +124,10 @@
   margin-left:10px;
 }
 
+.SingleEntryStandardInfo .scoreInfo .textAlignRight {
+  text-align: right;
+}
+
 .SingleEntryStandardInfo .entryInfo {
   padding-bottom:5px;
   padding-top:5px;
@@ -151,10 +155,14 @@
   font-size:130%;
 }
 
-.SingleEntryStandardInfo .SingleEntryStandardInfo .domainInfo, .SingleEntryStandardInfo .typeInfo {
+.SingleEntryStandardInfo .titleInfo a {
+  color: var(--secondary-text-color);
+  text-decoration-color: var(--secondary-highlight-color);
+}
+
+.SingleEntryStandardInfo, .SingleEntryStandardInfo .domainInfo, .SingleEntryStandardInfo .typeInfo {
   margin-right:3px;
   margin-left:3px;
-
 }
 
 .SingleEntryStandardInfo .snippetHighlight {
@@ -173,7 +181,7 @@
   height:30px;
 }
 
-.showAllButtonContainer button, .singleEntryImages button {
+.showAllButtonContainer button, .singleEntryImages button, .pagingContainer button {
   float:right;
   border:2px solid var(--secondary-bg-color);
   border-radius: 0;
@@ -186,7 +194,36 @@
   transition:all 0.2s linear 0s;
 }
 
-.showAllButtonContainer button:hover, .singleEntryImages button:hover {
+.pagingContainer button {
+  float:none;
+  margin-left:5px;
+  margin-right:5px;
+  width:100px;
+}
+
+.pagingContainer button:disabled {
+  color: rgba(30,30,30,0.5);
+	border: 2px solid rgba(30,30,30,0.5);
+}
+
+.pagingContainer button:disabled:hover {
+  color: rgba(30,30,30,0.5);
+  border: 2px solid rgba(30,30,30,0.5);
+  background-color:white;
+  cursor:default;
+}
+
+
+.pagingContainer {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.tonedDownText {
+  color:rgba(30,30,30, 0.5)
+}
+
+.showAllButtonContainer button:hover, .singleEntryImages button:hover, .pagingContainer button:hover {
   border:2px solid var(--secondary-bg-color);
   color:white;
   background-color:var(--secondary-bg-color);

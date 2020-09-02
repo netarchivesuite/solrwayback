@@ -51,11 +51,13 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import { requestService } from '../../services/RequestService'
+import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
 
 export default {
   name: 'SearchSingleItemAllData',
   components: {  
   },
+  mixins: [HistoryRoutingUtils],
   props: {
     id: {
       type: String,
@@ -76,6 +78,7 @@ export default {
     ...mapState({
       results: state => state.Search.results,
       query: state => state.Search.query,
+      solrSettings: state => state.Search.solrSettings,
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
     }),
     allDataButtonText: function () {
@@ -118,10 +121,10 @@ export default {
       let searchString = attribute + ':"' + value + '"'
       this.updateQuery(searchString)
       this.updateSearchAppliedFacets('')
-      this.requestSearch({query:searchString, facets:this.searchAppliedFacets})
-      this.requestFacets({query:searchString, facets:this.searchAppliedFacets})
+      this.requestSearch({query:searchString, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.requestFacets({query:searchString, facets:this.searchAppliedFacets, options:this.solrSettings})
       //this.$router.push({ name:'SolrWayback', params:{query:searchString }})
-      history.pushState({name: 'SolrWayback'}, 'SolrWayback', '?q=' + searchString)
+      this.$_pushSearchHistory('SolrWayback', searchString, this.searchAppliedFacets, this.solrSettings)
       //this.$router.replace({ query: {q:searchString }})
     },
     toggleShownData(index) {
