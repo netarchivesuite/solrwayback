@@ -27,6 +27,11 @@ module.exports = {
         pathRewrite: { '^services/viewForward/': '' },
         changeOrigin: true
       },
+    '^/services/frontend/upload/gethash/': {
+          target: 'http://localhost:8080/solrwayback/services/frontend/upload/gethash',
+          pathRewrite: { '^/services/frontend/upload/gethash/': '' },
+          changeOrigin: true
+      },
     }
   },
 publicPath: process.env.NODE_ENV === 'production'

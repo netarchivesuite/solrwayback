@@ -30,12 +30,13 @@ import org.slf4j.LoggerFactory;
 import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
-import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
+
 import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
@@ -52,6 +53,19 @@ public class SolrWaybackResourceWeb {
     public String test() throws SolrWaybackServiceException {
         return "TEST";
     }
+   
+    @GET
+    @Path("/images/search")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public  ArrayList<ImageUrl> imagesSearch(@QueryParam("query") String query) throws SolrWaybackServiceException {
+      try {                                          
+        ArrayList<ArcEntryDescriptor> img = Facade.findImages(query);
+        return Facade.arcEntrys2Images(img);                                                            
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
+    
     
     @GET
     @Path("/wordcloud/domain")
@@ -90,7 +104,7 @@ public class SolrWaybackResourceWeb {
         
     
     @POST
-    @Path("/upload/gethash")
+    @Path("upload/gethash")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.TEXT_PLAIN)
     public String uploadPdf(List<Attachment> attachments,@Context HttpServletRequest request) throws  SolrWaybackServiceException { 
