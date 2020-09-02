@@ -53,6 +53,11 @@ color:var(--secondary-text-color);
   overflow: hidden;
 }
 
+.searchForm .buttonExplanation {
+  cursor:default;
+  color:rgba(30,30,30,0.5)
+}
+
 .searchForm #querySubmit {
   box-sizing: border-box;
   width:60px;
@@ -151,16 +156,65 @@ color:var(--secondary-text-color);
   border-radius:0;
 }
 
-.searchBoxActionLink {
-  font-size:85%;
+.searchForm input[type="checkbox"] {
+  position: relative;
+  top: 3px;
+  height: 15px;
+	width: 15px;
 }
 
-.searchBoxActionLink:hover {
-  border-bottom: 2px solid var(--secondary-text-color);
-  cursor: pointer;
-  
+.searchForm label {
+  cursor:pointer;
 }
 
-.fileUploader{
+.searchForm .sortOptions {
+  margin-top:10px;
+  width: calc(100% - 80px);
+  padding-bottom:15px;
+  border-bottom: 1px solid var(--secondary-highlight-color);
+  text-transform: uppercase;
+	font-size: 80%;
+}
+
+.searchForm .tools {
+  margin-top: 17px;
+	width: calc(100% - 80px);
+	padding-bottom: 10px;
+	text-transform: uppercase;
+	margin-bottom: 10px;
+	display: flex;
+	cursor: pointer;
+	justify-content: space-between;
+	font-size: 80%;
+}
+
+.searchForm .tools span {
+  display:inline-block;
+  color: var(--main-highlight-color);
+  border-bottom:1px solid var(--secondary-highlight-color);
+}
+
+.searchForm .sortOptions .marginRight {
+  margin-right:15px;
+}
+
+.searchForm .sortOptions div {
+  display: inline-block;
+  color: var(--main-highlight-color);
+}
+
+.searchForm .sortOptions label {
+  user-select: none;
+}
+
+.searchForm #groupedSearch {
+  margin-left: 0px;
+}
+
+.searchForm .sortOptions .floatRight {
+  float:right;
+}
+
+.fileUploader {
   margin:20px 0 20px 0;
 }

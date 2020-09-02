@@ -1,8 +1,11 @@
 <template>
   <div class="SingleEntryStandardInfo">
-    <p class="scoreInfo">
-      score: <span class="highlightText">{{ result.score }}</span>
-    </p>
+    <div class="scoreInfo">
+      <p class="textAlignRight">
+        #<span class="highlightText">{{ solrSettings.offset + rank + 1 }}</span>
+      </p>
+      <p>score: <span class="highlightText"> {{ result.score }}</span></p>
+    </div>
     <p class="entryInfo">
       <span class="highlightText titleInfo">
         <a :href="getPlaybackURL(result.source_file_path, result.source_file_offset)" target="_blank"><span>{{ result.title || 'No title' }}</span></a>
@@ -32,6 +35,8 @@
 
 <script>
 import configs from '../../configs'
+import { mapState } from 'vuex'
+
 
 export default {
   name: 'SearchSingleItemStandardInfo',
@@ -39,7 +44,16 @@ export default {
     result: {
       type: Object,
       required: true
+    },
+    rank: {
+      type: Number,
+      required: true
     }
+  },
+  computed: {
+    ...mapState({
+      solrSettings: state => state.Search.solrSettings
+    }),
   },
   methods: {
     refactoredDate(date) {
