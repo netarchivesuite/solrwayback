@@ -45,6 +45,7 @@ export default {
     SearchSingleItemDefault: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemDefault'),
     SearchSingleItemTweet: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemTweet'),
     SearchSingleItemWeb: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemWeb'),
+    SearchSingleItemImage: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemImage'),
     SearchFacetOptions
   },
   mixins: [HistoryRoutingUtils],
@@ -84,6 +85,7 @@ export default {
     SingleEntryComponent(type) {
       switch(type) {   
         case 'Web Page': return 'SearchSingleItemWeb'
+        case 'Image': return 'SearchSingleItemImage'
         case 'Twitter Tweet': return 'SearchSingleItemTweet'
         default: return 'SearchSingleItemDefault'
       }

@@ -12,22 +12,26 @@ module.exports = {
       pathRewrite: { '^/services/frontend/images/htmlpage/': '' },
       changeOrigin: true
       },
-      '^/services/viewForward/': {
-        target: 'http://localhost:8080/solrwayback/services/viewForward/',
-        pathRewrite: { '^services/viewForward/': '' },
-        changeOrigin: true
-        },
     '^/services/frontend/properties/solrwaybackweb/': {
         target: 'http://localhost:8080/solrwayback/services/frontend/properties/solrwaybackweb',
         pathRewrite: { '^/services/frontend/properties/solrwaybackweb/': '' },
         changeOrigin: true
-        },
-       
+      },
+    '^/services/downloadRaw/': {
+        target: 'http://localhost:8080/solrwayback/services/downloadRaw/',
+        pathRewrite: { '^/services/downloadRaw/': '' },
+        changeOrigin: true
+      },
+    '^/services/viewForward/': {
+        target: 'http://localhost:8080/solrwayback/services/viewForward/',
+        pathRewrite: { '^services/viewForward/': '' },
+        changeOrigin: true
+      },
     '^/services/frontend/upload/gethash/': {
           target: 'http://localhost:8080/solrwayback/services/frontend/upload/gethash',
           pathRewrite: { '^/services/frontend/upload/gethash/': '' },
           changeOrigin: true
-          },
+      },
     }
   },
 publicPath: process.env.NODE_ENV === 'production'
