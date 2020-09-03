@@ -28,7 +28,6 @@
     },
 
     dismissNotification(state, notification) {
-      console.log(notification)
       Vue.delete(state.notifications, notification.__ob__.vmCount)
     },
     
