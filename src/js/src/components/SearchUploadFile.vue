@@ -26,6 +26,7 @@ export default {
   computed: {
     ...mapState({
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
+       solrSettings: state => state.Search.solrSettings
     })
   },
 
@@ -49,7 +50,7 @@ export default {
      requestService.uploadFileRequest(this.fileToUpload[0])
         .then(response => {
          this.updateQuery(this.createRequestQuery(response.data))
-         this.requestSearch({query:this.createRequestQuery(response.data), facets:this.searchAppliedFacets})
+         this.requestSearch({query:this.createRequestQuery(response.data), facets:this.searchAppliedFacets, options:this.solrSettings})
         })
         .catch(() => {
           this.setNotification({
