@@ -35,6 +35,11 @@ export default {
        updateQuery: 'updateQuery',
     }),
 
+    ...mapActions('Notifier', {
+      setNotification: 'setNotification'
+     
+    }),
+
   selectFileToUpload() {
       this.fileToUpload = this.$refs.file.files
     },
@@ -43,12 +48,16 @@ export default {
      //TODO spinner
      requestService.uploadFileRequest(this.fileToUpload[0])
         .then(response => {
-          //Search for file
          this.updateQuery(this.createRequestQuery(response.data))
          this.requestSearch({query:this.createRequestQuery(response.data), facets:this.searchAppliedFacets})
         })
         .catch(() => {
-           //TODO Call error handler - something went wrong
+          this.setNotification({
+          	title: 'We are so sorry!',
+            text: 'Something went wrong when uploading your image - please try again',
+            type: 'error',
+            timeout: false
+          })
           this.fileToUpload = []
         })
     
