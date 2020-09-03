@@ -12,8 +12,6 @@ import SearchSingleItemAllData from './../SearchSingleItemAllData.vue'
 import SearchSingleItemImages from './../SearchSingleItemImages.vue'
 import configs from '../../../configs'
 
-//import { mapState, mapActions } from 'vuex'
-
 export default {
   name: 'SearchSingleItemImage',
   components: {  
@@ -30,16 +28,6 @@ export default {
       type:Number,
       required:true
     }
-  },
-  data () {
-    return {     
-    }
-  },
-  computed: {
-  },
-  mounted () {
-  },
-  methods: {
   }
 }
 
