@@ -25,12 +25,12 @@ public class PropertiesLoaderWeb {
 	public static final String ALLOW_EXPORT_WARC_PROPERTY = "allow.export.warc";
 	public static final String ALLOW_EXPORT_CSV_PROPERTY = "allow.export.csv";
 	public static final String EXPORT_CSV_FIELDS_PROPERTY = "export.csv.fields";
+	public static final String ABOUT_HTML_PROPERTY = "about.html";
 	
 	public static final String LEAFLET_SOURCE_PROPERTY = "leaflet.source";
 	public static final String LEAFLET_ATTRIBUTION_PROPERTY = "leaflet.attribution";
 	
-	
-	
+		
 	public static String OPENWAYBACK_SERVER;
 	public static String WAYBACK_SERVER = null;
     public static String MAPS_LATITUDE;
@@ -43,6 +43,7 @@ public class PropertiesLoaderWeb {
     
     public static String LEAFLET_SOURCE;
     public static String LEAFLET_ATTRIBUTION;
+    public static String ABOUT_HTML;
     
 		
 	private static Properties serviceProperties = null;
@@ -83,7 +84,7 @@ public class PropertiesLoaderWeb {
 		    ALLOW_EXPORT_WARC = Boolean.parseBoolean(serviceProperties.getProperty(ALLOW_EXPORT_WARC_PROPERTY));
 	        ALLOW_EXPORT_CSV = Boolean.parseBoolean(serviceProperties.getProperty(ALLOW_EXPORT_CSV_PROPERTY));
 	        EXPORT_CSV_FIELDS = serviceProperties.getProperty(EXPORT_CSV_FIELDS_PROPERTY);
-		    
+	        ABOUT_HTML = serviceProperties.getProperty(ABOUT_HTML_PROPERTY);
             LEAFLET_SOURCE = serviceProperties.getProperty(LEAFLET_SOURCE_PROPERTY);
 		    LEAFLET_ATTRIBUTION = serviceProperties.getProperty(LEAFLET_ATTRIBUTION_PROPERTY);
 		    
@@ -96,7 +97,7 @@ public class PropertiesLoaderWeb {
 			log.info("Property:"+ MAPS_LONGITUDE_PROPERTY+" = " +MAPS_LONGITUDE);
 			log.info("Property:"+ MAPS_RADIUS_PROPERTY+" = " + MAPS_RADIUS);
 			log.info("Property:"+ FACETS_PROPERTY +" = " + FACETS);
-
+			log.info("Property:"+ ABOUT_HTML_PROPERTY +" = " + ABOUT_HTML);
 			log.info("Property:"+ LEAFLET_SOURCE_PROPERTY +" = " + LEAFLET_SOURCE);
 			log.info("Property:"+ LEAFLET_ATTRIBUTION_PROPERTY +" = " + LEAFLET_ATTRIBUTION);
 		
