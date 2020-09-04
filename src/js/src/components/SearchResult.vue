@@ -5,29 +5,62 @@
     </div>
     <div class="resultContainer">
       <h2>Results</h2>
-      <span v-if="!results.cardinality">
-        <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span>  - <span class="highlightText">{{ solrSettings.offset + 20 > results.numFound ? results.numFound : solrSettings.offset + 20 }}</span> of </span>
-        <span class="highlightText">{{ results.numFound.toLocaleString("en") }}</span> entries matching <span class="highlightText">{{ query }}. </span>
-      </span>
-      <span v-if="results.cardinality">
-        <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span> - <span class="highlightText">{{ solrSettings.offset + 20 > results.cardinality ? results.cardinality : solrSettings.offset + 20 }}</span> of </span>
-        <span class="highlightText">{{ results.cardinality.toLocaleString("en") }}</span> unique entries matching <span class="highlightText">{{ query }} </span>
-        <span class="tonedDownText">(total hits: {{ results.numFound.toLocaleString("en") }})</span>.
-      </span>
-      <div class="pagingContainer">
-        <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
-          Previous 20
-        </button>
-        <button :disabled="results.cardinality ? solrSettings.offset + 20 > results.cardinality : solrSettings.offset + 20 > results.numFound" @click="getNextResults()">
-          Next 20
-        </button>
+      <!-- HERE COMES RESULTS -->
+      <div v-if="results.searchType === 'post'">
+        <span v-if="!results.cardinality">
+          <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span>  - <span class="highlightText">{{ solrSettings.offset + 20 > results.numFound ? results.numFound : solrSettings.offset + 20 }}</span> of </span>
+          <span class="highlightText">{{ results.numFound.toLocaleString("en") }}</span> entries matching <span class="highlightText">{{ query }}. </span>
+        </span>
+        <span v-if="results.cardinality">
+          <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span> - <span class="highlightText">{{ solrSettings.offset + 20 > results.cardinality ? results.cardinality : solrSettings.offset + 20 }}</span> of </span>
+          <span class="highlightText">{{ results.cardinality.toLocaleString("en") }}</span> unique entries matching <span class="highlightText">{{ query }} </span>
+          <span class="tonedDownText">(total hits: {{ results.numFound.toLocaleString("en") }})</span>.
+        </span>
+        <div class="pagingContainer">
+          <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
+            Previous 20
+          </button>
+          <button :disabled="results.cardinality ? solrSettings.offset + 20 > results.cardinality : solrSettings.offset + 20 > results.numFound" @click="getNextResults()">
+            Next 20
+          </button>
+        </div>
+        <div v-if="results && results !== {}" class="results">
+          <component :is="SingleEntryComponent(result.type)"
+                     v-for="(result, index) in results.docs"
+                     :key="index"
+                     :result="result"
+                     :rank-number="index" />
+        </div>
       </div>
-      <div v-if="results && results !== {}" class="results">
-        <component :is="SingleEntryComponent(result.type)"
-                   v-for="(result, index) in results.docs"
-                   :key="index"
-                   :result="result"
-                   :rank-number="index" />
+      <!-- HERE COMES PICTURES -->
+      <div v-if="results.searchType === 'image'">
+        <span>Showing <span class="highlightText">{{ results.images.length }}</span> images matching <span class="highlightText">{{ query }}. </span> </span>
+        <div class="images">
+          <div class="column 1">
+            <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,0)"
+                                  :key="index"
+                                  :number="index"
+                                  :result="result" />
+          </div>
+          <div class="column 2">
+            <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,1)"
+                                  :key="index"
+                                  :number="index"
+                                  :result="result" />
+          </div>
+          <div class="column 3">
+            <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,2)"
+                                  :key="index"
+                                  :number="index"
+                                  :result="result" />
+          </div>
+          <div class="column 4">
+            <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,3)"
+                                  :key="index"
+                                  :number="index"
+                                  :result="result" />
+          </div>
+        </div>
       </div>
     </div>
     <div class="marginContainer" />
@@ -38,6 +71,7 @@
 import { mapState, mapActions } from 'vuex'
 import SearchFacetOptions from './SearchFacetOptions.vue'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
+import SearchMasonryImage from './SearchSingleItemComponents/SearchMasonryImage'
 
 export default {
   name: 'SearchResult',
@@ -45,7 +79,8 @@ export default {
     SearchSingleItemDefault: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemDefault'),
     SearchSingleItemTweet: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemTweet'),
     SearchSingleItemWeb: () => import('./SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemWeb'),
-    SearchFacetOptions
+    SearchFacetOptions,
+    SearchMasonryImage
   },
   mixins: [HistoryRoutingUtils],
   data () {
@@ -80,6 +115,15 @@ export default {
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+    },
+    getOffsetArray(array, number) {
+      let newArray = [...array]
+      newArray.splice(0,number)
+      let returnArray = newArray.filter((item, index) => {
+        return index % 4 === 0
+      })
+      console.log(returnArray)
+      return returnArray
     },
     SingleEntryComponent(type) {
       switch(type) {   
