@@ -6,8 +6,8 @@
     <!--<div class="imageButtonContainer">
       {{ number }}
       <button>Search for image</button>
-      <button>Pages linking to image</button> -->
-  </div>
+      <button>Pages linking to image</button>
+  </div> -->
   </div>
 </template>
 
