@@ -416,16 +416,22 @@
 }
 
 .images .column {
-  flex: calc(25% - 8px);
-  max-width: calc(25% - 8px);
+  flex: calc(33.3% - 8px);
+  max-width: calc(33.3% - 8px);
   padding: 0 4px;
 }
 
 .images .column .columnImageContainer {
-  border:5px solid var(--secondary-highlight-color);
+  border:5px solid #fffadf;
   margin-top:5px;
   margin-bottom:5px;
+  padding-bottom:0px;
+  background-color:#fffadf;
+  min-height:50px;
+  transition: all 300ms linear 0s;
+  cursor:pointer;
 }
+
 
 .images .column .columnImageContainer img {
   object-fit: cover;
@@ -436,16 +442,80 @@
   height: auto;
   display: block;
   margin-left: auto;
-	margin-right: auto;
+  margin-right: auto;
+  transition: all 300ms linear 0s;
+}
+
+.images .column .columnImageContainer:hover {
+  transition: all 300ms linear 0s;
+  padding-bottom:0px;
+
+}
+
+.images .column .columnImageContainer:hover .number {
+  transition: all 300ms linear 0s;
+  opacity:1;
+}
+
+.images .column .columnImageContainer:hover .imageButtonContainer {
+  transition: all 300ms linear 0s;
+  height:42px;
+  opacity:1;
+  padding-top:10px;
+  padding-bottom:5px;
+}
+
+.images .column .columnImageContainer .number {
+  color:var(--main-highlight-color);
+  position: relative;
+  height:20px;
+  opacity:0;
+  transition: all 300ms linear 0s;
+  text-align: right;
 }
 
 .images .imageButtonContainer {
-	position: relative;
-	top: -52px;
-	margin-left: 10px;
-	margin-right: 10px;
+  position: relative;
+  height:20px;
+  opacity:0;
+  overflow:hidden;
+  text-align: center;
+  padding-top:0px;
+  padding-bottom:0px;
+  transition: all 300ms linear 0s;
+  margin-left: 5px;
+	margin-right: 5px;
 }
 
 .images .imageButtonContainer button {
-  width: 100%;
+  background-color: white;
+	//box-shadow: inset 0 0 7px var(--seethrough-black);
+  border-radius: 0% 0 0% 0;
+  border:0px solid transparent;
+	color:var(--main-highlight-color);
+  float: right;
+  background-color:transparent;
+	position: relative;
+	cursor: pointer;
+  margin:0px 1%;
+  cursor:pointer;
+  text-transform: uppercase;
+  width:100%;
+  margin-left:0px;
+  margin-right:5px;
+  text-align: center;
+  font-size: 80%;
+  padding:1px 0;
+}
+
+.images .imageButtonContainer button:first-of-type {
+  margin-left:5px;
+  margin-right:0px;
+}
+
+.images .imageButtonContainer button span {
+}
+
+.images .imageButtonContainer button:hover span {
+  font-weight:bold;
 }

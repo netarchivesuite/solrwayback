@@ -40,25 +40,22 @@
             <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,0)"
                                   :key="index"
                                   :number="index"
-                                  :result="result" />
+                                  :result="result"
+                                  :row="1" />
           </div>
           <div class="column 2">
             <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,1)"
                                   :key="index"
                                   :number="index"
-                                  :result="result" />
+                                  :result="result"
+                                  :row="2" />
           </div>
           <div class="column 3">
             <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,2)"
                                   :key="index"
                                   :number="index"
-                                  :result="result" />
-          </div>
-          <div class="column 4">
-            <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,3)"
-                                  :key="index"
-                                  :number="index"
-                                  :result="result" />
+                                  :result="result"
+                                  :row="3" />
           </div>
         </div>
       </div>
@@ -120,7 +117,7 @@ export default {
       let newArray = [...array]
       newArray.splice(0,number)
       let returnArray = newArray.filter((item, index) => {
-        return index % 4 === 0
+        return index % 3 === 0
       })
       console.log(returnArray)
       return returnArray
