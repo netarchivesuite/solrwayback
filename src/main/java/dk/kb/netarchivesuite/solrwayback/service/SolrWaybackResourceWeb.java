@@ -73,11 +73,8 @@ public class SolrWaybackResourceWeb {
     public Response  wordCloudForDomain(@QueryParam("domain") String domain) throws SolrWaybackServiceException {
       try {                        
           BufferedImage image = Facade.wordCloudForDomain(domain);           
-          //In jersey images could just be returned as bufferedimage class. in jax-res need to convert them manual-
-          ByteArrayOutputStream baos = new ByteArrayOutputStream();
-          ImageIO.write(image, "png", baos);
-          byte[] imageData = baos.toByteArray();        
-          return Response.ok(imageData).build();     
+          return convertToPng(image);
+          
       } catch (Exception e) {           
         throw handleServiceExceptions(e);
       }
@@ -261,6 +258,18 @@ public class SolrWaybackResourceWeb {
       catch (Exception e) {           
         throw handleServiceExceptions(e);
       }
+    }
+
+    
+    
+    private Response convertToPng(BufferedImage image)  throws Exception { 
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ImageIO.write(image, "png", baos);
+      byte[] imageData = baos.toByteArray();
+      baos.flush();
+      baos.close();
+      ResponseBuilder response = Response.ok(new ByteArrayInputStream(imageData));
+      return response.build();
     }
 
     

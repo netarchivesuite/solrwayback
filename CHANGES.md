@@ -1,3 +1,9 @@
+4.0.0
+-----
+Frontend completely rewritten
+Tomcat upgraded to 8.5.51 in next bundle release. Due to GhostCat (CVE-2020-1938 - AJP). 
+
+
 3.2.6
 -----
 Twitter API playback updated and improved (require newer version of warc-indexer)

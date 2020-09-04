@@ -137,7 +137,7 @@
   text-transform: lowercase;
 }
 
-.SingleEntryStandardInfo .entryInfo .attri {
+.entryInfo .attri {
   width:50px;
   display:inline-block;
   font-weight: bold;
@@ -160,7 +160,7 @@
   text-decoration-color: var(--secondary-highlight-color);
 }
 
-.SingleEntryStandardInfo, .SingleEntryStandardInfo .domainInfo, .SingleEntryStandardInfo .typeInfo {
+.SingleEntryStandardInfo, .SingleEntryStandardInfo .domainInfo, .SingleEntryStandardInfo .typeInfo, .imageInfo {
   margin-right:3px;
   margin-left:3px;
 }
@@ -330,7 +330,7 @@
   margin: 1em;
   flex-grow: 0;
   width: calc(25% -  2em);
-  background-color: rgba(255,246,196,0.5);
+  background-color: rgb(255, 250, 223);
 	//border-left: 1px solid var(--secondary-highlight-color);
   box-sizing: border-box;
   height:200px;
@@ -348,6 +348,21 @@
   position: relative;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.singleEntryImages .previewImage:after, .previewImageContainer .imageEntry:after { 
+  content: "Image broken";
+  font-size: 16px;
+  color: rgb(100, 100, 100);
+  text-align:center;
+  display: block;
+  position: absolute;
+  z-index: 2;
+  top: 0px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(255, 250, 223);
 }
 
 .singleEntryImages img {
@@ -518,4 +533,38 @@
 
 .images .imageButtonContainer button:hover span {
   font-weight:bold;
+}
+.singleEntryResult .imageEntry {
+  max-width:200px;
+  max-height: 200px;
+  text-align: center;
+  display: block;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.singleEntryResult .typePreview.twitter {
+  background-color: black;
+	background-image: url('../icons/twitter.svg');
+}
+
+.singleEntryResult .typePreview.image {
+	background-image: url('../icons/image.svg');
+}
+
+.singleEntryResult .typePreview.web {
+	background-image: url('../icons/web.svg');
+}
+
+.singleEntryResult .typePreview {
+  height: 20px;
+	position: relative;
+	width: 20px;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-size: auto;
+  background-position: center;
+  top: 2px;
+  margin-right:5px;
 }

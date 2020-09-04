@@ -26,7 +26,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.brotli.dec.BrotliInputStream;
@@ -250,9 +249,8 @@ public class SolrWaybackResource {
       long offset = doc.getOffset();
 
       BufferedImage image = Facade.getHtmlPagePreview(source_file_path, offset);
-    
-      //TODO need to convert manuel. See the wordcloud method
-      return Response.ok(image).build();   
+      return convertToPng(image);
+         
     } catch (Exception e) {
       log.error("error thumbnail html image:" +uriInfo.getRequestUri().toString());  
       throw handleServiceExceptions(e);
@@ -269,13 +267,15 @@ public class SolrWaybackResource {
     try {
       log.debug("Getting thumbnail html image from source_file_path:" + source_file_path + " offset:" + offset);
       BufferedImage image = Facade.getHtmlPagePreview(source_file_path, offset);          
-      return Response.ok(image).build();                       
+      return convertToPng(image);                       
     } catch (Exception e) {
       log.error("error thumbnail html image:"+source_file_path +" offset:"+offset);  
       throw handleServiceExceptions(e);
     }
   }
 
+  
+   
   @GET
   @Path("/image")
   @Produces("image/png")
@@ -303,22 +303,11 @@ public class SolrWaybackResource {
       int sourceHeight = image.getHeight();
 
       if (sourceHeight <= height && sourceWidth <= width) { // No resize, image is smaller
-          ByteArrayOutputStream baos = new ByteArrayOutputStream();
-          ImageIO.write(image, "png", baos);
-          byte[] imageData = baos.toByteArray();
-          baos.flush();
-          baos.close();
-          ResponseBuilder response = Response.ok(new ByteArrayInputStream(imageData));
-        return response.build();
+       return convertToPng(image); 
+        
       } else {
         BufferedImage resizeImage = ImageUtils.resizeImage(image, sourceWidth, sourceHeight, width, height);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(resizeImage, "png", baos);
-        byte[] imageData = baos.toByteArray();
-        baos.flush();
-        baos.close();
-        ResponseBuilder response = Response.ok(new ByteArrayInputStream(imageData));               
-        return response.build();
+        return convertToPng(resizeImage);
       }
     } catch (Exception e) {
       log.error("error getImage:"+source_file_path +" offset:"+offset +" height:"+height +" width:"+width); //Java can not read all images. 
@@ -746,9 +735,8 @@ public class SolrWaybackResource {
     // String newUrl="http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url="+url+"&time="+waybackDate;
       //http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url=http%3A%2F%2Fwww.stiften.dk%2F&time=20120328044226
       log.info("forward url:"+newUrl);
-      
-      
-      URI uri = UriBuilder.fromUri(newUrl).build();
+            
+      URI uri =new URI(newUrl);
       log.info("forwarding to:"+uri.toString());
       return Response.seeOther( uri ).build(); //Jersey way to forward response.
            
@@ -937,10 +925,13 @@ public class SolrWaybackResource {
   public Response proxy(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) throws Exception {
     try {
       
+
       // refererUrl="http://teg-desktop.sb.statsbiblioteket.dk:8080/solrwayback/services/view?source_file_path=/media/teg/1200GB_SSD/netarkiv/warcs/solrwayback_2018-08-27-13-29-21.warc&offset=1226957110";
       // leakUrl= "http://localhost:8080/images/leaked.png?test=123";      
             
       String leakUrl = httpRequest.getParameter("url");
+      log.info("Resolve leak called for url:"+leakUrl);
+      
       String refererUrl = httpRequest.getHeader("referer");
       Map<String, String> queryMap = getQueryMap(refererUrl);
       String source_file_path = queryMap.get("source_file_path");      
@@ -1019,6 +1010,17 @@ public class SolrWaybackResource {
     return null;
     
   }
+  
+  private Response convertToPng(BufferedImage image)  throws Exception { 
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ImageIO.write(image, "png", baos);
+    byte[] imageData = baos.toByteArray();
+    baos.flush();
+    baos.close();
+    ResponseBuilder response = Response.ok(new ByteArrayInputStream(imageData));
+    return response.build();
+  }
+
   
   private SolrWaybackServiceException handleServiceExceptions(Exception e) {
     if (e instanceof SolrWaybackServiceException) {

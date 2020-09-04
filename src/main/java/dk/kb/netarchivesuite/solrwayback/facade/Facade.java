@@ -689,7 +689,8 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
         props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY,PropertiesLoaderWeb.OPENWAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_CSV_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_CSV);
-        props.put(PropertiesLoaderWeb.EXPORT_CSV_FIELDS_PROPERTY,""+PropertiesLoaderWeb.EXPORT_CSV_FIELDS);
+        props.put(PropertiesLoaderWeb.EXPORT_CSV_FIELDS_PROPERTY,PropertiesLoaderWeb.EXPORT_CSV_FIELDS);
+        props.put(PropertiesLoaderWeb.ABOUT_HTML_PROPERTY,PropertiesLoaderWeb.ABOUT_HTML);
         props.put(PropertiesLoaderWeb.MAPS_LATITUDE_PROPERTY,PropertiesLoaderWeb.MAPS_LATITUDE);
         props.put(PropertiesLoaderWeb.MAPS_LONGITUDE_PROPERTY,PropertiesLoaderWeb.MAPS_LONGITUDE);
         props.put(PropertiesLoaderWeb.MAPS_RADIUS_PROPERTY,PropertiesLoaderWeb.MAPS_RADIUS);        
