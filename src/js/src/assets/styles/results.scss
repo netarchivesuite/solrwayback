@@ -336,10 +336,6 @@
   height:200px;
 }
 
-.singleEntryImages .previewImageContainer:nth-child(4n - 2) {
-	//border-left: 0px solid var(--secondary-highlight-color);
-}
-
 .singleEntryImages .previewImageHidden {
   display:none;
 }
@@ -526,9 +522,6 @@
 .images .imageButtonContainer button:first-of-type {
   margin-left:5px;
   margin-right:0px;
-}
-
-.images .imageButtonContainer button span {
 }
 
 .images .imageButtonContainer button:hover span {
