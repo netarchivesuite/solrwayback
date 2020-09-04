@@ -26,7 +26,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.brotli.dec.BrotliInputStream;
@@ -736,9 +735,8 @@ public class SolrWaybackResource {
     // String newUrl="http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url="+url+"&time="+waybackDate;
       //http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url=http%3A%2F%2Fwww.stiften.dk%2F&time=20120328044226
       log.info("forward url:"+newUrl);
-      
-      
-      URI uri = UriBuilder.fromUri(newUrl).build();
+            
+      URI uri =new URI(newUrl);
       log.info("forwarding to:"+uri.toString());
       return Response.seeOther( uri ).build(); //Jersey way to forward response.
            
@@ -927,10 +925,13 @@ public class SolrWaybackResource {
   public Response proxy(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) throws Exception {
     try {
       
+
       // refererUrl="http://teg-desktop.sb.statsbiblioteket.dk:8080/solrwayback/services/view?source_file_path=/media/teg/1200GB_SSD/netarkiv/warcs/solrwayback_2018-08-27-13-29-21.warc&offset=1226957110";
       // leakUrl= "http://localhost:8080/images/leaked.png?test=123";      
             
       String leakUrl = httpRequest.getParameter("url");
+      log.info("Resolve leak called for url:"+leakUrl);
+      
       String refererUrl = httpRequest.getHeader("referer");
       Map<String, String> queryMap = getQueryMap(refererUrl);
       String source_file_path = queryMap.get("source_file_path");      
