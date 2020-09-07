@@ -39,23 +39,20 @@ export default {
     }),
   },
   beforeRouteUpdate (to, from, next) {
-    console.log('we updated route', to)
+    //console.log('we updated route', to)
     this.updateQuery(to.query.q)
     to.query.grouping === 'true' ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
     to.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
     to.query.urlSearch === 'true' ? this.updateSolrSettingUrlSearch(true) :  this.updateSolrSettingUrlSearch(false)
     to.query.facets ? this.updateSearchAppliedFacets(to.query.facets) : this.updateSearchAppliedFacets('')
     if(this.solrSettings.imgSearch === true) {
-          console.log('firing image search')
            this.requestImageSearch({query:this.query})
           return
         }
         if(this.solrSettings.urlSearch === true) {
-          console.log('fireing url search')
           return
         }
         else {
-          console.log('firing normal search')
           this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
           this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
           return

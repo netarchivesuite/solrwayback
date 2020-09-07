@@ -134,24 +134,21 @@ export default {
           this.futureUrlSearch !== this.solrSettings.urlSearch ||
           this.futureImgSearch !== this.solrSettings.imgSearch) 
         {
-        console.log('search params changed!')
+        //console.log('search params changed!')
         this.clearResults()
         this.updateQuery(this.futureQuery)
         this.futureGrouped = this.solrSettings.grouping
         this.futureUrlSearch = this.solrSettings.urlSearch
         this.futureImgSearch = this.solrSettings.imgSearch
         if(this.solrSettings.imgSearch === true) {
-          console.log('firing image search')
            this.requestImageSearch({query:this.query})
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
           return
         }
         if(this.solrSettings.urlSearch === true) {
-          console.log('fireing url search')
           return
         }
         else {
-          console.log('firing normal search')
           this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
           this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
           this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)

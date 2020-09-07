@@ -1,15 +1,15 @@
 <template>
   <div class="columnImageContainer">
     <div class="number">
-      #{{ row + number * 3 }}
+      #{{ row + number * rowNumber }}
     </div>
     <img 
       loading="lazy"
       :src="result.downloadUrl"
-      @click="toggleFullImage(row + number * 3)">
-    <search-single-item-focus-image v-if="showFullImage === row + number * 3"
+      @click="toggleFullImage(row + number * rowNumber)">
+    <search-single-item-focus-image v-if="showFullImage === row + number * rowNumber"
                                     :image="result.downloadUrl"
-                                    :index="row + number * 3"
+                                    :index="row + number * rowNumber"
                                     @close-window="closeWindow" />
     <div class="imageButtonContainer">
       <button @click="startImageSearch()">
@@ -45,7 +45,11 @@ export default {
     },
     row: {
       type:Number,
-      required:true
+      required: true
+    },
+    rowNumber: {
+      type: Number,
+      required: true
     }
   },
   data () {
@@ -77,7 +81,7 @@ export default {
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     startImageSearch() {
-       this.updateQuery('hash:"' + this.result.hash + '"')
+      this.updateQuery('hash:"' + this.result.hash + '"')
       this.updateSearchAppliedFacets('')
       this.updateSolrSettingImgSearch(false)
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})

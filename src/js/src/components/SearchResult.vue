@@ -5,7 +5,7 @@
     </div>
     <div class="resultContainer">
       <h2>Results</h2>
-      <!-- HERE COMES RESULTS -->
+      <!-- HERE COMES RESULTS // Figure out if this should be splitted out into a new component -->
       <div v-if="results.searchType === 'post'">
         <span v-if="!results.cardinality">
           <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span>  - <span class="highlightText">{{ solrSettings.offset + 20 > results.numFound ? results.numFound : solrSettings.offset + 20 }}</span> of </span>
@@ -32,7 +32,7 @@
                      :rank-number="index" />
         </div>
       </div>
-      <!-- HERE COMES PICTURES -->
+      <!-- HERE COMES PICTURES // Figure out if this should be splitted out into a new component -->
       <div v-if="results.searchType === 'image'">
         <span>Showing <span class="highlightText">{{ results.images.length }}</span> images matching <span class="highlightText">{{ query }}. </span> </span>
         <div class="images">
@@ -41,21 +41,24 @@
                                   :key="index"
                                   :number="index"
                                   :result="result"
-                                  :row="1" />
+                                  :row="1"
+                                  :row-number="numberOfRows" />
           </div>
           <div class="column 2">
             <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,1)"
                                   :key="index"
                                   :number="index"
                                   :result="result"
-                                  :row="2" />
+                                  :row="2"
+                                  :row-number="numberOfRows" />
           </div>
           <div class="column 3">
             <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,2)"
                                   :key="index"
                                   :number="index"
                                   :result="result"
-                                  :row="3" />
+                                  :row="3"
+                                  :row-number="numberOfRows" />
           </div>
         </div>
       </div>
@@ -82,7 +85,8 @@ export default {
   },
   mixins: [HistoryRoutingUtils],
   data () {
-    return {     
+    return {  
+      numberOfRows:3,   
     }
   },
   computed: {
