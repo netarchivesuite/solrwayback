@@ -94,13 +94,13 @@ export default {
       this.$router.history.current.query.grouping === 'true' ? this.updateSolrSettingGrouping(true) : null
       this.$router.history.current.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : null
       this.$router.history.current.query.urlSearch === 'true' ? this.updateSolrSettingUrlSearch(true) : null
-      if(this.solrSettings.imgSearch === true) {
+      if(this.solrSettings.imgSearch) {
           console.log('firing image search')
            this.requestImageSearch({query:this.query})
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
           return
         }
-        if(this.solrSettings.urlSearch === true) {
+        else if(this.solrSettings.urlSearch) {
           console.log('fireing url search')
           return
         }
@@ -140,12 +140,12 @@ export default {
         this.futureGrouped = this.solrSettings.grouping
         this.futureUrlSearch = this.solrSettings.urlSearch
         this.futureImgSearch = this.solrSettings.imgSearch
-        if(this.solrSettings.imgSearch === true) {
+        if(this.solrSettings.imgSearch) {
            this.requestImageSearch({query:this.query})
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
           return
         }
-        if(this.solrSettings.urlSearch === true) {
+        else if(this.solrSettings.urlSearch) {
           return
         }
         else {

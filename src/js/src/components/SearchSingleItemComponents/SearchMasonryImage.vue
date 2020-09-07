@@ -6,8 +6,8 @@
     <img 
       loading="lazy"
       :src="result.downloadUrl"
-      @click="toggleFullImage(row + number * rowNumber)">
-    <search-single-item-focus-image v-if="showFullImage === row + number * rowNumber"
+      @click="toggleFullImage(true)">
+    <search-single-item-focus-image v-if="showFullImage === true"
                                     :image="result.downloadUrl"
                                     :index="row + number * rowNumber"
                                     @close-window="closeWindow" />

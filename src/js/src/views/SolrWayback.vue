@@ -2,14 +2,14 @@
   <div class="contentContainer">
     <h1>Solr<span>Wayback</span></h1>
     <search-box />
-    <search-result />
+    <all-search-results />
     <!--<router-link class="aboutLink" to="/about">Om Solrwayback search</router-link> -->
   </div>
 </template>
 
 <script>
  import SearchBox from '../components/SearchBox'
- import SearchResult from '../components/SearchResult'
+ import AllSearchResults from '../components/SearchResults/AllSearchResults'
  import { mapState, mapActions } from 'vuex'
 
 
@@ -17,7 +17,7 @@ export default {
   name: 'SolrWayback',
    components: {
    SearchBox,
-   SearchResult
+   AllSearchResults
   },
   computed: {
     ...mapState({
@@ -45,18 +45,18 @@ export default {
     to.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
     to.query.urlSearch === 'true' ? this.updateSolrSettingUrlSearch(true) :  this.updateSolrSettingUrlSearch(false)
     to.query.facets ? this.updateSearchAppliedFacets(to.query.facets) : this.updateSearchAppliedFacets('')
-    if(this.solrSettings.imgSearch === true) {
-           this.requestImageSearch({query:this.query})
-          return
-        }
-        if(this.solrSettings.urlSearch === true) {
-          return
-        }
-        else {
-          this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-          this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-          return
-        }
+    if(this.solrSettings.imgSearch) {
+      this.requestImageSearch({query:this.query})
+      return
+    }
+    else if(this.solrSettings.urlSearch) {
+      return
+    } 
+    else {
+      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      return
+    }
   } 
 }
 </script>
