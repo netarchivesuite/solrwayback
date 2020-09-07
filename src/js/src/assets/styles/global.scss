@@ -131,3 +131,47 @@ button:focus {
 .fullWidth {
   width:100%;
 }
+
+// Global notifications
+.notifications{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width:100%;
+  
+}
+
+.notification {
+  width: 40%;
+  padding:1rem;
+  margin: auto;
+
+  padding-top: 20px;
+  text-align: center;
+  -webkit-box-shadow: 0px 9px 30px -6px rgba(0,0,0,0.75);
+  -moz-box-shadow: 0px 9px 30px -6px rgba(0,0,0,0.75);
+  box-shadow: 0px 9px 30px -6px rgba(0,0,0,0.75);
+}
+
+.notification.error {
+background-color:red;  
+}
+
+.notification.success {
+  background-color:green;  
+  }
+
+.notification.info {
+  background-color:lavender;  
+  }
+
+ .notificationCloseBtn {
+  background: transparent;
+  border: none;
+  float: right;
+  position: relative;
+  font-size: 125%;
+  top: -20px;
+  left: 20px;
+  cursor: pointer;
+ } 

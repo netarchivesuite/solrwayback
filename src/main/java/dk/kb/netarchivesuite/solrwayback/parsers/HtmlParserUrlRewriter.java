@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
 // TODO: Support https://www.w3schools.com/TAGs/tag_base.asp
@@ -133,7 +134,7 @@ public class HtmlParserUrlRewriter {
 		final long startMS = System.currentTimeMillis();
 		return replaceLinks(
 				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getCrawlDate(),
-				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp),
+				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFewFields(urls, timeStamp),
 				startMS);
 	}
 
@@ -166,12 +167,12 @@ public class HtmlParserUrlRewriter {
 		log.debug("#unique urlset to resolve for arc-url '" + url + "' :" + urlSet.size());
 
 		long resolveMS = -System.currentTimeMillis();
-		List<IndexDoc> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
+		List<IndexDocShort> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
 		resolveMS += System.currentTimeMillis();
 
 		// Rewriting to url_norm, so it can be matched when replacing.
-		final Map<String, IndexDoc> urlReplaceMap = new CountingMap<>();
-		for (IndexDoc indexDoc: docs){
+		final Map<String, IndexDocShort> urlReplaceMap = new CountingMap<>();
+		for (IndexDocShort indexDoc: docs){
 			urlReplaceMap.put(indexDoc.getUrl_norm(), indexDoc);
 		}
 
@@ -245,7 +246,7 @@ public class HtmlParserUrlRewriter {
 	}
 
 	private static void rewriteInlineScripts(
-			Document doc, String crawlDate, Map<String, IndexDoc> urlReplaceMap,
+			Document doc, String crawlDate, Map<String, IndexDocShort> urlReplaceMap,
 			AtomicInteger numberOfLinksReplaced, AtomicInteger numberOfLinksNotFound) {
 		processElement(doc, "script", null, (content) -> {
 			try {
@@ -272,12 +273,12 @@ public class HtmlParserUrlRewriter {
 	 * @return an URL to an archived version of the resource that the URL designates or a {@code notfound} URL.
 	 */
 	private static UnaryOperator<String> createTransformer(
-            Map<String, IndexDoc> urlReplaceMap, String type, String extraParams,
+            Map<String, IndexDocShort> urlReplaceMap, String type, String extraParams,
             AtomicInteger numberOfLinksReplaced, AtomicInteger numberOfLinksNotFound) {
         return (String sourceURL) -> {
                 sourceURL =  sourceURL.replace("/../", "/");
     
-                IndexDoc indexDoc = urlReplaceMap.get(Normalisation.canonicaliseURL(sourceURL));
+                IndexDocShort indexDoc = urlReplaceMap.get(Normalisation.canonicaliseURL(sourceURL));
                 if (indexDoc != null){
                     numberOfLinksReplaced.getAndIncrement();
                     return PropertiesLoader.WAYBACK_BASEURL + "services/" + type +
@@ -353,10 +354,10 @@ public class HtmlParserUrlRewriter {
            
       log.info("#unique urlset to resolve:"+urlSet.size());
 
-      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
+      ArrayList<IndexDocShort> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFewFields(urlSet,arc.getCrawlDate());
 
       StringBuffer buf = new StringBuffer();
-      for (IndexDoc indexDoc: docs){
+      for (IndexDocShort indexDoc: docs){
           buf.append("<part>\n");        
           buf.append("urn:pwid:"+collectionName+":"+indexDoc.getCrawlDate()+":part:"+indexDoc.getUrl() +"\n");
           buf.append("</part>\n");
@@ -393,7 +394,7 @@ public class HtmlParserUrlRewriter {
 		 * @return  IndexDocs for the located URLs containing at least
 		 *          {@code url_norm, url, source_file, source_file_offset} for each document.
 		 */
-		List<IndexDoc> findNearestHarvestTime(Collection<String> urls, String isoTime) throws Exception;
+		List<IndexDocShort> findNearestHarvestTime(Collection<String> urls, String isoTime) throws Exception;
 	}
 
 

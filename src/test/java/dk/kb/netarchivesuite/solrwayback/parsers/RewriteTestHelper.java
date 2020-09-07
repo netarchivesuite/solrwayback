@@ -14,7 +14,8 @@
  */
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
+
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 
@@ -51,12 +52,12 @@ public class RewriteTestHelper {
     }
 
     // Fake url_norm, url, source_file, source_file_offset
-    private static IndexDoc makeIndexDoc(String url, String timeStamp, AtomicLong counter) {
+    private static IndexDocShort makeIndexDoc(String url, String timeStamp, AtomicLong counter) {
         if (!url.startsWith("http")) {
             log.warn("mockResolver is skipping '" + url + "' as it does not start with 'http'");
             return null;
         }
-        IndexDoc doc = new IndexDoc();
+        IndexDocShort doc = new IndexDocShort();
         doc.setUrl(url);
         doc.setUrl_norm(Normalisation.canonicaliseURL(url));
         doc.setSource_file_path("somesourcefile");

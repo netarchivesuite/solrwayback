@@ -1,5 +1,6 @@
 <template>
   <div class="contentContainer">
+    <notifications />
     <h1>Solr<span>Wayback</span></h1>
     <search-box />
     <all-search-results />
@@ -10,14 +11,15 @@
 <script>
  import SearchBox from '../components/SearchBox'
  import AllSearchResults from '../components/SearchResults/AllSearchResults'
+ import Notifications from '../components/notifications/Notifications'
  import { mapState, mapActions } from 'vuex'
-
 
 export default {
   name: 'SolrWayback',
    components: {
    SearchBox,
-   AllSearchResults
+   AllSearchResults,
+   Notifications
   },
   computed: {
     ...mapState({

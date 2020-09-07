@@ -17,6 +17,7 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.CountingMap;
 import dk.kb.netarchivesuite.solrwayback.util.RegexpReplacer;
@@ -107,7 +108,7 @@ public abstract class RewriterBase {
    		parseResult.addTiming("getContent", System.currentTimeMillis()-startgetContentMS);
 
 		replaceLinks(
-				content, arc.getUrl(), arc.getCrawlDate(), (urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urls, timeStamp), parseResult, packaging
+				content, arc.getUrl(), arc.getCrawlDate(), (urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFewFields(urls, timeStamp), parseResult, packaging
 		);
 		log.info(String.format(
 				"replaceLinks.%s(<arc-entry of length %d bytes>, packaging=%s, base='%s', date=%s) completed: %s",
@@ -179,12 +180,12 @@ public abstract class RewriterBase {
 			ParseResult parseResult, Set<String> urlSet, PACKAGING packaging) throws Exception {
 
 		long resolveStartMS = System.currentTimeMillis();
-		List<IndexDoc> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
+		List<IndexDocShort> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
 		parseResult.addTiming("findNearest", System.currentTimeMillis()-resolveStartMS);
 
 		// We keep track of whether a link resolves or not, so only call get once per URL!
-		final CountingMap<String, IndexDoc> countingUrlReplaceMap = new CountingMap<>();
-		for (IndexDoc indexDoc: docs){
+		final CountingMap<String, IndexDocShort> countingUrlReplaceMap = new CountingMap<>();
+		for (IndexDocShort indexDoc: docs){
 			countingUrlReplaceMap.put(indexDoc.getUrl_norm(), indexDoc);
 		}
 
@@ -208,12 +209,12 @@ public abstract class RewriterBase {
 	 * @throws Exception generic Exception.
 	 */
 	public ParseResult replaceLinks(
-			String content, String baseURL, String crawlDate, Map<String, IndexDoc> urlMap, PACKAGING packaging)
+			String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap, PACKAGING packaging)
 			throws Exception {
 
-		CountingMap<String, IndexDoc> countingMap = null;
+		CountingMap<String, IndexDocShort> countingMap = null;
 		if (urlMap instanceof CountingMap) {
-			countingMap = (CountingMap<String, IndexDoc>) urlMap;
+			countingMap = (CountingMap<String, IndexDocShort>) urlMap;
 		} else {
 			countingMap = new CountingMap<>();
 			countingMap.putAll(urlMap);
@@ -272,7 +273,7 @@ public abstract class RewriterBase {
 	 * @throws Exception generic Exception.
 	 */
 	protected abstract String replaceLinks(
-			String content, String baseURL, String crawlDate, Map<String, IndexDoc> urlMap) throws Exception;
+			String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap) throws Exception;
 
 	/**
 	 * Generic transformer creator that absolutes & normalises the incoming URL and return a link to an archived
@@ -286,14 +287,14 @@ public abstract class RewriterBase {
 	 */
 	public static UnaryOperator<String> createURLTransformer(
 			String baseURL, boolean normalise, SOLRWAYBACK_SERVICE service, String extraParams,
-			Map<String, IndexDoc> urlReplaceMap) {
+			Map<String, IndexDocShort> urlReplaceMap) {
 		final URLAbsoluter absoluter = new URLAbsoluter(baseURL, normalise);
         return (String sourceURL) -> {
         	if ((sourceURL = absoluter.apply(sourceURL)) == null) {
 				return null;
 			}
 
-			IndexDoc indexDoc = urlReplaceMap.get(sourceURL);
+			IndexDocShort indexDoc = urlReplaceMap.get(sourceURL);
 			if (indexDoc != null){
 				return PropertiesLoader.WAYBACK_BASEURL + "services/" + service +
 					   "?source_file_path=" + indexDoc.getSource_file_path() +

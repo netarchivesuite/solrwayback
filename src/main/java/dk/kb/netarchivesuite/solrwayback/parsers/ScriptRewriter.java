@@ -14,7 +14,8 @@
  */
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
+
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 
@@ -50,7 +51,7 @@ public class ScriptRewriter extends RewriterBase {
 	}
 
 	@Override
-	protected String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDoc> urlMap) {
+	protected String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap) {
 		UnaryOperator<String> rawURLTransformer =
 				createURLTransformer(baseURL, true, SOLRWAYBACK_SERVICE.downloadRaw, null, urlMap);
 		UnaryOperator<String> rawProcessor = createProcessorChain(rawURLTransformer);
