@@ -36,6 +36,7 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -51,7 +52,8 @@ public class NetarchiveSolrClient {
   protected  static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+"); 
 
   protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_full,content_type_norm,hash,type,crawl_date,content_encoding,exif_location,status_code,last_modified,redirect_to_norm";
-
+  protected static String indexDocFieldListShort = "url,url_norm,source_file_path,source_file,source_file_offset,crawl_date";
+  
   protected NetarchiveSolrClient() { // private. Singleton
   }
 
@@ -534,7 +536,8 @@ public class NetarchiveSolrClient {
   }
   
   
-  public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrls(Collection<String> urls, String timeStamp) throws Exception{
+  
+  public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrlsFullFields(Collection<String> urls, String timeStamp) throws Exception{
     ArrayList<IndexDoc>  allDocs = new ArrayList<IndexDoc>();
     Iterable<List<String>> splitSets = Iterables.partition(urls, 1000); //split into sets of size max 1000;
     for (List<String> set : splitSets){
@@ -545,7 +548,33 @@ public class NetarchiveSolrClient {
     }               
     return allDocs;         
 }
+  
+  public ArrayList<IndexDocShort> findNearestHarvestTimeForMultipleUrlsFewFields(Collection<String> urls, String timeStamp) throws Exception{
+    ArrayList<IndexDocShort>  allDocs = new ArrayList<IndexDocShort>();
+    Iterable<List<String>> splitSets = Iterables.partition(urls, 1000); //split into sets of size max 1000;
+    for (List<String> set : splitSets){
+      HashSet<String> urlPartSet = new  HashSet<String>();
+      urlPartSet.addAll(set);
+      List<IndexDocShort> partIndexDocs= findNearestHarvestTimeForMultipleUrlsMax1000Short(urlPartSet, timeStamp);
+      allDocs.addAll(partIndexDocs);
+    }               
+    return allDocs;         
+}
 
+  
+  private List<IndexDocShort> findNearestHarvestTimeForMultipleUrlsMax1000Short(HashSet<String> urls, String timeStamp) throws Exception{
+    SolrDocumentList docs = findNearestDocuments(urls, timeStamp, indexDocFieldListShort);
+
+    ArrayList<IndexDocShort>  allDocs = new ArrayList<IndexDocShort>(docs.size());
+    for (SolrDocument current:docs){
+      IndexDocShort groupDoc = solrDocument2IndexDocShort(current);
+      allDocs.add(groupDoc);                             
+    }                    
+
+    return allDocs;
+  }
+
+  
   private List<IndexDoc> findNearestHarvestTimeForMultipleUrlsMax1000(HashSet<String> urls, String timeStamp) throws Exception{
     SolrDocumentList docs = findNearestDocuments(urls, timeStamp, indexDocFieldList);
 
@@ -1116,6 +1145,19 @@ public class NetarchiveSolrClient {
     return indexDoc;
   }
 
+  
+  private static IndexDocShort solrDocument2IndexDocShort(SolrDocument doc) {
+    IndexDocShort indexDoc = new IndexDocShort();
+
+    indexDoc.setUrl((String) doc.get("url"));
+    indexDoc.setUrl_norm((String) doc.get("url_norm"));
+    indexDoc.setOffset(getOffset(doc));
+    indexDoc.setSource_file_path((String) doc.get("source_file_path"));
+    Date date = (Date) doc.get("crawl_date");    
+    indexDoc.setCrawlDate(DateUtils.getSolrDate(date));
+    return indexDoc;
+  }
+  
   //TO, remove method and inline 
   public static long getOffset(SolrDocument doc){
     return  (Long) doc.get("source_file_offset");

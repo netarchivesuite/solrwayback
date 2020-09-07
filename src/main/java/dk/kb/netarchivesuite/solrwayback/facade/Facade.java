@@ -539,7 +539,7 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
                                                         
       HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);      
       
-      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(resources,arc.getCrawlDate());
+      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFullFields(resources,arc.getCrawlDate());
           
       for(IndexDoc doc : docs){ //These are the resources found        
         String docUrl = doc.getUrl_norm();                  
