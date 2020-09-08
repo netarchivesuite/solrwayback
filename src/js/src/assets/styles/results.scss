@@ -583,6 +583,7 @@
   border-bottom:2px solid transparent;
   color:white;
   border:2px solid var(--main-highlight-color);
+  float: right;
 }
 
 .exportButton:hover {
@@ -607,6 +608,7 @@
   border-bottom:1px solid transparent;
   border-right:1px solid transparent;
   padding-bottom:15px;
+  z-index: 1;
 }
 
 .downloadSearchResultDropdown:hover {
@@ -619,4 +621,5 @@
 
 .downloadSearchResultDropdown:hover .exportButton {
   background-color: var(--main-highlight-color);
+  z-index:1;
 }
