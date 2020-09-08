@@ -98,18 +98,15 @@ export default {
           console.log('firing image search')
            this.requestImageSearch({query:this.query})
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-          return
         }
         else if(this.solrSettings.urlSearch) {
           console.log('fireing url search')
-          return
         }
         else {
           console.log('firing normal search')
           this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
           this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
           this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-          return
         }
       }
   },
