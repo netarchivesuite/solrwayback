@@ -94,14 +94,27 @@ export default {
       this.$router.history.current.query.grouping === 'true' ? this.updateSolrSettingGrouping(true) : null
       this.$router.history.current.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : null
       this.$router.history.current.query.urlSearch === 'true' ? this.updateSolrSettingUrlSearch(true) : null
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      if(this.solrSettings.imgSearch) {
+          console.log('firing image search')
+           this.requestImageSearch({query:this.query})
+           this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+        }
+        else if(this.solrSettings.urlSearch) {
+          console.log('fireing url search')
+        }
+        else {
+          console.log('firing normal search')
+          this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
+          this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
+          this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+        }
       }
   },
   
   methods: {
     ...mapActions('Search', {
       requestSearch: 'requestSearch',
+      requestImageSearch: 'requestImageSearch',
       requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
       clearResults: 'clearResults',
@@ -118,14 +131,26 @@ export default {
           this.futureUrlSearch !== this.solrSettings.urlSearch ||
           this.futureImgSearch !== this.solrSettings.imgSearch) 
         {
-        console.log('search fired!')
+        //console.log('search params changed!')
+        this.clearResults()
         this.updateQuery(this.futureQuery)
         this.futureGrouped = this.solrSettings.grouping
         this.futureUrlSearch = this.solrSettings.urlSearch
         this.futureImgSearch = this.solrSettings.imgSearch
-        this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-        this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-        this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+        if(this.solrSettings.imgSearch) {
+           this.requestImageSearch({query:this.query})
+           this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+          return
+        }
+        else if(this.solrSettings.urlSearch) {
+          return
+        }
+        else {
+          this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
+          this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
+          this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+          return
+        }
       }
     },
     selectSearchMethod(selected) {
