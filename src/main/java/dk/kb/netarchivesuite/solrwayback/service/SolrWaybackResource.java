@@ -179,16 +179,7 @@ public class SolrWaybackResource {
     }
   }
    
-  @GET
-  @Path("/harvestDates")
-  @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-  public HarvestDates harvestDates(@QueryParam("url") String url) throws SolrWaybackServiceException {
-    try {                    
-      return Facade.getHarvestTimesForUrl(url);
-    } catch (Exception e) {           
-      throw handleServiceExceptions(e);
-    }
-  }
+  
 
   @GET
   @Path("/pagepreviews")

@@ -31,6 +31,7 @@ import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
+import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
@@ -115,6 +116,17 @@ public class SolrWaybackResourceWeb {
       return b.toString();
     }
     
+    
+    @GET
+    @Path("/harvestDates")
+    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    public HarvestDates harvestDates(@QueryParam("url") String url) throws SolrWaybackServiceException {
+      try {                    
+        return Facade.getHarvestTimesForUrl(url);
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
     
     @GET
     @Path("/images/search")
