@@ -6,8 +6,8 @@ export const requestService = {
   fireFacetRequest,
   fireLookupRequest,
   fireImagesRequest,
-  uploadFileRequest
-
+  uploadFileRequest,
+  fireImageSearchRequest,
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -25,6 +25,24 @@ function fireSearchRequest (query, facets, options) {
           else {
             returnObj = dataTransformationHelper.transformGroupedSearchResponse(returnObj)
           }
+          return returnObj
+        }
+      ]}).then(returnObj => {
+    return returnObj.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function fireImageSearchRequest(query) {
+  // Split url and move to config
+  const url = 'services/frontend/images/search/' + `?query=${query}`
+  return axios.get(
+    url, {
+      transformResponse: [
+        function(response) {
+          let returnObj = JSON.parse(response)
+          returnObj = dataTransformationHelper.transformImageResponse(returnObj)
           return returnObj
         }
       ]}).then(returnObj => {

@@ -52,6 +52,13 @@ const actions = {
       .then(result => commit('doSearchSuccess', result), error =>
         commit('doSearchError', error))
   },
+  requestImageSearch ({ commit }, params) {
+    commit('setLoadingStatus',true)
+    requestService
+      .fireImageSearchRequest(params.query)
+      .then(result => commit('doImageSearchSuccess', result), error =>
+        commit('doImageSearchError', error))
+  },
   requestFacets({commit}, params) {
     commit('setFacetLoadingStatus')
     requestService
@@ -94,6 +101,13 @@ const mutations = {
     state.loading = false
   },
   doSearchError(state, message) {
+    state.error = message
+  },
+  doImageSearchSuccess(state, result) {
+    state.results = result.response
+    state.loading = false
+  },
+  doImageSearchError(state, message) {
     state.error = message
   },
   setLoadingStatus(state, status) {
