@@ -5,6 +5,17 @@
     </div>
     <div class="resultContainer">
       <h2>Results</h2>
+      <div class="downloadSearchResultDropdown">
+        <div class="downloadSearchResultButton">
+          See export options
+        </div>
+        <button class="exportButton" @click="exportToWARC">
+          WARC export
+        </button>
+        <button class="exportButton" @click="exportToCSV">
+          CSV export
+        </button>
+      </div>
       <span v-if="!results.cardinality">
         <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span>  - <span class="highlightText">{{ solrSettings.offset + 20 > results.numFound ? results.numFound : solrSettings.offset + 20 }}</span> of </span>
         <span class="highlightText">{{ results.numFound.toLocaleString("en") }}</span> entries matching <span class="highlightText">{{ query }}. </span>
@@ -89,6 +100,13 @@ export default {
         case 'Twitter Tweet': return 'SearchSingleItemTweet'
         default: return 'SearchSingleItemDefault'
       }
+    },
+    exportToWARC() {
+      console.log('warc export!')
+
+    },
+    exportToCSV() {
+      console.log('csv export!')
     }
   }
 }
