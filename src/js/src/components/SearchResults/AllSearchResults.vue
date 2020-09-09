@@ -4,17 +4,7 @@
       <search-facet-options />
     </div>
     <div class="resultContainer">
-      <div class="downloadSearchResultDropdown">
-        <div class="downloadSearchResultButton">
-          See export options
-        </div>
-        <button class="exportButton" @click="exportToWARC">
-          WARC export
-        </button>
-        <button class="exportButton" @click="exportToCSV">
-          CSV export
-        </button>
-      </div>
+      <search-result-export v-if="configs" />
       <h2>Results</h2>
       <!-- HERE COMES RESULTS // Figure out if this should be splitted out into a new component -->
       <post-search-results v-if="results.searchType === 'post'" />
@@ -31,19 +21,22 @@ import SearchFacetOptions from './../SearchFacetOptions.vue'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
 import ImageSearchResults from './ImageSearchResults'
 import PostSearchResults from './PostSearchResults'
-
+import SearchResultExport from './SearchResultExport'
+import configs from '../../configs'
 
 export default {
   name: 'AllSearchResults',
   components: {
     SearchFacetOptions,
     ImageSearchResults,
-    PostSearchResults
+    PostSearchResults,
+    SearchResultExport
   },
   mixins: [HistoryRoutingUtils],
   data () {
     return {  
       numberOfRows:3,   
+      configs:configs
     }
   },
   computed: {
@@ -53,6 +46,9 @@ export default {
       results: state => state.Search.results,
       solrSettings: state => state.Search.solrSettings
     }),
+  },
+  mounted () {
+    console.log(configs, 'HETE')
   },
   methods: {
     ...mapActions('Search', {
@@ -80,13 +76,6 @@ export default {
         default: return 'SearchSingleItemDefault'
       }
     },
-    exportToWARC() {
-      console.log('warc export!')
-
-    },
-    exportToCSV() {
-      console.log('csv export!')
-    }
   }
 }
 </script>
