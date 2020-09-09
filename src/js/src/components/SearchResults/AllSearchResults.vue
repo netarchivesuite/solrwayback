@@ -47,9 +47,6 @@ export default {
       solrSettings: state => state.Search.solrSettings
     }),
   },
-  mounted () {
-    console.log(configs, 'HETE')
-  },
   methods: {
     ...mapActions('Search', {
       requestSearch: 'requestSearch',

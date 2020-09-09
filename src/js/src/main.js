@@ -16,7 +16,6 @@ Axios.get('services/frontend/properties/solrwaybackweb/')
         configs.exportOptions.warcAllowed = response.data['allow.export.warc']
         configs.exportOptions.csvAllowed = response.data['allow.export.csv']
         configs.exportOptions.csvFields = response.data['export.csv.fields']
-        console.log(response)
         initializeVue()
     })
     .catch(error => initializeVue())
