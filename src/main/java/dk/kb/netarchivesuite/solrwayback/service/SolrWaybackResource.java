@@ -179,16 +179,7 @@ public class SolrWaybackResource {
     }
   }
    
-  @GET
-  @Path("/harvestDates")
-  @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-  public HarvestDates harvestDates(@QueryParam("url") String url) throws SolrWaybackServiceException {
-    try {                    
-      return Facade.getHarvestTimesForUrl(url);
-    } catch (Exception e) {           
-      throw handleServiceExceptions(e);
-    }
-  }
+  
 
   @GET
   @Path("/pagepreviews")
@@ -454,7 +445,7 @@ public class SolrWaybackResource {
  
 
   @GET
-  @Path("/export/cvs")    
+  @Path("/export/csv")    
   public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq,@QueryParam("fields") String fields) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
       throw new InvalidArgumentServiceException("Export to csv not allowed!");
