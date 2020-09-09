@@ -48,7 +48,7 @@ module.exports = {
         changeOrigin: true
       },
     '^/services/export/csv/': {
-        target: 'http://localhost:8080/solrwayback/services/export/cvs',
+        target: 'http://localhost:8080/solrwayback/services/export/csv',
         pathRewrite: { '^/services/export/csv/': '' },
         changeOrigin: true
       },
