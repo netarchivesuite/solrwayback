@@ -445,7 +445,7 @@ public class SolrWaybackResource {
  
 
   @GET
-  @Path("/export/cvs")    
+  @Path("/export/csv")    
   public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq,@QueryParam("fields") String fields) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
       throw new InvalidArgumentServiceException("Export to csv not allowed!");
