@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
@@ -80,6 +81,14 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
      IndexDoc doc = NetarchiveSolrClient.getInstance().findExactMatchPWID(url, utc);
      return doc;    
 }
+
+
+
+public static String generateDomainResultGraph(@QueryParam("q") String q, @QueryParam("fq") List<String> fq ) throws Exception {   
+     HashMap<Integer, List<FacetCount>> domainStatisticsForQuery = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq);    
+     String matrix = generateDomainQueryStatisticsString(domainStatisticsForQuery);     
+     return matrix;              
+}
     
     public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {        
         SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types                        
@@ -98,6 +107,8 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
       return stats;            
     }
         
+    
+    
         
     public static  ArrayList<ImageUrl> imagesLocationSearch(String searchText,String filter, String results, double latitude, double longitude, double radius, String sort) throws Exception {
       int resultInt=500;
@@ -835,7 +846,69 @@ public static String proxyBackendResources(String source_file_path, String offse
     long seconds = TimeUnit.MILLISECONDS.toSeconds(millis); 
     return sign+seconds +" seconds";    
   }
-   
+  
+  
+  /*
+   * TODO specify format
+   * 
+   */
+  
+  private static String generateDomainQueryStatisticsString(HashMap<Integer, List<FacetCount>> domainStatisticsForQuery) {
+      
+      StringBuilder matrix = new StringBuilder();
+      
+      //Logic to create to matrix.
+      TreeSet<String> allValues = new TreeSet<String>(); //will be sorted 
+      for (int year : domainStatisticsForQuery.keySet()){                
+          List<FacetCount> list = domainStatisticsForQuery.get(year);
+          for ( FacetCount facetCount : list) {
+             allValues.add(facetCount.getValue());                       
+          }
+      }            
+      
+      //Create header
+      StringJoiner joiner = new StringJoiner(",");
+      joiner.add("State"); //part of format
+      for (String value: allValues) {
+          joiner.add(value);
+      }           
+      String header = joiner.toString(); 
+      matrix.append(header+"\n\n"); //Double line break
+            
+            
+      //Iterate over years and generate each line
+      TreeSet<Integer> yearsSorted = new TreeSet<Integer>();
+      yearsSorted.addAll(domainStatisticsForQuery.keySet());
+      
+      for (int year : yearsSorted) {
+          joiner = new StringJoiner(",");
+          joiner.add(""+year);    
+          
+          List<FacetCount> yearValues = domainStatisticsForQuery.get(year);
+          HashMap<String, Long> valuesMap = new HashMap<String,Long>(); //Make map since we need them in order from header.
+          for (FacetCount f: yearValues) {
+              valuesMap.put(f.getValue(),f.getCount()); 
+          }
+          
+          for (String value : allValues) {
+              Long count = valuesMap.get(value);
+              if (count == null) {
+                 joiner.add("0");
+              }
+              else {
+                  joiner.add(""+count);
+              }              
+          }
+          
+          String line = joiner.toString();
+          matrix.append(line+"\n");
+                    
+          
+      }     
+  return matrix.toString();
+      
+  }
+  
   
   //takes the wayback_base url and create the proxy url
   // http://localhost:8080/solrwayback/ -> socks4://localhost:9000 

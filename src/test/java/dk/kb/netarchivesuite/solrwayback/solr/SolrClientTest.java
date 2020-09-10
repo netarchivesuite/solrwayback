@@ -4,17 +4,26 @@ import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
+import java.util.TreeSet;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
+import org.apache.solr.client.solrj.response.Group;
+import org.apache.solr.client.solrj.response.GroupCommand;
 import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -35,7 +44,9 @@ public class SolrClientTest {
   // Just an easy class to test methods in  NetarchiveSolrClient class.
   
   public static void main (String[] args) throws Exception{
-    PropertiesLoader.initProperties();
+    
+
+      NetarchiveSolrClient.initialize("http://localhost:8983/solr/netarchivebuilder/");
 
     /*
 	        String dateSolr ="2015-09-17T17:02:03Z";
@@ -57,7 +68,8 @@ public class SolrClientTest {
     //testSolrDate();
     //   testHarvestPreviewsForUrl();
     //domainStatistics();
-    testGroup();
+    testDomainStatisticsForQuery();
+    //testGroup();
   }
 
   public static void testWaybackStats() throws Exception{
@@ -143,6 +155,82 @@ public class SolrClientTest {
   }
 
 
+  public static void testDomainStatisticsForQuery() throws Exception{
+      NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();      
+      List<String> filters = new ArrayList<String>();
+       HashMap<Integer, List<FacetCount>> domainStatisticsForQuery = solr.domainStatisticsForQuery("politik",filters);      
+      for (int year : domainStatisticsForQuery.keySet()){
+        System.out.println(year);
+        
+        List<FacetCount> list = domainStatisticsForQuery.get(year);
+        for ( FacetCount facetCount : list) {
+            System.out.println("   "+facetCount.getValue() +":"+facetCount.getCount());                       
+        }               
+      }
+  
+  
+     //Logic to create to matrix.
+      TreeSet<String> allValues = new TreeSet<String>(); //will be sorted 
+      for (int year : domainStatisticsForQuery.keySet()){                
+          List<FacetCount> list = domainStatisticsForQuery.get(year);
+          for ( FacetCount facetCount : list) {
+             allValues.add(facetCount.getValue());                       
+          }
+      }            
+      
+      //Create header
+      StringJoiner joiner = new StringJoiner(",");
+      joiner.add("state"); //part of format
+      for (String value: allValues) {
+          joiner.add(value);
+      }           
+      String header = joiner.toString(); 
+      System.out.println(header);
+      
+            
+      //Iterate over years and generate each line
+      HashSet<Integer> yearsSorted = new HashSet<Integer>();
+      yearsSorted.addAll(domainStatisticsForQuery.keySet());
+      
+      for (int year : yearsSorted) {
+          joiner = new StringJoiner(",");
+          joiner.add(""+year);    
+          
+          List<FacetCount> yearValues = domainStatisticsForQuery.get(year);
+          HashMap<String, Long> valuesMap = new HashMap<String,Long>(); //Make map since we need them in order from header.
+          for (FacetCount f: yearValues) {
+              valuesMap.put(f.getValue(),f.getCount()); 
+          }
+          
+          for (String value : allValues) {
+              Long count = valuesMap.get(value);
+              if (count == null) {
+                 joiner.add("0");
+              }
+              else {
+                  joiner.add(""+count);
+              }              
+          }
+          
+          String line = joiner.toString();
+          System.out.println(line);
+          
+          
+          
+          
+          
+      }
+      
+      
+      
+      
+      
+  
+  
+  
+  }
+  
+  
   public static void testImagesLocationSearch() throws Exception{
 
     NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();//pt=56.431,9.431&d=500
@@ -248,17 +336,19 @@ public class SolrClientTest {
     System.out.println("querytime:"+(System.currentTimeMillis()-start));     
 
 
-
-
   }
 
+  
+
+  
+  
   public static void domainStatistics() throws Exception{
     int maxRows = 20000;// it is faster than grouping to extract all
-    String domain ="eb.dk";
+    String domain ="ekot.dk";
     HttpSolrClient solrServer;
     NetarchiveSolrClient instance = null;
 
-    solrServer =  new HttpSolrClient.Builder("http://belinda:8983/solr/netarchivebuilder").build();
+    solrServer =  new HttpSolrClient.Builder("http://localhost:8983/solr/netarchivebuilder").build();
 
     //solrServer.setRequestWriter(new BinaryRequestWriter());
 
@@ -267,7 +357,7 @@ public class SolrClientTest {
     solrQuery.setQuery(searchString); 
     solrQuery.set("facet", "false"); 
     solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
-    solrQuery.addFilterQuery("crawl_year:2011");            
+    solrQuery.addFilterQuery("crawl_year:2020");            
     solrQuery.setRows(0);
     solrQuery.add("fl","id");
     solrQuery.add("stats","true");

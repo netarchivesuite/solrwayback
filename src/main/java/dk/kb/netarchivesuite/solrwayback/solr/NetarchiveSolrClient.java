@@ -16,12 +16,6 @@ import org.apache.solr.client.solrj.impl.NoOpResponseParser;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.*;
 import org.apache.solr.client.solrj.response.FacetField.Count;
-
-import org.apache.solr.client.solrj.response.FieldStatsInfo;
-import org.apache.solr.client.solrj.response.Group;
-import org.apache.solr.client.solrj.response.GroupCommand;
-import org.apache.solr.client.solrj.response.QueryResponse;
-
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.util.NamedList;
@@ -1090,6 +1084,49 @@ public class NetarchiveSolrClient {
   }
 
 
+  //Maybe do facet for each year in 1 query ? TODO TOKE
+  //Will return hashmap with year as key, and then the domains with count. (domain, count)
+  
+  public HashMap<Integer,List<FacetCount>> domainStatisticsForQuery(String query, List<String> fq) throws Exception{
+
+      
+      HashMap<Integer,List<FacetCount>> yearFacetDomainCountMap = new HashMap<Integer,List<FacetCount>>();
+      
+      //Hard coded, not required if Toke fixes. Else do lookup first to find lastest+newest. 
+      int startYear=1998;
+      int endYear=2020; 
+      
+      for (int year=startYear;year<=endYear;year++) {
+       SolrQuery solrQuery = new SolrQuery();
+                 
+     solrQuery.setQuery(query);        
+     solrQuery.set("facet", "true");
+     solrQuery.set("facet.field", "domain");
+     solrQuery.set("facet.limit", "10");
+     solrQuery.setRows(0);
+                     
+     for (String filter : fq) {
+         solrQuery.addFilterQuery(filter);    
+     }
+     solrQuery.addFilterQuery("crawl_year:"+year); //probably already in filter cache.                  
+
+     QueryResponse rsp = solrServer.query(solrQuery);  
+     FacetField domainFacet = rsp.getFacetField("domain");
+
+     List<Count> values = domainFacet.getValues();
+     List<FacetCount> facetList = new ArrayList<FacetCount>();
+     for (Count facet : values) {
+         FacetCount count = new FacetCount();
+         count.setValue(facet.getName());
+         count.setCount(facet.getCount());;
+         facetList.add(count);        
+       }      
+     yearFacetDomainCountMap.put(year, facetList);
+    }
+     
+    return yearFacetDomainCountMap;
+  }
+  
 
   private static ArrayList<IndexDoc> solrDocList2IndexDoc(SolrDocumentList docs) {
     ArrayList<IndexDoc> earchives = new ArrayList<IndexDoc>();
