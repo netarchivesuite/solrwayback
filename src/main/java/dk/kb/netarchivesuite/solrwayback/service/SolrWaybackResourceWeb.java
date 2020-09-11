@@ -58,7 +58,15 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("graph/domain_result")
     @Produces({ MediaType.TEXT_PLAIN})
-    public String domainGraph(@QueryParam("q") String q) throws SolrWaybackServiceException {
+    public String domainResultGraph(@QueryParam("q") String q, @QueryParam("fq") List<String> fq ) throws SolrWaybackServiceException {
+
+     try {
+       return Facade.generateDomainResultGraph(q,fq);
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }    
+        
+        /*
         StringBuilder b = new StringBuilder();
        b.append("State,education.alberta.ca,ubiqcomputing.org,www.ubiqcomputing.org,www.education.alberta.ca,www.pdfonline.com,mediasmarts.ca,www.youtube.com,www.oecd.org,m.pdfonline.com,www.education.gov.ab.ca,www.lrc.education.gov.ab.ca,tradesecrets.alberta.ca,eae.alberta.ca,studyinalberta.ca,alberta.ca,ideas.education.alberta.ca,www.easypdfcloud.com,www.netera.ca,www.industrymailout.com,alis.alberta.ca,other"+"\n");           
        b.append("\n"); 
@@ -113,7 +121,9 @@ public class SolrWaybackResourceWeb {
       b.append("2024,2,0,0,0,309,0,85,0,212,0,0,0,0,0,0,0,2,0,0,0,46");
       b.append("\n");
 
-      return b.toString();
+*/
+
+     
     }
     
     
