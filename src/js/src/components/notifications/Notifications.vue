@@ -2,6 +2,7 @@
   <div class="notifications">
     <notification-item v-for="(notification, index) in notifications" 
                        :key="index"
+                       :current="index + 1 === notifications.length"
                        :notification="notification" 
                        @dismiss-notification="doDismissNotification" />
   </div>
