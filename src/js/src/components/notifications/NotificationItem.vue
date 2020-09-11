@@ -1,14 +1,15 @@
 <template>
   <div class="notification"
-       :class="notification.type">
+       :class="current === true ? notification.type : notification.type + ' collapsed'">
     <button class="notificationCloseBtn"
             type="button"
             @click="doDismiss(notification)">
-      X
+      ✕
     </button>
     <h2 v-if="notification.title">
       {{ notification.title }}
     </h2>
+    <hr>
     <p>
       {{ notification.text }}
     </p>
@@ -31,6 +32,10 @@ export default {
             'text' in obj
       }
     },
+    current: {
+      type:Boolean,
+      required:true
+    }
   },
 
   computed: {

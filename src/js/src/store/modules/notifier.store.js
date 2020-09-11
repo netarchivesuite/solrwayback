@@ -24,7 +24,7 @@
   const mutations = {
    
     setNotification(state, notification) {
-      state.notifications.push(notification)
+      state.notifications.unshift(notification)
     },
 
     dismissNotification(state, notification) {
