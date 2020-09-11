@@ -8,11 +8,14 @@ const routes = [
   {
     path: '/',
     name: 'SolrWayback',
-    component: SolrWayback
+    component: SolrWayback,
   },
   {
     path: '/about',
     name: 'About',
+    meta: {
+      title: 'About SolrWayback'
+    },
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
@@ -22,6 +25,9 @@ const routes = [
   {
     path: '/calendar',
     name: 'HarvestCalendar',
+    meta: {
+      title: 'Harvest Calendar'
+    },
     component: () =>
       import(/* webpackChunkName: "harvest-calendar" */ '../views/HarvestCalendar.vue')
   }

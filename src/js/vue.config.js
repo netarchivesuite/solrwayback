@@ -38,9 +38,9 @@ module.exports = {
           changeOrigin: true
       },
 
-   '^/services/frontend/harvestdates/': {
+   '^/services/frontend/harvestDates/': {
           target: 'http://localhost:8080/solrwayback/services/frontend/harvestDates/',
-          pathRewrite: { '^/services/frontend/harvestdates/': '' },
+          pathRewrite: { '^/services/frontend/harvestDates/': '' },
           changeOrigin: true
       }
     }
