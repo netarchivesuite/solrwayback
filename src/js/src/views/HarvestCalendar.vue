@@ -1,5 +1,6 @@
 <template>
   <div>
+    <notifications />
     <div class="harvestCalendarHeading">
       <h1>
         Solr<span>Wayback</span>
@@ -52,12 +53,11 @@
     </div> 
     <!-- TODO implement new spinner function when ready -->           
     <div v-if="!harvestData && !noResults">
-      <div id="spinner">
+      <div>
         <p class="spinnerText">
           Fetching harvests
         </p>
       </div>
-      <div id="overlay" />
     </div>
   </div>     
 </template>
@@ -74,6 +74,8 @@ import {toHumanDate} from '../components/harvestCalendar/util'
 import YearMonthGraph from '../components/harvestCalendar/YearMonthGraph'
 import AllYearsGraph from '../components/harvestCalendar/AllYearsGraph'
 import WeekGraph from '../components/harvestCalendar/WeekGraph'
+import Notifications from '../components/notifications/Notifications'
+import { mapActions } from 'vuex'
 import Vue from 'vue'
 import VTooltip from 'v-tooltip'
 
@@ -85,7 +87,8 @@ export default {
   components: {  
     YearMonthGraph,
     AllYearsGraph,
-    WeekGraph
+    WeekGraph,
+    Notifications
   },
 
   filters: {
@@ -109,6 +112,8 @@ export default {
             currentHarvestUrl: ''
         }
   },
+
+  
   
   mounted () {
     if (this.$route.query.url){
@@ -117,15 +122,26 @@ export default {
      requestService.getHarvestDates(encodeURIComponent(this.$route.query.url))
         .then(data => {
             if (data.dates === undefined || data.dates.length === 0) {
-              console.log(data)
                 this.noResults = true
             } else {
            this.harvestData = groupHarvestDatesByYearAndMonth(data.dates, calculateLinearActivityLevel)
             }
+        }).catch(() => {
+          console.log('error!')
+          this.setNotification({
+          	title: 'We are so sorry!',
+            text: 'Something went wrong when fetching the harvest calendar - please try again',
+            type: 'error',
+            timeout: false
+          })
+          
         })
   },
   
   methods: {
+    ...mapActions('Notifier', {
+      setNotification: 'setNotification'
+    }),
      showYearWeek(year) {
             this.year = year
             this.view = 'year-week'
