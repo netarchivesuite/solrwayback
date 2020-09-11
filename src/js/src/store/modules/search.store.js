@@ -44,21 +44,21 @@ const actions = {
     commit('clearResultsSuccess')
   },
   requestSearch ({ commit }, params) {
-    commit('setLoadingStatus',true)
+    commit('setLoadingStatus', true)
     requestService
       .fireSearchRequest(params.query, params.facets, params.options)
       .then(result => commit('doSearchSuccess', result), error =>
         commit('doSearchError', error))
   },
   requestImageSearch ({ commit }, params) {
-    commit('setLoadingStatus',true)
+    commit('setLoadingStatus', true)
     requestService
       .fireImageSearchRequest(params.query)
       .then(result => commit('doImageSearchSuccess', result), error =>
         commit('doImageSearchError', error))
   },
   requestFacets({commit}, params) {
-    commit('setLoadingStatus')
+    commit('setLoadingStatus', true)
     requestService
       .fireFacetRequest(params.query, params.facets, params.options)
       .then(result => commit('facetRequestSuccess', result), error =>
