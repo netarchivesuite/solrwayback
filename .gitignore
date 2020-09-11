@@ -44,3 +44,4 @@ src/js/*.sln
 src/js/*.sw?
 
 
+/deployTegLocal.sh
