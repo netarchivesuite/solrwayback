@@ -37,6 +37,12 @@ module.exports = {
           pathRewrite: { '^/services/frontend/upload/gethash/': '' },
           changeOrigin: true
       },
+
+   '^/services/frontend/harvestdates/': {
+          target: 'http://localhost:8080/solrwayback/services/frontend/harvestDates/',
+          pathRewrite: { '^/services/frontend/harvestdates/': '' },
+          changeOrigin: true
+      }
     }
   },
 publicPath: process.env.NODE_ENV === 'production'

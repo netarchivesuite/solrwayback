@@ -8,6 +8,7 @@ export const requestService = {
   fireImagesRequest,
   uploadFileRequest,
   fireImageSearchRequest,
+  getHarvestDates
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -95,4 +96,15 @@ function uploadFileRequest(fileData) {
     }}).catch(error => {
   return Promise.reject(error)
   })
+}
+
+function getHarvestDates(harvestUrl) {
+  const url = 'services/frontend/harvestdates/' + `?url=${harvestUrl}`
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+
 }
