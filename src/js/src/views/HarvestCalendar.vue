@@ -49,7 +49,8 @@
     </div>
     <div v-if="!harvestData && noResults">
       <p>No results.</p>
-    </div>            
+    </div> 
+    <!-- TODO implement new spinner function when ready -->           
     <div v-if="!harvestData && !noResults">
       <div id="spinner">
         <p class="spinnerText">
