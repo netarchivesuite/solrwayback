@@ -99,7 +99,7 @@ function uploadFileRequest(fileData) {
 }
 
 function getHarvestDates(harvestUrl) {
-  const url = 'services/frontend/harvestdates/' + `?url=${harvestUrl}`
+  const url = 'services/frontend/harvestDates/' + `?url=${harvestUrl}`
   return axios.get(
     url).then(response => {
     return response.data
