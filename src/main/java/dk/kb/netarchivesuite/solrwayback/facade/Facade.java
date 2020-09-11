@@ -85,8 +85,9 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
 
 
 public static String generateDomainResultGraph(@QueryParam("q") String q, @QueryParam("fq") List<String> fq ) throws Exception {   
-     HashMap<Integer, List<FacetCount>> domainStatisticsForQuery = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq);    
-     String matrix = generateDomainQueryStatisticsString(domainStatisticsForQuery);     
+     String jsonStr  = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq);              
+     HashMap<Integer, List<FacetCount>> domainStatisticsForQuery =  DomainStatisticsForDomainParser.parseDomainStatisticsJson(jsonStr);     
+     String matrix = DomainStatisticsForDomainParser.generateDomainQueryStatisticsString(domainStatisticsForQuery);     
      return matrix;              
 }
     
@@ -847,67 +848,6 @@ public static String proxyBackendResources(String source_file_path, String offse
     return sign+seconds +" seconds";    
   }
   
-  
-  /*
-   * TODO specify format
-   * 
-   */
-  
-  private static String generateDomainQueryStatisticsString(HashMap<Integer, List<FacetCount>> domainStatisticsForQuery) {
-      
-      StringBuilder matrix = new StringBuilder();
-      
-      //Logic to create to matrix.
-      TreeSet<String> allValues = new TreeSet<String>(); //will be sorted 
-      for (int year : domainStatisticsForQuery.keySet()){                
-          List<FacetCount> list = domainStatisticsForQuery.get(year);
-          for ( FacetCount facetCount : list) {
-             allValues.add(facetCount.getValue());                       
-          }
-      }            
-      
-      //Create header
-      StringJoiner joiner = new StringJoiner(",");
-      joiner.add("State"); //part of format
-      for (String value: allValues) {
-          joiner.add(value);
-      }           
-      String header = joiner.toString(); 
-      matrix.append(header+"\n\n"); //Double line break
-            
-            
-      //Iterate over years and generate each line
-      TreeSet<Integer> yearsSorted = new TreeSet<Integer>();
-      yearsSorted.addAll(domainStatisticsForQuery.keySet());
-      
-      for (int year : yearsSorted) {
-          joiner = new StringJoiner(",");
-          joiner.add(""+year);    
-          
-          List<FacetCount> yearValues = domainStatisticsForQuery.get(year);
-          HashMap<String, Long> valuesMap = new HashMap<String,Long>(); //Make map since we need them in order from header.
-          for (FacetCount f: yearValues) {
-              valuesMap.put(f.getValue(),f.getCount()); 
-          }
-          
-          for (String value : allValues) {
-              Long count = valuesMap.get(value);
-              if (count == null) {
-                 joiner.add("0");
-              }
-              else {
-                  joiner.add(""+count);
-              }              
-          }
-          
-          String line = joiner.toString();
-          matrix.append(line+"\n");
-                    
-          
-      }     
-  return matrix.toString();
-      
-  }
   
   
   //takes the wayback_base url and create the proxy url

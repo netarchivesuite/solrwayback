@@ -1084,47 +1084,28 @@ public class NetarchiveSolrClient {
   }
 
 
-  //Maybe do facet for each year in 1 query ? TODO TOKE
-  //Will return hashmap with year as key, and then the domains with count. (domain, count)
-
-  public HashMap<Integer,List<FacetCount>> domainStatisticsForQuery(String query, List<String> fq) throws Exception{
-
-
-    HashMap<Integer,List<FacetCount>> yearFacetDomainCountMap = new HashMap<Integer,List<FacetCount>>();
-
-    //Hard coded, not required if Toke fixes. Else do lookup first to find lastest+newest. 
-    int startYear=1998;
-    int endYear=2020; 
-
-    for (int year=startYear;year<=endYear;year++) {
-      SolrQuery solrQuery = new SolrQuery();
-
+  // returns JSON. Response not supported by SolrJ
+  public String domainStatisticsForQuery(String query, List<String> fq) throws Exception{
+      SolrQuery solrQuery = new SolrQuery();          
       solrQuery.setQuery(query);        
-      solrQuery.set("facet", "true");
-      solrQuery.set("facet.field", "domain");
-      solrQuery.set("facet.limit", "25");
       solrQuery.setRows(0);
-
+      solrQuery.set("facet", "false"); 
+      //TODO set min/max year (max year is not included so add one)
+      solrQuery.setParam("json.facet", "{domains:{type:terms,field:domain,limit:25 facet:{years:{type:range,field:crawl_year,start:1998,end:2021,gap:1}}}}");
+      
       for (String filter : fq) {
         solrQuery.addFilterQuery(filter);    
       }
-      solrQuery.addFilterQuery("crawl_year:"+year); //probably already in filter cache.                  
+                  
+      NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
+      rawJsonResponseParser.setWriterType("json");
 
-      QueryResponse rsp = solrServer.query(solrQuery);  
-      FacetField domainFacet = rsp.getFacetField("domain");
+      QueryRequest req = new QueryRequest(solrQuery);
+      req.setResponseParser(rawJsonResponseParser);
 
-      List<Count> values = domainFacet.getValues();
-      List<FacetCount> facetList = new ArrayList<FacetCount>();
-      for (Count facet : values) {
-        FacetCount count = new FacetCount();
-        count.setValue(facet.getName());
-        count.setCount(facet.getCount());;
-        facetList.add(count);        
-      }      
-      yearFacetDomainCountMap.put(year, facetList);
-    }
-
-    return yearFacetDomainCountMap;
+      NamedList<Object> resp = solrServer.request(req);
+      String jsonResponse = (String) resp.get("response");
+      return jsonResponse;          
   }
 
 
