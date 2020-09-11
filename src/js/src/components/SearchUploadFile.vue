@@ -52,11 +52,12 @@ export default {
          this.updateQuery(this.createRequestQuery(response.data))
          this.requestSearch({query:this.createRequestQuery(response.data), facets:this.searchAppliedFacets, options:this.solrSettings})
         })
-        .catch(() => {
+        .catch((error) => {
           this.setNotification({
           	title: 'We are so sorry!',
             text: 'Something went wrong when uploading your image - please try again',
             type: 'error',
+            srvMessage: error,
             timeout: false
           })
           this.fileToUpload = []

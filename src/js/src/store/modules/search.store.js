@@ -13,7 +13,6 @@ const initialState = () => ({
     imgSearch:false,
     urlSearch:false
   },
-  error: '',
   loading:false,
   facetLoading:false,
 })
@@ -94,21 +93,39 @@ const mutations = {
     state.facets = result
   },
   facetRequestError(state, message) {
-    state.error = message
+    this.dispatch('Notifier/setNotification', {
+      title: 'We are so sorry!',
+      text: 'Something went wrong when requesting the facets - please try again',
+      srvMessage: message,
+      type: 'error',
+      timeout: false
+    })
   },
   doSearchSuccess(state, result) {
     state.results = result.response
     state.loading = false
   },
   doSearchError(state, message) {
-    state.error = message
+    this.dispatch('Notifier/setNotification', {
+      title: 'We are so sorry!',
+      text: 'Something went wrong when searching - please try again',
+      srvMessage: message,
+      type: 'error',
+      timeout: false
+    })
   },
   doImageSearchSuccess(state, result) {
     state.results = result.response
     state.loading = false
   },
   doImageSearchError(state, message) {
-    state.error = message
+    this.dispatch('Notifier/setNotification', {
+      title: 'We are so sorry!',
+      text: 'Something went wrong when searching for images - please try again',
+      srvMessage: message,
+      type: 'error',
+      timeout: false
+    })
   },
   setLoadingStatus(state, status) {
     state.loading = status

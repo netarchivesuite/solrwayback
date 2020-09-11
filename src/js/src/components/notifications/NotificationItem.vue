@@ -13,6 +13,10 @@
     <p>
       {{ notification.text }}
     </p>
+    <br>
+    <p v-if="notification.srvMessage">
+      <span>server message: </span>{{ notification.srvMessage }}
+    </p>
   </div>
 </template>
 
