@@ -68,7 +68,6 @@ public class SolrClientTest {
     //testSolrDate();
     //   testHarvestPreviewsForUrl();
     //domainStatistics();
-    testDomainStatisticsForQuery();
     //testGroup();
   }
 
@@ -151,85 +150,7 @@ public class SolrClientTest {
 
     }
     fw.close();
-
   }
-
-
-  public static void testDomainStatisticsForQuery() throws Exception{
-      NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();      
-      List<String> filters = new ArrayList<String>();
-       HashMap<Integer, List<FacetCount>> domainStatisticsForQuery = solr.domainStatisticsForQuery("politik",filters);      
-      for (int year : domainStatisticsForQuery.keySet()){
-        System.out.println(year);
-        
-        List<FacetCount> list = domainStatisticsForQuery.get(year);
-        for ( FacetCount facetCount : list) {
-            System.out.println("   "+facetCount.getValue() +":"+facetCount.getCount());                       
-        }               
-      }
-  
-  
-     //Logic to create to matrix.
-      TreeSet<String> allValues = new TreeSet<String>(); //will be sorted 
-      for (int year : domainStatisticsForQuery.keySet()){                
-          List<FacetCount> list = domainStatisticsForQuery.get(year);
-          for ( FacetCount facetCount : list) {
-             allValues.add(facetCount.getValue());                       
-          }
-      }            
-      
-      //Create header
-      StringJoiner joiner = new StringJoiner(",");
-      joiner.add("state"); //part of format
-      for (String value: allValues) {
-          joiner.add(value);
-      }           
-      String header = joiner.toString(); 
-      System.out.println(header);
-      
-            
-      //Iterate over years and generate each line
-      HashSet<Integer> yearsSorted = new HashSet<Integer>();
-      yearsSorted.addAll(domainStatisticsForQuery.keySet());
-      
-      for (int year : yearsSorted) {
-          joiner = new StringJoiner(",");
-          joiner.add(""+year);    
-          
-          List<FacetCount> yearValues = domainStatisticsForQuery.get(year);
-          HashMap<String, Long> valuesMap = new HashMap<String,Long>(); //Make map since we need them in order from header.
-          for (FacetCount f: yearValues) {
-              valuesMap.put(f.getValue(),f.getCount()); 
-          }
-          
-          for (String value : allValues) {
-              Long count = valuesMap.get(value);
-              if (count == null) {
-                 joiner.add("0");
-              }
-              else {
-                  joiner.add(""+count);
-              }              
-          }
-          
-          String line = joiner.toString();
-          System.out.println(line);
-          
-          
-          
-          
-          
-      }
-      
-      
-      
-      
-      
-  
-  
-  
-  }
-  
   
   public static void testImagesLocationSearch() throws Exception{
 
