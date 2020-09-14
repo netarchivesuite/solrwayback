@@ -121,13 +121,12 @@ export default {
      }
      requestService.getHarvestDates(encodeURIComponent(this.$route.query.url))
         .then(data => {
-            if (data.dates === undefined || data.dates.length === 0) {
+            if (data.dates.length === 0) {
                 this.noResults = true
             } else {
            this.harvestData = groupHarvestDatesByYearAndMonth(data.dates, calculateLinearActivityLevel)
             }
         }).catch(() => {
-          console.log('error!')
           this.setNotification({
           	title: 'We are so sorry!',
             text: 'Something went wrong when fetching the harvest calendar - please try again',

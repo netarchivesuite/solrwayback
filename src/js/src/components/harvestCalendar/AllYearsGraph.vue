@@ -27,9 +27,7 @@ import {toHumanDate} from './util'
 
 export default {
   name: 'AllYearsGraph',
-  components: {  
-   
-  },
+  
   props: {
     harvestData: {
       type: Object,
