@@ -64,14 +64,18 @@
   </div>
 </template>
 <script>
-import configs from '../../configs'
 import { mapState } from 'vuex'
 
 export default {
   name: 'SearchResultExport',
+  props: {
+    configs: {
+      type: Object,
+      required: true
+    },
+  },
   data () {
     return {  
-      configs:configs,
       csvExportOpen:false,
       selectedArray:[],
       nonSelectedArray:[]
@@ -84,26 +88,29 @@ export default {
     }),
   },
   mounted () {
-    this.selectedArray = this.getSplitFieldsSelected(configs.exportOptions.csvFields)
-    this.nonSelectedArray = this.getSplitFieldsNotSelected(configs.exportOptions.csvFields)
+    this.selectedArray = this.getSplitFieldsSelected(this.configs.exportOptions.csvFields)
+    this.nonSelectedArray = this.getSplitFieldsNotSelected(this.configs.exportOptions.csvFields)
     //console.log(configs.exportOptions.csvFields)
   },
   methods: {
     exportToWARC() {
      return this.searchAppliedFacets ? 
-       configs.playbackConfig.solrwaybackBaseURL + 'services/export/warc?query=' + this.query + this.searchAppliedFacets :
-       configs.playbackConfig.solrwaybackBaseURL + 'services/export/warc?query=' + this.query
+       this.returnExportUrl + 'warc?query=' + this.query + this.searchAppliedFacets :
+       this.returnExportUrl + 'warc?query=' + this.query
     },
     exportToExtendedWARC() {
       return this.searchAppliedFacets ? 
-      configs.playbackConfig.solrwaybackBaseURL + 'services/export/warcExpanded?query=' + this.query + this.searchAppliedFacets :
-      configs.playbackConfig.solrwaybackBaseURL + 'services/export/warcExpanded?query=' + this.query
+      this.returnExportUrl + 'warcExpanded?query=' + this.query + this.searchAppliedFacets :
+      this.returnExportUrl + 'warcExpanded?query=' + this.query
     },
     exportToCSV() {
       let fields = this.selectedArray.join(',')
       return this.searchAppliedFacets ? 
-      configs.playbackConfig.solrwaybackBaseURL + 'services/export/csv?query=' + this.query + this.searchAppliedFacets + '&fields=' + fields :
-      configs.playbackConfig.solrwaybackBaseURL + 'services/export/csv?query=' + this.query + '&fields=' + fields
+      this.returnExportUrl + 'csv?query=' + this.query + this.searchAppliedFacets + '&fields=' + fields :
+      this.returnExportUrl + 'csv?query=' + this.query + '&fields=' + fields
+    },
+    returnExportUrl() {
+      return this.configs.playbackConfig.solrwaybackBaseURL + 'services/export/'
     },
     toggleCsvExportOptions() {
       this.csvExportOpen = !this.csvExportOpen
@@ -116,9 +123,12 @@ export default {
       return newArray.slice(9,newArray.length)
     },
     moveItemInArray(array, direction, itemNumber, item) {
-      if(itemNumber >= 1 && itemNumber < array.length) {
-      array.splice(itemNumber, 1)
-      direction === 'up' ? array.splice(itemNumber - 1, 0, item) : array.splice(itemNumber + 1, 0, item)
+      if(itemNumber >= 0 && itemNumber < array.length) {
+      direction === 'up'
+        // Small check to see if it's the first element. If so, it can't move up. 
+        ? itemNumber !== 0 ? (array.splice(itemNumber, 1), array.splice(itemNumber - 1, 0, item)) : null
+        // If its down, we don't have those kinda problems.
+        : (array.splice(itemNumber, 1), array.splice(itemNumber + 1, 0, item))
       }
     },
     toggleItemInArrays(toArray, fromArray, item, itemNumber, recipient) {

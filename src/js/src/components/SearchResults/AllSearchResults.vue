@@ -4,7 +4,7 @@
       <search-facet-options />
     </div>
     <div class="resultContainer">
-      <search-result-export v-if="configs" />
+      <search-result-export v-if="configs" :configs="configs" />
       <h2>Results</h2>
       <!-- HERE COMES RESULTS // Figure out if this should be splitted out into a new component -->
       <post-search-results v-if="results.searchType === 'post'" />
