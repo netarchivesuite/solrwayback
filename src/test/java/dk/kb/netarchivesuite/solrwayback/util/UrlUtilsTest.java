@@ -51,11 +51,12 @@ public class UrlUtilsTest {
     url="http://test.dk"; // Domain urls in the solr index will always end with a / for domains.
     assertTrue(UrlUtils.isUrlWithDomain(url));
     
-    url="http://test/"; // No domain in URL
-    assertFalse(UrlUtils.isUrlWithDomain(url));
     
-    url="http://test/images/horse.png"; // No domain in URL
-    assertFalse(UrlUtils.isUrlWithDomain(url));   
+    url="http://test/"; // Allowed, just no .
+    assertTrue(UrlUtils.isUrlWithDomain(url));
+    
+    url="http://test/images/horse.png"; // L
+    assertTrue(UrlUtils.isUrlWithDomain(url));   
     
     url="test/images/horse.png"; // only a relative url
     assertFalse(UrlUtils.isUrlWithDomain(url));    
