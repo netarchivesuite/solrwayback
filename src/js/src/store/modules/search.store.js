@@ -58,6 +58,13 @@ const actions = {
       .then(result => commit('doImageSearchSuccess', result), error =>
         commit('doImageSearchError', error))
   },
+  requestUrlSearch ({ commit }, params) {
+    commit('setLoadingStatus',true)
+    requestService
+      .fireUrlSearchRequest(params.query, params.facets, params.options)
+      .then(result => commit('doUrlSearchSuccess', result), error =>
+        commit('doUrlSearchError', error))
+  },
   requestFacets({commit}, params) {
     commit('setFacetLoadingStatus')
     requestService
@@ -122,6 +129,19 @@ const mutations = {
     this.dispatch('Notifier/setNotification', {
       title: 'We are so sorry!',
       text: 'Something went wrong when searching for images - please try again',
+      srvMessage: message,
+      type: 'error',
+      timeout: false
+    })
+  },
+  doUrlSearchSuccess(state, result) {
+    state.results = result.response
+    state.loading = false
+  },
+  doUrlSearchError(state, message) {
+    this.dispatch('Notifier/setNotification', {
+      title: 'We are so sorry!',
+      text: 'Something went wrong when searching for URLs - please try again',
       srvMessage: message,
       type: 'error',
       timeout: false

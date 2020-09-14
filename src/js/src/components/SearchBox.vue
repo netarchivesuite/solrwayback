@@ -5,11 +5,8 @@
              v-model="futureQuery"
              type="text"
              autofocus
-             :class="solrSettings.urlSearch ? 'urlSearchActivated' : ''"
-             placeholder="Enter search term">
-      <transition name="url-search-helper">
-        <span v-if="solrSettings.urlSearch" class="urlSearchHelper">http://</span>
-      </transition>
+             :class="solrSettings.urlSearch ? validateUrl() === false ? 'urlNotTrue' : '' : ''"
+             :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'">
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
       </button>
@@ -118,6 +115,7 @@ export default {
     ...mapActions('Search', {
       requestSearch: 'requestSearch',
       requestImageSearch: 'requestImageSearch',
+      requestUrlSearch:'requestUrlSearch',
       requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
       clearResults: 'clearResults',
@@ -126,7 +124,10 @@ export default {
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch'
-
+    }),
+    ...mapActions('Notifier', {
+      setNotification: 'setNotification'
+     
     }),
     handleSubmit() {
       if (this.futureQuery !== this.query ||
@@ -146,7 +147,18 @@ export default {
           return
         }
         else if(this.solrSettings.urlSearch) {
+          if(this.validateUrl()) {
+            this.requestUrlSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
           return
+          }
+          else {
+            this.setNotification({
+          	title: 'We are so sorry!',
+            text: 'This URL is not valid. Make sure it starts with http:// or https://',
+            type: 'error',
+            timeout: false
+          })
+          }
         }
         else {
           this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
@@ -173,6 +185,11 @@ export default {
       this.futureQuery = ''
       this.resetSearchState()
     },
+    validateUrl() {
+      return this.futureQuery.substring(0,7) === 'http://' || this.futureQuery.substring(0,8) === 'https://'
+      ? true
+      : false
+    }
   }
 }
 

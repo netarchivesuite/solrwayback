@@ -241,3 +241,7 @@ color:var(--secondary-text-color);
   transition: opacity 0.3s linear 0s;
   opacity: 0;
 }
+
+.urlNotTrue {
+  color:red !important;
+}
