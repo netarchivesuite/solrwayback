@@ -14,7 +14,6 @@ const initialState = () => ({
     urlSearch:false
   },
   loading:false,
-  facetLoading:false,
 })
 
 const state = initialState()
@@ -45,21 +44,21 @@ const actions = {
     commit('clearResultsSuccess')
   },
   requestSearch ({ commit }, params) {
-    commit('setLoadingStatus',true)
+    commit('setLoadingStatus', true)
     requestService
       .fireSearchRequest(params.query, params.facets, params.options)
       .then(result => commit('doSearchSuccess', result), error =>
         commit('doSearchError', error))
   },
   requestImageSearch ({ commit }, params) {
-    commit('setLoadingStatus',true)
+    commit('setLoadingStatus', true)
     requestService
       .fireImageSearchRequest(params.query)
       .then(result => commit('doImageSearchSuccess', result), error =>
         commit('doImageSearchError', error))
   },
   requestFacets({commit}, params) {
-    commit('setFacetLoadingStatus')
+    commit('setLoadingStatus', true)
     requestService
       .fireFacetRequest(params.query, params.facets, params.options)
       .then(result => commit('facetRequestSuccess', result), error =>
@@ -100,6 +99,7 @@ const mutations = {
       type: 'error',
       timeout: false
     })
+    state.loading = false
   },
   doSearchSuccess(state, result) {
     state.results = result.response
@@ -113,6 +113,7 @@ const mutations = {
       type: 'error',
       timeout: false
     })
+    state.loading = false
   },
   doImageSearchSuccess(state, result) {
     state.results = result.response
@@ -126,12 +127,10 @@ const mutations = {
       type: 'error',
       timeout: false
     })
+    state.loading = false
   },
   setLoadingStatus(state, status) {
     state.loading = status
-  },
-  setFacetLoadingStatus(state, status) {
-    state.facetLoading = status
   },
   clearResultsSuccess(state) {
     state.results = {}
