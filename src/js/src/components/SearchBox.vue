@@ -6,11 +6,12 @@
              type="text"
              autofocus
              class=""
+             autocomplete="off"
              placeholder="Enter search term">
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
       </button>
-      <button v-if="futureQuery !== ''"
+      <button v-if="futureQuery !== '' || Object.keys(results).length !== 0"
               id="clearSubmit"
               title="Clear search and results"
               type="button"

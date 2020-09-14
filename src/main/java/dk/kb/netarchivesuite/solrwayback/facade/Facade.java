@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
@@ -80,6 +81,15 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
      IndexDoc doc = NetarchiveSolrClient.getInstance().findExactMatchPWID(url, utc);
      return doc;    
 }
+
+
+
+public static String generateDomainResultGraph(@QueryParam("q") String q, @QueryParam("fq") List<String> fq ) throws Exception {   
+     String jsonStr  = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq);              
+     HashMap<Integer, List<FacetCount>> domainStatisticsForQuery =  DomainStatisticsForDomainParser.parseDomainStatisticsJson(jsonStr);     
+     String matrix = DomainStatisticsForDomainParser.generateDomainQueryStatisticsString(domainStatisticsForQuery);     
+     return matrix;              
+}
     
     public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {        
         SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); //only search these two types                        
@@ -98,6 +108,8 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
       return stats;            
     }
         
+    
+    
         
     public static  ArrayList<ImageUrl> imagesLocationSearch(String searchText,String filter, String results, double latitude, double longitude, double radius, String sort) throws Exception {
       int resultInt=500;
@@ -835,7 +847,8 @@ public static String proxyBackendResources(String source_file_path, String offse
     long seconds = TimeUnit.MILLISECONDS.toSeconds(millis); 
     return sign+seconds +" seconds";    
   }
-   
+  
+  
   
   //takes the wayback_base url and create the proxy url
   // http://localhost:8080/solrwayback/ -> socks4://localhost:9000 

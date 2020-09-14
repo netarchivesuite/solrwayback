@@ -1,4 +1,15 @@
 <!DOCTYPE html>
+
+<%
+String query =request.getParameter("q");
+String filter =request.getParameter("fq");
+%>
+
+<!-- 
+This visualization was created with d3, based on <a href="http://bl.ocks.org/mbostock/3886208">this example</a> and <a href="http://bl.ocks.org/yuuniverse4444/8325617">this example</a>. The raw data for this visualization comes from the output of a <a href="https://github.com/lintool/warcbase/wiki/Spark:-Gathering-Basic-Crawl-Statistics">Spark script</a>.</p>
+##Original code created by Jimmy Lin and found in the <a href="https://github.com/lintool/warcbase/tree/master/vis/crawl-sites">warcbase repo here.</a></p>
+ -->
+ 
 <html>
 <meta charset="utf-8">
 <style>
@@ -37,14 +48,16 @@ p {
 </style>
 <body>
 
-<h1>Visualization of ALBERTA_alberta_education_curriculum-all.csv</h1>
+<h1>Visualization of search result by domain</h1>
+<h2>Query:<%=query%></h1>
 
+<h2>Filter query:<%=filter%></h1>
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script>
 
 var margin = {top: 20, right: 120, bottom: 50, left: 32},
     width = 1050 - margin.left - margin.right,
-    height = 480 - margin.top - margin.bottom;
+    height = 700 - margin.top - margin.bottom;
 
 var x = d3.scale.ordinal()
     .rangeRoundBands([0, width], .1);
@@ -71,7 +84,7 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.csv("/solrwayback/services/frontend/graph/domain_result?q=<%=request.getParameter("q") %>", function(error, data) {
+d3.csv("/solrwayback/services/frontend/graph/domain_result?q=<%=query%>", function(error, data) {
   color.domain(d3.keys(data[0]).filter(function(key) { return key !== "State"; }));
 
   data.forEach(function(d) {
@@ -166,10 +179,5 @@ d3.csv("/solrwayback/services/frontend/graph/domain_result?q=<%=request.getParam
 
 </script>
 
-<p>This is a visualization of the ALBERTA_alberta_education_curriculum-all.csv file. Each bar shows the distribution of pages in that crawl by top-level domain. The legend on the right orders the domains by the number of pages across the <i>entire</i> collection, ordered from the bottom&mdash;that is, the bottom domain has the most pages, the second one from the bottom has the second most pages, etc. The legend breaks out the top 20 domains; everything else is grouped into "other" (at the very top). The stacking of the colors in each column is consistent with the legend ordering. Mousing over a portion of a bar will outline in red the domain across all crawls, as will mousing over any part of the legend.</p>
-
-<p>This visualization was created with d3, based on <a href="http://bl.ocks.org/mbostock/3886208">this example</a> and <a href="http://bl.ocks.org/yuuniverse4444/8325617">this example</a>. The raw data for this visualization comes from the output of a <a href="https://github.com/lintool/warcbase/wiki/Spark:-Gathering-Basic-Crawl-Statistics">Spark script</a>.</p>
-
-<p>Original code created by Jimmy Lin and found in the <a href="https://github.com/lintool/warcbase/tree/master/vis/crawl-sites">warcbase repo here.</a></p>
 
 </html>

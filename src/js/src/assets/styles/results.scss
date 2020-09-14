@@ -723,3 +723,185 @@
 	height: 40px;
 	font-size: 120%;
 }
+.loadingScreen {
+  position: fixed;
+  z-index:10000;
+  top:0px;
+  left:0px;
+  width:100vw;
+  height:100vh;
+  background-color:rgba(30,30,30,0.9);
+  margin:0;
+  padding:0;
+}
+
+.loading-overlay-enter-active, .loading-overlay-leave-active {
+  transition: opacity .1s ;
+}
+.loading-overlay-enter, .loading-overlay-leave-to {
+  opacity: 0;
+}
+
+.loadingScreen .spinner {
+  width:200px;
+  height:200px;
+  padding:25px;
+  box-sizing: border-box;
+  margin:calc(35vh - 100px) calc(50vw - 100px);
+}
+
+.loadingScreen .spinner .lookingGlass {
+  position: relative;
+	box-sizing: border-box;
+	width: 30px;
+	height: 30px;
+	border: 2px solid white;
+	border-radius: 360%;
+	display: block;
+	left: 55px;
+	top: -5px;
+	opacity: 1;
+  animation: glMovingX 3s linear infinite 0s,glMovingY 3s linear infinite 0s
+}
+
+@keyframes glMovingX {
+  0% {
+    animation-timing-function: linear;
+    left:105px;
+    opacity: 0;
+  }
+  20% {
+    animation-timing-function: linear;
+    left: 5px;
+    opacity:1;
+  }
+  40% {
+    animation-timing-function: linear;
+    left: 105px;
+    opacity:1;
+  }
+  60% {
+    animation-timing-function: linear;
+    left: 5px;
+    opacity:1;
+  }
+  80% {
+    animation-timing-function: linear;
+    left: 105px;
+    opacity:1;
+  }
+  100% {
+    animation-timing-function: linear;
+    left: 55px;
+    opacity:0;
+  }
+}
+
+@keyframes glMovingY {
+0% {
+  animation-timing-function: ease-in-out;
+  top:-25px
+}
+20% {
+  animation-timing-function:ease-in-out;
+  top: 50px;
+}
+40% {
+  animation-timing-function: ease-in-out;
+  top: 100px;
+}
+60% {
+  animation-timing-function: ease-in-out;
+  top: 150px;
+}
+80% {
+  animation-timing-function: ease-in-out;
+  top: 180px;
+}
+100% {
+  animation-timing-function: ease-in-out;
+  top:220px;
+}
+}
+
+.loadingScreen .spinner .lookingGlass:before {
+  content: '';
+	width: 2px;
+	height: 20px;
+	background-color: White;
+	display: block;
+	position: relative;
+	top: 20px;
+	left: 27px;
+	border-radius: 3px;
+	transform: rotateZ(-45deg);
+}
+
+.loadingScreen .spinner .lookingGlass:after {
+  content: '';
+	width: 30px;
+	height: 30px;
+	top: -23px;
+	left: -3px;
+	display: block;
+	background-image: linear-gradient(45deg, #ffdee923 0%, #b5fffd31 100%);
+	opacity: 1;
+	position: relative;
+	border-radius: 360%;
+}
+
+.loadingScreen .spinner .lines {
+  display:inline-block;
+  height:3px;
+  border-radius:5px;
+  margin:5px 3px;
+  background-color:var(--secondary-highlight-color);
+}
+
+.loadingScreen .spinner .lines:first-child {
+  visibility:hidden;
+}
+
+.loadingScreen .spinner .lines:last-child {
+  visibility:hidden;
+}
+
+.loadingScreen .spinner .lines.highlighted {
+  background-color:var(--main-highlight-color)
+}
+
+.showLines-enter-active, .showLines-overlay-leave-active {
+  transition: opacity .1s;
+  transition-delay: 0.2s;
+}
+.showLines-overlay-enter, .showLines-overlay-leave-to {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+@keyframes moveLines {
+  0% {
+    opacity:0;
+    transform:translateY(15px)
+  }
+  5% {
+    opacity:0;
+  }
+  10% {
+    opacity:1;
+  }
+  90% {
+    opacity:1;
+  }
+  95% {
+    transform:translateY(0px)
+  }
+  100% {
+    opacity:0;
+    transform:translateY(0px)
+  }
+}
+
+.loadingScreen .spinner .row {
+  animation: moveLines 3s linear infinite 0s;
+}
