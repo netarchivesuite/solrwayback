@@ -51,6 +51,12 @@ color:var(--secondary-text-color);
   text-overflow: ellipsis; 
   white-space: nowrap; 
   overflow: hidden;
+  transition: all 0.3s linear 0.3s;
+}
+
+.urlSearchActivated {
+  transition: all 0.3s linear 0s !important;
+  padding-left: 65px !important;
 }
 
 .searchForm .buttonExplanation {
@@ -217,4 +223,21 @@ color:var(--secondary-text-color);
 
 .fileUploader {
   margin:20px 0 20px 0;
+}
+
+.urlSearchHelper {
+  color: rgba(130,130,130,0.6);
+	position: absolute;
+  left: calc(50vw - 300px + 24px);
+  margin-top: 16px;
+  user-select: none;
+}
+
+.url-search-helper-enter-active, .url-search-helper-leave-active {
+  transition: opacity 0.3s linear 0.3s;
+}
+.url-search-helper-enter, .url-search-helper-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transition: opacity 0.3s linear 0s;
+  opacity: 0;
 }

@@ -5,8 +5,11 @@
              v-model="futureQuery"
              type="text"
              autofocus
-             class=""
+             :class="solrSettings.urlSearch ? 'urlSearchActivated' : ''"
              placeholder="Enter search term">
+      <transition name="url-search-helper">
+        <span v-if="solrSettings.urlSearch" class="urlSearchHelper">http://</span>
+      </transition>
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
       </button>
