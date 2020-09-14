@@ -95,19 +95,19 @@ export default {
   methods: {
     exportToWARC() {
      return this.searchAppliedFacets ? 
-       this.returnExportUrl + 'warc?query=' + this.query + this.searchAppliedFacets :
-       this.returnExportUrl + 'warc?query=' + this.query
+       this.returnExportUrl() + 'warc?query=' + this.query + this.searchAppliedFacets :
+       this.returnExportUrl() + 'warc?query=' + this.query
     },
     exportToExtendedWARC() {
       return this.searchAppliedFacets ? 
-      this.returnExportUrl + 'warcExpanded?query=' + this.query + this.searchAppliedFacets :
-      this.returnExportUrl + 'warcExpanded?query=' + this.query
+      this.returnExportUrl() + 'warcExpanded?query=' + this.query + this.searchAppliedFacets :
+      this.returnExportUrl() + 'warcExpanded?query=' + this.query
     },
     exportToCSV() {
       let fields = this.selectedArray.join(',')
       return this.searchAppliedFacets ? 
-      this.returnExportUrl + 'csv?query=' + this.query + this.searchAppliedFacets + '&fields=' + fields :
-      this.returnExportUrl + 'csv?query=' + this.query + '&fields=' + fields
+      this.returnExportUrl() + 'csv?query=' + this.query + this.searchAppliedFacets + '&fields=' + fields :
+      this.returnExportUrl() + 'csv?query=' + this.query + '&fields=' + fields
     },
     returnExportUrl() {
       return this.configs.playbackConfig.solrwaybackBaseURL + 'services/export/'

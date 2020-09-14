@@ -46,7 +46,6 @@ export default {
     }),
   },
   beforeRouteUpdate (to, from, next) {
-    //console.log('we updated route', to)
     this.updateQuery(to.query.q)
     to.query.grouping === 'true' ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
     to.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)

@@ -22,7 +22,9 @@ const actions = {
   setLoadingStatus( {commit}, param) {
     commit('setLoadingStatus', param)
   },
-  updateQuery ( {commit}, param ) {
+  updateQuery ( {commit, rootState}, param, foo, bar) {
+    console.log(rootState.Notifier)
+    console.log(bar)
     commit('updateQuerySuccess', param)
   },
   updateSolrSettingGrouping ( {commit}, param ) {
