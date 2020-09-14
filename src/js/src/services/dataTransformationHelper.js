@@ -21,7 +21,6 @@ export default {
     return data
   },
   transformImageResponse(data) {
-    console.log('yep')
     let obj = {}
     obj.response = {
       searchType:'image',

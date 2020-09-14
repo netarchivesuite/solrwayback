@@ -13,6 +13,9 @@ Axios.get('services/frontend/properties/solrwaybackweb/')
     .then(response => {
         configs.playbackConfig.openwaybackBaseURL = response.data['openwayback.baseurl']
         configs.playbackConfig.solrwaybackBaseURL = response.data['wayback.baseurl']
+        configs.exportOptions.warcAllowed = response.data['allow.export.warc']
+        configs.exportOptions.csvAllowed = response.data['allow.export.csv']
+        configs.exportOptions.csvFields = response.data['export.csv.fields']
         initializeVue()
     })
     .catch(error => initializeVue())

@@ -68,7 +68,6 @@ export default {
       let returnArray = newArray.filter((item, index) => {
         return index % 3 === 0
       })
-      console.log(returnArray)
       return returnArray
     },
   }
