@@ -43,11 +43,27 @@ public class RewriteTestHelper {
      * Creates a mock resolver that resolves all input that contains {@code _oXXX}, where XXX is a number.
      * @return a mock resolver.
      */
-    static HtmlParserUrlRewriter.NearestResolver createMockResolver() {
+    static HtmlParserUrlRewriter.NearestResolver createOXResolver() {
         final AtomicLong counter = new AtomicLong(0);
         return (urls, timeStamp)-> urls.stream().
                 map(url -> makeIndexDoc(url, timeStamp, counter)).
                 filter(Objects::nonNull).
+                collect(Collectors.toList());
+    }
+
+    /**
+     * @return a resolver that returns the URLs unchanged.
+     */
+    static HtmlParserUrlRewriter.NearestResolver createIdentityResolver() {
+        return (urls, timeStamp)-> urls.stream().
+                map(url -> {
+                    IndexDocShort doc = new IndexDocShort();
+                    doc.setUrl(url);
+                    doc.setUrl_norm(Normalisation.canonicaliseURL(url));
+                    doc.setSource_file_path("somesourcefile");
+                    doc.setOffset(0);
+                    return doc;
+                }).
                 collect(Collectors.toList());
     }
 

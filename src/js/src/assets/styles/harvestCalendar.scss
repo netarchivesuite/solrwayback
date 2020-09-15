@@ -1,0 +1,247 @@
+.harvestCalendarHeading h1 {
+  text-align: center;
+text-transform: uppercase;
+font-size: 200%;
+color: var(--main-text-color);
+padding-top: 60px;
+}
+
+.harvestCalendarHeading h1 span{
+  font-weight: bold;
+color: var(--secondary-text-color);
+}
+
+.harvestUrlHeading{
+  color: var(--secondary-bg-color);
+ font-size: 120%;
+ margin: 0 0 .5em 0;
+}
+
+.tableContainer a {
+  color: var(--secondary-text-color);
+  text-decoration-color: var(--secondary-highlight-color);
+}
+
+.tableContainer ul,ol{
+  padding-left: 2em;
+}
+
+.tableContainer h1, h2, h3{
+  margin: 0 0 .8em;
+}
+
+.tableContainer h1{
+  font-weight: normal;
+}
+
+
+.tableContainer{
+  overflow: hidden;
+  margin: 1em 2em 2em 2em;
+}
+
+table.harvestCalendarTable{
+  border-collapse: separate;
+  border: 0;
+  float: left;
+  margin: 0;
+  opacity: 1;
+  width: auto;
+}
+
+
+
+.harvestCalendarTable td, th{
+  background-color: #f0f0f0;
+  border: 1px solid white;
+  border-left: 0;
+  cursor: pointer;
+  padding: .2em;
+  height:25px;
+}
+
+.totalHarvestData td{
+  background: white;
+  border: 0;
+  color: var(--secondary-bg-color);
+}
+
+.totalHarvestData td:first-child{
+  white-space: nowrap;
+  width: 10%;
+}
+
+.totalHarvestData td:last-child{
+  font-weight: bold;
+  color: black;
+}
+
+.detailsMenu{
+  clear: both;
+  float: left;
+  margin: 2em 0 1em;
+  width: 100%;
+}
+
+.detailsMenu span {
+  display: inline-block;
+color: var(--main-highlight-color);
+border-bottom: 1px solid var(--secondary-highlight-color);
+}
+
+/* A fill cell used for empty days (when f.ex. not all days in the first week exist) */
+.harvestCalendarTable td.filler {
+  background-color: white;
+}
+
+.harvestCalendarTable.monthLabels td, th{
+  background-color: white;
+  cursor: default;
+  font-weight: normal;
+  color: var(--secondary-bg-color);
+// font-weight: bold;
+}
+
+th.weekNumber{
+  border: 0;
+  color: #999999;
+  padding: 0;
+}
+
+.yearHeader{
+  clear: both;
+  float: left;
+  margin: 1.5em 0 .5em;
+  width: 100%;
+}
+
+#harvests-for-day{
+  box-sizing: border-box;
+  clear: both;
+  float: left;
+  margin-top: 2em;
+  min-width: 50%;
+}
+
+#harvests-for-day li{
+  padding: .2em 0;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.active {
+  font-weight: bold;
+}
+
+.uppercase{
+  text-transform: uppercase;
+}
+
+.harvestCalendarTable td.empty{
+  border-color: transparent;
+}
+
+.harvestCalendarTable td.activityLevel1, .legend.legend1 {
+  background: #d6e685;
+}
+
+.harvestCalendarTable td.activityLevel2, .legend.legend2 {
+  background: #8cc665;
+}
+
+.harvestCalendarTable td.activityLevel3, .legend.legend3 {
+  background: #44a340;
+}
+
+.harvestCalendarTable td.activityLevel4, .legend.legend4 {
+  background: #1e6823;
+}
+
+.harvestCalendarTable td.weekday {
+  width: 10px;
+  height: 10px;
+}
+
+
+/* Legends */
+#legends{
+  clear: both;
+  float: left;
+}
+
+.legend{
+  background-color: #f0f0f0;
+  display: inline-block;
+  height: 1.5em;
+  margin: 0 .3em;
+  vertical-align: bottom;
+  width: 2.5em;
+}
+
+#details{
+  float: left;
+  width: 100%;
+}
+
+.hideDetails{
+  color: #666;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+
+/* Vue transitions */
+.yearTables, .detailsContainer, #legends{
+  opacity: 1;
+  padding-top: 2em;
+}
+
+.detailsContainer{
+  padding-top: 0;
+}
+
+.fadeIn-enter-active{
+  transition: opacity .5s;
+}
+
+.fadeIn-leave-active{
+  transition: opacity 0s;
+}
+
+.fadeIn-enter-active{
+  transition-delay: 0s;
+}
+
+.fadeIn-enter,
+.fadeIn-leave-to{
+  opacity: 0;
+}
+
+
+
+// <v-tooltip less>
+// source: https://akryum.github.io/vue-tooltip/
+.tooltip {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+  padding: 4px;
+  z-index: 10000;
+}
+  .tooltip-content {
+    background-color: var(--main-highlight-color);
+    color: white;
+    padding: 5px 10px 4px;
+  }
+
+  .tooltip-open-transitionend {
+    display: block;
+  }
+
+  .tooltip-after-open {
+    opacity: 1;
+  }
+
+// </v-tooltip less>

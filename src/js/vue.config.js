@@ -42,6 +42,26 @@ module.exports = {
         pathRewrite: { '^/services/frontend/util/normalizeurl': '' },
         changeOrigin: true
       },
+    '^/services/export/warc/': {
+        target: 'http://localhost:8080/solrwayback/services/export/warc',
+        pathRewrite: { '^/services/export/warc/': '' },
+        changeOrigin: true
+      },
+    '^/services/export/warcExpanded/': {
+        target: 'http://localhost:8080/solrwayback/services/export/warcExpanded',
+        pathRewrite: { '^/services/export/warcExpanded/': '' },
+        changeOrigin: true
+      },
+    '^/services/export/csv/': {
+        target: 'http://localhost:8080/solrwayback/services/export/csv',
+        pathRewrite: { '^/services/export/csv/': '' },
+        changeOrigin: true
+      },
+   '^/services/frontend/harvestDates/': {
+          target: 'http://localhost:8080/solrwayback/services/frontend/harvestDates/',
+          pathRewrite: { '^/services/frontend/harvestDates/': '' },
+          changeOrigin: true
+      }
     }
   },
 publicPath: process.env.NODE_ENV === 'production'

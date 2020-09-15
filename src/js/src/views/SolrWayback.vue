@@ -1,5 +1,8 @@
 <template>
   <div class="contentContainer">
+    <transition name="loading-overlay">
+      <loading-overlay />
+    </transition>
     <notifications />
     <h1>Solr<span>Wayback</span></h1>
     <search-box />
@@ -12,6 +15,7 @@
  import SearchBox from '../components/SearchBox'
  import AllSearchResults from '../components/SearchResults/AllSearchResults'
  import Notifications from '../components/notifications/Notifications'
+ import LoadingOverlay from '../components/LoadingOverlay'
  import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -19,7 +23,8 @@ export default {
    components: {
    SearchBox,
    AllSearchResults,
-   Notifications
+   Notifications,
+   LoadingOverlay
   },
   computed: {
     ...mapState({
@@ -41,7 +46,6 @@ export default {
     }),
   },
   beforeRouteUpdate (to, from, next) {
-    //console.log('we updated route', to)
     this.updateQuery(to.query.q)
     to.query.grouping === 'true' ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
     to.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)

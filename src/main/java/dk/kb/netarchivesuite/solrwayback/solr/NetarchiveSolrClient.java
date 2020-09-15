@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -1085,13 +1086,21 @@ public class NetarchiveSolrClient {
 
 
   // returns JSON. Response not supported by SolrJ
+  /* Example query:
+   * time curl -s -d 'q=demokrati&rows=0&json.facet={domains:{type:terms,field:domain,limit:25 facet:{years:{type:range,field:crawl_year,start:2000,end:2020,gap:1}}}}' 'http://localhost:52300/solr/ns/select' > demokrati.json
+   * 
+   * 
+   */
   public String domainStatisticsForQuery(String query, List<String> fq) throws Exception{
       SolrQuery solrQuery = new SolrQuery();          
       solrQuery.setQuery(query);        
       solrQuery.setRows(0);
       solrQuery.set("facet", "false"); 
-      //TODO set min/max year (max year is not included so add one)
-      solrQuery.setParam("json.facet", "{domains:{type:terms,field:domain,limit:25 facet:{years:{type:range,field:crawl_year,start:1998,end:2021,gap:1}}}}");
+
+      String startYear="1998"; //maybe configure
+      int endYear = LocalDate.now().getYear()+1; //add one since it is not incluced 
+         
+      solrQuery.setParam("json.facet", "{domains:{type:terms,field:domain,limit:25 facet:{years:{type:range,field:crawl_year,start:"+startYear+",end:"+endYear+",gap:1}}}}");
       
       for (String filter : fq) {
         solrQuery.addFilterQuery(filter);    

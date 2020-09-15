@@ -38,6 +38,12 @@ public class HtmlParserUrlRewriterTest {
         assertRewrite("simple", 11);
     }
 
+    // No verification of result, only count of replaced
+    @Test
+    public void testSimpleRewritingCount() throws Exception {
+        assertCount("simple", 11);
+    }
+
     @Test
     public void testMultiSourceRewriting() throws Exception {
         assertRewrite("multisource", 16);
@@ -60,8 +66,7 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testScriptRewriting() throws Exception {
-        // TODO: Why is it not 7?
-        assertRewrite("script", 8);
+        assertRewrite("script", 7);
     }
 
     /* *************************************************************************************
@@ -75,10 +80,21 @@ public class HtmlParserUrlRewriterTest {
 
         ParseResult rewritten = HtmlParserUrlRewriter.replaceLinks(
                 input, "http://example.com/somefolder/", "2020-04-30T13:07:00",
-                RewriteTestHelper.createMockResolver());
+                RewriteTestHelper.createOXResolver());
 
         assertEquals("The result should be as expected for test '" + testPrefix + "'",
                      expected, rewritten.getReplaced().replaceAll(" +\n", "\n"));
+        assertEquals("The number of replaced links should be as expected",
+                     expectedReplaced, rewritten.getNumberOfLinksReplaced());
+    }
+
+    private void assertCount(String testPrefix, int expectedReplaced) throws Exception {
+        final String input = RewriteTestHelper.fetchUTF8("example_rewrite/" + testPrefix + ".html");
+
+        ParseResult rewritten = HtmlParserUrlRewriter.replaceLinks(
+                input, "http://example.com/somefolder/", "2020-04-30T13:07:00",
+                RewriteTestHelper.createIdentityResolver());
+
         assertEquals("The number of replaced links should be as expected",
                      expectedReplaced, rewritten.getNumberOfLinksReplaced());
     }
