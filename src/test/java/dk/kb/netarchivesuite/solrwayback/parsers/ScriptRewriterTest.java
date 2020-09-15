@@ -42,7 +42,7 @@ public class ScriptRewriterTest {
 
         ScriptRewriter rewriter = new ScriptRewriter();
         String actual = rewriter.replaceLinks(
-                SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createMockResolver(), RewriterBase.PACKAGING.attribute
+                SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(), RewriterBase.PACKAGING.attribute
         ).getReplaced();
         assertEquals(EXPECTED, actual);
     }
@@ -53,7 +53,7 @@ public class ScriptRewriterTest {
         final String expected = RewriteTestHelper.fetchUTF8("example_rewrite/script_external_expected.js").
                 replaceAll(" +\n", "\n");
         ParseResult rewritten = ScriptRewriter.getInstance().replaceLinks(
-                input, "http://example.com", MOCK_DATE, RewriteTestHelper.createMockResolver(), RewriterBase.PACKAGING.identity
+                input, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(), RewriterBase.PACKAGING.identity
         );
 
         assertEquals(expected, rewritten.getReplaced());

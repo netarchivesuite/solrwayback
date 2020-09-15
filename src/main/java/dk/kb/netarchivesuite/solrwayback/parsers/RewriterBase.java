@@ -212,15 +212,7 @@ public abstract class RewriterBase {
 			String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap, PACKAGING packaging)
 			throws Exception {
 
-		CountingMap<String, IndexDocShort> countingMap = null;
-		if (urlMap instanceof CountingMap) {
-			countingMap = (CountingMap<String, IndexDocShort>) urlMap;
-		} else {
-			countingMap = new CountingMap<>();
-			countingMap.putAll(urlMap);
-		}
-		ParseResult result = new ParseResult(replaceLinks(content, baseURL, crawlDate, countingMap));
-		result.addStats(countingMap.getFoundCount(), countingMap.getFoundCount());
+		ParseResult result = new ParseResult(replaceLinks(content, baseURL, crawlDate, urlMap));
 		escapeContent(result, packaging);
 		return result;
 	}
