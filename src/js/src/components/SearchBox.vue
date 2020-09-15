@@ -7,12 +7,12 @@
              autofocus
              :class="solrSettings.urlSearch 
                ? validateUrl(futureQuery) === false 
-                 ? query.substring(0,8) === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
-                 : query.substring(0,8) === 'url_norm' ? '' : 'urlSearchActivated' 
+                 ? futureQuery.substring(0,8) === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
+                 : futureQuery.substring(0,8) === 'url_norm' ? '' : 'urlSearchActivated' 
                : ''"
              :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'">
       <transition name="url-search-helper">
-        <span v-if="solrSettings.urlSearch && query.substring(0,8) !== 'url_norm'" class="urlSearchHelper">url_norm:</span>
+        <span v-if="solrSettings.urlSearch && futureQuery.substring(0,8) !== 'url_norm'" class="urlSearchHelper">url_norm:</span>
       </transition>
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
