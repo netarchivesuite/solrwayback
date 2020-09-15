@@ -5,8 +5,15 @@
              v-model="futureQuery"
              type="text"
              autofocus
-             :class="solrSettings.urlSearch ? validateUrl() === false ? 'urlNotTrue' : '' : ''"
+             :class="solrSettings.urlSearch 
+               ? validateUrl(futureQuery) === false 
+                 ? query.substring(0,8) === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
+                 : query.substring(0,8) === 'url_norm' ? '' : 'urlSearchActivated' 
+               : ''"
              :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'">
+      <transition name="url-search-helper">
+        <span v-if="solrSettings.urlSearch && query.substring(0,8) !== 'url_norm'" class="urlSearchHelper">url_norm:</span>
+      </transition>
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
       </button>
@@ -86,7 +93,7 @@ export default {
     },
   },
   mounted () {
-    console.log(this.$router.history.current.query)
+    //console.log(this.$router.history.current.query)
     if(this.$router.history.current.query.q) {
       this.updateQuery(this.$router.history.current.query.q)
       this.futureQuery = this.$router.history.current.query.q
@@ -100,7 +107,27 @@ export default {
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
         }
         else if(this.solrSettings.urlSearch) {
-          console.log('fireing url search')
+          let queryString = ''
+          if(this.futureQuery.substring(0,10) === 'url_norm:"') {
+            queryString = this.futureQuery.replace('url_norm:"', '').slice(0,-1)
+          }
+          else {
+            queryString = this.futureQuery
+          }
+          if(this.validateUrl(queryString)) {
+            this.updateQuery('url_norm:"' + queryString + '"')
+            this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
+            this.requestFacets({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
+            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+          }
+          else {
+            this.setNotification({
+          	title: 'We are so sorry!',
+            text: 'This query is not valid. the url must start with \'http://\' or \'https://\'',
+            type: 'error',
+            timeout: false
+          })
+          }
         }
         else {
           console.log('firing normal search')
@@ -123,7 +150,8 @@ export default {
       resetSearchState:'resetState',
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
-      updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch'
+      updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
+      updateSolrSettingOffset:'updateSolrSettingOffset'
     }),
     ...mapActions('Notifier', {
       setNotification: 'setNotification'
@@ -138,23 +166,32 @@ export default {
         //console.log('search params changed!')
         this.clearResults()
         this.updateQuery(this.futureQuery)
+        this.updateSolrSettingOffset(0)
         this.futureGrouped = this.solrSettings.grouping
         this.futureUrlSearch = this.solrSettings.urlSearch
         this.futureImgSearch = this.solrSettings.imgSearch
         if(this.solrSettings.imgSearch) {
            this.requestImageSearch({query:this.query})
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-          return
         }
         else if(this.solrSettings.urlSearch) {
-          if(this.validateUrl()) {
-            this.requestUrlSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-          return
+          let queryString = ''
+          if(this.futureQuery.substring(0,10) === 'url_norm:"') {
+            queryString = this.futureQuery.replace('url_norm:"', '').slice(0,-1)
+          }
+          else {
+            queryString = this.futureQuery
+          }
+          if(this.validateUrl(queryString)) {
+            this.updateQuery('url_norm:"' + queryString + '"')
+            this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
+            this.requestFacets({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
+            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
           }
           else {
             this.setNotification({
           	title: 'We are so sorry!',
-            text: 'This URL is not valid. Make sure it starts with http:// or https://',
+            text: 'This query is not valid. the url must start with \'http://\' or \'https://\'',
             type: 'error',
             timeout: false
           })
@@ -185,8 +222,10 @@ export default {
       this.futureQuery = ''
       this.resetSearchState()
     },
-    validateUrl() {
-      return this.futureQuery.substring(0,7) === 'http://' || this.futureQuery.substring(0,8) === 'https://'
+    validateUrl(testString) {
+      return testString.substring(0,7) === 'http://' || 
+             testString.substring(0,8) === 'https://' || 
+             testString.substring(0,10) === 'url_norm:"'
       ? true
       : false
     }
