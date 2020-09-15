@@ -158,8 +158,6 @@ public class HtmlParserUrlRewriter {
 		long replaceMS = -System.currentTimeMillis();
 
 		final String waybackDate = DateUtils.convertUtcDate2WaybackDate(crawlDate);
-		AtomicInteger numberOfLinksReplaced = new  AtomicInteger();
-		AtomicInteger numberOfLinksNotFound = new  AtomicInteger();
 		Document doc = Jsoup.parse(html, url);
 
 		// Collect URLs and resolve archived versions for them 
@@ -171,14 +169,14 @@ public class HtmlParserUrlRewriter {
 		resolveMS += System.currentTimeMillis();
 
 		// Rewriting to url_norm, so it can be matched when replacing.
-		final Map<String, IndexDocShort> urlReplaceMap = new CountingMap<>();
+		final CountingMap<String, IndexDocShort> urlReplaceMap = new CountingMap<>();
 		for (IndexDocShort indexDoc: docs){
 			urlReplaceMap.put(indexDoc.getUrl_norm(), indexDoc);
 		}
 
         // Replace URLs in the document with URLs for archived versions.
 		UnaryOperator<String> rewriterRaw = createTransformer(
-				urlReplaceMap, "downloadRaw", "", numberOfLinksReplaced, numberOfLinksNotFound);
+				urlReplaceMap, "downloadRaw", "");
         processElement(doc, "img",    "abs:src", rewriterRaw);
         processElement(doc, "embed",  "abs:src", rewriterRaw);
         processElement(doc, "source", "abs:src", rewriterRaw);
@@ -189,12 +187,12 @@ public class HtmlParserUrlRewriter {
 
 		// link elements are mostly used to reference stylesheets, which must be transformed before use
 		UnaryOperator<String> rewriterView = createTransformer(
-				urlReplaceMap, "view", "", numberOfLinksReplaced, numberOfLinksNotFound);
+				urlReplaceMap, "view", "");
 		processElement(doc, "link", "abs:href", rewriterView);
 
 		// Don't show SolrWayback bar in frames
 		UnaryOperator<String> rewriterViewNoBar = createTransformer(
-				urlReplaceMap, "view", "&showToolbar=false", numberOfLinksReplaced, numberOfLinksNotFound);
+				urlReplaceMap, "view", "&showToolbar=false");
 		processElement(doc, "frame",  "abs:src", rewriterViewNoBar);
         processElement(doc, "iframe", "abs:src", rewriterViewNoBar);
 
@@ -222,13 +220,13 @@ public class HtmlParserUrlRewriter {
 		processElementRegexp(doc, "*", "style", rewriterRaw, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
 
 		// Script content is handled by ScriptRewriter
-		rewriteInlineScripts(doc, crawlDate, urlReplaceMap, numberOfLinksReplaced, numberOfLinksNotFound);
+		rewriteInlineScripts(doc, crawlDate, urlReplaceMap);
 
 		replaceMS += System.currentTimeMillis();
 		log.info(String.format(
 				"replaceLinks('%s', %s): Links unique=%d, replaced=%d, not_found=%d. " +
 				"Time total=%dms (resolveHTML=%dms, analysis+adjustment=%dms, resolveResources=%dms)",
-	            url, crawlDate, urlSet.size(), numberOfLinksReplaced.get(), numberOfLinksNotFound.get(),
+	            url, crawlDate, urlSet.size(), urlReplaceMap.getFoundCount(), urlReplaceMap.getFailCount(),
 				preReplaceMS+replaceMS, preReplaceMS, replaceMS-resolveMS, resolveMS));
 
 
@@ -240,20 +238,17 @@ public class HtmlParserUrlRewriter {
 
 		ParseResult res = new ParseResult();
 		res.setReplaced(html_output);
-		res.setNumberOfLinksReplaced(numberOfLinksReplaced.intValue());
-		res.setNumberOfLinksNotFound(numberOfLinksNotFound.intValue());
+		res.setNumberOfLinksReplaced(urlReplaceMap.getFoundCount());
+		res.setNumberOfLinksNotFound(urlReplaceMap.getFailCount());
 		return res;
 	}
 
 	private static void rewriteInlineScripts(
-			Document doc, String crawlDate, Map<String, IndexDocShort> urlReplaceMap,
-			AtomicInteger numberOfLinksReplaced, AtomicInteger numberOfLinksNotFound) {
+			Document doc, String crawlDate, Map<String, IndexDocShort> urlReplaceMap) {
 		processElement(doc, "script", null, (content) -> {
 			try {
 				ParseResult scriptResult = ScriptRewriter.getInstance().replaceLinks(
 						content, doc.baseUri(), crawlDate, urlReplaceMap, RewriterBase.PACKAGING.inline);
-				numberOfLinksReplaced.addAndGet(scriptResult.getNumberOfLinksReplaced());
-				numberOfLinksNotFound.addAndGet(scriptResult.getNumberOfLinksNotFound());
 				return scriptResult.getReplaced();
 			} catch (Exception e) {
 				log.warn("Exception while parsing inline script for " + doc.baseUri() + " " + crawlDate, e);
@@ -268,26 +263,21 @@ public class HtmlParserUrlRewriter {
 	 * @param urlReplaceMap         a map of archived versions for normalised URLs on the page.
 	 * @param type                  view or downloadRAW.
 	 * @param extraParams           optional extra parameters for the URL to return.
-	 * @param numberOfLinksReplaced incremented with 1 if the incoming URL is matched in urlReplaceMap.
-	 * @param numberOfLinksNotFound incremented with 1 if the incoming URL is not matched in urlReplaceMap.
 	 * @return an URL to an archived version of the resource that the URL designates or a {@code notfound} URL.
 	 */
 	private static UnaryOperator<String> createTransformer(
-            Map<String, IndexDocShort> urlReplaceMap, String type, String extraParams,
-            AtomicInteger numberOfLinksReplaced, AtomicInteger numberOfLinksNotFound) {
+            Map<String, IndexDocShort> urlReplaceMap, String type, String extraParams) {
         return (String sourceURL) -> {
                 sourceURL =  sourceURL.replace("/../", "/");
     
                 IndexDocShort indexDoc = urlReplaceMap.get(Normalisation.canonicaliseURL(sourceURL));
                 if (indexDoc != null){
-                    numberOfLinksReplaced.getAndIncrement();
                     return PropertiesLoader.WAYBACK_BASEURL + "services/" + type +
                            "?source_file_path=" + indexDoc.getSource_file_path() +
                            "&offset=" + indexDoc.getOffset() +
                            (extraParams == null ? "" : extraParams);
                 }
                 log.info("No harvest found for:"+sourceURL);
-                numberOfLinksNotFound.getAndIncrement();;
                 return NOT_FOUND_LINK;
             };
     }
