@@ -22,8 +22,7 @@ public class DomainStatisticsForDomainParser {
     
     JSONObject json = new JSONObject(jsonString);
     JSONObject jsonFacets = JsonUtils.getSubObjectIfExists(json, "facets");
-    long totalCount = jsonFacets.getLong("count");
-    System.out.println("count:" + totalCount);
+    long totalCount = jsonFacets.getLong("count"); //Total summation over all year of all results.    
     JSONObject jsonDomains= JsonUtils.getSubObjectIfExists(jsonFacets, "domains");
     
        
