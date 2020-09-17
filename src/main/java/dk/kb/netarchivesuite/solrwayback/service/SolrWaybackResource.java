@@ -843,9 +843,8 @@ public class SolrWaybackResource {
       response.header("Content-Encoding", doc.getContentEncoding()); 
     }else {      
       response.header("Content-Encoding", arcEntry.getContentEncoding());
-    }
-          log.info("return before 0");
-          return response.build();
+    }          
+     return response.build();
   }
 
 
