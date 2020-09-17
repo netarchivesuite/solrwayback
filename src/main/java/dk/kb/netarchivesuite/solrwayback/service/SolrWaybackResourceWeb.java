@@ -65,64 +65,6 @@ public class SolrWaybackResourceWeb {
       } catch (Exception e) {           
         throw handleServiceExceptions(e);
       }    
-        
-        /*
-        StringBuilder b = new StringBuilder();
-       b.append("State,education.alberta.ca,ubiqcomputing.org,www.ubiqcomputing.org,www.education.alberta.ca,www.pdfonline.com,mediasmarts.ca,www.youtube.com,www.oecd.org,m.pdfonline.com,www.education.gov.ab.ca,www.lrc.education.gov.ab.ca,tradesecrets.alberta.ca,eae.alberta.ca,studyinalberta.ca,alberta.ca,ideas.education.alberta.ca,www.easypdfcloud.com,www.netera.ca,www.industrymailout.com,alis.alberta.ca,other"+"\n");           
-       b.append("\n"); 
-       b.append("2000,2,0,0,0,0,0,0,0,0,95,0,0,0,0,0,0,0,0,0,0,0");
-       b.append("\n");
-      b.append("2001,4,0,0,338,0,0,0,0,0,55,0,0,0,0,0,0,0,0,0,0,6");
-      b.append("\n");
-      b.append("2002,5,0,0,1041,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,1");
-      b.append("\n");
-      b.append("2003,3,1,0,370,0,0,0,0,0,0,0,0,0,0,0,3,0,1,0,0,7");
-      b.append("\n");
-      b.append("2004,3,0,0,251,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,2");
-      b.append("\n");
-      b.append("2005,3,0,0,289,0,0,0,0,0,0,0,0,0,0,0,1,0,28,0,0,22");
-      b.append("\n");
-      b.append("2006,4,0,0,402,0,0,0,0,0,1,0,0,0,0,0,0,0,29,0,0,23");
-      b.append("\n");
-      b.append("2007,322,0,0,654,0,0,0,0,0,3,0,0,0,0,0,0,0,29,0,2,19");
-      b.append("\n");
-      b.append("2008,16056,0,0,322,0,1,4,0,0,71,1,0,24,0,12,17,0,0,0,20,205");
-      b.append("\n");
-      b.append("2009,12177,1,1,387,0,1,3,134,0,0,1,0,4,0,32,18,0,0,0,18,66");
-      b.append("\n");
-      b.append("2010,10219,13472,11953,416,0,1,5,4,0,1,1,75,4,0,19,7,0,0,0,5,78");
-      b.append("\n");
-      b.append("2011,9,0,0,7,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,1");
-      b.append("\n");
-      b.append("2012,21613,0,0,592,0,1,5,71,0,0,1,64,4,15,11,7,0,0,20,5,52");
-      b.append("\n");
-      b.append("2013,3231,0,0,549,0,1,3,66,0,0,1,1,15,16,6,7,0,0,20,4,50");
-      b.append("\n");
-      b.append("2014,7849,0,0,354,0,2,14,2,0,0,2,1,27,16,9,8,0,0,2,4,74");
-      b.append("\n");
-      b.append("2015,0,0,0,0,0,0,0,0,0,0,55,0,0,0,0,0,0,0,0,0,0");
-      b.append("\n");
-      b.append("2016,56,0,0,300,0,0,0,0,0,1,46,1,0,0,0,0,0,0,0,0,1");
-      b.append("\n");
-      b.append("2017,6371,0,0,302,0,1,3,2,0,0,98,61,15,16,5,7,0,0,44,3,129");
-      b.append("\n");
-      b.append("2018,56,0,0,243,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5");
-      b.append("\n");
-      b.append("2019,5605,0,0,196,0,620,1,1,0,0,0,0,20,16,5,7,0,0,0,4,121");
-      b.append("\n");
-      b.append("2020,497,0,0,309,0,572,4,1,0,1,0,0,0,0,0,0,0,0,0,1,53");
-      b.append("\n");
-      b.append("2021,5471,0,0,300,2104,1145,180,1,28,0,0,0,1,16,4,8,59,0,0,5,251");
-      b.append("\n");
-      b.append("2022,533,0,0,329,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,1,11");
-      b.append("\n");
-      b.append("2023,5054,0,0,0,677,0,104,0,19,0,0,0,1,16,3,8,27,0,0,9,159");
-      b.append("\n");
-      b.append("2024,2,0,0,0,309,0,85,0,212,0,0,0,0,0,0,0,2,0,0,0,46");
-      b.append("\n");
-
-*/
-
      
     }
     
