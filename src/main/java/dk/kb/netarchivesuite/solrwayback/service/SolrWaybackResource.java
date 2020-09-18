@@ -65,6 +65,23 @@ public class SolrWaybackResource {
   
   
 
+  
+  /*
+   * Only for debugging/error finding. Not called from SolrWayback frontend.
+   * Can be improved to not also load binary which are not shown. 
+   */
+  @GET
+  @Path("warc/header/parsed")
+  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+  public ArcEntry getArcEntry(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
+      try {                                                                                      
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+        return arcEntry;                              
+      } catch (Exception e) {         
+          throw handleServiceExceptions(e);
+      }
+  }
+  
   /*
    * Only for debugging/error finding. Not called from SolrWayback frontend.
    * Can be improved to not also load binary which are not shown. 
