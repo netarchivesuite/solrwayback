@@ -289,12 +289,14 @@ public abstract class RewriterBase {
 				parseResult.replace(ESCAPE_SLASH_PATTERN, ESCAPE_SLASH_REPLACEMENT);
 //				parseResult.replace(SLASH_PATTERN, SLASH_REPLACEMENT);
 				parseResult.replace(LT_PATTERN, LT_REPLACEMENT);
+				parseResult.replace(GT_PATTERN, GT_REPLACEMENT);
 				parseResult.replace(AMPERSAND_PATTERN, AMPERSAND_REPLACEMENT);
 //				parseResult.setReplaced(COMMENT_PATTERN.matcher(parseResult.getReplaced()).replaceAll(COMMENT_REPLACEMENT_ENCODE)); // Must be before SLASH_PATTERN
 				break;
 			}
 			case attribute: {
-				parseResult.setReplaced(SLASH_PATTERN.matcher(parseResult.getReplaced()).replaceAll(SLASH_REPLACEMENT));
+//				parseResult.setReplaced(SLASH_PATTERN.matcher(parseResult.getReplaced()).replaceAll(SLASH_REPLACEMENT));
+				parseResult.replace(ESCAPE_SLASH_PATTERN, ESCAPE_SLASH_REPLACEMENT);
 				parseResult.setReplaced(LT_PATTERN.matcher(parseResult.getReplaced()).replaceAll(LT_REPLACEMENT));
 				parseResult.setReplaced(parseResult.getReplaced().replace("\"", "&quot;"));
 				break;
@@ -323,8 +325,12 @@ public abstract class RewriterBase {
 
 	static final Pattern SLASH_PATTERN = Pattern.compile("(\\\\)?(/[^/])");
 	static final String SLASH_REPLACEMENT = "\\\\$1$2";
+
 	static Pattern LT_PATTERN = Pattern.compile("<");
 	static final String LT_REPLACEMENT = "\\\\u003C"; // Why do we need double escape? (Unit tests shows we do)
+
+	static Pattern GT_PATTERN = Pattern.compile(">");
+	static final String GT_REPLACEMENT = "\\\\u003E"; // Why do we need double escape? (Unit tests shows we do)
 
 	/**
 	 * Takes a previously processed String that contains special markers for strings like {@code //}, {@code &} and
