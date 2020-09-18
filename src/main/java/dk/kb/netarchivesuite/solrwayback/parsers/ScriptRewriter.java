@@ -33,7 +33,7 @@ public class ScriptRewriter extends RewriterBase {
 
 	// TODO: How about escaped " in the values?
 	private static Pattern JSON_KEY_PATTERN = Pattern.compile(
-			"(?s)\"(?:href|uri|url|playable_url_dash|playable_url|playable_url_quality_hd)\"\\s*:\\s*\"([^\"]+)\"");
+			"(?s)\"?(?:href|uri|url|playable_url_dash|playable_url|playable_url_quality_hd)\"?\\s*[=:]\\s*\"([^\"]+)\"");
 	private static Pattern JSON_XML_BASEURL_PATTERN = Pattern.compile(
 			"(?s)(?:<|\\\\u003[cC]|&lt;)BaseURL(?:>|&gt;)(.+?)(?:<|\\\\u003[cC]|&lt;)\\\\?/BaseURL(?:>|&gt;)");
 
