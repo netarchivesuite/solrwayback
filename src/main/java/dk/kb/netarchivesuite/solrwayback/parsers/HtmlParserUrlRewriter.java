@@ -2,7 +2,6 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,7 +46,7 @@ public class HtmlParserUrlRewriter {
 			"url\\s*\\(\\s*[\"']?([^)\"']*)[\"']?\\s*\\)");
 
 	//replacing urls that points into the world outside solrwayback because they are never harvested
-    private static final String NOT_FOUND_LINK=PropertiesLoader.WAYBACK_BASEURL+"services/notfound/";
+    public static final String NOT_FOUND_LINK = PropertiesLoader.WAYBACK_BASEURL + "services/notfound/";
 
 	public static void main(String[] args) throws Exception{
 //		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
@@ -231,10 +230,7 @@ public class HtmlParserUrlRewriter {
 
 
 		String html_output= doc.toString();
-		html_output = html_output.
-				replace(AMPERSAND_REPLACE, "&").
-				// JSOUP replaces newlines with space
-				replace(RewriterBase.NEWLINE_REPLACE, "\n");
+		html_output = RewriterBase.unescape(html_output);
 
 		ParseResult res = new ParseResult();
 		res.setReplaced(html_output);
@@ -248,7 +244,7 @@ public class HtmlParserUrlRewriter {
 		processElement(doc, "script", null, (content) -> {
 			try {
 				ParseResult scriptResult = ScriptRewriter.getInstance().replaceLinks(
-						content, doc.baseUri(), crawlDate, urlReplaceMap, RewriterBase.PACKAGING.inline);
+						content, doc.baseUri(), crawlDate, urlReplaceMap, RewriterBase.PACKAGING.inline, true);
 				return scriptResult.getReplaced();
 			} catch (Exception e) {
 				log.warn("Exception while parsing inline script for " + doc.baseUri() + " " + crawlDate, e);
@@ -441,7 +437,7 @@ public class HtmlParserUrlRewriter {
             String newContent = transformer.apply(content);
 			if (newContent != null && !newContent.equals(content)) {
 				if (attribute == null || attribute.isEmpty()) {
-					e.html(newContent.replace("\n", RewriterBase.NEWLINE_REPLACE));
+					e.html(newContent.replace("\n", RewriterBase.NEWLINE_REPLACEMENT));
 				} else {
 					e.attr(attribute.replaceFirst("abs:", ""), newContent);
 				}

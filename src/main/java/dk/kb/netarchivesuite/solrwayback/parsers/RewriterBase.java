@@ -16,10 +16,10 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.CountingMap;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.RegexpReplacer;
 import dk.kb.netarchivesuite.solrwayback.util.URLAbsoluter;
 import org.apache.commons.logging.Log;
@@ -65,13 +65,42 @@ public abstract class RewriterBase {
  	 */
 	public enum SOLRWAYBACK_SERVICE {
 		/**
-		 * Transform embedded links.
+		 * Transform resources during delivery (typically links to HTML pages, CSS and JavaScript).
+		 * If the linked resource cannot be located in the archive, {@link SOLRWAYBACK_SERVICE_FALLBACK} is used.
 		 */
 		view,
 		/**
 		 * Deliver directly, without any transformation.
+		 * If the linked resource cannot be located in the archive, {@link SOLRWAYBACK_SERVICE_FALLBACK} is used.
 		 */
-		downloadRaw
+		downloadRaw,
+		/**
+		 * No rewriting of links: Deliver the original link unmodified.
+		 */
+		identity,
+		/**
+		 * Rewrite links to their absolute and normalised form.
+		 */
+		normalised,
+		/**
+		 * Fail all resolving intentionally, so that the {@link SOLRWAYBACK_SERVICE_FALLBACK} is triggered.
+		 */
+		fail
+	}
+
+	/**
+	 * If linked content cannot be resolved in the archive, the given action is performed on the URL.
+	 */
+	public enum SOLRWAYBACK_SERVICE_FALLBACK {
+		/**
+		 * Rewrite links to SolrWayback links where the resolving of the resource in the archive is delayed until
+		 * the browser activated the link.
+		 */
+		delay,
+		/**
+		 * Insert {@link HtmlParserUrlRewriter#NOT_FOUND_LINK} as link for all non-resolvable resources.
+		 */
+		error
 	}
 
 
@@ -211,12 +240,29 @@ public abstract class RewriterBase {
 	public ParseResult replaceLinks(
 			String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap, PACKAGING packaging)
 			throws Exception {
-
-		ParseResult result = new ParseResult(replaceLinks(content, baseURL, crawlDate, urlMap));
-		escapeContent(result, packaging);
-		return result;
+		return replaceLinks(content, baseURL, crawlDate, urlMap, packaging, false);
 	}
 
+	/**
+	 * Replaces links and other URLs with the alternatives in urlMap.
+	 * @param content probably JavaScript, CSS or similar.
+	 * @param baseURL the URL for the content (needed for resolving relative links).
+	 * @param crawlDate the ideal timestamp for the archived versions to link to.
+	 * @param urlMap map from resource URLs to archived versions, normally retrieved with {@link #getResourceURLs}.
+	 * @param packaging how the content was stated originally. This controls escaping.
+	 * @param markSpecialChars if true, ampersand and newlines are marked as {@link #AMPERSAND_REPLACEMENT}
+	 *                         and {@link #NEWLINE_REPLACEMENT}.
+	 * @return the content with links to archived versions instead of live web version.
+	 * @throws Exception generic Exception.
+	 */
+	public ParseResult replaceLinks(
+			String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap, PACKAGING packaging,
+			boolean markSpecialChars) throws Exception {
+
+		ParseResult result = new ParseResult(replaceLinks(content, baseURL, crawlDate, urlMap));
+		escapeContent(result, packaging, markSpecialChars);
+		return result;
+	}
 
 	/**
 	 * Escape the given content with regard to the packaging.
@@ -224,13 +270,25 @@ public abstract class RewriterBase {
 	 * @param packaging   how the content is to be represented.
 	 */
 	public static void escapeContent(ParseResult parseResult, PACKAGING packaging) {
+		escapeContent(parseResult, packaging, false);
+	}
+	/**
+	 * Escape the given content with regard to the packaging.
+	 * @param parseResult holds the content.
+	 * @param packaging   how the content is to be represented.
+	 * @param markSpecialChars if true, ampersand and newlines are marked as {@link #AMPERSAND_REPLACEMENT}
+	 *                         and {@link #NEWLINE_REPLACEMENT}.
+	 */
+	public static void escapeContent(ParseResult parseResult, PACKAGING packaging, boolean markSpecialChars) {
 		if (parseResult.getReplaced() == null) {
 			return;
 		}
 		switch (packaging) {
 			case inline: {
+				parseResult.setReplaced(COMMENT_PATTERN.matcher(parseResult.getReplaced()).replaceAll(COMMENT_REPLACEMENT_ENCODE)); // Must be before SLASH_PATTERN
 				parseResult.setReplaced(SLASH_PATTERN.matcher(parseResult.getReplaced()).replaceAll(SLASH_REPLACEMENT));
 				parseResult.setReplaced(LT_PATTERN.matcher(parseResult.getReplaced()).replaceAll(LT_REPLACEMENT));
+				parseResult.setReplaced(AMPERSAND_PATTERN.matcher(parseResult.getReplaced()).replaceAll(AMPERSAND_REPLACEMENT));
 				break;
 			}
 			case attribute: {
@@ -242,18 +300,35 @@ public abstract class RewriterBase {
 			case identity: break;
 			default: throw new UnsupportedOperationException("PACKAGING '" + packaging + "' is unsupported");
 		}
-		// Always replace special placeholder for &
-		parseResult.setReplaced(parseResult.getReplaced().
-				replace(AMPERSAND_REPLACE, "&").
-				replace(NEWLINE_REPLACE, "\n"));
+		if (!markSpecialChars) {
+			parseResult.setReplaced(unescape(parseResult.getReplaced()));
+		}
 	}
-	static final String AMPERSAND_REPLACE="_STYLE_AMPERSAND_REPLACE_";
-	static final String NEWLINE_REPLACE = "_REWRITER_NEWLINE_REPLACE_";
+	static final Pattern AMPERSAND_PATTERN = Pattern.compile("([&])");
+	static final String AMPERSAND_REPLACEMENT ="_STYLE_AMPERSAND_REPLACE_";
+	
+	static final Pattern COMMENT_PATTERN = Pattern.compile("(//)(.*)");
+	static final String COMMENT_REPLACEMENT ="_COMMENT_REPLACE_";
+	static final String COMMENT_REPLACEMENT_ENCODE ="_COMMENT_REPLACE_$2";
 
-	static final Pattern SLASH_PATTERN = Pattern.compile("(\\\\)?/");
-	static final String SLASH_REPLACEMENT = "\\\\/";
+	static final String NEWLINE_REPLACEMENT = "_REWRITER_NEWLINE_REPLACE_";
+
+	static final Pattern SLASH_PATTERN = Pattern.compile("(?:\\\\)?(/[^/])"); // Should not match // (comments)
+	static final String SLASH_REPLACEMENT = "\\\\$1";
 	static Pattern LT_PATTERN = Pattern.compile("<");
-	static final String LT_REPLACEMENT = "\\u003C";
+	static final String LT_REPLACEMENT = "\\\\u003C"; // Why do we need double escape? (Unit tests shows we do)
+
+	/**
+	 * Takes a previously processed String that contains special markers for strings like {@code //}, {@code &} and
+	 * newline and converts them back to their original form.
+	 * @param in previously processed String.
+	 * @return the String ready for external delivery.
+	 */
+	public static String unescape(String in) {
+		return in.replace(AMPERSAND_REPLACEMENT, "&").
+				replace(NEWLINE_REPLACEMENT, "\n").
+				replace(COMMENT_REPLACEMENT, "//");
+	}
 
 	/**
 	 * Replaces links and other URLs with the alternatives in urlMap.
@@ -271,6 +346,8 @@ public abstract class RewriterBase {
 	 * Generic transformer creator that absolutes & normalises the incoming URL and return a link to an archived
 	 * version, if such a version exists. Else a {@code notfound} link is returned.
 	 * @param baseURL       if defined, incoming URLs are made absolute using this.
+	 * @param crawlDate     f defined and delayed resolving is used, it will be relative to baseTime.
+	 *                      ISO-Format: {@code YYYY-mm-ddTHH:MM:ssZ}.
 	 * @param normalise     if true, incoming URLs are normalised using {@link Normalisation#canonicaliseURL(String)}.
 	 * @param urlReplaceMap a map of archived versions for normalised URLs on the page.
 	 * @param service       the type of SolrWayback service to call when secondary content is to be delivered.
@@ -278,23 +355,55 @@ public abstract class RewriterBase {
 	 * @return an URL to an archived version of the resource that the URL designates or a {@code notfound} URL.
 	 */
 	public static UnaryOperator<String> createURLTransformer(
-			String baseURL, boolean normalise, SOLRWAYBACK_SERVICE service, String extraParams,
-			Map<String, IndexDocShort> urlReplaceMap) {
+			String baseURL, String crawlDate, boolean normalise,
+			SOLRWAYBACK_SERVICE service, SOLRWAYBACK_SERVICE_FALLBACK fallback,
+			String extraParams, Map<String, IndexDocShort> urlReplaceMap) {
+		final String waybackDate = crawlDate == null ? null : DateUtils.convertUtcDate2WaybackDate(crawlDate);
+
+		if (service == SOLRWAYBACK_SERVICE.identity) {
+			return url -> url;
+		}
+
 		final URLAbsoluter absoluter = new URLAbsoluter(baseURL, normalise);
         return (String sourceURL) -> {
         	if ((sourceURL = absoluter.apply(sourceURL)) == null) {
 				return null;
 			}
 
-			IndexDocShort indexDoc = urlReplaceMap.get(sourceURL);
-			if (indexDoc != null){
-				return PropertiesLoader.WAYBACK_BASEURL + "services/" + service +
-					   "?source_file_path=" + indexDoc.getSource_file_path() +
-					   "&offset=" + indexDoc.getOffset() +
-					   (extraParams == null ? "" : extraParams);
+        	if (service == SOLRWAYBACK_SERVICE.normalised) {
+        		return sourceURL;
 			}
-			log.info("No harvest found for: '" + sourceURL + "'");
-			return NOT_FOUND_LINK;
+
+        	if (service != SOLRWAYBACK_SERVICE.fail) { // view or downloadRaw
+				IndexDocShort indexDoc = urlReplaceMap.get(sourceURL);
+				final String serviceCall;
+				switch (service) { // Decouple the service call from the enum.toString as the enum might be renamed
+					case view: {
+						serviceCall = "view";
+						break;
+					}
+					case downloadRaw: {
+						serviceCall = "downloadRaw";
+						break;
+					}
+					default: throw new UnsupportedOperationException(
+							"The SOLRWAYBACK_SERVICE " + service + " is not supported yet");
+				}
+				if (indexDoc != null) {
+					return PropertiesLoader.WAYBACK_BASEURL + "services/" + serviceCall +
+						   "?source_file_path=" + indexDoc.getSource_file_path() +
+						   "&offset=" + indexDoc.getOffset() +
+						   (extraParams == null ? "" : extraParams);
+				}
+				log.info("No harvest found for: '" + sourceURL + "'");
+			}
+
+        	switch (fallback) {
+				case error: return NOT_FOUND_LINK;
+				case delay: return PropertiesLoader.WAYBACK_BASEURL + "services/web/" + waybackDate + "/" + sourceURL;
+				default: throw new UnsupportedOperationException(
+						"The SOLRWAYBACK_SERVICE_FALLBACK " + fallback + " is not supported yet");
+			}
 		};
 	}
 	private static final String NOT_FOUND_LINK = PropertiesLoader.WAYBACK_BASEURL + "services/notfound/";

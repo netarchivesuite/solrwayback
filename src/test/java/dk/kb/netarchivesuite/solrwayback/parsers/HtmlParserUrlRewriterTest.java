@@ -69,6 +69,16 @@ public class HtmlParserUrlRewriterTest {
         assertRewrite("script", 7);
     }
 
+    @Test
+    public void testScript2Rewriting() throws Exception {
+        assertRewrite("script2", 7);
+    }
+
+    @Test
+    public void testScriptescaping() throws Exception {
+        assertRewrite("script_escape", 0);
+    }
+
     /* *************************************************************************************
      * Helpers below
      ************************************************************************************* */
