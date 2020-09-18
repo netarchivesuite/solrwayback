@@ -285,10 +285,12 @@ public abstract class RewriterBase {
 		}
 		switch (packaging) {
 			case inline: {
-				parseResult.setReplaced(COMMENT_PATTERN.matcher(parseResult.getReplaced()).replaceAll(COMMENT_REPLACEMENT_ENCODE)); // Must be before SLASH_PATTERN
-				parseResult.setReplaced(SLASH_PATTERN.matcher(parseResult.getReplaced()).replaceAll(SLASH_REPLACEMENT));
-				parseResult.setReplaced(LT_PATTERN.matcher(parseResult.getReplaced()).replaceAll(LT_REPLACEMENT));
-				parseResult.setReplaced(AMPERSAND_PATTERN.matcher(parseResult.getReplaced()).replaceAll(AMPERSAND_REPLACEMENT));
+				parseResult.replace(ESCAPE2_PATTERN, ESCAPE2_REPLACEMENT);
+				parseResult.replace(ESCAPE_SLASH_PATTERN, ESCAPE_SLASH_REPLACEMENT);
+//				parseResult.replace(SLASH_PATTERN, SLASH_REPLACEMENT);
+				parseResult.replace(LT_PATTERN, LT_REPLACEMENT);
+				parseResult.replace(AMPERSAND_PATTERN, AMPERSAND_REPLACEMENT);
+//				parseResult.setReplaced(COMMENT_PATTERN.matcher(parseResult.getReplaced()).replaceAll(COMMENT_REPLACEMENT_ENCODE)); // Must be before SLASH_PATTERN
 				break;
 			}
 			case attribute: {
@@ -304,17 +306,23 @@ public abstract class RewriterBase {
 			parseResult.setReplaced(unescape(parseResult.getReplaced()));
 		}
 	}
-	static final Pattern AMPERSAND_PATTERN = Pattern.compile("([&])");
+	static final Pattern AMPERSAND_PATTERN = Pattern.compile("[&]");
 	static final String AMPERSAND_REPLACEMENT ="_STYLE_AMPERSAND_REPLACE_";
-	
+
+	static final Pattern ESCAPE2_PATTERN = Pattern.compile("[\\\\][\\\\]");
+	static final String ESCAPE2_REPLACEMENT ="_ESCAPE2_REPLACE_";
+
+	static final Pattern ESCAPE_SLASH_PATTERN = Pattern.compile("[\\\\][/]");
+	static final String ESCAPE_SLASH_REPLACEMENT ="_ESCAPE_SLASH_REPLACE_";
+
 	static final Pattern COMMENT_PATTERN = Pattern.compile("(//)(.*)");
 	static final String COMMENT_REPLACEMENT ="_COMMENT_REPLACE_";
 	static final String COMMENT_REPLACEMENT_ENCODE ="_COMMENT_REPLACE_$2";
 
 	static final String NEWLINE_REPLACEMENT = "_REWRITER_NEWLINE_REPLACE_";
 
-	static final Pattern SLASH_PATTERN = Pattern.compile("(?:\\\\)?(/[^/])"); // Should not match // (comments)
-	static final String SLASH_REPLACEMENT = "\\\\$1";
+	static final Pattern SLASH_PATTERN = Pattern.compile("(\\\\)?(/[^/])");
+	static final String SLASH_REPLACEMENT = "\\\\$1$2";
 	static Pattern LT_PATTERN = Pattern.compile("<");
 	static final String LT_REPLACEMENT = "\\\\u003C"; // Why do we need double escape? (Unit tests shows we do)
 
@@ -327,6 +335,8 @@ public abstract class RewriterBase {
 	public static String unescape(String in) {
 		return in.replace(AMPERSAND_REPLACEMENT, "&").
 				replace(NEWLINE_REPLACEMENT, "\n").
+				replace(ESCAPE2_REPLACEMENT, "\\\\").
+				replace(ESCAPE_SLASH_REPLACEMENT, "\\/").
 				replace(COMMENT_REPLACEMENT, "//");
 	}
 
@@ -397,7 +407,6 @@ public abstract class RewriterBase {
 				}
 				log.info("No harvest found for: '" + sourceURL + "'");
 			}
-
         	switch (fallback) {
 				case error: return NOT_FOUND_LINK;
 				case delay: return PropertiesLoader.WAYBACK_BASEURL + "services/web/" + waybackDate + "/" + sourceURL;

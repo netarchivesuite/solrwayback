@@ -75,7 +75,7 @@ public class HtmlParserUrlRewriterTest {
     }
 
     @Test
-    public void testScriptescaping() throws Exception {
+    public void testScriptEscaping() throws Exception {
         assertRewrite("script_escape", 0);
     }
 
