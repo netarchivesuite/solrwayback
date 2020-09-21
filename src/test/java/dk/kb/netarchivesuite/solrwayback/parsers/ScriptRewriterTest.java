@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
  */
 public class ScriptRewriterTest {
 
-    public final String MOCK_DATE = "20200511132200";
+    public final String MOCK_DATE = "2020-05-11T13:22:00Z";
 
     @Before
     public void invalidateProperties() {
@@ -38,13 +38,32 @@ public class ScriptRewriterTest {
     public void testAttributeScript() throws Exception {
         // Espected to be enclosed in single pings {@code '}
         final String SCRIPT = "return {\"url\": \"\\/foo/bar_o1.jpg\" };";
-        final String EXPECTED = "return {&quot;url&quot;: &quot;http:\\/\\/localhost:0000\\/solrwayback\\/services\\/downloadRaw?source_file_path=somesourcefile&offset=1&quot; };";
+        final String EXPECTED = "return {&quot;url&quot;: &quot;http://localhost:0000/solrwayback/services/web/20200511132200/http://example.com/foo/bar_o1.jpg&quot; };";
 
         ScriptRewriter rewriter = new ScriptRewriter();
         String actual = rewriter.replaceLinks(
                 SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(), RewriterBase.PACKAGING.attribute
         ).getReplaced();
         assertEquals(EXPECTED, actual);
+    }
+
+    @Test
+    public void testEscapeSlash() throws Exception {
+        // Espected to be enclosed in single pings {@code '}
+        final String SCRIPT = "console.log(\"Hello \\/\");";
+        final String EXPECTED_INLINE = SCRIPT;
+        final String EXPECTED_ATTRIBUTE = "console.log(&quot;Hello \\/&quot;);";;
+
+        ScriptRewriter rewriter = new ScriptRewriter();
+        String actualInline = rewriter.replaceLinks(
+                SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(), RewriterBase.PACKAGING.inline
+        ).getReplaced();
+        assertEquals("Inline", EXPECTED_INLINE, actualInline);
+
+        String actualAttribute = rewriter.replaceLinks(
+                SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(), RewriterBase.PACKAGING.attribute
+        ).getReplaced();
+        assertEquals("Attribute", EXPECTED_ATTRIBUTE, actualAttribute);
     }
 
     @Test
@@ -57,7 +76,7 @@ public class ScriptRewriterTest {
         );
 
         assertEquals(expected, rewritten.getReplaced());
-        assertEquals("The number of replaces links should be reported", 6, rewritten.getNumberOfLinksReplaced());
+        assertEquals("The number of replaces links should be reported", 0, rewritten.getNumberOfLinksReplaced());
     }
 
 }

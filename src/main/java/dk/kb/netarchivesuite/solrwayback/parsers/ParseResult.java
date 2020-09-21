@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ParseResult {
@@ -107,6 +108,15 @@ public class ParseResult {
     public void addStats(int replaced, int notFound) {
         numberOfLinksReplaced.addAndGet(replaced);
         numberOfLinksNotFound.addAndGet(notFound);
+    }
+
+    /**
+     * Replaces all matches of pattern for the content with replacement.
+     * @param pattern     a Java Pattern.
+     * @param replacement replacement for matches. Conforms to {@link java.util.regex.Matcher#replaceAll(String)}.
+     */
+    public void replace(Pattern pattern, String replacement) {
+        setReplaced(pattern.matcher(getReplaced()).replaceAll(replacement));
     }
 
     public static class Timing {
