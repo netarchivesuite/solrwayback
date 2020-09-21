@@ -270,7 +270,7 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
     }
     
     public static String punyCodeAndNormaliseUrl(String url) throws Exception {     
-      if (!url.startsWith("http://") || url.startsWith("https://")){ 
+      if (!(url.startsWith("http://") || url.startsWith("https://"))){ 
         throw new Exception("Url not starting with http:// or https://");
       }
       
