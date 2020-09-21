@@ -122,8 +122,6 @@ export default {
             this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
             this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
             this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-            this.futureUrlSearch = false
-            this.updateSolrSettingUrlSearch(false)
           }
           else {
             this.setNotification({
@@ -193,8 +191,6 @@ export default {
             this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
             this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
             this.$_pushSearchHistory('SolrWayback', queryString, this.searchAppliedFacets, this.solrSettings)
-            this.futureUrlSearch = false
-            this.updateSolrSettingUrlSearch(false)
           }
           else {
             this.setNotification({
