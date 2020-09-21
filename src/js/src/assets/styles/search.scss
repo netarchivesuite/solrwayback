@@ -221,6 +221,20 @@ color:var(--secondary-text-color);
   float:right;
 }
 
+.searchForm .orgQuery {
+  font-size: 75%;
+	text-transform: uppercase;
+	margin-top: -20px;
+  color: rgba(30,30,30,0.3);
+  position: absolute;
+}
+
+.searchForm .orgQuery .preQuery {
+  text-transform: none;
+  color: rgba(0,46,112,0.5);
+
+}
+
 .fileUploader {
   margin:20px 0 20px 0;
 }

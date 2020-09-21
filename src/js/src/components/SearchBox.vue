@@ -1,6 +1,7 @@
 <template>
   <div class="searchBoxContainer">
     <form class="searchForm" @submit.prevent="handleSubmit">
+      <span v-if="preNormalizeQuery !== null" class="orgQuery">Original query: <span class="preQuery">{{ preNormalizeQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
       <input id="query"
              v-model="futureQuery"
              type="text"
@@ -71,6 +72,7 @@ export default {
   data () {
     return {    
       futureQuery:'',
+      preNormalizeQuery:null,
       futureGrouped:false,
       futureUrlSearch:false,
       futureImgSearch:false,
@@ -106,6 +108,7 @@ export default {
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
         }
         else if(this.solrSettings.urlSearch) {
+          this.preNormalizeQuery = this.futureQuery
           let queryString = ''
           if(this.futureQuery.substring(0,10) === 'url_norm:"') {
             queryString = this.futureQuery.replace('url_norm:"', '')
@@ -117,8 +120,10 @@ export default {
           if(this.validateUrl(queryString)) {
             this.updateQuery('url_norm:"' + queryString + '"')
             this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
-            this.requestFacets({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
+            this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
             this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+            this.futureUrlSearch = false
+            this.updateSolrSettingUrlSearch(false)
           }
           else {
             this.setNotification({
@@ -163,6 +168,7 @@ export default {
           this.futureImgSearch !== this.solrSettings.imgSearch) 
         {
         console.log('search params changed!')
+        this.preNormalizeQuery = null
         this.clearResults()
         this.updateQuery(this.futureQuery)
         this.updateSolrSettingOffset(0)
@@ -174,6 +180,7 @@ export default {
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
         }
         else if(this.solrSettings.urlSearch) {
+          this.preNormalizeQuery = this.futureQuery
           let queryString = ''
           if(this.futureQuery.substring(0,10) === 'url_norm:"') {
             queryString = this.futureQuery.replace('url_norm:"', '')
@@ -184,8 +191,10 @@ export default {
           }
           if(this.validateUrl(queryString)) {
             this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
-            this.requestFacets({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
+            this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
             this.$_pushSearchHistory('SolrWayback', queryString, this.searchAppliedFacets, this.solrSettings)
+            this.futureUrlSearch = false
+            this.updateSolrSettingUrlSearch(false)
           }
           else {
             this.setNotification({
@@ -221,6 +230,10 @@ export default {
     clearResultsAndSearch() {
       history.pushState({name: 'SolrWayback'}, 'SolrWayback', '/')
       this.futureQuery = ''
+      this.preNormalizeQuery = null
+      this.futureGrouped = false
+      this.futureUrlSearch = false
+      this.futureImgSearch = false
       this.resetSearchState()
     },
     validateUrl(testString) {
