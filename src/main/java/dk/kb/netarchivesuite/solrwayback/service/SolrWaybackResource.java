@@ -65,6 +65,23 @@ public class SolrWaybackResource {
   
   
 
+  
+  /*
+   * Only for debugging/error finding. Not called from SolrWayback frontend.
+   * Can be improved to not also load binary which are not shown. 
+   */
+  @GET
+  @Path("warc/header/parsed")
+  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+  public ArcEntry getArcEntry(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
+      try {                                                                                      
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+        return arcEntry;                              
+      } catch (Exception e) {         
+          throw handleServiceExceptions(e);
+      }
+  }
+  
   /*
    * Only for debugging/error finding. Not called from SolrWayback frontend.
    * Can be improved to not also load binary which are not shown. 
@@ -316,6 +333,7 @@ public class SolrWaybackResource {
   
   @GET
   @Path("/downloadRaw")
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)    
   public Response downloadRaw(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
     try {
 
@@ -342,11 +360,16 @@ public class SolrWaybackResource {
        
       }
       ResponseBuilder response = null;
-      try{
+      try{        
         String contentType = arcEntry.getContentType();
-        if (arcEntry.getContentCharset() != null){
+        if (arcEntry.getContentCharset() != null){ //Do I also have to check contentType not null?
           contentType = contentType +"; charset="+arcEntry.getContentCharset();
-        }        
+        }
+        else {                          
+            IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
+            log.warn("No contenttype in warc-header, using content_type from tika:"+doc.getContentType() + " for  "+source_file_path +" offset:"+offset);            
+            contentType=doc.getContentType(); 
+        }               
         response= Response.ok((Object) in).type(contentType);          
       }
       catch (Exception e){         
@@ -361,9 +384,10 @@ public class SolrWaybackResource {
       
       if (arcEntry.getContentEncoding() != null){
         response.header("Content-Encoding", arcEntry.getContentEncoding());      
+      
       }
       
-      log.debug("Download from source_file_path:" + source_file_path + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());
+      log.debug("Download from source_file_path:" + source_file_path + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());      
       return response.build();
 
     } catch (Exception e) {

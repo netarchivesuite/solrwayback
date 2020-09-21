@@ -208,6 +208,7 @@ public class SolrWaybackResourceWeb {
 
     
 
+    //TODO want to remove this method from web frontend
     @GET
     @Path("/downloadRaw")
     public Response downloadRaw(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
