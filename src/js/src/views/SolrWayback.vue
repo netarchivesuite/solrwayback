@@ -39,6 +39,7 @@ export default {
       requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
       requestImageSearch: 'requestImageSearch',
+      requestUrlSearch: 'requestUrlSearch',
       updateSearchAppliedFacets:'updateSearchAppliedFacets',
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
@@ -46,6 +47,7 @@ export default {
     }),
   },
   beforeRouteUpdate (to, from, next) {
+    //console.log('route changed!',to)
     this.updateQuery(to.query.q)
     to.query.grouping === 'true' ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
     to.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
@@ -53,15 +55,20 @@ export default {
     to.query.facets ? this.updateSearchAppliedFacets(to.query.facets) : this.updateSearchAppliedFacets('')
     if(this.solrSettings.imgSearch) {
       this.requestImageSearch({query:this.query})
-      return
     }
     else if(this.solrSettings.urlSearch) {
-      return
+      let queryString = ''
+      if(this.query.substring(0,10) === 'url_norm:"') {
+        queryString = this.query.replace('url_norm:"', '')
+        queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString.slice(0,-1) : null
+        this.updateQuery(queryString)
+      }
+      this.requestUrlSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
     } 
     else {
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      return
     }
   } 
 }

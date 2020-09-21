@@ -8,8 +8,8 @@ export const requestService = {
   fireImagesRequest,
   uploadFileRequest,
   fireImageSearchRequest,
-  fireUrlSearchRequest,
-  getHarvestDates
+  getHarvestDates,
+  getNormalizedUrlSearch
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -99,28 +99,13 @@ function uploadFileRequest(fileData) {
   })
 }
 
-function fireUrlSearchRequest(query, facets, options) {
+function getNormalizedUrlSearch(query, facets, options) {
   const url = '/services/frontend/util/normalizeurl' + '?url=' + query
   return axios.get(
     url).then(response => {
-      let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
     // Split url and move to config
-      const url = 'services/frontend/solr/search/results/' + `?query=url_norm:"${response.data.url}"${facets + optionString}`
-      return axios.get( 
-        url, {
-          transformResponse: [
-            function(response) {
-              let returnObj = JSON.parse(response)
-              if(options.grouping === false) {
-                returnObj = dataTransformationHelper.transformSearchResponse(returnObj)
-              }
-              else {
-                returnObj = dataTransformationHelper.transformGroupedSearchResponse(returnObj)
-              }
-              return returnObj
-            }
-          ]}).then(returnObj => {
-        return returnObj.data
+    return fireSearchRequest('url_norm:"' + response.data.url + '"', facets, options).then(returnObj => {
+        return returnObj
       }).catch(error => {
         return Promise.reject(error)
       })

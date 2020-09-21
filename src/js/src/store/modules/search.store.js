@@ -22,9 +22,7 @@ const actions = {
   setLoadingStatus( {commit}, param) {
     commit('setLoadingStatus', param)
   },
-  updateQuery ( {commit, rootState}, param, foo, bar) {
-    console.log(rootState.Notifier)
-    console.log(bar)
+  updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
   },
   updateSolrSettingGrouping ( {commit}, param ) {
@@ -62,7 +60,7 @@ const actions = {
   requestUrlSearch ({ commit }, params) {
     commit('setLoadingStatus',true)
     requestService
-      .fireUrlSearchRequest(params.query, params.facets, params.options)
+      .getNormalizedUrlSearch(params.query, params.facets, params.options)
       .then(result => commit('doUrlSearchSuccess', result), error =>
         commit('doUrlSearchError', error))
   },
@@ -140,6 +138,7 @@ const mutations = {
   },
   doUrlSearchSuccess(state, result) {
     state.results = result.response
+    state.query = result.responseHeader.params.q
     state.loading = false
   },
   doUrlSearchError(state, message) {

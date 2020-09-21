@@ -5,14 +5,14 @@
              v-model="futureQuery"
              type="text"
              autofocus
-             :class="solrSettings.urlSearch 
+             :class="futureUrlSearch 
                ? validateUrl(futureQuery) === false 
                  ? futureQuery.substring(0,8) === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
                  : futureQuery.substring(0,8) === 'url_norm' ? '' : 'urlSearchActivated' 
                : ''"
-             :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'">
+             :placeholder="futureUrlSearch ? 'Enter search url' : 'Enter search term'">
       <transition name="url-search-helper">
-        <span v-if="solrSettings.urlSearch && futureQuery.substring(0,8) !== 'url_norm'" class="urlSearchHelper">url_norm:</span>
+        <span v-if="futureUrlSearch && futureQuery.substring(0,8) !== 'url_norm'" class="urlSearchHelper">URL:</span>
       </transition>
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
@@ -108,7 +108,8 @@ export default {
         else if(this.solrSettings.urlSearch) {
           let queryString = ''
           if(this.futureQuery.substring(0,10) === 'url_norm:"') {
-            queryString = this.futureQuery.replace('url_norm:"', '').slice(0,-1)
+            queryString = this.futureQuery.replace('url_norm:"', '')
+            queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString = queryString.slice(0,-1) : null
           }
           else {
             queryString = this.futureQuery
@@ -175,16 +176,16 @@ export default {
         else if(this.solrSettings.urlSearch) {
           let queryString = ''
           if(this.futureQuery.substring(0,10) === 'url_norm:"') {
-            queryString = this.futureQuery.replace('url_norm:"', '').slice(0,-1)
+            queryString = this.futureQuery.replace('url_norm:"', '')
+            queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString = queryString.slice(0,-1) : null
           }
           else {
             queryString = this.futureQuery
           }
           if(this.validateUrl(queryString)) {
-            this.updateQuery('url_norm:"' + queryString + '"')
             this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
             this.requestFacets({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
-            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+            this.$_pushSearchHistory('SolrWayback', queryString, this.searchAppliedFacets, this.solrSettings)
           }
           else {
             this.setNotification({
@@ -199,7 +200,6 @@ export default {
           this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
           this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
           this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-          return
         }
       }
     },
