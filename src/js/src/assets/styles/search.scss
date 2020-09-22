@@ -218,3 +218,20 @@ color:var(--secondary-text-color);
 .fileUploader {
   margin:20px 0 20px 0;
 }
+
+.topTopArrow {
+  -webkit-box-shadow: 0px 5px 10px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 5px 10px 1px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  background-color: white;
+  position: fixed;
+  bottom: 20px;
+  border: 2px solid var(--secondary-highlight-color);
+  color: var(--main-highlight-color);
+  right: calc(20vw - 55px);
+  line-height: 30px;
+  text-align: center;
+  font-size: 200%;
+}
