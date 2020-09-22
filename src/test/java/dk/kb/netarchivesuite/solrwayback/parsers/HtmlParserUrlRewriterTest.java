@@ -55,6 +55,11 @@ public class HtmlParserUrlRewriterTest {
     }
 
     @Test
+    public void testCSS2Rewriting() throws Exception {
+        assertRewrite("css2", 5);
+    }
+
+    @Test
     public void testCSSImportRewriting() throws Exception {
         assertRewrite("css_import", 3);
     }
