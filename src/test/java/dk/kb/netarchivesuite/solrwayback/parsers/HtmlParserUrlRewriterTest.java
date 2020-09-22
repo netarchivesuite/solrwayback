@@ -56,7 +56,7 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testCSS2Rewriting() throws Exception {
-        assertRewrite("css2", 5);
+        assertRewrite("css2", 3, 2);
     }
 
     @Test
@@ -89,19 +89,29 @@ public class HtmlParserUrlRewriterTest {
      * Helpers below
      ************************************************************************************* */
 
+    // All links must contain {@code _oX} where X is an integer.
     private void assertRewrite(String testPrefix, int expectedReplaced) throws Exception {
+        assertRewrite(testPrefix, expectedReplaced, -1);
+    }
+
+    // Only links containing {@code _oX} where X is an integer, will be replaced.
+    private void assertRewrite(String testPrefix, int expectedReplaced, int expectedNotFound) throws Exception {
         final String input = RewriteTestHelper.fetchUTF8("example_rewrite/" + testPrefix + ".html");
         final String expected = RewriteTestHelper.fetchUTF8("example_rewrite/" + testPrefix + "_expected.html").
                 replaceAll(" +\n", "\n");
 
         ParseResult rewritten = HtmlParserUrlRewriter.replaceLinks(
                 input, "http://example.com/somefolder/", "2020-04-30T13:07:00",
-                RewriteTestHelper.createOXResolver());
+                RewriteTestHelper.createOXResolver(expectedNotFound >= 0));
 
         assertEquals("The result should be as expected for test '" + testPrefix + "'",
                      expected, rewritten.getReplaced().replaceAll(" +\n", "\n"));
         assertEquals("The number of replaced links should be as expected",
                      expectedReplaced, rewritten.getNumberOfLinksReplaced());
+        if (expectedNotFound >= 0) {
+            assertEquals("The number of not found links should be as expected",
+                         expectedNotFound, rewritten.getNumberOfLinksNotFound());
+        }
     }
 
     private void assertCount(String testPrefix, int expectedReplaced) throws Exception {

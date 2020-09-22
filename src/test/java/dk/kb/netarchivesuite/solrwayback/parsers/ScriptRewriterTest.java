@@ -42,7 +42,7 @@ public class ScriptRewriterTest {
 
         ScriptRewriter rewriter = new ScriptRewriter();
         String actual = rewriter.replaceLinks(
-                SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(), RewriterBase.PACKAGING.attribute
+                SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(false), RewriterBase.PACKAGING.attribute
         ).getReplaced();
         assertEquals(EXPECTED, actual);
     }
@@ -56,12 +56,12 @@ public class ScriptRewriterTest {
 
         ScriptRewriter rewriter = new ScriptRewriter();
         String actualInline = rewriter.replaceLinks(
-                SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(), RewriterBase.PACKAGING.inline
+                SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(false), RewriterBase.PACKAGING.inline
         ).getReplaced();
         assertEquals("Inline", EXPECTED_INLINE, actualInline);
 
         String actualAttribute = rewriter.replaceLinks(
-                SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(), RewriterBase.PACKAGING.attribute
+                SCRIPT, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(false), RewriterBase.PACKAGING.attribute
         ).getReplaced();
         assertEquals("Attribute", EXPECTED_ATTRIBUTE, actualAttribute);
     }
@@ -72,7 +72,7 @@ public class ScriptRewriterTest {
         final String expected = RewriteTestHelper.fetchUTF8("example_rewrite/script_external_expected.js").
                 replaceAll(" +\n", "\n");
         ParseResult rewritten = ScriptRewriter.getInstance().replaceLinks(
-                input, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(), RewriterBase.PACKAGING.identity
+                input, "http://example.com", MOCK_DATE, RewriteTestHelper.createOXResolver(false), RewriterBase.PACKAGING.identity
         );
 
         assertEquals(expected, rewritten.getReplaced());
