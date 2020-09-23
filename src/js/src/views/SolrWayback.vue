@@ -7,6 +7,11 @@
     <h1>Solr<span>Wayback</span></h1>
     <search-box />
     <all-search-results />
+    <transition name="loading-overlay">
+      <div v-if="scrolledFromTop" class="topTopArrow" @click="backToTop">
+        ↑
+      </div>
+    </transition>
     <!--<router-link class="aboutLink" to="/about">Om Solrwayback search</router-link> -->
   </div>
 </template>
@@ -26,12 +31,18 @@ export default {
    Notifications,
    LoadingOverlay
   },
+  data: () => ({
+        scrolledFromTop:false
+  }),
   computed: {
     ...mapState({
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       query: state => state.Search.query,
       solrSettings: state => state.Search.solrSettings
     }),
+  },
+  mounted() {
+    window.addEventListener('scroll', this.onScroll)
   },
   methods: {
     ...mapActions('Search', {
@@ -45,6 +56,12 @@ export default {
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch'
     }),
+    onScroll(e) {
+    e.target.documentElement.scrollTop > 0 ? this.scrolledFromTop = true : this.scrolledFromTop = false
+    },
+    backToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 
   },
   beforeRouteUpdate (to, from, next) {
     //console.log('route changed!',to)
@@ -70,6 +87,6 @@ export default {
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
     }
-  } 
+  },
 }
 </script>

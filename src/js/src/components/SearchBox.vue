@@ -222,6 +222,12 @@ export default {
       }
     },
     clearResultsAndSearch() {
+      this.updateSolrSettingGrouping(false)
+      this.futureGrouped = false
+      this.updateSolrSettingImgSearch(false)
+      this.futureImgSearch = false
+      this.updateSolrSettingUrlSearch(false)
+      this.futureUrlSearch = false
       history.pushState({name: 'SolrWayback'}, 'SolrWayback', '/')
       this.futureQuery = ''
       this.preNormalizeQuery = null
