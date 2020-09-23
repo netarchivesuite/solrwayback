@@ -7,6 +7,11 @@
     <h1>Solr<span>Wayback</span></h1>
     <search-box />
     <all-search-results />
+    <transition name="loading-overlay">
+      <div v-if="scrolledFromTop" class="topTopArrow" @click="backToTop">
+        ↑
+      </div>
+    </transition>
     <!--<router-link class="aboutLink" to="/about">Om Solrwayback search</router-link> -->
   </div>
 </template>
@@ -26,6 +31,9 @@ export default {
    Notifications,
    LoadingOverlay
   },
+  data: () => ({
+        scrolledFromTop:false
+  }),
   computed: {
     ...mapState({
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
@@ -33,21 +41,30 @@ export default {
       solrSettings: state => state.Search.solrSettings
     }),
   },
+  mounted() {
+    window.addEventListener('scroll', this.onScroll)
+  },
   methods: {
     ...mapActions('Search', {
       requestSearch: 'requestSearch',
       requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
       requestImageSearch: 'requestImageSearch',
+      requestUrlSearch: 'requestUrlSearch',
       updateSearchAppliedFacets:'updateSearchAppliedFacets',
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch'
     }),
+    onScroll(e) {
+    e.target.documentElement.scrollTop > 0 ? this.scrolledFromTop = true : this.scrolledFromTop = false
+    },
+    backToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 
   },
   beforeRouteUpdate (to, from, next) {
-    //Should be deleted before production.
-    console.log('passed through beforeRouteUpdate',to, from)
+    //console.log('route changed!',to)
     this.updateQuery(to.query.q)
     to.query.grouping === 'true' ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
     to.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
@@ -57,11 +74,19 @@ export default {
       this.requestImageSearch({query:this.query})
     }
     else if(this.solrSettings.urlSearch) {
+      let queryString = ''
+      if(this.query.substring(0,10) === 'url_norm:"') {
+        queryString = this.query.replace('url_norm:"', '')
+        queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString.slice(0,-1) : null
+        this.updateQuery(queryString)
+      }
+      this.requestUrlSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
     } 
     else {
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
     }
-  } 
+  },
 }
 </script>

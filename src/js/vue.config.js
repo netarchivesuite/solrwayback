@@ -3,9 +3,9 @@ module.exports = {
   devServer: {
     proxy: {
     '^/services/frontend/solr/': {
-      target: 'http://localhost:8080/solrwayback/services/frontend/solr/',
-      pathRewrite: { '^/services/frontend/solr/': '' },
-      changeOrigin: true
+        target: 'http://localhost:8080/solrwayback/services/frontend/solr/',
+        pathRewrite: { '^/services/frontend/solr/': '' },
+        changeOrigin: true
       },
     '^/services/frontend/images/': {
         target: 'http://localhost:8080/solrwayback/services/frontend/images/',
@@ -13,9 +13,9 @@ module.exports = {
         changeOrigin: true
       },
     '^/services/frontend/images/htmlpage/': {
-      target: 'http://localhost:8080/solrwayback/services/frontend/images/htmlpage/',
-      pathRewrite: { '^/services/frontend/images/htmlpage/': '' },
-      changeOrigin: true
+        target: 'http://localhost:8080/solrwayback/services/frontend/images/htmlpage/',
+        pathRewrite: { '^/services/frontend/images/htmlpage/': '' },
+        changeOrigin: true
       },
     '^/services/frontend/properties/solrwaybackweb/': {
         target: 'http://localhost:8080/solrwayback/services/frontend/properties/solrwaybackweb',
@@ -33,9 +33,14 @@ module.exports = {
         changeOrigin: true
       },
     '^/services/frontend/upload/gethash/': {
-          target: 'http://localhost:8080/solrwayback/services/frontend/upload/gethash',
-          pathRewrite: { '^/services/frontend/upload/gethash/': '' },
-          changeOrigin: true
+        target: 'http://localhost:8080/solrwayback/services/frontend/upload/gethash',
+        pathRewrite: { '^/services/frontend/upload/gethash/': '' },
+        changeOrigin: true
+      },
+    '^/services/frontend/util/normalizeurl': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/util/normalizeurl',
+        pathRewrite: { '^/services/frontend/util/normalizeurl': '' },
+        changeOrigin: true
       },
     '^/services/export/warc/': {
         target: 'http://localhost:8080/solrwayback/services/export/warc',

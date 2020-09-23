@@ -51,6 +51,12 @@ color:var(--secondary-text-color);
   text-overflow: ellipsis; 
   white-space: nowrap; 
   overflow: hidden;
+  transition: all 0.3s linear 0.3s;
+}
+
+.urlSearchActivated {
+  transition: all 0.3s linear 0s !important;
+  padding-left: 55px !important;
 }
 
 .searchForm .buttonExplanation {
@@ -215,6 +221,67 @@ color:var(--secondary-text-color);
   float:right;
 }
 
+.searchForm .orgQuery {
+  font-size: 75%;
+	text-transform: uppercase;
+	margin-top: -20px;
+  color: rgba(30,30,30,0.3);
+  position: absolute;
+}
+
+.searchForm .orgQuery .preQuery {
+  text-transform: none;
+  color: rgba(0,46,112,0.5);
+
+}
+
 .fileUploader {
   margin:20px 0 20px 0;
+}
+
+.urlSearchHelper {
+  color: rgba(130,130,130,0.6);
+	position: absolute;
+  left: calc(50vw - 300px + 24px);
+  margin-top: 16px;
+  user-select: none;
+}
+
+.urlNotTrue {
+  color:red !important;
+}
+
+.urlSearchHelper {
+  color: rgba(130,130,130,0.6);
+	position: absolute;
+  left: calc(50vw - 300px + 24px);
+  margin-top: 16px;
+  user-select: none;
+}
+
+.url-search-helper-enter-active, .url-search-helper-leave-active {
+  transition: opacity 0.3s linear 0.3s;
+}
+
+.url-search-helper-enter, .url-search-helper-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transition: opacity 0.3s linear 0s;
+  opacity: 0;
+}
+
+.topTopArrow {
+  -webkit-box-shadow: 0px 5px 10px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 5px 10px 1px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  background-color: white;
+  position: fixed;
+  bottom: 20px;
+  border: 2px solid var(--secondary-highlight-color);
+  color: var(--main-highlight-color);
+  right: calc(20vw - 55px);
+  line-height: 30px;
+  text-align: center;
+  font-size: 200%;
 }

@@ -22,9 +22,7 @@ const actions = {
   setLoadingStatus( {commit}, param) {
     commit('setLoadingStatus', param)
   },
-  updateQuery ( {commit, rootState}, param, foo, bar) {
-    console.log(rootState.Notifier)
-    console.log(bar)
+  updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
   },
   updateSolrSettingGrouping ( {commit}, param ) {
@@ -58,6 +56,13 @@ const actions = {
       .fireImageSearchRequest(params.query)
       .then(result => commit('doImageSearchSuccess', result), error =>
         commit('doImageSearchError', error))
+  },
+  requestUrlSearch ({ commit }, params) {
+    commit('setLoadingStatus',true)
+    requestService
+      .getNormalizedUrlSearch(params.query, params.facets, params.options)
+      .then(result => commit('doUrlSearchSuccess', result), error =>
+        commit('doUrlSearchError', error))
   },
   requestFacets({commit}, params) {
     commit('setLoadingStatus', true)
@@ -130,6 +135,20 @@ const mutations = {
       timeout: false
     })
     state.loading = false
+  },
+  doUrlSearchSuccess(state, result) {
+    state.results = result.response
+    state.query = result.responseHeader.params.q
+    state.loading = false
+  },
+  doUrlSearchError(state, message) {
+    this.dispatch('Notifier/setNotification', {
+      title: 'We are so sorry!',
+      text: 'Something went wrong when searching for URLs - please try again',
+      srvMessage: message,
+      type: 'error',
+      timeout: false
+    })
   },
   setLoadingStatus(state, status) {
     state.loading = status
