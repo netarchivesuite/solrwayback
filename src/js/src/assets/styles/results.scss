@@ -316,6 +316,7 @@
   height:auto;
   display: flex;
   flex-wrap: wrap;
+  padding-bottom:15px;
 }
 
 .singleEntryImages .singleEntryImagesHeadline {
@@ -334,6 +335,8 @@
 .singleEntryImages .previewImageContainer {
   display: inline-block;
   margin: 1em;
+  margin-bottom: 2em;
+  position: relative;
   flex-grow: 0;
   width: calc(25% -  2em);
   background-color: rgb(255, 250, 223);
@@ -482,6 +485,15 @@
   padding-bottom:5px;
 }
 
+.previewImageContainer:hover .imageButtonContainer {
+  transition: all 300ms linear 0s;
+  height:42px;
+  opacity:1;
+  padding-top:10px;
+  padding-bottom:5px;
+  bottom:-50px;
+}
+
 .images .column .columnImageContainer .number {
   color:var(--main-highlight-color);
   position: relative;
@@ -491,7 +503,7 @@
   text-align: right;
 }
 
-.images .imageButtonContainer {
+.images .imageButtonContainer, .previewImageContainer .imageButtonContainer {
   position: relative;
   height:20px;
   opacity:0;
@@ -504,11 +516,16 @@
 	margin-right: 5px;
 }
 
-.images .imageButtonContainer button {
+.previewImageContainer .imageButtonContainer {
+  position:absolute;
+  bottom:0px;
+}
+
+.images .imageButtonContainer a, .previewImageContainer .imageButtonContainer a {
   background-color: white;
 	//box-shadow: inset 0 0 7px var(--seethrough-black);
   border-radius: 0% 0 0% 0;
-  border:0px solid transparent;
+  border-bottom:2px solid transparent;
 	color:var(--main-highlight-color);
   float: right;
   background-color:transparent;
@@ -523,15 +540,17 @@
   text-align: center;
   font-size: 80%;
   padding:1px 0;
+  text-decoration: none;
 }
 
-.images .imageButtonContainer button:first-of-type {
+.images .imageButtonContainer a:first-of-type, .previewImageContainer .imageButtonContainer a:first-of-type {
   margin-left:5px;
   margin-right:0px;
 }
 
-.images .imageButtonContainer button:hover span {
-  font-weight:bold;
+.images .imageButtonContainer a:hover span, .previewImageContainer .imageButtonContainer a:hover span {
+  border-bottom:1px solid var(--main-highlight-color);
+
 }
 .singleEntryResult .imageEntry {
   max-width:200px;

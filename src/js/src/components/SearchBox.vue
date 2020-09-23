@@ -91,10 +91,10 @@ export default {
     if(this.$router.history.current.query.q) {
       this.updateQuery(this.$router.history.current.query.q)
       this.futureQuery = this.$router.history.current.query.q
-      this.$router.history.current.query.facets ? this.updateSearchAppliedFacets(this.$router.history.current.query.facets) : null
-      this.$router.history.current.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.futureGrouped = true) : null
-      this.$router.history.current.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.futureImgSearch = true) : null
-      this.$router.history.current.query.urlSearch === 'true' ? (this.updateSolrSettingUrlSearch(true), this.futureUrlSearch = true) : null
+      this.$router.history.current.query.facets ? this.updateSearchAppliedFacets(this.$router.history.current.query.facets) : this.updateSearchAppliedFacets('')
+      this.$router.history.current.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.futureGrouped = true) : (this.updateSolrSettingGrouping(false), this.futureGrouped = false)
+      this.$router.history.current.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.futureImgSearch = true) : (this.updateSolrSettingImgSearch(false), this.futureImgSearch = false)
+      this.$router.history.current.query.urlSearch === 'true' ? (this.updateSolrSettingUrlSearch(true), this.futureUrlSearch = true) : (this.updateSolrSettingUrlSearch(false), this.futureUrlSearch = false)
       if(this.solrSettings.imgSearch) {
            this.requestImageSearch({query:this.query})
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
@@ -129,7 +129,7 @@ export default {
           this.futureUrlSearch !== this.solrSettings.urlSearch ||
           this.futureImgSearch !== this.solrSettings.imgSearch) 
         {
-        console.log('search params changed!')
+        console.log('search params changed!', this.query)
         this.clearResults()
         this.updateQuery(this.futureQuery)
         this.updateSolrSettingGrouping(this.futureGrouped)

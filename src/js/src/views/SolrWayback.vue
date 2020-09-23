@@ -46,6 +46,8 @@ export default {
     }),
   },
   beforeRouteUpdate (to, from, next) {
+    //Should be deleted before production.
+    console.log('passed through beforeRouteUpdate',to, from)
     this.updateQuery(to.query.q)
     to.query.grouping === 'true' ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
     to.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
@@ -53,15 +55,12 @@ export default {
     to.query.facets ? this.updateSearchAppliedFacets(to.query.facets) : this.updateSearchAppliedFacets('')
     if(this.solrSettings.imgSearch) {
       this.requestImageSearch({query:this.query})
-      return
     }
     else if(this.solrSettings.urlSearch) {
-      return
     } 
     else {
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      return
     }
   } 
 }
