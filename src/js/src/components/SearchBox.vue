@@ -7,9 +7,7 @@
              type="text"
              autofocus
              :class="futureUrlSearch 
-               ? validateUrl(futureQuery) === false 
-                 ? futureQuery.substring(0,8) === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
-                 : futureQuery.substring(0,8) === 'url_norm' ? '' : 'urlSearchActivated' 
+               ? decideActiveClassesForQueryBox()
                : ''"
              :placeholder="futureUrlSearch ? 'Enter search url' : 'Enter search term'">
       <transition name="url-search-helper">
@@ -236,8 +234,11 @@ export default {
       return testString.substring(0,7) === 'http://' || 
              testString.substring(0,8) === 'https://' || 
              testString.substring(0,10) === 'url_norm:"'
-      ? true
-      : false
+    },
+    decideActiveClassesForQueryBox() {
+      return this.validateUrl(this.futureQuery) === false 
+                 ? this.futureQuery.substring(0,8) === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
+                 : this.futureQuery.substring(0,8) === 'url_norm' ? '' : 'urlSearchActivated' 
     }
   }
 }
