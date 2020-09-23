@@ -41,14 +41,13 @@ export default {
     SearchSingleItemTweet: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemTweet'),
     SearchSingleItemWeb: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemWeb'),
     SearchSingleItemImage: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemImage'),
-    SearchFacetOptions,
+    SearchSingleItemVideoAudio: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemVideoAudio'),
+   
+   SearchFacetOptions,
     ImageSearchResults
   },
   mixins: [HistoryRoutingUtils],
-  data () {
-    return {  
-    }
-  },
+  
   computed: {
     ...mapState({
       query: state => state.Search.query,
@@ -76,10 +75,13 @@ export default {
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     SingleEntryComponent(type) {
+      console.log('search result type', type)
       switch(type) {   
         case 'Web Page': return 'SearchSingleItemWeb'
         case 'Image': return 'SearchSingleItemImage'
         case 'Twitter Tweet': return 'SearchSingleItemTweet'
+        case 'Video' : 
+        case 'Audio' : return 'SearchSingleItemVideoAudio'
         default: return 'SearchSingleItemDefault'
       }
     }

@@ -28,7 +28,6 @@
 </template>
 
 <script>
-//import { mapState, mapActions } from 'vuex'
 import { requestService } from '../../services/RequestService'
 import SearchSingleItemFocusImage from './SearchSingleItemFocusImage.vue'
 import configs from '../../configs'

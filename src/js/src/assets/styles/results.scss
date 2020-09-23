@@ -180,6 +180,56 @@
   width:100%;
   height:30px;
 }
+.custom-vjs-play-button {
+  font-size: 1em;
+width: 6em;
+display: block;
+}
+
+.downloadFileLinkBox {
+margin: 1em 0 0 0;
+}
+
+.downloadFileLinkBox a {
+  color: var(--main-highlight-color);
+}
+
+// kudos - http://jsfiddle.net/0nvns9Lj/3/
+.vjs-play-button.wrap{
+  background: #ddd;
+  position: relative;
+  margin:0 0 4rem 2rem ;
+}
+
+.vjs-play-button.circle{
+  background:var(--main-highlight-color);
+  border-radius: 50px;
+  height: 50px;
+  position: absolute;
+  width: 50px;
+  margin: 0 0 0 0;
+  top:0;
+  bottom:0;
+  right:0;
+  left:0;
+  cursor:pointer;
+}
+.vjs-play-button.circle:before{
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 10px 0 10px 20px;
+  border-color: transparent transparent transparent #ffffff;
+  position: absolute;
+  top:0;
+  left:0;
+  right:-5px;
+  bottom:0;
+  margin: auto;
+}
+// Kudos end
 
 .showAllButtonContainer button, .singleEntryImages button, .pagingContainer button, .exportContent .downloadButton {
   float:right;

@@ -33,7 +33,8 @@
     "node-sass": "^4.12.0",
     "prettier": "^1.19.1",
     "sass-loader": "^8.0.2",
-    "vue-template-compiler": "^2.6.11",
-    "v-tooltip": "^1.1.6"
+    "v-tooltip": "^1.1.6",
+    "video.js": "^7.8.4",
+    "vue-template-compiler": "^2.6.11"
   }
 }
