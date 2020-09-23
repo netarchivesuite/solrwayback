@@ -1,13 +1,18 @@
 <template>
   <div class="searchBoxContainer">
     <form class="searchForm" @submit.prevent="handleSubmit">
+      <span v-if="preNormalizeQuery !== null" class="orgQuery">Original query: <span class="preQuery">{{ preNormalizeQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
       <input id="query"
              v-model="futureQuery"
              type="text"
              autofocus
-             class=""
-             autocomplete="off"
-             placeholder="Enter search term">
+             :class="futureUrlSearch 
+               ? decideActiveClassesForQueryBox()
+               : ''"
+             :placeholder="futureUrlSearch ? 'Enter search url' : 'Enter search term'">
+      <transition name="url-search-helper">
+        <span v-if="futureUrlSearch && futureQuery.substring(0,8) !== 'url_norm'" class="urlSearchHelper">URL:</span>
+      </transition>
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
       </button>
@@ -65,6 +70,7 @@ export default {
   data () {
     return {    
       futureQuery:'',
+      preNormalizeQuery:null,
       futureGrouped:false,
       futureUrlSearch:false,
       futureImgSearch:false,
@@ -87,7 +93,7 @@ export default {
     },
   },
   mounted () {
-    console.log(this.$router.history.current.query)
+    //console.log(this.$router.history.current.query)
     if(this.$router.history.current.query.q) {
       this.updateQuery(this.$router.history.current.query.q)
       this.futureQuery = this.$router.history.current.query.q
@@ -100,6 +106,29 @@ export default {
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
         }
         else if(this.solrSettings.urlSearch) {
+          this.preNormalizeQuery = this.futureQuery
+          let queryString = ''
+          if(this.futureQuery.substring(0,10) === 'url_norm:"') {
+            queryString = this.futureQuery.replace('url_norm:"', '')
+            queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString = queryString.slice(0,-1) : null
+          }
+          else {
+            queryString = this.futureQuery
+          }
+          if(this.validateUrl(queryString)) {
+            this.updateQuery('url_norm:"' + queryString + '"')
+            this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
+            this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
+            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+          }
+          else {
+            this.setNotification({
+          	title: 'We are so sorry!',
+            text: 'This query is not valid. the url must start with \'http://\' or \'https://\'',
+            type: 'error',
+            timeout: false
+          })
+          }
         }
         else {
           this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
@@ -113,6 +142,7 @@ export default {
     ...mapActions('Search', {
       requestSearch: 'requestSearch',
       requestImageSearch: 'requestImageSearch',
+      requestUrlSearch:'requestUrlSearch',
       requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
       clearResults: 'clearResults',
@@ -120,8 +150,12 @@ export default {
       resetSearchState:'resetState',
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
-      updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch'
-
+      updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
+      updateSolrSettingOffset:'updateSolrSettingOffset'
+    }),
+    ...mapActions('Notifier', {
+      setNotification: 'setNotification'
+     
     }),
     handleSubmit() {
       if (this.futureQuery !== this.query ||
@@ -130,24 +164,45 @@ export default {
           this.futureImgSearch !== this.solrSettings.imgSearch) 
         {
         console.log('search params changed!')
+        this.preNormalizeQuery = null
         this.clearResults()
         this.updateQuery(this.futureQuery)
+        this.updateSolrSettingOffset(0)
         this.updateSolrSettingGrouping(this.futureGrouped)
         this.updateSolrSettingUrlSearch(this.futureUrlSearch)
         this.updateSolrSettingImgSearch(this.futureImgSearch)
         if(this.solrSettings.imgSearch) {
            this.requestImageSearch({query:this.query})
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-          return
         }
         else if(this.solrSettings.urlSearch) {
-          return
+          this.preNormalizeQuery = this.futureQuery
+          let queryString = ''
+          if(this.futureQuery.substring(0,10) === 'url_norm:"') {
+            queryString = this.futureQuery.replace('url_norm:"', '')
+            queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString = queryString.slice(0,-1) : null
+          }
+          else {
+            queryString = this.futureQuery
+          }
+          if(this.validateUrl(queryString)) {
+            this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
+            this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
+            this.$_pushSearchHistory('SolrWayback', queryString, this.searchAppliedFacets, this.solrSettings)
+          }
+          else {
+            this.setNotification({
+          	title: 'We are so sorry!',
+            text: 'This query is not valid. the url must start with \'http://\' or \'https://\'',
+            type: 'error',
+            timeout: false
+          })
+          }
         }
         else {
           this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
           this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
           this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-          return
         }
       }
     },
@@ -175,8 +230,22 @@ export default {
       this.futureUrlSearch = false
       history.pushState({name: 'SolrWayback'}, 'SolrWayback', '/')
       this.futureQuery = ''
+      this.preNormalizeQuery = null
+      this.futureGrouped = false
+      this.futureUrlSearch = false
+      this.futureImgSearch = false
       this.resetSearchState()
     },
+    validateUrl(testString) {
+      return testString.substring(0,7) === 'http://' || 
+             testString.substring(0,8) === 'https://' || 
+             testString.substring(0,10) === 'url_norm:"'
+    },
+    decideActiveClassesForQueryBox() {
+      return this.validateUrl(this.futureQuery) === false 
+                 ? this.futureQuery.substring(0,8) === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
+                 : this.futureQuery.substring(0,8) === 'url_norm' ? '' : 'urlSearchActivated' 
+    }
   }
 }
 

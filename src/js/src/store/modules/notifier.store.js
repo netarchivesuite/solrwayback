@@ -29,6 +29,7 @@
 
     dismissNotification(state, notification) {
       Vue.delete(state.notifications, notification.__ob__.vmCount)
+      this.dispatch('Search/setLoadingStatus', false)
     },
     
     resetState(state) {
