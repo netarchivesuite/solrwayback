@@ -155,6 +155,14 @@
   font-size:130%;
 }
 
+.SingleEntryStandardInfo .openWaybackLink:after {
+    content: '';
+    display: block;
+    height: 25px;  /*height of icon */
+    width: 25px;  /*width of icon */
+    background: url(../icons/external_link_font_awesome.svg) no-repeat 0px 0px;
+}
+
 .SingleEntryStandardInfo .titleInfo a {
   color: var(--secondary-text-color);
   text-decoration-color: var(--secondary-highlight-color);
