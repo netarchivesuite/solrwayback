@@ -64,6 +64,13 @@ const actions = {
       .then(result => commit('doUrlSearchSuccess', result), error =>
         commit('doUrlSearchError', error))
   },
+  requestNormalizedFacets({commit}, params) {
+    commit('setLoadingStatus', true)
+    requestService
+      .getNormalizedUrlFacets(params.query, params.facets, params.options)
+      .then(result => commit('facetRequestSuccess', result), error =>
+        commit('facetRequestError', error))
+  },
   requestFacets({commit}, params) {
     commit('setLoadingStatus', true)
     requestService

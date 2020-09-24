@@ -9,7 +9,8 @@ export const requestService = {
   uploadFileRequest,
   fireImageSearchRequest,
   getHarvestDates,
-  getNormalizedUrlSearch
+  getNormalizedUrlSearch,
+  getNormalizedUrlFacets
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -100,11 +101,26 @@ function uploadFileRequest(fileData) {
 }
 
 function getNormalizedUrlSearch(query, facets, options) {
-  const url = '/services/frontend/util/normalizeurl' + '?url=' + query
+  const url = 'services/frontend/util/normalizeurl/' + '?url=' + query
   return axios.get(
     url).then(response => {
     // Split url and move to config
     return fireSearchRequest('url_norm:"' + response.data.url + '"', facets, options).then(returnObj => {
+        return returnObj
+      }).catch(error => {
+        return Promise.reject(error)
+      })
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function getNormalizedUrlFacets(query, facets, options) {
+  const url = 'services/frontend/util/normalizeurl/' + '?url=' + query
+  return axios.get(
+    url).then(response => {
+    // Split url and move to config
+    return fireFacetRequest('url_norm:"' + response.data.url + '"', facets, options).then(returnObj => {
         return returnObj
       }).catch(error => {
         return Promise.reject(error)

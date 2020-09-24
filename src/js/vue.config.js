@@ -37,9 +37,9 @@ module.exports = {
         pathRewrite: { '^/services/frontend/upload/gethash/': '' },
         changeOrigin: true
       },
-    '^/services/frontend/util/normalizeurl': {
+    '^/services/frontend/util/normalizeurl/': {
         target: 'http://localhost:8080/solrwayback/services/frontend/util/normalizeurl',
-        pathRewrite: { '^/services/frontend/util/normalizeurl': '' },
+        pathRewrite: { '^/services/frontend/util/normalizeurl/': '' },
         changeOrigin: true
       },
     '^/services/export/warc/': {
