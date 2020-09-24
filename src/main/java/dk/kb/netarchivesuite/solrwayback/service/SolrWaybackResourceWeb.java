@@ -67,26 +67,23 @@ public class SolrWaybackResourceWeb {
       }    
      
     }
-    
-    
-/* TODO
+        
+
     @GET
     @Path("/help/about")
-    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-    public String getHelpText() throws SolrWaybackServiceException {
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getAboutText() throws SolrWaybackServiceException {
       try {                    
-        return Facade.aboutText();
+        return Facade.getAboutText();
       } catch (Exception e) {           
         throw handleServiceExceptions(e);
       }
     }
-  */  
-
-    
+      
 
     @GET
     @Path("/help/search")
-    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    @Produces( MediaType.TEXT_PLAIN)
     public String getHelpText() throws SolrWaybackServiceException {
       try {                    
         return Facade.getSearchHelpText();
