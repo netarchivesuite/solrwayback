@@ -11,7 +11,10 @@
       <span class="highlightText titleInfo">
         <div :title="result.type.toLowerCase()" :class="'typePreview ' + getIconForType(result.type)" /><a :href="getPlaybackURL(result.source_file_path, result.source_file_offset)" target="_blank"><span>{{ result.title || `${result.content_type_norm} - no title` }}</span></a>
       </span>
-      <span v-if="result.content_type_norm === 'html' "><a :href="getOpenWaybackLink(result.wayback_date, result.url)" title="Alternative playback engine" class="openWaybackLink" /></span>
+      <a v-if="result.content_type_norm === 'html'"
+         :href="getOpenWaybackLink(result.wayback_date, result.url)"
+         title="Alternative playback engine"
+         class="openWaybackLink" />
     </p>
     <p class="entryInfo type">
       <span class="attri">type:</span> <span class="val">{{ result.content_type_norm }}, {{ result.type }} @ {{ result.domain }}</span>
