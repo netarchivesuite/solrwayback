@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>SolrWayback search syntax guideline </title>
+</head>
+
+<body>
+<h1>Search syntax guideline for searching in the netarchive</h1>
+
+<h3> Boolean Operators </h3>
+The following 3 boolean operators are supported. They MUST be entered in uppercase or they will be considered normal search words. 
+<table border='1'>
+<tr>
+<td> Operator </td>
+<td> Example </td>
+<td> Description </td>
+</tr>
+<tr>
+ <td>AND</td>
+ <td><b>computer AND apple</b></td>
+ <td> Both terms must match. <br> Same as just: computer apple <br> AND is the default operator between terms if not specified</td>
+</tr>
+<tr>
+ <td>OR</td>
+ <td><b>computer OR apple</b></td>
+ <td>Will match if just any of the terms is found</td>
+</tr>
+<tr>
+ <td>NOT</td>
+ <td><b>computer NOT apple</b></td>
+ <td>Must match computer but not apple.<br> Alternative syntax: <b>computer -apple</b> </td>
+</tr>
+</table>
+
+<h3>Use brackets if mixing operators</h3>
+To avoid ambiguous interpretation of syntax always use brackets () if mixing operators.<br>
+Example:<b> (computer AND apple) OR (amiga)<br> </b>
+This can also return results where only the text 'amiga' is found.
+
+<h3>Use fields to limit results considerably</h3>
+If you only want results for a given domain etc. you can define this is the query. Here are some examples: <br>
+<b>domain:testdomain.dk computer apple</b> (Same as domain:testdomain.dk AND computer AND apple)<br>
+<b>source_file_path:"/mount/files/test123.warc"</b> (here quotes are required due to special character /). Will only show results from that warc-file.<br>
+<b>domain:testdomain.dk AND crawl_year:2002 </b><br>	
+
+<h3>Use quotes when required. This is called phrase search.</h3>
+<b> "apple computer" </b> will only match if both words are next to each other in the the text.<br>
+<b> "apple computer"~4</b> The tilde character ~ is a proximity clause and can be used to define how far the words must be found apart in the text. Can also be used for multiple words.<br>
+<b> links:"http://mydomain.dk/mypage.html"</b> Find all html pages that links to this exact page. Due to the special character in the url, the field value must be in quotes.<br> 
+Since all links are normalized and must be matched with the normalized url, you can use the url search feature to find the normalized form of any url.<br>
+
+
+<h3>Wildcards</h3>
+The character * and ? can be used as wilds cards in terms.<br>
+Examples:<br>
+<b>innovati*</b> will match all words that starts with this. ie. innovation or innovative<br>
+<b> Analy?e </b> Wlll match both analyse and analyze and analyce etc. Multiple ? in a row can be used. Each ? will match exactly one character.<br>
+The wild card ? has been used to find common spelling mistakes of words on the net.<br>
+Warning: Do not use wildcards in the start of words (prefix) as this can take too long time to resolve. 
+
+<h3>Range search</h3>
+If the field value is numeric or date you can specify a range that must match.<br>
+Examples:
+<b>content_type_norm:image AND content_length:[1000000 TO 10000000]</b> Search only images of size 1Mb to 10Mb <br>
+<b>crawl_date:[2010-01-01T00:00:00Z TO 2010-02-01T00:00:00Z]</b> Only search for resources that has been crawled in January 2010.<br>
+The <b>TO</b> must be upper case and notice the Z in the end of the dates.  
+ 
+ <h3>Default fields</h3>
+ 
+ When searching without using field prefix you will only search the define default search fields. <br>
+ These are the most obvious field for text search like content_text,title,url etc. but far from all fields. <br>
+ FThe default search fields are also case insensitive, but for some fields case must also match. <br>
+ Always use field prefix search if you also want to search a non-default search field.<br>
+ Example: <b>content_type_served:"image/jpeg"</b>
+
+
+</body>
+</html>

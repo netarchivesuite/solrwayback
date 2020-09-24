@@ -67,6 +67,30 @@ public class SolrWaybackResourceWeb {
       }    
      
     }
+        
+
+    @GET
+    @Path("/help/about")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getAboutText() throws SolrWaybackServiceException {
+      try {                    
+        return Facade.getAboutText();
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
+      
+
+    @GET
+    @Path("/help/search")
+    @Produces( MediaType.TEXT_PLAIN)
+    public String getHelpText() throws SolrWaybackServiceException {
+      try {                    
+        return Facade.getSearchHelpText();
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
     
     
     @GET
