@@ -51,7 +51,7 @@ export default {
   mounted () {
     let timeout = this.notification.hasOwnProperty('timeout') ? this.notification.timeout : true
         if (timeout) {
-  	        let delay = this.notification.delay || 3000
+  	        let delay = this.notification.delay || 5000
             this.timer = setTimeout(() => {
             this.doDismiss(this.notification)
         }, delay)
