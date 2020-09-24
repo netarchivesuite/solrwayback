@@ -43,6 +43,7 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceExcept
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 import dk.kb.netarchivesuite.solrwayback.solr.*;
+import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
@@ -80,6 +81,12 @@ public class Facade {
 public static IndexDoc findExactMatchPWID(String url, String utc) throws Exception {  
      IndexDoc doc = NetarchiveSolrClient.getInstance().findExactMatchPWID(url, utc);
      return doc;    
+}
+
+
+public static String getSearchHelpText() throws Exception {  
+    String helpText=FileUtil.fetchUTF8("/home/teg/workspace/solrwayback/src/main/resources/search_help.html");
+    return helpText;
 }
 
 
