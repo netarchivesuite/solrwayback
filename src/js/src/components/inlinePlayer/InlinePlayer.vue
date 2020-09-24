@@ -34,7 +34,7 @@ export default {
     mounted() {
         this.playerInstance = videojs(this.$refs.inlinePlayerObj, this.getPlayerOptions())
         this.playerInstance.on('error', () => {
-        const errorObj = this.player.error()
+        const errorObj = this.playerInstance.error()
         this.dispatchError(errorObj.code, errorObj.message)
       })
     },
