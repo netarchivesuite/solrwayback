@@ -20,7 +20,7 @@
         :src="inputType === 'multiple' ? item.imageUrl + '&height=200&width=200' : item"
         @click="toggleFullImage(index)">
       <search-single-item-focus-image v-if="showFullImage === index"
-                                      :image="inputType === 'multiple' ? item.downloadUrl + '&height=200&width=200' : item"
+                                      :image="inputType === 'multiple' ? item.downloadUrl : item"
                                       :index="index"
                                       @close-window="closeWindow" />
     </div>
@@ -61,10 +61,13 @@ export default {
   computed: {
     shownImagesButtonText: function () {
       return this.allImagesShown ? 'See fewer images ' : 'See all images'
-    }
+    },
+    sourceAndOffset: function () {
+      return `source_file_path=${this.source}&offset=${this.offset}`
+    },
   },
   watch: { 
-    source: function() { // watch it
+    sourceAndOffset: function() { // watch it
       if(this.inputType === 'multiple') {
         requestService.fireImagesRequest(this.source, this.offset).then(result => (this.imageSrcs = result, this.imageSrcs === [] ? console.log('request successfull, no images!') : null), error => (console.log('Error in getting images'), this.imageSrc = []))
       }
