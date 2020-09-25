@@ -100,7 +100,7 @@ function uploadFileRequest(fileData) {
 }
 
 function getNormalizedUrlSearch(query, facets, options) {
-  const url = '/services/frontend/util/normalizeurl' + '?url=' + query
+  const url = 'services/frontend/util/normalizeurl/' + '?url=' + query
   return axios.get(
     url).then(response => {
     // Split url and move to config
