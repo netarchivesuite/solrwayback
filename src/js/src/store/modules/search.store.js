@@ -4,6 +4,7 @@ import { requestService } from '../../services/RequestService'
 
 const initialState = () => ({
   query: '',
+  preNormalizedQuery:null,
   searchAppliedFacets:'',
   results: {},
   facets: {},
@@ -23,6 +24,9 @@ const actions = {
     commit('setLoadingStatus', param)
   },
   updateQuery ( {commit}, param) {
+    commit('updateQuerySuccess', param)
+  },
+  updatePreNormalizedQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
   },
   updateSolrSettingGrouping ( {commit}, param ) {
@@ -85,6 +89,9 @@ const actions = {
 
 const mutations = {
   updateQuerySuccess(state, param) {
+    state.query = param
+  },
+  updatePreNormalizedQuerySuccess(state, param) {
     state.query = param
   },
   updateSolrSettingGroupingSuccess(state, param) {

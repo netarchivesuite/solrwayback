@@ -1,7 +1,7 @@
 <template>
   <div class="searchBoxContainer">
-    <form class="searchForm" @submit.prevent="handleSubmit">
-      <span v-if="preNormalizeQuery !== null" class="orgQuery">Original query: <span class="preQuery">{{ preNormalizeQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
+    <form class="searchForm" @submit.prevent="determineNewSearch(futureQuery)">
+      <span v-if="preNormalizedQuery !== null" class="orgQuery">Original query: <span class="preQuery">{{ preNormalizedQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
       <input id="query"
              v-model="futureQuery"
              type="text"
@@ -59,6 +59,7 @@
 import { mapState, mapActions } from 'vuex'
 import AppliedSearchFacets from './AppliedSearchFacets.vue'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
+import SearchUtils from './../mixins/SearchUtils'
 import SearchUploadFile from './SearchUploadFile.vue'
 
 export default {
@@ -66,11 +67,10 @@ export default {
     AppliedSearchFacets,
     SearchUploadFile
   },
-  mixins: [HistoryRoutingUtils],
+  mixins: [HistoryRoutingUtils, SearchUtils],
   data () {
     return {    
       futureQuery:'',
-      preNormalizeQuery:null,
       futureGrouped:false,
       futureUrlSearch:false,
       futureImgSearch:false,
@@ -81,6 +81,7 @@ export default {
   computed: {
     ...mapState({
       query: state => state.Search.query,
+      preNormalizedQuery: state => state.Search.preNormalizedQuery,
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       results: state => state.Search.results,
       solrSettings: state => state.Search.solrSettings,
@@ -106,7 +107,7 @@ export default {
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
         }
         else if(this.solrSettings.urlSearch) {
-          this.preNormalizeQuery = this.futureQuery
+          this.updatePreNormalizedQuery(futureQuery)
           let queryString = ''
           if(this.futureQuery.substring(0,10) === 'url_norm:"') {
             queryString = this.futureQuery.replace('url_norm:"', '')
@@ -151,61 +152,13 @@ export default {
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
-      updateSolrSettingOffset:'updateSolrSettingOffset'
+      updateSolrSettingOffset:'updateSolrSettingOffset',
+      updatePreNormalizedQuery:'updatePreNormalizedQuery'
     }),
     ...mapActions('Notifier', {
       setNotification: 'setNotification'
      
     }),
-    handleSubmit() {
-      if (this.futureQuery !== this.query ||
-          this.futureGrouped !== this.solrSettings.grouping ||
-          this.futureUrlSearch !== this.solrSettings.urlSearch ||
-          this.futureImgSearch !== this.solrSettings.imgSearch) 
-        {
-        console.log('search params changed!')
-        this.preNormalizeQuery = null
-        this.clearResults()
-        this.updateQuery(this.futureQuery)
-        this.updateSolrSettingOffset(0)
-        this.updateSolrSettingGrouping(this.futureGrouped)
-        this.updateSolrSettingUrlSearch(this.futureUrlSearch)
-        this.updateSolrSettingImgSearch(this.futureImgSearch)
-        if(this.solrSettings.imgSearch) {
-           this.requestImageSearch({query:this.query})
-           this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-        }
-        else if(this.solrSettings.urlSearch) {
-          this.preNormalizeQuery = this.futureQuery
-          let queryString = ''
-          if(this.futureQuery.substring(0,10) === 'url_norm:"') {
-            queryString = this.futureQuery.replace('url_norm:"', '')
-            queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString = queryString.slice(0,-1) : null
-          }
-          else {
-            queryString = this.futureQuery
-          }
-          if(this.validateUrl(queryString)) {
-            this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
-            this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
-            this.$_pushSearchHistory('SolrWayback', queryString, this.searchAppliedFacets, this.solrSettings)
-          }
-          else {
-            this.setNotification({
-          	title: 'We are so sorry!',
-            text: 'This query is not valid. the url must start with \'http://\' or \'https://\'',
-            type: 'error',
-            timeout: false
-          })
-          }
-        }
-        else {
-          this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-          this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-          this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-        }
-      }
-    },
     selectSearchMethod(selected) {
       console.log(selected)
       if(selected === 'imgSearch') {
@@ -230,16 +183,11 @@ export default {
       this.futureUrlSearch = false
       history.pushState({name: 'SolrWayback'}, 'SolrWayback', '/')
       this.futureQuery = ''
-      this.preNormalizeQuery = null
+      this.updatePreNormalizedQuery(null)
       this.futureGrouped = false
       this.futureUrlSearch = false
       this.futureImgSearch = false
       this.resetSearchState()
-    },
-    validateUrl(testString) {
-      return testString.substring(0,7) === 'http://' || 
-             testString.substring(0,8) === 'https://' || 
-             testString.substring(0,10) === 'url_norm:"'
     },
     decideActiveClassesForQueryBox() {
       return this.validateUrl(this.futureQuery) === false 

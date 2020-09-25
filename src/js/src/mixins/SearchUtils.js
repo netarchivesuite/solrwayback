@@ -8,7 +8,7 @@ export default {
       query: state => state.Search.query,
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       solrSettings: state => state.Search.solrSettings,
-      futoreSolrSettings: state => state.Search.futureSolrSettings,
+      futureSolrSettings: state => state.Search.futureSolrSettings,
     }),
   },
   methods: {
@@ -21,40 +21,29 @@ export default {
       updateFutureSolrSettingGrouping:'updateFutureSolrSettingGrouping',
       updateFutureSolrSettingImgSearch:'updateFutureSolrSettingImgSearch',
       updateFutureSolrSettingUrlSearch:'updateFutureSolrSettingUrlSearch',
+      updatePreNormalizedQuery:'updatePreNormalizedQuery',
       clearResults:'clearResults',
       requestSearch:'requestSearch',
       requestImageSearch:'requestImageSearch',
       requestUrlSearch:'requestUrlSearch',
 
     }),
-    handleSubmit(futureQuery) {
-      if (futureQuery !== this.query ||
-          this.futureGrouped !== this.solrSettings.grouping ||
-          this.futureUrlSearch !== this.solrSettings.urlSearch ||
-          this.futureImgSearch !== this.solrSettings.imgSearch) 
-        {
-        console.log('search params changed!')
-        this.preNormalizeQuery = null
-        this.clearResults()
-        this.updateQuery(futureQuery)
-        this.updateSolrSettingOffset(0)
-        this.updateSolrSettingGrouping(this.futureGrouped)
-        this.updateSolrSettingUrlSearch(this.futureUrlSearch)
-        this.updateSolrSettingImgSearch(this.futureImgSearch)
-        if(this.solrSettings.imgSearch) {
-           this.requestImageSearch({query:this.query})
-           this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-        }
-        else if(this.solrSettings.urlSearch) {
-          this.preNormalizeQuery = futureQuery
-          let queryString = ''
-          if(futureQuery.substring(0,10) === 'url_norm:"') {
-            queryString = futureQuery.replace('url_norm:"', '')
-            queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString = queryString.slice(0,-1) : null
-          }
-          else {
-            queryString = futureQuery
-          }
+    ...mapActions('Notifier', {
+      setNotification: 'setNotification'
+    }),
+    validateUrl(testString) {
+      return testString.substring(0,7) === 'http://' || 
+             testString.substring(0,8) === 'https://' || 
+             testString.substring(0,10) === 'url_norm:"'
+    },
+    deliverSearchRequest() {
+      this.requestSearch({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.requestFacets({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+    },
+    deliverUrlSearchRequest(futureQuery) {
+      this.updatePreNormalizedQuery(futureQuery)
+          let queryString = DisectQueryForNewUrlSearch()
           if(this.validateUrl(queryString)) {
             this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
             this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
@@ -63,18 +52,58 @@ export default {
           else {
             this.setNotification({
           	title: 'We are so sorry!',
-            text: 'This query is not valid. the url must start with \'http://\' or \'https://\'',
+            text: 'This URL is not valid. the url must start with \'http://\' or \'https://\'',
             type: 'error',
             timeout: false
           })
           }
-        }
-        else {
-          this.requestSearch({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-          this.requestFacets({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-          this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-        }
-      }
     },
+    deliverImgSearchRequest() {
+      this.requestImageSearch({query:this.query})
+      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+    },
+    checkForChangesInSolrSettings() {
+      return  this.futureGrouped !== this.solrSettings.grouping ||
+              this.futureUrlSearch !== this.solrSettings.urlSearch ||
+              this.futureImgSearch !== this.solrSettings.imgSearch
+    },
+    checkForChangesInQuery(query) {
+      return query !== this.query
+    },
+    setSolrQueryParamsForNewQuery() {
+      this.updateSolrSettingGrouping(this.futureSolrSettings.grouping)
+      this.updateSolrSettingUrlSearch(this.futureSolrSettings.urlSearch)
+      this.updateSolrSettingImgSearch(this.futureSolrSettings.imgSearch)  
+    },
+    prepareVariablesForNewSearch(futureQuery) {
+      this.updatePreNormalizedQuery(null)
+      this.clearResults()
+      this.updateQuery(futureQuery)
+      this.updateSolrSettingOffset(0)
+      this.setSolrQueryParamsForNewQuery()
+    },
+    DisectQueryForNewUrlSearch() {
+      let queryString = ''
+          if(futureQuery.substring(0,10) === 'url_norm:"') {
+            queryString = futureQuery.replace('url_norm:"', '')
+            queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString = queryString.slice(0,-1) : null
+          }
+          else {
+            queryString = futureQuery
+          }
+          return queryString
+    },
+    determineNewSearch(futureQuery) {
+      this.prepareVariablesForNewSearch(futureQuery)
+      if(this.solrSettings.imgSearch) {
+         this.deliverImgSearchRequest()
+      }
+      else if(this.solrSettings.urlSearch) {
+        this.deliverUrlSearchRequest(futureQuery)
+      }
+      else {
+        this.deliverSearchRequest()
+      }
+    }
   }
 }
