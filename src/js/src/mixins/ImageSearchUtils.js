@@ -14,10 +14,10 @@ export default {
       updateSearchAppliedFacets:'updateSearchAppliedFacets',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
     }),
-    $_startPageSearch(searchItem) {
+    $_startPageSearchFromImage(searchItem) {
       return '/?q=' + 'links_images:"' + searchItem + '"' + '&offset=' + this.solrSettings.offset + '&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false'
     },
-    $_startImageSearch(searchItem) {
+    $_startImageSearchFromImage(searchItem) {
       return '/?q=' + 'hash:"' + searchItem + '"' + '&offset=' + this.solrSettings.offset + '&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false'
     },
     $_addHistory(field, searchItem) {

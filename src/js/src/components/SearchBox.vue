@@ -212,11 +212,11 @@ export default {
       console.log(selected)
       if(selected === 'imgSearch') {
         this.updateFutureSolrSettingImgSearch(!this.futureSolrSettings.imgSearch)
-        this.futureSolrSettings.imgSearch === true ? this.updateFutureSolrSettingUrlSearch(false) : null
+        this.futureSolrSettings.imgSearch ? this.updateFutureSolrSettingUrlSearch(false) : null
       }
       else if(selected === 'urlSearch') {
         this.updateFutureSolrSettingUrlSearch(!this.futureSolrSettings.urlSearch)
-        this.futureSolrSettings.urlSearch === true ? this.updateFutureSolrSettingImgSearch(false) : null
+        this.futureSolrSettings.urlSearch ? this.updateFutureSolrSettingImgSearch(false) : null
       }
     },
     clearResultsAndSearch() {

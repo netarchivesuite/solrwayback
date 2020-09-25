@@ -12,10 +12,10 @@
                                     :index="row + number * rowNumber"
                                     @close-window="closeWindow" />
     <div class="imageButtonContainer">
-      <router-link :to="{ path: $_startImageSearch(result.hash)}">
+      <router-link :to="{ path: $_startImageSearchFromImage(result.hash)}">
         <span @click="$_addHistory('hash',result.hash)">Search for image</span>
       </router-link>
-      <router-link :to="{ path: $_startPageSearch(result.urlNorm)}">
+      <router-link :to="{ path: $_startPageSearchFromImage(result.urlNorm)}">
         <span @click="$_addHistory('links_images',result.urlNorm)">Pages linking to image</span>
       </router-link>
     </div>

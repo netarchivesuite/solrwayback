@@ -24,10 +24,10 @@
                                       :index="index"
                                       @close-window="closeWindow" />
       <div class="imageButtonContainer">
-        <router-link :to="{ path: $_startImageSearch(item.hash ? item.hash : hash )}">
+        <router-link :to="{ path: $_startImageSearchFromImage(item.hash ? item.hash : hash )}">
           <span @click="$_addHistory('hash', item.hash ? item.hash : hash)">Search for image</span>
         </router-link>
-        <router-link :to="{ path: $_startPageSearch(item.urlNorm ? item.urlNorm : urlNorm)}">
+        <router-link :to="{ path: $_startPageSearchFromImage(item.urlNorm ? item.urlNorm : urlNorm)}">
           <span @click="$_addHistory('links_images', item.urlNorm ? item.urlNorm : urlNorm)">Pages linking to image</span>
         </router-link>
       </div>
