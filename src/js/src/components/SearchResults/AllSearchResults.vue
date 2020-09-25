@@ -53,26 +53,6 @@ export default {
       requestFacets: 'requestFacets',
       updateSolrSettingOffset:'updateSolrSettingOffset'
     }),
-    getNextResults() {
-      this.updateSolrSettingOffset(this.solrSettings.offset + 20)
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-    },
-    getPreviousResults() {
-      this.updateSolrSettingOffset(this.solrSettings.offset - 20)
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-    },
-    SingleEntryComponent(type) {
-      switch(type) {   
-        case 'Web Page': return 'SearchSingleItemWeb'
-        case 'Image': return 'SearchSingleItemImage'
-        case 'Twitter Tweet': return 'SearchSingleItemTweet'
-        default: return 'SearchSingleItemDefault'
-      }
-    },
   }
 }
 </script>
