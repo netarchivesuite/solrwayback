@@ -83,9 +83,19 @@ public class ArcEntry {
   public String getUrl() {
     return url;
   }
+  
+  /*
+   *   In warc-header Target-URI can be enclosed in < and >. Remove them if that is the case   
+   *   heritrix: WARC-Target-URI: https://test.dk/
+   *   wget: WARC-Target-URI: <https://test.dk/>  
+   */
   public void setUrl(String url) {
-    this.url = url;
-  }
+     if (url.startsWith("<") && url.endsWith(">")){// remove <>
+        url = url.substring(1,url.length()-1);
+     }      
+     this.url = url;
+     }
+  
   public String getContentEncoding() {
     return contentEncoding;
   }
