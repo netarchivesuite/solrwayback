@@ -24,7 +24,7 @@ public class HtmlParserUrlRewriterFromWarcTest {
                 RewriteTestHelper.createOXResolver(true));
 
         
-        //See the replaced HTML
+        //See the replaced HTML. See all urls are replaced with 'notfound'
         System.out.println(rewritten.getReplaced());
                     
         }
