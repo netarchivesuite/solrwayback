@@ -13,6 +13,7 @@
 <script>
 import videojs from 'video.js'
 import {mapActions} from 'vuex'
+import Configs from '../../configs'
 
 export default {
     name: 'InlinePlayer',
@@ -32,6 +33,7 @@ export default {
     },
 
     mounted() {
+      console.log(this.result)
         this.playerInstance = videojs(this.$refs.inlinePlayerObj, this.getPlayerOptions())
         this.playerInstance.on('error', () => {
         const errorObj = this.playerInstance.error()
@@ -80,18 +82,24 @@ export default {
           controls: true,
           width: 400, 
           height: this.result.type === 'Video' ? 200 : 30,
-				  sources: [
-					{ 
-						src: this.result.url_norm,
-					}
-				]
+				  sources: this.getSource() 
         }
         return playerConf    
       },
     
       getFileExtension() {
         return this.result.url_norm.match(/\.[0-9a-z]+$/i)
-      } 
+      },
+      
+      getSource() {
+        let src =  {type:  this.result.content_type, 
+                      src: `${Configs.playbackConfig.solrwaybackBaseURL}services/downloadRaw?source_file_path=${this.result.source_file_path}&offset=${this.result.source_file_offset}`
+                      //src: 'http://belinda:9721/solrwayback/services/web/20200317201128/http://70.85.109.171/albino_mp4/badgerphone(www.albinoblacksheep.com).mp4'
+     } 
+          console.log('src', src)
+          return src
+      
+      }
 
     }
 }
