@@ -54,7 +54,10 @@ export default {
       updateSearchAppliedFacets:'updateSearchAppliedFacets',
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
-      updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch'
+      updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
+      updateFutureSolrSettingGrouping:'updateFutureSolrSettingGrouping',
+      updateFutureSolrSettingImgSearch:'updateFutureSolrSettingImgSearch',
+      updateFutureSolrSettingUrlSearch:'updateFutureSolrSettingUrlSearch'
     }),
     onScroll(e) {
     e.target.documentElement.scrollTop > 0 ? this.scrolledFromTop = true : this.scrolledFromTop = false
@@ -66,9 +69,9 @@ export default {
   beforeRouteUpdate (to, from, next) {
     //console.log('route changed!',to)
     this.updateQuery(to.query.q)
-    to.query.grouping === 'true' ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
-    to.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
-    to.query.urlSearch === 'true' ? this.updateSolrSettingUrlSearch(true) :  this.updateSolrSettingUrlSearch(false)
+    to.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.updateFiutureSolrSettingGrouping(true)) : (this.updateSolrSettingGrouping(false), this.updateFutureSolrSettingGrouping(false))
+    to.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.updateFutureSolrSettingImgSearch(true)) : (this.updateSolrSettingImgSearch(false), this.updateFutureSolrSettingImgSearch(false))
+    to.query.urlSearch === 'true' ? (this.updateSolrSettingUrlSearch(true), this.updateFutureSolrSettingUrlSearch(true)) :  (this.updateSolrSettingUrlSearch(false), this.updateFutureSolrSettingUrlSearch(false))
     to.query.facets ? this.updateSearchAppliedFacets(to.query.facets) : this.updateSearchAppliedFacets('')
     if(this.solrSettings.imgSearch) {
       this.requestImageSearch({query:this.query})

@@ -35,7 +35,7 @@ import ImageSearchResults from './ImageSearchResults'
 
 
 export default {
-  name: 'AllSearchResults',
+  name: 'PostSearchResults',
   components: {
     SearchSingleItemDefault: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemDefault'),
     SearchSingleItemTweet: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemTweet'),
