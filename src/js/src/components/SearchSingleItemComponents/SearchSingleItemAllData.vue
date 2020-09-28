@@ -118,7 +118,7 @@ export default {
     },
     searchFromAllValues(attribute, value) {
       this.allDataShown = !this.allDataShown
-      let searchString = attribute + ':"' + value + '"'
+      let searchString = attribute + ':"' + encodeURIComponent(value) + '"'
       this.updateQuery(searchString)
       this.updateSearchAppliedFacets('')
       this.requestSearch({query:searchString, facets:this.searchAppliedFacets, options:this.solrSettings})
