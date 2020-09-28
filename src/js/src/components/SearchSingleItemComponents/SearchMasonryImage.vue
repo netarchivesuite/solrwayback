@@ -5,7 +5,7 @@
     </div>
     <img 
       loading="lazy"
-      :src="result.downloadUrl"
+      :src="result.imageUrl + '&height=200&width=200'"
       @click="toggleFullImage(true)">
     <search-single-item-focus-image v-if="showFullImage === true"
                                     :image="result.downloadUrl"
