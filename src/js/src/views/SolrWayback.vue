@@ -21,6 +21,7 @@
  import AllSearchResults from '../components/SearchResults/AllSearchResults'
  import Notifications from '../components/notifications/Notifications'
  import LoadingOverlay from '../components/LoadingOverlay'
+ import SearchUtils from './../mixins/SearchUtils'
  import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -31,6 +32,7 @@ export default {
    Notifications,
    LoadingOverlay
   },
+  mixins: [SearchUtils],
   data: () => ({
         scrolledFromTop:false
   }),
@@ -67,29 +69,14 @@ export default {
     }, 
   },
   beforeRouteUpdate (to, from, next) {
-    //console.log('route changed!',to)
+    console.log(this)
+    console.log('route changed!',to)
     this.updateQuery(to.query.q)
-    to.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.updateFiutureSolrSettingGrouping(true)) : (this.updateSolrSettingGrouping(false), this.updateFutureSolrSettingGrouping(false))
-    to.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.updateFutureSolrSettingImgSearch(true)) : (this.updateSolrSettingImgSearch(false), this.updateFutureSolrSettingImgSearch(false))
-    to.query.urlSearch === 'true' ? (this.updateSolrSettingUrlSearch(true), this.updateFutureSolrSettingUrlSearch(true)) :  (this.updateSolrSettingUrlSearch(false), this.updateFutureSolrSettingUrlSearch(false))
+    to.query.grouping === 'true' ? this.updateFiutureSolrSettingGrouping(true) : this.updateFutureSolrSettingGrouping(false)
+    to.query.imgSearch === 'true' ? this.updateFutureSolrSettingImgSearch(true) : this.updateFutureSolrSettingImgSearch(false)
+    to.query.urlSearch === 'true' ? this.updateFutureSolrSettingUrlSearch(true) : this.updateFutureSolrSettingUrlSearch(false)
     to.query.facets ? this.updateSearchAppliedFacets(to.query.facets) : this.updateSearchAppliedFacets('')
-    if(this.solrSettings.imgSearch) {
-      this.requestImageSearch({query:this.query})
-    }
-    else if(this.solrSettings.urlSearch) {
-      let queryString = ''
-      if(this.query.substring(0,10) === 'url_norm:"') {
-        queryString = this.query.replace('url_norm:"', '')
-        queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString.slice(0,-1) : null
-        this.updateQuery(queryString)
-      }
-      this.requestUrlSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-    } 
-    else {
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-    }
+    this.determineNewSearch(to.query.q)
   },
 }
 </script>
