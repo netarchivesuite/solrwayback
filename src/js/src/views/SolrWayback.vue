@@ -69,7 +69,6 @@ export default {
     }, 
   },
   beforeRouteUpdate (to, from, next) {
-    console.log(this)
     console.log('route changed!',to)
     this.updateQuery(to.query.q)
     to.query.grouping === 'true' ? this.updateFiutureSolrSettingGrouping(true) : this.updateFutureSolrSettingGrouping(false)

@@ -36,11 +36,13 @@ export default {
              testString.substring(0,8) === 'https://' || 
              testString.substring(0,10) === 'url_norm:"'
     },
+    //Deliver a normal search
     deliverSearchRequest(futureQuery) {
       this.requestSearch({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
+    //Deliver an URL search
     deliverUrlSearchRequest(futureQuery) {
       this.updatePreNormalizedQuery(futureQuery)
       let queryString = this.DisectQueryForNewUrlSearch(futureQuery)
@@ -58,23 +60,28 @@ export default {
         })
       }
     },
-    deliverImgSearchRequest() {
-      this.requestImageSearch({query:this.query})
-      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+    // Deliver an image search
+    deliverImgSearchRequest(futureQuery) {
+      this.requestImageSearch({query:futureQuery})
+      this.$_pushSearchHistory('SolrWayback', futureQuery, this.searchAppliedFacets, this.solrSettings)
     },
+    // Check if there has been any changes to params
     checkForChangesInSolrSettings() {
-      return  this.futureGrouped !== this.solrSettings.grouping ||
-              this.futureUrlSearch !== this.solrSettings.urlSearch ||
-              this.futureImgSearch !== this.solrSettings.imgSearch
+      return  this.futureSolrSettings.grouping !== this.solrSettings.grouping ||
+              this.futureSolrSettings.urlSearch !== this.solrSettings.urlSearch ||
+              this.futureSolrSettings.imgSearch !== this.solrSettings.imgSearch
     },
+    // Check if there has been any changes to the query
     checkForChangesInQuery(query) {
       return query !== this.query
     },
+    // Set the params for a new query
     setSolrQueryParamsForNewQuery() {
       this.updateSolrSettingGrouping(this.futureSolrSettings.grouping)
       this.updateSolrSettingUrlSearch(this.futureSolrSettings.urlSearch)
       this.updateSolrSettingImgSearch(this.futureSolrSettings.imgSearch)  
     },
+    // Prepare for a new search
     prepareVariablesForNewSearch(futureQuery) {
       this.updatePreNormalizedQuery(null)
       this.clearResults()
@@ -82,6 +89,7 @@ export default {
       this.updateSolrSettingOffset(0)
       this.setSolrQueryParamsForNewQuery()
     },
+    // Disect the query for URL searching
     DisectQueryForNewUrlSearch(futureQuery) {
       let queryString = ''
           if(futureQuery.substring(0,10) === 'url_norm:"') {
@@ -93,16 +101,19 @@ export default {
           }
           return queryString
     },
+    // Method to fire off a search (and deciding which kind it is)
     determineNewSearch(futureQuery) {
-      this.prepareVariablesForNewSearch(futureQuery)
-      if(this.solrSettings.imgSearch) {
-         this.deliverImgSearchRequest()
-      }
-      else if(this.solrSettings.urlSearch) {
-        this.deliverUrlSearchRequest(futureQuery)
-      }
-      else {
-        this.deliverSearchRequest(futureQuery)
+      if(this.checkForChangesInSolrSettings() || this.checkForChangesInQuery(futureQuery)) {
+        this.prepareVariablesForNewSearch(futureQuery)
+        if(this.solrSettings.imgSearch) {
+          this.deliverImgSearchRequest(futureQuery)
+        }
+        else if(this.solrSettings.urlSearch) {
+          this.deliverUrlSearchRequest(futureQuery)
+        }
+        else {
+          this.deliverSearchRequest(futureQuery)
+        }
       }
     }
   }
