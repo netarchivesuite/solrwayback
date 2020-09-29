@@ -94,8 +94,8 @@ export default {
   mounted () {
     //console.log(this.$router.history.current.query)
     if(this.$router.history.current.query.q) {
-      this.updateQuery(this.$router.history.current.query.q)
-      this.futureQuery = this.$router.history.current.query.q
+      this.updateQuery(encodeURIComponent(this.$router.history.current.query.q))
+      this.futureQuery = encodeURIComponent(this.$router.history.current.query.q)
       this.$router.history.current.query.facets ? this.updateSearchAppliedFacets(this.$router.history.current.query.facets) : this.updateSearchAppliedFacets('')
       this.$router.history.current.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.updateFutureSolrSettingGrouping(true)) : (this.updateSolrSettingGrouping(false), this.updateFutureSolrSettingGrouping(false))
       this.$router.history.current.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.updateFutureSolrSettingImgSearch(true)) : (this.updateSolrSettingImgSearch(false), this.updateFutureSolrSettingImgSearch(false))
