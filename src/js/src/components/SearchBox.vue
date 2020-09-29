@@ -1,6 +1,6 @@
 <template>
   <div class="searchBoxContainer">
-    <form class="searchForm" @submit.prevent="determineNewSearch(futureQuery)">
+    <form class="searchForm" @submit.prevent="$_determineNewSearch(futureQuery)">
       <span v-if="preNormalizedQuery !== null" class="orgQuery">Original query: <span class="preQuery">{{ preNormalizedQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
       <input id="query"
              v-model="futureQuery"
@@ -101,7 +101,7 @@ export default {
       this.$router.history.current.query.grouping === 'true' ? this.updateFutureSolrSettingGrouping(true) : this.updateFutureSolrSettingGrouping(false)
       this.$router.history.current.query.imgSearch === 'true' ? this.updateFutureSolrSettingImgSearch(true) : this.updateFutureSolrSettingImgSearch(false)
       this.$router.history.current.query.urlSearch === 'true' ? this.updateFutureSolrSettingUrlSearch(true) : this.updateFutureSolrSettingUrlSearch(false)
-      this.determineNewSearch(this.futureQuery)
+      this.$_determineNewSearch(this.futureQuery)
       }
   },
   
@@ -154,7 +154,7 @@ export default {
       this.resetSearchState()
     },
     decideActiveClassesForQueryBox() {
-      return this.validateUrl(this.futureQuery) === false 
+      return this.$_validateUrlSearchPrefix(this.futureQuery) === false 
                  ? this.futureQuery.substring(0,8) === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
                  : this.futureQuery.substring(0,8) === 'url_norm' ? '' : 'urlSearchActivated' 
     }

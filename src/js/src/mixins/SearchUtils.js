@@ -31,7 +31,7 @@ export default {
     ...mapActions('Notifier', {
       setNotification: 'setNotification'
     }),
-    validateUrl(testString) {
+    $_validateUrlSearchPrefix(testString) {
       return testString.substring(0,7) === 'http://' || 
              testString.substring(0,8) === 'https://' || 
              testString.substring(0,10) === 'url_norm:"'
@@ -46,7 +46,7 @@ export default {
     deliverUrlSearchRequest(futureQuery) {
       this.updatePreNormalizedQuery(futureQuery)
       let queryString = this.DisectQueryForNewUrlSearch(futureQuery)
-      if(this.validateUrl(queryString)) {
+      if(this.$_validateUrlSearchPrefix(queryString)) {
         this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
         this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
         this.$_pushSearchHistory('SolrWayback', queryString, this.searchAppliedFacets, this.solrSettings)
@@ -66,13 +66,13 @@ export default {
       this.$_pushSearchHistory('SolrWayback', futureQuery, this.searchAppliedFacets, this.solrSettings)
     },
     // Check if there has been any changes to params
-    checkForChangesInSolrSettings() {
+    solrSettingsHaveChanged() {
       return  this.futureSolrSettings.grouping !== this.solrSettings.grouping ||
               this.futureSolrSettings.urlSearch !== this.solrSettings.urlSearch ||
               this.futureSolrSettings.imgSearch !== this.solrSettings.imgSearch
     },
     // Check if there has been any changes to the query
-    checkForChangesInQuery(query) {
+    queryHasChanged(query) {
       return query !== this.query
     },
     // Set the params for a new query
@@ -102,8 +102,8 @@ export default {
           return queryString
     },
     // Method to fire off a search (and deciding which kind it is)
-    determineNewSearch(futureQuery) {
-      if(this.checkForChangesInSolrSettings() || this.checkForChangesInQuery(futureQuery)) {
+    $_determineNewSearch(futureQuery) {
+      if(this.solrSettingsHaveChanged() || this.queryHasChanged(futureQuery)) {
         this.prepareVariablesForNewSearch(futureQuery)
         if(this.solrSettings.imgSearch) {
           this.deliverImgSearchRequest(futureQuery)

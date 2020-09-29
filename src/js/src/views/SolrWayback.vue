@@ -70,12 +70,11 @@ export default {
   },
   beforeRouteUpdate (to, from, next) {
     console.log('route changed!',to)
-    this.updateQuery(to.query.q)
     to.query.grouping === 'true' ? this.updateFiutureSolrSettingGrouping(true) : this.updateFutureSolrSettingGrouping(false)
     to.query.imgSearch === 'true' ? this.updateFutureSolrSettingImgSearch(true) : this.updateFutureSolrSettingImgSearch(false)
     to.query.urlSearch === 'true' ? this.updateFutureSolrSettingUrlSearch(true) : this.updateFutureSolrSettingUrlSearch(false)
     to.query.facets ? this.updateSearchAppliedFacets(to.query.facets) : this.updateSearchAppliedFacets('')
-    this.determineNewSearch(to.query.q)
+    this.$_determineNewSearch(to.query.q)
   },
 }
 </script>
