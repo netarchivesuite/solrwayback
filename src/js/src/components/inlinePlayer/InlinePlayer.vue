@@ -33,7 +33,6 @@ export default {
     },
 
     mounted() {
-      console.log(this.result)
         this.playerInstance = videojs(this.$refs.inlinePlayerObj, this.getPlayerOptions())
         this.playerInstance.on('error', () => {
         const errorObj = this.playerInstance.error()
@@ -54,11 +53,10 @@ export default {
         }),
         
         dispatchError(code, playerErrorMessage) {
-        
         if (code === 4 ){
           this.setNotification({
           	title: 'Unsupported format',
-            text:`Try another browser or direct playback (copy URL listed above player) in a stand alone player compatible with the ${this.getFileExtension()} format.`,
+            text:'The media format is not supported in the web-player. Use the Download link to download the file and use video-player that supports the format',
             type: 'error',
             srvMessage: playerErrorMessage,
             timeout: true
@@ -86,19 +84,11 @@ export default {
         }
         return playerConf    
       },
-    
-      getFileExtension() {
-        return this.result.url_norm.match(/\.[0-9a-z]+$/i)
-      },
       
       getSource() {
-        let src =  {type:  this.result.content_type, 
-                      src: `${Configs.playbackConfig.solrwaybackBaseURL}services/downloadRaw?source_file_path=${this.result.source_file_path}&offset=${this.result.source_file_offset}`
-                      //src: 'http://belinda:9721/solrwayback/services/web/20200317201128/http://70.85.109.171/albino_mp4/badgerphone(www.albinoblacksheep.com).mp4'
-     } 
-          console.log('src', src)
-          return src
-      
+          return  {type:  this.result.content_type, 
+                   src: `${Configs.playbackConfig.solrwaybackBaseURL}services/downloadRaw?source_file_path=${this.result.source_file_path}&offset=${this.result.source_file_offset}`
+                  } 
       }
 
     }
