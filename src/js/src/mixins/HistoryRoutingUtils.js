@@ -2,12 +2,20 @@ export default {
   methods: {
     $_pushSearchHistory(destination, query, appliedFacets, solrSettings) {
     // Should be deleted before production.
-
     console.log('We pushed a history.')
     let newFacetUrl = appliedFacets !== '' ? '&facets=' + encodeURIComponent(appliedFacets) : ''
     let newOptionsUrl = '&offset=' + solrSettings.offset + '&grouping=' + solrSettings.grouping + '&imgSearch=' + solrSettings.imgSearch + '&urlSearch=' + solrSettings.urlSearch
-    history.pushState({name: destination}, destination, '?q=' + query + newFacetUrl + newOptionsUrl)
-   
+    //history.pushState({name: destination}, destination, '?q=' + query + newFacetUrl + newOptionsUrl)
+      this.$router.push({name: destination, query: { query: query,
+                                                     grouping: solrSettings.grouping,
+                                                     imgSearch: solrSettings.imgSearch,
+                                                     offset: solrSettings.offset,
+                                                     urlSearch: solrSettings.urlSearch,
+                                                     facets:encodeURIComponent(appliedFacets)
+                                                     } })
+    console.log(this.$router, 'we pushed route yey')
+    }
+  }
   
   /*  console.log('We pushed a history.', this.$router)
     console.log('query', query)
@@ -28,9 +36,4 @@ export default {
       this.$router.push({name: destination, query: {q: query}})
     
     }  */
-  
-  
-  
-  },
-  }
 }

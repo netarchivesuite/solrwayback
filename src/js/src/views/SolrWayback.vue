@@ -40,10 +40,13 @@ export default {
       query: state => state.Search.query,
       solrSettings: state => state.Search.solrSettings
     }),
+    changeInSearchParams: function() {
+      return [this.solrSettings.offset,this.solrSettings.imgSearch, this.solrSettings.urlSearch]
+    }
   },
 watch: {
-    '$route.query.q': function (to, from) {
-      console.log('wathcing route to-from', to, from)
+    changeInSearchParams: function(oldVal, newVal) {
+      console.log('changeInSearchParams!',oldVal, newVal)
     }
   },
 
@@ -71,40 +74,46 @@ watch: {
     },
     backToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    }, 
+    },
   },
-  
-
-   beforeRouteEnter (to, from, next) {
-        console.log('enter!!')
-        next()
-   },
   beforeRouteUpdate (to, from, next) {
-    console.log('route changed!fooooo',next)
-    this.updateQuery(to.query.q)
-    to.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.updateFiutureSolrSettingGrouping(true)) : (this.updateSolrSettingGrouping(false), this.updateFutureSolrSettingGrouping(false))
-    to.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.updateFutureSolrSettingImgSearch(true)) : (this.updateSolrSettingImgSearch(false), this.updateFutureSolrSettingImgSearch(false))
-    to.query.urlSearch === 'true' ? (this.updateSolrSettingUrlSearch(true), this.updateFutureSolrSettingUrlSearch(true)) :  (this.updateSolrSettingUrlSearch(false), this.updateFutureSolrSettingUrlSearch(false))
-    to.query.facets ? this.updateSearchAppliedFacets(to.query.facets) : this.updateSearchAppliedFacets('')
-    if(this.solrSettings.imgSearch) {
-      this.requestImageSearch({query:this.query})
-    }
-    else if(this.solrSettings.urlSearch) {
-      let queryString = ''
-      if(this.query.substring(0,10) === 'url_norm:"') {
-        queryString = this.query.replace('url_norm:"', '')
-        queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString.slice(0,-1) : null
-        this.updateQuery(queryString)
+    console.log(to.query)
+    if( this.solrSettings.imgSearch.toString() !== to.query.imgSearch ||
+        this.solrSettings.urlSearch.toString() !== to.query.urlSearch ||
+        this.solrSettings.grouping.toString() !== to.query.grouping ||
+        this.solrSettings.offset.toString() !== to.query.offset ||
+        this.query !== to.query.query)
+      { 
+      console.log('WE HAVE CHANGE!',to.query.query)
+      this.updateQuery(to.query.query)
+      if(to.query.query === undefined) {
+        this.resetState()
       }
-      this.requestUrlSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-    } 
-    else {
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      else {
+        to.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.updateFiutureSolrSettingGrouping(true)) : (this.updateSolrSettingGrouping(false), this.updateFutureSolrSettingGrouping(false))
+        to.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.updateFutureSolrSettingImgSearch(true)) : (this.updateSolrSettingImgSearch(false), this.updateFutureSolrSettingImgSearch(false))
+        to.query.urlSearch === 'true' ? (this.updateSolrSettingUrlSearch(true), this.updateFutureSolrSettingUrlSearch(true)) :  (this.updateSolrSettingUrlSearch(false), this.updateFutureSolrSettingUrlSearch(false))
+        to.query.facets ? this.updateSearchAppliedFacets(to.query.facets) : this.updateSearchAppliedFacets('')
+        if(this.solrSettings.imgSearch) {
+          this.requestImageSearch({query:this.query})
+        }
+        else if(this.solrSettings.urlSearch) {
+          let queryString = ''
+          if(this.query.substring(0,10) === 'url_norm:"') {
+            queryString = this.query.replace('url_norm:"', '')
+            queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString.slice(0,-1) : null
+            this.updateQuery(queryString)
+          }
+          this.requestUrlSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+          this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+        } 
+        else {
+          this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+          this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+        }
+      }
     }
-
-   
-  },
+  next() 
+  }, 
 }
 </script>

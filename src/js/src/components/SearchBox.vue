@@ -92,17 +92,18 @@ export default {
     },
   },
   mounted () {
-    //console.log(this.$router.history.current.query)
-    if(this.$router.history.current.query.q) {
-      this.updateQuery(this.$router.history.current.query.q)
-      this.futureQuery = this.$router.history.current.query.q
+    //console.log(this.$router.history.current.query,'WEHERE DAMNIT')
+    if(this.$router.history.current.query.query) {
+      this.updateQuery(this.$router.history.current.query.query)
+      this.futureQuery = this.$router.history.current.query.query
       this.$router.history.current.query.facets ? this.updateSearchAppliedFacets(this.$router.history.current.query.facets) : this.updateSearchAppliedFacets('')
+      this.$router.history.current.query.offset ? this.updateSolrSettingOffset(Number(this.$router.history.current.query.offset)) : this.updateSolrSettingOffset(0)
       this.$router.history.current.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.updateFutureSolrSettingGrouping(true)) : (this.updateSolrSettingGrouping(false), this.updateFutureSolrSettingGrouping(false))
       this.$router.history.current.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.updateFutureSolrSettingImgSearch(true)) : (this.updateSolrSettingImgSearch(false), this.updateFutureSolrSettingImgSearch(false))
       this.$router.history.current.query.urlSearch === 'true' ? (this.updateSolrSettingUrlSearch(true), this.updateFutureSolrSettingUrlSearch(true)) : (this.updateSolrSettingUrlSearch(false), this.updateFutureSolrSettingUrlSearch(false))
       if(this.solrSettings.imgSearch) {
            this.requestImageSearch({query:this.query})
-           this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+           //this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
         }
         else if(this.solrSettings.urlSearch) {
           this.preNormalizeQuery = this.futureQuery
@@ -118,7 +119,7 @@ export default {
             this.updateQuery('url_norm:"' + queryString + '"')
             this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
             this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
-            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+            //this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
           }
           else {
             this.setNotification({
@@ -132,7 +133,7 @@ export default {
         else {
           this.requestSearch({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
           this.requestFacets({query:this.futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-          this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+          //this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
         }
       }
   },
