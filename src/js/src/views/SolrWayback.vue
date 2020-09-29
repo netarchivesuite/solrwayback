@@ -41,11 +41,18 @@ export default {
       solrSettings: state => state.Search.solrSettings
     }),
   },
+watch: {
+    '$route.query.q': function (to, from) {
+      console.log('wathcing route to-from', to, from)
+    }
+  },
+
   mounted() {
     window.addEventListener('scroll', this.onScroll)
   },
   methods: {
     ...mapActions('Search', {
+      resetState:'resetState',
       requestSearch: 'requestSearch',
       requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
@@ -66,8 +73,14 @@ export default {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }, 
   },
+  
+
+   beforeRouteEnter (to, from, next) {
+        console.log('enter!!')
+        next()
+   },
   beforeRouteUpdate (to, from, next) {
-    //console.log('route changed!',to)
+    console.log('route changed!fooooo',next)
     this.updateQuery(to.query.q)
     to.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.updateFiutureSolrSettingGrouping(true)) : (this.updateSolrSettingGrouping(false), this.updateFutureSolrSettingGrouping(false))
     to.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.updateFutureSolrSettingImgSearch(true)) : (this.updateSolrSettingImgSearch(false), this.updateFutureSolrSettingImgSearch(false))
@@ -90,6 +103,8 @@ export default {
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
     }
+
+   
   },
 }
 </script>
