@@ -6,11 +6,17 @@
       </p>
       <p>score: <span class="highlightText"> {{ result.score }}</span></p>
     </div>
+   
     <p class="entryInfo">
       <span class="highlightText titleInfo">
         <div :title="result.type.toLowerCase()" :class="'typePreview ' + getIconForType(result.type)" /><a :href="getPlaybackURL(result.source_file_path, result.source_file_offset)" target="_blank"><span>{{ result.title || `${result.content_type_norm} - no title` }}</span></a>
       </span>
-    </p><p class="entryInfo type">
+      <a v-if="result.content_type_norm === 'html'"
+         :href="getOpenWaybackLink(result.wayback_date, result.url)"
+         title="Alternative playback engine"
+         class="openWaybackLink" />
+    </p>
+    <p class="entryInfo type">
       <span class="attri">type:</span> <span class="val">{{ result.content_type_norm }}, {{ result.type }} @ {{ result.domain }}</span>
     </p>
     <p class="entryInfo date">
@@ -60,9 +66,16 @@ export default {
       date = date.toString()
       return date.substring(6,8) + '/' + date.substring(4,6) + '-' + date.substring(0,4)
     },
+
     getPlaybackURL(source_file_path, source_file_offset) {
       return `${configs.playbackConfig.solrwaybackBaseURL}services/viewForward?source_file_path=${source_file_path}&offset=${source_file_offset}`    
     },
+
+    getOpenWaybackLink(wayback_date, url) {
+      return `${configs.playbackConfig.openwaybackBaseURL}${wayback_date}/${url}`    
+    },
+    
+
     getIconForType(type) {
       switch(type) {   
         case 'Web Page': return 'web'

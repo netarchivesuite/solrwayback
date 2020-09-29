@@ -1,7 +1,11 @@
 <template>
   <div class="singleEntryResult">
     <search-single-item-standard-info :result="result" :rank="rankNumber" />
-    <search-single-item-images :source="result.source_file_path" :offset="result.source_file_offset" input-type="singluar" />
+    <search-single-item-images :hash="result.hash"
+                               :url-norm="result.url_norm"
+                               :source="result.source_file_path"
+                               :offset="result.source_file_offset"
+                               input-type="singluar" />
     <search-single-item-all-data :id="result.id" />
   </div>
 </template>

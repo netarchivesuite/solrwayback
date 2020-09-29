@@ -35,9 +35,11 @@ export default {
     ...mapActions('Search', {
       requestSearch: 'requestSearch',
       requestFacets: 'requestFacets',
-      updateSearchAppliedFacets:'updateSearchAppliedFacets'
+      updateSearchAppliedFacets:'updateSearchAppliedFacets',
+      updateSolrSettingOffset:'updateSolrSettingOffset'
     }),
     removeFacet(facet) {
+      this.updateSolrSettingOffset(0)
       this.updateSearchAppliedFacets(this.searchAppliedFacets.replace('&fq=' + facet,''))
       this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})

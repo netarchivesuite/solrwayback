@@ -36,7 +36,7 @@ import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
 import SearchMasonryImage from './../SearchSingleItemComponents/SearchMasonryImage'
 
 export default {
-  name: 'AllSearchResults',
+  name: 'ImageSearchResults',
   components: {
     SearchMasonryImage
   },

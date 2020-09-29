@@ -14,6 +14,11 @@ const initialState = () => ({
     imgSearch:false,
     urlSearch:false
   },
+  futureSolrSettings:{
+    grouping:false,
+    imgSearch:false,
+    urlSearch:false
+  },
   loading:false,
 })
 
@@ -27,7 +32,7 @@ const actions = {
     commit('updateQuerySuccess', param)
   },
   updatePreNormalizedQuery ( {commit}, param) {
-    commit('updateQuerySuccess', param)
+    commit('updatePreNormalizedQuerySuccess', param)
   },
   updateSolrSettingGrouping ( {commit}, param ) {
     commit('updateSolrSettingGroupingSuccess', param)
@@ -40,6 +45,15 @@ const actions = {
   },
   updateSolrSettingUrlSearch ( {commit}, param ) {
     commit('updateSolrSettingUrlSearchSuccess', param)
+  },
+  updateFutureSolrSettingGrouping ( {commit}, param ) {
+    commit('updateFutureSolrSettingGroupingSuccess', param)
+  },
+  updateFutureSolrSettingImgSearch ( {commit}, param ) {
+    commit('updateFutureSolrSettingImgSearchSuccess', param)
+  },
+  updateFutureSolrSettingUrlSearch ( {commit}, param ) {
+    commit('updateFutureSolrSettingUrlSearchSuccess', param)
   },
   updateSearchAppliedFacets ( {commit}, param ) {
     commit('updateSearchAppliedFacetsSuccess', param)
@@ -92,7 +106,7 @@ const mutations = {
     state.query = param
   },
   updatePreNormalizedQuerySuccess(state, param) {
-    state.query = param
+    state.preNormalizedQuery = param
   },
   updateSolrSettingGroupingSuccess(state, param) {
     state.solrSettings.grouping = param
@@ -105,6 +119,15 @@ const mutations = {
   },
   updateSolrSettingUrlSearchSuccess(state, param) {
     state.solrSettings.urlSearch = param
+  },
+  updateFutureSolrSettingGroupingSuccess(state, param) {
+    state.futureSolrSettings.grouping = param
+  },
+  updateFutureSolrSettingImgSearchSuccess(state, param) {
+    state.futureSolrSettings.imgSearch = param
+  },
+  updateFutureSolrSettingUrlSearchSuccess(state, param) {
+    state.futureSolrSettings.urlSearch = param
   },
   updateSearchAppliedFacetsSuccess(state, param) {
     state.searchAppliedFacets = param

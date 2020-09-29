@@ -6,12 +6,12 @@
              v-model="futureQuery"
              type="text"
              autofocus
-             :class="futureUrlSearch 
+             :class="futureSolrSettings.urlSearch 
                ? decideActiveClassesForQueryBox()
                : ''"
-             :placeholder="futureUrlSearch ? 'Enter search url' : 'Enter search term'">
+             :placeholder="futureSolrSettings.urlSearch ? 'Enter search url' : 'Enter search term'">
       <transition name="url-search-helper">
-        <span v-if="futureUrlSearch && futureQuery.substring(0,8) !== 'url_norm'" class="urlSearchHelper">URL:</span>
+        <span v-if="futureSolrSettings.urlSearch && futureQuery.substring(0,8) !== 'url_norm'" class="urlSearchHelper">URL:</span>
       </transition>
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
@@ -22,16 +22,17 @@
               type="button"
               @click="clearResultsAndSearch" />
       <div class="sortOptions">
-        <div @click.prevent="futureGrouped = !futureGrouped">
+        <div @click.prevent="updateFutureSolrSettingGrouping(!futureSolrSettings.grouping)">
           <input id="groupedSearch"
-                 :checked="futureGrouped"
+                 :checked="futureSolrSettings.grouping"
                  type="checkbox"
-                 name="groupedSearch">
+                 name="groupedSearch"
+                 @click.stop="updateFutureSolrSettingGrouping(!futureSolrSettings.grouping)">
           <label for="groupedSearch">Grouped search <span class="buttonExplanation" title="Grouping results by URL, meaning you only seen an URL as one hit, even though it might have been a hit on several params.">[ ? ]</span></label>
         </div>
         <div class="floatRight" @click.prevent="selectSearchMethod('urlSearch')">
           <input id="urlSearch"
-                 :checked="futureUrlSearch"
+                 :checked="futureSolrSettings.urlSearch"
                  type="checkbox"
                  name="urlSearch"
                  @click.stop="selectSearchMethod('urlSearch')">
@@ -39,7 +40,7 @@
         </div>
         <div class="floatRight marginRight" @click.prevent="selectSearchMethod('imgSearch')">
           <input id="imgSearch"
-                 :checked="futureImgSearch"
+                 :checked="futureSolrSettings.imgSearch"
                  type="checkbox"
                  name="imgSearch"
                  @click.stop="selectSearchMethod('imgSearch')">
@@ -71,9 +72,6 @@ export default {
   data () {
     return {    
       futureQuery:'',
-      futureGrouped:false,
-      futureUrlSearch:false,
-      futureImgSearch:false,
       showUploadFileSearch: false
 
     }
@@ -85,6 +83,7 @@ export default {
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       results: state => state.Search.results,
       solrSettings: state => state.Search.solrSettings,
+      futureSolrSettings: state => state.Search.futureSolrSettings,
       loading: state => state.Search.loading,
     })
   },
@@ -98,10 +97,10 @@ export default {
     if(this.$router.history.current.query.q) {
       this.updateQuery(this.$router.history.current.query.q)
       this.futureQuery = this.$router.history.current.query.q
-      this.$router.history.current.query.facets ? this.updateSearchAppliedFacets(this.$router.history.current.query.facets) : null
-      this.$router.history.current.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.futureGrouped = true) : null
-      this.$router.history.current.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.futureImgSearch = true) : null
-      this.$router.history.current.query.urlSearch === 'true' ? (this.updateSolrSettingUrlSearch(true), this.futureUrlSearch = true) : null
+      this.$router.history.current.query.facets ? this.updateSearchAppliedFacets(this.$router.history.current.query.facets) : this.updateSearchAppliedFacets('')
+      this.$router.history.current.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.updateFutureSolrSettingGrouping(true)) : (this.updateSolrSettingGrouping(false), this.updateFutureSolrSettingGrouping(false))
+      this.$router.history.current.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.updateFutureSolrSettingImgSearch(true)) : (this.updateSolrSettingImgSearch(false), this.updateFutureSolrSettingImgSearch(false))
+      this.$router.history.current.query.urlSearch === 'true' ? (this.updateSolrSettingUrlSearch(true), this.updateFutureSolrSettingUrlSearch(true)) : (this.updateSolrSettingUrlSearch(false), this.updateFutureSolrSettingUrlSearch(false))
       if(this.solrSettings.imgSearch) {
            this.requestImageSearch({query:this.query})
            this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
@@ -153,7 +152,11 @@ export default {
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
       updateSolrSettingOffset:'updateSolrSettingOffset',
-      updatePreNormalizedQuery:'updatePreNormalizedQuery'
+      updateFutureSolrSettingGrouping:'updateFutureSolrSettingGrouping',
+      updateFutureSolrSettingImgSearch:'updateFutureSolrSettingImgSearch',
+      updateFutureSolrSettingUrlSearch:'updateFutureSolrSettingUrlSearch',
+      updatePreNormalizedQuery:'updatePreNormalizedQuery',
+
     }),
     ...mapActions('Notifier', {
       setNotification: 'setNotification'
@@ -162,31 +165,25 @@ export default {
     selectSearchMethod(selected) {
       console.log(selected)
       if(selected === 'imgSearch') {
-        this.futureImgSearch = !this.futureImgSearch
-        this.futureImgSearch === true ? this.futureUrlSearch = false : null
-        //this.solrSettings.urlSearch ? this.updateSolrSettingUrlSearch(!this.solrSettings.urlSearch) : null
-        //this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch)
+        this.updateFutureSolrSettingImgSearch(!this.futureSolrSettings.imgSearch)
+        this.futureSolrSettings.imgSearch ? this.updateFutureSolrSettingUrlSearch(false) : null
       }
       else if(selected === 'urlSearch') {
-        this.futureUrlSearch = !this.futureUrlSearch
-        this.futureUrlSearch === true ? this.futureImgSearch = false : null
-        //this.solrSettings.imgSearch ? this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch) : null
-        //this.updateSolrSettingUrlSearch(!this.solrSettings.urlSearch)
+        this.updateFutureSolrSettingUrlSearch(!this.futureSolrSettings.urlSearch)
+        this.futureSolrSettings.urlSearch ? this.updateFutureSolrSettingImgSearch(false) : null
       }
     },
     clearResultsAndSearch() {
       this.updateSolrSettingGrouping(false)
-      this.futureGrouped = false
       this.updateSolrSettingImgSearch(false)
-      this.futureImgSearch = false
       this.updateSolrSettingUrlSearch(false)
-      this.futureUrlSearch = false
+      this.updateFutureSolrSettingGrouping(false)
+      this.updateFutureSolrSettingImgSearch(false)
+      this.updateFutureSolrSettingUrlSearch(false)
       history.pushState({name: 'SolrWayback'}, 'SolrWayback', '/')
       this.futureQuery = ''
-      this.updatePreNormalizedQuery(null)
-      this.futureGrouped = false
-      this.futureUrlSearch = false
-      this.futureImgSearch = false
+      this.preNormalizeQuery = null
+
       this.resetSearchState()
     },
     decideActiveClassesForQueryBox() {

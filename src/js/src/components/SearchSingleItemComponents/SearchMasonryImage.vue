@@ -5,19 +5,19 @@
     </div>
     <img 
       loading="lazy"
-      :src="result.downloadUrl"
+      :src="result.imageUrl + '&height=200&width=200'"
       @click="toggleFullImage(true)">
     <search-single-item-focus-image v-if="showFullImage === true"
                                     :image="result.downloadUrl"
                                     :index="row + number * rowNumber"
                                     @close-window="closeWindow" />
     <div class="imageButtonContainer">
-      <button @click="startImageSearch()">
-        <span>Search for image</span>
-      </button>
-      <button @click="startPageSearch()">
-        <span>Pages linking to image</span>
-      </button>
+      <router-link :to="{ path: $_startImageSearchFromImage(result.hash)}">
+        <span @click="$_addHistory('hash',result.hash)">Search for image</span>
+      </router-link>
+      <router-link :to="{ path: $_startPageSearchFromImage(result.urlNorm)}">
+        <span @click="$_addHistory('links_images',result.urlNorm)">Pages linking to image</span>
+      </router-link>
     </div>
   </div>
 </template>
@@ -27,13 +27,14 @@
 import { mapActions, mapState } from 'vuex'
 import SearchSingleItemFocusImage from './SearchSingleItemFocusImage'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
+import ImageSearchUtils from './../../mixins/ImageSearchUtils'
 
 export default {
   name: 'SearchMasonryImage',
   components: {
     SearchSingleItemFocusImage
   },
-  mixins: [HistoryRoutingUtils],
+  mixins: [HistoryRoutingUtils, ImageSearchUtils],
   props: {
     result: {
       type: Object,
@@ -72,22 +73,6 @@ export default {
       updateSearchAppliedFacets:'updateSearchAppliedFacets',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
     }),
-    startPageSearch() {
-      this.updateQuery('links_images:"' + this.result.urlNorm + '"')
-      this.updateSearchAppliedFacets('')
-      this.updateSolrSettingImgSearch(false)
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-    },
-    startImageSearch() {
-      this.updateQuery('hash:"' + this.result.hash + '"')
-      this.updateSearchAppliedFacets('')
-      this.updateSolrSettingImgSearch(false)
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-    },
      toggleFullImage(index) {
       this.showFullImage !== null ? this.showFullImage = null : this.showFullImage = index
     },

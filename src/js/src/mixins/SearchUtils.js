@@ -36,27 +36,27 @@ export default {
              testString.substring(0,8) === 'https://' || 
              testString.substring(0,10) === 'url_norm:"'
     },
-    deliverSearchRequest() {
+    deliverSearchRequest(futureQuery) {
       this.requestSearch({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     deliverUrlSearchRequest(futureQuery) {
       this.updatePreNormalizedQuery(futureQuery)
-          let queryString = DisectQueryForNewUrlSearch()
-          if(this.validateUrl(queryString)) {
-            this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
-            this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
-            this.$_pushSearchHistory('SolrWayback', queryString, this.searchAppliedFacets, this.solrSettings)
-          }
-          else {
-            this.setNotification({
-          	title: 'We are so sorry!',
-            text: 'This URL is not valid. the url must start with \'http://\' or \'https://\'',
-            type: 'error',
-            timeout: false
-          })
-          }
+      let queryString = this.DisectQueryForNewUrlSearch(futureQuery)
+      if(this.validateUrl(queryString)) {
+        this.requestUrlSearch({query:queryString, facets:this.searchAppliedFacets, options:this.solrSettings})
+        this.requestFacets({query:'url_norm:"' + queryString + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
+        this.$_pushSearchHistory('SolrWayback', queryString, this.searchAppliedFacets, this.solrSettings)
+      }
+      else {
+        this.setNotification({
+          title: 'We are so sorry!',
+          text: 'This URL is not valid. the url must start with \'http://\' or \'https://\'',
+          type: 'error',
+          timeout: false
+        })
+      }
     },
     deliverImgSearchRequest() {
       this.requestImageSearch({query:this.query})
@@ -82,7 +82,7 @@ export default {
       this.updateSolrSettingOffset(0)
       this.setSolrQueryParamsForNewQuery()
     },
-    DisectQueryForNewUrlSearch() {
+    DisectQueryForNewUrlSearch(futureQuery) {
       let queryString = ''
           if(futureQuery.substring(0,10) === 'url_norm:"') {
             queryString = futureQuery.replace('url_norm:"', '')
@@ -102,7 +102,7 @@ export default {
         this.deliverUrlSearchRequest(futureQuery)
       }
       else {
-        this.deliverSearchRequest()
+        this.deliverSearchRequest(futureQuery)
       }
     }
   }

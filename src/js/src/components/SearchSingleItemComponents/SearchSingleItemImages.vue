@@ -20,9 +20,17 @@
         :src="inputType === 'multiple' ? item.imageUrl + '&height=200&width=200' : item"
         @click="toggleFullImage(index)">
       <search-single-item-focus-image v-if="showFullImage === index"
-                                      :image="inputType === 'multiple' ? item.downloadUrl + '&height=200&width=200' : item"
+                                      :image="inputType === 'multiple' ? item.downloadUrl : item"
                                       :index="index"
                                       @close-window="closeWindow" />
+      <div class="imageButtonContainer">
+        <router-link :to="{ path: $_startImageSearchFromImage(item.hash ? item.hash : hash )}">
+          <span @click="$_addHistory('hash', item.hash ? item.hash : hash)">Search for image</span>
+        </router-link>
+        <router-link :to="{ path: $_startPageSearchFromImage(item.urlNorm ? item.urlNorm : urlNorm)}">
+          <span @click="$_addHistory('links_images', item.urlNorm ? item.urlNorm : urlNorm)">Pages linking to image</span>
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -31,12 +39,14 @@
 import { requestService } from '../../services/RequestService'
 import SearchSingleItemFocusImage from './SearchSingleItemFocusImage.vue'
 import configs from '../../configs'
+import ImageSearchUtils from './../../mixins/ImageSearchUtils'
 
 export default {
   name: 'SearchSingleItemImages',
   components: {  
     SearchSingleItemFocusImage
   },
+  mixins: [ImageSearchUtils],
   props: {
     offset: {
       type: Number,
@@ -49,7 +59,16 @@ export default {
     inputType: {
       type:String,
       required:true
+    },
+    hash: {
+      type:String,
+      required:true
+    },
+    urlNorm: {
+      type:String,
+      required: true
     }
+
   },
   data () {
     return {     
@@ -61,10 +80,13 @@ export default {
   computed: {
     shownImagesButtonText: function () {
       return this.allImagesShown ? 'See fewer images ' : 'See all images'
-    }
+    },
+    sourceAndOffset: function () {
+      return `source_file_path=${this.source}&offset=${this.offset}`
+    },
   },
   watch: { 
-    source: function() { // watch it
+    sourceAndOffset: function() { // watch it
       if(this.inputType === 'multiple') {
         requestService.fireImagesRequest(this.source, this.offset).then(result => (this.imageSrcs = result, this.imageSrcs === [] ? console.log('request successfull, no images!') : null), error => (console.log('Error in getting images'), this.imageSrc = []))
       }
