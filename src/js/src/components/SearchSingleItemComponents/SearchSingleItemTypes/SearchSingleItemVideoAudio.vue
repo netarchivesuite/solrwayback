@@ -6,7 +6,6 @@
                                :hash="result.hash"
                                :url-norm="result.url_norm"
                                input-type="multiple" />
-    <search-single-item-all-data :id="result.id" />
     <inline-player v-if="initVideo"
                    :result="result" />
    
@@ -23,6 +22,7 @@
         Download source file
       </a>
     </div>
+    <search-single-item-all-data :id="result.id" />
   </div>
 </template>
 
