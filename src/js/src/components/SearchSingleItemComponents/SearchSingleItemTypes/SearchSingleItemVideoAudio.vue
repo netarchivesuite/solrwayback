@@ -1,12 +1,11 @@
 <template>
   <div class="singleEntryResult">
     <search-single-item-standard-info :rank="rankNumber" :result="result" />
-    <search-single-item-images :hash="result.hash"
-                               :url-norm="result.url_norm"
-                               :source="result.source_file_path"
+    <search-single-item-images :source="result.source_file_path"
                                :offset="result.source_file_offset"
+                               :hash="result.hash"
+                               :url-norm="result.url_norm"
                                input-type="multiple" />
-    <search-single-item-all-data :id="result.id" />
     <inline-player v-if="initVideo"
                    :result="result" />
    
@@ -23,6 +22,7 @@
         Download source file
       </a>
     </div>
+    <search-single-item-all-data :id="result.id" />
   </div>
 </template>
 

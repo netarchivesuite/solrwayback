@@ -15,19 +15,19 @@ export default {
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
     }),
     $_startPageSearchFromImage(searchItem) {
-      return '/?q=' + 'links_images:"' + searchItem + '"' + '&offset=' + this.solrSettings.offset + '&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false'
+      return '/?q=' + 'links_images:"' + encodeURIComponent(searchItem) + '"' + '&offset=' + this.solrSettings.offset + '&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false'
     },
     $_startImageSearchFromImage(searchItem) {
-      return '/?q=' + 'hash:"' + searchItem + '"' + '&offset=' + this.solrSettings.offset + '&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false'
+      return '/?q=' + 'hash:"' + encodeURIComponent(searchItem) + '"' + '&offset=' + this.solrSettings.offset + '&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false'
     },
     $_addHistory(field, searchItem) {
       console.log('adding history with', field)
       let query
       if(field === 'hash') {
-        query = 'hash:"' + searchItem + '"'
+        query = 'hash:"' + encodeURIComponent(searchItem) + '"'
       } 
       else if(field === 'links_images') {
-        query = 'links_images:"' + searchItem + '"'
+        query = 'links_images:"' + encodeURIComponent(searchItem) + '"'
       }  
       this.updateSearchAppliedFacets('')
       this.updateSolrSettingImgSearch(false)

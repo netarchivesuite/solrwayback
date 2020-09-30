@@ -34,6 +34,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -68,6 +69,18 @@ public class SolrWaybackResourceWeb {
      
     }
         
+    
+    @GET
+    @Path("/pagepreviews")
+    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    public ArrayList<PagePreview> search(@QueryParam("url") String url) throws SolrWaybackServiceException {
+      try {                    
+        return Facade.getPagePreviewsForUrl(url);
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
+
 
     @GET
     @Path("/help/about")
