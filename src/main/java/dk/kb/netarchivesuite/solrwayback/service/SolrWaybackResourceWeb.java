@@ -36,6 +36,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
+import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -71,6 +72,26 @@ public class SolrWaybackResourceWeb {
      
     }
     
+
+    @GET
+    @Path("/image/pagepreview")
+    @Produces("image/png")
+    public Response getHtmlPagePreview(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset)
+        throws SolrWaybackServiceException {
+      try {
+        log.debug("Getting thumbnail html image from source_file_path:" + source_file_path + " offset:" + offset);
+        BufferedImage image = Facade.getHtmlPagePreview(source_file_path, offset);          
+        return convertToPng(image);                       
+      } catch (Exception e) {
+        log.error("error thumbnail html image:"+source_file_path +" offset:"+offset);  
+        throw handleServiceExceptions(e);
+      }
+    }
+
+    
+
+    
+    //TODO will this be used???
     /*
      *    
      * Example call:
@@ -81,7 +102,8 @@ public class SolrWaybackResourceWeb {
      */
     @GET
     @Path("/image/pagepreviewurl")
-    @Produces("image/png")    
+    @Produces("image/png")        
+
     public Response getHtmlPagePreviewForCrawltime (@Context UriInfo uriInfo) throws SolrWaybackServiceException {      
       //Get the full request url and find the waybackdata object
 
@@ -383,6 +405,14 @@ public class SolrWaybackResourceWeb {
     }
 
     
+    @GET
+    @Path("/timestampsforpage")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public TimestampsForPage timestamps(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
+      log.debug("timestamps:" + source_file_path + " offset:" + offset);
+      TimestampsForPage ts = Facade.timestampsForPage(source_file_path, offset);                                                                
+      return ts;
+    }
     
     private Response convertToPng(BufferedImage image)  throws Exception { 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
