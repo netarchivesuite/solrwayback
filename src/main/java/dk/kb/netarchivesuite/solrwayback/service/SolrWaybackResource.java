@@ -201,60 +201,6 @@ public class SolrWaybackResource {
   
   
   
-  /*
-   *    
-   * Example call:
-   * image/pagepreviewurl?waybackdata=19990914144635/http://209.130.118.14/novelle/novelle.asp?id=478&grp=3
-   * Since the URL part is not url encoded we can not use a jersey queryparam for the string
-   * The part after 'waybackdata=' is same syntax as the (archive.org) wayback machine. (not url encoded).
-   * Also supports URL encoding of the parameters as fallback if above syntax does not validate   
-   */
-  @GET
-  @Path("/image/pagepreviewurl")
-  @Produces("image/png")    
-  public Response getHtmlPagePreviewForCrawltime (@Context UriInfo uriInfo) throws SolrWaybackServiceException {      
-    //Get the full request url and find the waybackdata object
-
-    //Duplicate code below, refactor!
-    try {           
-      String fullUrl = uriInfo.getRequestUri().toString();
-      int dataStart=fullUrl.indexOf("/pagepreviewurl?waybackdata=");
-      if (dataStart <0){
-        throw new InvalidArgumentServiceException("no waybackdata parameter in call. Syntax is: /image/pagepreviewurl?waybackdata={time}/{url}");
-      }
-
-      String waybackDataObject = fullUrl.substring(dataStart+28);
-      log.info("Waybackdata object:"+waybackDataObject);
-
-      int indexFirstSlash = waybackDataObject.indexOf("/");  
-      if (indexFirstSlash == -1){ //Fallback, try URL decode
-        waybackDataObject = java.net.URLDecoder.decode(waybackDataObject, "UTF-8");
-        log.info("urldecoded wayback dataobject:"+waybackDataObject);
-        indexFirstSlash = waybackDataObject.indexOf("/");          
-      }
-      String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
-      String url = waybackDataObject.substring(indexFirstSlash+1);
-      String solrDate = DateUtils.convertWaybackDate2SolrDate(waybackDate);
-      
-      IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
-      if (doc == null){
-        log.info("Url has never been harvested:"+url);
-        throw new IllegalArgumentException("Url has never been harvested:"+url);
-      }
-
-      String source_file_path = doc.getSource_file_path();
-      long offset = doc.getOffset();
-
-      BufferedImage image = Facade.getHtmlPagePreview(source_file_path, offset);
-      return convertToPng(image);
-         
-    } catch (Exception e) {
-      log.error("error thumbnail html image:" +uriInfo.getRequestUri().toString());  
-      throw handleServiceExceptions(e);
-    }
-  }
-
-
 
   @GET
   @Path("/image/pagepreview")
