@@ -383,6 +383,21 @@ public class SolrWaybackResource {
   }
 
 
+  @GET
+  @Path("/image/pagepreview")
+  @Produces("image/png")
+  public Response getHtmlPagePreview(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset)
+      throws SolrWaybackServiceException {
+    try {
+      log.debug("Getting thumbnail html image from source_file_path:" + source_file_path + " offset:" + offset);
+      BufferedImage image = Facade.getHtmlPagePreview(source_file_path, offset);          
+      return convertToPng(image);                       
+    } catch (Exception e) {
+      log.error("error thumbnail html image:"+source_file_path +" offset:"+offset);  
+      throw handleServiceExceptions(e);
+    }
+  }
+
   
   
  
