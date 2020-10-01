@@ -92,9 +92,9 @@ export default {
     },
   },
   mounted () {
-    if(this.$router.history.current.query.q) {
-      this.futureQuery = encodeURIComponent(this.$router.history.current.query.q)
-      
+    console.log(this.$router.history.current.query)
+    if(this.$router.history.current.query.query) {
+      this.futureQuery = decodeURIComponent(this.$router.history.current.query.query)
       let newFacets = this.$router.history.current.query.facets.split('&fq=')
       newFacets.shift()
       newFacets.length > 0 ? newFacets.forEach((item) => {
