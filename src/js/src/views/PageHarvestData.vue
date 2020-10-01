@@ -1,21 +1,23 @@
 <template>
   <div class="contentContainerHarvestTimes">
     <notifications />
-    <div v-if="!harvestTimesData">
+    <div v-if="harvestTimesData">
+      <div class="pageHarvestDate">
+        Page crawl date: {{ getPrettyDate(harvestTimesData.pageCrawlDate) }}
+      </div>
+      <h2>
+        {{ harvestTimesData.pageUrl }}
+      </h2>
+      <harvest-page-preview :harvest-times-data="harvestTimesData" />
+      <harvest-resources-missing :harvest-times-data="harvestTimesData" />
+      <harvest-resources 
+        :harvest-times-data="harvestTimesData"
+        :source-file-path="sourceFilePath"
+        :offset="offset" />
+    </div>
+    <div v-else>
       No harvest resource data loaded for {{ sourceFilePath }}
-    </div>
-    <div class="pageHarvestDate">
-      Page crawl date: {{ getPrettyDate(harvestTimesData.pageCrawlDate) }}
-    </div>
-    <h2 v-if="harvestTimesData">
-      {{ harvestTimesData.pageUrl }}
-    </h2>
-    <harvest-page-preview v-if="harvestTimesData" :harvest-times-data="harvestTimesData" />
-    <harvest-resources-missing v-if="harvestTimesData" :harvest-times-data="harvestTimesData" />
-    <harvest-resources v-if="harvestTimesData"
-                       :harvest-times-data="harvestTimesData"
-                       :source-file-path="sourceFilePath"
-                       :offset="offset" />
+    </div>                
   </div>
 </template>
 
