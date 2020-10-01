@@ -85,12 +85,12 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
 
 
 public static String getAboutText() throws Exception {  
-    String helpText=FileUtil.fetchUTF8("/home/teg/workspace/solrwayback/src/main/resources/about_this_archive.txt");
+    String helpText=FileUtil.fetchUTF8("/about_this_archive.txt");
     return helpText;
 }
 
 public static String getSearchHelpText() throws Exception {  
-    String helpText=FileUtil.fetchUTF8("/home/teg/workspace/solrwayback/src/main/resources/search_help.html");
+    String helpText=FileUtil.fetchUTF8("/search_help.html");
     return helpText;
 }
 
