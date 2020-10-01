@@ -58,19 +58,15 @@ export default {
   },
   methods: {
     ...mapActions('Search', {
-      requestSearch: 'requestSearch',
-      requestFacets: 'requestFacets',
       updateSolrSettingOffset:'updateSolrSettingOffset'
     }),
     getNextResults() {
       this.updateSolrSettingOffset(this.solrSettings.offset + 20)
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      //this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     getPreviousResults() {
       this.updateSolrSettingOffset(this.solrSettings.offset - 20)
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      //this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     SingleEntryComponent(type) {
       //console.log('search result type', type)

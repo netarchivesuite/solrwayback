@@ -13,6 +13,7 @@
 <script>
 import videojs from 'video.js'
 import {mapActions} from 'vuex'
+import Configs from '../../configs'
 
 export default {
     name: 'InlinePlayer',
@@ -52,11 +53,10 @@ export default {
         }),
         
         dispatchError(code, playerErrorMessage) {
-        
         if (code === 4 ){
           this.setNotification({
           	title: 'Unsupported format',
-            text:`Try another browser or direct playback (copy URL listed above player) in a stand alone player compatible with the ${this.getFileExtension()} format.`,
+            text:'The media format is not supported in the web-player. Use the Download link to download the file and use video-player that supports the format',
             type: 'error',
             srvMessage: playerErrorMessage,
             timeout: true
@@ -80,18 +80,16 @@ export default {
           controls: true,
           width: 400, 
           height: this.result.type === 'Video' ? 200 : 30,
-				  sources: [
-					{ 
-						src: this.result.url_norm,
-					}
-				]
+				  sources: this.getSource() 
         }
         return playerConf    
       },
-    
-      getFileExtension() {
-        return this.result.url_norm.match(/\.[0-9a-z]+$/i)
-      } 
+      
+      getSource() {
+          return  {type:  this.result.content_type, 
+                   src: `${Configs.playbackConfig.solrwaybackBaseURL}services/downloadRaw?source_file_path=${this.result.source_file_path}&offset=${this.result.source_file_offset}`
+                  } 
+      }
 
     }
 }

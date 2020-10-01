@@ -11,27 +11,13 @@ export default {
   },
   methods: {
     ...mapActions('Search', {
-      updateSearchAppliedFacets:'updateSearchAppliedFacets',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
     }),
     $_startPageSearchFromImage(searchItem) {
-      return '/?q=' + 'links_images:"' + searchItem + '"' + '&offset=' + this.solrSettings.offset + '&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false'
+      return '/?query=' + 'links_images:"' + encodeURIComponent(searchItem) + '"' + '&offset=' + this.solrSettings.offset + '&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false&facets='
     },
     $_startImageSearchFromImage(searchItem) {
-      return '/?q=' + 'hash:"' + searchItem + '"' + '&offset=' + this.solrSettings.offset + '&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false'
-    },
-    $_addHistory(field, searchItem) {
-      console.log('adding history with', field)
-      let query
-      if(field === 'hash') {
-        query = 'hash:"' + searchItem + '"'
-      } 
-      else if(field === 'links_images') {
-        query = 'links_images:"' + searchItem + '"'
-      }  
-      this.updateSearchAppliedFacets('')
-      this.updateSolrSettingImgSearch(false)
-      this.$_pushSearchHistory('SolrWayback', query, this.searchAppliedFacets, this.solrSettings)
+      return '/?query=' + 'hash:"' + encodeURIComponent(searchItem) + '"' + '&offset=' + this.solrSettings.offset + '&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false&facets='
     },
   }
 }

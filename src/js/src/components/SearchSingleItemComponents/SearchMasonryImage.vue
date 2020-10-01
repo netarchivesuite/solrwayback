@@ -13,10 +13,10 @@
                                     @close-window="closeWindow" />
     <div class="imageButtonContainer">
       <router-link :to="{ path: $_startImageSearchFromImage(result.hash)}">
-        <span @click="$_addHistory('hash',result.hash)">Search for image</span>
+        <span>Search for image</span>
       </router-link>
       <router-link :to="{ path: $_startPageSearchFromImage(result.urlNorm)}">
-        <span @click="$_addHistory('links_images',result.urlNorm)">Pages linking to image</span>
+        <span>Pages linking to image</span>
       </router-link>
     </div>
   </div>
@@ -61,18 +61,10 @@ export default {
   computed: {
     ...mapState({
       query: state => state.Search.query,
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
       solrSettings: state => state.Search.solrSettings,
     })
   },
   methods: {
-    ...mapActions('Search', {
-      requestSearch: 'requestSearch',
-      requestFacets: 'requestFacets',
-      updateQuery: 'updateQuery',
-      updateSearchAppliedFacets:'updateSearchAppliedFacets',
-      updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
-    }),
      toggleFullImage(index) {
       this.showFullImage !== null ? this.showFullImage = null : this.showFullImage = index
     },

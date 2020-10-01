@@ -1,8 +1,8 @@
 <template>
-  <div v-if="searchAppliedFacets !== ''" class="selectedFacets">
+  <div v-if="searchAppliedFacets.length > 0" class="selectedFacets">
     <h2>Applied facets</h2>
-    <div v-for="(item, index) in seperateFacets(searchAppliedFacets)" :key="index" class="displayedFacet">
-      <span>{{ displayFacetName(item) }}</span><span>{{ displayFacetValue(item) }}</span><button @click="removeFacet(item)">
+    <div v-for="(item, index) in searchAppliedFacets" :key="index" class="displayedFacet">
+      <span>{{ displayFacetName(item) }}</span><span>{{ displayFacetValue(item) }}</span><button @click="removeFacet(index)">
         ✕
       </button>
     </div>
@@ -35,18 +35,13 @@ export default {
     ...mapActions('Search', {
       requestSearch: 'requestSearch',
       requestFacets: 'requestFacets',
-      updateSearchAppliedFacets:'updateSearchAppliedFacets',
+      removeFromSearchAppliedFacets:'removeFromSearchAppliedFacets',
       updateSolrSettingOffset:'updateSolrSettingOffset'
     }),
-    removeFacet(facet) {
+    removeFacet(index) {
       this.updateSolrSettingOffset(0)
-      this.updateSearchAppliedFacets(this.searchAppliedFacets.replace('&fq=' + facet,''))
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.removeFromSearchAppliedFacets(index)
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-      //let newFacetUrl = this.searchAppliedFacets !== '' ? '&facets=' + encodeURIComponent(this.searchAppliedFacets) : ''
-      //history.pushState({name: 'SolrWayback'}, 'SolrWayback', '?q=' + this.query + newFacetUrl)
-      //this.$router.replace({query: {q:this.query, facets:this.searchAppliedFacets !== '' ?  this.searchAppliedFacets : undefined }})
     }
   }
 }

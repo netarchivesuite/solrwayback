@@ -198,17 +198,6 @@ public class SolrWaybackResource {
    
   
 
-  @GET
-  @Path("/pagepreviews")
-  @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-  public ArrayList<PagePreview> search(@QueryParam("url") String url) throws SolrWaybackServiceException {
-    try {                    
-      return Facade.getPagePreviewsForUrl(url);
-    } catch (Exception e) {           
-      throw handleServiceExceptions(e);
-    }
-  }
-  
   
   
   

@@ -13,23 +13,22 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import { requestService } from '../services/RequestService'
-
+import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
 
 export default {
   name: 'SearchFileUpload',
+  mixins: [HistoryRoutingUtils],
   data() {
     return {
       fileToUpload: [],
     }
   },
-
   computed: {
     ...mapState({
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
-       solrSettings: state => state.Search.solrSettings
+        searchAppliedFacets: state => state.Search.searchAppliedFacets,
+        solrSettings: state => state.Search.solrSettings
     })
   },
-
   methods: {
     ...mapActions('Search', {
       requestSearch: 'requestSearch',
@@ -50,7 +49,7 @@ export default {
      requestService.uploadFileRequest(this.fileToUpload[0])
         .then(response => {
          this.updateQuery(this.createRequestQuery(response.data))
-         this.requestSearch({query:this.createRequestQuery(response.data), facets:this.searchAppliedFacets, options:this.solrSettings})
+         this.$_pushSearchHistory('SolrWayback', this.createRequestQuery(response.data), this.searchAppliedFacets, this.solrSettings)
         })
         .catch((error) => {
           this.setNotification({
