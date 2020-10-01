@@ -5,7 +5,8 @@
       <img alt="webpage preview"
            class="preview loading"
            :src="harvestTimesData.pagePreviewUrl"
-           @load="onImgLoad">
+           @load="onImgLoad"
+           @error="onImgLoad">
     </a>
   </div>
 </template>
