@@ -61,7 +61,7 @@ function fireFacetRequest (query, facets, options) {
   const url = 'services/frontend/solr/search/facets/' + `?query=${query + facets.join('') + optionString}`
   return axios.get(
     url).then(response => {
-    console.log('facets', response.data.facet_counts)
+    //console.log('facets', response.data.facet_counts)
     return response.data.facet_counts
   }).catch(error => {
     return Promise.reject(error)
