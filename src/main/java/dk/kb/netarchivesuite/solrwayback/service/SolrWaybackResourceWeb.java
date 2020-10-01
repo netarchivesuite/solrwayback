@@ -20,6 +20,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
@@ -35,12 +36,14 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
+import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 
 import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
 @Path("/frontend/")
 public class SolrWaybackResourceWeb {
@@ -68,6 +71,65 @@ public class SolrWaybackResourceWeb {
       }    
      
     }
+    
+   
+    //TODO will this be used???
+    /*
+     *    
+     * Example call:
+     * image/pagepreviewurl?waybackdata=19990914144635/http://209.130.118.14/novelle/novelle.asp?id=478&grp=3
+     * Since the URL part is not url encoded we can not use a jersey queryparam for the string
+     * The part after 'waybackdata=' is same syntax as the (archive.org) wayback machine. (not url encoded).
+     * Also supports URL encoding of the parameters as fallback if above syntax does not validate   
+     */
+    @GET
+    @Path("/image/pagepreviewurl")
+    @Produces("image/png")        
+
+    public Response getHtmlPagePreviewForCrawltime (@Context UriInfo uriInfo) throws SolrWaybackServiceException {      
+      //Get the full request url and find the waybackdata object
+
+      //Duplicate code below, refactor!
+      try {           
+        String fullUrl = uriInfo.getRequestUri().toString();
+        int dataStart=fullUrl.indexOf("/pagepreviewurl?waybackdata=");
+        if (dataStart <0){
+          throw new InvalidArgumentServiceException("no waybackdata parameter in call. Syntax is: /image/pagepreviewurl?waybackdata={time}/{url}");
+        }
+
+        String waybackDataObject = fullUrl.substring(dataStart+28);
+        log.info("Waybackdata object:"+waybackDataObject);
+
+        int indexFirstSlash = waybackDataObject.indexOf("/");  
+        if (indexFirstSlash == -1){ //Fallback, try URL decode
+          waybackDataObject = java.net.URLDecoder.decode(waybackDataObject, "UTF-8");
+          log.info("urldecoded wayback dataobject:"+waybackDataObject);
+          indexFirstSlash = waybackDataObject.indexOf("/");          
+        }
+        String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
+        String url = waybackDataObject.substring(indexFirstSlash+1);
+        String solrDate = DateUtils.convertWaybackDate2SolrDate(waybackDate);
+        
+        IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
+        if (doc == null){
+          log.info("Url has never been harvested:"+url);
+          throw new IllegalArgumentException("Url has never been harvested:"+url);
+        }
+
+        String source_file_path = doc.getSource_file_path();
+        long offset = doc.getOffset();
+
+        BufferedImage image = Facade.getHtmlPagePreview(source_file_path, offset);
+        return convertToPng(image);
+           
+      } catch (Exception e) {
+        log.error("error thumbnail html image:" +uriInfo.getRequestUri().toString());  
+        throw handleServiceExceptions(e);
+      }
+    }
+
+
+
         
     
     @GET
@@ -325,6 +387,14 @@ public class SolrWaybackResourceWeb {
     }
 
     
+    @GET
+    @Path("/timestampsforpage")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public TimestampsForPage timestamps(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
+      log.debug("timestamps:" + source_file_path + " offset:" + offset);
+      TimestampsForPage ts = Facade.timestampsForPage(source_file_path, offset);                                                                
+      return ts;
+    }
     
     private Response convertToPng(BufferedImage image)  throws Exception { 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
