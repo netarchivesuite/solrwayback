@@ -14,7 +14,7 @@ export default {
       this.$router.push({name: destination, query: { query: query,
                                                      grouping: solrSettings.grouping,
                                                      imgSearch: solrSettings.imgSearch,
-                                                     offset: solrSettings.offset,
+                                                     offset: solrSettings.imgSearch === true ? 0 : solrSettings.offset,
                                                      urlSearch: solrSettings.urlSearch,
                                                      fileSearch: solrSettings.fileSearch,
                                                      facets:appliedFacets.join('')
