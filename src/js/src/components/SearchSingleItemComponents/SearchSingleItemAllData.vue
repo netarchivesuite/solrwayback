@@ -76,8 +76,6 @@ export default {
   },
   computed: {
     ...mapState({
-      results: state => state.Search.results,
-      query: state => state.Search.query,
       solrSettings: state => state.Search.solrSettings,
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
     }),
@@ -87,8 +85,6 @@ export default {
     contentButtonText: function () {
       return this.allContentShown ? 'Show less ↑' : 'Show all ↓'
     },
-  },
-  mounted () {
   },
   methods: {
     ...mapActions('Search', {
@@ -116,7 +112,7 @@ export default {
     },
     searchFromAllValues(attribute, value) {
       this.allDataShown = !this.allDataShown
-      let searchString = attribute + ':"' + encodeURIComponent(value) + '"'
+      const searchString = attribute + ':"' + encodeURIComponent(value) + '"'
       this.updateQuery(searchString)
       this.emptySearchAppliedFacets()
       this.$_pushSearchHistory('SolrWayback', searchString, this.searchAppliedFacets, this.solrSettings)

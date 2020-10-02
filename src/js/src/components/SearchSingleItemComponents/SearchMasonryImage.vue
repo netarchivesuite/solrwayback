@@ -24,9 +24,7 @@
 
 <script>
 
-import { mapActions, mapState } from 'vuex'
 import SearchSingleItemFocusImage from './SearchSingleItemFocusImage'
-import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
 import ImageSearchUtils from './../../mixins/ImageSearchUtils'
 
 export default {
@@ -34,7 +32,7 @@ export default {
   components: {
     SearchSingleItemFocusImage
   },
-  mixins: [HistoryRoutingUtils, ImageSearchUtils],
+  mixins: [ImageSearchUtils],
   props: {
     result: {
       type: Object,
@@ -57,12 +55,6 @@ export default {
     return {  
       showFullImage:null
     }
-  },
-  computed: {
-    ...mapState({
-      query: state => state.Search.query,
-      solrSettings: state => state.Search.solrSettings,
-    })
   },
   methods: {
      toggleFullImage(index) {

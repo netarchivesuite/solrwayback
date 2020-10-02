@@ -93,18 +93,20 @@ export default {
   },
   mounted () {
     console.log(this.$router.history.current.query)
-    if(this.$router.history.current.query.query) {
-      this.futureQuery = decodeURIComponent(this.$router.history.current.query.query)
-      let newFacets = this.$router.history.current.query.facets.split('&fq=')
+    const routerQuery = this.$router.history.current.query
+    if(routerQuery.query) {
+      this.futureQuery = decodeURIComponent(routerQuery.query)
+      if(routerQuery.facets) {
+      let newFacets = routerQuery.facets.split('&fq=')
       newFacets.shift()
       newFacets.length > 0 ? newFacets.forEach((item) => {
         this.addToSearchAppliedFacets('&fq=' + item)  
       }) : null
-      
-      this.$router.history.current.query.grouping === 'true' ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
-      this.$router.history.current.query.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
-      this.$router.history.current.query.urlSearch === 'true' ? this.updateSolrSettingUrlSearch(true) : this.updateSolrSettingUrlSearch(false)
-      this.$router.history.current.query.offset ? this.updateSolrSettingOffset(Number(this.$router.history.current.query.offset)) : this.updateSolrSettingOffset(0)
+      }
+      routerQuery.grouping === 'true' ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
+      routerQuery.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
+      routerQuery.urlSearch === 'true' ? this.updateSolrSettingUrlSearch(true) : this.updateSolrSettingUrlSearch(false)
+      routerQuery.offset ? this.updateSolrSettingOffset(Number(routerQuery.offset)) : this.updateSolrSettingOffset(0)
       this.$_determineNewSearch(this.futureQuery, false)
       }
   },
@@ -125,19 +127,15 @@ export default {
       updatePreNormalizedQuery:'updatePreNormalizedQuery',
 
     }),
-    ...mapActions('Notifier', {
-      setNotification: 'setNotification'
-     
-    }),
     selectSearchMethod(selected) {
       console.log(selected)
       if(selected === 'imgSearch') {
         this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch)
-        this.solrSettings.imgSearch ? this.updateSolrSettingUrlSearch(false) : null
+        this.updateSolrSettingUrlSearch(false)
       }
       else if(selected === 'urlSearch') {
         this.updateSolrSettingUrlSearch(!this.solrSettings.urlSearch)
-        this.solrSettings.urlSearch ? this.updateSolrSettingImgSearch(false) : null
+        this.updateSolrSettingImgSearch(false)
       }
     },
     clearResultsAndSearch() {
@@ -150,9 +148,10 @@ export default {
       this.resetSearchState()
     },
     decideActiveClassesForQueryBox() {
+      const isPrefixUrlNorm = this.futureQuery.substring(0,8) === 'url_norm'
       return this.$_validateUrlSearchPrefix(this.futureQuery) === false 
-                 ? this.futureQuery.substring(0,8) === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
-                 : this.futureQuery.substring(0,8) === 'url_norm' ? '' : 'urlSearchActivated' 
+                 ? isPrefixUrlNorm === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
+                 : isPrefixUrlNorm === 'url_norm' ? '' : 'urlSearchActivated' 
     }
   }
 }

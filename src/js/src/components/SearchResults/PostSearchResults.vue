@@ -47,7 +47,11 @@ export default {
     ImageSearchResults
   },
   mixins: [HistoryRoutingUtils],
-  
+  data () {
+    return {
+            hitsPerPage: 20
+        }
+  },
   computed: {
     ...mapState({
       query: state => state.Search.query,
@@ -61,11 +65,11 @@ export default {
       updateSolrSettingOffset:'updateSolrSettingOffset'
     }),
     getNextResults() {
-      this.updateSolrSettingOffset(this.solrSettings.offset + 20)
+      this.updateSolrSettingOffset(this.solrSettings.offset + this.hitsPerPage)
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     getPreviousResults() {
-      this.updateSolrSettingOffset(this.solrSettings.offset - 20)
+      this.updateSolrSettingOffset(this.solrSettings.offset - this.hitsPerPage)
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     SingleEntryComponent(type) {

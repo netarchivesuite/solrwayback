@@ -66,7 +66,7 @@ export default {
       return query !== this.query
     },
     // Prepare for a new search
-    prepareVariablesForNewSearch(futureQuery) {
+    prepareStateForNewSearch(futureQuery) {
       this.updatePreNormalizedQuery(null)
       this.clearResults()
       this.updateQuery(futureQuery)
@@ -88,7 +88,7 @@ export default {
       //console.log('we\'ve accessed the searchfunction with ',futureQuery)
       //console.log('we have these solrsettings: ', this.solrSettings)
       //console.log('and these facets', this.searchAppliedFacets)
-      this.prepareVariablesForNewSearch(futureQuery)
+      this.prepareStateForNewSearch(futureQuery)
       if(this.solrSettings.imgSearch) {
         this.deliverImgSearchRequest(futureQuery ,updateHistory)
       }

@@ -28,9 +28,6 @@ export default {
       solrSettings: state => state.Search.solrSettings,
     }),
   },
-  mounted () {
-  },
- 
   methods: {
     ...mapActions('Search', {
       requestSearch: 'requestSearch',

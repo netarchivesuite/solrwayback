@@ -63,17 +63,20 @@ export default {
     backToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     },
-  },
-  beforeRouteUpdate (to, from, next) {
-    //console.log('route changed!',to.query, from.query)
-    // Check if any of our params have changed. Could be refactored into a nice functon.
-    if(to.query.query !== undefined &&
+    checkForChangesBetweenRouteQueries(to, from) {
+      return to.query.query !== undefined &&
        (to.query.query !== from.query.query ||
        to.query.offset !== from.query.offset ||
        to.query.imgSearch !== from.query.imgSerach ||
        to.query.urlSearch !== from.query.urlSearch ||
        to.query.grouping !== from.query.grouping ||
-       to.query.facets !== from.query.facets)) {
+       to.query.facets !== from.query.facets)
+    }
+  },
+  beforeRouteUpdate (to, from, next) {
+    //console.log('route changed!',to.query, from.query)
+    // Check if any of our params have changed. Could be refactored into a nice functon.
+    if(this.checkForChangesBetweenRouteQueries(to, from)) {
       //console.log('we doing a route search')
       // update our variables from the query.
       to.query.grouping === 'true' || to.query.grouping === true ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
@@ -83,11 +86,13 @@ export default {
       to.query.offset ? this.updateSolrSettingOffset(Number(to.query.offset)) : this.updateSolrSettingOffset(0)
       // Update our filers set from facets, if there are any. To avoid dublicated, we empty it first, then refill it.
       this.emptySearchAppliedFacets()
-      let newFacets = to.query.facets.split('&fq=')
-      newFacets.shift()
-      newFacets.length > 0 ? newFacets.forEach((item) => {
-        this.addToSearchAppliedFacets('&fq=' + item)  
-      }) : null 
+      if(to.query.facets) {
+        let newFacets = to.query.facets.split('&fq=')
+        newFacets.shift()
+        newFacets.length > 0 ? newFacets.forEach((item) => {
+          this.addToSearchAppliedFacets('&fq=' + item)  
+        }) : null 
+      }
       // Fire off a new search based on the updated variables.
       this.$_determineNewSearch(to.query.query, false)
     }

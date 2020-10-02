@@ -35,7 +35,6 @@ export default {
   mixins: [HistoryRoutingUtils],
   data () {
     return {  
-      numberOfRows:3,   
       configs:configs
     }
   },
