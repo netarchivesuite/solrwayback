@@ -14,7 +14,8 @@
       <a v-if="result.content_type_norm === 'html'"
          :href="getOpenWaybackLink(result.wayback_date, result.url)"
          title="Alternative playback engine"
-         class="openWaybackLink" />
+         class="openWaybackLink"
+         target="_blank" />
     </p>
     <p class="entryInfo type">
       <span class="attri">type:</span> <span class="val">{{ result.content_type_norm }}, {{ result.type }} @ {{ result.domain }}</span>
