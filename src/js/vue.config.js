@@ -58,9 +58,14 @@ module.exports = {
         changeOrigin: true
       },
    '^/services/frontend/harvestDates/': {
-          target: 'http://localhost:8080/solrwayback/services/frontend/harvestDates/',
-          pathRewrite: { '^/services/frontend/harvestDates/': '' },
-          changeOrigin: true
+        target: 'http://localhost:8080/solrwayback/services/frontend/harvestDates/',
+        pathRewrite: { '^/services/frontend/harvestDates/': '' },
+        changeOrigin: true
+      },
+    '^/services/frontend/help/about/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/help/about/',
+        pathRewrite: { '^/services/frontend/help/about/': '' },
+        changeOrigin: true
       }
     }
   },

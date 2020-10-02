@@ -6,10 +6,11 @@ export const requestService = {
   fireFacetRequest,
   fireLookupRequest,
   fireImagesRequest,
-  uploadFileRequest,
   fireImageSearchRequest,
+  uploadFileRequest,
   getHarvestDates,
-  getNormalizedUrlSearch
+  getNormalizedUrlSearch,
+  getAboutText
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -116,6 +117,16 @@ function getNormalizedUrlSearch(query, facets, options) {
 
 function getHarvestDates(harvestUrl) {
   const url = 'services/frontend/harvestDates/' + `?url=${harvestUrl}`
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function getAboutText() {
+  const url = 'services/frontend/help/about/'
   return axios.get(
     url).then(response => {
     return response.data

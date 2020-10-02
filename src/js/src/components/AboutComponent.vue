@@ -1,26 +1,26 @@
 <template>
   <div class="aboutContainer">
-    test
+    {{ aboutText }}
   </div>
 </template>
 
 <script>
 
-import { mapState, mapActions } from 'vuex'
+import { requestService } from '../services/RequestService'
 
 export default {
   name: 'AboutComponent',
-  
-  computed: {
-    ...mapState({
-    }),
-  },
+  data: () => ({
+        aboutText:''
+  }),
   mounted () {
+    this.getAboutTextFromService()
   },
  
   methods: {
-    ...mapActions('Search', {
-    }),
+    getAboutTextFromService() {
+      requestService.getAboutText().then(result => this.aboutText = result, error => console.log('Error in getting images'))
+    }
   }
 }
 
