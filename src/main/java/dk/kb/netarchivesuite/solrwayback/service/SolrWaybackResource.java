@@ -813,34 +813,6 @@ public class SolrWaybackResource {
 
   }
 
-
-  
-  
-  @GET
-  @Path("/waybacklinkgraph")
-  @Produces(MediaType.APPLICATION_JSON)
-  public D3Graph waybackgraph(@QueryParam("domain") String domain, @QueryParam("ingoing") Boolean ingoing, @QueryParam("facetLimit") Integer facetLimit, @QueryParam("dateStart") String dateStart, @QueryParam("dateEnd") String dateEnd) throws SolrWaybackServiceException {
-    try{        
-      log.info("ingoing:"+ingoing +" facetLimit:"+facetLimit +" dateStart:"+dateStart +" dateEnd:"+dateEnd);
-      int fLimit =10;//Default
-      boolean in=false;//Default
-      if (facetLimit != null){
-        fLimit=facetLimit.intValue();
-      }
-      if(ingoing != null){
-        in=ingoing.booleanValue();
-      }
-
-      //TODO use ingoing, facetlimit. with defaults
-      return Facade.waybackgraph(domain, fLimit,in,dateStart,dateEnd);        
-
-    } catch (Exception e) {
-      throw handleServiceExceptions(e);
-    }
-
-  }
-
-
   
   /*
    * Some leaks refers to the contextroot of the webapplication(/solrwayback). Etc. /solrwayback/images/horse.png
