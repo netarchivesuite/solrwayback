@@ -45,6 +45,7 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceExc
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
+
 @Path("/frontend/")
 public class SolrWaybackResourceWeb {
 
@@ -191,6 +192,23 @@ public class SolrWaybackResourceWeb {
       }
     }
     
+ // TODO https://wiki.apache.org/solr/SpatialSearch#How_to_boost_closest_results
+    @GET
+    @Path("/images/search/location")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public  ArrayList<ImageUrl> imagesLocationSearch(@QueryParam("query") String query, @QueryParam("fq") String fq, @QueryParam("results") String results,@QueryParam("latitude") double latitude, @QueryParam("longitude") double longitude, @QueryParam("d") double d,@QueryParam("sort") String sort) throws SolrWaybackServiceException {
+  //sort is optional
+      if(d <=0 || d>5001){
+        throw new InvalidArgumentServiceException("d parameter must be between 1 and 5000 (radius in km)");
+      }
+
+      try {                                          
+        ArrayList<ImageUrl> images = Facade.imagesLocationSearch(query,fq, results, latitude, longitude, d,sort);
+        return images;                                                            
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
     
     @GET
     @Path("/wordcloud/domain")
