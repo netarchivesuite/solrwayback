@@ -1,6 +1,6 @@
 <template>
   <div class="searchBoxContainer">
-    <form class="searchForm" @submit.prevent="$_pushSearchHistory('SolrWayback', futureQuery, searchAppliedFacets, solrSettings)">
+    <form class="searchForm" @submit.prevent="launchNewSearch()">
       <span v-if="preNormalizedQuery !== null" class="orgQuery">Original query: <span class="preQuery">{{ preNormalizedQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
       <input id="query"
              v-model="futureQuery"
@@ -113,10 +113,6 @@ export default {
   
   methods: {
     ...mapActions('Search', {
-      requestSearch: 'requestSearch',
-      requestImageSearch: 'requestImageSearch',
-      requestFacets: 'requestFacets',
-      updateQuery: 'updateQuery',
       clearResults: 'clearResults',
       addToSearchAppliedFacets:'addToSearchAppliedFacets',
       resetSearchState:'resetState',
@@ -124,8 +120,7 @@ export default {
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
       updateSolrSettingOffset:'updateSolrSettingOffset',
-      updatePreNormalizedQuery:'updatePreNormalizedQuery',
-
+      emptySearchAppliedFacets:'emptySearchAppliedFacets'
     }),
     selectSearchMethod(selected) {
       console.log(selected)
@@ -152,6 +147,11 @@ export default {
       return this.$_validateUrlSearchPrefix(this.futureQuery) === false 
                  ? isPrefixUrlNorm === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
                  : isPrefixUrlNorm === 'url_norm' ? '' : 'urlSearchActivated' 
+    },
+    launchNewSearch() {
+      this.emptySearchAppliedFacets()
+      this.updateSolrSettingOffset(0)
+      this.$_pushSearchHistory('SolrWayback', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
     }
   }
 }
