@@ -57,7 +57,8 @@ export default {
            this.harvestTimesData = data
            /* Uncomment for local test only */
            //this.harvestTimesData.notHarvested = ['http://foobar.dk/images/bar/lorem/public/images/icon_facebook.png','http://foobar.dk/images/bar/lorem/public/images/icon_instagram.png','http://foobar.dk/images/bar/lorem/public/images/payment_icon.png','http://foobar.dk/images/bar/lorem/public/images/icon_favorite.png']
-        }).catch(() => {
+          //this.harvestTimesData.notHarvested = []
+      }).catch(() => {
           this.setNotification({
           	title: 'We are so sorry!',
             text: 'Something went wrong when fetching the harvest data for this page - please try again',
