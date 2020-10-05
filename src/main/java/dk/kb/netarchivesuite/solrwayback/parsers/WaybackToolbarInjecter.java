@@ -145,12 +145,12 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     "               <span class=\"dynamicData\">"+htmlParsed.getNumberOfLinksNotFound()+"</span>" +
     "            </div>" +
     "            <div class=\"infoLine\">" +
-    "               <span title=\"View in- and out-going links\"class=\"dynamicData icon\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +
+//    "               <span title=\"View in- and out-going links\"class=\"dynamicData icon\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +
     "               <span title=\"View dates for harvest\" class=\"dynamicData icon\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
     "               <span title=\"View XML\" class=\"dynamicData icon\">"+generatePwid("xml.png",source_file_path,offset) +"</span>" +
     "               <span title=\"View website previews\" class=\"dynamicData icon\">"+generatePagePreviews("preview.png",stats.getUrl_norm()) +"</span>" +
     "               <span title=\"View harvest time for page resources\" class=\"dynamicData icon\">"+generatePageResources("watch.png",source_file_path,offset) +"</span>" +
-            "       <span title=\"View domain developement over time\" class=\"dynamicData icon\">" + generateDomainGrowthImageLink("growth_icon.png",stats.getDomain()) +"</span>" +
+//            "       <span title=\"View domain developement over time\" class=\"dynamicData icon\">" + generateDomainGrowthImageLink("growth_icon.png",stats.getDomain()) +"</span>" +
     "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
