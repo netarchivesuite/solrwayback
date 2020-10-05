@@ -19,7 +19,7 @@ export default {
  
   methods: {
     getAboutTextFromService() {
-      requestService.getAboutText().then(result => this.aboutText = result, error => console.log('Error in getting images'))
+      requestService.getAboutText().then(result => this.aboutText = result, error => console.log('No information found about this archive.'))
     }
   }
 }
