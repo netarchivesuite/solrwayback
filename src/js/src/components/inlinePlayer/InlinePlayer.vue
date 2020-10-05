@@ -56,7 +56,7 @@ export default {
         if (code === 4 ){
           this.setNotification({
           	title: 'Unsupported format',
-            text:'The media format is not supported in the web-player. Use the Download link to download the file and use video-player that supports the format',
+            text:`The media format (${this.getFileExtension()}) is not supported in the web-player. Use the Download link to download the file and use video-player that supports the format`,
             type: 'error',
             srvMessage: playerErrorMessage,
             timeout: true
@@ -89,8 +89,12 @@ export default {
           return  {type:  this.result.content_type, 
                    src: `${Configs.playbackConfig.solrwaybackBaseURL}services/downloadRaw?source_file_path=${this.result.source_file_path}&offset=${this.result.source_file_offset}`
                   } 
-      }
+      },
 
+      // Regex matches all characters from the last '.' to the end of the string  
+      getFileExtension() {
+        return this.result.url_norm.match(/\.[0-9a-z]+$/i)
+      } 
     }
 }
 </script>

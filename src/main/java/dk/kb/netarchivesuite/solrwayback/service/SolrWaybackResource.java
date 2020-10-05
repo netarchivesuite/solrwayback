@@ -110,27 +110,7 @@ public class SolrWaybackResource {
       }
   }
   
-  
-  
-  // TODO https://wiki.apache.org/solr/SpatialSearch#How_to_boost_closest_results
-  @GET
-  @Path("/images/search/location")
-  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-  public  ArrayList<ImageUrl> imagesLocationSearch(@QueryParam("query") String query, @QueryParam("fq") String fq, @QueryParam("results") String results,@QueryParam("latitude") double latitude, @QueryParam("longitude") double longitude, @QueryParam("d") double d,@QueryParam("sort") String sort) throws SolrWaybackServiceException {
-//sort is optional
-    if(d <=0 || d>5001){
-      throw new InvalidArgumentServiceException("d parameter must be between 1 and 5000 (radius in km)");
-    }
-
-    try {                                          
-      ArrayList<ImageUrl> images = Facade.imagesLocationSearch(query,fq, results, latitude, longitude, d,sort);
-      return images;                                                            
-    } catch (Exception e) {           
-      throw handleServiceExceptions(e);
-    }
-  }
-
-  
+ 
   
   @GET
   @Path("smurf/tags")
@@ -832,34 +812,6 @@ public class SolrWaybackResource {
     }
 
   }
-
-
-  
-  
-  @GET
-  @Path("/waybacklinkgraph")
-  @Produces(MediaType.APPLICATION_JSON)
-  public D3Graph waybackgraph(@QueryParam("domain") String domain, @QueryParam("ingoing") Boolean ingoing, @QueryParam("facetLimit") Integer facetLimit, @QueryParam("dateStart") String dateStart, @QueryParam("dateEnd") String dateEnd) throws SolrWaybackServiceException {
-    try{        
-      log.info("ingoing:"+ingoing +" facetLimit:"+facetLimit +" dateStart:"+dateStart +" dateEnd:"+dateEnd);
-      int fLimit =10;//Default
-      boolean in=false;//Default
-      if (facetLimit != null){
-        fLimit=facetLimit.intValue();
-      }
-      if(ingoing != null){
-        in=ingoing.booleanValue();
-      }
-
-      //TODO use ingoing, facetlimit. with defaults
-      return Facade.waybackgraph(domain, fLimit,in,dateStart,dateEnd);        
-
-    } catch (Exception e) {
-      throw handleServiceExceptions(e);
-    }
-
-  }
-
 
   
   /*
