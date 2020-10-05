@@ -31,6 +31,15 @@ const routes = [
     },
     component: () =>
       import(/* webpackChunkName: "harvest-calendar" */ '../views/HarvestCalendar.vue')
+  },
+  {
+    path: '/pageharvestdata',
+    name: 'PageHavestData',
+    meta: {
+      title: 'Page Harvest Data'
+    },
+    component: () =>
+      import(/* webpackChunkName: "page-harvest-data" */ '../views/PageHarvestData.vue')
   }
 ]
 

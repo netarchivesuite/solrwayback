@@ -18,14 +18,15 @@ public class PropertiesLoaderWeb {
 
 	public static final String WAYBACK_SERVER_PROPERTY="wayback.baseurl";
 	public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";	
-	private static final String FACETS_PROPERTY = "facets";	
+	public static final String FACETS_PROPERTY = "facets";	
 	public static final String MAPS_LATITUDE_PROPERTY = "maps.latitude";
 	public static final String MAPS_LONGITUDE_PROPERTY = "maps.longitude";
 	public static final String MAPS_RADIUS_PROPERTY = "maps.radius";
 	public static final String ALLOW_EXPORT_WARC_PROPERTY = "allow.export.warc";
 	public static final String ALLOW_EXPORT_CSV_PROPERTY = "allow.export.csv";
 	public static final String EXPORT_CSV_FIELDS_PROPERTY = "export.csv.fields";
-	public static final String ABOUT_HTML_PROPERTY = "about.html";
+	public static final String ABOUT_TEXT_FILE_PROPERTY = "about.text.file";
+	public static final String SEARCH_HELP_FILE_PROPERTY = "search.help.text.file";
 	
 	public static final String LEAFLET_SOURCE_PROPERTY = "leaflet.source";
 	public static final String LEAFLET_ATTRIBUTION_PROPERTY = "leaflet.attribution";
@@ -43,7 +44,8 @@ public class PropertiesLoaderWeb {
     
     public static String LEAFLET_SOURCE;
     public static String LEAFLET_ATTRIBUTION;
-    public static String ABOUT_HTML;
+    public static String ABOUT_TEXT_FILE;
+    public static String SEARCH_HELP_TEXT_FILE;
     
 		
 	private static Properties serviceProperties = null;
@@ -84,8 +86,9 @@ public class PropertiesLoaderWeb {
 		    ALLOW_EXPORT_WARC = Boolean.parseBoolean(serviceProperties.getProperty(ALLOW_EXPORT_WARC_PROPERTY));
 	        ALLOW_EXPORT_CSV = Boolean.parseBoolean(serviceProperties.getProperty(ALLOW_EXPORT_CSV_PROPERTY));
 	        EXPORT_CSV_FIELDS = serviceProperties.getProperty(EXPORT_CSV_FIELDS_PROPERTY);
-	        ABOUT_HTML = serviceProperties.getProperty(ABOUT_HTML_PROPERTY);
-            LEAFLET_SOURCE = serviceProperties.getProperty(LEAFLET_SOURCE_PROPERTY);
+	        ABOUT_TEXT_FILE = serviceProperties.getProperty(ABOUT_TEXT_FILE_PROPERTY).trim();
+	        SEARCH_HELP_TEXT_FILE = serviceProperties.getProperty(SEARCH_HELP_FILE_PROPERTY).trim();
+	        LEAFLET_SOURCE = serviceProperties.getProperty(LEAFLET_SOURCE_PROPERTY);
 		    LEAFLET_ATTRIBUTION = serviceProperties.getProperty(LEAFLET_ATTRIBUTION_PROPERTY);
 		    
 		    log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
@@ -97,7 +100,10 @@ public class PropertiesLoaderWeb {
 			log.info("Property:"+ MAPS_LONGITUDE_PROPERTY+" = " +MAPS_LONGITUDE);
 			log.info("Property:"+ MAPS_RADIUS_PROPERTY+" = " + MAPS_RADIUS);
 			log.info("Property:"+ FACETS_PROPERTY +" = " + FACETS);
-			log.info("Property:"+ ABOUT_HTML_PROPERTY +" = " + ABOUT_HTML);
+			log.info("Property:"+ ABOUT_TEXT_FILE_PROPERTY +" = " + ABOUT_TEXT_FILE);
+			log.info("Property:"+ SEARCH_HELP_FILE_PROPERTY +" = " + SEARCH_HELP_TEXT_FILE );
+			
+			
 			log.info("Property:"+ LEAFLET_SOURCE_PROPERTY +" = " + LEAFLET_SOURCE);
 			log.info("Property:"+ LEAFLET_ATTRIBUTION_PROPERTY +" = " + LEAFLET_ATTRIBUTION);
 		

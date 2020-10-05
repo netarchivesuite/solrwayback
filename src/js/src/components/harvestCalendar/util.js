@@ -15,11 +15,11 @@ export function sortDatesDescending(dateArray) {
  * @param {Date} date
  * @param {Boolean} showWeekday  
  */
-export function toHumanDate(date, showWeekday = false) {
+export function toHumanDate(date, showWeekday = false, showTime = false) {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   if (date instanceof Date) {
-      let dateString = `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+      let dateString = showTime ? `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} - ${date.getHours()}:${date.getMinutes()}`:`${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
       return showWeekday ? days[date.getDay()] + ', ' + dateString : dateString
   }
   return date

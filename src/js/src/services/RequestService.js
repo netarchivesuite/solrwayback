@@ -10,7 +10,9 @@ export const requestService = {
   fireImageSearchRequest,
   getHarvestDates,
   getNormalizedUrlSearch,
-  getNormalizedUrlFacets
+  getNormalizedUrlFacets,
+  getHarvestedPageResources
+  
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -132,6 +134,16 @@ function getNormalizedUrlFacets(query, facets, options) {
 
 function getHarvestDates(harvestUrl) {
   const url = 'services/frontend/harvestDates/' + `?url=${harvestUrl}`
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function getHarvestedPageResources(source_file_path, offset) {
+  const url = `services/timestampsforpage/?source_file_path=${encodeURIComponent(source_file_path)}&offset=${offset}`
   return axios.get(
     url).then(response => {
     return response.data
