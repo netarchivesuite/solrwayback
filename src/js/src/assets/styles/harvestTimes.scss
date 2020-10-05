@@ -70,7 +70,6 @@ max-width: 100px;
 }
 
 .missingResourcesHeader h2 {
-  color:maroon;
   font-weight:normal;
 }
 
@@ -88,7 +87,7 @@ h2.harvestedResourcesHeader {
 
 .previewImg {
   float: left;
-margin: 4rem 0 2em 1rem;
+margin: 0 0 2em 1rem;
 width: 40%;
 }
 
@@ -96,6 +95,10 @@ width: 40%;
   margin-bottom: 2em;
 max-width: 100%;
 min-height: 300px;
+}
+
+h2.previewHeader {
+  font-weight:normal;
 }
 
 .pageHarvestDate {
@@ -120,10 +123,6 @@ min-height: 300px;
 .checkmarkIcon {
   background: url(../assets/icons/Icons8_flat_checkmark.svg) no-repeat 0px 0px;
 
-}
-
-h2.previewFailedHeader {
-  font-weight:normal;
 }
 
 .previewImg .spinner {

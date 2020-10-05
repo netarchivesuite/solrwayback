@@ -1,12 +1,15 @@
 <template>
   <div class="previewImg">
+    <h2 class="previewHeader">
+      Preview
+    </h2>
     <div v-if="!isLoaded" class="spinner" />
     <a :href="harvestTimesData.pagePreviewUrl" target="_blank">
-      <h2 v-if="imgLoadError" class="previewFailedHeader">Preview of web page could not be loaded - use direct link</h2>
+      <span v-if="imgLoadError" class="previewFailedHeader">Preview of web page could not be loaded - use direct link</span>
       <img v-if="!imgLoadError"
            alt="webpage preview"
            class="preview loading"
-           :src="harvestTimesData.pagePreviewUrl"
+           :src="'harvestTimesData.pagePreviewUrl'"
            @load="onImgLoad(false)"
            @error="onImgLoad(true)">
     </a>
