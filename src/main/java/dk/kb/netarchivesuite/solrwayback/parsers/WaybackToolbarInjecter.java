@@ -261,6 +261,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pageresources.jsp?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
   
+  /*
   private static String generateDomainGraphImageLink(String image,String domain){
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"waybacklinkgraph.jsp?domain="+domain+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
@@ -268,6 +269,6 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
   private static String generateDomainGrowthImageLink(String image,String domain){
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"domaingrowth.html?domain="+domain+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
-  
+  */
   
 }
