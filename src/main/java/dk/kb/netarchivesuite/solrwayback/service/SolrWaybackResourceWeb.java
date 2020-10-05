@@ -36,13 +36,16 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
+import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
+import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 
 import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+
 
 @Path("/frontend/")
 public class SolrWaybackResourceWeb {
@@ -71,6 +74,8 @@ public class SolrWaybackResourceWeb {
      
     }
     
+   
+    //TODO will this be used???
     /*
      *    
      * Example call:
@@ -81,7 +86,8 @@ public class SolrWaybackResourceWeb {
      */
     @GET
     @Path("/image/pagepreviewurl")
-    @Produces("image/png")    
+    @Produces("image/png")        
+
     public Response getHtmlPagePreviewForCrawltime (@Context UriInfo uriInfo) throws SolrWaybackServiceException {      
       //Get the full request url and find the waybackdata object
 
@@ -187,6 +193,23 @@ public class SolrWaybackResourceWeb {
       }
     }
     
+ // TODO https://wiki.apache.org/solr/SpatialSearch#How_to_boost_closest_results
+    @GET
+    @Path("/images/search/location")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public  ArrayList<ImageUrl> imagesLocationSearch(@QueryParam("query") String query, @QueryParam("fq") String fq, @QueryParam("results") String results,@QueryParam("latitude") double latitude, @QueryParam("longitude") double longitude, @QueryParam("d") double d,@QueryParam("sort") String sort) throws SolrWaybackServiceException {
+  //sort is optional
+      if(d <=0 || d>5001){
+        throw new InvalidArgumentServiceException("d parameter must be between 1 and 5000 (radius in km)");
+      }
+
+      try {                                          
+        ArrayList<ImageUrl> images = Facade.imagesLocationSearch(query,fq, results, latitude, longitude, d,sort);
+        return images;                                                            
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
     
     @GET
     @Path("/wordcloud/domain")
@@ -301,6 +324,30 @@ public class SolrWaybackResourceWeb {
       }
     }
 
+    @GET
+    @Path("/tools/linkgraph")
+    @Produces(MediaType.APPLICATION_JSON)
+    public D3Graph waybackgraph(@QueryParam("domain") String domain, @QueryParam("ingoing") Boolean ingoing, @QueryParam("facetLimit") Integer facetLimit, @QueryParam("dateStart") String dateStart, @QueryParam("dateEnd") String dateEnd) throws SolrWaybackServiceException {
+      try{        
+        log.info("ingoing:"+ingoing +" facetLimit:"+facetLimit +" dateStart:"+dateStart +" dateEnd:"+dateEnd);
+        int fLimit =10;//Default
+        boolean in=false;//Default
+        if (facetLimit != null){
+          fLimit=facetLimit.intValue();
+        }
+        if(ingoing != null){
+          in=ingoing.booleanValue();
+        }
+
+        //TODO use ingoing, facetlimit. with defaults
+        return Facade.waybackgraph(domain, fLimit,in,dateStart,dateEnd);        
+
+      } catch (Exception e) {
+        throw handleServiceExceptions(e);
+      }
+
+    }
+
     
 
     //TODO want to remove this method from web frontend
@@ -383,6 +430,14 @@ public class SolrWaybackResourceWeb {
     }
 
     
+    @GET
+    @Path("/timestampsforpage")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public TimestampsForPage timestamps(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
+      log.debug("timestamps:" + source_file_path + " offset:" + offset);
+      TimestampsForPage ts = Facade.timestampsForPage(source_file_path, offset);                                                                
+      return ts;
+    }
     
     private Response convertToPng(BufferedImage image)  throws Exception { 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -85,13 +85,15 @@ public static IndexDoc findExactMatchPWID(String url, String utc) throws Excepti
 
 
 public static String getAboutText() throws Exception {  
-    String helpText=FileUtil.fetchUTF8("/home/teg/workspace/solrwayback/src/main/resources/about_this_archive.txt");
-    return helpText;
+    String aboutFile = PropertiesLoaderWeb.ABOUT_TEXT_FILE;    
+    String aboutText=FileUtil.fetchUTF8(aboutFile);
+    return aboutText;
 }
 
 public static String getSearchHelpText() throws Exception {  
-    String helpText=FileUtil.fetchUTF8("/home/teg/workspace/solrwayback/src/main/resources/search_help.html");
-    return helpText;
+    String searchHelpFile = PropertiesLoaderWeb.SEARCH_HELP_TEXT_FILE;    
+    String searchHelpText=FileUtil.fetchUTF8(searchHelpFile);
+    return searchHelpText;    
 }
 
 
@@ -203,10 +205,10 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
                               
       int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT*1000;            
       log.info("generate temp preview file:"+filename);
-     pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=10000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
+//     pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=10000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
       //no socks proxy
-      //pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=10000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024",  url);
-      log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=10000 --timeout="+timeoutMillis+" --screenshot="+filename+" --window-size=1280,1024 --proxy-server="+proxyUrl+" "+url);
+      pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=10000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024",  url);
+      log.info(chromeCommand+" --headless --disable-gpu --ipc-connection-timeout=10000 --timeout="+timeoutMillis+" --screenshot="+filename+" --window-size=1280,1024", url);
     // chromium-browser --headless  --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024   --proxy-server="socks4://localhost:9000" https://www.google.com/        
       Process start = pb.start();      
       //Due to a bug in chromium, the process can hang and never terminate. The timeout is not working.. Also the screenshot will not be written to file.
@@ -220,7 +222,7 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
       //return image even if timeout.
       InputStream is = start.getInputStream();
         String conlog= getStringFromInputStream(is);
-        //log.info("conlog:"+conlog); No need to log this, can be spammy. But usefull when debugging                    
+        log.info("conlog:"+conlog); //No need to log this, can be spammy. But usefull when debugging                    
        BufferedImage image =  ImageIO.read(new File(filename));
        return image;  
       
@@ -714,7 +716,6 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_CSV_PROPERTY,""+PropertiesLoaderWeb.ALLOW_EXPORT_CSV);
         props.put(PropertiesLoaderWeb.EXPORT_CSV_FIELDS_PROPERTY,PropertiesLoaderWeb.EXPORT_CSV_FIELDS);
-        props.put(PropertiesLoaderWeb.ABOUT_HTML_PROPERTY,PropertiesLoaderWeb.ABOUT_HTML);
         props.put(PropertiesLoaderWeb.MAPS_LATITUDE_PROPERTY,PropertiesLoaderWeb.MAPS_LATITUDE);
         props.put(PropertiesLoaderWeb.MAPS_LONGITUDE_PROPERTY,PropertiesLoaderWeb.MAPS_LONGITUDE);
         props.put(PropertiesLoaderWeb.MAPS_RADIUS_PROPERTY,PropertiesLoaderWeb.MAPS_RADIUS);        
