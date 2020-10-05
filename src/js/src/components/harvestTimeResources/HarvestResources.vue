@@ -1,7 +1,7 @@
 <template>
   <div class="containerHarvestTimes">
     <h2 class="harvestedResourcesHeader">
-      Harvestet resources
+      Harvested resources
     </h2>
     <div v-if="harvestTimesData.resources">
       <ul class="responsive-table">
