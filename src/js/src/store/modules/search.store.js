@@ -53,6 +53,9 @@ const actions = {
   clearResults ( {commit} ) {
     commit('clearResultsSuccess')
   },
+  clearFacets ( {commit} ) {
+    commit('clearFacetsSuccess')
+  },
   requestSearch ({ commit }, params) {
     commit('setLoadingStatus', true)
     requestService
@@ -182,6 +185,10 @@ const mutations = {
   },
   clearResultsSuccess(state) {
     state.results = {}
+    state.facetLoading = false
+  },
+  clearFacetsSuccess(state) {
+    state.facets = {}
     state.facetLoading = false
   },
   resetState(state) {

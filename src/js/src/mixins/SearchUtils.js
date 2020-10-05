@@ -19,6 +19,7 @@ export default {
       updateSolrSettingOffset:'updateSolrSettingOffset',
       updatePreNormalizedQuery:'updatePreNormalizedQuery',
       clearResults:'clearResults',
+      clearFacets:'clearFacets',
       requestSearch:'requestSearch',
       requestImageSearch:'requestImageSearch',
       requestUrlSearch:'requestUrlSearch',
@@ -69,6 +70,7 @@ export default {
     prepareStateForNewSearch(futureQuery) {
       this.updatePreNormalizedQuery(null)
       this.clearResults()
+      this.clearFacets()
       this.updateQuery(futureQuery)
     },
     // Disect the query for URL searching
