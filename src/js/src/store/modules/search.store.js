@@ -4,19 +4,15 @@ import { requestService } from '../../services/RequestService'
 
 const initialState = () => ({
   query: '',
-  searchAppliedFacets:'',
+  preNormalizedQuery:null,
+  searchAppliedFacets:[],
   results: {},
   facets: {},
   solrSettings:{
     grouping:false,
     offset:0,
     imgSearch:false,
-    urlSearch:false
-  },
-  futureSolrSettings:{
-    grouping:false,
-    imgSearch:false,
-    urlSearch:false
+    urlSearch:false,
   },
   loading:false,
 })
@@ -30,6 +26,9 @@ const actions = {
   updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
   },
+  updatePreNormalizedQuery ( {commit}, param) {
+    commit('updatePreNormalizedQuerySuccess', param)
+  },
   updateSolrSettingGrouping ( {commit}, param ) {
     commit('updateSolrSettingGroupingSuccess', param)
   },
@@ -42,17 +41,14 @@ const actions = {
   updateSolrSettingUrlSearch ( {commit}, param ) {
     commit('updateSolrSettingUrlSearchSuccess', param)
   },
-  updateFutureSolrSettingGrouping ( {commit}, param ) {
-    commit('updateFutureSolrSettingGroupingSuccess', param)
+  addToSearchAppliedFacets ( {commit}, param ) {
+    commit('addToSearchAppliedFacetsSuccess', param)
   },
-  updateFutureSolrSettingImgSearch ( {commit}, param ) {
-    commit('updateFutureSolrSettingImgSearchSuccess', param)
+  removeFromSearchAppliedFacets ( {commit}, param ) {
+    commit('removeFromSearchAppliedFacetsSuccess', param)
   },
-  updateFutureSolrSettingUrlSearch ( {commit}, param ) {
-    commit('updateFutureSolrSettingUrlSearchSuccess', param)
-  },
-  updateSearchAppliedFacets ( {commit}, param ) {
-    commit('updateSearchAppliedFacetsSuccess', param)
+  emptySearchAppliedFacets ({commit}) {
+    commit('emptySearchAppliedFacetsSuccess')
   },
   clearResults ( {commit} ) {
     commit('clearResultsSuccess')
@@ -78,6 +74,13 @@ const actions = {
       .then(result => commit('doUrlSearchSuccess', result), error =>
         commit('doUrlSearchError', error))
   },
+  requestNormalizedFacets({commit}, params) {
+    commit('setLoadingStatus', true)
+    requestService
+      .getNormalizedUrlFacets(params.query, params.facets, params.options)
+      .then(result => commit('facetRequestSuccess', result), error =>
+        commit('facetRequestError', error))
+  },
   requestFacets({commit}, params) {
     commit('setLoadingStatus', true)
     requestService
@@ -94,6 +97,9 @@ const mutations = {
   updateQuerySuccess(state, param) {
     state.query = param
   },
+  updatePreNormalizedQuerySuccess(state, param) {
+    state.preNormalizedQuery = param
+  },
   updateSolrSettingGroupingSuccess(state, param) {
     state.solrSettings.grouping = param
   },
@@ -106,17 +112,14 @@ const mutations = {
   updateSolrSettingUrlSearchSuccess(state, param) {
     state.solrSettings.urlSearch = param
   },
-  updateFutureSolrSettingGroupingSuccess(state, param) {
-    state.futureSolrSettings.grouping = param
+  addToSearchAppliedFacetsSuccess(state, param) {
+    state.searchAppliedFacets.push(param)
   },
-  updateFutureSolrSettingImgSearchSuccess(state, param) {
-    state.futureSolrSettings.imgSearch = param
+  removeFromSearchAppliedFacetsSuccess(state, position) {
+    state.searchAppliedFacets.splice(position, 1)
   },
-  updateFutureSolrSettingUrlSearchSuccess(state, param) {
-    state.futureSolrSettings.urlSearch = param
-  },
-  updateSearchAppliedFacetsSuccess(state, param) {
-    state.searchAppliedFacets = param
+  emptySearchAppliedFacetsSuccess(state) {
+    state.searchAppliedFacets = []
   },
   facetRequestSuccess(state, result) {
     state.facets = result
@@ -172,6 +175,7 @@ const mutations = {
       type: 'error',
       timeout: false
     })
+    state.loading = false
   },
   setLoadingStatus(state, status) {
     state.loading = status

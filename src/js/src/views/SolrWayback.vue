@@ -21,6 +21,7 @@
  import AllSearchResults from '../components/SearchResults/AllSearchResults'
  import Notifications from '../components/notifications/Notifications'
  import LoadingOverlay from '../components/LoadingOverlay'
+ import SearchUtils from './../mixins/SearchUtils'
  import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -31,6 +32,7 @@ export default {
    Notifications,
    LoadingOverlay
   },
+  mixins: [SearchUtils],
   data: () => ({
         scrolledFromTop:false
   }),
@@ -41,55 +43,66 @@ export default {
       solrSettings: state => state.Search.solrSettings
     }),
   },
+
   mounted() {
     window.addEventListener('scroll', this.onScroll)
   },
   methods: {
     ...mapActions('Search', {
-      requestSearch: 'requestSearch',
-      requestFacets: 'requestFacets',
-      updateQuery: 'updateQuery',
-      requestImageSearch: 'requestImageSearch',
-      requestUrlSearch: 'requestUrlSearch',
-      updateSearchAppliedFacets:'updateSearchAppliedFacets',
+      resetState:'resetState',
+      addToSearchAppliedFacets:'addToSearchAppliedFacets',
+      emptySearchAppliedFacets:'emptySearchAppliedFacets',
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
-      updateFutureSolrSettingGrouping:'updateFutureSolrSettingGrouping',
-      updateFutureSolrSettingImgSearch:'updateFutureSolrSettingImgSearch',
-      updateFutureSolrSettingUrlSearch:'updateFutureSolrSettingUrlSearch'
+      updateSolrSettingOffset:'updateSolrSettingOffset',
     }),
     onScroll(e) {
     e.target.documentElement.scrollTop > 0 ? this.scrolledFromTop = true : this.scrolledFromTop = false
     },
     backToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    }, 
+    },
+    checkForChangesBetweenRouteQueries(to, from) {
+      return to.query.query !== undefined &&
+       (to.query.query !== from.query.query ||
+       to.query.offset !== from.query.offset ||
+       to.query.imgSearch !== from.query.imgSerach ||
+       to.query.urlSearch !== from.query.urlSearch ||
+       to.query.grouping !== from.query.grouping ||
+       to.query.facets !== from.query.facets)
+    }
   },
   beforeRouteUpdate (to, from, next) {
-    //console.log('route changed!',to)
-    this.updateQuery(to.query.q)
-    to.query.grouping === 'true' ? (this.updateSolrSettingGrouping(true), this.updateFiutureSolrSettingGrouping(true)) : (this.updateSolrSettingGrouping(false), this.updateFutureSolrSettingGrouping(false))
-    to.query.imgSearch === 'true' ? (this.updateSolrSettingImgSearch(true), this.updateFutureSolrSettingImgSearch(true)) : (this.updateSolrSettingImgSearch(false), this.updateFutureSolrSettingImgSearch(false))
-    to.query.urlSearch === 'true' ? (this.updateSolrSettingUrlSearch(true), this.updateFutureSolrSettingUrlSearch(true)) :  (this.updateSolrSettingUrlSearch(false), this.updateFutureSolrSettingUrlSearch(false))
-    to.query.facets ? this.updateSearchAppliedFacets(to.query.facets) : this.updateSearchAppliedFacets('')
-    if(this.solrSettings.imgSearch) {
-      this.requestImageSearch({query:this.query})
-    }
-    else if(this.solrSettings.urlSearch) {
-      let queryString = ''
-      if(this.query.substring(0,10) === 'url_norm:"') {
-        queryString = this.query.replace('url_norm:"', '')
-        queryString.substring(queryString.length-1, queryString.length) === '"' ? queryString.slice(0,-1) : null
-        this.updateQuery(queryString)
+    //console.log('route changed!',to.query, from.query)
+    // Check if any of our params have changed. Could be refactored into a nice functon.
+    if(this.checkForChangesBetweenRouteQueries(to, from)) {
+      //console.log('we doing a route search')
+      // update our variables from the query.
+      to.query.grouping === 'true' || to.query.grouping === true ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
+      to.query.imgSearch === 'true' || to.query.imgSearch === true ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
+      to.query.urlSearch === 'true' || to.query.urlSearch === true ? this.updateSolrSettingUrlSearch(true) : this.updateSolrSettingUrlSearch(false)
+      to.query.urlSearch === 'true' || to.query.urlSearch === true ? this.updateSolrSettingUrlSearch(true) : this.updateSolrSettingUrlSearch(false)
+      to.query.offset ? this.updateSolrSettingOffset(Number(to.query.offset)) : this.updateSolrSettingOffset(0)
+      // Update our filers set from facets, if there are any. To avoid dublicated, we empty it first, then refill it.
+      this.emptySearchAppliedFacets()
+      if(to.query.facets) {
+        let newFacets = to.query.facets.split('&fq=')
+        newFacets.shift()
+        newFacets.length > 0 ? newFacets.forEach((item) => {
+          this.addToSearchAppliedFacets('&fq=' + item)  
+        }) : null 
       }
-      this.requestUrlSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-    } 
-    else {
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      // Fire off a new search based on the updated variables.
+      this.$_determineNewSearch(to.query.query, false)
     }
+    else {
+      // If the route was changed and the query is undefined, we reset everything.
+      if(to.query.query === undefined) {
+        this.resetState()
+      }
+    }
+    next()
   },
 }
 </script>

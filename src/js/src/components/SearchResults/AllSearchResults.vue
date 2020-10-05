@@ -1,7 +1,7 @@
 <template>
   <div v-if="Object.keys(results).length > 0" class="resultAndFacetContainer">
     <div class="facetContainer">
-      <search-facet-options />
+      <search-facet-options v-if="results.searchType === 'post'" />
     </div>
     <div class="resultContainer">
       <search-result-export v-if="configs" :configs="configs" />
@@ -35,25 +35,14 @@ export default {
   mixins: [HistoryRoutingUtils],
   data () {
     return {  
-      numberOfRows:3,   
       configs:configs
     }
   },
   computed: {
     ...mapState({
-      query: state => state.Search.query,
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
       results: state => state.Search.results,
-      solrSettings: state => state.Search.solrSettings
     }),
   },
-  methods: {
-    ...mapActions('Search', {
-      requestSearch: 'requestSearch',
-      requestFacets: 'requestFacets',
-      updateSolrSettingOffset:'updateSolrSettingOffset'
-    }),
-  }
 }
 </script>
 
