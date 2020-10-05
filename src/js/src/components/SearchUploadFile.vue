@@ -49,7 +49,7 @@ export default {
      requestService.uploadFileRequest(this.fileToUpload[0])
         .then(response => {
          this.updateQuery(this.createRequestQuery(response.data))
-         this.$_pushSearchHistory('SolrWayback', this.createRequestQuery(response.data), this.searchAppliedFacets, this.solrSettings)
+         this.$_pushSearchHistory('Search', this.createRequestQuery(response.data), this.searchAppliedFacets, this.solrSettings)
         })
         .catch((error) => {
           this.setNotification({

@@ -66,11 +66,11 @@ export default {
     }),
     getNextResults() {
       this.updateSolrSettingOffset(this.solrSettings.offset + this.hitsPerPage)
-      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     getPreviousResults() {
       this.updateSolrSettingOffset(this.solrSettings.offset - this.hitsPerPage)
-      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     SingleEntryComponent(type) {
       //console.log('search result type', type)
