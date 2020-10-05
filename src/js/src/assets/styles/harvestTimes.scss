@@ -41,11 +41,8 @@
   }
   
   .col-1 {
-    flex-basis: 47%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding: 0 1rem 0 0;
+    width:47%;
+    font-size: 14px;
   }
 
   .col-2 {
@@ -57,16 +54,6 @@
   }
   .col-4 {
     flex-basis: 20%;
-  }
-
-  .table-row .col-1:hover {
-    position:absolute;
-    background:var(--main-highlight-color);
-    color: #fff;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: visible;
-    padding:.5rem;
   }
 }
 
@@ -101,14 +88,14 @@ h2.harvestedResourcesHeader {
 
 .previewImg {
   float: left;
-margin: 4rem 0 0 1rem;
-min-height: 300px;
+margin: 4rem 0 2em 1rem;
 width: 40%;
 }
 
 .previewImg img.preview {
   margin-bottom: 2em;
 max-width: 100%;
+min-height: 300px;
 }
 
 .pageHarvestDate {
@@ -133,6 +120,10 @@ max-width: 100%;
 .checkmarkIcon {
   background: url(../assets/icons/Icons8_flat_checkmark.svg) no-repeat 0px 0px;
 
+}
+
+h2.previewFailedHeader {
+  font-weight:normal;
 }
 
 .previewImg .spinner {
