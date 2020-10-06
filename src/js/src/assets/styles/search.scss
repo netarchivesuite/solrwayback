@@ -22,10 +22,34 @@ color:var(--secondary-text-color);
 //border-bottom: 2px solid var(--secondary-highlight-color);
 }
 
-.searchBoxContainer, .aboutContainer {
+.searchBoxContainer {
   width:60%;
   margin:0px 20% 0px 20%;
   padding:15px;
+}
+
+.aboutContainer {
+  width:1000px;
+  margin:0px calc(50vw - 500px);
+  padding:15px;
+  text-align:center;
+}
+
+.aboutContainer button {
+  border: 0px;
+	position: relative;
+	border-bottom: 2px solid var(--main-highlight-color);
+	background-color: transparent;
+	cursor: pointer;
+}
+
+.aboutContainer .activated {
+	top: -30px;
+}
+
+.aboutTextContainer {
+  padding: 15px 15px 65px 15px;
+  background-color:var(--secondary-highlight-color);
 }
 
 .searchForm {

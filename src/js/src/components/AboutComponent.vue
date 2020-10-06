@@ -1,6 +1,9 @@
 <template>
   <div class="aboutContainer">
-    {{ aboutText }}
+    <div v-if="showAbout" class="aboutTextContainer" v-html="aboutText" />
+    <button :class="showAbout ? 'activated' : ''" @click="toggleAboutText()">
+      {{ aboutButtonText }}
+    </button>
   </div>
 </template>
 
@@ -11,15 +14,23 @@ import { requestService } from '../services/RequestService'
 export default {
   name: 'AboutComponent',
   data: () => ({
-        aboutText:''
+        aboutText:'',
+        showAbout:false
   }),
+  computed: {
+    aboutButtonText: function() {
+      return this.showAbout ? 'Show less' : 'About this archive'
+    }
+  },
   mounted () {
     this.getAboutTextFromService()
   },
- 
   methods: {
     getAboutTextFromService() {
       requestService.getAboutText().then(result => this.aboutText = result, error => console.log('No information found about this archive.'))
+    },
+    toggleAboutText() {
+      this.showAbout = !this.showAbout
     }
   }
 }
