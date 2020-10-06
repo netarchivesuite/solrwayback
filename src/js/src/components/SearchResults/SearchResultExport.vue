@@ -49,7 +49,11 @@
           </div>
         </div>
         <div class="exportContent">
-          <h2>Non selected</h2>
+          <h2 class="nonSelectedExportHeadline">
+            Non selected
+          </h2> <button class="exportSelectAll" @click="selectAllFields()">
+            Select all
+          </button>
           <div v-for="(item, index) in nonSelectedArray" :key="'nonSelected' + index" class="fieldItem">
             {{ item }}  <div class="fieldItem actions">
               <button class="select" @click="toggleItemInArrays(selectedArray, nonSelectedArray, item, index,'nonSelectedArray')">
@@ -114,6 +118,14 @@ export default {
     },
     toggleCsvExportOptions() {
       this.csvExportOpen = !this.csvExportOpen
+      if(this.csvExportOpen === false) {
+        this.selectedArray = this.getSplitFieldsSelected(this.configs.exportOptions.csvFields)
+        this.nonSelectedArray = this.getSplitFieldsNotSelected(this.configs.exportOptions.csvFields)
+      }
+    },
+    selectAllFields() {
+      this.selectedArray = this.configs.exportOptions.csvFields.replace(/ /g, '').split(',')
+      this.nonSelectedArray = []
     },
     getSplitFieldsSelected(fields) {
       return fields.replace(/ /g, '').split(',').slice(0,9)
