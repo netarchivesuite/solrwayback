@@ -31,24 +31,16 @@ export default {
       solrSettings: state => state.Search.solrSettings
     }),
   },
-  mounted () {
-  },
   methods: {
     ...mapActions('Search', {
-      requestSearch: 'requestSearch',
-      requestFacets: 'requestFacets',
-      updateSearchAppliedFacets:'updateSearchAppliedFacets',
-      updateSolrSettingOffset:'updateSolrSettingOffset'
+      updateSolrSettingOffset:'updateSolrSettingOffset',
+      addToSearchAppliedFacets:'addToSearchAppliedFacets',
     }),
     applyFacet(facetCategory, facet) {
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
       this.updateSolrSettingOffset(0)
-      this.updateSearchAppliedFacets(this.searchAppliedFacets + newFacet)
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options: this.solrSettings})
-      this.requestFacets({query:this.query, facets:this.searchAppliedFacets, options: this.solrSettings})
+      this.addToSearchAppliedFacets(newFacet)
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
-      //history.pushState({name: 'SolrWayback'}, 'SolrWayback', '?q=' + this.query + '&facets=' + encodeURIComponent(this.searchAppliedFacets))
-      //this.$router.replace({query: {q:this.query, facets:this.searchAppliedFacets !== '' ?  this.searchAppliedFacets : undefined }})
     }
   }
 }

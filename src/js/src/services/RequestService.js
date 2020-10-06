@@ -11,13 +11,14 @@ export const requestService = {
   getHarvestDates,
   getNormalizedUrlSearch,
   getAboutText,
+  getNormalizedUrlFacets,
   getHarvestedPageResources
 }
 
 function fireSearchRequest (query, facets, options) {
   let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
   // Split url and move to config
-  const url = 'services/frontend/solr/search/results/' + `?query=${query + facets + optionString}`
+  const url = 'services/frontend/solr/search/results/' + `?query=${query + facets.join('') + optionString}`
   return axios.get(
     url, {
       transformResponse: [
@@ -59,10 +60,10 @@ function fireImageSearchRequest(query) {
 function fireFacetRequest (query, facets, options) {
   let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
   // Split url and move to config
-  const url = 'services/frontend/solr/search/facets/' + `?query=${query + facets + optionString}`
+  const url = 'services/frontend/solr/search/facets/' + `?query=${query + facets.join('') + optionString}`
   return axios.get(
     url).then(response => {
-    console.log('facets', response.data.facet_counts)
+    //console.log('facets', response.data.facet_counts)
     return response.data.facet_counts
   }).catch(error => {
     return Promise.reject(error)
@@ -107,6 +108,21 @@ function getNormalizedUrlSearch(query, facets, options) {
     url).then(response => {
     // Split url and move to config
     return fireSearchRequest('url_norm:"' + response.data.url + '"', facets, options).then(returnObj => {
+        return returnObj
+      }).catch(error => {
+        return Promise.reject(error)
+      })
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function getNormalizedUrlFacets(query, facets, options) {
+  const url = 'services/frontend/util/normalizeurl/' + '?url=' + query
+  return axios.get(
+    url).then(response => {
+    // Split url and move to config
+    return fireFacetRequest('url_norm:"' + response.data.url + '"', facets, options).then(returnObj => {
         return returnObj
       }).catch(error => {
         return Promise.reject(error)

@@ -47,7 +47,11 @@ export default {
     ImageSearchResults
   },
   mixins: [HistoryRoutingUtils],
-  
+  data () {
+    return {
+            hitsPerPage: 20
+        }
+  },
   computed: {
     ...mapState({
       query: state => state.Search.query,
@@ -58,22 +62,18 @@ export default {
   },
   methods: {
     ...mapActions('Search', {
-      requestSearch: 'requestSearch',
-      requestFacets: 'requestFacets',
       updateSolrSettingOffset:'updateSolrSettingOffset'
     }),
     getNextResults() {
-      this.updateSolrSettingOffset(this.solrSettings.offset + 20)
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.updateSolrSettingOffset(this.solrSettings.offset + this.hitsPerPage)
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     getPreviousResults() {
-      this.updateSolrSettingOffset(this.solrSettings.offset - 20)
-      this.requestSearch({query:this.query, facets:this.searchAppliedFacets, options:this.solrSettings})
+      this.updateSolrSettingOffset(this.solrSettings.offset - this.hitsPerPage)
       this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     SingleEntryComponent(type) {
-      console.log('search result type', type)
+      //console.log('search result type', type)
       switch(type) {   
         case 'Web Page': return 'SearchSingleItemWeb'
         case 'Image': return 'SearchSingleItemImage'

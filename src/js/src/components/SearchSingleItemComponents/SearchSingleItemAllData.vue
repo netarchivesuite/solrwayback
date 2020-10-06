@@ -76,8 +76,6 @@ export default {
   },
   computed: {
     ...mapState({
-      results: state => state.Search.results,
-      query: state => state.Search.query,
       solrSettings: state => state.Search.solrSettings,
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
     }),
@@ -88,14 +86,10 @@ export default {
       return this.allContentShown ? 'Show less ↑' : 'Show all ↓'
     },
   },
-  mounted () {
-  },
   methods: {
     ...mapActions('Search', {
-      requestSearch: 'requestSearch',
-      requestFacets: 'requestFacets',
       updateQuery: 'updateQuery',
-      updateSearchAppliedFacets:'updateSearchAppliedFacets',
+      emptySearchAppliedFacets:'emptySearchAppliedFacets',
 
     }),
     determinePlaceAndVisiblity(place, lineNumber) {
@@ -118,14 +112,10 @@ export default {
     },
     searchFromAllValues(attribute, value) {
       this.allDataShown = !this.allDataShown
-      let searchString = attribute + ':"' + encodeURIComponent(value) + '"'
+      const searchString = attribute + ':"' + encodeURIComponent(value) + '"'
       this.updateQuery(searchString)
-      this.updateSearchAppliedFacets('')
-      this.requestSearch({query:searchString, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:searchString, facets:this.searchAppliedFacets, options:this.solrSettings})
-      //this.$router.push({ name:'SolrWayback', params:{query:searchString }})
+      this.emptySearchAppliedFacets()
       this.$_pushSearchHistory('SolrWayback', searchString, this.searchAppliedFacets, this.solrSettings)
-      //this.$router.replace({ query: {q:searchString }})
     },
     toggleShownData(index) {
       index === this.currentDataShown ? this.currentDataShown = null : this.currentDataShown = index
