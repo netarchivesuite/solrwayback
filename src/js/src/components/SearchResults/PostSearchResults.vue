@@ -13,7 +13,7 @@
       <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
         Previous 20
       </button>
-      <button :disabled="results.cardinality ? solrSettings.offset + 20 > results.cardinality : solrSettings.offset + 20 > results.numFound" @click="getNextResults()">
+      <button :disabled="results.cardinality ? solrSettings.offset + 20 >= results.cardinality : solrSettings.offset + 20 >= results.numFound" @click="getNextResults()">
         Next 20
       </button>
     </div>
