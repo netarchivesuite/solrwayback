@@ -49,7 +49,11 @@
           </div>
         </div>
         <div class="exportContent">
-          <h2>Non selected</h2>
+          <h2 class="nonSelectedExportHeadline">
+            Non selected
+          </h2> <button class="exportSelectAll" @click="selectAllFields()">
+            Select all
+          </button>
           <div v-for="(item, index) in nonSelectedArray" :key="'nonSelected' + index" class="fieldItem">
             {{ item }}  <div class="fieldItem actions">
               <button class="select" @click="toggleItemInArrays(selectedArray, nonSelectedArray, item, index,'nonSelectedArray')">
@@ -95,18 +99,18 @@ export default {
   methods: {
     exportToWARC() {
      return this.searchAppliedFacets ? 
-       this.returnExportUrl() + 'warc?query=' + this.query + this.searchAppliedFacets :
+       this.returnExportUrl() + 'warc?query=' + this.query + this.searchAppliedFacets.join('') :
        this.returnExportUrl() + 'warc?query=' + this.query
     },
     exportToExtendedWARC() {
       return this.searchAppliedFacets ? 
-      this.returnExportUrl() + 'warcExpanded?query=' + this.query + this.searchAppliedFacets :
+      this.returnExportUrl() + 'warcExpanded?query=' + this.query + this.searchAppliedFacets.join('') :
       this.returnExportUrl() + 'warcExpanded?query=' + this.query
     },
     exportToCSV() {
       let fields = this.selectedArray.join(',')
       return this.searchAppliedFacets ? 
-      this.returnExportUrl() + 'csv?query=' + this.query + this.searchAppliedFacets + '&fields=' + fields :
+      this.returnExportUrl() + 'csv?query=' + this.query + this.searchAppliedFacets.join('') + '&fields=' + fields :
       this.returnExportUrl() + 'csv?query=' + this.query + '&fields=' + fields
     },
     returnExportUrl() {
@@ -114,6 +118,14 @@ export default {
     },
     toggleCsvExportOptions() {
       this.csvExportOpen = !this.csvExportOpen
+      if(this.csvExportOpen === false) {
+        this.selectedArray = this.getSplitFieldsSelected(this.configs.exportOptions.csvFields)
+        this.nonSelectedArray = this.getSplitFieldsNotSelected(this.configs.exportOptions.csvFields)
+      }
+    },
+    selectAllFields() {
+      this.selectedArray = this.configs.exportOptions.csvFields.replace(/ /g, '').split(',')
+      this.nonSelectedArray = []
     },
     getSplitFieldsSelected(fields) {
       return fields.replace(/ /g, '').split(',').slice(0,9)
