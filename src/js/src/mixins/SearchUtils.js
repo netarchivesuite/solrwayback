@@ -38,7 +38,7 @@ export default {
     deliverSearchRequest(futureQuery, updateHistory) {
       this.requestSearch({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
       this.requestFacets({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-      updateHistory ? this.$_pushSearchHistory('SolrWayback', futureQuery, this.searchAppliedFacets, this.solrSettings) : null
+      updateHistory ? this.$_pushSearchHistory('Search', futureQuery, this.searchAppliedFacets, this.solrSettings) : null
     },
     //Deliver an URL search
     deliverUrlSearchRequest(futureQuery, updateHistory) {
@@ -46,7 +46,7 @@ export default {
       if(this.$_validateUrlSearchPrefix(this.DisectQueryForNewUrlSearch(futureQuery))) {
         this.requestUrlSearch({query:this.DisectQueryForNewUrlSearch(futureQuery), facets:this.searchAppliedFacets, options:this.solrSettings})
         this.requestFacets({query:'url_norm:"' + this.DisectQueryForNewUrlSearch(futureQuery) + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
-        updateHistory ? this.$_pushSearchHistory('SolrWayback', this.DisectQueryForNewUrlSearch(futureQuery), this.searchAppliedFacets, this.solrSettings) : null
+        updateHistory ? this.$_pushSearchHistory('Search', this.DisectQueryForNewUrlSearch(futureQuery), this.searchAppliedFacets, this.solrSettings) : null
       }
       else {
         this.setNotification({
@@ -60,7 +60,7 @@ export default {
     // Deliver an image search
     deliverImgSearchRequest(futureQuery, updateHistory) {
       this.requestImageSearch({query:futureQuery})
-      updateHistory ? this.$_pushSearchHistory('SolrWayback', futureQuery, this.searchAppliedFacets, this.solrSettings) : null
+      updateHistory ? this.$_pushSearchHistory('Search', futureQuery, this.searchAppliedFacets, this.solrSettings) : null
     },
     // Check if there has been any changes to the query
     queryHasChanged(query) {

@@ -115,7 +115,7 @@ export default {
       const searchString = attribute + ':"' + encodeURIComponent(value) + '"'
       this.updateQuery(searchString)
       this.emptySearchAppliedFacets()
-      this.$_pushSearchHistory('SolrWayback', searchString, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', searchString, this.searchAppliedFacets, this.solrSettings)
     },
     toggleShownData(index) {
       index === this.currentDataShown ? this.currentDataShown = null : this.currentDataShown = index

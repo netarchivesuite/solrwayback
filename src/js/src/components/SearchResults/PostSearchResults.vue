@@ -2,11 +2,11 @@
   <div>
     <span v-if="!results.cardinality">
       <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span>  - <span class="highlightText">{{ solrSettings.offset + 20 > results.numFound ? results.numFound : solrSettings.offset + 20 }}</span> of </span>
-      <span class="highlightText">{{ results.numFound.toLocaleString("en") }}</span> entries matching <span class="highlightText">{{ query }}. </span>
+      <span class="highlightText">{{ results.numFound.toLocaleString("en") }}</span> entries matching query.
     </span>
     <span v-if="results.cardinality">
       <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span> - <span class="highlightText">{{ solrSettings.offset + 20 > results.cardinality ? results.cardinality : solrSettings.offset + 20 }}</span> of </span>
-      <span class="highlightText">{{ results.cardinality.toLocaleString("en") }}</span> unique entries matching <span class="highlightText">{{ query }} </span>
+      <span class="highlightText">{{ results.cardinality.toLocaleString("en") }}</span> unique entries matching query 
       <span class="tonedDownText">(total hits: {{ results.numFound.toLocaleString("en") }})</span>.
     </span>
     <div class="pagingContainer">
@@ -66,11 +66,11 @@ export default {
     }),
     getNextResults() {
       this.updateSolrSettingOffset(this.solrSettings.offset + this.hitsPerPage)
-      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     getPreviousResults() {
       this.updateSolrSettingOffset(this.solrSettings.offset - this.hitsPerPage)
-      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     SingleEntryComponent(type) {
       //console.log('search result type', type)

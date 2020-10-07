@@ -5,10 +5,14 @@ import SolrWayback from '../views/SolrWayback.vue'
 Vue.use(VueRouter)
 
 const routes = [
-
   {
-    path: '/:query?',
+    path: '/',
     name: 'SolrWayback',
+    component: SolrWayback,
+  },
+  {
+    path: '/search/:query?',
+    name: 'Search',
     component: SolrWayback,
   },
   {
