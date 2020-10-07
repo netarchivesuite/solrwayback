@@ -58,27 +58,27 @@ module.exports = {
         changeOrigin: true
       },
    '^/services/frontend/harvestDates/': {
-          target: 'http://localhost:8080/solrwayback/services/frontend/harvestDates/',
-          pathRewrite: { '^/services/frontend/harvestDates/': '' },
-          changeOrigin: true
+        target: 'http://localhost:8080/solrwayback/services/frontend/harvestDates/',
+        pathRewrite: { '^/services/frontend/harvestDates/': '' },
+        changeOrigin: true
       },
-    
+    '^/services/frontend/help/about/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/help/about/',
+        pathRewrite: { '^/services/frontend/help/about/': '' },
+        changeOrigin: true
+      },
     '^/services/timestampsforpage/': {
       target: 'http://localhost:8080/solrwayback/services/timestampsforpage/',
       pathRewrite: { '^/services/timestampsforpage/': '' },
       changeOrigin: true
       },
-      
-      '^/services/frontend/image/pagepreview/': {
+    '^/services/frontend/image/pagepreview/': {
         target: 'http://localhost:8080/solrwayback/services/frontend/image/pagepreview/',
         pathRewrite: { '^/services/frontend/image/pagepreview/': '' },
         changeOrigin: true
-        },
-  
-}
-
-    
-  },
+      },
+  }
+},
 publicPath: process.env.NODE_ENV === 'production'
 ? '/solrwayback/'
 : '/',
