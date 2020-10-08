@@ -916,7 +916,9 @@ public class NetarchiveSolrClient {
     solrQuery.set("q.op", "AND");
     solrQuery.set("indent", "true");
     solrQuery.set("f.crawl_year.facet.limit", "100"); //Show all crawl_years. Maybe remove limit to property file as well
-
+    solrQuery.set("f.crawl_year.facet.sort", "index"); //Sort by year and not count.
+          
+    
     if (!revisits){
       solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
     }
