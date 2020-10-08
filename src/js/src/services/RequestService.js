@@ -11,8 +11,7 @@ export const requestService = {
   getHarvestDates,
   getNormalizedUrlSearch,
   getNormalizedUrlFacets,
-  getHarvestedPageResources
-  
+  getHarvestedPageResources,
 }
 
 function fireSearchRequest (query, facets, options) {

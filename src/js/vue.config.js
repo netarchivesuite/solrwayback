@@ -69,12 +69,16 @@ module.exports = {
       changeOrigin: true
       },
       
-      '^/services/frontend/image/pagepreview/': {
+    '^/services/frontend/image/pagepreview/': {
         target: 'http://localhost:8080/solrwayback/services/frontend/image/pagepreview/',
         pathRewrite: { '^/services/frontend/image/pagepreview/': '' },
         changeOrigin: true
-        },
-  
+      },
+    '^/services/frontend/wordcloud/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/wordcloud/',
+        pathRewrite: { '^/services/frontend/wordcloud/': '' },
+        changeOrigin: true
+      },
 }
 
     
