@@ -28,6 +28,30 @@ color:var(--secondary-text-color);
   padding:15px;
 }
 
+.aboutContainer {
+  width:1000px;
+  margin:0px calc(50vw - 500px);
+  padding:15px;
+  text-align:center;
+}
+
+.aboutContainer button {
+  border: 0px;
+	position: relative;
+	border-bottom: 2px solid var(--main-highlight-color);
+	background-color: transparent;
+	cursor: pointer;
+}
+
+.aboutContainer .activated {
+	top: -30px;
+}
+
+.aboutTextContainer {
+  padding: 15px 15px 50px 15px;
+  background-color:var(--secondary-highlight-color);
+}
+
 .searchForm {
   margin-top:20px;
   margin-bottom:20px;

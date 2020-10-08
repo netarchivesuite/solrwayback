@@ -40,7 +40,7 @@ export default {
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
       this.updateSolrSettingOffset(0)
       this.addToSearchAppliedFacets(newFacet)
-      this.$_pushSearchHistory('SolrWayback', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
     }
   }
 }

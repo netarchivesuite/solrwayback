@@ -842,10 +842,12 @@
        <str name="pf">
          text
        </str>     
-        <!--  We really want http 200 first. 404 will be boosted too much if url/title match-->
-       <str name="bq">
-         status_code:200^100
-       </str>
+        <!--  Boost status 200. Negative boost on other+text -->
+        <str name="bq">status_code:200^20</str>               
+ <!--   <str name="bq">content_type_norm:html^5</str>  include this if further html boost is desired -->
+        <str name="bq">content_type_norm:other^-15</str>
+        <str name="bq">content_type_norm:text^-15</str>
+                
        <str name="fl">*,score</str>
        <str name="facet">false</str>
        <str name="facet.mincount">1</str>

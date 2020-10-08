@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <router-view />
+    <!-- En enforce component SolrWayback update when moving from '/' to '/search' -->
+    <router-view :key="$route.path" />
   </div>
 </template>
 <script>

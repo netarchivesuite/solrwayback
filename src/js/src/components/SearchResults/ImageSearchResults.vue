@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span>Showing <span class="highlightText">{{ results.images.length }}</span> images matching <span class="highlightText">{{ query }}. </span> </span>
+    <span>Showing <span class="highlightText">{{ results.images.length }}</span> images matching query. </span>
     <div class="images">
       <div class="column 1">
         <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,0)"

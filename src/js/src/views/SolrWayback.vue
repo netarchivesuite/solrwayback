@@ -7,6 +7,7 @@
     <h1>Solr<span>Wayback</span></h1>
     <search-box />
     <all-search-results />
+    <about-component />
     <transition name="loading-overlay">
       <div v-if="scrolledFromTop" class="topTopArrow" @click="backToTop">
         ↑
@@ -18,6 +19,7 @@
 
 <script>
  import SearchBox from '../components/SearchBox'
+ import AboutComponent from '../components/AboutComponent'
  import AllSearchResults from '../components/SearchResults/AllSearchResults'
  import Notifications from '../components/notifications/Notifications'
  import LoadingOverlay from '../components/LoadingOverlay'
@@ -30,7 +32,8 @@ export default {
    SearchBox,
    AllSearchResults,
    Notifications,
-   LoadingOverlay
+   LoadingOverlay,
+   AboutComponent
   },
   mixins: [SearchUtils],
   data: () => ({

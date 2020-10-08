@@ -131,6 +131,7 @@
 .SingleEntryStandardInfo .entryInfo {
   padding-bottom:5px;
   padding-top:5px;
+  word-break: break-all;
 }
 
 .SingleEntryStandardInfo .entryInfo.type {
@@ -270,6 +271,19 @@ margin: 1em 0 0 0;
   width:100%;
   text-align: center;
   text-decoration:none;
+}
+
+.exportContent .exportSelectAll {
+	float: right;
+	background-color: transparent;
+	border: 0px;
+	color: var(--main-highlight-color);
+	cursor: pointer;
+	border-bottom: 2px solid var(--main-highlight-color);
+}
+
+.exportContent .nonSelectedExportHeadline {
+  display:inline-block;
 }
 
 .pagingContainer button:disabled {

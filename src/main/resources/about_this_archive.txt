@@ -1,4 +1,4 @@
 About us<br> Welcome to the Danish Netarchive.<br> 
-For more information see <A href='http://netarkivet.dk/in-english/'> Danish Netarchive </a>. <br>
+For more information see <A href='http://netarkivet.dk/in-english/' target='_new'> Danish Netarchive </a>. <br>
 <br> 
 The Royal Danish Library.

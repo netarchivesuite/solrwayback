@@ -157,7 +157,7 @@ export default {
     launchNewSearch() {
       this.emptySearchAppliedFacets()
       this.updateSolrSettingOffset(0)
-      this.$_pushSearchHistory('SolrWayback', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
     },
     toggleToolbox() {
       this.showToolbox = !this.showToolbox
