@@ -317,6 +317,12 @@ color:var(--secondary-text-color);
   padding: 15px;
 }
 
+.domainHelperText {
+  font-size: 75%;
+	text-transform: uppercase;
+	color: rgba(30, 30, 30, 0.3);
+}
+
 .wordcloudContainer .imgContainer .imageNotLoaded {
   display:none;
 }

@@ -6,14 +6,23 @@
     <div class="wordcloudContainer">
       <div class="wordcloudExplanation">
         <input v-model="domain"
-               placeholder="Enter domain"
-               :class="checkDomain(domain) ? 'goodDomain' : 'badDomain'"
-               @keyup.enter="setDomainImage()"><button :disabled="loadingImage" class="wordcloudButton" @click.prevent="setDomainImage()">
-                 Create wordcloud
-               </button>
+               placeholder="Enter domain, like 'kb.dk'"
+               :class="checkDomain(domain) ? '' : 'urlNotTrue'"
+               @keyup.enter="setDomainImage()">
+        <button :disabled="loadingImage" class="wordcloudButton" @click.prevent="setDomainImage()">
+          Create wordcloud
+        </button>
         <br>
         <p>
           Simply enter the domain you wish to see a wordcloud of, and generate the wordcloud. The image is generated in real time, so it might take some time.
+        </p>
+        <br>
+        <p>
+          The domain entered must be without http://www, and only contain the trailing domain, like 'kb.dk' or 'statsbiblioteket.dk'.
+        </p>
+        <br>
+        <p>
+          If the image returned is black, it simply means the archive holds no data on the entered domain.
         </p>
       </div>
       <div class="imgContainer">
@@ -43,8 +52,8 @@ export default {
     this.imgSrc = ''
   },
   methods: {
-    checkDomain() {
-      return true
+    checkDomain(domain) {
+      return domain.match(/^[^\.]+\.[^\.]+$/)
     },
     setDomainImage() {
       this.loadingImage = true
