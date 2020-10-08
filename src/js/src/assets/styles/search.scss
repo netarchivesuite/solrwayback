@@ -263,9 +263,17 @@ color:var(--secondary-text-color);
 	border-bottom: 1px solid var(--main-highlight-color);
 }
 
+.toolboxNavigation .activeTool {
+  font-weight: bold;
+}
+
 .wordcloudContainer {
 	display: grid;
 	grid-template-columns: 20% 80%;
+}
+
+.toolboxHeadline {
+  padding-left:15px;
 }
 
 .wordcloudContainer button {
@@ -307,6 +315,14 @@ color:var(--secondary-text-color);
 	margin-left: auto;
   margin-right: auto;
   padding: 15px;
+}
+
+.wordcloudContainer .imgContainer .imageNotLoaded {
+  display:none;
+}
+
+.wordcloudContainer .imgContainer .imageLoaded {
+  display:block;
 }
 
 .searchForm .sortOptions .marginRight {
