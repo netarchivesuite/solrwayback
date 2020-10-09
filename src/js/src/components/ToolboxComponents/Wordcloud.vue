@@ -56,8 +56,8 @@ export default {
       return domain.match(/^[^\.]+\.[^\.]+$/)
     },
     setDomainImage() {
-      this.loadingImage = true
-      this.imgSrc = 'services/frontend/wordcloud/domain?domain=' + this.domain
+        this.loadingImage = true
+        this.imgSrc = 'services/frontend/wordcloud/domain?domain=' + this.domain + '&time=' + new Date().getTime()
     },
     doneLoading() {
     this.loadingImage = false
