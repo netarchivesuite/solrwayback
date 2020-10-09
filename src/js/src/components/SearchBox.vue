@@ -48,9 +48,10 @@
         </div>
       </div>
       <div class="tools">
-        <span @click="showUploadFileSearch = !showUploadFileSearch">Search with uploaded file</span> <span>Search for HTML-tags</span>
+        <span @click="showUploadFileSearch = !showUploadFileSearch">Search with uploaded file</span>
         <button class="toolbox" @click.prevent="toggleToolbox()">
-          Toolbox
+          <span class="toolboxText">Toolbox</span>
+          <span class="toolboxIcon" />
         </button>
       </div>
     </form>

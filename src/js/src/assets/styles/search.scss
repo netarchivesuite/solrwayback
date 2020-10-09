@@ -221,18 +221,41 @@ color:var(--secondary-text-color);
 .searchForm .tools span {
   display:inline-block;
   color: var(--main-highlight-color);
-  border-bottom:1px solid var(--secondary-highlight-color);
+  //border-bottom:1px solid var(--secondary-highlight-color);
   margin-right:20px;
 }
 
 .searchForm .tools .toolbox {
   text-transform: uppercase;
-	border: 0px;
-	border-bottom: 1px solid var(--secondary-highlight-color);
+  border: 0px;
+  margin:0px;
+	//border-bottom: 1px solid var(--secondary-highlight-color);
 	background-color: transparent;
 	color: var(--main-highlight-color);
 	cursor: pointer;
 	float: right;
+}
+
+.searchForm .tools .toolboxText {
+  border-bottom: 1px solid var(--secondary-highlight-color);
+  margin-right:5px !important;
+}
+
+.searchForm .tools .toolboxIcon {
+  margin-right:0px !important;
+}
+
+.toolboxIcon {
+  background-image: url('../icons/tools.svg');
+  height: 20px;
+	position: relative;
+  width: 20px;
+  margin-right:10px;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-size: auto;
+	background-position: center;
+  top: 3px;
 }
 
 .toolboxNavigation h3 {

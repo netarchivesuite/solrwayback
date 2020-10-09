@@ -5,7 +5,10 @@
     </button>
     <div class="toolboxContent">
       <div class="toolboxNavigation">
-        <h3>Available tools: </h3>
+        <h3>
+          <span class="toolboxIcon" />
+          Available tools:
+        </h3>
         <button :class="currentTool === 'wordcloud' ? 'activeTool' : ''" @click="setCurrentTool('wordcloud')">
           Wordcloud
         </button>
@@ -15,11 +18,23 @@
         <button :class="currentTool === 'domainstats' ? 'activeTool' : ''" @click="setCurrentTool('domainstats')">
           Domain stats
         </button>
+        <button :class="currentTool === 'htmltags' ? 'activeTool' : ''" @click="setCurrentTool('htmltags')">
+          HTML-tags
+        </button>
+        <button :class="currentTool === 'gephiexport' ? 'activeTool' : ''" @click="setCurrentTool('gephiexport')">
+          Link graph Gephi export
+        </button>
+        <button :class="currentTool === 'smurf' ? 'activeTool' : ''" @click="setCurrentTool('smurf')">
+          Smurf
+        </button>
         <hr>
       </div>
       <wordcloud v-if="currentTool === 'wordcloud'" />
       <link-graph v-if="currentTool === 'linkgraph'" />
       <domain-stats v-if="currentTool === 'domainstats'" />
+      <html-tags v-if="currentTool === 'htmltags'" />
+      <gephi-export v-if="currentTool === 'gephiexport'" />
+      <smurf v-if="currentTool === 'smurf'" />
     </div>
   </div>
 </template>
@@ -28,6 +43,9 @@
 import Wordcloud from './ToolboxComponents/Wordcloud'
 import LinkGraph from './ToolboxComponents/LinkGraph'
 import DomainStats from './ToolboxComponents/DomainStats'
+import HtmlTags from './ToolboxComponents/HtmlTags'
+import GephiExport from './ToolboxComponents/GephiExport'
+import Smurf from './ToolboxComponents/Smurf'
 
 
 export default {
@@ -35,7 +53,10 @@ export default {
   components: {
     Wordcloud, 
     LinkGraph, 
-    DomainStats
+    DomainStats,
+    HtmlTags,
+    GephiExport,
+    Smurf,
   },
   data() {
     return {
