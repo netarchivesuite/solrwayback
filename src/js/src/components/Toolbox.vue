@@ -25,7 +25,6 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
 import Wordcloud from './ToolboxComponents/Wordcloud'
 import LinkGraph from './ToolboxComponents/LinkGraph'
 import DomainStats from './ToolboxComponents/DomainStats'
