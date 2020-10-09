@@ -145,13 +145,18 @@ export default {
     decideActiveClassesForQueryBox() {
       const isPrefixUrlNorm = this.futureQuery.substring(0,8) === 'url_norm'
       return this.$_validateUrlSearchPrefix(this.futureQuery) === false 
-                 ? isPrefixUrlNorm === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
-                 : isPrefixUrlNorm === 'url_norm' ? '' : 'urlSearchActivated' 
+                 ? isPrefixUrlNorm === 'url_norm' 
+                    ? 'urlNotTrue' 
+                    : 'urlNotTrue urlSearchActivated'
+                 : isPrefixUrlNorm !== 'url_norm' 
+                    ? '' 
+                    : 'urlSearchActivated' 
     },
     launchNewSearch() {
       this.emptySearchAppliedFacets()
       this.updateSolrSettingOffset(0)
-      this.$_pushSearchHistory('Search', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
+      this.$_determineNewSearch(this.futureQuery, true)
+      //this.$_pushSearchHistory('Search', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
     }
   }
 }
