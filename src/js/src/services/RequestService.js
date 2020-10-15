@@ -13,7 +13,8 @@ export const requestService = {
   getAboutText,
   getNormalizedUrlFacets,
   getHarvestedPageResources,
-  getSearchGuidelines
+  getSearchGuidelines,
+  getSearchVizualisation
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -155,6 +156,16 @@ function getAboutText() {
 
 function getSearchGuidelines() {
   const url = 'services/frontend/help/search/'
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function getSearchVizualisation() {
+  const url = '/services/frontend/graph/domain_result/'
   return axios.get(
     url).then(response => {
     return response.data
