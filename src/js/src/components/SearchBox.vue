@@ -86,6 +86,8 @@ export default {
       results: state => state.Search.results,
       solrSettings: state => state.Search.solrSettings,
       loading: state => state.Search.loading,
+      showModal: state => state.Modal.showModal,
+      currentModal: state => state.Modal.currentModal
     })
   },
   watch: {
@@ -124,6 +126,10 @@ export default {
       updateSolrSettingOffset:'updateSolrSettingOffset',
       emptySearchAppliedFacets:'emptySearchAppliedFacets'
     }),
+    ...mapActions('Modal', {
+      updateShowModal:'updateShowModal',
+      updateCurrentModal:'updateCurrentModal'
+    }),
     selectSearchMethod(selected) {
       console.log(selected)
       if(selected === 'imgSearch') {
@@ -156,7 +162,8 @@ export default {
       this.$_pushSearchHistory('Search', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
     },
     openSelectedModal(modal) {
-      this.$emit('open-modal', modal)
+      this.updateShowModal(!this.showModal),
+      this.updateCurrentModal(modal)
     }
   }
 }

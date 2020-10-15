@@ -12,25 +12,31 @@
 <script>
 
 import SearchGuidelines from './SearchGuidelines'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'PrimaryModal',
   components: {
     SearchGuidelines
   },
-  props: {
-    currentModal: {
-      type:String,
-      required:true
-    },
-  },
   data() {
     return {
     }
   },
+  computed: {
+    ...mapState({
+      showModal: state => state.Modal.showModal,
+      currentModal: state => state.Modal.currentModal,
+    })
+  },
   methods: {
+       ...mapActions('Modal', {
+      updateShowModal:'updateShowModal',
+      updateCurrentModal:'updateCurrentModal'
+    }),
     closeModal() {
-      this.$emit('close-modal')
+      this.updateShowModal(!this.showModal)
+      this.updateCurrentModal('')
     },
   }
   
