@@ -5,10 +5,10 @@
     </transition>
     <notifications />
     <h1>Solr<span>Wayback</span></h1>
-    <search-box @open-modal="toggleModal($event)" />
+    <search-box />
     <all-search-results />
     <about-component />
-    <primary-modal v-if="showModal" :current-modal="currentModal" @close-modal="toggleModal()" />
+    <primary-modal v-if="showModal" />
     <transition name="loading-overlay">
       <div v-if="scrolledFromTop" class="topTopArrow" @click="backToTop">
         ↑
@@ -41,14 +41,13 @@ export default {
   mixins: [SearchUtils],
   data: () => ({
         scrolledFromTop:false,
-        showModal:false,
-        currentModal:''
   }),
   computed: {
     ...mapState({
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       query: state => state.Search.query,
-      solrSettings: state => state.Search.solrSettings
+      solrSettings: state => state.Search.solrSettings,
+      showModal: state => state.Modal.showModal,
     }),
   },
 
@@ -79,10 +78,6 @@ export default {
        to.query.urlSearch !== from.query.urlSearch ||
        to.query.grouping !== from.query.grouping ||
        to.query.facets !== from.query.facets)
-    },
-    toggleModal(modal) {
-      modal ? this.currentModal = modal : null
-      this.showModal = !this.showModal
     },
   },
   beforeRouteUpdate (to, from, next) {
