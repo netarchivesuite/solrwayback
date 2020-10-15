@@ -5,9 +5,10 @@
     </transition>
     <notifications />
     <h1>Solr<span>Wayback</span></h1>
-    <search-box />
+    <search-box @open-modal="toggleModal($event)" />
     <all-search-results />
     <about-component />
+    <primary-modal v-if="showModal" :current-modal="currentModal" @close-modal="toggleModal()" />
     <transition name="loading-overlay">
       <div v-if="scrolledFromTop" class="topTopArrow" @click="backToTop">
         ↑
@@ -25,6 +26,7 @@
  import LoadingOverlay from '../components/LoadingOverlay'
  import SearchUtils from './../mixins/SearchUtils'
  import { mapState, mapActions } from 'vuex'
+ import PrimaryModal from './../components/modalComponents/PrimaryModal'
 
 export default {
   name: 'SolrWayback',
@@ -33,11 +35,14 @@ export default {
    AllSearchResults,
    Notifications,
    LoadingOverlay,
-   AboutComponent
+   AboutComponent,
+   PrimaryModal
   },
   mixins: [SearchUtils],
   data: () => ({
-        scrolledFromTop:false
+        scrolledFromTop:false,
+        showModal:false,
+        currentModal:''
   }),
   computed: {
     ...mapState({
@@ -74,7 +79,11 @@ export default {
        to.query.urlSearch !== from.query.urlSearch ||
        to.query.grouping !== from.query.grouping ||
        to.query.facets !== from.query.facets)
-    }
+    },
+    toggleModal(modal) {
+      modal ? this.currentModal = modal : null
+      this.showModal = !this.showModal
+    },
   },
   beforeRouteUpdate (to, from, next) {
     //console.log('route changed!',to.query, from.query)

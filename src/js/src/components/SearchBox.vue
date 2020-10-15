@@ -10,6 +10,9 @@
                ? decideActiveClassesForQueryBox()
                : ''"
              :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'">
+      <button type="button" class="searchGuidelinesButton" @click.prevent="openSelectedModal('guidelines')">
+        ?
+      </button>
       <transition name="url-search-helper">
         <span v-if="solrSettings.urlSearch && futureQuery.substring(0,8) !== 'url_norm'" class="urlSearchHelper">URL:</span>
       </transition>
@@ -66,14 +69,13 @@ import SearchUploadFile from './SearchUploadFile.vue'
 export default {
   components: {
     AppliedSearchFacets,
-    SearchUploadFile
+    SearchUploadFile,
   },
   mixins: [HistoryRoutingUtils, SearchUtils],
   data () {
     return {    
       futureQuery:'',
-      showUploadFileSearch: false
-
+      showUploadFileSearch: false,
     }
   },
   computed: {
@@ -152,6 +154,9 @@ export default {
       this.emptySearchAppliedFacets()
       this.updateSolrSettingOffset(0)
       this.$_pushSearchHistory('Search', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
+    },
+    openSelectedModal(modal) {
+      this.$emit('open-modal', modal)
     }
   }
 }

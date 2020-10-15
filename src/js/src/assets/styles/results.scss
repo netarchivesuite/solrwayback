@@ -806,7 +806,7 @@ margin: 1em 0 0 0;
 }
 
 
-.csvExportOptions .closeButton {
+.csvExportOptions .closeButton, .modalContainer .closeButton {
   position: fixed;
 	right: 15px;
   top: 15px;
@@ -817,10 +817,16 @@ margin: 1em 0 0 0;
 	margin-left: 10px;
 	font-weight: bold;
   cursor: pointer;
-  width: 40px;
-	height: 40px;
-	font-size: 120%;
+  width: 30px;
+	height: 30px;
+	font-size: 100%;
 }
+
+.modalContainer .closeButton {
+  right:5px !important;
+  top:5px !important;
+}
+
 .loadingScreen {
   position: fixed;
   z-index:10000;

@@ -1,11 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-<title>SolrWayback search syntax guideline </title>
-</head>
-
-<body>
 <h1>Search syntax guideline for searching in the netarchive</h1>
 
 <h3> Boolean Operators </h3>
@@ -155,7 +147,7 @@ This is a description of some of the more important fields but does not include 
 <td>no</td>
 <td>String</td>
 <td>Almost same content_type_norm. Just more human names and fewer values: Web Page, Image, Other, Document, Audio, Video, Presentation, Data</td>
-<tr>
+</tr>
 
 <tr>
 <td>hash</td>
@@ -277,9 +269,4 @@ The public suffix of the url: Example: co.uk, dk, com </td>
 <td>Full path to the warc-file where the resource is from. The field source_file_offset gives the offset for the resource in that warc-file</td>
 </tr>
 
-<table>
-
-
-
-</body>
-</html>
+</table>
