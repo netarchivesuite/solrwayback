@@ -9,6 +9,26 @@
   box-sizing: border-box;
 }
 
+.resultContainer h2 {
+  display:inline-block;
+}
+
+.resultContainer .visualizeButton {
+	background-color: transparent;
+	font-size: 100%;
+	position: relative;
+	top: -2px;
+	height: 18px;
+	width: 20px;
+	background: url('../icons/chart.svg') no-repeat 0px 0px;
+	padding: 2px;
+	background-size: 16px 16px;
+	box-sizing: border-box;
+	cursor: pointer;
+	margin-left: 7px;
+	border: 2px solid var(--main-highlight-color);
+	box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.35);
+}
 
 .singleEntryResult {
   -webkit-box-shadow: 0px 4px 12px -2px rgba(0, 0, 0, 0.65);
@@ -825,6 +845,30 @@ margin: 1em 0 0 0;
 .modalContainer .closeButton {
   right:5px !important;
   top:5px !important;
+}
+
+.searchVisualizationContainer {
+  font-size:12px;
+}
+
+.searchVisualizationContainer .visualized svg {
+  margin-left:auto;
+  margin-right:auto;
+  position: relative;
+  display:block;
+}
+
+.searchVisualizationHeadline {
+  font-size:150%
+}
+
+.searchVisualizationHeadline h2 {
+  text-align: center;
+}
+
+.searchVisualizationHeadline span {
+  font-weight: bold;
+  color:var(--main-highlight-color);
 }
 
 .loadingScreen {

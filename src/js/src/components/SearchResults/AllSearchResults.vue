@@ -5,7 +5,10 @@
     </div>
     <div class="resultContainer">
       <search-result-export v-if="configs" :configs="configs" />
-      <h2>Results</h2>
+      <h2>Results</h2><button title="Visualize result"
+                              type="button"
+                              class="visualizeButton"
+                              @click="showVisualizedResult('visualization')" />
       <!-- HERE COMES RESULTS // Figure out if this should be splitted out into a new component -->
       <post-search-results v-if="results.searchType === 'post'" />
       <!-- HERE COMES PICTURES -->
@@ -41,8 +44,20 @@ export default {
   computed: {
     ...mapState({
       results: state => state.Search.results,
+      showModal: state => state.Modal.showModal,
+      currentModal: state => state.Modal.currentModal
     }),
   },
+  methods: {
+    ...mapActions('Modal', {
+      updateShowModal:'updateShowModal',
+      updateCurrentModal:'updateCurrentModal'
+    }),
+    showVisualizedResult(modal) {
+      this.updateCurrentModal(modal)
+      this.updateShowModal(true)
+    }
+  }
 }
 </script>
 

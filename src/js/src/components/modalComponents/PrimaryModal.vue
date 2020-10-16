@@ -5,6 +5,7 @@
     </button>
     <div class="modalContent">
       <search-guidelines v-if="currentModal === 'guidelines'" />
+      <search-visualization v-if="currentModal === 'visualization'" />
     </div>
   </div>
 </template>
@@ -12,12 +13,14 @@
 <script>
 
 import SearchGuidelines from './SearchGuidelines'
+import SearchVisualization from './SearchVisualization'
 import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'PrimaryModal',
   components: {
-    SearchGuidelines
+    SearchGuidelines,
+    SearchVisualization
   },
   data() {
     return {
