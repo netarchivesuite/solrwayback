@@ -336,6 +336,14 @@ margin: 1em 0 0 0;
 }
 
 .facets {
+margin-left:40px;
+}
+
+.facetContainer h2 {
+  margin-bottom: 10px;
+}
+
+.allFacets {
   flex-direction: column;
 	display: flex;
 }
@@ -674,6 +682,18 @@ margin: 1em 0 0 0;
 	background-image: url('../icons/web.svg');
 }
 
+.singleEntryResult .typePreview.default {
+	background-image: url('../icons/default.svg');
+}
+
+.singleEntryResult .typePreview.video {
+	background-image: url('../icons/video.svg');
+}
+
+.singleEntryResult .typePreview.audio {
+	background-image: url('../icons/audio.svg');
+}
+
 .singleEntryResult .typePreview {
   height: 20px;
 	position: relative;
@@ -889,7 +909,7 @@ margin: 1em 0 0 0;
   color:var(--main-highlight-color);
 }
 
-.toolboxCloseButton {
+.modalContainer .closeButton, .toolboxCloseButton {
   z-index:1;
   right:5px !important;
   top:5px !important;

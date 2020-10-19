@@ -22,10 +22,6 @@ export default {
     SearchGuidelines,
     SearchVisualization
   },
-  data() {
-    return {
-    }
-  },
   computed: {
     ...mapState({
       showModal: state => state.Modal.showModal,

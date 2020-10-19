@@ -15,6 +15,7 @@ const initialState = () => ({
     urlSearch:false,
   },
   loading:false,
+  facetLoading:false,
 })
 
 const state = initialState()
@@ -22,6 +23,9 @@ const state = initialState()
 const actions = {
   setLoadingStatus( {commit}, param) {
     commit('setLoadingStatus', param)
+  },
+  setFacetLoadingStatus( {commit}, param) {
+    commit('setFacetLoadingStatus', param)
   },
   updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
@@ -85,7 +89,7 @@ const actions = {
         commit('facetRequestError', error))
   },
   requestFacets({commit}, params) {
-    commit('setLoadingStatus', true)
+    commit('setFacetLoadingStatus', true)
     requestService
       .fireFacetRequest(params.query, params.facets, params.options)
       .then(result => commit('facetRequestSuccess', result), error =>
@@ -125,7 +129,8 @@ const mutations = {
     state.searchAppliedFacets = []
   },
   facetRequestSuccess(state, result) {
-    state.facets = result
+      state.facets = result
+      state.facetLoading = false
   },
   facetRequestError(state, message) {
     this.dispatch('Notifier/setNotification', {
@@ -182,6 +187,9 @@ const mutations = {
   },
   setLoadingStatus(state, status) {
     state.loading = status
+  },
+  setFacetLoadingStatus(state, status) {
+    state.facetLoading = status
   },
   clearResultsSuccess(state) {
     state.results = {}

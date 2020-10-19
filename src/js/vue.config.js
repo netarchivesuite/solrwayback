@@ -92,6 +92,11 @@ module.exports = {
         pathRewrite: { '^/services/frontend/wordcloud/': '' },
         changeOrigin: true
       },
+    '^/services/frontend/wordcloud/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/wordcloud/',
+        pathRewrite: { '^/services/frontend/wordcloud/': '' },
+        changeOrigin: true
+      }
   }
 },
 publicPath: process.env.NODE_ENV === 'production'
@@ -100,4 +105,5 @@ publicPath: process.env.NODE_ENV === 'production'
 assetsDir: 'static',
 
 indexPath: 'solrwayback_index_page.html' 
+
 }

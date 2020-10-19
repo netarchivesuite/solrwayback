@@ -209,7 +209,7 @@ color:white;
 	margin-top: 75px !important;
  }
 
- .previewImg .spinner, .searchVisualizationContainer .spinner, .imgContainer .spinner {
+ .previewImg .spinner, .searchVisualizationContainer .spinner, .imgContainer .spinner, .facetContainer .spinner {
   width: 40px;
   height: 40px;
   padding:15px;
@@ -217,6 +217,12 @@ color:white;
   background-color: var(--main-highlight-color);
 -webkit-animation: sk-rotateplane 1.2s infinite ease-in-out;
   animation: sk-rotateplane 1.2s infinite ease-in-out;
+}
+
+.facetContainer .spinner {
+  position: relative;
+  top:150px;
+  margin:auto;
 }
 
 .imgContainer .spinner {
@@ -245,5 +251,3 @@ color:white;
     -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
   }
 }
-
-
