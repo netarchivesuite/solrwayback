@@ -1,7 +1,5 @@
 // Global modal state
 
-import Vue from 'vue'
-
 const initialState = () => ({
   showModal: false,
   currentModal:''

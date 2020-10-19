@@ -40,14 +40,14 @@ export default {
   },
   mixins: [SearchUtils],
   data: () => ({
-        scrolledFromTop:false,
+        scrolledFromTop:false
   }),
   computed: {
     ...mapState({
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       query: state => state.Search.query,
       solrSettings: state => state.Search.solrSettings,
-      showModal: state => state.Modal.showModal,
+      showModal: state => state.Modal.showModal
     }),
   },
 
@@ -78,7 +78,7 @@ export default {
        to.query.urlSearch !== from.query.urlSearch ||
        to.query.grouping !== from.query.grouping ||
        to.query.facets !== from.query.facets)
-    },
+    }
   },
   beforeRouteUpdate (to, from, next) {
     //console.log('route changed!',to.query, from.query)

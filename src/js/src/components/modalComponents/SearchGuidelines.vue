@@ -11,7 +11,7 @@ import { requestService } from '../../services/RequestService'
 export default {
   name: 'SearchGuidelines',
   data: () => ({
-        searchGuidelines:'',
+        searchGuidelines:''
   }),
   mounted () {
     this.getSearchGuidelinesFromService()

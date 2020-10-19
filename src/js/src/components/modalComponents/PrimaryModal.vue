@@ -19,10 +19,6 @@ export default {
   components: {
     SearchGuidelines
   },
-  data() {
-    return {
-    }
-  },
   computed: {
     ...mapState({
       showModal: state => state.Modal.showModal,
