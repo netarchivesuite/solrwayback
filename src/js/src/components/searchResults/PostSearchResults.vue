@@ -24,6 +24,14 @@
                  :result="result"
                  :rank-number="index" />
     </div>
+    <div class="pagingContainer">
+      <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
+        Previous 20
+      </button>
+      <button :disabled="results.cardinality ? solrSettings.offset + 20 >= results.cardinality : solrSettings.offset + 20 >= results.numFound" @click="getNextResults()">
+        Next 20
+      </button>
+    </div>
   </div>
 </template>
 
@@ -37,11 +45,11 @@ import ImageSearchResults from './ImageSearchResults'
 export default {
   name: 'PostSearchResults',
   components: {
-    SearchSingleItemDefault: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemDefault'),
-    SearchSingleItemTweet: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemTweet'),
-    SearchSingleItemWeb: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemWeb'),
-    SearchSingleItemImage: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemImage'),
-    SearchSingleItemVideoAudio: () => import('./../SearchSingleItemComponents/SearchSingleItemTypes/SearchSingleItemVideoAudio'),
+    SearchSingleItemDefault: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemDefault'),
+    SearchSingleItemTweet: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemTweet'),
+    SearchSingleItemWeb: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemWeb'),
+    SearchSingleItemImage: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemImage'),
+    SearchSingleItemVideoAudio: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemVideoAudio'),
    
    SearchFacetOptions,
     ImageSearchResults
