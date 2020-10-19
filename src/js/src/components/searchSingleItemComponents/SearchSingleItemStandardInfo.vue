@@ -82,7 +82,9 @@ export default {
         case 'Web Page': return 'web'
         case 'Image': return 'image'
         case 'Twitter Tweet': return 'twitter'
-        default: return 'web'
+        case 'Audio': return 'audio'
+        case 'Video': return 'video'
+        default: return 'default'
       }
     }
   }

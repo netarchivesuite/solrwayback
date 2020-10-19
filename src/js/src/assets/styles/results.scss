@@ -654,6 +654,18 @@ margin: 1em 0 0 0;
 	background-image: url('../icons/web.svg');
 }
 
+.singleEntryResult .typePreview.default {
+	background-image: url('../icons/default.svg');
+}
+
+.singleEntryResult .typePreview.video {
+	background-image: url('../icons/video.svg');
+}
+
+.singleEntryResult .typePreview.audio {
+	background-image: url('../icons/audio.svg');
+}
+
 .singleEntryResult .typePreview {
   height: 20px;
 	position: relative;
