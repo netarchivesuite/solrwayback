@@ -871,6 +871,11 @@ margin: 1em 0 0 0;
   display:block;
 }
 
+// Vue reuses components, so we gotta hide this. Super wierd, cant be solved with :key
+.searchVisualizationContainer .spinner svg {
+  display:none;
+}
+
 .searchVisualizationHeadline {
   font-size:150%
 }

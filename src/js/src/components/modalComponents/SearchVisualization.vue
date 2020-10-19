@@ -39,7 +39,6 @@ export default {
     }
   }, */
   mounted () {
-    console.log('WE MOUNTING!')
     this.getSearchVizualisationFromService(this.query, this.searchAppliedFacets, this.solrSettings)
   },
   methods: {
