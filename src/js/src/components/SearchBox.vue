@@ -11,7 +11,7 @@
                : ''"
              :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'">
       <transition name="url-search-helper">
-        <span v-if="solrSettings.urlSearch && futureQuery.substring(0,8) !== 'url_norm'" class="urlSearchHelper">URL:</span>
+        <span v-if="solrSettings.urlSearch && !$_validateUrlSearchPrefix(futureQuery)" class="urlSearchHelper">URL:</span>
       </transition>
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
@@ -151,9 +151,13 @@ export default {
     },
     decideActiveClassesForQueryBox() {
       const isPrefixUrlNorm = this.futureQuery.substring(0,8) === 'url_norm'
-      return this.$_validateUrlSearchPrefix(this.futureQuery) === false 
-                 ? isPrefixUrlNorm === 'url_norm' ? 'urlNotTrue' : 'urlNotTrue urlSearchActivated'
-                 : isPrefixUrlNorm === 'url_norm' ? '' : 'urlSearchActivated' 
+      return !this.$_validateUrlSearchPrefix(this.futureQuery) 
+                 ? isPrefixUrlNorm === 'url_norm' 
+                    ? 'urlNotTrue' 
+                    : 'urlNotTrue urlSearchActivated'
+                 : isPrefixUrlNorm !== 'url_norm' 
+                    ? '' 
+                    : 'urlSearchActivated' 
     },
     launchNewSearch() {
       this.emptySearchAppliedFacets()
