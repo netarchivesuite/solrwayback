@@ -33,7 +33,7 @@
 
 import { mapState, mapActions } from 'vuex'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
-import SearchMasonryImage from './../SearchSingleItemComponents/SearchMasonryImage'
+import SearchMasonryImage from './../searchSingleItemComponents/SearchMasonryImage'
 
 export default {
   name: 'ImageSearchResults',

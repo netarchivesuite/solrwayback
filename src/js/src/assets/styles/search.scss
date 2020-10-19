@@ -243,16 +243,147 @@ color:var(--secondary-text-color);
 	padding-bottom: 10px;
 	text-transform: uppercase;
 	margin-bottom: 10px;
-	display: flex;
+	//display: flex;
 	cursor: pointer;
-	justify-content: space-between;
+	//justify-content: space-between;
 	font-size: 80%;
 }
 
 .searchForm .tools span {
   display:inline-block;
   color: var(--main-highlight-color);
+  //border-bottom:1px solid var(--secondary-highlight-color);
+  margin-right:20px;
+}
+
+.searchForm .tools .toolbox {
+  text-transform: uppercase;
+  border: 0px;
+  margin:0px;
+	//border-bottom: 1px solid var(--secondary-highlight-color);
+	background-color: transparent;
+	color: var(--main-highlight-color);
+	cursor: pointer;
+	float: right;
+}
+
+.searchForm .tools .toolboxText {
+  border-bottom: 1px solid var(--secondary-highlight-color);
+  margin-right:5px !important;
+}
+
+.searchForm .tools .toolboxIcon {
+  margin-right:0px !important;
+}
+
+.toolboxIcon {
+  background-image: url('../icons/tools.svg');
+  height: 20px;
+	position: relative;
+  width: 20px;
+  margin-right:10px;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-size: auto;
+	background-position: center;
+  top: 3px;
+}
+
+.toolboxNavigation h3 {
+  display:inline-block;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.toolboxNavigation button {
+  border:0px;
+  color:var(--main-highlight-color);
+  background-color: transparent;
   border-bottom:1px solid var(--secondary-highlight-color);
+  font-size:100%;
+  padding:0px 0px;
+  margin:0px 15px;
+  transition: all 0.2s linear 0s;
+  cursor:pointer;
+}
+
+.toolboxNavigation button:hover {
+  border-bottom:1px solid var(--main-highlight-color);
+}
+
+.toolboxNavigation hr {
+  height: 1px;
+	border: 0px;
+	border-bottom: 1px solid var(--main-highlight-color);
+}
+
+.toolboxNavigation .activeTool {
+  font-weight: bold;
+}
+
+.wordcloudContainer {
+	display: grid;
+	grid-template-columns: 20% 80%;
+}
+
+.toolboxHeadline {
+  padding-left:15px;
+}
+
+.wordcloudContainer button {
+  margin-top: 15px;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.wordcloudContainer button:disabled {
+  color:rgba(30,30,30,0.5)
+}
+
+.wordcloudContainer button:disabled:hover {
+  color:rgba(30,30,30,0.5);
+  background-color:white;
+  cursor: default;
+}
+
+.wordcloudContainer .wordcloudExplanation {
+  padding:15px;
+  //border-right:1px solid var(--main-highlight-color);
+}
+
+.wordcloudContainer .wordcloudExplanation input {
+  width:100%;
+  border-radius: 0px;
+	border: 1px solid var(--seethrough-black);
+	box-sizing: border-box;
+	padding-left: 15px;
+	font-size: 120%;
+	color: var(--main-highlight-color);
+	height: 30px;
+	box-shadow: inset 0 0 7px var(--seethrough-black);
+}
+
+.wordcloudContainer .imgContainer img {
+  max-width: 800px;
+	display: block;
+	max-height: 600px;
+	margin-left: auto;
+  margin-right: auto;
+  padding: 15px;
+}
+
+.domainHelperText {
+  font-size: 75%;
+	text-transform: uppercase;
+	color: rgba(30, 30, 30, 0.3);
+}
+
+.wordcloudContainer .imgContainer .imageNotLoaded {
+  display:none;
+}
+
+.wordcloudContainer .imgContainer .imageLoaded {
+  display:block;
 }
 
 .searchForm .sortOptions .marginRight {
