@@ -204,7 +204,7 @@ color:white;
   cursor: pointer;
  } 
 
- .previewImg .spinner, .facetContainer .spinner {
+.previewImg .spinner, .facetContainer .spinner, .imgContainer .spinner {
   width: 40px;
   height: 40px;
   padding:15px;
@@ -218,6 +218,14 @@ color:white;
   position: relative;
   top:150px;
   margin:auto;
+}
+
+.imgContainer .spinner {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	top: 30%;
+	transform: translateY(-50%);
 }
 
 @-webkit-keyframes sk-rotateplane {
@@ -238,7 +246,3 @@ color:white;
     -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
   }
 }
-
-
-
-

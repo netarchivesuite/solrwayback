@@ -247,7 +247,7 @@ margin: 1em 0 0 0;
 }
 // Kudos end
 
-.showAllButtonContainer button, .singleEntryImages button, .pagingContainer button, .exportContent .downloadButton {
+.showAllButtonContainer button, .singleEntryImages button, .pagingContainer button, .exportContent .downloadButton, .wordcloudButton  {
   float:right;
   border:2px solid var(--secondary-bg-color);
   border-radius: 0;
@@ -308,7 +308,7 @@ margin: 1em 0 0 0;
   color:rgba(30,30,30, 0.5)
 }
 
-.showAllButtonContainer button:hover, .singleEntryImages button:hover, .pagingContainer button:hover, .exportContent .downloadButton:hover {
+.showAllButtonContainer button:hover, .singleEntryImages button:hover, .pagingContainer button:hover, .exportContent .downloadButton:hover, .wordcloudButton:hover {
   border:2px solid var(--secondary-bg-color);
   color:white;
   background-color:var(--secondary-bg-color);
@@ -754,7 +754,7 @@ margin-left:40px;
   z-index:1;
 }
 
-.csvExportOptions {
+.csvExportOptions, .toolboxContainer {
   position: fixed;
 	width: 100%;
 	height: 100%;
@@ -762,6 +762,19 @@ margin-left:40px;
 	top: 0px;
   left: 0px;
   z-index:10;
+}
+
+.toolboxContent {
+  top: 0px;
+  left: 0px;
+	position: relative;
+	width: calc(100vw - 80px);
+	height: calc(100vh - 80px);
+  margin: 40px 40px;
+  padding: 10px;
+  box-sizing: border-box;
+	overflow-y: scroll;
+  background-color: white;
 }
 
 .csvExportOptions .csvExportContent {
@@ -826,7 +839,7 @@ margin-left:40px;
 }
 
 
-.csvExportOptions .closeButton {
+.csvExportOptions .closeButton, .toolboxContainer .toolboxCloseButton {
   position: fixed;
 	right: 15px;
   top: 15px;
@@ -837,10 +850,17 @@ margin-left:40px;
 	margin-left: 10px;
 	font-weight: bold;
   cursor: pointer;
-  width: 40px;
-	height: 40px;
-	font-size: 120%;
+  width: 30px;
+	height: 30px;
+	font-size: 100%;
 }
+
+.toolboxCloseButton {
+  z-index:1;
+  right:5px !important;
+  top:5px !important;
+}
+
 .loadingScreen {
   position: fixed;
   z-index:10000;
