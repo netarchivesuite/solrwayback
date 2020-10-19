@@ -48,11 +48,16 @@
         </div>
       </div>
       <div class="tools">
-        <span @click="showUploadFileSearch = !showUploadFileSearch">Search with uploaded file</span> <span>Search for HTML-tags</span> <span>Domain stats</span><span>Link graphs</span>
+        <span @click="showUploadFileSearch = !showUploadFileSearch">Search with uploaded file</span>
+        <button class="toolbox" @click.prevent="toggleToolbox()">
+          <span class="toolboxText">Toolbox</span>
+          <span class="toolboxIcon" />
+        </button>
       </div>
     </form>
     <applied-search-facets />
     <search-upload-file v-if="showUploadFileSearch" />
+    <toolbox v-if="showToolbox" @close-toolbox="toggleToolbox()" />
   </div>
 </template> 
 
@@ -62,18 +67,20 @@ import AppliedSearchFacets from './AppliedSearchFacets.vue'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
 import SearchUtils from './../mixins/SearchUtils'
 import SearchUploadFile from './SearchUploadFile.vue'
+import Toolbox from './Toolbox.vue'
 
 export default {
   components: {
     AppliedSearchFacets,
-    SearchUploadFile
+    SearchUploadFile,
+    Toolbox
   },
   mixins: [HistoryRoutingUtils, SearchUtils],
   data () {
     return {    
       futureQuery:'',
-      showUploadFileSearch: false
-
+      showUploadFileSearch: false,
+      showToolbox: false
     }
   },
   computed: {
@@ -155,8 +162,10 @@ export default {
     launchNewSearch() {
       this.emptySearchAppliedFacets()
       this.updateSolrSettingOffset(0)
-      this.$_determineNewSearch(this.futureQuery, true)
-      //this.$_pushSearchHistory('Search', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
+    },
+    toggleToolbox() {
+      this.showToolbox = !this.showToolbox
     }
   }
 }

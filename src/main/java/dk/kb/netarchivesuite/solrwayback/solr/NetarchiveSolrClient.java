@@ -1102,7 +1102,7 @@ public class NetarchiveSolrClient {
       String startYear="1998"; //maybe configure
       int endYear = LocalDate.now().getYear()+1; //add one since it is not incluced 
          
-      solrQuery.setParam("json.facet", "{domains:{type:terms,field:domain,limit:25 facet:{years:{type:range,field:crawl_year,start:"+startYear+",end:"+endYear+",gap:1}}}}");
+      solrQuery.setParam("json.facet", "{domains:{type:terms,field:domain,limit:30 facet:{years:{type:range,field:crawl_year,start:"+startYear+",end:"+endYear+",gap:1}}}}");
       
       for (String filter : fq) {
         solrQuery.addFilterQuery(filter);    

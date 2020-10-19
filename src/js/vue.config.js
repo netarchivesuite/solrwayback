@@ -77,13 +77,17 @@ module.exports = {
         pathRewrite: { '^/services/frontend/image/pagepreview/': '' },
         changeOrigin: true
       },
-  }
-},
-publicPath: process.env.NODE_ENV === 'production'
-? '/solrwayback/'
-: '/',
-assetsDir: 'static',
+    '^/services/frontend/wordcloud/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/wordcloud/',
+        pathRewrite: { '^/services/frontend/wordcloud/': '' },
+        changeOrigin: true
+      },
+    }
+  },
+  publicPath: process.env.NODE_ENV === 'production'
+  ? '/solrwayback/'
+  : '/',
+  assetsDir: 'static',
 
-indexPath: 'solrwayback_index_page.html' 
-
+  indexPath: 'solrwayback_index_page.html' 
 }
