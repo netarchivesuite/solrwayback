@@ -299,10 +299,10 @@ color:var(--secondary-text-color);
   padding-left:15px;
 }
 
-.wordcloudContainer button {
-  margin-top: 15px;
-  width: 100%;
-  margin-bottom: 15px;
+.wordcloudContainer .wordcloudButton {
+  margin-top: 15px !important;
+  width: 100% !important;
+  margin-bottom: 15px !important;
 }
 
 .wordcloudContainer button:disabled {
@@ -320,7 +320,7 @@ color:var(--secondary-text-color);
   //border-right:1px solid var(--main-highlight-color);
 }
 
-.wordcloudContainer .wordcloudExplanation input {
+.wordcloudContainer .wordcloudExplanation input, .domainContentContainer input {
   width:100%;
   border-radius: 0px;
 	border: 1px solid var(--seethrough-black);
@@ -353,6 +353,21 @@ color:var(--secondary-text-color);
 
 .wordcloudContainer .imgContainer .imageLoaded {
   display:block;
+}
+
+.domainContentContainer {
+  padding:5px 15px 5px 15px;
+}
+
+.domainContentContainer input {
+  width:300px;
+}
+
+.domainContentContainer .domainStatsButton {
+  float: unset !important;
+	position: relative;
+	top: -2px;
+	margin-left: 5px;
 }
 
 .searchForm .sortOptions .marginRight {

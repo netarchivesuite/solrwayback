@@ -247,7 +247,7 @@ margin: 1em 0 0 0;
 }
 // Kudos end
 
-.showAllButtonContainer button, .singleEntryImages button, .pagingContainer button, .exportContent .downloadButton, .wordcloudButton  {
+.showAllButtonContainer button, .singleEntryImages button, .pagingContainer button, .exportContent .downloadButton, .wordcloudButton, .domainContentContainer .domainStatsButton  {
   float:right;
   border:2px solid var(--secondary-bg-color);
   border-radius: 0;
@@ -308,7 +308,7 @@ margin: 1em 0 0 0;
   color:rgba(30,30,30, 0.5)
 }
 
-.showAllButtonContainer button:hover, .singleEntryImages button:hover, .pagingContainer button:hover, .exportContent .downloadButton:hover, .wordcloudButton:hover {
+.showAllButtonContainer button:hover, .singleEntryImages button:hover, .pagingContainer button:hover, .exportContent .downloadButton:hover, .wordcloudButton:hover, .domainContentContainer .domainStatsButton:hover {
   border:2px solid var(--secondary-bg-color);
   color:white;
   background-color:var(--secondary-bg-color);
