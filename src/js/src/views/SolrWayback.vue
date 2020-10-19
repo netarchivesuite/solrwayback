@@ -8,6 +8,7 @@
     <search-box />
     <all-search-results />
     <about-component />
+    <primary-modal v-if="showModal" />
     <transition name="loading-overlay">
       <div v-if="scrolledFromTop" class="topTopArrow" @click="backToTop">
         ↑
@@ -25,6 +26,7 @@
  import LoadingOverlay from '../components/LoadingOverlay'
  import SearchUtils from './../mixins/SearchUtils'
  import { mapState, mapActions } from 'vuex'
+ import PrimaryModal from './../components/modalComponents/PrimaryModal'
 
 export default {
   name: 'SolrWayback',
@@ -33,7 +35,8 @@ export default {
    AllSearchResults,
    Notifications,
    LoadingOverlay,
-   AboutComponent
+   AboutComponent,
+   PrimaryModal
   },
   mixins: [SearchUtils],
   data: () => ({
@@ -43,7 +46,8 @@ export default {
     ...mapState({
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       query: state => state.Search.query,
-      solrSettings: state => state.Search.solrSettings
+      solrSettings: state => state.Search.solrSettings,
+      showModal: state => state.Modal.showModal
     }),
   },
 

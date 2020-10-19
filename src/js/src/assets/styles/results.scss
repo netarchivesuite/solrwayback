@@ -839,7 +839,7 @@ margin-left:40px;
 }
 
 
-.csvExportOptions .closeButton, .toolboxContainer .toolboxCloseButton {
+.csvExportOptions .closeButton, .modalContainer .closeButton, .toolboxContainer .toolboxCloseButton {
   position: fixed;
 	right: 15px;
   top: 15px;
@@ -855,7 +855,7 @@ margin-left:40px;
 	font-size: 100%;
 }
 
-.toolboxCloseButton {
+.modalContainer .closeButton, .toolboxCloseButton {
   z-index:1;
   right:5px !important;
   top:5px !important;

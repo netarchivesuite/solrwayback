@@ -12,7 +12,8 @@ export const requestService = {
   getNormalizedUrlSearch,
   getAboutText,
   getNormalizedUrlFacets,
-  getHarvestedPageResources
+  getHarvestedPageResources,
+  getSearchGuidelines
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -144,6 +145,16 @@ function getHarvestDates(harvestUrl) {
 
 function getAboutText() {
   const url = 'services/frontend/help/about/'
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function getSearchGuidelines() {
+  const url = 'services/frontend/help/search/'
   return axios.get(
     url).then(response => {
     return response.data

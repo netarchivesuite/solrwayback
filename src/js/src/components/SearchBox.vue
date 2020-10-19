@@ -10,6 +10,9 @@
                ? decideActiveClassesForQueryBox()
                : ''"
              :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'">
+      <button type="button" class="searchGuidelinesButton" @click.prevent="openSelectedModal('guidelines')">
+        ?
+      </button>
       <transition name="url-search-helper">
         <span v-if="solrSettings.urlSearch && !$_validateUrlSearchPrefix(futureQuery)" class="urlSearchHelper">URL:</span>
       </transition>
@@ -91,6 +94,8 @@ export default {
       results: state => state.Search.results,
       solrSettings: state => state.Search.solrSettings,
       loading: state => state.Search.loading,
+      showModal: state => state.Modal.showModal,
+      currentModal: state => state.Modal.currentModal
     })
   },
   watch: {
@@ -129,6 +134,10 @@ export default {
       updateSolrSettingOffset:'updateSolrSettingOffset',
       emptySearchAppliedFacets:'emptySearchAppliedFacets'
     }),
+    ...mapActions('Modal', {
+      updateShowModal:'updateShowModal',
+      updateCurrentModal:'updateCurrentModal'
+    }),
     selectSearchMethod(selected) {
       console.log(selected)
       if(selected === 'imgSearch') {
@@ -163,6 +172,10 @@ export default {
       this.emptySearchAppliedFacets()
       this.updateSolrSettingOffset(0)
       this.$_pushSearchHistory('Search', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
+    },
+    openSelectedModal(modal) {
+      this.updateShowModal(!this.showModal),
+      this.updateCurrentModal(modal)
     },
     toggleToolbox() {
       this.showToolbox = !this.showToolbox
