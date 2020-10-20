@@ -35,9 +35,9 @@ export default {
              testString.substring(0,10) === 'url_norm:"'
     },
     //Deliver a normal search
-    deliverSearchRequest(futureQuery, updateHistory) {
+    deliverSearchRequest(futureQuery, updateHistory, pagnation) {
       this.requestSearch({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-      this.requestFacets({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
+      !pagnation ? this.requestFacets({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings}) : null
       updateHistory ? this.$_pushSearchHistory('Search', futureQuery, this.searchAppliedFacets, this.solrSettings) : null
     },
     //Deliver an URL search
@@ -67,10 +67,10 @@ export default {
       return query !== this.query
     },
     // Prepare for a new search
-    prepareStateForNewSearch(futureQuery) {
+    prepareStateForNewSearch(futureQuery, pagnation) {
       this.updatePreNormalizedQuery(null)
       this.clearResults()
-      this.clearFacets()
+      !pagnation ? this.clearFacets() : null
       this.updateQuery(futureQuery)
     },
     // Disect the query for URL searching
@@ -86,19 +86,20 @@ export default {
           return queryString
     },
     // Method to fire off a search (and deciding which kind it is)
-    $_determineNewSearch(futureQuery, updateHistory) {
+    $_determineNewSearch(futureQuery, updateHistory, pagnation) {
       //console.log('we\'ve accessed the searchfunction with ',futureQuery)
       //console.log('we have these solrsettings: ', this.solrSettings)
       //console.log('and these facets', this.searchAppliedFacets)
-      this.prepareStateForNewSearch(futureQuery)
+      this.prepareStateForNewSearch(futureQuery, pagnation)
       if(this.solrSettings.imgSearch) {
         this.deliverImgSearchRequest(futureQuery ,updateHistory)
       }
       else if(this.solrSettings.urlSearch) {
+        console.log('we came here!')
         this.deliverUrlSearchRequest(futureQuery , updateHistory)
       }
       else {
-        this.deliverSearchRequest(futureQuery, updateHistory)
+        this.deliverSearchRequest(futureQuery, updateHistory, pagnation)
       }
     }
   }

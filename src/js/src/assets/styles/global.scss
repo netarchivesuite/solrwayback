@@ -204,7 +204,7 @@ color:white;
   cursor: pointer;
  } 
 
- .previewImg .spinner, .imgContainer .spinner, .domainContentContainer .spinner {
+.previewImg .spinner, .facetContainer .spinner, .imgContainer .spinner, .domainContentContainer .spinner {
   width: 40px;
   height: 40px;
   padding:15px;
@@ -214,7 +214,13 @@ color:white;
   animation: sk-rotateplane 1.2s infinite ease-in-out;
 }
 
-.imgContainer .spinner, .domainContentContainer .spinner {
+.imgContainer .spinner, .domainContentContainer .spinner, .facetContainer .spinner {
+  position: relative;
+  top:150px;
+  margin:auto;
+}
+
+.imgContainer .spinner {
 	position: relative;
 	margin-left: auto;
 	margin-right: auto;
