@@ -75,7 +75,6 @@ export default {
     }
   },
   mounted () {
-    console.log(domainScript)
   },
   methods: {
     loadGraphData(domain) {
@@ -87,7 +86,7 @@ export default {
       }
       this.rawData = null
       this.loading = true
-      requestService.getDomainStatistics(this.prepareDomainForGetRequest()).then(result => (this.sanitizeResponseData(result), this.rawData = result), error => console.log('No information found about this archive.'))
+      requestService.getDomainStatistics(this.prepareDomainForGetRequest()).then(result => (this.sanitizeResponseDataAndDrawChart(result), this.rawData = result), error => console.log('No information found about this archive.'))
     },
     checkDomain(domain) {
       return true
@@ -101,7 +100,7 @@ export default {
       }
       return preparedDomain
     },
-    sanitizeResponseData(data) {
+    sanitizeResponseDataAndDrawChart(data) {
       for(var i = 0; i < data.length; i++){
         this.graphData.chartLabels.push(data[i].year)
         this.graphData.sizeInKb.push(data[i].sizeInKb)
