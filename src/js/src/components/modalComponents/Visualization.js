@@ -1,7 +1,8 @@
 import * as d3 from 'd3'
 
 export default {
-  createVisualization(query, facets, options) {
+   async createVisualization(query, facets, options) {
+    
     let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
     let dataUrl =  `services/frontend/graph/domain_result/?q=${query + facets.join('') + optionString}`
     
@@ -73,97 +74,106 @@ export default {
     .attr('height', height + margin.top + margin.bottom)
     .append('g')
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+  
+    await new Promise(function (resolve, reject){
+        d3.csv(dataUrl, function(error, data) {
+            if(error) {
+               reject(error)
+            } else {
+              color.domain(d3.keys(data[0]).filter(function(key) { return key !== 'State' }))
 
-    d3.csv(dataUrl, function(error, data) {
-    color.domain(d3.keys(data[0]).filter(function(key) { return key !== 'State' }))
-
-    data.forEach(function(d) {
-    var y0 = 0
-    d.ages = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]} })
-    d.total = d.ages[d.ages.length - 1].y1
-    })
-
-    x.domain(data.map(function(d) { return d.State }))
-    y.domain([0, d3.max(data, function(d) { return d.total })])
-
-    // For rotated axis labels
-    // http://www.d3noob.org/2013/01/how-to-rotate-text-labels-for-x-axis-of.html
-    svg.append('g')
-    .attr('class', 'x axis')
-    .attr('transform', 'translate(0,' + height + ')')
-    .call(xAxis)
-    .selectAll('text')
-    .style('text-anchor', 'end')
-    .attr('dx', '-.8em')
-    .attr('dy', '.15em')
-    .attr('transform', function(d) { return 'rotate(-65)' })
-
-    svg.append('g')
-      .attr('class', 'y axis')
-      .call(yAxis)
-    .append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', 6)
-      .attr('dy', '.71em')
-      .style('text-anchor', 'end')
-      .text('pages')
-
-    var state = svg.selectAll('.state')
-      .data(data)
-    .enter().append('g')
-      .attr('class', 'g')
-      .attr('transform', function(d) { return 'translate(' + x(d.State) + ',0)' })
-
-    state.selectAll('rect')
-      .data(function(d) { return d.ages })
-    .enter().append('rect')
-      .attr('domain', function(d) { return d.name })
-      .attr('width', x.rangeBand())
-      .attr('y', function(d) {  return y(d.y1 || 0) })
-      .attr('height', function(d) { return y(d.y0) - y(d.y1) || 0 })
-      .style('fill', function(d) { return color(d.name) })
-      .on('mouseover', function(d, i) {
-        var xPos = parseFloat(d3.select(this).attr('width'))
-        var yPos = parseFloat(d3.select(this).attr('y'))
-        var height = parseFloat(d3.select(this).attr('height'))
-
-    d3.select(this).attr('stroke','blue').attr('stroke-width',0.8)
-
-        var domain = d3.select(this).attr('domain')
-        d3.selectAll('[domain=\'' + domain + '\']').attr('stroke','red').attr('stroke-width',2.0)
-        })
-      .on('mouseout', function(d) {
-        var domain = d3.select(this).attr('domain')
-        d3.selectAll('[domain=\'' + domain + '\']').attr('stroke','pink').attr('stroke-width',0.2)
-    d3.select(this).attr('stroke','pink').attr('stroke-width',0.2)
-      })
-
-
-    var legend = svg.selectAll('.legend')
-      .data(color.domain().slice().reverse())
-    .enter().append('g')
-      .attr('class', 'legend')
-      .attr('transform', function(d, i) { return 'translate(200,' + i * 20 + ')' })
-      .on('mouseover', function(d, i) {
-        d3.selectAll('[domain=\'' + d + '\']').attr('stroke','red').attr('stroke-width',2.0)
-        })
-      .on('mouseout', function(d) {
-        d3.selectAll('[domain=\'' + d + '\']').attr('stroke','pink').attr('stroke-width',0.2)
-      })
-
-    legend.append('rect')
-      .attr('x', width - 18)
-      .attr('width', 18)
-      .attr('height', 18)
-      .attr('domain', function(d) { return d })
-      .style('fill', color)
-
-    legend.append('text')
-      .attr('x', width - 24)
-      .attr('y', 9)
-      .attr('dy', '.35em')
-      .style('text-anchor', 'end')
-      .text(function(d) { return d })
-    })
+              data.forEach(function(d) {
+              var y0 = 0
+              d.ages = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]} })
+              d.total = d.ages[d.ages.length - 1].y1
+              })
+          
+              x.domain(data.map(function(d) { return d.State }))
+              y.domain([0, d3.max(data, function(d) { return d.total })])
+          
+              // For rotated axis labels
+              // http://www.d3noob.org/2013/01/how-to-rotate-text-labels-for-x-axis-of.html
+              svg.append('g')
+              .attr('class', 'x axis')
+              .attr('transform', 'translate(0,' + height + ')')
+              .call(xAxis)
+              .selectAll('text')
+              .style('text-anchor', 'end')
+              .attr('dx', '-.8em')
+              .attr('dy', '.15em')
+              .attr('transform', function(d) { return 'rotate(-65)' })
+          
+              svg.append('g')
+                .attr('class', 'y axis')
+                .call(yAxis)
+              .append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', 6)
+                .attr('dy', '.71em')
+                .style('text-anchor', 'end')
+                .text('pages')
+          
+              var state = svg.selectAll('.state')
+                .data(data)
+              .enter().append('g')
+                .attr('class', 'g')
+                .attr('transform', function(d) { return 'translate(' + x(d.State) + ',0)' })
+          
+              state.selectAll('rect')
+                .data(function(d) { return d.ages })
+              .enter().append('rect')
+                .attr('domain', function(d) { return d.name })
+                .attr('width', x.rangeBand())
+                .attr('y', function(d) {  return y(d.y1 || 0) })
+                .attr('height', function(d) { return y(d.y0) - y(d.y1) || 0 })
+                .style('fill', function(d) { return color(d.name) })
+                .on('mouseover', function(d, i) {
+                  var xPos = parseFloat(d3.select(this).attr('width'))
+                  var yPos = parseFloat(d3.select(this).attr('y'))
+                  var height = parseFloat(d3.select(this).attr('height'))
+          
+              d3.select(this).attr('stroke','blue').attr('stroke-width',0.8)
+          
+                  var domain = d3.select(this).attr('domain')
+                  d3.selectAll('[domain=\'' + domain + '\']').attr('stroke','red').attr('stroke-width',2.0)
+                  })
+                .on('mouseout', function(d) {
+                  var domain = d3.select(this).attr('domain')
+                  d3.selectAll('[domain=\'' + domain + '\']').attr('stroke','pink').attr('stroke-width',0.2)
+              d3.select(this).attr('stroke','pink').attr('stroke-width',0.2)
+                })
+          
+          
+              var legend = svg.selectAll('.legend')
+                .data(color.domain().slice().reverse())
+              .enter().append('g')
+                .attr('class', 'legend')
+                .attr('transform', function(d, i) { return 'translate(200,' + i * 20 + ')' })
+                .on('mouseover', function(d, i) {
+                  d3.selectAll('[domain=\'' + d + '\']').attr('stroke','red').attr('stroke-width',2.0)
+                  })
+                .on('mouseout', function(d) {
+                  d3.selectAll('[domain=\'' + d + '\']').attr('stroke','pink').attr('stroke-width',0.2)
+                })
+          
+              legend.append('rect')
+                .attr('x', width - 18)
+                .attr('width', 18)
+                .attr('height', 18)
+                .attr('domain', function(d) { return d })
+                .style('fill', color)
+          
+              legend.append('text')
+                .attr('x', width - 24)
+                .attr('y', 9)
+                .attr('dy', '.35em')
+                .style('text-anchor', 'end')
+                .text(function(d) { return d })
+             //  console.log('d3 async function done') 
+               resolve()
+            }
+         })
+     })
+    
   }
 }

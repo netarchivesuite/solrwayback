@@ -33,28 +33,16 @@ export default {
     })
   },
 // For test purposes
-/*  watch: {
+ /* watch: {
     loading: function(val) {
       console.log('LOADING CHANGED!')
     }
   }, */
   mounted () {
-    this.getSearchVizualisationFromService(this.query, this.searchAppliedFacets, this.solrSettings)
-  },
-  methods: {
-    getSearchVizualisationFromService(query, facets, options) {
-      this.loading = true
-      const createVizual = new Promise((resolve, reject) => {
-        Visualization.createVisualization(query, facets, options)
-        resolve()
+    this.loading = true
+    Visualization.createVisualization(this.query, this.searchAppliedFacets, this.solrSettings).then(() =>{
+    this.loading = false
     })
-
-    createVizual.then(() => {
-      this.loading = false
-    }, reason => {
-      console.log('something went wrong')
-    })
-    },
   }
 }
 
