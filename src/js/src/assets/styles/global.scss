@@ -204,7 +204,7 @@ color:white;
   cursor: pointer;
  } 
 
- .previewImg .spinner, .imgContainer .spinner {
+ .previewImg .spinner, .imgContainer .spinner, .domainContentContainer .spinner {
   width: 40px;
   height: 40px;
   padding:15px;
@@ -214,7 +214,7 @@ color:white;
   animation: sk-rotateplane 1.2s infinite ease-in-out;
 }
 
-.imgContainer .spinner {
+.imgContainer .spinner, .domainContentContainer .spinner {
 	position: relative;
 	margin-left: auto;
 	margin-right: auto;
@@ -241,4 +241,39 @@ color:white;
   }
 }
 
+#lineContainer {
+  width:70%;
+  position: relative;
+  margin-left:auto;
+  margin-right:auto;
+  display:block;
+}
 
+#line-chart {
+  width:100%;
+  height:100%;
+  position: relative;
+  margin-left:auto;
+  margin-right:auto;
+  display:block;
+}
+
+#domainGrowthTable {
+  width: 100%;
+	overflow-x: scroll;
+	overflow-y: hidden;
+  display: block;
+  margin-bottom:25px;
+  margin-top:25px;
+}
+
+#domainGrowthTable thead th {
+  font-weight: bold;
+  text-align: left;
+}
+
+#domainGrowthTable td {
+  min-width:100px;
+  background-color:var(--secondary-highlight-color);
+  padding:5px;
+}

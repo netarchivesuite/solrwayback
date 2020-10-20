@@ -1,5 +1,7 @@
+import Chart from 'chart.js'
+
 export default {
-  drawChart: function(chartLabels, sizeInKb, numberOfPages, ingoingLinks){
+  drawChart: function(chartLabels, sizeInKb, numberOfPages, ingoingLinks) {
     var domainGrowthChart = new Chart(document.getElementById('line-chart'), {
         type: 'line',
         data: {
