@@ -9,8 +9,8 @@
         filters: <span>{{ searchAppliedFacets.join('') }}</span>.
       </p>
     </div>
-    <div v-if="loading === false" class="visualized" />
-    <div v-if="loading === true" class="spinner" />
+    <div v-show="!loading" key="d3-viz" class="visualized" />
+    <div v-if="loading" key="spinner-viz" class="spinner" />
   </div>
 </template>
 
