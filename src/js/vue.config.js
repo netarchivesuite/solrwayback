@@ -82,7 +82,17 @@ module.exports = {
         pathRewrite: { '^/services/frontend/help/search/': '' },
         changeOrigin: true
       },
-      '^/services/frontend/wordcloud/': {
+    '^/services/frontend/graph/domain_result/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/graph/domain_result/',
+        pathRewrite: { '^/services/frontend/graph/domain_result/': '' },
+        changeOrigin: true
+      },
+    '^/services/frontend/wordcloud/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/wordcloud/',
+        pathRewrite: { '^/services/frontend/wordcloud/': '' },
+        changeOrigin: true
+      },
+    '^/services/frontend/wordcloud/': {
         target: 'http://localhost:8080/solrwayback/services/frontend/wordcloud/',
         pathRewrite: { '^/services/frontend/wordcloud/': '' },
         changeOrigin: true

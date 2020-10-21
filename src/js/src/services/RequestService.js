@@ -13,7 +13,7 @@ export const requestService = {
   getAboutText,
   getNormalizedUrlFacets,
   getHarvestedPageResources,
-  getSearchGuidelines
+  getSearchGuidelines,
 }
 
 function fireSearchRequest (query, facets, options) {
