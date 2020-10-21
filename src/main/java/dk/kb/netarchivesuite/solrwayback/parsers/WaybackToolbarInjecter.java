@@ -260,7 +260,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
   }
   
   private static String generatePageResources(String image, String source_file_path, long offset) throws Exception{
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pageharvestdata?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">View harvest time for page resources</span></a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pageharvestdata?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">View page resources</span></a>";
   }
   
   /*
