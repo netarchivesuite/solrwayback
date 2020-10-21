@@ -252,7 +252,7 @@ color:var(--secondary-text-color);
 .searchForm .tools span {
   display:inline-block;
   color: var(--main-highlight-color);
-  //border-bottom:1px solid var(--secondary-highlight-color);
+  border-bottom:1px solid var(--secondary-highlight-color);
   margin-right:20px;
 }
 
@@ -260,6 +260,7 @@ color:var(--secondary-text-color);
   text-transform: uppercase;
   border: 0px;
   margin:0px;
+  margin-top: -9px;
 	//border-bottom: 1px solid var(--secondary-highlight-color);
 	background-color: transparent;
 	color: var(--main-highlight-color);
