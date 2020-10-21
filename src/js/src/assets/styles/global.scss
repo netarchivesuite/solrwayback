@@ -204,7 +204,12 @@ color:white;
   cursor: pointer;
  } 
 
-.previewImg .spinner, .facetContainer .spinner, .imgContainer .spinner, .domainContentContainer .spinner {
+ .searchVisualizationContainer .spinner {
+  margin: auto !important;
+	margin-top: 75px !important;
+ }
+
+ .previewImg .spinner, .searchVisualizationContainer .spinner, .imgContainer .spinner, .facetContainer .spinner, .domainContentContainer .spinner {
   width: 40px;
   height: 40px;
   padding:15px;
