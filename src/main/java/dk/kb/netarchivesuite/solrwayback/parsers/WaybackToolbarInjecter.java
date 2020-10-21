@@ -243,20 +243,20 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
   
   private static String generatePwid(String image, String source_file_path, long offset) throws Exception{
 
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/generatepwid?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">View XML</span></a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/generatepwid?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">PWID xml</span></a>";
   }
   
   
   private static String generateCalendarImageLink(String image,String url) throws Exception{
 
     String urlEncoded=URLEncoder.encode(url, "UTF-8");
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"calendar?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">View dates for harvest</span></a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"calendar?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">Harvest calendar</span></a>";
   }
   
   private static String generatePagePreviews(String image,String url) throws Exception{
 
     String urlEncoded=URLEncoder.encode(url, "UTF-8");
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pagepreviews.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">View website previews</span></a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pagepreviews.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">Website previews</span></a>";
   }
   
   private static String generatePageResources(String image, String source_file_path, long offset) throws Exception{
