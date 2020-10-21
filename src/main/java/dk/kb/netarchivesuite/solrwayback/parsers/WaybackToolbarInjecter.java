@@ -198,7 +198,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     "       #tegModal .paging .inlineLabel{margin: 0 .5em 0 .1em;}" +
     "       #tegModal .paging{border-top: 1px solid #ccc; margin-top: 1em; padding-top: 0.8em;text-align: center;}" +
     "       #tegModal .pagingBlock{display: inline-block; margin-right: .8em}" +
-    "       #tegModal .dynamicData.icon{flex: 1; width: 80px;	margin-left: 35px;margin-right: 35px;margin-top: 15px;margin-bottom: 10px;line-break: auto;}" +
+    "       #tegModal .dynamicData.icon{flex: 1; width: 80px;	margin-left: 35px;margin-right: 35px;margin-top: 15px;margin-bottom: 0px;line-break: auto;}" +
     "       </style>" +
     "       <script type=\"text/javascript\">" +
     "           function toggleModal(){" +
