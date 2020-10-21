@@ -12,13 +12,13 @@
 <script>
 
 import { mapState, mapActions } from 'vuex'
-import AppliedSearchFacetsUtils from './../mixins/AppliedSearchFacetsUtils'
+import StringManipulationUtils from './../mixins/StringManipulationUtils'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
 
 export default {
   name: 'AppliedSearchFacets',
   
-  mixins: [AppliedSearchFacetsUtils, HistoryRoutingUtils],
+  mixins: [StringManipulationUtils, HistoryRoutingUtils],
 
   computed: {
     ...mapState({

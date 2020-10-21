@@ -11,14 +11,14 @@
       <button :disabled="loading" class="domainStatsButton" @click.prevent="loadGraphData(domain)">
         Generate
       </button>
-      <div v-if="loading === true" class="spinner" />
-      <div v-show="loading === false && rawData" id="lineContainer">
+      <div v-if="loading" class="spinner" />
+      <div v-show="!loading && rawData" id="lineContainer">
         <canvas
           id="line-chart"
           width="800"
           height="450" />
       </div>
-      <div v-if="rawData !== null && loading === false" id="tableContainer">
+      <div v-if="rawData !== null && !loading" id="tableContainer">
         <table id="domainGrowthTable">
           <thead>
             <tr>
@@ -58,9 +58,13 @@
 
 import { requestService } from '../../services/RequestService'
 import domainScript from './ToolboxResources/domainStats'
+import StringManipulationUtils from './../../mixins/StringManipulationUtils'
 
 export default {
   name: 'DomainStats',
+
+  mixins: [StringManipulationUtils],
+
   data() {
     return {
       domain:'',
@@ -74,8 +78,6 @@ export default {
       }
     }
   },
-  mounted () {
-  },
   methods: {
     loadGraphData(domain) {
       this.graphData = {
@@ -88,9 +90,6 @@ export default {
       this.loading = true
       requestService.getDomainStatistics(this.prepareDomainForGetRequest()).then(result => (this.sanitizeResponseDataAndDrawChart(result), this.rawData = result), error => console.log('No information found about this archive.'))
     },
-    checkDomain(domain) {
-      return true
-    },
     prepareDomainForGetRequest() {
       let preparedDomain = this.domain
       preparedDomain = preparedDomain.replace(/http.*:\/\//i,'').trim() //Get domain from URL, using replace and regex to trim domain
@@ -101,7 +100,7 @@ export default {
       return preparedDomain
     },
     sanitizeResponseDataAndDrawChart(data) {
-      for(var i = 0; i < data.length; i++){
+      for(let i = 0; i < data.length; i++){
         this.graphData.chartLabels.push(data[i].year)
         this.graphData.sizeInKb.push(data[i].sizeInKb)
         this.graphData.ingoingLinks.push(data[i].ingoingLinks)

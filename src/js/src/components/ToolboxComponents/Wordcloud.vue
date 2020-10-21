@@ -38,8 +38,13 @@
 
 <script>
 
+import StringManipulationUtils from './../../mixins/StringManipulationUtils'
+
 export default {
   name: 'Wordcloud',
+
+  mixins: [StringManipulationUtils],
+
   data() {
     return {
       domain:'',
@@ -52,9 +57,6 @@ export default {
     this.imgSrc = ''
   },
   methods: {
-    checkDomain(domain) {
-      return domain.match(/^[^\.]+\.[^\.]+$/)
-    },
     setDomainImage() {
         this.loadingImage = true
         this.imgSrc = 'services/frontend/wordcloud/domain?domain=' + this.domain + '&time=' + new Date().getTime()
