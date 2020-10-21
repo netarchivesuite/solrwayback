@@ -139,17 +139,17 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     "            </div>" +
     "            <div class=\"infoLine\">" +
     "               <span class=\"label\">Page resources:</span>" +
-    "               <span class=\"inlineLabel\">#Found:</span>" +
+    "               <span class=\"inlineLabel removeLeftMargin\">#Found:</span>" +
     "               <span class=\"dynamicData\">"+htmlParsed.getNumberOfLinksReplaced()+"</span>" +
     "               <span class=\"inlineLabel\">#Not found:</span>" +
     "               <span class=\"dynamicData\">"+htmlParsed.getNumberOfLinksNotFound()+"</span>" +
     "            </div>" +
-    "            <div class=\"infoLine\">" +
+    "            <div class=\"infoLine iconContainer\">" +
 //    "               <span title=\"View in- and out-going links\"class=\"dynamicData icon\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +
-    "               <span title=\"View dates for harvest\" class=\"dynamicData icon\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
-    "               <span title=\"View XML\" class=\"dynamicData icon\">"+generatePwid("xml.png",source_file_path,offset) +"</span>" +
-    "               <span title=\"View website previews\" class=\"dynamicData icon\">"+generatePagePreviews("preview.png",stats.getUrl_norm()) +"</span>" +
-    "               <span title=\"View harvest time for page resources\" class=\"dynamicData icon\">"+generatePageResources("watch.png",source_file_path,offset) +"</span>" +
+    "               <span title=\"View dates for harvest\" class=\"dynamicData icon\">"+generateCalendarImageLink("today-24px.svg",stats.getUrl_norm()) +"</span>" +
+    "               <span title=\"View XML\" class=\"dynamicData icon\">"+generatePwid("code-24dp.svg",source_file_path,offset) +"</span>" +
+    "               <span title=\"View website previews\" class=\"dynamicData icon\">"+generatePagePreviews("preview-24px.svg",stats.getUrl_norm()) +"</span>" +
+    "               <span title=\"View harvest time for page resources\" class=\"dynamicData icon\">"+generatePageResources("schedule-24dp.svg",source_file_path,offset) +"</span>" +
 //            "       <span title=\"View domain developement over time\" class=\"dynamicData icon\">" + generateDomainGrowthImageLink("growth_icon.png",stats.getDomain()) +"</span>" +
     "            </div>" +    
     "           <div class=\"paging\">" +
@@ -176,27 +176,29 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     "       font-size: 14px; opacity: 1; padding: 0; width: auto}" +
     "       #tegModal p, #tegModal div{display: block}" +
     "       #tegModal span, #tegModal a{display: inline}" +
-    "       #tegModal{z-index: 999999 !important; color: black; font-size: 14px;" + "font-family: arial, Helvetica,sans-serif;background: #ffffff; border: 1px solid black;border-radius: 4px; " +
-    "       box-shadow: 0 0 5px 5px #ccc; display: block; left: calc(50% - 450px); opacity: 1; padding: 1.5em 1.5em .5em;" +
+    "       #tegModal{z-index: 999999 !important; color: black; font-size: 14px;" + "font-family: arial, Helvetica,sans-serif;background: #ffffff; border: 1px solid white;" +
+    "       box-shadow:0px 6px 14px 2px rgba(25,25,25,0.3); display: block; left: calc(50% - 450px); opacity: 1; padding: 1.5em 1.5em .5em;" +
             "position:fixed; text-align:left !important; top: 25%; width: 900px; z-index: 500; box-sizing: content-box;" +
     "       transition: left 0.4s, opacity 0.3s, padding 0.3s, top 0.4s, width 0.3s;}" +
             "#tegModal p, #tegModal div{color: black !important; font-family: Arial, Helvetica, sans-serif; font-size: 12px !important}" +
-    "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.8; padding:0.5em; top: 3px; width: auto; text-orientation: upright; writing-mode: vertical-rl;}" +
+    "       #tegModal.closed {font-weight: bold;box-shadow: 0px 0px 4px rgba(30,30,30,0.5); left: 3px;opacity: 0.9; padding:0.5em; top: 3px; width: auto; text-orientation: upright; writing-mode: vertical-rl;}" +
     "       #toggleToolbar, #closeToolbar{float: right; margin: -.8em -.5em 2em 2em;}" +
     "       #tegModal.closed #toggleToolbar{float: none; margin: 0;}" +
+    "       #tegModal .iconContainer{text-align:center;margin: 5px 15%;display: flex;flex-direction: row;}" +
     "       #toggleToolbar{margin-left: 1em;}" +
     "       #tegModal.closed #tegContent,#tegModal.closed #closeToolbar{display: none}" +
     "       #tegModal .infoLine{margin-bottom: .5em;}" +
-    "       #tegModal a img {display: inline-block; margin: 2em 3em 2em 0; max-height: 60px; }" +        
+    "       #tegModal a img {display: block;position: relative;margin: auto;max-height: 60px;height:40px;}" +        
     "       #tegModal a {color: #003399; font-size: 14px; text-decoration: none}" +
     "       #tegModal a:hover {color: #003399; text-decoration: underline}"+
     "       #tegModal.closed a:hover {text-decoration: none}"+
-    "       #tegModal .label{background:transparent;color:black;display: inline-block;font-size:12px;font-weight: bold; min-width: 110px;text-align: left;}" +
+    "       #tegModal .label{text-transform:uppercase;background:transparent;color:black;display: inline-block;font-size:12px;font-weight: bold; min-width: 140px;text-align: left;}" +
     "       #tegModal .inlineLabel{display: inline-block;font-weight: bold; margin: 0 .2em 0 .8em;}" +
+    "       #tegModal .removeLeftMargin{margin-left: 0px;}" + 
     "       #tegModal .paging .inlineLabel{margin: 0 .5em 0 .1em;}" +
-    "       #tegModal .paging{border-top: 1px solid #ccc; margin-top: 1em; padding-top: 0.8em;}" +
+    "       #tegModal .paging{border-top: 1px solid #ccc; margin-top: 1em; padding-top: 0.8em;text-align: center;}" +
     "       #tegModal .pagingBlock{display: inline-block; margin-right: .8em}" +
-    "       #tegModal .dynamicData.icon{display: inline-block}" +
+    "       #tegModal .dynamicData.icon{flex: 1; width: 80px;	margin-left: 35px;margin-right: 35px;margin-top: 15px;margin-bottom: 10px;line-break: auto;}" +
     "       </style>" +
     "       <script type=\"text/javascript\">" +
     "           function toggleModal(){" +
@@ -241,24 +243,24 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
   
   private static String generatePwid(String image, String source_file_path, long offset) throws Exception{
 
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/generatepwid?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/generatepwid?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">View XML</span></a>";
   }
   
   
   private static String generateCalendarImageLink(String image,String url) throws Exception{
 
     String urlEncoded=URLEncoder.encode(url, "UTF-8");
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"calendar?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"calendar?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">View dates for harvest</span></a>";
   }
   
   private static String generatePagePreviews(String image,String url) throws Exception{
 
     String urlEncoded=URLEncoder.encode(url, "UTF-8");
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pagepreviews.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pagepreviews.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">View website previews</span></a>";
   }
   
   private static String generatePageResources(String image, String source_file_path, long offset) throws Exception{
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pageharvestdata?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pageharvestdata?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">View harvest time for page resources</span></a>";
   }
   
   /*
