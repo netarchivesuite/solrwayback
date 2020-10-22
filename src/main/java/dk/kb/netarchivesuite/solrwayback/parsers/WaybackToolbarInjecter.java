@@ -147,7 +147,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     "            <div class=\"infoLine iconContainer\">" +
 //    "               <span title=\"View in- and out-going links\"class=\"dynamicData icon\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +
     "               <span title=\"View dates for harvest\" class=\"dynamicData icon\">"+generateCalendarImageLink("today-24px.svg",stats.getUrl_norm()) +"</span>" +
-    "               <span title=\"View XML\" class=\"dynamicData icon\">"+generatePwid("code-24dp.svg",source_file_path,offset) +"</span>" +
+    "               <span title=\"View XML\" class=\"dynamicData icon\">"+generatePwid("text_snippet-24px.svg",source_file_path,offset) +"</span>" +
     "               <span title=\"View website previews\" class=\"dynamicData icon\">"+generatePagePreviews("preview-24px.svg",stats.getUrl_norm()) +"</span>" +
     "               <span title=\"View harvest time for page resources\" class=\"dynamicData icon\">"+generatePageResources("schedule-24dp.svg",source_file_path,offset) +"</span>" +
 //            "       <span title=\"View domain developement over time\" class=\"dynamicData icon\">" + generateDomainGrowthImageLink("growth_icon.png",stats.getDomain()) +"</span>" +
