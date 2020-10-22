@@ -2,7 +2,7 @@
   <div v-if="searchAppliedFacets.length > 0" class="selectedFacets">
     <h2>Applied facets</h2>
     <div v-for="(item, index) in searchAppliedFacets" :key="index" class="displayedFacet">
-      <span>{{ displayFacetName(item) }}</span><span>{{ displayFacetValue(item) }}</span><button @click="removeFacet(index)">
+      <span>{{ $_displayFacetName(item) }}</span><span>{{ $_displayFacetValue(item) }}</span><button @click="removeFacet(index)">
         ✕
       </button>
     </div>
@@ -12,13 +12,13 @@
 <script>
 
 import { mapState, mapActions } from 'vuex'
-import AppliedSearchFacetsUtils from './../mixins/AppliedSearchFacetsUtils'
+import StringManipulationUtils from './../mixins/StringManipulationUtils'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
 
 export default {
   name: 'AppliedSearchFacets',
   
-  mixins: [AppliedSearchFacetsUtils, HistoryRoutingUtils],
+  mixins: [StringManipulationUtils, HistoryRoutingUtils],
 
   computed: {
     ...mapState({

@@ -13,7 +13,8 @@ export const requestService = {
   getAboutText,
   getNormalizedUrlFacets,
   getHarvestedPageResources,
-  getSearchGuidelines,
+  getDomainStatistics,
+  getSearchGuidelines
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -165,6 +166,16 @@ function getSearchGuidelines() {
   
 function getHarvestedPageResources(source_file_path, offset) {
   const url = `services/timestampsforpage/?source_file_path=${encodeURIComponent(source_file_path)}&offset=${offset}`
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function getDomainStatistics(domain) {
+  const url = `services/statistics/domain/?domain=${domain}`
   return axios.get(
     url).then(response => {
     return response.data
