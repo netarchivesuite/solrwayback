@@ -14,11 +14,11 @@ The two export to CVS options has been merged into one where you can select whic
 'About this archive' text added. This can be configured in solrwaybackweb.properties to load a custom file instead.
 Search guidelines added. This can be configured in solrwaybackweb.properties to load a custom file instead.
 Services has been split into frontend-services and backend-services.
-Introduced toolbox on search page. Some features from playbacktool has been moved into this toolbox. 
+Introduced toolbox on search page. Some features from the playback toolbar has been moved into this toolbox. 
 Wordcloud added as new feature to toolbox.
 Result visualization by domain for search results. Shows top 30 domains in search results over the years. 
 Icons added for different document types. (video/audio/html etc.)
-Url search reimplemented and working..Search by an url, it will be puny encoded and normalized.
+Url search reimplemented and working. Search by an url, it will be puny encoded and normalized.
 Lazy loading of images. Once again performance improvement and not hitting the backend as hard.
 "Back to top" and pagination link added after search results.
 Spinner animations added to all service calls while it is loading.
@@ -37,7 +37,7 @@ Smurf (new feature)
 
 
 Property changes in solrwayback.properties:
-Socks v.4 proxy did not perform well and has been remove, so has the properties: proxy.port+proxy.allow.hosts
+Socks v.4 proxy did not perform well and has been removed, so has the properties: proxy.port+proxy.allow.hosts
 
 Property changes in solrwaybackweb.properties:
 # About this archive. Will be shown when page is loaded and when about is clicked.
