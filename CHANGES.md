@@ -1,5 +1,5 @@
 
-4.0.0-SNAPSHOT
+4.0.0
 -----
 Frontend completely rewritten (VUE framework)
 Services upgraded from Jersey to apache-cxf
