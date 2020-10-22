@@ -3,10 +3,10 @@
     <div class="searchVisualizationHeadline">
       <h2>Visualization of search result by domain</h2>
       <p>
-        query: <span>{{ query }}</span>. 
+        query: <span>{{ query }}</span>
       </p>
       <p v-if="searchAppliedFacets.length > 0">
-        filters: <span>{{ searchAppliedFacets.join('') }}</span>.
+        filters: <span>{{ searchAppliedFacets.join('') }}</span>
       </p>
     </div>
     <div v-show="!loading" key="d3-viz" class="visualized" />

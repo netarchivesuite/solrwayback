@@ -889,6 +889,7 @@ margin-left:40px;
   margin-right:auto;
   position: relative;
   display:block;
+  overflow: visible;
 }
 
 // Vue reuses components, so we gotta hide this. Super wierd, cant be solved with :key
