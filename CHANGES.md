@@ -1,7 +1,53 @@
-4.0.0
+
+4.0.0-SNAPSHOT
 -----
-Frontend completely rewritten
-Tomcat upgraded to 8.5.51 in next bundle release. Due to GhostCat (CVE-2020-1938 - AJP). 
+Frontend completely rewritten (VUE framework)
+Services upgraded from Jersey to apache-cxf
+log4j upgraded to logback
+Various third part dependencies upgraded as well.
+Playback improvements.
+Warc-export with resources will find more resources to include. 
+Ranking change (in solrconfig.xml). Boost html pages a little more.
+
+Facet years sortet by year and not count.
+Faster loading of results and pagination. Facets are loaded in a seperate service call and not reloaded when paging.
+The two export to CVS options has been merged into one where you can select which fields to export from search result.
+'About this archive' text added. This can be configured in solrwaybackweb.properties to load a custom file instead.
+Search guidelines added. This can be configured in solrwaybackweb.properties to load a custom file instead.
+Services has been split into frontend-services and backend-services.
+Introduced toolbox on search page. Some features from playbacktool has been moved into this toolbox. 
+Wordcloud added as new feature to toolbox.
+Result visualization by domain for search results. Shows top 30 domains in search results over the years. 
+Icons added for different document types. (video/audio/html etc.)
+Url search reimplemented and working..Search by an url, it will be puny encoded and normalized.
+Lazy loading of images. Once again performance improvement and not hitting the backend as hard.
+"Back to top" and pagination link added after search results.
+Spinner animations added to all service calls while it is loading.
+In browser audio+video player added for documents of this time. If browser does not support the encoding, it can be downloaded as before.
+Improved twitter playback for twitter harvest with https://github.com/netarchivesuite/so-me
+
+Still missing the folllowing features before version 4.0:
+PWID (show XML in browser + clipboard function)
+GPS location search
+HTML-tags graph
+Link graph
+Domain stats
+Gephi  linkgraph export
+Website previews
+Smurf (new feature)
+
+
+
+Property changes in solrwayback.properties
+Socks v.4 proxy did not perform well and has been remove, so has the properties: proxy.port+proxy.allow.hosts
+
+Property changes in solrwaybackweb.properties
+
+
+
+
+
+Tomcat upgraded to 8.5.51 in  SolrwWayback bundle release. Due to GhostCat (CVE-2020-1938 - AJP). 
 Special tomcat config required:
 
     <Connector port="9721" protocol="HTTP/1.1"
@@ -10,6 +56,7 @@ Special tomcat config required:
 relaxedPathChars="[]|"
 relaxedQueryChars="[]|{}^&#x5c;&#x60;&quot;&lt;&gt;"
                connectionTimeout="20000" />
+
 
 
 
