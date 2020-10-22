@@ -7,7 +7,7 @@
       <div class="wordcloudExplanation">
         <input v-model="domain"
                placeholder="Enter domain, like 'kb.dk'"
-               :class="checkDomain(domain) ? '' : 'urlNotTrue'"
+               :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
                @keyup.enter="setDomainImage()">
         <button :disabled="loadingImage" class="wordcloudButton" @click.prevent="setDomainImage()">
           Create wordcloud
@@ -38,8 +38,13 @@
 
 <script>
 
+import StringManipulationUtils from './../../mixins/StringManipulationUtils'
+
 export default {
   name: 'Wordcloud',
+
+  mixins: [StringManipulationUtils],
+
   data() {
     return {
       domain:'',
@@ -52,9 +57,6 @@ export default {
     this.imgSrc = ''
   },
   methods: {
-    checkDomain(domain) {
-      return domain.match(/^[^\.]+\.[^\.]+$/)
-    },
     setDomainImage() {
         this.loadingImage = true
         this.imgSrc = 'services/frontend/wordcloud/domain?domain=' + this.domain + '&time=' + new Date().getTime()
