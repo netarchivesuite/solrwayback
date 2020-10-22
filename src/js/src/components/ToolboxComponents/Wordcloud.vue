@@ -7,7 +7,7 @@
       <div class="wordcloudExplanation">
         <input v-model="domain"
                placeholder="Enter domain, like 'kb.dk'"
-               :class="checkDomain(domain) ? '' : 'urlNotTrue'"
+               :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
                @keyup.enter="setDomainImage()">
         <button :disabled="loadingImage" class="wordcloudButton" @click.prevent="setDomainImage()">
           Create wordcloud

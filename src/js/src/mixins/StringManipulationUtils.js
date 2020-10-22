@@ -1,13 +1,13 @@
 export default {
   methods: {
 
-    displayFacetName(facet) {
+    $_displayFacetName(facet) {
       return facet.replace('&fq=','').split(':')[0] + ': '
     },
-    displayFacetValue(facet) {
+    $_displayFacetValue(facet) {
       return facet.split(':')[1].replace(/"/g,'')
     },
-    checkDomain(domain) {
+    $_checkDomain(domain) {
       // Matches at least 1 dot in the string, and no spaces. 
       return domain.match(/^[^\s]+\.[^\s]+$/)
     },

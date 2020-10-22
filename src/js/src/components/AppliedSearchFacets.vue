@@ -2,7 +2,7 @@
   <div v-if="searchAppliedFacets.length > 0" class="selectedFacets">
     <h2>Applied facets</h2>
     <div v-for="(item, index) in searchAppliedFacets" :key="index" class="displayedFacet">
-      <span>{{ displayFacetName(item) }}</span><span>{{ displayFacetValue(item) }}</span><button @click="removeFacet(index)">
+      <span>{{ $_displayFacetName(item) }}</span><span>{{ $_displayFacetValue(item) }}</span><button @click="removeFacet(index)">
         ✕
       </button>
     </div>

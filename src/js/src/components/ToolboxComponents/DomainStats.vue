@@ -6,7 +6,7 @@
     <div class="domainContentContainer">
       <input v-model="domain"
              placeholder="Enter domain, like 'kb.dk'"
-             :class="checkDomain(domain) ? '' : 'urlNotTrue'"
+             :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
              @keyup.enter="loadGraphData(domain)">
       <button :disabled="loading" class="domainStatsButton" @click.prevent="loadGraphData(domain)">
         Generate
