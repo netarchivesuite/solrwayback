@@ -115,11 +115,16 @@ export default {
         this.addToSearchAppliedFacets('&fq=' + item)  
       }) : null
       }
-      routerQuery.grouping === 'true' ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
-      routerQuery.imgSearch === 'true' ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
-      routerQuery.urlSearch === 'true' ? this.updateSolrSettingUrlSearch(true) : this.updateSolrSettingUrlSearch(false)
+      routerQuery.grouping === 'true' || routerQuery.grouping === true ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
+      routerQuery.imgSearch === 'true' || routerQuery.imgSearch === true ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
+      routerQuery.urlSearch === 'true' || routerQuery.urlSearch === true ? this.updateSolrSettingUrlSearch(true) : this.updateSolrSettingUrlSearch(false)
       routerQuery.offset ? this.updateSolrSettingOffset(Number(routerQuery.offset)) : this.updateSolrSettingOffset(0)
       this.$_determineNewSearch(this.futureQuery, false)
+      }
+      else {
+        //If we mount and there is no query, we just make sure to empty the state, results and facets for good measure.
+        //If this is resulted by a backbutton going to the first time the user landed on the page, we want a clean slate.
+        this.resetSearchState()
       }
   },
   
