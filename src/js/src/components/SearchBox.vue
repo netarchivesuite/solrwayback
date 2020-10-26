@@ -49,6 +49,9 @@
                  @click.stop="selectSearchMethod('imgSearch')">
           <label for="imgSearch">Image search <span class="buttonExplanation" title="Explanation goes here">[ ? ]</span></label>
         </div>
+        <button @click.prevent="openSelectedModal('gpssearch')">
+          GPS search
+        </button>
       </div>
       <div class="tools">
         <span @click="showUploadFileSearch = !showUploadFileSearch">Search with uploaded file</span>

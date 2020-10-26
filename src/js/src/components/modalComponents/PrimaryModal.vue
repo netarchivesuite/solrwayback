@@ -6,6 +6,7 @@
     <div class="modalContent">
       <search-guidelines v-if="currentModal === 'guidelines'" />
       <search-visualization v-if="currentModal === 'visualization'" />
+      <gps-search v-if="currentModal === 'gpssearch'" />
     </div>
   </div>
 </template>
@@ -14,13 +15,15 @@
 
 import SearchGuidelines from './SearchGuidelines'
 import SearchVisualization from './SearchVisualization'
+import GpsSearch from './GpsSearch'
 import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'PrimaryModal',
   components: {
     SearchGuidelines,
-    SearchVisualization
+    SearchVisualization,
+    GpsSearch
   },
   computed: {
     ...mapState({
