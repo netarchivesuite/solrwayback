@@ -275,7 +275,16 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
           else if (headerLine.toLowerCase().startsWith("location:")) {                                      
             warcEntry.setRedirectUrl(headerLine.substring(9).trim());
           }
-                 
+          else if (headerLine.toLowerCase().startsWith("transfer-encoding:")) {                                      
+            String transferEncoding=headerLine.substring(18).trim();
+            log.debug("transfer-encoding:"+transferEncoding);
+            if (transferEncoding.equalsIgnoreCase("chunked")) {
+               warcEntry.setChunked(true);
+             }
+          }    
+       
+       
+       
           
       }
      
