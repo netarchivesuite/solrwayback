@@ -17,7 +17,7 @@ public class TestExportWarcStreaming {
     PropertiesLoader.initProperties();
     String source_file_path="/home/teg/workspace/solrwayback/storedanske_export-00000.warc";
     int offset = 515818793;
-    ArcEntry warcEntry = WarcParser.getWarcEntry(source_file_path,offset);
+    ArcEntry warcEntry = WarcParser.getWarcEntry(source_file_path,offset,true);
     
     byte[] bytes = warcEntry.getBinary(); // <--------- The binary
     String fileFromBytes = "image1.jpg";

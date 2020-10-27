@@ -32,19 +32,172 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
    *MicrosoftOfficeWebServer: 5.0_Pub
    *X-Powered-By: ASP.NET
    */
-  public static ArcEntry getArcEntry(String arcFilePath, long arcEntryPosition) throws Exception {
+  public static ArcEntry getArcEntry(String arcFilePath, long arcEntryPosition, boolean loadBinary) throws Exception {
     RandomAccessFile raf= null ;
     try{
 
       if (arcFilePath.endsWith(".gz")){ //It is zipped
-        return getArcEntryZipped(arcFilePath, arcEntryPosition);                       
+        return getArcEntryZipped(arcFilePath, arcEntryPosition, loadBinary);                       
       }
+      else {
+          return getArcEntryNotZipped(arcFilePath, arcEntryPosition, loadBinary);
+      }      
+    }
+    catch(Exception e){
+      throw e;
+    }
+    finally{
+      if (raf!= null){
+        raf.close();
+      }
+    }
+  }
+
+  
+  public static ArcEntry getArcEntryNotZipped(String arcFilePath, long arcEntryPosition, boolean loadBinary) throws Exception {
+      RandomAccessFile raf= null ;
       ArcEntry arcEntry = new ArcEntry();
-      StringBuffer headerLinesBuffer = new StringBuffer();
+      arcEntry.setSourceFilePath(arcFilePath);
+      arcEntry.setOffset(arcEntryPosition);
+      
+      try{        
+      
+        raf = new RandomAccessFile(new File(arcFilePath), "r");
+        raf.seek(arcEntryPosition);
 
+        loadArcHeaderNotZipped(raf, arcEntry);
+        
+        long binarySize=arcEntry.getBinaryArraySize();
+        
+        if (loadBinary) {        
+        //log.debug("Arc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);            
+          byte[] bytes = new byte[(int) binarySize];
+          raf.read(bytes);
+          arcEntry.setBinary(bytes);
+        }
+                        
+        return arcEntry;
+      }
+      catch(Exception e){
+        throw e;
+      }
+      finally{
+        if (raf!= null){
+          raf.close();
+        }
+      }      
+      
+  }
+
+  public static ArcEntry getArcEntryZipped(String arcFilePath, long arcEntryPosition, boolean loadBinary) throws Exception {
+    RandomAccessFile raf=null;
+    
+    ArcEntry arcEntry = new ArcEntry();
+    arcEntry.setSourceFilePath(arcFilePath);
+    arcEntry.setOffset(arcEntryPosition);
+    
+    try{ 
       raf = new RandomAccessFile(new File(arcFilePath), "r");
-      raf.seek(arcEntryPosition);
+      raf.seek(arcEntryPosition);          
 
+      // log.info("file is zipped:"+arcFilePath);
+      InputStream is = Channels.newInputStream(raf.getChannel());                           
+
+      GZIPInputStream stream = new GZIPInputStream(is);             
+      BufferedInputStream  bis= new BufferedInputStream(stream);
+
+      loadArcHeaderZipped(bis, arcEntry);
+      
+      //System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);          
+      long binarySize = arcEntry.getBinaryArraySize();
+       if (loadBinary) {
+        byte[] chars = new byte[(int)binarySize];           
+        
+        bis.read(chars);
+        arcEntry.setBinary(chars);
+      }      
+      raf.close();
+      bis.close();
+      
+      
+      return arcEntry;
+    }
+    catch(Exception e){
+      throw e;
+    }
+    finally {
+      if (raf!= null){
+        raf.close();
+      }
+    }
+  }
+
+  
+  
+  
+  /*
+   * Will load the header information into the warcEntry
+   * The  BufferedInputStream will be returned with pointer in start of binary 
+   * warcEntry will have binaryArraySize defined
+   * 
+   */
+  private static void loadArcHeaderZipped( BufferedInputStream bis, ArcEntry arcEntry) throws Exception{
+      
+    StringBuffer headerLinesBuffer = new StringBuffer(); 
+
+ 
+    String line = readLine(bis); // First line
+    headerLinesBuffer.append(line+newLineChar);
+
+    if  (!(line.startsWith("http"))) //No version check yet
+    {            
+      throw new IllegalArgumentException("ARC header does not start with http : "+line);
+    }            
+    
+    arcEntry.setFileName(getArcLastUrlPart(line));                    
+    String waybackDate = getWaybackDate(line);                    
+    arcEntry.setCrawlDate(DateUtils.convertWaybackDate2SolrDate(waybackDate));          
+    arcEntry.setWaybackDate(waybackDate);
+    arcEntry.setUrl(getArcUrl(line));
+    arcEntry.setIp(getIp(line));            
+
+    String[] split = line.split(" ");
+    int totalSize = Integer.parseInt(split[split.length - 1]);
+
+    int byteCount=0; //Bytes of second header
+
+    LineAndByteCount lc =readLineCount(bis);
+    line=lc.getLine();
+    arcEntry.setStatus_code(getStatusCode(line));
+    
+    headerLinesBuffer.append(line+newLineChar);
+    byteCount +=lc.getByteCount();                    
+
+    while (!"".equals(line)) { // End of warc second header block is an empty line              
+      lc =readLineCount(bis);
+      line=lc.getLine();
+      headerLinesBuffer.append(line+newLineChar);
+      byteCount +=lc.getByteCount();                    
+
+      populateArcHeader(arcEntry, line);        
+    }
+    arcEntry.setHeader(headerLinesBuffer.toString());
+    
+    int binarySize = totalSize-byteCount;                                                   
+    arcEntry.setContentLength(binarySize); //trust the load, not the http-header for arc-files
+    arcEntry.setBinaryArraySize(binarySize);      
+  }
+  
+  /*
+   * Will load the header information into the warcEntry
+   * The  RandomAccessFile will be returned with pointer in start of binary 
+   * warcEntry will have binaryArraySize defined
+   * 
+   */
+  private static void loadArcHeaderNotZipped(RandomAccessFile raf, ArcEntry arcEntry) throws Exception{
+      
+      StringBuffer headerLinesBuffer = new StringBuffer();
+      
       String line = raf.readLine(); // First line
       headerLinesBuffer.append(line+newLineChar);
       
@@ -73,104 +226,18 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
         headerLinesBuffer.append(line+newLineChar);
         populateArcHeader(arcEntry, line);
       }
+      
+      arcEntry.setHeader(headerLinesBuffer.toString());
+      
       // Load the binary blog. We are now right after the header. Rest will be the binary
       long headerSize = raf.getFilePointer() - afterFirst;
       long binarySize = totalSize - headerSize;
+      arcEntry.setContentLength(binarySize);  //trust the load, not the http-header for arc-files
 
-      //log.debug("Arc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);            
-      byte[] bytes = new byte[(int) binarySize];
-      raf.read(bytes);
-
-      arcEntry.setBinary(bytes);
-      arcEntry.setContentLength(binarySize);
-      arcEntry.setHeader(headerLinesBuffer.toString());
-      return arcEntry;
-    }
-    catch(Exception e){
-      throw e;
-    }
-    finally{
-      if (raf!= null){
-        raf.close();
-      }
-    }
-  }
-
-
-  public static ArcEntry getArcEntryZipped(String arcFilePath, long arcEntryPosition) throws Exception {
-    RandomAccessFile raf=null;
-    StringBuffer headerLinesBuffer = new StringBuffer();
-    try{
-      ArcEntry arcEntry = new ArcEntry();
-      raf = new RandomAccessFile(new File(arcFilePath), "r");
-      raf.seek(arcEntryPosition);          
-
-      // log.info("file is zipped:"+arcFilePath);
-      InputStream is = Channels.newInputStream(raf.getChannel());                           
-
-
-      GZIPInputStream stream = new GZIPInputStream(is);             
-
-      BufferedInputStream  bis= new BufferedInputStream(stream);
-
-      String line = readLine(bis); // First line
-      headerLinesBuffer.append(line+newLineChar);
-
-      if  (!(line.startsWith("http"))) //No version check yet
-      {            
-        throw new IllegalArgumentException("ARC header does not start with http : "+line);
-      }            
+      arcEntry.setBinaryArraySize(binarySize);
       
-      arcEntry.setFileName(getArcLastUrlPart(line));                    
-      String waybackDate = getWaybackDate(line);                    
-      arcEntry.setCrawlDate(DateUtils.convertWaybackDate2SolrDate(waybackDate));          
-      arcEntry.setWaybackDate(waybackDate);
-      arcEntry.setUrl(getArcUrl(line));
-      arcEntry.setIp(getIp(line));            
-
-      String[] split = line.split(" ");
-      int totalSize = Integer.parseInt(split[split.length - 1]);
-
-      int byteCount=0; //Bytes of second header
-
-      LineAndByteCount lc =readLineCount(bis);
-      line=lc.getLine();
-      arcEntry.setStatus_code(getStatusCode(line));
-      
-      headerLinesBuffer.append(line+newLineChar);
-      byteCount +=lc.getByteCount();                    
-
-      while (!"".equals(line)) { // End of warc second header block is an empty line              
-        lc =readLineCount(bis);
-        line=lc.getLine();
-        headerLinesBuffer.append(line+newLineChar);
-        byteCount +=lc.getByteCount();                    
-
-        populateArcHeader(arcEntry, line);        
-      }
-
-      int binarySize = totalSize-byteCount;                                                   
-      //System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);          
-      byte[] chars = new byte[binarySize];           
-      arcEntry.setContentLength(binarySize);
-      bis.read(chars);
-
-      raf.close();
-      bis.close();
-      arcEntry.setBinary(chars);
-      arcEntry.setHeader(headerLinesBuffer.toString());
-      return arcEntry;
-    }
-    catch(Exception e){
-      throw e;
-    }
-    finally {
-      if (raf!= null){
-        raf.close();
-      }
-    }
   }
-
+  
 
   public static String readLine(BufferedInputStream  bis) throws Exception{
     StringBuffer buf = new StringBuffer();
