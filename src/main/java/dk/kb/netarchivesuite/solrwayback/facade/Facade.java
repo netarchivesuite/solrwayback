@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.httpclient.ChunkedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
@@ -671,10 +672,12 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
           arc.setHasBeenDecompressed(true);
           arc.setBinary(IOUtils.toByteArray(in)); //TODO charset?  
         }
-          
-    	
-    	
-        
+        else if (arc.isChunked()) { //Guess we can not have brotli and chunked at the same time!            
+            log.info("fixing chuncked HTML");
+            InputStream in = new ChunkedInputStream(new ByteArrayInputStream(arc.getBinary()));            
+            arc.setBinary(IOUtils.toByteArray(in)); //TODO charset?            
+        }
+    	    	        
         String encoding = arc.getContentCharset();
            
         if (encoding == null){

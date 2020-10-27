@@ -28,6 +28,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.httpclient.ChunkedInputStream;
+import org.apache.commons.io.IOUtils;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -253,7 +255,13 @@ public class SolrWaybackResource {
       in = new BrotliInputStream(new ByteArrayInputStream(arcEntry.getBinary()));
       arcEntry.setContentEncoding(null); //Clear encoding.
       arcEntry.setHasBeenDecompressed(true);
+      in = new BrotliInputStream(new ChunkedInputStream(new ByteArrayInputStream(arcEntry.getBinary())));
       }
+      else if (arcEntry.isChunked()) {
+          log.info("fixing chuncked HTML");
+          in = new ChunkedInputStream(new ByteArrayInputStream(arcEntry.getBinary()));                                  
+      
+      }      
       else{      
        in = new ByteArrayInputStream(arcEntry.getBinary());
        
@@ -282,8 +290,7 @@ public class SolrWaybackResource {
       }
       
       if (arcEntry.getContentEncoding() != null){
-        response.header("Content-Encoding", arcEntry.getContentEncoding());      
-      
+        response.header("Content-Encoding", arcEntry.getContentEncoding());            
       }
       
       log.debug("Download from source_file_path:" + source_file_path + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());      
@@ -782,6 +789,7 @@ public class SolrWaybackResource {
     }else {      
       response.header("Content-Encoding", arcEntry.getContentEncoding());
     }          
+         
      return response.build();
   }
 

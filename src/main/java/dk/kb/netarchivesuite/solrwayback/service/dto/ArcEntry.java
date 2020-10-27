@@ -20,6 +20,7 @@ public class ArcEntry {
   private static final Logger log = LoggerFactory.getLogger(ArcEntry.class);
   
   private boolean hasBeenDecompressed=false;
+  private boolean chunked=false;
   private byte[] binary;
   private int status_code;
   private String header;//Both headers for WARC.
@@ -159,7 +160,15 @@ public class ArcEntry {
   public void setHasBeenDecompressed(boolean hasBeenDecompressed) {
     this.hasBeenDecompressed = hasBeenDecompressed;
   }
-  /*
+  
+  
+  public boolean isChunked() {
+    return chunked;
+}
+public void setChunked(boolean chunked) {
+    this.chunked = chunked;
+}
+/*
    * Will decompres if gzip.
    */
   public String getBinaryContentAsStringUnCompressed() throws Exception{
