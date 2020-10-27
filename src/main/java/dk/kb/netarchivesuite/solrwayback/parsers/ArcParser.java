@@ -102,7 +102,6 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
 
       // log.info("file is zipped:"+arcFilePath);
       InputStream is = Channels.newInputStream(raf.getChannel());                           
-
       GZIPInputStream stream = new GZIPInputStream(is);             
       BufferedInputStream  bis= new BufferedInputStream(stream);
 
