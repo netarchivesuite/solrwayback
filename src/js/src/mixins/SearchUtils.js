@@ -95,7 +95,6 @@ export default {
         this.deliverImgSearchRequest(futureQuery ,updateHistory)
       }
       else if(this.solrSettings.urlSearch) {
-        console.log('we came here!')
         this.deliverUrlSearchRequest(futureQuery , updateHistory)
       }
       else {
