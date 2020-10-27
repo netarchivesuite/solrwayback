@@ -53,8 +53,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
           }
           else {
               return getWarcEntryNotZipped(warcFilePath, warcEntryPosition,loadBinary);
-          }
-          
+          }          
          }
 
     public static ArcEntry getWarcEntryNotZipped(String warcFilePath, long warcEntryPosition,boolean loadBinary) throws Exception {
@@ -95,7 +94,6 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
               raf.close();
            }
       }
-
     }
     
     
@@ -143,9 +141,6 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
         warcEntry.setBinaryArraySize(binarySize);          
         
         //log.debug("Warc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);
-
-       
-        
     }
     
     
