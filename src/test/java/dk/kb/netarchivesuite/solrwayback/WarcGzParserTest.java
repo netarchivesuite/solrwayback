@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback;
 import static org.junit.Assert.*;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,6 +41,26 @@ public class WarcGzParserTest  extends UnitTestUtils{
     
     }
 
+    
+    @Test
+    public void testLazyLoadBinary() throws Exception {
+        
+        File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc.gz");        
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777, false); //Image entry
+        
+        assertNull(arcEntry.getBinary());
+        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777); //Image entry and load binary
+        byte[] orgBinary = arcEntry.getBinary();        
+        BufferedInputStream buf = arcEntry.getBinaryLazyLoad();
+        
+        byte[] newBinary = new byte[(int)arcEntry.getBinaryArraySize()];           
+        buf.read(newBinary);        
+        assertEquals(orgBinary.length, newBinary.length); //Same length
+        assertArrayEquals(orgBinary, newBinary); //Same binary        
+        
+    }
+
+    
     /* The warc file used for these tests below can not be shared.
    
      @Test

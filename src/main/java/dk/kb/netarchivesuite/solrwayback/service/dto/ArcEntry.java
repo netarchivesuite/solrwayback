@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.service.dto;
 
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -12,12 +13,28 @@ import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.tools.javac.api.Formattable;
+
+import dk.kb.netarchivesuite.solrwayback.parsers.ArcParser;
+import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
+
 //Notice this class is returned both by the ArcParser and WarcParser.
 //Could not think of a good common name...
+
+
 
 @XmlRootElement
 public class ArcEntry {
 
+    public enum FORMAT {
+        ARC,
+        WARC
+      }
+
+    
+    
+  private static FORMAT format;
+    
   private static final Logger log = LoggerFactory.getLogger(ArcEntry.class);
   private String sourceFilePath; //full path
   private long offset;  
@@ -197,9 +214,26 @@ public void setChunked(boolean chunked) {
     this.chunked = chunked;
 }
 
-  public InputStream getBinaryContentInputStreamUncompressed(){
-      return null;
-      
+
+public  FORMAT getFormat() {
+    return format;
+}
+public void setFormat(FORMAT format) {
+    ArcEntry.format = format;
+}
+/*
+ * Will wrap the byte[] in a BufferedInputStream
+ * 
+ * It is up the caller to close the inputstream!
+ * 
+ */
+  public BufferedInputStream getBinaryLazyLoad() throws Exception{
+      if (format.equals(FORMAT.ARC)) {          
+         return ArcParser.lazyLoadBinary(sourceFilePath, offset);         
+     }
+      else {
+          return WarcParser.lazyLoadBinary(sourceFilePath, offset);
+      }            
   }
    
 

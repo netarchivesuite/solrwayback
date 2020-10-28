@@ -57,6 +57,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
   public static ArcEntry getArcEntryNotZipped(String arcFilePath, long arcEntryPosition, boolean loadBinary) throws Exception {
       RandomAccessFile raf= null ;
       ArcEntry arcEntry = new ArcEntry();
+      arcEntry.setFormat(ArcEntry.FORMAT.ARC);
       arcEntry.setSourceFilePath(arcFilePath);
       arcEntry.setOffset(arcEntryPosition);
       
@@ -93,6 +94,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
     RandomAccessFile raf=null;
     
     ArcEntry arcEntry = new ArcEntry();
+    arcEntry.setFormat(ArcEntry.FORMAT.ARC);
     arcEntry.setSourceFilePath(arcFilePath);
     arcEntry.setOffset(arcEntryPosition);
     
@@ -238,6 +240,34 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
   }
   
 
+  public static BufferedInputStream lazyLoadBinary(String arcFilePath, long arcEntryPosition) throws Exception{
+      ArcEntry arcEntry = new ArcEntry(); // We just throw away the header info anyway 
+      
+      if (arcFilePath.endsWith(".gz")){ //It is zipped
+          
+          RandomAccessFile raf = new RandomAccessFile(new File(arcFilePath), "r");
+          raf.seek(arcEntryPosition);          
+
+          // log.info("file is zipped:"+arcFilePath);
+          InputStream is = Channels.newInputStream(raf.getChannel());                           
+          GZIPInputStream zipStream = new GZIPInputStream(is);              
+          BufferedInputStream  bis= new BufferedInputStream(zipStream);
+
+          loadArcHeaderZipped(bis, arcEntry);
+          return bis;
+          
+        }
+        else {
+            RandomAccessFile raf = new RandomAccessFile(new File(arcFilePath), "r");
+            raf.seek(arcEntryPosition);
+            loadArcHeaderNotZipped(raf, arcEntry);
+            InputStream is = Channels.newInputStream(raf.getChannel());
+            BufferedInputStream  bis= new BufferedInputStream(is);
+            return bis;
+        }            
+      
+  }
+  
   public static String readLine(BufferedInputStream  bis) throws Exception{
     StringBuffer buf = new StringBuffer();
     int current = 0; // CRLN || LN
