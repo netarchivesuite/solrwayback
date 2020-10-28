@@ -102,6 +102,12 @@ module.exports = {
         pathRewrite: { '^/services/statistics/domain/': '' },
         changeOrigin: true
       },
+
+      '^/services/smurf/text/': {
+        target: 'http://localhost:8080/solrwayback/services/smurf/text/',
+        pathRewrite: { '^/services/smurf/text/': '' },
+        changeOrigin: true
+      },
     }
   },
   publicPath: process.env.NODE_ENV === 'production'

@@ -24,7 +24,7 @@
         <button :class="currentTool === 'gephiexport' ? 'activeTool' : ''" @click="setCurrentTool('gephiexport')">
           Link graph Gephi export
         </button>
-        <button :class="currentTool === 'smurf' ? 'activeTool' : ''" @click="setCurrentTool('smurf')">
+        <button :class="currentTool === 'smurf' ? 'activeTool' : ''" @click="navigateTo('ngram')">
           Smurf
         </button>
         <hr>
@@ -69,6 +69,9 @@ export default {
     },
     setCurrentTool(tool) {
       this.currentTool = tool
+    },
+    navigateTo(destination) {
+      this.$router.push(destination)
     }
   }
   
