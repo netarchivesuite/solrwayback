@@ -47,7 +47,7 @@ public class TwitterParserTest {
 */
 	  
 	    
-	
+	/*
 	  @Test
 	     public void testNotRetweet() throws Exception {    
 	     
@@ -68,13 +68,17 @@ public class TwitterParserTest {
 	    assertEquals(1,tweet.getImageUrlsList().size());
 	    assertEquals("http://pbs.twimg.com/media/ABCDE.jpg",tweet.getImageUrlsList().iterator().next());	    	   	    
 	  }
-	
+	*/
+    
+    
+    
+    
+    
 	  @Test
-     public void testIsRetweet() throws Exception {    
-     /*
-     * This is just test code to load the json. When used only a single json document will be parsed at a time.
-     * 
-     */
+     
+	/*  
+	  public void testIsRetweet() throws Exception {    
+    
     String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/twitter1.json")));
     
     
@@ -91,7 +95,7 @@ public class TwitterParserTest {
     //System.out.println(tweet.getImageUrlsList());        
   }
 	  
-
+*/
 	  public static String replaceHashTags(String text, HashSet<String> tags) {
     	  String searchUrl = "http://localhost/";
     	  String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false"; //TODO frontend fix so all other params not needed	  
