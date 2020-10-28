@@ -13,8 +13,6 @@ import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.tools.javac.api.Formattable;
-
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParser;
 import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
 
