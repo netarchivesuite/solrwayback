@@ -1,9 +1,9 @@
 <template>
   <div>
-    <span>Showing <span class="highlightText">{{ results.images.length }}</span> images matching query. </span>
+    <span>Showing <span class="highlightText">{{ imgResults.images.length }}</span> images matching query. </span>
     <div class="images">
       <div class="column 1">
-        <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,0)"
+        <search-masonry-image v-for="(result, index) in getOffsetArray(imgResults.images,0)"
                               :key="index"
                               :number="index"
                               :result="result"
@@ -11,7 +11,7 @@
                               :row-number="numberOfRows" />
       </div>
       <div class="column 2">
-        <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,1)"
+        <search-masonry-image v-for="(result, index) in getOffsetArray(imgResults.images,1)"
                               :key="index"
                               :number="index"
                               :result="result"
@@ -19,7 +19,7 @@
                               :row-number="numberOfRows" />
       </div>
       <div class="column 3">
-        <search-masonry-image v-for="(result, index) in getOffsetArray(results.images,2)"
+        <search-masonry-image v-for="(result, index) in getOffsetArray(imgResults.images,2)"
                               :key="index"
                               :number="index"
                               :result="result"
@@ -41,6 +41,12 @@ export default {
     SearchMasonryImage
   },
   mixins: [HistoryRoutingUtils],
+  props: {
+    imgResults: {
+      type: Object,
+      required: true
+    }
+  },
   data () {
     return {  
       numberOfRows:3,   
@@ -49,7 +55,6 @@ export default {
   computed: {
     ...mapState({
       query: state => state.Search.query,
-      results: state => state.Search.results,
       solrSettings: state => state.Search.solrSettings
     }),
   },

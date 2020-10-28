@@ -102,6 +102,11 @@ module.exports = {
         pathRewrite: { '^/services/statistics/domain/': '' },
         changeOrigin: true
       },
+      '^/services/frontend/images/search/': {
+        target: 'http://localhost:8080/solrwayback//services/frontend/images/search/',
+        pathRewrite: { '^/services/frontend/images/search/': '' },
+        changeOrigin: true
+      },
     }
   },
   publicPath: process.env.NODE_ENV === 'production'

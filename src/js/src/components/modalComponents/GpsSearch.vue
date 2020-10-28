@@ -4,16 +4,19 @@
   <div class="GpsSearchContainer">
     <div :class="getMapSize()">
       <div class="gpsControls">
-        <span>Longtitude:</span>
-        <input v-model="longtitude"
-               placeholder="Longtitude">
+        <span>Longitude:</span>
+        <input v-model="longitude"
+               placeholder="Longitude">
         <span>Latitude:</span>
         <input v-model="latitude"
                placeholder="Latitude">
         <span>Radius in KM:</span>
         <input v-model="radius"
                placeholder="Radius">
-        <button class="searchButton">
+        <span>Query:</span>
+        <input v-model="imgQuery"
+               placeholder="Search term">       
+        <button :disabled="longitude === 0 || longitude === '' || latitude === 0 || latitude === ''" class="searchButton" @click="doGeoSearch()">
           Search
         </button>
       </div>
@@ -28,57 +31,98 @@
       </div>
     </div>
     <div :class="getResultSize()">
-      <image-search-results v-if="results.searchType === 'image'" />
+      <image-search-results v-if="imgResults.searchType === 'geoImage'" :img-results="imgResults" />
     </div>
   </div>
 </template>
 
+<style lang="scss">
+@import '../../../node_modules/leaflet/dist/leaflet.css';
+@import '../../../node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css';
+</style>
+
 <script>
 
 import L from 'leaflet'
-import '../../../node_modules/leaflet/dist/leaflet.css'
+import icon from '../../../node_modules/leaflet/dist/images/marker-icon.png'
+import iconShadow from '../../../node_modules/leaflet/dist/images/marker-shadow.png'
+import Markercluster from '../../../node_modules/leaflet.markercluster/dist/leaflet.markercluster.js'
 import ImageSearchResults from '../searchResults/ImageSearchResults'
-import { mapState } from 'vuex'
-
+import SearchUtils from './../../mixins/SearchUtils'
+import { mapState, mapActions } from 'vuex'
+import { requestService } from '../../services/RequestService'
 
 export default {
   name: 'GpsSearch',
   components: {
     ImageSearchResults
   },
+  mixins: [SearchUtils],
   data: () => ({
-    longtitude:0,
+    longitude:0,
     latitude:0,
     radius:50,
+    imgQuery:'*:*',
     searchMap:null,
     selected:null,
     resultSize:'hidden',
     mapSize:'full',
+    imgResults:{},
+    imageLayer:null,
   }),
   computed: {
-    ...mapState({
-      results: state => state.Search.results,
-    }),
+    latLngRad() {
+      return `${this.latitude}|${this.longitude}|${this.radius}`
+    }
+  },
+  watch: {
+    latLngRad(newVal, oldVal) {
+      this.setNewSearchArea()
+    }
   },
   mounted () {
-    console.log(L)
     this.createMap()
   },
   methods: {
+    ...mapActions('Search', {
+      setLoadingStatus:'setLoadingStatus'
+    }),
     createMap() {
-        console.log(L)
         this.searchMap = L.map('gpsMap', null, { zoomControl: false }).setView([56.1572, 10.2107], 7)
         //If https problems occur, try https://a.tile.openstreetmap.org/{z}/{x}/{y}.png instead.
         //Old access point: https://{s}.tile.osm.org/{z}/{x}/{y}.png
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
       }).addTo(this.searchMap)
+      const defaultIcon = L.icon({
+        iconSize: [25, 41],
+        iconAnchor: [12.5, 25],
+        //popupAnchor: [0, -30],
+        iconUrl: icon,
+        shadowUrl: iconShadow
+      })
+      L.Marker.prototype.options.icon = defaultIcon
+      const resizeObserver = new ResizeObserver(() => {
+        this.searchMap.invalidateSize()
+      })
+      resizeObserver.observe(document.getElementById('gpsMap'))
+      
       this.selected = L.featureGroup().addTo(this.searchMap)
       this.searchMap.on('click', this.setNewSearchArea)
     },
+    doGeoSearch() {
+      this.setLoadingStatus(true)
+      requestService.fireGeoImageSearchRequest(this.imgQuery,this.latitude,this.longitude,this.radius)
+      .then(result => (this.imgResults = result.response,this.mapSize = 'half', this.resultSize = 'half', this.plotImagesOnMap(this.imgResults.images), this.setLoadingStatus(false)), error => (console.log('Error in seaching for images by location.'), this.setLoadingStatus(false)))
+      //this.requestGeoImageSearch({query:this.imgQuery,latitude:this.latitude,longitude: this.longitude,radius: this.radius}).then(this.mapSize = 'half', this.resultSize = 'half',this.recalculateMap())
+    },
     setNewSearchArea(e) {
       this.selected.clearLayers()
-      L.circle( e.latlng, {
+      if(e !== undefined) {
+      this.longitude = e.latlng.wrap().lng.toFixed(6)
+      this.latitude = e.latlng.wrap().lat.toFixed(6)
+      }
+      L.circle( {lat:this.latitude, lng:this.longitude}, {
       color: '#002E70',
       weight:'1',
       fillColor: '#002E70',
@@ -91,6 +135,16 @@ export default {
     },
     getResultSize() {
       return 'gpsResultsContainer ' + this.resultSize
+    },
+    plotImagesOnMap(images) {
+      this.imageLayer !== null ? this.searchMap.removeLayer(this.imageLayer) : null
+      this.imageLayer = L.markerClusterGroup()
+      images.forEach((item, index) => {
+        let newMarker = L.marker(new L.LatLng(item.latitude,item.longitude), { title:item.urlNorm } )
+        newMarker.bindPopup(`<span title="${item.urlNorm}">${item.urlNorm}</span><img src="${item.imageUrl}&height=200&width=200" />`)
+        this.imageLayer.addLayer(newMarker)
+      })	
+      this.searchMap.addLayer(this.imageLayer)
     },
     dividerPosition() {
       let decision = ''
@@ -126,11 +180,6 @@ export default {
                          break
         }
       }
-      let callbackmap = this.searchMap
-      //Horrible, horrible hack to have the map revalidate the size 
-      //Just to make sure that it's aligned to the size of the users screen, and the right tiles are loaded.
-      // https://stackoverflow.com/questions/24412325/resizing-a-leaflet-map-on-container-resize
-      setTimeout(function() { callbackmap.invalidateSize() }, 200)
     }
     
   }

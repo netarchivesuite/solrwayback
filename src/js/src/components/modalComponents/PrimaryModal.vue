@@ -3,7 +3,7 @@
     <button class="closeButton" @click="closeModal()">
       ✕
     </button>
-    <div class="modalContent">
+    <div :class="currentModal === 'gpssearch' ? 'modalContent gpssearch' : 'modalContent'">
       <search-guidelines v-if="currentModal === 'guidelines'" />
       <search-visualization v-if="currentModal === 'visualization'" />
       <gps-search v-if="currentModal === 'gpssearch'" />

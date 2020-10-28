@@ -12,7 +12,7 @@
       <!-- HERE COMES RESULTS // Figure out if this should be splitted out into a new component -->
       <post-search-results v-if="results.searchType === 'post'" />
       <!-- HERE COMES PICTURES -->
-      <image-search-results v-if="results.searchType === 'image'" />
+      <image-search-results v-if="results.searchType === 'image'" :img-results="results" />
     </div>
     <div class="marginContainer" />
   </div>

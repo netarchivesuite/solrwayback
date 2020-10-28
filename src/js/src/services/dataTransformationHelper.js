@@ -20,12 +20,19 @@ export default {
     }
     return data
   },
-  transformImageResponse(data) {
+  transformImageResponse(data, type) {
     let obj = {}
     obj.response = {
-      searchType:'image',
+      searchType:type,
       images:data,
       }
+    // THIS IS FOR TEST PURPOSES ONLY - IMAGES IN INDEX DONT HAVE THE DATA YET.
+    if(type === 'geoImage') {
+      for(let y = 0; y < obj.response.images.length; y++) {
+        obj.response.images[y].latitude = 56 + Math.random()
+        obj.response.images[y].longitude = 10 + Math.random()
+      }
+    }
     return obj
   }
 }
