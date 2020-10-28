@@ -400,7 +400,11 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
         return ArcParserFileResolver.getArcEntry(source_file_path, offset);        
     }
     
-
+    public static ArcEntry getArcEntry(String source_file_path, long offset, boolean loadBinary) throws Exception{         
+        return ArcParserFileResolver.getArcEntry(source_file_path, offset,loadBinary);        
+    }
+    
+    
     public static InputStream exportWarcStreaming(
             boolean expandResources, boolean avoidDuplicates, String query, String... filterqueries) {
       SolrGenericStreaming solr = new SolrGenericStreaming(

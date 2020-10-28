@@ -59,6 +59,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     public static ArcEntry getWarcEntryNotZipped(String warcFilePath, long warcEntryPosition,boolean loadBinary) throws Exception {
 
         ArcEntry warcEntry = new ArcEntry();
+        warcEntry.setFormat(ArcEntry.FORMAT.WARC);
         warcEntry.setSourceFilePath(warcFilePath);
         warcEntry.setOffset(warcEntryPosition);
                 
@@ -200,6 +201,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     public static ArcEntry getWarcEntryZipped(String warcFilePath, long warcEntryPosition, boolean loadBinary) throws Exception {
       RandomAccessFile raf=null;
       ArcEntry warcEntry = new ArcEntry();
+      warcEntry.setFormat(ArcEntry.FORMAT.WARC);
       warcEntry.setSourceFilePath(warcFilePath);
       warcEntry.setOffset(warcEntryPosition);
       
@@ -230,11 +232,13 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
            byte[] chars = new byte[(int)binarySize];           
             bis.read(chars);
             warcEntry.setBinary(chars);
+
           }          
           raf.close();
           bis.close();
  
-
+           
+          
           /*
           System.out.println("-------- binary start");
           System.out.println(new String(chars));
@@ -253,7 +257,34 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
   }
 
     
-    
+    public static BufferedInputStream lazyLoadBinary(String arcFilePath, long arcEntryPosition) throws Exception{
+        ArcEntry arcEntry = new ArcEntry(); // We just throw away the header info anyway 
+        
+        if (arcFilePath.endsWith(".gz")){ //It is zipped
+            
+            RandomAccessFile raf = new RandomAccessFile(new File(arcFilePath), "r");
+            raf.seek(arcEntryPosition);          
+
+            // log.info("file is zipped:"+arcFilePath);
+            InputStream is = Channels.newInputStream(raf.getChannel());                           
+            GZIPInputStream zipStream = new GZIPInputStream(is);              
+            BufferedInputStream  bis= new BufferedInputStream(zipStream);
+
+            loadWarcHeaderZipped(bis, arcEntry);
+            return bis;
+            
+          }
+          else {
+              RandomAccessFile raf = new RandomAccessFile(new File(arcFilePath), "r");
+              raf.seek(arcEntryPosition);              
+              loadWarcHeaderNotZipped(raf, arcEntry);
+              InputStream is = Channels.newInputStream(raf.getChannel());
+              BufferedInputStream  bis= new BufferedInputStream(is);
+              return bis;
+          }            
+        
+    }
+            
       public static String getWarcLastUrlPart(String warcHeaderLine) {        
         //Example:
         //WARC-Target-URI: http://www.boerkopcykler.dk/images/low_Trance-27.5-2-LTD-_20112013_151813.jpg
