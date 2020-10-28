@@ -14,6 +14,12 @@ import dk.kb.netarchivesuite.solrwayback.util.RegexpReplacer;
 
 public class TwitterParserTest {
 	
+    @Test
+    public void testDoNothing() throws Exception {
+        //fuck up junit5
+        
+    }
+    
 	/*
 
 	  @Test
@@ -74,7 +80,7 @@ public class TwitterParserTest {
     
     
     
-	  @Test
+	
      
 	/*  
 	  public void testIsRetweet() throws Exception {    
@@ -96,6 +102,8 @@ public class TwitterParserTest {
   }
 	  
 */
+	  
+	  /*
 	  public static String replaceHashTags(String text, HashSet<String> tags) {
     	  String searchUrl = "http://localhost/";
     	  String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false"; //TODO frontend fix so all other params not needed	  
@@ -111,6 +119,6 @@ public class TwitterParserTest {
     	  }
     	  return text;	  	  
       }
-        
+        */
 	  
 }
