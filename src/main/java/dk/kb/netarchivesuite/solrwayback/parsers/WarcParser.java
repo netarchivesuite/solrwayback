@@ -10,7 +10,6 @@ import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.util.zip.GZIPInputStream;
 
-import dk.kb.netarchivesuite.solrwayback.util.MaxLengthInputStream;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
