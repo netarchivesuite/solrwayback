@@ -10,6 +10,8 @@ import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.util.zip.GZIPInputStream;
 
+import dk.kb.netarchivesuite.solrwayback.util.MaxLengthInputStream;
+import org.apache.commons.io.input.BoundedInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +54,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
              return getWarcEntryZipped(warcFilePath, warcEntryPosition, loadBinary);                       
           }
           else {
-              return getWarcEntryNotZipped(warcFilePath, warcEntryPosition,loadBinary);
+              return getWarcEntryNotZipped(warcFilePath, warcEntryPosition, loadBinary);
           }          
          }
 
@@ -253,7 +255,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
   }
 
     
-    public static BufferedInputStream lazyLoadBinary(String arcFilePath, long arcEntryPosition) throws Exception{
+    public static BufferedInputStream lazyLoadBinary(String arcFilePath, long arcEntryPosition, long binarySize) throws Exception{
         ArcEntry arcEntry = new ArcEntry(); // We just throw away the header info anyway 
         
         if (arcFilePath.endsWith(".gz")){ //It is zipped
@@ -267,15 +269,18 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
             BufferedInputStream  bis= new BufferedInputStream(zipStream);
 
             loadWarcHeaderZipped(bis, arcEntry);
-            return bis;
-            
+
+            BoundedInputStream maxStream = new BoundedInputStream(bis, binarySize);
+            return new BufferedInputStream(maxStream); // It's a mess to use nested BufferedInputStreams...
+
           }
           else {
               RandomAccessFile raf = new RandomAccessFile(new File(arcFilePath), "r");
               raf.seek(arcEntryPosition);              
               loadWarcHeaderNotZipped(raf, arcEntry);
               InputStream is = Channels.newInputStream(raf.getChannel());
-              BufferedInputStream  bis= new BufferedInputStream(is);
+              BoundedInputStream maxStream = new BoundedInputStream(is, binarySize);
+              BufferedInputStream bis = new BufferedInputStream(maxStream);
               return bis;
           }            
         

@@ -226,11 +226,11 @@ public void setFormat(FORMAT format) {
  * 
  */
   public BufferedInputStream getBinaryLazyLoad() throws Exception{
-      if (format.equals(FORMAT.ARC)) {          
-         return ArcParser.lazyLoadBinary(sourceFilePath, offset);         
+      if (format.equals(FORMAT.ARC)) {
+         return ArcParser.lazyLoadBinary(sourceFilePath, offset, binaryArraySize);
      }
       else {
-          return WarcParser.lazyLoadBinary(sourceFilePath, offset);
+          return WarcParser.lazyLoadBinary(sourceFilePath, offset, binaryArraySize);
       }            
   }
    
