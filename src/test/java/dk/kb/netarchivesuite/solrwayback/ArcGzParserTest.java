@@ -48,11 +48,14 @@ public class ArcGzParserTest extends UnitTestUtils {
         assertNull(arcEntry.getBinary());
         arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 7733); //Image entry and load binary
         byte[] orgBinary = arcEntry.getBinary();        
-        BufferedInputStream buf = arcEntry.getBinaryLazyLoad();
-        byte[] newBinary = new byte[(int)arcEntry.getBinaryArraySize()];           
-        buf.read(newBinary);
-        assertEquals(orgBinary.length, newBinary.length); //Same length
-        assertArrayEquals(orgBinary, newBinary); //Same binary                        
+        try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
+            byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
+            assertEquals("The expected number of bytes should be read from the lazy stream",
+                         newBinary.length, buf.read(newBinary));
+            assertEquals(orgBinary.length, newBinary.length); //Same length
+            assertArrayEquals(orgBinary, newBinary); //Same binary
+            assertEquals("There should be no more content in the lazy loaded stream", -1, buf.read());
+        }
     }
 
     
