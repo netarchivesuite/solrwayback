@@ -199,14 +199,15 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     
     
     public static ArcEntry getWarcEntryZipped(String warcFilePath, long warcEntryPosition, boolean loadBinary) throws Exception {
-      RandomAccessFile raf=null;
+
       ArcEntry warcEntry = new ArcEntry();
       warcEntry.setFormat(ArcEntry.FORMAT.WARC);
       warcEntry.setSourceFilePath(warcFilePath);
       warcEntry.setOffset(warcEntryPosition);
       
-      try{      
-            raf = new RandomAccessFile(new File(warcFilePath), "r");
+      try (RandomAccessFile raf = new RandomAccessFile(new File(warcFilePath), "r")){      
+          
+                      
             raf.seek(warcEntryPosition);
           
           //  log.info("file is zipped:"+warcFilePath);
@@ -248,12 +249,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
       }
       catch(Exception e){
           throw e;
-      }
-      finally {
-          if (raf!= null){
-              raf.close();
-           }
-      }
+      }      
   }
 
     
