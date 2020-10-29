@@ -40,23 +40,21 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   private final byte[] SINGLE_BYTE = new byte[1];
 
   @Override
-  public int read(byte[] b, int off, final int len) throws IOException {
+  public int read(byte[] b, int off, int len) throws IOException {
     int totalRead = 0;
-    while (totalRead < len) {
-      int toRead = len-totalRead;
-
+    while (len > 0) {
       // Do we have any content?
       if (entryStreams.isEmpty()) {
         loadMore();
         if (entryStreams.isEmpty()) {
           log.info("warcExport buffer empty");
           log.info("Warcs read:"+docsWarcRead +" arcs read:"+docsArcRead);
-          return totalRead == 0 ? -1 : 0; // -1 signals EOS
+          return totalRead == 0 ? -1 : totalRead; // -1 signals EOS
         }
       }
 
       // There is content. Read up to max requested
-      int read = entryStreams.get(0).read(b, off, toRead);
+      int read = entryStreams.get(0).read(b, off, len);
       if (read == -1) { // The entryStream is empty. Remove it and go to the next
         try {
           entryStreams.get(0).close();
@@ -70,8 +68,9 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
       // We got some content. Update counters and loop to try and fill the input buffer fully
       totalRead += read;
       off += read;
+      len -= read;
     }
-    return totalRead == 0 ? -1 : 0; // -1 signals EOS
+    return totalRead == 0 ? -1 : totalRead; // -1 signals EOS
   }
 
   public StreamingSolrWarcExportBufferedInputStream(SolrGenericStreaming solrClient, int maxRecords) {
