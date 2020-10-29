@@ -30,7 +30,7 @@ public class StreamBridge {
     private static final Logger log = LoggerFactory.getLogger(StreamBridge.class);
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread("StreamBridge");
+        Thread t = new Thread(r, "StreamBridge");
         t.setDaemon(true);
         return t;
     });

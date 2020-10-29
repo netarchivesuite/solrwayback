@@ -3,11 +3,13 @@ package dk.kb.netarchivesuite.solrwayback.export;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.util.StreamBridge;
@@ -113,29 +115,29 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
           continue;
         }
 
-        if (gzip) {
-          entryStreams.add(StreamBridge.outputToGzipInput(out -> {
+
+        if (gzip) { // Lazy writer for the different parts of the WARC entry as a single gzip block
+          Consumer<OutputStream> provider = out -> {
             try {
               IOUtils.copy(entryAndHeaders.headers, out);
               if (entryAndHeaders.entry.getBinaryArraySize() > 0) {
-                IOUtils.copy()
-                entryStreams.add(warcEntry.getBinaryLazyLoad());
+                IOUtils.copy(entryAndHeaders.entry.getBinaryLazyLoad(), out);
               }
-              entryStreams.add(new ByteArrayInputStream("\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING)) );
-            } catch (IOException e) {
+              IOUtils.copy(new ByteArrayInputStream("\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING)), out);
+            } catch (Exception e) {
               throw new RuntimeException(
-                      "IOException writing entry to gzip stream: " + entryAndHeaders.entry.getUrl(), e);
+                      "Exception writing entry to gzip stream: " + entryAndHeaders.entry.getUrl(), e);
             }
-
-          }))
+          };
+          entryStreams.add(StreamBridge.outputToGzipInput(provider));
+        } else { // No compression: Just add the streams
+          entryStreams.add(entryAndHeaders.headers);
+          if (entryAndHeaders.entry.getBinaryArraySize() > 0) {
+            entryStreams.add(entryAndHeaders.entry.getBinaryLazyLoad());
+          }
+          entryStreams.add(new ByteArrayInputStream("\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING)));
         }
-        //Do this for both arc/warc 
-        if ( warcEntry.getBinary().length > 0){
-          entryStreams.add(warcEntry.getBinaryLazyLoad());
-        }
-        entryStreams.add(new ByteArrayInputStream("\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING)) );
-
-      }      
+      }
     } catch (Exception e) {
       log.error("Unhandled exception in loadMore", e);
       e.printStackTrace();
