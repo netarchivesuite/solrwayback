@@ -10,6 +10,7 @@ import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.io.input.BoundedInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
              return getWarcEntryZipped(warcFilePath, warcEntryPosition, loadBinary);                       
           }
           else {
-              return getWarcEntryNotZipped(warcFilePath, warcEntryPosition,loadBinary);
+              return getWarcEntryNotZipped(warcFilePath, warcEntryPosition, loadBinary);
           }          
          }
 
@@ -267,15 +268,18 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
             BufferedInputStream  bis= new BufferedInputStream(zipStream);
 
             loadWarcHeaderZipped(bis, arcEntry);
-            return bis;
-            
+
+            BoundedInputStream maxStream = new BoundedInputStream(bis, arcEntry.getBinaryArraySize());
+            return new BufferedInputStream(maxStream); // It's a mess to use nested BufferedInputStreams...
+
           }
           else {
               RandomAccessFile raf = new RandomAccessFile(new File(arcFilePath), "r");
               raf.seek(arcEntryPosition);              
               loadWarcHeaderNotZipped(raf, arcEntry);
               InputStream is = Channels.newInputStream(raf.getChannel());
-              BufferedInputStream  bis= new BufferedInputStream(is);
+              BoundedInputStream maxStream = new BoundedInputStream(is, arcEntry.getBinaryArraySize());
+              BufferedInputStream bis = new BufferedInputStream(maxStream);
               return bis;
           }            
         

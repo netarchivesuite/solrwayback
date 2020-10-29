@@ -412,7 +412,6 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
               expandResources, avoidDuplicates, query, filterqueries);
 
       // TODO: Why do we have a max of 1M?
-      //Buffer size 100 only since the binary can be big
       return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000); //1M max. results just for now
     }
  

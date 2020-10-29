@@ -4,6 +4,7 @@ package dk.kb.netarchivesuite.solrwayback.service;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -353,6 +354,7 @@ public class SolrWaybackResource {
                                    List<String>  fqList,
                                    boolean expandResources,
                                    boolean avoidDuplicates) throws SolrWaybackServiceException {
+    InputStream is = null;
     try {
       log.debug("Export warc. query:"+q +" filterquery:"+fqList);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
@@ -360,10 +362,17 @@ public class SolrWaybackResource {
 
       //Map FQ List<String> to String[]
       String[] fqArray = fqList.stream().toArray(String[]::new);
-      InputStream is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, q, fqArray);
+      is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, q, fqArray);
       return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".warc\"").build();
 
     } catch (Exception e) {
+      if (is != null) { // We cannot use the Closeable-feature as we return the stream(?)
+        try {
+          is.close();
+        } catch (IOException ex) {
+          log.error("Error closing export stream", e);
+        }
+      }
       log.error("Error in export warc",e);
       throw handleServiceExceptions(e);
     }

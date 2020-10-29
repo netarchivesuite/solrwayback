@@ -7,6 +7,7 @@ import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.io.input.BoundedInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -245,11 +246,12 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
 
           // log.info("file is zipped:"+arcFilePath);
           InputStream is = Channels.newInputStream(raf.getChannel());                           
-          GZIPInputStream zipStream = new GZIPInputStream(is);              
+          GZIPInputStream zipStream = new GZIPInputStream(is);
           BufferedInputStream  bis= new BufferedInputStream(zipStream);
-
           loadArcHeaderZipped(bis, arcEntry);
-          return bis;
+          
+          BoundedInputStream maxStream = new BoundedInputStream(bis, arcEntry.getBinaryArraySize());
+          return new BufferedInputStream(maxStream); // It's a mess to use nested BufferedInputStreams...
           
         }
         else {
@@ -257,7 +259,8 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
             raf.seek(arcEntryPosition);
             loadArcHeaderNotZipped(raf, arcEntry);
             InputStream is = Channels.newInputStream(raf.getChannel());
-            BufferedInputStream  bis= new BufferedInputStream(is);
+            BoundedInputStream maxStream = new BoundedInputStream(is, arcEntry.getBinaryArraySize());
+            BufferedInputStream bis = new BufferedInputStream(maxStream);
             return bis;
         }            
       
