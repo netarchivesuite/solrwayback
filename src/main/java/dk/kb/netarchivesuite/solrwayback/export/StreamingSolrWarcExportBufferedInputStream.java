@@ -71,7 +71,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
       totalRead += read;
       off += read;
     }
-    return totalRead;
+    return totalRead == 0 ? -1 : 0; // -1 signals EOS
   }
 
   public StreamingSolrWarcExportBufferedInputStream(SolrGenericStreaming solrClient, int maxRecords) {
