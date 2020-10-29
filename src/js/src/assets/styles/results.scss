@@ -1104,6 +1104,10 @@ margin-left:40px;
   background: rgba(255, 255, 255, 0.8);
 }
 
+.leaflet-popup-content {
+  width:auto !important;
+}
+
 .leaflet-popup-content img {
 	margin-left: auto;
 	margin-right: auto;
