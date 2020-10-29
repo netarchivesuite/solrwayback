@@ -40,7 +40,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
 
     {
-      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET);
+      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, 1);
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
               StreamingSolrWarcExportBufferedInputStream(mockedSolr, 1, false);
@@ -54,13 +54,13 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
   }
 
-  // TODO: Add test for multiple entries
   @Test
   public void testGzipExport() throws Exception {
     final String WARC = getFile("compressions_warc/transfer_compression_none.warc.gz").getCanonicalPath();
     final long OFFSET = 881;
     final int EXPECTED_CONTENT_LENGTH = 246;
     final int EXPECTED_EXPORT_LENGTH = 1102;
+    final int recordCount = 2;
 
     byte[] upFrontBinary;
     {
@@ -70,16 +70,16 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
 
     {
-      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET);
+      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, recordCount);
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
               StreamingSolrWarcExportBufferedInputStream(mockedSolr, 1, true);
       GZIPInputStream gis = new GZIPInputStream(exportStream);
 
-      byte[] exportedBytes = new byte[EXPECTED_EXPORT_LENGTH];
+      byte[] exportedBytes = new byte[recordCount*EXPECTED_EXPORT_LENGTH];
 
       int exported = IOUtils.read(gis, exportedBytes);
-      assertEquals("Expected the right number of bytes to be read", EXPECTED_EXPORT_LENGTH, exported);
+      assertEquals("Expected the right number of bytes to be read", recordCount*EXPECTED_EXPORT_LENGTH, exported);
       assertEquals("There should be no more content in the export stream", -1, exportStream.read());
 
       assertBinaryEnding(upFrontBinary, exportedBytes);
@@ -146,17 +146,19 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     
   }
 
-  private SolrGenericStreaming getMockedSolrStream(String WARC, long OFFSET) throws Exception {
-    SolrDocument doc = new SolrDocument();
-    doc.addField("id", "MockedDocument");
-    doc.addField("source_file_path", WARC);
-    doc.addField("source_file_offset", OFFSET);
-
+  private SolrGenericStreaming getMockedSolrStream(String WARC, long OFFSET, int docCount) throws Exception {
     SolrDocumentList docs = new SolrDocumentList();
     docs.setMaxScore(1.0f);
     docs.setNumFound(1);
     docs.setStart(System.currentTimeMillis());
-    docs.add(doc);
+
+    for (int i = 0 ; i < docCount ; i++) {
+      SolrDocument doc = new SolrDocument();
+      doc.addField("id", "MockedDocument_" + i);
+      doc.addField("source_file_path", WARC);
+      doc.addField("source_file_offset", OFFSET);
+      docs.add(doc);
+    };
 
     SolrGenericStreaming mockedSolr = mock(SolrGenericStreaming.class);
     when(mockedSolr.nextDocuments()).thenReturn(docs).thenReturn(null); // Return docs on first call, then null
