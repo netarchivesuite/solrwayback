@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
@@ -21,6 +22,7 @@ import org.apache.solr.common.SolrDocumentList;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -63,10 +65,30 @@ public class TestExportWarcStreaming extends UnitTestUtils {
       assertEquals("Expected the right number of bytes to be read", EXPECTED_EXPORT_LENGTH, exported);
       assertEquals("There should be no more content in the export stream", -1, exportStream.read());
 
-      // TODO: Compare the binary part (using offsets in exportedBytes vs. the full UpFrontBinary)
-      System.out.println(new String(exportedBytes));
+      assertBinaryEnding(upFrontBinary, exportedBytes);
     }
 
+  }
+
+  /**
+   * Checks that the last exported binary is exported correctly.
+   *
+   * Compares {@code expected} with the subset of {@code exported} that is expected.length in size and is located
+   * immediately before the last 4 bytes.
+   * @param expected      the expected bytes.
+   * @param exported bytes from a WARC export.
+   */
+  private void assertBinaryEnding(byte[] expected, byte[] exported) {
+    int minLength = expected.length+4;
+    assertTrue("The exported bytes should be at least of length " + minLength + ", but was " + expected.length,
+               exported.length >= minLength);
+    int exportedOrigo = exported.length-4-expected.length;
+    for (int i = 0 ; i < expected.length ; i++) {
+      assertEquals(String.format(
+              Locale.ENGLISH, "The bytes at expected[%d] and exportedBytes[%d (%d-4-%d+%d)] should be equal",
+              i, exportedOrigo+i, exported.length, expected.length, i),
+                   expected[i], exported[exportedOrigo+i]);
+    }
   }
 
   public static void main(String[] args) throws Exception{
