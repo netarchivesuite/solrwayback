@@ -51,7 +51,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
         if (entryStreams.isEmpty()) {
           log.info("warcExport buffer empty");
           log.info("Warcs read:"+docsWarcRead +" arcs read:"+docsArcRead);
-          return totalRead;
+          return totalRead == 0 ? -1 : 0; // -1 signals EOS
         }
       }
 

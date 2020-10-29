@@ -61,8 +61,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
       byte[] exportedBytes = new byte[EXPECTED_EXPORT_LENGTH];
       long exported = exportStream.read(exportedBytes);
       assertEquals("Expected the right number of bytes to be read", EXPECTED_EXPORT_LENGTH, exported);
-      // TODO: This should return -1 to signal EOF, not 0!
-      assertEquals("There should be no more content in the export stream", 0, exportStream.read());
+      assertEquals("There should be no more content in the export stream", -1, exportStream.read());
 
       // TODO: Compare the binary part (using offsets in exportedBytes vs. the full UpFrontBinary)
       System.out.println(new String(exportedBytes));
