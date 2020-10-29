@@ -186,7 +186,7 @@ function getDomainStatistics(domain) {
 }
 
 function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
-  const url = 'services/frontend/images/search/' + `?query=${query}&latitude=${latitude}&longitude=${longitude}&d=${radius}`
+  const url = 'services/frontend/images/search/location/' + `?query=${query}&latitude=${latitude}&longitude=${longitude}&d=${radius}`
   return axios.get(
     url, {
       transformResponse: [

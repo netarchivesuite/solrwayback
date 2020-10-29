@@ -102,9 +102,9 @@ module.exports = {
         pathRewrite: { '^/services/statistics/domain/': '' },
         changeOrigin: true
       },
-      '^/services/frontend/images/search/': {
-        target: 'http://localhost:8080/solrwayback//services/frontend/images/search/',
-        pathRewrite: { '^/services/frontend/images/search/': '' },
+      '^/services/frontend/images/search/location/': {
+        target: 'http://localhost:8080/solrwayback//services/frontend/images/search/location/',
+        pathRewrite: { '^/services/frontend/images/search/location/': '' },
         changeOrigin: true
       },
     }

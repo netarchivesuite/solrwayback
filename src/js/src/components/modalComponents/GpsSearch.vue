@@ -141,7 +141,7 @@ export default {
       this.imageLayer = L.markerClusterGroup()
       images.forEach((item, index) => {
         let newMarker = L.marker(new L.LatLng(item.latitude,item.longitude), { title:item.urlNorm } )
-        newMarker.bindPopup(`<span title="${item.urlNorm}">${item.urlNorm}</span><img src="${item.imageUrl}&height=200&width=200" />`)
+        newMarker.bindPopup(`<span title="${item.resourceName}">${item.resourceName}</span><img src="${item.imageUrl}&height=200&width=200" />`)
         this.imageLayer.addLayer(newMarker)
       })	
       this.searchMap.addLayer(this.imageLayer)
