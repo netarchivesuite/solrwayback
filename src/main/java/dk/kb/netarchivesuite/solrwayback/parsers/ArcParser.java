@@ -236,7 +236,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
   }
   
 
-  public static BufferedInputStream lazyLoadBinary(String arcFilePath, long arcEntryPosition, long binarySize) throws Exception{
+  public static BufferedInputStream lazyLoadBinary(String arcFilePath, long arcEntryPosition) throws Exception{
       ArcEntry arcEntry = new ArcEntry(); // We just throw away the header info anyway 
       
       if (arcFilePath.endsWith(".gz")){ //It is zipped
@@ -249,8 +249,8 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
           GZIPInputStream zipStream = new GZIPInputStream(is);
           BufferedInputStream  bis= new BufferedInputStream(zipStream);
           loadArcHeaderZipped(bis, arcEntry);
-
-          BoundedInputStream maxStream = new BoundedInputStream(bis, binarySize);
+          
+          BoundedInputStream maxStream = new BoundedInputStream(bis, arcEntry.getBinaryArraySize());
           return new BufferedInputStream(maxStream); // It's a mess to use nested BufferedInputStreams...
           
         }
@@ -259,7 +259,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
             raf.seek(arcEntryPosition);
             loadArcHeaderNotZipped(raf, arcEntry);
             InputStream is = Channels.newInputStream(raf.getChannel());
-            BoundedInputStream maxStream = new BoundedInputStream(is, binarySize);
+            BoundedInputStream maxStream = new BoundedInputStream(is, arcEntry.getBinaryArraySize());
             BufferedInputStream bis = new BufferedInputStream(maxStream);
             return bis;
         }            
