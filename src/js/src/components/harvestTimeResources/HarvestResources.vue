@@ -51,7 +51,7 @@
 
 <script>
  import { requestService } from '../../services/RequestService'
- import {copyTextToClipboard} from './harvestUtil'
+ import {copyTextToClipboard} from '../../utils/globalUtils'
  
 export default {
   name: 'HarvestResources',

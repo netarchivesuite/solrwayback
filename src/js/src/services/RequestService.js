@@ -14,7 +14,8 @@ export const requestService = {
   getNormalizedUrlFacets,
   getHarvestedPageResources,
   getDomainStatistics,
-  getSearchGuidelines
+  getSearchGuidelines,
+  getPWID
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -183,3 +184,15 @@ function getDomainStatistics(domain) {
     return Promise.reject(error)
   })
 }
+
+function getPWID(sourceFilePath, offset) {
+  const url = `services/generatepwid/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
+  return axios.get(
+    url).then(response => {
+      console.log(response.data)
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
