@@ -665,9 +665,13 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
     	   showToolbar=false;
     	}      
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
-       log.info("from arch contenttype:"+arc.getContentType());
-    	//temporary hack.
-        
+           	
+    	log.info("from arch contenttype:"+arc.getContentType());
+
+       
+       //temporary hack.
+     
+       /*
         if ("br".equalsIgnoreCase(arc.getContentEncoding())){         
           log.info("fixing br encoding");
           InputStream in = new BrotliInputStream(new ByteArrayInputStream(arc.getBinary()));
@@ -680,6 +684,7 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
             InputStream in = new ChunkedInputStream(new ByteArrayInputStream(arc.getBinary()));            
             arc.setBinary(IOUtils.toByteArray(in)); //TODO charset?            
         }
+    	 */
     	    	        
         String encoding = arc.getContentCharset();
            

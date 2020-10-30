@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.playback;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,12 @@ public class HtmlPlayback  extends PlaybackHandler{
   public ArcEntry playback() throws Exception{    
     log.debug(" Generate webpage from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset() +" content encoding:"+arc.getContentEncoding());
     long start = System.currentTimeMillis();
-    ParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);
+    
+
+      arc.setBinary(IOUtils.toByteArray(arc.getBinaryContentAsStringUnCompressed())); //TODO charset;
+    
+    
+     ParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);
       String textReplaced=htmlReplaced.getReplaced();
 
       boolean xhtml =doc.getContentType().toLowerCase().indexOf("application/xhtml") > -1;            
