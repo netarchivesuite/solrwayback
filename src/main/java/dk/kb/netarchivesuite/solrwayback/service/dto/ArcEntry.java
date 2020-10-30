@@ -1,5 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.service.dto;
 
+
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
@@ -11,14 +13,29 @@ import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dk.kb.netarchivesuite.solrwayback.parsers.ArcParser;
+import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
+
 //Notice this class is returned both by the ArcParser and WarcParser.
 //Could not think of a good common name...
+
+
 
 @XmlRootElement
 public class ArcEntry {
 
+    public enum FORMAT {
+        ARC,
+        WARC
+      }
+
+    
+    
+  private static FORMAT format;
+    
   private static final Logger log = LoggerFactory.getLogger(ArcEntry.class);
-  
+  private String sourceFilePath; //full path
+  private long offset;  
   private boolean hasBeenDecompressed=false;
   private boolean chunked=false;
   private byte[] binary;
@@ -29,15 +46,34 @@ public class ArcEntry {
   private String contentCharset;
   private long contentLength;
   private long warcEntryContentLength; //From warc header#1. This does not exist for arc files
+  private long binaryArraySize;
   private String contentType; //As returned by the webserver when harvested
   private String contentTypeExt; //As returned by the webserver when harvested
-  private String fileName;
+  private String fileName; //only filename
   private String crawlDate; // format 2009-12-09T05:32:50Z
   private String contentEncoding;
   private String waybackDate; // format 20080331193532
   private String redirectUrl; //null if not redirect
   
-  public byte[] getBinary() {
+  
+  
+  public String getSourceFilePath() {
+    return sourceFilePath;
+}
+public void setSourceFilePath(String sourceFilePath) {
+    this.sourceFilePath = sourceFilePath;
+}
+public long getOffset() {
+    return offset;
+}
+public void setOffset(long offset) {
+    this.offset = offset;
+}
+
+/*
+ * Will only be loaded if specificed when constructed
+ */
+ public byte[] getBinary() {
     return binary;
   }
   public void setBinary(byte[] binary) {
@@ -83,7 +119,7 @@ public class ArcEntry {
   }
   public String getUrl() {
     return url;
-  }
+  }  
   
   /*
    *   In warc-header Target-URI can be enclosed in < and >. Remove them if that is the case   
@@ -101,7 +137,15 @@ public class ArcEntry {
     return contentEncoding;
   }
 
-  /**
+  
+  
+  public long getBinaryArraySize() {
+    return binaryArraySize;
+}
+public void setBinaryArraySize(long binaryArraySize) {
+    this.binaryArraySize = binaryArraySize;
+}
+/**
    * Lenient setter for content-encoding (compression).
    * Will trim leading and trailing whitespace and remove {@code "}-characters.
    * @param contentEncoding the encoding to use when retrieving content.
@@ -160,14 +204,37 @@ public class ArcEntry {
   public void setHasBeenDecompressed(boolean hasBeenDecompressed) {
     this.hasBeenDecompressed = hasBeenDecompressed;
   }
-  
-  
-  public boolean isChunked() {
+    
+public boolean isChunked() {
     return chunked;
 }
 public void setChunked(boolean chunked) {
     this.chunked = chunked;
 }
+
+
+public  FORMAT getFormat() {
+    return format;
+}
+public void setFormat(FORMAT format) {
+    ArcEntry.format = format;
+}
+/*
+ * Will wrap the byte[] in a BufferedInputStream
+ * 
+ * It is up the caller to close the inputstream!
+ * 
+ */
+  public BufferedInputStream getBinaryLazyLoad() throws Exception{
+      if (format.equals(FORMAT.ARC)) {
+         return ArcParser.lazyLoadBinary(sourceFilePath, offset);
+     }
+      else {
+          return WarcParser.lazyLoadBinary(sourceFilePath, offset);
+      }            
+  }
+   
+
 /*
    * Will decompres if gzip.
    */

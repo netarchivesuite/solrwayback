@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import org.junit.Test;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
@@ -37,5 +38,26 @@ public class ArcGzParserTest extends UnitTestUtils {
         assertEquals(1662,arcEntry.getBinary().length); //Actually loaded in binary
     }
     
-       
+ 
+    @Test
+    public void testLazyLoadBinary() throws Exception {
+        
+        File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc.gz");        
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(),7733, false); //Image entry
+        
+        assertNull(arcEntry.getBinary());
+        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 7733); //Image entry and load binary
+        byte[] orgBinary = arcEntry.getBinary();        
+        try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
+            byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
+            assertEquals("The expected number of bytes should be read from the lazy stream",
+                         newBinary.length, buf.read(newBinary));
+            assertEquals(orgBinary.length, newBinary.length); //Same length
+            assertArrayEquals(orgBinary, newBinary); //Same binary
+            assertEquals("There should be no more content in the lazy loaded stream", -1, buf.read());
+        }
+    }
+
+    
+    
 }

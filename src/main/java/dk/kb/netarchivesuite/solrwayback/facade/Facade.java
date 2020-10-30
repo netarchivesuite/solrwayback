@@ -400,7 +400,11 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
         return ArcParserFileResolver.getArcEntry(source_file_path, offset);        
     }
     
-
+    public static ArcEntry getArcEntry(String source_file_path, long offset, boolean loadBinary) throws Exception{         
+        return ArcParserFileResolver.getArcEntry(source_file_path, offset,loadBinary);        
+    }
+    
+    
     public static InputStream exportWarcStreaming(
             boolean expandResources, boolean avoidDuplicates, String query, String... filterqueries) {
       SolrGenericStreaming solr = new SolrGenericStreaming(
@@ -408,7 +412,6 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
               expandResources, avoidDuplicates, query, filterqueries);
 
       // TODO: Why do we have a max of 1M?
-      //Buffer size 100 only since the binary can be big
       return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000); //1M max. results just for now
     }
  
