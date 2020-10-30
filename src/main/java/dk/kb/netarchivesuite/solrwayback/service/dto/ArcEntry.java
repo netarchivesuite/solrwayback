@@ -235,6 +235,17 @@ public void setFormat(FORMAT format) {
       }            
   }
    
+  public InputStream getBinaryStreamNoEncoding() throws Exception {
+      //Chain the inputstreams in correct order.
+      InputStream binaryStream = new ByteArrayInputStream(binary);      
+      InputStream maybeDechunked = maybeDechunk(binaryStream);
+      InputStream maybeUnziped = maybeUnzip(maybeDechunked);
+      InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeUnziped);
+
+      return  maybeBrotliDecoded;
+      
+  }
+  
 
   /*
    * Will dechunk, unzip  Brotli decode  if required (in that order)
@@ -281,7 +292,7 @@ public void setFormat(FORMAT format) {
       if ("br".equalsIgnoreCase(contentEncoding)){    
           log.info("brotli decode");
           InputStream brIs = new BrotliInputStream(before);
-          this.setContentEncoding("UTF-8");
+          this.setContentEncoding("identity");
           return brIs;                
       }
       else {
@@ -304,7 +315,7 @@ public void setFormat(FORMAT format) {
   
   private InputStream maybeUnzip(InputStream before) throws Exception{
       if ("gzip".equalsIgnoreCase(contentEncoding) || "x-gzip".equalsIgnoreCase(contentEncoding)) {
-          this.setContentEncoding("UTF-8");
+          this.setContentEncoding("identity");
           log.info("uunzip");
           return new GZIPInputStream(before);
           
