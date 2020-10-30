@@ -9,18 +9,23 @@ export default {
   mounted () {
     // this.chartData is created in the mixin.
     // If you want to pass options please create a local options object
-    this.renderChart(this.chartData, this.getMergedOptions() )
+    this.renderChart(this.chartData,  this.getMergedOptions())
+  },
+
+  data: function () {
+    return {
+        mutableOptions: this.options
+    }
   },
 
   methods: {
-      
-      pointCallBack(evt) {
-       const chartInstance = this.$data._chart  
+     chartPointCallBack(evt) {
+       const chartInstance = this._data._chart  
        this.$_handleSearch(chartInstance, evt)
       },
 
       getMergedOptions(){
-         return this.options['onClick'] = this.pointCallBack
+         return this.mutableOptions.onClick = this.chartPointCallBack
       }
   }
 

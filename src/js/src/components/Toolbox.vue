@@ -24,8 +24,8 @@
         <button :class="currentTool === 'gephiexport' ? 'activeTool' : ''" @click="setCurrentTool('gephiexport')">
           Link graph Gephi export
         </button>
-        <button :class="currentTool === 'smurf' ? 'activeTool' : ''" @click="navigateTo('ngram')">
-          Smurf
+        <button @click="navigateTo('ngram')">
+          Ngram
         </button>
         <hr>
       </div>
@@ -34,7 +34,6 @@
       <domain-stats v-if="currentTool === 'domainstats'" />
       <html-tags v-if="currentTool === 'htmltags'" />
       <gephi-export v-if="currentTool === 'gephiexport'" />
-      <smurf v-if="currentTool === 'smurf'" />
     </div>
   </div>
 </template>
@@ -45,7 +44,7 @@ import LinkGraph from './ToolboxComponents/LinkGraph'
 import DomainStats from './ToolboxComponents/DomainStats'
 import HtmlTags from './ToolboxComponents/HtmlTags'
 import GephiExport from './ToolboxComponents/GephiExport'
-import Smurf from './ToolboxComponents/Smurf'
+
 
 
 export default {
@@ -56,7 +55,7 @@ export default {
     DomainStats,
     HtmlTags,
     GephiExport,
-    Smurf,
+   
   },
   data() {
     return {

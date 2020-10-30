@@ -1,5 +1,10 @@
 import Config from '../../netarchive/configs'
 
+/**
+ * Here we keep all the specific logic and options
+ * needed for configuring the chart
+ * 
+ */
 export default {
   /**
   * Generate labels for chart.
@@ -24,9 +29,9 @@ export default {
     return {
      tooltips:this.getTooltipOptions(),
      scales: this.getScalesOptions(),   
-     responsive: true, 
-     maintainAspectRatio: true,
-     aspectRatio:2
+     responsive: true,
+     maintainAspectRatio: false
+   
     }
   },
 
