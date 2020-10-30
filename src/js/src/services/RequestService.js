@@ -187,7 +187,7 @@ function getDomainStatistics(domain) {
 }
 
 function getNgramNetarchive(query){
-  const url = `services/smurf/text/?q=${encodeURIComponent(query)}&startyear=${NgramConfig.START_YEAR}`
+  const url = `services/frontend/smurf/text/?q=${encodeURIComponent(query)}&startyear=${NgramConfig.START_YEAR}`
   return axios.get(url).then(response => {
     return response.data
   }).catch(error => {

@@ -103,9 +103,9 @@ module.exports = {
         changeOrigin: true
       },
 
-      '^/services/smurf/text/': {
-        target: 'http://localhost:8080/solrwayback/services/smurf/text/',
-        pathRewrite: { '^/services/smurf/text/': '' },
+      '^/services/frontend/smurf/text/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/smurf/text/',
+        pathRewrite: { '^/services/frontend/smurf/text/': '' },
         changeOrigin: true
       },
     }
