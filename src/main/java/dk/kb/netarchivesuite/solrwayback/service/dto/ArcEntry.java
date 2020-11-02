@@ -234,16 +234,28 @@ public void setFormat(FORMAT format) {
           return WarcParser.lazyLoadBinary(sourceFilePath, offset);
       }            
   }
-   
+  
+  public InputStream getBinaryLazyLoadNoChucking() throws Exception{
+      if (format.equals(FORMAT.ARC)) {
+         BufferedInputStream is = ArcParser.lazyLoadBinary(sourceFilePath, offset);
+         return maybeDechunk(is);
+      }
+      else {
+         InputStream is = WarcParser.lazyLoadBinary(sourceFilePath, offset);
+          return maybeDechunk(is);
+      }            
+  }
+  
+  
+  
   public InputStream getBinaryStreamNoEncoding() throws Exception {
+     
       //Chain the inputstreams in correct order.
       InputStream binaryStream = new ByteArrayInputStream(binary);      
       InputStream maybeDechunked = maybeDechunk(binaryStream);
       InputStream maybeUnziped = maybeUnzip(maybeDechunked);
       InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeUnziped);
-
-      return  maybeBrotliDecoded;
-      
+      return  maybeBrotliDecoded;      
   }
   
 

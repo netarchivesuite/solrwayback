@@ -15,10 +15,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
-
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -29,9 +29,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.httpclient.ChunkedInputStream;
-import org.apache.commons.io.IOUtils;
-import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,15 +38,9 @@ import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
-import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
-import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
-import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
-import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
-import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -66,8 +57,6 @@ public class SolrWaybackResource {
 
   private static final Logger log = LoggerFactory.getLogger(SolrWaybackResource.class);
   
-  
-
   
   /*
    * Only for debugging/error finding. Not called from SolrWayback frontend.
@@ -212,7 +201,7 @@ public class SolrWaybackResource {
     try {
 
       log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
-      ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+      ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,false); //DO not load binary in memory
       
       //Only solr lookup if redirect.
       if (arcEntry.getStatus_code() >= 300 &&  arcEntry.getStatus_code() <= 399 ){
@@ -222,23 +211,8 @@ public class SolrWaybackResource {
         return responseRedirect;
       }
       
-      //temp dirty hack to see if it fixes brotli
-      InputStream in;
-      if ("br".equalsIgnoreCase(arcEntry.getContentEncoding())){
-      in = new BrotliInputStream(new ByteArrayInputStream(arcEntry.getBinary()));
-      arcEntry.setContentEncoding(null); //Clear encoding.
-      arcEntry.setHasBeenDecompressed(true);
-      in = new BrotliInputStream(new ChunkedInputStream(new ByteArrayInputStream(arcEntry.getBinary())));
-      }
-      else if (arcEntry.isChunked()) {
-          log.info("fixing chuncked HTML");
-          in = new ChunkedInputStream(new ByteArrayInputStream(arcEntry.getBinary()));                                  
+      InputStream in = arcEntry.getBinaryLazyLoadNoChucking(); //Stream entry. Dechucking require as tomcat/apache also chunks.
       
-      }      
-      else{      
-       in = new ByteArrayInputStream(arcEntry.getBinary());
-       
-      }
       ResponseBuilder response = null;
       try{        
         String contentType = arcEntry.getContentType();
