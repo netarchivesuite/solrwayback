@@ -51,7 +51,7 @@
         </div>
       </div>
       <div class="tools">
-        <button class="searchByFileButton" @click="showUploadFileSearch = !showUploadFileSearch">
+        <button class="searchByFileButton" @click.prevent="showUploadFileSearch = !showUploadFileSearch">
           Search with uploaded file
         </button>
         <button class="toolbox" @click.prevent="toggleToolbox()">

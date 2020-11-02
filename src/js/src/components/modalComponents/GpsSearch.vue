@@ -60,9 +60,9 @@ export default {
   },
   mixins: [SearchUtils],
   data: () => ({
-    longitude:0,
-    latitude:0,
-    radius:50,
+    longitude:configs.leaflet.map.longitude || 0,
+    latitude:configs.leaflet.map.latitude || 0,
+    radius:configs.leaflet.map.radius / 1000 || 50,
     imgQuery:'*:*',
     searchMap:null,
     selected:null,
@@ -82,9 +82,7 @@ export default {
     }
   },
   mounted () {
-    this.longitude = configs.leaflet.map.longitude
-    this.latitude = configs.leaflet.map.latitude
-    this.radius = configs.leaflet.map.radius / 1000
+
     this.createMap()
   },
   methods: {
@@ -118,8 +116,14 @@ export default {
       this.setLoadingStatus(true)
       this.imgResults = {}
       requestService.fireGeoImageSearchRequest(this.imgQuery,this.latitude,this.longitude,this.radius)
-      .then(result => (this.imgResults = result.response,this.mapSize = 'half', this.resultSize = 'half', this.plotImagesOnMap(this.imgResults.images), this.setLoadingStatus(false)), error => (console.log('Error in seaching for images by location.'), this.setLoadingStatus(false)))
-      //this.requestGeoImageSearch({query:this.imgQuery,latitude:this.latitude,longitude: this.longitude,radius: this.radius}).then(this.mapSize = 'half', this.resultSize = 'half',this.recalculateMap())
+      .then(result => (this.imgResults = result.response, this.setScreenOnSuccessfullResult()),
+            error => (console.log('Error in seaching for images by location.'), this.setLoadingStatus(false)))
+    },
+    setScreenOnSuccessfullResult() {
+      this.mapSize = 'half'
+      this.resultSize = 'half'
+      this.plotImagesOnMap(this.imgResults.images)
+      this.setLoadingStatus(false)
     },
     setNewSearchArea(e) {
       this.selected.clearLayers()
@@ -152,17 +156,17 @@ export default {
       this.searchMap.addLayer(this.imageLayer)
     },
     dividerPosition() {
-      let decision = ''
+      let position = ''
       if(this.mapSize === 'full') {
-        decision = 'end'
+        position = 'end'
       }
       else if(this.resultSize === 'full') {
-        decision = 'start'
+        position = 'start'
       }
       else {
-        decision = 'half'
+        position = 'half'
       }
-      return 'dividerButtons ' + decision
+      return 'dividerButtons ' + position
     },
     changeView(direction) {
       if(direction === 'forward') {
