@@ -4,7 +4,8 @@
       <line-chart v-if="datasets.length > 0"
                   :chart-data="datacollection"
                   :options="options"
-                  :chart-id="'netarchive-chart'" />
+                  :chart-id="'netarchive-chart'"
+                  :height="150" />
     </div>
   </div>
 </template>

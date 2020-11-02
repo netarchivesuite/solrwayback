@@ -29,9 +29,8 @@ export default {
     return {
      tooltips:this.getTooltipOptions(),
      scales: this.getScalesOptions(),   
-     responsive: true,
-     maintainAspectRatio: false
-   
+     //responsive: true,
+     maintainAspectRatio: true
     }
   },
 

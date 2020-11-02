@@ -22,11 +22,9 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import NavHelper from './navHelper'
 
 export default {
   name: 'SearchBox',
-  mixins: [NavHelper],
  
   data () {
     return {    
@@ -36,7 +34,7 @@ export default {
   
   computed: {
     ...mapState({
-      query: state => state.Ngram.query,
+     query: state => state.Ngram.query,
      results: state => state.Ngram.results,
      loading: state => state.Ngram.loading,
      datasetQueries: state => state.Ngram.datasetQueries
@@ -49,12 +47,6 @@ export default {
     },
   },
   
-  mounted () {
-     // Gather query params from URL
-    const currentURLParams  = this.$router.history.current.query 
-    this.$_doSearchFromQueryParams(currentURLParams)
-  },
-  
   methods: {
     ...mapActions('Ngram', {
       resetSearchState:'resetState',
@@ -62,13 +54,11 @@ export default {
     }),
 
     submitSearch() {
-      const newQuery = { ...this.$route.query } 
-      newQuery['query' + this.datasetQueries.length] = this.searchQuery
-      this.$router.push({ path: 'ngram', query: newQuery})
+      this.doSearch(this.searchQuery)
+
     },
 
     resetState() {
-      this.$router.push(this.$route.path)
       this.resetSearchState()
     }
   }

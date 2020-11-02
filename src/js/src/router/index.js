@@ -44,15 +44,6 @@ const routes = [
     },
     component: () =>
       import(/* webpackChunkName: "page-harvest-data" */ '../views/PageHarvestData.vue')
-  },
-  {
-    path: '/ngram',
-    name: 'Ngram',
-    meta: {
-      title: 'Ngram netarchive'
-    },
-    component: () =>
-      import(/* webpackChunkName: "page-harvest-data" */ '../views/Ngram.vue')
   }
 ]
 

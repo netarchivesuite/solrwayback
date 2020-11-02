@@ -24,8 +24,8 @@
         <button :class="currentTool === 'gephiexport' ? 'activeTool' : ''" @click="setCurrentTool('gephiexport')">
           Link graph Gephi export
         </button>
-        <button @click="navigateTo('ngram')">
-          Ngram
+        <button :class="currentTool === 'ngramnetarchive' ? 'activeTool' : ''" @click="setCurrentTool('ngramnetarchive')">
+          Ngram Netarchive 
         </button>
         <hr>
       </div>
@@ -34,6 +34,7 @@
       <domain-stats v-if="currentTool === 'domainstats'" />
       <html-tags v-if="currentTool === 'htmltags'" />
       <gephi-export v-if="currentTool === 'gephiexport'" />
+      <ngram-netarchive v-if="currentTool === 'ngramnetarchive'" />
     </div>
   </div>
 </template>
@@ -44,7 +45,7 @@ import LinkGraph from './ToolboxComponents/LinkGraph'
 import DomainStats from './ToolboxComponents/DomainStats'
 import HtmlTags from './ToolboxComponents/HtmlTags'
 import GephiExport from './ToolboxComponents/GephiExport'
-
+import NgramNetarchive from './ToolboxComponents/NgramNetarchive'
 
 
 export default {
@@ -55,6 +56,7 @@ export default {
     DomainStats,
     HtmlTags,
     GephiExport,
+    NgramNetarchive
    
   },
   data() {
@@ -68,9 +70,6 @@ export default {
     },
     setCurrentTool(tool) {
       this.currentTool = tool
-    },
-    navigateTo(destination) {
-      this.$router.push(destination)
     }
   }
   
