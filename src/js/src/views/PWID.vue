@@ -8,7 +8,9 @@
         <span class="copyToClipboardText" @click.prevent="copyPWID(PWIDData)">Copy PWID to clip board</span>
         <span class="copyToClipboard" :class="PWIDCopied ? 'checkmarkIcon' : 'clipBoardIcon'" @click.prevent="copyPWID(PWIDData)" />
       </div>
-      {{ PWIDData }}
+      <span class="PWIDRawData">
+        {{ PWIDData }}
+      </span>
     </div>
   </div>     
 </template>
