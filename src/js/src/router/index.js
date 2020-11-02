@@ -52,7 +52,7 @@ const routes = [
       title: 'PWID'
     },
     component: () =>
-      import(/* webpackChunkName: "page-harvest-data" */ '../views/PWID.vue')
+      import(/* webpackChunkName: "PWID" */ '../views/PWID.vue')
   }
 ]
 
