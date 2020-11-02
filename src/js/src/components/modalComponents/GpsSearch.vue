@@ -51,6 +51,7 @@ import ImageSearchResults from '../searchResults/ImageSearchResults'
 import SearchUtils from './../../mixins/SearchUtils'
 import { mapState, mapActions } from 'vuex'
 import { requestService } from '../../services/RequestService'
+import configs from '../../configs'
 
 export default {
   name: 'GpsSearch',
@@ -81,6 +82,9 @@ export default {
     }
   },
   mounted () {
+    this.longitude = configs.leaflet.map.longitude
+    this.latitude = configs.leaflet.map.latitude
+    this.radius = configs.leaflet.map.radius / 1000
     this.createMap()
   },
   methods: {
@@ -88,11 +92,11 @@ export default {
       setLoadingStatus:'setLoadingStatus'
     }),
     createMap() {
-        this.searchMap = L.map('gpsMap', null, { zoomControl: false }).setView([56.1572, 10.2107], 7)
+        this.searchMap = L.map('gpsMap', null, { zoomControl: false }).setView([this.latitude, this.longitude], 7)
         //If https problems occur, try https://a.tile.openstreetmap.org/{z}/{x}/{y}.png instead.
         //Old access point: https://{s}.tile.osm.org/{z}/{x}/{y}.png
-        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
+        L.tileLayer(configs.leaflet.source, {
+        attribution: configs.leaflet.attribution
       }).addTo(this.searchMap)
       const defaultIcon = L.icon({
         iconSize: [25, 41],
@@ -112,6 +116,7 @@ export default {
     },
     doGeoSearch() {
       this.setLoadingStatus(true)
+      this.imgResults = {}
       requestService.fireGeoImageSearchRequest(this.imgQuery,this.latitude,this.longitude,this.radius)
       .then(result => (this.imgResults = result.response,this.mapSize = 'half', this.resultSize = 'half', this.plotImagesOnMap(this.imgResults.images), this.setLoadingStatus(false)), error => (console.log('Error in seaching for images by location.'), this.setLoadingStatus(false)))
       //this.requestGeoImageSearch({query:this.imgQuery,latitude:this.latitude,longitude: this.longitude,radius: this.radius}).then(this.mapSize = 'half', this.resultSize = 'half',this.recalculateMap())

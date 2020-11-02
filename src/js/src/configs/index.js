@@ -7,5 +7,14 @@ export default {
     warcAllowed:false,
     csvAllowed:false,
     csvFields:''
-  }
+  },
+  leaflet: {
+    attribution:'',
+    source:'',
+    map: {
+      latitude:'',
+      longitude:'',
+      radius:''
+    }
+  },
 }
