@@ -31,5 +31,7 @@ export default {
    SearchBox,
    Notifications
   }
+
+  
 }
 </script>

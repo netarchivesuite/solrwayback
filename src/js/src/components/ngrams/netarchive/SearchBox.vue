@@ -46,6 +46,10 @@ export default {
       this.searchQuery  = val
     },
   },
+
+  beforeDestroy() {
+        this.resetSearchState()
+  },
   
   methods: {
     ...mapActions('Ngram', {
@@ -61,7 +65,9 @@ export default {
     resetState() {
       this.resetSearchState()
     }
+    
   }
+  
 }
 
 </script>

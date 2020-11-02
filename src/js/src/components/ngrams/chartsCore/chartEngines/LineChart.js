@@ -36,6 +36,9 @@ export default {
       getMergedOptions(){
          return this.mutableOptions.onClick = this.chartPointCallBack
       }
-  }
+  },
+  beforeDestroy() {
+    this._data._chart.destroy()
+},
 
 }
