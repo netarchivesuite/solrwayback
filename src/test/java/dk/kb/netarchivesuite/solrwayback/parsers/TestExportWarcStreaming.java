@@ -1,25 +1,22 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Locale;
-
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
-import org.apache.commons.io.FileUtils;
-
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.Locale;
+import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -43,26 +40,46 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
 
     {
-      SolrDocument doc = new SolrDocument();
-      doc.addField("id", "MockedDocument");
-      doc.addField("source_file_path", WARC);
-      doc.addField("source_file_offset", OFFSET);
-
-      SolrDocumentList docs = new SolrDocumentList();
-      docs.setMaxScore(1.0f);
-      docs.setNumFound(1);
-      docs.setStart(System.currentTimeMillis());
-      docs.add(doc);
-
-      SolrGenericStreaming mockedSolr = mock(SolrGenericStreaming.class);
-      when(mockedSolr.nextDocuments()).thenReturn(docs).thenReturn(null); // Return docs on first call, then null
+      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, 1);
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
-              StreamingSolrWarcExportBufferedInputStream(mockedSolr, 1);
+              StreamingSolrWarcExportBufferedInputStream(mockedSolr, 1, false);
 
       byte[] exportedBytes = new byte[EXPECTED_EXPORT_LENGTH];
-      long exported = exportStream.read(exportedBytes);
+      int exported = IOUtils.read(exportStream, exportedBytes);
       assertEquals("Expected the right number of bytes to be read", EXPECTED_EXPORT_LENGTH, exported);
+      assertEquals("There should be no more content in the export stream", -1, exportStream.read());
+
+      assertBinaryEnding(upFrontBinary, exportedBytes);
+    }
+  }
+
+  @Test
+  public void testGzipExport() throws Exception {
+    final String WARC = getFile("compressions_warc/transfer_compression_none.warc.gz").getCanonicalPath();
+    final long OFFSET = 881;
+    final int EXPECTED_CONTENT_LENGTH = 246;
+    final int EXPECTED_EXPORT_LENGTH = 1102;
+    final int recordCount = 2;
+
+    byte[] upFrontBinary;
+    {
+      ArcEntry warcEntry = WarcParser.getWarcEntry(WARC, OFFSET, true);
+      upFrontBinary = warcEntry.getBinary();
+      assertEquals("Length for up front load should be as expected", EXPECTED_CONTENT_LENGTH, upFrontBinary.length);
+    }
+
+    {
+      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, recordCount);
+
+      StreamingSolrWarcExportBufferedInputStream exportStream = new
+              StreamingSolrWarcExportBufferedInputStream(mockedSolr, 1, true);
+      GZIPInputStream gis = new GZIPInputStream(exportStream);
+
+      byte[] exportedBytes = new byte[recordCount*EXPECTED_EXPORT_LENGTH];
+
+      int exported = IOUtils.read(gis, exportedBytes);
+      assertEquals("Expected the right number of bytes to be read", recordCount*EXPECTED_EXPORT_LENGTH, exported);
       assertEquals("There should be no more content in the export stream", -1, exportStream.read());
 
       assertBinaryEnding(upFrontBinary, exportedBytes);
@@ -128,5 +145,25 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
     
   }
-  
+
+  private SolrGenericStreaming getMockedSolrStream(String WARC, long OFFSET, int docCount) throws Exception {
+    SolrDocumentList docs = new SolrDocumentList();
+    docs.setMaxScore(1.0f);
+    docs.setNumFound(1);
+    docs.setStart(System.currentTimeMillis());
+
+    for (int i = 0 ; i < docCount ; i++) {
+      SolrDocument doc = new SolrDocument();
+      doc.addField("id", "MockedDocument_" + i);
+      doc.addField("source_file_path", WARC);
+      doc.addField("source_file_offset", OFFSET);
+      docs.add(doc);
+    };
+
+    SolrGenericStreaming mockedSolr = mock(SolrGenericStreaming.class);
+    when(mockedSolr.nextDocuments()).thenReturn(docs).thenReturn(null); // Return docs on first call, then null
+    return mockedSolr;
+  }
+
+
 }

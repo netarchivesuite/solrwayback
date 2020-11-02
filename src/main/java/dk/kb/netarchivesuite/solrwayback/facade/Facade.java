@@ -412,7 +412,7 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
               expandResources, avoidDuplicates, query, filterqueries);
 
       // TODO: Why do we have a max of 1M?
-      return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000); //1M max. results just for now
+      return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000, false); //1M max. results just for now
     }
  
    
