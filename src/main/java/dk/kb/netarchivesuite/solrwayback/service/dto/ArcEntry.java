@@ -241,7 +241,7 @@ public void setFormat(FORMAT format) {
          return maybeDechunk(is);
       }
       else {
-         InputStream is = WarcParser.lazyLoadBinary(sourceFilePath, offset);
+           InputStream is = WarcParser.lazyLoadBinary(sourceFilePath, offset);
           return maybeDechunk(is);
       }            
   }
