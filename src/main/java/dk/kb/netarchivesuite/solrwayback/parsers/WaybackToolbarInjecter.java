@@ -243,7 +243,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
   
   private static String generatePwid(String image, String source_file_path, long offset) throws Exception{
 
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/generatepwid?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">PWID xml</span></a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pwid?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">PWID xml</span></a>";
   }
   
   

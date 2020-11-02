@@ -8,6 +8,7 @@ import java.util.zip.GZIPInputStream;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.httpclient.ChunkedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
@@ -196,7 +197,7 @@ public void setBinaryArraySize(long binaryArraySize) {
   }
   public void setRedirectUrl(String redirectUrl) {
     this.redirectUrl = redirectUrl;
-  }	
+  } 
   
   public boolean isHasBeenDecompressed() {
     return hasBeenDecompressed;
@@ -233,26 +234,53 @@ public void setFormat(FORMAT format) {
           return WarcParser.lazyLoadBinary(sourceFilePath, offset);
       }            
   }
-   
+  
+  public InputStream getBinaryLazyLoadNoChucking() throws Exception{
+      if (format.equals(FORMAT.ARC)) {
+         BufferedInputStream is = ArcParser.lazyLoadBinary(sourceFilePath, offset);
+         return maybeDechunk(is);
+      }
+      else {
+           InputStream is = WarcParser.lazyLoadBinary(sourceFilePath, offset);
+          return maybeDechunk(is);
+      }            
+  }
+  
+  
+  
+  public InputStream getBinaryStreamNoEncoding() throws Exception {
+     
+      //Chain the inputstreams in correct order.
+      InputStream binaryStream = new ByteArrayInputStream(binary);      
+      InputStream maybeDechunked = maybeDechunk(binaryStream);
+      InputStream maybeUnziped = maybeUnzip(maybeDechunked);
+      InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeUnziped);
+      return  maybeBrotliDecoded;      
+  }
+  
 
-/*
-   * Will decompres if gzip.
+  /*
+   * Will dechunk, unzip  Brotli decode  if required (in that order)
    */
   public String getBinaryContentAsStringUnCompressed() throws Exception{
-    if ("br".equalsIgnoreCase(contentEncoding)){
-     log.warn("br (brotli) encoding not supported");    
-     InputStream brIs = new BrotliInputStream(new ByteArrayInputStream(binary));
-     String content = IOUtils.toString(brIs, "UTF-8");
-     return content;      
-    }
     
-    else if ("gzip".equalsIgnoreCase(contentEncoding) || "x-gzip".equalsIgnoreCase(contentEncoding)){
-      log.info("gzip detected, decompressing");      
-      GZIPInputStream gzipStream = new GZIPInputStream (new ByteArrayInputStream(binary));                       
-      String content = IOUtils.toString(gzipStream, "UTF-8");      
-      return content;      
-    }
-    else{
+      
+      
+      //Chain the inputstreams in correct order.
+      InputStream binaryStream = new ByteArrayInputStream(binary);      
+      InputStream maybeDechunked = maybeDechunk(binaryStream);
+      InputStream maybeUnziped = maybeUnzip(maybeDechunked);
+      InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeUnziped);
+          
+       hasBeenDecompressed=true;
+      return IOUtils.toString(maybeBrotliDecoded, "UTF-8"); //READ below!                       
+                          
+      //IMPORTANT! If no encoding is applied , maybe replace UTF-8 with below
+      /*    
+        if (encoding == null || "utf-8".equals(encoding)){ // still check?
+      String content = IOUtils.toString(gzipStream, "UTF-8");
+    
+    
       String encoding = this.getContentCharset();
       if (encoding == null || "utf-8".equals(encoding)){
         encoding ="UTF-8";   
@@ -264,12 +292,52 @@ public void setFormat(FORMAT format) {
       return text;
       }
       catch(Exception e){
-    	  log.warn("Encoding error for encoding:"+encoding);    	  
+          log.warn("Encoding error for encoding:"+encoding);          
       }
       return new String(this.getBinary()); //UNKOWN ENCODING!
-      
+      */
 
-    }  
+      
   }
 
+  private InputStream maybeBrotliDecode(InputStream before) throws Exception{
+      
+      if ("br".equalsIgnoreCase(contentEncoding)){    
+          log.info("brotli decode");
+          InputStream brIs = new BrotliInputStream(before);
+          this.setContentEncoding("identity");
+          return brIs;                
+      }
+      else {
+          return before;
+      }                
+  }
+
+  
+  private InputStream maybeDechunk(InputStream before) throws Exception{
+      if (isChunked()) {
+      log.info("dechunking");
+      this.setChunked(false);
+          return new ChunkedInputStream(before);
+          
+      }
+      else {
+          return before;
+      }                
+  }
+  
+  private InputStream maybeUnzip(InputStream before) throws Exception{
+      if ("gzip".equalsIgnoreCase(contentEncoding) || "x-gzip".equalsIgnoreCase(contentEncoding)) {
+          this.setContentEncoding("identity");
+          log.info("uunzip");
+          return new GZIPInputStream(before);
+          
+      }
+      else {
+          return before;
+      }                
+  }
+  
+  
+  
 }

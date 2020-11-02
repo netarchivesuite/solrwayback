@@ -108,6 +108,12 @@ module.exports = {
         pathRewrite: { '^/services/frontend/smurf/text/': '' },
         changeOrigin: true
       },
+      
+      '^/services/generatepwid/': {
+        target: 'http://localhost:8080/solrwayback/services/generatepwid/',
+        pathRewrite: { '^/services/generatepwid/': '' },
+        changeOrigin: true
+      },
     }
   },
   publicPath: process.env.NODE_ENV === 'production'

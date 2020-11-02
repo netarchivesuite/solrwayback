@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
@@ -236,7 +237,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
   }
   
 
-  public static BufferedInputStream lazyLoadBinary(String arcFilePath, long arcEntryPosition) throws Exception{
+  public static BufferedInputStream lazyLoadBinary(String arcFilePath, long arcEntryPosition) throws Exception {
       ArcEntry arcEntry = new ArcEntry(); // We just throw away the header info anyway 
       
       if (arcFilePath.endsWith(".gz")){ //It is zipped
