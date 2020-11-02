@@ -668,23 +668,6 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
            	
     	log.info("from arch contenttype:"+arc.getContentType());
 
-       
-       //temporary hack.
-     
-       /*
-        if ("br".equalsIgnoreCase(arc.getContentEncoding())){         
-          log.info("fixing br encoding");
-          InputStream in = new BrotliInputStream(new ByteArrayInputStream(arc.getBinary()));
-          arc.setContentEncoding(null); //Clear br encoding.
-          arc.setHasBeenDecompressed(true);
-          arc.setBinary(IOUtils.toByteArray(in)); //TODO charset?  
-        }
-        else if (arc.isChunked()) { //Guess we can not have brotli and chunked at the same time!            
-            log.info("fixing chuncked HTML");
-            InputStream in = new ChunkedInputStream(new ByteArrayInputStream(arc.getBinary()));            
-            arc.setBinary(IOUtils.toByteArray(in)); //TODO charset?            
-        }
-    	 */
     	    	        
         String encoding = arc.getContentCharset();
            

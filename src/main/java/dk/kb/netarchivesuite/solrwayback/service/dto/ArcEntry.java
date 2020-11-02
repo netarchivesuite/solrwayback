@@ -272,6 +272,7 @@ public void setFormat(FORMAT format) {
       InputStream maybeUnziped = maybeUnzip(maybeDechunked);
       InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeUnziped);
           
+       hasBeenDecompressed=true;
       return IOUtils.toString(maybeBrotliDecoded, "UTF-8"); //READ below!                       
                           
       //IMPORTANT! If no encoding is applied , maybe replace UTF-8 with below

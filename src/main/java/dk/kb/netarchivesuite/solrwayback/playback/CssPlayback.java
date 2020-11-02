@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.playback;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,15 +19,15 @@ public class CssPlayback  extends PlaybackHandler{
   @Override
   public ArcEntry playback() throws Exception{    
     //Never show the toolbar.
-    long start = System.currentTimeMillis();    
+      arc.setBinary(IOUtils.toByteArray(arc.getBinaryContentAsStringUnCompressed())); //TODO charset;
+      
     String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);                
     if (!"gzip".equalsIgnoreCase(arc.getContentEncoding())){ //TODO x-gzip brotli
       arc.setBinary(textReplaced.getBytes(arc.getContentCharset()));
       }
       else{
        arc.setBinary(textReplaced.getBytes("UTF-8"));  
-      }
-    arc.setHasBeenDecompressed(true);
+      }    
     return arc;
   }
   
