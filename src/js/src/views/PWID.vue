@@ -29,7 +29,6 @@ export default {
     Notifications
   },
 
-  
   data () {
     return {
             PWIDData: null,
@@ -39,8 +38,6 @@ export default {
             copiedItem: null
         }
   },
-
-  
   
   mounted () {
     if (this.$route.query.source_file_path){
@@ -49,14 +46,12 @@ export default {
      }
      requestService.getPWID(this.sourcefilepath, this.offset)
         .then(response => {
-          console.log(response)
             if (response === '') {
               this.noResults = true
             } else {
            this.PWIDData = response
           }
         }).catch((e) => {
-          console.log(e)
           this.setNotification({
           	title: 'We are so sorry!',
             text: 'Something went wrong when fetching the PWID data - please try again',
@@ -71,6 +66,7 @@ export default {
     ...mapActions('Notifier', {
       setNotification: 'setNotification'
     }),
+    
     copyPWID: function(text, index) {
       if (copyTextToClipboard(text)) {
          this.PWIDCopied = true
