@@ -1,4 +1,5 @@
 import Config from '../../netarchive/configs'
+import SearchHelper from '../../searchHelper'
 
 /**
  * Here we keep all the specific logic and options
@@ -30,7 +31,31 @@ export default {
      tooltips:this.getTooltipOptions(),
      scales: this.getScalesOptions(),   
      //responsive: true,
-     maintainAspectRatio: true
+     maintainAspectRatio: true,
+     onClick: (evt, chartObj) => {
+       this.getChartPointCallback(evt, chartObj)
+    }
+   }
+  },
+
+  /**
+   * The callback attached to all clickable points on
+   * the chart. 
+   * 
+   * Generates and executes a search (new tab) when user
+   * clicks a a point    
+   */
+  getChartPointCallback(evt, chartObj) {
+    // We have to fetch the chart instance this way because direct 
+    // access to the vue chart instance is out of scope here (resides LineChart.js).
+    // If you try to go the "correct way" and enrich options on render in LineChart.js
+    // vueChartJS refuses to function correctly on first search
+    const chartInstance = chartObj[0]._chart
+    const activeElement = chartInstance.getElementAtEvent(evt)
+    if (activeElement.length > 0) {
+      const yearFromClick = activeElement[0]._xScale.ticks[activeElement[0]._index]
+      const queryFromClick = chartInstance.config.data.datasets[activeElement[0]._datasetIndex].label
+      SearchHelper.handleSearch(queryFromClick, yearFromClick)
     }
   },
 
