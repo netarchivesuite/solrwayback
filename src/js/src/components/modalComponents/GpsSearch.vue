@@ -95,8 +95,8 @@ export default {
         this.searchMap = L.map('gpsMap', null, { zoomControl: false }).setView([this.latitude, this.longitude], 7)
         //If https problems occur, try https://a.tile.openstreetmap.org/{z}/{x}/{y}.png instead.
         //Old access point: https://{s}.tile.osm.org/{z}/{x}/{y}.png
-        L.tileLayer(configs.leaflet.source, {
-        attribution: configs.leaflet.attribution
+        L.tileLayer(configs.leaflet.source || 'http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        attribution: configs.leaflet.attribution || '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
       }).addTo(this.searchMap)
       const defaultIcon = L.icon({
         iconSize: [25, 41],
