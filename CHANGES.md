@@ -106,6 +106,7 @@ Property changes in solrwayback.properties:
 Socks v.4 proxy did not perform well and has been removed, so has the properties: proxy.port+proxy.allow.hosts
 
 Property changes in solrwaybackweb.properties:
+```
 # About this archive. Will be shown when page is loaded and when about is clicked.
 # Search help is shown when the icon next to search is clicked. 
 # Both properties can be changed to a full filepath with a custom text.. HTML formating allowed.
@@ -116,7 +117,7 @@ search.help.text.file=/search_help.txt
 
 #define fields that can be selected for CVS export
 export.csv.fields=id,index_time, author, description,keywords,description,license_url,content,content_encoding,content_length,content_language, content_type_droid,content_type_ext,content_type_full,content_type_norm,content_type_served,content_type_tika,content_type,content_type_version,elements_used,hash,wayback_date,crawl_year,url_norm,url_path,url,url_type,domain,host,host_surt,public_suffix,resourcename,image_size,links_images,links_domains,links_hosts,links_hosts_surts,links_norm,links_public_suffixes,links,server,status_code,generator,redirect_to_norm,source_file_path,source_file_offset,source_file,text,title,type,warc_key_id,warc_ip ,ssdeep_hash_bs_3, ssdeep_hash_bs_6, ssdeep_hash_bs_12, ssdeep_hash_bs_24, ssdeep_hash_bs_48, ssdeep_hash_bs_96,ssdeep_hash_bs_192
-
+```
 
 
 

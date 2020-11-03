@@ -13,10 +13,10 @@
                                     @close-window="closeWindow" />
     <div class="imageButtonContainer">
       <router-link :to="{ path: $_startImageSearchFromImage(result.hash)}">
-        <span>Search for image</span>
+        <span @click="closeModalIfOpen()">Search for image</span>
       </router-link>
       <router-link :to="{ path: $_startPageSearchFromImage(result.urlNorm)}">
-        <span>Pages linking to image</span>
+        <span @click="closeModalIfOpen()">Pages linking to image</span>
       </router-link>
     </div>
   </div>
@@ -26,6 +26,7 @@
 
 import SearchSingleItemFocusImage from './SearchSingleItemFocusImage'
 import ImageSearchUtils from './../../mixins/ImageSearchUtils'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'SearchMasonryImage',
@@ -56,12 +57,26 @@ export default {
       showFullImage:null
     }
   },
+  computed: {
+    ...mapState({
+      showModal: state => state.Modal.showModal,
+      currentModal: state => state.Modal.currentModal,
+    }),
+  },
   methods: {
+    ...mapActions('Modal', {
+      updateShowModal:'updateShowModal',
+      updateCurrentModal:'updateCurrentModal'
+    }),
      toggleFullImage(index) {
       this.showFullImage !== null ? this.showFullImage = null : this.showFullImage = index
     },
     closeWindow(index) {
       this.showFullImage = null
+    },
+    closeModalIfOpen() {
+      this.updateShowModal(false)
+      this.updateCurrentModal('')
     } 
   }
 }
