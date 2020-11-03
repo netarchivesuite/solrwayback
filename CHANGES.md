@@ -3,9 +3,9 @@
 Playback support for chunked transfer encoding. This also require new version of the warc-indexer when indexing (https://github.com/ukwa/webarchive-discovery/pull/232)
 
 Images geo search reimplemented with better design. Lazy load of images, dynamic heatmap and spreading out images on same location.
-Smurf (N-gram) vizualization implemented in toolbox.
+Smurf (N-gram) visualization implemented in toolbox.
 
-Domain stats (toolbox)
+Domain stats visualization reimplemented (toolbox)
 
 PWID reimplemented (playback toolbar)
 
