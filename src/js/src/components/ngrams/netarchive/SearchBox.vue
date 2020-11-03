@@ -9,7 +9,7 @@
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
       </button>
-      <button v-if="searchQuery !== '' || Object.keys(results).length !== 0"
+      <button v-if="searchQuery !== '' || datasets.length !== 0"
               id="clearSubmit"
               title="Clear search and results"
               type="button"
@@ -35,7 +35,7 @@ export default {
   computed: {
     ...mapState({
      query: state => state.Ngram.query,
-     results: state => state.Ngram.results,
+     datasets: state => state.Ngram.datasets,
      loading: state => state.Ngram.loading,
      datasetQueries: state => state.Ngram.datasetQueries
     })

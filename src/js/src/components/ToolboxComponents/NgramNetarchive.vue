@@ -7,7 +7,6 @@
       <transition name="loading-overlay">
         <loading-overlay />
       </transition>
-      <notifications />
       <search-box />
       <netarchive-chart />
     </div>
@@ -19,7 +18,6 @@
 import NetarchiveChart from '@/components/ngrams/netarchive/NetarchiveChart.vue'
 import SearchBox from '@/components/ngrams/netarchive/SearchBox.vue'
 import LoadingOverlay from '@/components/LoadingOverlay'
-import Notifications from '@/components/notifications/Notifications.vue'
 
 
 
@@ -29,7 +27,6 @@ export default {
    NetarchiveChart,
   LoadingOverlay, 
    SearchBox,
-   Notifications
   }
 
   

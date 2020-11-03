@@ -4,9 +4,6 @@ import { requestService } from '../../services/RequestService'
 // Global ngram state.
 const initialState = () => ({
   query: '',
-  // cache for current query in case server rejects it
-  attemptedQuery:'',
-  results: {},
   loading:false,
   yearCountPercent: [],
   yearCountsTotal: [],
@@ -25,16 +22,10 @@ const actions = {
   updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
   },
-  updateAttemptedQuery ( {commit}, param) {
-    commit('updateAttemptedQuery', param)
-  },
   doSearch ({ commit }, params) {
     this.dispatch('Search/setLoadingStatus', true)
-   //commit('setLoadingStatus', true)
-   commit('updateAttemptedQuery', params)
    
-
-   requestService.getNgramNetarchive(params)
+    requestService.getNgramNetarchive(params)
    .then(results => {this.dispatch('Ngram/updateQuery', params), commit('doSearchSuccess', results)}, error =>
    commit('doSearchError', error))
   },
@@ -56,9 +47,6 @@ const mutations = {
   updateQuerySuccess(state, param) {
     state.query = param
   },
-  updateAttemptedQuery(state, param) {
-    state.attemptedQuery = param
-  },
   addDataset(state, param) {
     state.query = param
   },
@@ -77,9 +65,8 @@ const mutations = {
         total: state.yearCountsTotal.map(yearCountTotal => yearCountTotal.total),
         percent: state.yearCountPercent
       })
-    state.results = results
     this.dispatch('Search/setLoadingStatus', false)
-    //state.loading = false
+   
   },
 
   doSearchError(state, message) {
@@ -91,7 +78,7 @@ const mutations = {
         timeout: false
       })
       this.dispatch('Search/setLoadingStatus', false)
-  //state.loading = false
+  
   },
 
   setLoadingStatus(state, status) {
