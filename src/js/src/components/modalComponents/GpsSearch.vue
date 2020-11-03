@@ -60,9 +60,9 @@ export default {
   },
   mixins: [SearchUtils],
   data: () => ({
-    longitude:configs.leaflet.map.longitude || 0,
-    latitude:configs.leaflet.map.latitude || 0,
-    radius:configs.leaflet.map.radius / 1000 || 50,
+    longitude: 0,
+    latitude: 0,
+    radius: 50,
     imgQuery:'*:*',
     searchMap:null,
     selected:null,
@@ -82,7 +82,9 @@ export default {
     }
   },
   mounted () {
-
+    this.longitude = configs.leaflet.map.longitude
+    this.latitude = configs.leaflet.map.latitude
+    this.radius = configs.leaflet.map.radius / 1000
     this.createMap()
   },
   methods: {
