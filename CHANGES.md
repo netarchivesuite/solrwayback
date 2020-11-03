@@ -124,14 +124,14 @@ export.csv.fields=id,index_time, author, description,keywords,description,licens
 
 Tomcat upgraded to 8.5.51 in  SolrwWayback bundle release. Due to GhostCat (CVE-2020-1938 - AJP). 
 Special tomcat config required:
-
+```
     <Connector port="9721" protocol="HTTP/1.1"
                URIEncoding="UTF-8" 
                useBodyEncodingForURI="true"
 relaxedPathChars="[]|"
 relaxedQueryChars="[]|{}^&#x5c;&#x60;&quot;&lt;&gt;"
                connectionTimeout="20000" />
-
+```
 
 
 
