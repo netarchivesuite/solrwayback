@@ -5,6 +5,8 @@ Playback support for chunked transfer encoding. This also require new version of
 Images geo search reimplemented with better design. Lazy load of images, dynamic heatmap and spreading out images on same location.
 Smurf (N-gram) vizualization implemented in toolbox.
 
+Domain stats (toolbox)
+
 PWID reimplemented (playback toolbar)
 
 Memory improvement for streaming warc-export. Minimal memory required for the web-app which was a scaling problem for multiple simultanious exports.
@@ -25,9 +27,7 @@ The following features still needs to be implemented
 
 HTML-tags graph
 
-
 Link graph
-Domain stats
 
 Gephi  linkgraph export
 
