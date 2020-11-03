@@ -51,10 +51,16 @@
         </div>
       </div>
       <div class="tools">
-        <span @click="showUploadFileSearch = !showUploadFileSearch">Search with uploaded file</span>
+        <button class="searchByFileButton" @click.prevent="showUploadFileSearch = !showUploadFileSearch">
+          Search with uploaded file
+        </button>
         <button class="toolbox" @click.prevent="toggleToolbox()">
           <span class="toolboxText">Toolbox</span>
           <span class="toolboxIcon" />
+        </button>
+        <button class="gpsSearchButton" @click.prevent="openSelectedModal('gpssearch')">
+          <span class="gpsText">GPS Image Search</span>
+          <span class="gpsIcon" />
         </button>
       </div>
     </form>

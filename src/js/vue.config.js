@@ -109,6 +109,12 @@ module.exports = {
         changeOrigin: true
       },
       
+      '^/services/frontend/images/search/location/': {
+        target: 'http://localhost:8080/solrwayback//services/frontend/images/search/location/',
+        pathRewrite: { '^/services/frontend/images/search/location/': '' },
+        changeOrigin: true
+      },
+      
       '^/services/generatepwid/': {
         target: 'http://localhost:8080/solrwayback/services/generatepwid/',
         pathRewrite: { '^/services/generatepwid/': '' },

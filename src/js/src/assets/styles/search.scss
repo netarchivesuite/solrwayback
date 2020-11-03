@@ -244,7 +244,7 @@ color:var(--secondary-text-color);
 	text-transform: uppercase;
 	margin-bottom: 10px;
 	//display: flex;
-	cursor: pointer;
+	//cursor: pointer;
 	//justify-content: space-between;
 	font-size: 80%;
 }
@@ -252,14 +252,28 @@ color:var(--secondary-text-color);
 .searchForm .tools span {
   display:inline-block;
   color: var(--main-highlight-color);
-  //border-bottom:1px solid var(--secondary-highlight-color);
-  margin-right:20px;
+  border-bottom:1px solid var(--secondary-highlight-color);
+  margin-right:10px;
+}
+
+.searchForm .tools .searchByFileButton {
+  background-color: white;
+	border: 0px;
+	cursor: pointer;
+	text-transform: uppercase;
+	color: var(--main-highlight-color);
+	margin-right: 10px;
+	padding: 0px;
+  border-bottom: 1px solid var(--secondary-highlight-color);
 }
 
 .searchForm .tools .toolbox {
   text-transform: uppercase;
+  padding-left:0px;
+  padding-right:0px;
   border: 0px;
   margin:0px;
+  margin-top: -4px;
 	//border-bottom: 1px solid var(--secondary-highlight-color);
 	background-color: transparent;
 	color: var(--main-highlight-color);
@@ -267,7 +281,7 @@ color:var(--secondary-text-color);
 	float: right;
 }
 
-.searchForm .tools .toolboxText {
+.searchForm .tools .toolboxText, .searchForm .gpsText {
   border-bottom: 1px solid var(--secondary-highlight-color);
   margin-right:5px !important;
 }
@@ -278,15 +292,43 @@ color:var(--secondary-text-color);
 
 .toolboxIcon {
   background-image: url('../icons/tools.svg');
-  height: 20px;
+  height: 16px;
 	position: relative;
-  width: 20px;
+  width: 16px;
   margin-right:10px;
 	display: inline-block;
 	background-repeat: no-repeat;
-	background-size: auto;
+	background-size: cover;
 	background-position: center;
   top: 3px;
+  border-bottom: 0px !important;
+}
+
+.gpsSearchButton {
+  background-color:white;
+  border:0px;
+  cursor: pointer;
+  text-transform: uppercase;
+  color:var(--main-highlight-color);
+  margin-left:10px;
+  margin-right:10px;
+  padding:0px;
+  float:right;
+  margin-top:-4px;
+}
+
+.gpsIcon {
+  background-image: url('../icons/location.svg');
+  height: 16px;
+	position: relative;
+  width: 16px;
+  margin-right:10px;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+  top: 3px;
+  border-bottom: 0px !important;
 }
 
 .toolboxNavigation h3 {
@@ -510,6 +552,10 @@ color:var(--secondary-text-color);
   background-color: white;
 }
 
+.modalContent.gpssearch {
+  overflow-y:hidden;
+}
+
 .searchGuidelinesContainer {
   line-height: 20px;
   padding-left:15px;
@@ -564,4 +610,151 @@ color:var(--secondary-text-color);
       padding:5px;
     }
   }
+}
+
+#gpsMap {
+  width:100%;
+  height:100%;
+}
+
+.GpsSearchContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.gpsMapContainer {
+  transition: width 0.3s ease-in-out 0s;
+  display:inline-block;
+  width:100%;
+  height:100%;
+}
+
+.gpsMapContainer.half {
+  width:50%;
+}
+
+.gpsMapContainer.hidden {
+  width:0%;
+}
+
+#gpsMap .leaflet-tile {
+  -webkit-filter: grayscale(100%); 
+	filter: grayscale(100%);
+}
+
+.gpsControls {
+  transition: all 0.3s ease-in-out 0s;
+  width: 200px;
+	height: 115px;
+	position: absolute;
+	right: 20px;
+	top: 20px;
+	background-color: rgba(255,255,255,0.8);
+	padding: 10px;
+  z-index: 500;
+  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.25);
+}
+
+.gpsMapContainer.half .gpsControls {
+  right:calc(50% + 20px);
+}
+
+.gpsMapContainer.hidden .gpsControls {
+  right:calc(100% + 20px);
+}
+
+.gpsResultsContainer {
+  transition: width 0.3s ease-in-out 0s;
+  float: right;
+  width:0%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y:scroll;
+}
+
+.gpsResultsContainer.half {
+  width:50%;
+}
+
+.gpsResultsContainer.full {
+  width:100%;
+}
+
+.gpsControls span {
+  padding:2px 0px;
+  display:inline-block;
+  width:110px;
+  font-size: 90%;
+}
+
+.dividerButtons {
+  transition: all 0.3s ease-in-out 0s;
+  position: absolute;
+  top:50%;
+  z-index:1000;
+  width:60px;
+  text-align: center;
+}
+
+.dividerButtons.start {
+  left:calc(0%);
+}
+
+.dividerButtons.half {
+  left:calc(50% - 30px);
+}
+
+.dividerButtons.end {
+  left:calc(100% - 60px);
+}
+
+.gpsControls input {
+  width:auto;
+  width:calc(100% - 110px);
+  padding:0px;
+  margin:0px;
+  box-sizing: border-box;
+  border-radius: 0px;
+	border: 1px solid var(--seethrough-black);
+	box-sizing: border-box;
+	padding-left: 2px;
+	box-shadow: inset 0 0 3px var(--seethrough-black);
+	display: inline-block;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+  overflow: hidden;
+}
+
+.GpsSearchContainer .searchButton {
+  margin-top:5px;
+  display:block;
+  width:100%;
+	border: 2px solid var(--secondary-bg-color);
+	border-radius: 0;
+	background-color: white;
+	color: var(--secondary-bg-color);
+	padding: 3px 10px 3px 10px;
+	box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.25);
+	cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s linear 0s;
+}
+
+.GpsSearchContainer .searchButton:disabled {
+  color:var(--seethrough-black);
+  border: 2px solid var(--seethrough-black);
+  cursor: default;
+  box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.25);
+}
+
+.dividerButtons .dividerButton {
+  //border:2px solid var(--main-highlight-color);
+  border:0px;
+  box-sizing: border-box;
+  //background-color:white;
+  background-color: transparent;
+  font-size:200%;
+  color:var(--main-highlight-color);
+  font-weight: bold;
+  cursor: pointer;
 }

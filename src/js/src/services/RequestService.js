@@ -17,6 +17,7 @@ export const requestService = {
   getDomainStatistics,
   getSearchGuidelines,
   getNgramNetarchive,
+  fireGeoImageSearchRequest,
   getPWID
 }
 
@@ -52,7 +53,7 @@ function fireImageSearchRequest(query) {
       transformResponse: [
         function(response) {
           let returnObj = JSON.parse(response)
-          returnObj = dataTransformationHelper.transformImageResponse(returnObj)
+          returnObj = dataTransformationHelper.transformImageResponse(returnObj,'image')
           return returnObj
         }
       ]}).then(returnObj => {
@@ -196,7 +197,27 @@ function getNgramNetarchive(query){
   })
 }
 
- function getPWID(sourceFilePath, offset) {
+
+    
+function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
+  const url = 'services/frontend/images/search/location/' + `?query=${query}&latitude=${latitude}&longitude=${longitude}&d=${radius}`
+  return axios.get(
+    url, {
+      transformResponse: [
+        function(response) {
+          let returnObj = JSON.parse(response)
+          returnObj = dataTransformationHelper.transformImageResponse(returnObj,'geoImage')
+          return returnObj
+        }
+      ]}).then(returnObj => {
+    return returnObj.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+ 
+function getPWID(sourceFilePath, offset) {
   const url = `services/generatepwid/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
   return axios.get(
     url).then(response => {

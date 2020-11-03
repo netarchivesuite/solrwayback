@@ -1,38 +1,104 @@
+4.0.1
+-----
+Playback support for chunked transfer encoding. This also require new version of the warc-indexer when indexing (https://github.com/ukwa/webarchive-discovery/pull/232)
+
+Images geo search reimplemented with better design. Lazy load of images, dynamic heatmap and spreading out images on same location.
+Smurf (N-gram) vizualization implemented in toolbox.
+
+PWID reimplemented (playback toolbar)
+
+Memory improvement for streaming warc-export. Minimal memory required for the web-app which was a scaling problem for multiple simultanious exports.
+
+Memory improvement duing playback when servering large binaries (images/audio/video etc.)
+
+Minor playback improvements.
+ 
+Added unittest+warcs  for various decompression (brotli,gzip,chuncking)
+Added unittest for warc-export. (Mockito)
+
+Spinners added for more service-calls.
+
+Minor css-changes to layout
+
+
+The following features still needs to be implemented
+
+HTML-tags graph
+
+
+Link graph
+Domain stats
+
+Gephi  linkgraph export
+
+Website previews
+
+
+
 
 4.0.0
 -----
 Frontend completely rewritten (VUE framework)
 Services upgraded from Jersey to apache-cxf
+
 log4j upgraded to logback
+
 Various third part dependencies upgraded as well.
+
 Playback improvements.
-Warc-export with resources will find more resources to include. 
+
+Warc-export with resources will find more resources to include.
+ 
 Ranking change (in solrconfig.xml). Boost html pages a little more.
+
 Facet years sortet by year and not count.
+
 Faster loading of results and pagination. Facets are loaded in a seperate service call and not reloaded when paging.
+
 The two export to CVS options has been merged into one where you can select which fields to export from search result.
-'About this archive' text added. This can be configured in solrwaybackweb.properties to load a custom file instead.
+
+"About this archive" text added. This can be configured in solrwaybackweb.properties to load a custom file instead.
+
 Search guidelines added. This can be configured in solrwaybackweb.properties to load a custom file instead.
+
 Services has been split into frontend-services and backend-services.
-Introduced toolbox on search page. Some features from the playback toolbar has been moved into this toolbox. 
+
+Introduced toolbox on search page. Some features from the playback toolbar has been moved into this toolbox.
+ 
 Wordcloud added as new feature to toolbox.
-Result visualization by domain for search results. Shows top 30 domains in search results over the years. 
+
+Result visualization by domain for search results. Shows top 30 domains in search results over the years.
+ 
 Icons added for different document types. (video/audio/html etc.)
+
 Url search reimplemented and working. Search by an url, it will be puny encoded and normalized.
+
 Lazy loading of images. Once again performance improvement and not hitting the backend as hard.
+
 "Back to top" and pagination link added after search results.
+
 Spinner animations added to all service calls while it is loading.
+
 In browser audio+video player added for documents of this time. If browser does not support the encoding, it can be downloaded as before.
+
 Improved twitter playback for twitter warc-files harvesed with https://github.com/netarchivesuite/so-me
 
 Still missing the folllowing features before version 4.0:
+
 PWID (show XML in browser + clipboard function)
+
 GPS location search
+
 HTML-tags graph
+
 Link graph
+
 Domain stats
+
 Gephi  linkgraph export
+
 Website previews
+
 Smurf (new feature)
 
 
@@ -40,6 +106,7 @@ Property changes in solrwayback.properties:
 Socks v.4 proxy did not perform well and has been removed, so has the properties: proxy.port+proxy.allow.hosts
 
 Property changes in solrwaybackweb.properties:
+```
 # About this archive. Will be shown when page is loaded and when about is clicked.
 # Search help is shown when the icon next to search is clicked. 
 # Both properties can be changed to a full filepath with a custom text.. HTML formating allowed.
@@ -50,21 +117,21 @@ search.help.text.file=/search_help.txt
 
 #define fields that can be selected for CVS export
 export.csv.fields=id,index_time, author, description,keywords,description,license_url,content,content_encoding,content_length,content_language, content_type_droid,content_type_ext,content_type_full,content_type_norm,content_type_served,content_type_tika,content_type,content_type_version,elements_used,hash,wayback_date,crawl_year,url_norm,url_path,url,url_type,domain,host,host_surt,public_suffix,resourcename,image_size,links_images,links_domains,links_hosts,links_hosts_surts,links_norm,links_public_suffixes,links,server,status_code,generator,redirect_to_norm,source_file_path,source_file_offset,source_file,text,title,type,warc_key_id,warc_ip ,ssdeep_hash_bs_3, ssdeep_hash_bs_6, ssdeep_hash_bs_12, ssdeep_hash_bs_24, ssdeep_hash_bs_48, ssdeep_hash_bs_96,ssdeep_hash_bs_192
-
+```
 
 
 
 
 Tomcat upgraded to 8.5.51 in  SolrwWayback bundle release. Due to GhostCat (CVE-2020-1938 - AJP). 
 Special tomcat config required:
-
+```
     <Connector port="9721" protocol="HTTP/1.1"
                URIEncoding="UTF-8" 
                useBodyEncodingForURI="true"
 relaxedPathChars="[]|"
 relaxedQueryChars="[]|{}^&#x5c;&#x60;&quot;&lt;&gt;"
                connectionTimeout="20000" />
-
+```
 
 
 
