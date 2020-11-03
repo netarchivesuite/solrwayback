@@ -1,6 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 
 import org.slf4j.Logger;
@@ -32,25 +31,50 @@ public class ArcParserFileResolver {
     resolver = resolverImpl;
   }
 
-  public static ArcEntry getArcEntry(String source_file_path, long offset) throws Exception {
-    try {
-      String cached = cache.get(source_file_path);
-      String fileLocation = null;
-      if (cached != null) {
-        fileLocation = cached;
-        // log.info("Using cached arcfile location:"+source_file_path +"->"+fileLocation);
-      } else {
-        fileLocation = resolver.resolveArcFileLocation(source_file_path);
-        cache.put(source_file_path, fileLocation);
-        log.debug("Resolved arcfile location:" + source_file_path + "->" + fileLocation);
-      }
-      return ArcFileParserFactory.getArcEntry(fileLocation, offset);
-    } catch (Exception e) {
-      // It CAN happen, but crazy unlikely, and not critical at all... (took 10 threads spamming 1M+ requests/sec for it to happen in a test.):
-      log.error("Critical error resolving warc:"+source_file_path +" and offset:"+offset +" Error:",e.getMessage());
-      throw new Exception(e);
-    }
+ 
+  
 
+  
+  /*  
+  * 
+  * @param file_path is the file location, the file location must be resolved first. 
+  * @param offset offset in the warc file 
+  * 
+  * The binary will be loaded. If binary is not needed use the other method.
+   */
+  public static ArcEntry getArcEntry(String source_file_path, long offset) throws Exception {  
+      return getArcEntry(source_file_path, offset, true);
   }
 
+  
+  /*  
+   * 
+   * @param file_path is the file location, the file location must be resolved first. 
+   * @param offset offset in the warc file
+   * @param loadBinary will load the byte[] with the content. Do mot use for video/audio etc. Use the InputStream method for this
+    */
+   public static ArcEntry getArcEntry(String source_file_path, long offset, boolean loadBinary) throws Exception {
+     try {
+       String cached = cache.get(source_file_path);
+       String fileLocation = null;
+       if (cached != null) {
+         fileLocation = cached;
+         // log.info("Using cached arcfile location:"+source_file_path +"->"+fileLocation);
+       } else {
+         fileLocation = resolver.resolveArcFileLocation(source_file_path);
+         cache.put(source_file_path, fileLocation);
+         log.debug("Resolved arcfile location:" + source_file_path + "->" + fileLocation);
+       }
+       
+       return ArcFileParserFactory.getArcEntry(fileLocation, offset, loadBinary);
+       
+     } catch (Exception e) {
+       // It CAN happen, but crazy unlikely, and not critical at all... (took 10 threads spamming 1M+ requests/sec for it to happen in a test.):
+       log.error("Critical error resolving warc:"+source_file_path +" and offset:"+offset +" Error:",e.getMessage());
+       throw new Exception(e);
+     }
+
+   }
+
+  
 }

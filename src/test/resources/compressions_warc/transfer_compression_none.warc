@@ -1,0 +1,102 @@
+WARC/1.0
+WARC-Type: warcinfo
+Content-Type: application/warc-fields
+WARC-Date: 2019-08-15T14:06:11Z
+WARC-Record-ID: <urn:uuid:8bb82bd1-7534-4a01-9084-833dc29735dc>
+WARC-Filename: transfer_compression_none.warc
+WARC-Block-Digest: sha1:IE6ZBN5PHUQBK6SPRI4FW6TMGYM5SEVF
+Content-Length: 323
+
+software: Wget/1.20.3 (linux-gnu)
+format: WARC File Format 1.0
+conformsTo: http://bibnum.bnf.fr/WARC/WARC_ISO_28500_version1_latestdraft.pdf
+robots: classic
+wget-arguments: "--delete-after" "--no-warc-keep-log" "--no-warc-compression" "--warc-file=transfer_compression_none" "http://tokemon.sb.statsbiblioteket.dk" 
+
+
+
+WARC/1.0
+WARC-Type: request
+WARC-Target-URI: <http://tokemon.sb.statsbiblioteket.dk/>
+Content-Type: application/http;msgtype=request
+WARC-Date: 2019-08-15T14:06:11Z
+WARC-Record-ID: <urn:uuid:cdfe1be5-5648-47cf-b5f1-f529b2b110d4>
+WARC-IP-Address: 172.18.95.66
+WARC-Warcinfo-ID: <urn:uuid:8bb82bd1-7534-4a01-9084-833dc29735dc>
+WARC-Block-Digest: sha1:RGNVYXYHG5NSXAZIHA76HY5CQJ6KMYPR
+Content-Length: 157
+
+GET / HTTP/1.1
+User-Agent: Wget/1.20.3 (linux-gnu)
+Accept: */*
+Accept-Encoding: identity
+Host: tokemon.sb.statsbiblioteket.dk
+Connection: Keep-Alive
+
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Record-ID: <urn:uuid:bd300b07-eaa0-46e3-bdfd-116f11a62993>
+WARC-Warcinfo-ID: <urn:uuid:8bb82bd1-7534-4a01-9084-833dc29735dc>
+WARC-Concurrent-To: <urn:uuid:cdfe1be5-5648-47cf-b5f1-f529b2b110d4>
+WARC-Target-URI: <http://tokemon.sb.statsbiblioteket.dk/>
+WARC-Date: 2019-08-15T14:06:11Z
+WARC-IP-Address: 172.18.95.66
+WARC-Block-Digest: sha1:JWOYHDIAMDOYZQCFXTTQTUKBSPHG6G7O
+WARC-Payload-Digest: sha1:YXEHY6U7U5PWVRSVDUH5YGXNN6VV2JXL
+Content-Type: application/http;msgtype=response
+Content-Length: 553
+
+HTTP/1.1 200 OK
+Date: Thu, 15 Aug 2019 14:06:11 GMT
+Server: Apache/2.4.29 (Ubuntu)
+Last-Modified: Thu, 15 Aug 2019 11:54:02 GMT
+ETag: "f6-5902687a3a5e3"
+Accept-Ranges: bytes
+Content-Length: 246
+Vary: Accept-Encoding
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+Content-Type: text/html
+
+<html>
+    <head>
+        <title>Simple page</title>
+    </head>
+    <body>
+        <h1>Simple page</h1>
+        <p>
+            Extremely simple webpage used for testing GZip and Brotli transmission compression.
+        </p>
+    </body>
+</html>
+
+
+WARC/1.0
+WARC-Type: metadata
+WARC-Record-ID: <urn:uuid:5c3c07bd-da02-464e-abd3-32e640dd1dd5>
+WARC-Warcinfo-ID: <urn:uuid:8bb82bd1-7534-4a01-9084-833dc29735dc>
+WARC-Target-URI: <metadata://gnu.org/software/wget/warc/MANIFEST.txt>
+WARC-Date: 2019-08-15T14:06:11Z
+WARC-Block-Digest: sha1:SEQTZMX27W2P7ZADMR6J7UW54HZH64IM
+Content-Type: text/plain
+Content-Length: 48
+
+<urn:uuid:8bb82bd1-7534-4a01-9084-833dc29735dc>
+
+
+WARC/1.0
+WARC-Type: resource
+WARC-Record-ID: <urn:uuid:194087f1-ab9b-43d6-8932-09ce0709da25>
+WARC-Warcinfo-ID: <urn:uuid:8bb82bd1-7534-4a01-9084-833dc29735dc>
+WARC-Concurrent-To: <urn:uuid:5c3c07bd-da02-464e-abd3-32e640dd1dd5>
+WARC-Target-URI: <metadata://gnu.org/software/wget/warc/wget_arguments.txt>
+WARC-Date: 2019-08-15T14:06:11Z
+WARC-Block-Digest: sha1:QGXUHUWWQF2BARPFOR3HYXK4O33WNU6N
+Content-Type: text/plain
+Content-Length: 143
+
+"--delete-after" "--no-warc-keep-log" "--no-warc-compression" "--warc-file=transfer_compression_none" "http://tokemon.sb.statsbiblioteket.dk" 
+
+

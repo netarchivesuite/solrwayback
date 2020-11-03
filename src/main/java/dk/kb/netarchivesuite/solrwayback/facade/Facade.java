@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.httpclient.ChunkedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
@@ -399,7 +400,11 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
         return ArcParserFileResolver.getArcEntry(source_file_path, offset);        
     }
     
-
+    public static ArcEntry getArcEntry(String source_file_path, long offset, boolean loadBinary) throws Exception{         
+        return ArcParserFileResolver.getArcEntry(source_file_path, offset,loadBinary);        
+    }
+    
+    
     public static InputStream exportWarcStreaming(
             boolean expandResources, boolean avoidDuplicates, String query, String... filterqueries) {
       SolrGenericStreaming solr = new SolrGenericStreaming(
@@ -407,8 +412,7 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
               expandResources, avoidDuplicates, query, filterqueries);
 
       // TODO: Why do we have a max of 1M?
-      //Buffer size 100 only since the binary can be big
-      return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000); //1M max. results just for now
+      return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000, false); //1M max. results just for now
     }
  
    
@@ -661,20 +665,10 @@ public static String generateDomainResultGraph(@QueryParam("q") String q, @Query
     	   showToolbar=false;
     	}      
     	ArcEntry arc=ArcParserFileResolver.getArcEntry(source_file_path, offset);    	 
-       log.info("from arch contenttype:"+arc.getContentType());
-    	//temporary hack.
-        
-        if ("br".equalsIgnoreCase(arc.getContentEncoding())){         
-          log.info("fixing br encoding");
-          InputStream in = new BrotliInputStream(new ByteArrayInputStream(arc.getBinary()));
-          arc.setContentEncoding(null); //Clear br encoding.
-          arc.setHasBeenDecompressed(true);
-          arc.setBinary(IOUtils.toByteArray(in)); //TODO charset?  
-        }
-          
-    	
-    	
-        
+           	
+    	log.info("from arch contenttype:"+arc.getContentType());
+
+    	    	        
         String encoding = arc.getContentCharset();
            
         if (encoding == null){

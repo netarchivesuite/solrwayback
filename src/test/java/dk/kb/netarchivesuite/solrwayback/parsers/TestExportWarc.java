@@ -47,7 +47,7 @@ public class TestExportWarc {
       }
       System.out.println(source_file_path);
       System.out.println(offset);
-      ArcEntry warcEntry = WarcParser.getWarcEntry(source_file_path,offset);
+      ArcEntry warcEntry = WarcParser.getWarcEntry(source_file_path,offset,true);
       String warc2HeaderEncoding = warcEntry.getContentEncoding();
       Charset charset = Charset.forName(WarcParser.WARC_HEADER_ENCODING); //Default if none define or illegal charset
  

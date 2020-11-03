@@ -39,6 +39,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
+import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 
@@ -61,6 +62,38 @@ public class SolrWaybackResourceWeb {
         return "TEST";
     }
    
+    
+
+    @GET
+    @Path("smurf/text")
+    @Produces({ MediaType.APPLICATION_JSON})
+    public  SmurfYearBuckets smurfNetarchiveText( @QueryParam("q") String q , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
+        try {                                                                                                
+          if (startyear == null){
+            startyear=1990;
+          }
+          return Facade.generateNetarchiveTextSmurfData(q, filterQuery,startyear);                  
+        } catch (Exception e) {         
+            throw handleServiceExceptions(e);
+        }
+    }
+    
+    @GET
+    @Path("smurf/tags")
+    @Produces({ MediaType.APPLICATION_JSON})
+    public  SmurfYearBuckets smurfNetarchiveTags( @QueryParam("tag") String tag , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
+        try {                                                                                      
+          
+          if (startyear == null){
+            startyear=1990;
+          }
+          return Facade.generateNetarchiveSmurfData(tag, filterQuery,startyear);                  
+        } catch (Exception e) {         
+            throw handleServiceExceptions(e);
+        }
+    }
+
+    
     @GET
     @Path("graph/domain_result")
     @Produces({ MediaType.TEXT_PLAIN})

@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback;
 import static org.junit.Assert.*;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,7 +35,7 @@ public class WarcParserTest extends UnitTestUtils{
         assertEquals(300,image.getWidth());
         assertEquals(116,image.getHeight());        
         assertEquals("http://www.archive.org/images/hewlett.jpg",arcEntry.getUrl());
-        
+    
         System.out.println(arcEntry.getCrawlDate());
         System.out.println(arcEntry.getWaybackDate());
     
@@ -47,13 +48,28 @@ public class WarcParserTest extends UnitTestUtils{
         
         ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 216504); //Image entry
 
-        
         System.out.println(arcEntry.getRedirectUrl());
         
     
     }
     
-    
 
-             
+    @Test
+    public void testLazyLoadBinary() throws Exception {
+        
+        File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc");        
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688, false); //Image entry
+        
+        assertNull(arcEntry.getBinary());
+        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688); //Image entry and load binary
+        byte[] orgBinary = arcEntry.getBinary();        
+        try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
+            byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
+            assertEquals("The expected number of bytes should be read from the lazy stream",
+                         newBinary.length, buf.read(newBinary));
+            assertEquals(orgBinary.length, newBinary.length); //Same length
+            assertArrayEquals(orgBinary, newBinary); //Same binary
+            assertEquals("There should be no more content in the lazy loaded stream", -1, buf.read());
+        }
+    }
 }

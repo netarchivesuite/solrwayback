@@ -15,7 +15,8 @@ export const requestService = {
   getHarvestedPageResources,
   getDomainStatistics,
   getSearchGuidelines,
-  fireGeoImageSearchRequest
+  fireGeoImageSearchRequest,
+  getPWID
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -201,3 +202,14 @@ function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
     return Promise.reject(error)
   })
 }
+
+function getPWID(sourceFilePath, offset) {
+  const url = `services/generatepwid/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+

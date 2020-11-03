@@ -1,5 +1,18 @@
+4.0.1
+-----
+Playback support for chunked transfer encoding. This also require new version of the warc-indexer when indexing (https://github.com/ukwa/webarchive-discovery/pull/232)
+Images geo search reimplemented with better design. Lazy load of images, dynamic heatmap and spreading out images on same location.
+Smurf (N-gram) vizualization implemented in toolbox.
+PWID reimplemented (playback toolbar)
+Memory improvement for streaming warc-export. Minimal memory required for the web-app which was a scaling problem for multiple simultanious exports.
+Memory improvement duing playback when servering large binaries (images/audio/video etc.)
+Minor playback improvements. 
+Added unittest+warcs  for various decompression (brotli,gzip,chuncking)
+Added unittest for warc-export. (Mockito)
+Spinners added for more service-calls.
+Minor css-changes to layout
 
-4.0.0-SNAPSHOT
+4.0.0
 -----
 Frontend completely rewritten (VUE framework)
 Services upgraded from Jersey to apache-cxf

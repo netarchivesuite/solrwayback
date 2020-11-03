@@ -4,6 +4,7 @@ package dk.kb.netarchivesuite.solrwayback.service;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -14,10 +15,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
-
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -28,7 +29,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,15 +38,9 @@ import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
-import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
-import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
-import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
-import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
-import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -63,8 +57,6 @@ public class SolrWaybackResource {
 
   private static final Logger log = LoggerFactory.getLogger(SolrWaybackResource.class);
   
-  
-
   
   /*
    * Only for debugging/error finding. Not called from SolrWayback frontend.
@@ -112,20 +104,6 @@ public class SolrWaybackResource {
   
  
   
-  @GET
-  @Path("smurf/tags")
-  @Produces({ MediaType.APPLICATION_JSON})
-  public  SmurfYearBuckets smurfNetarchiveTags( @QueryParam("tag") String tag , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
-      try {                                                                                      
-        
-        if (startyear == null){
-          startyear=1990;
-        }
-        return Facade.generateNetarchiveSmurfData(tag, filterQuery,startyear);                  
-      } catch (Exception e) {         
-          throw handleServiceExceptions(e);
-      }
-  }
   
   
   @GET
@@ -140,20 +118,6 @@ public class SolrWaybackResource {
   }
  
   
-  
-  @GET
-  @Path("smurf/text")
-  @Produces({ MediaType.APPLICATION_JSON})
-  public  SmurfYearBuckets smurfNetarchiveText( @QueryParam("q") String q , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
-      try {                                                                                                
-        if (startyear == null){
-          startyear=1990;
-        }
-        return Facade.generateNetarchiveTextSmurfData(q, filterQuery,startyear);                  
-      } catch (Exception e) {         
-          throw handleServiceExceptions(e);
-      }
-  }
   
 //Already removed to frontend. Keep until sure it is not used.
   @GET
@@ -237,7 +201,7 @@ public class SolrWaybackResource {
     try {
 
       log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
-      ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+      ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,false); //DO not load binary in memory
       
       //Only solr lookup if redirect.
       if (arcEntry.getStatus_code() >= 300 &&  arcEntry.getStatus_code() <= 399 ){
@@ -247,17 +211,8 @@ public class SolrWaybackResource {
         return responseRedirect;
       }
       
-      //temp dirty hack to see if it fixes brotli
-      InputStream in;
-      if ("br".equalsIgnoreCase(arcEntry.getContentEncoding())){
-      in = new BrotliInputStream(new ByteArrayInputStream(arcEntry.getBinary()));
-      arcEntry.setContentEncoding(null); //Clear encoding.
-      arcEntry.setHasBeenDecompressed(true);
-      }
-      else{      
-       in = new ByteArrayInputStream(arcEntry.getBinary());
-       
-      }
+      InputStream in = arcEntry.getBinaryLazyLoadNoChucking(); //Stream entry. Dechucking require as tomcat/apache also chunks.
+      
       ResponseBuilder response = null;
       try{        
         String contentType = arcEntry.getContentType();
@@ -282,8 +237,7 @@ public class SolrWaybackResource {
       }
       
       if (arcEntry.getContentEncoding() != null){
-        response.header("Content-Encoding", arcEntry.getContentEncoding());      
-      
+        response.header("Content-Encoding", arcEntry.getContentEncoding());            
       }
       
       log.debug("Download from source_file_path:" + source_file_path + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());      
@@ -346,6 +300,7 @@ public class SolrWaybackResource {
                                    List<String>  fqList,
                                    boolean expandResources,
                                    boolean avoidDuplicates) throws SolrWaybackServiceException {
+    InputStream is = null;
     try {
       log.debug("Export warc. query:"+q +" filterquery:"+fqList);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
@@ -353,10 +308,17 @@ public class SolrWaybackResource {
 
       //Map FQ List<String> to String[]
       String[] fqArray = fqList.stream().toArray(String[]::new);
-      InputStream is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, q, fqArray);
+      is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, q, fqArray);
       return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".warc\"").build();
 
     } catch (Exception e) {
+      if (is != null) { // We cannot use the Closeable-feature as we return the stream(?)
+        try {
+          is.close();
+        } catch (IOException ex) {
+          log.error("Error closing export stream", e);
+        }
+      }
       log.error("Error in export warc",e);
       throw handleServiceExceptions(e);
     }
@@ -753,8 +715,6 @@ public class SolrWaybackResource {
     
     ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset, doc, showToolbar);
     
-    //System.out.println("trying to return html:"+arcEntry.getBinaryContentAsStringUnCompressed());
-    InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
     
     String contentType = arcEntry.getContentType();
     
@@ -774,6 +734,8 @@ public class SolrWaybackResource {
     //ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
    log.info("seting contentype:"+contentType);
 //          
+   
+   InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
    ResponseBuilder response = Response.ok(in).type(contentType );                    
 
    
@@ -782,6 +744,7 @@ public class SolrWaybackResource {
     }else {      
       response.header("Content-Encoding", arcEntry.getContentEncoding());
     }          
+         
      return response.build();
   }
 
