@@ -50,6 +50,7 @@ export default {
     // access to the vue chart instance is out of scope here (resides LineChart.js).
     // If you try to go the "correct way" and enrich options on render in LineChart.js
     // vueChartJS refuses to function correctly on first search
+    if (chartObj.length > 0) {
     const chartInstance = chartObj[0]._chart
     const activeElement = chartInstance.getElementAtEvent(evt)
     if (activeElement.length > 0) {
@@ -57,6 +58,7 @@ export default {
       const queryFromClick = chartInstance.config.data.datasets[activeElement[0]._datasetIndex].label
       SearchHelper.handleSearch(queryFromClick, yearFromClick)
     }
+  }
   },
 
   /**
