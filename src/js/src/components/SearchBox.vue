@@ -110,7 +110,6 @@ export default {
     },
   },
   mounted () {
-    console.log(this.$router.history.current.query)
     const routerQuery = this.$router.history.current.query
     if(routerQuery.query) {
       this.futureQuery = decodeURIComponent(routerQuery.query)
