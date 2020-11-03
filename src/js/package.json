@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^0.19.2",
     "chart.js": "^2.9.4",
+    "vue-chartjs": "^3.5.1",
     "core-js": "^3.6.5",
     "d3": "3.5.17",
     "date-fns": "^1.28.5",

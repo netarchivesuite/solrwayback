@@ -1,5 +1,6 @@
 import axios from 'axios'
 import dataTransformationHelper from './dataTransformationHelper'
+import NgramConfig from '../components/ngrams/netarchive/configs'
 
 export const requestService = {
   fireSearchRequest,
@@ -15,6 +16,7 @@ export const requestService = {
   getHarvestedPageResources,
   getDomainStatistics,
   getSearchGuidelines,
+  getNgramNetarchive,
   fireGeoImageSearchRequest,
   getPWID
 }
@@ -186,6 +188,17 @@ function getDomainStatistics(domain) {
   })
 }
 
+function getNgramNetarchive(query){
+  const url = `services/frontend/smurf/text/?q=${encodeURIComponent(query)}&startyear=${NgramConfig.START_YEAR}`
+  return axios.get(url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+
+    
 function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
   const url = 'services/frontend/images/search/location/' + `?query=${query}&latitude=${latitude}&longitude=${longitude}&d=${radius}`
   return axios.get(
@@ -203,6 +216,7 @@ function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
   })
 }
 
+ 
 function getPWID(sourceFilePath, offset) {
   const url = `services/generatepwid/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
   return axios.get(

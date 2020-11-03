@@ -102,11 +102,19 @@ module.exports = {
         pathRewrite: { '^/services/statistics/domain/': '' },
         changeOrigin: true
       },
+
+      '^/services/frontend/smurf/text/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/smurf/text/',
+        pathRewrite: { '^/services/frontend/smurf/text/': '' },
+        changeOrigin: true
+      },
+      
       '^/services/frontend/images/search/location/': {
         target: 'http://localhost:8080/solrwayback//services/frontend/images/search/location/',
         pathRewrite: { '^/services/frontend/images/search/location/': '' },
         changeOrigin: true
       },
+      
       '^/services/generatepwid/': {
         target: 'http://localhost:8080/solrwayback/services/generatepwid/',
         pathRewrite: { '^/services/generatepwid/': '' },
