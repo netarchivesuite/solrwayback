@@ -6,7 +6,9 @@
              type="text"
              autofocus
              placeholder="Enter search term">
-      <button id="querySubmit" title="Search" type="submit">
+      <button id="querySubmit"
+              title="Search"
+              type="submit">
         <div id="magnifyingGlass" />
       </button>
       <button v-if="searchQuery !== '' || datasets.length !== 0"
@@ -57,9 +59,22 @@ export default {
       doSearch:'doSearch'
     }),
 
-    submitSearch() {
-      this.doSearch(this.searchQuery)
+    ...mapActions('Notifier', {
+      setNotification: 'setNotification'
+     
+    }),
 
+    submitSearch() {
+      if (this.datasetQueries.includes(this.searchQuery.toLowerCase())) {
+         this.setNotification({
+          	title: `Sorry - you have already searched for ${this.searchQuery}`,
+            text: this.searchQuery.toLowerCase() === 'tenebrous horse' ? 'Try a new and exciting one - so many queries out there' : 'Try a new and exciting one like "tenebrous horse"',
+            type: 'error',
+            timeout: false
+          })
+      } else {
+          this.doSearch(this.searchQuery)
+      }
     },
 
     resetState() {
