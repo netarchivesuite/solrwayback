@@ -15,6 +15,7 @@ export const requestService = {
   getHarvestedPageResources,
   getDomainStatistics,
   getSearchGuidelines,
+  fireGeoImageSearchRequest,
   getPWID
 }
 
@@ -50,7 +51,7 @@ function fireImageSearchRequest(query) {
       transformResponse: [
         function(response) {
           let returnObj = JSON.parse(response)
-          returnObj = dataTransformationHelper.transformImageResponse(returnObj)
+          returnObj = dataTransformationHelper.transformImageResponse(returnObj,'image')
           return returnObj
         }
       ]}).then(returnObj => {
@@ -180,6 +181,23 @@ function getDomainStatistics(domain) {
   return axios.get(
     url).then(response => {
     return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
+  const url = 'services/frontend/images/search/location/' + `?query=${query}&latitude=${latitude}&longitude=${longitude}&d=${radius}`
+  return axios.get(
+    url, {
+      transformResponse: [
+        function(response) {
+          let returnObj = JSON.parse(response)
+          returnObj = dataTransformationHelper.transformImageResponse(returnObj,'geoImage')
+          return returnObj
+        }
+      ]}).then(returnObj => {
+    return returnObj.data
   }).catch(error => {
     return Promise.reject(error)
   })

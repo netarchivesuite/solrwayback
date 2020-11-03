@@ -498,7 +498,7 @@ margin-left:40px;
   height:100vh;
   top:0px;
   left:0px;
-  z-index:1;
+  z-index:1000;
   margin:0px;
   display: flex;
   justify-content: center;
@@ -1097,4 +1097,26 @@ margin-left:40px;
 
 .loadingScreen .spinner .row {
   animation: moveLines 3s linear infinite 0s;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.leaflet-popup-content {
+  width:auto !important;
+}
+
+.leaflet-popup-content img {
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
+
+.leaflet-popup-content span {
+  display: block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
