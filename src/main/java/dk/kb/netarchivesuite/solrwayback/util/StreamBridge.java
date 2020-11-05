@@ -36,6 +36,7 @@ public class StreamBridge {
     // An unbounded executor to avoid deadlocks between multiple concurrent calls to outputToInput
     private static int threadID = 0;
     private static final ExecutorService executor = Executors.newCachedThreadPool(r -> {
+        log.debug("Creating StreamBridge thread #" + threadID);
         Thread t = new Thread(r, "StreamBridge_" + threadID++);
         t.setDaemon(true);
         return t;
@@ -82,6 +83,7 @@ public class StreamBridge {
         executor.submit(() -> {
             providers.forEach(provider -> provider.accept(noCloseOut));
             try {
+                out.flush();
                 out.close();
             } catch (IOException e) {
                 log.error("IOException closing piped stream", e);

@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
@@ -89,7 +90,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
     }
     return totalRead == 0 ? -1 : totalRead; // -1 signals EOS
   }
-
+  AtomicInteger c = new AtomicInteger(0);
   private void loadMore() {
     try {
       if (docsWarcRead > maxRecords) { //Stop loading more
@@ -104,7 +105,6 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
       }
 
       List<Consumer<OutputStream>> providers = gzip ? new ArrayList<>(docs.size()) : null;
-
       for  (SolrDocument doc : docs){
         String source_file_path = (String) doc.getFieldValue("source_file_path");
         long offset = (Long) doc.getFieldValue("source_file_offset");
@@ -120,6 +120,8 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
         if (gzip) { // Lazy writer for the different parts of the WARC entry as a single gzip block
           providers.add(StreamBridge.gzip(out -> { // Add the lambda to the list for later activation
             try {
+              log.debug("Writing WARC entry #" + c.incrementAndGet() +
+                        ": " + entryAndHeaders.entry.getFileName() + "#" + entryAndHeaders.entry.getOffset());
               IOUtils.copy(entryAndHeaders.headers, out);
               if (entryAndHeaders.entry.getBinaryArraySize() > 0) {
                 IOUtils.copy(entryAndHeaders.entry.getBinaryLazyLoad(), out);
