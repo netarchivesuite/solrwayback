@@ -11,7 +11,7 @@
              :key="facetIndex"
              :class="facetIndex % 2 === 0 ? 'facetItem' : 'facetCount'"
              @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet) : null">
-          {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet + ")" }}
+          {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
       </div>
     </div>
