@@ -29,8 +29,10 @@ import java.util.zip.GZIPOutputStream;
 public class StreamBridge {
     private static final Logger log = LoggerFactory.getLogger(StreamBridge.class);
 
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "StreamBridge");
+    // We use an unbounded executor to avoid deadlocks between multiple concurrent calls to outputToInput
+    private static int threadID = 0;
+    private static final ExecutorService executor = Executors.newCachedThreadPool(r -> {
+        Thread t = new Thread(r, "StreamBridge_" + threadID++);
         t.setDaemon(true);
         return t;
     });
@@ -44,8 +46,8 @@ public class StreamBridge {
      *
      * The stream will be automatically closed after the producer has finished processing.
      *
-     * Important: This method uses a single-threaded executor. Ensure that the returned InputStream is fully depleted
-     * and closed before calling subsequent InputStreams delivered by this method or there will be a deadlock.
+     * Important: This method uses a thread from {@link #executor}. Do not make thousands of call to this method without
+     * ensuring that the InputStreams from previous calls has been depleted.
      * @param provider the provider of the bytes to pipe to the returned InputStream.
      * @return an InputStream which will be populated with data from the provider.
      */
@@ -72,8 +74,8 @@ public class StreamBridge {
      *
      * The stream will be automatically closed after the producer has finished processing.
      *
-     * Important: This method uses a single-threaded executor. Ensure that the returned InputStream is fully depleted
-     * and closed before calling subsequent InputStreams delivered by this method or there will be a deadlock.
+     * Important: This method uses a thread from {@link #executor}. Do not make thousands of call to this method without
+     * ensuring that the InputStreams from previous calls has been depleted.
      * @param provider the provider of the bytes to pipe to the returned InputStream.
      * @return an InputStream which will be populated with data from the provider and gzipped.
      */
