@@ -758,3 +758,39 @@ color:var(--secondary-text-color);
   font-weight: bold;
   cursor: pointer;
 }
+
+.fileUploader {
+  text-align: center;
+}
+
+.fileSelector {
+  text-align: center;
+	margin-bottom: 15px;
+}
+
+.fileSelector input {
+  background-color: var(--secondary-highlight-color);
+	padding: 10px;
+}
+
+.fileUploader .fileSelectButton {
+  display: block;
+  padding:5px;
+  border:1px solid var(--main-highlight-color);
+  color: var(--main-highlight-color);
+  box-shadow: 0px 5px 10px 1px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  font-size: 80%;
+  text-transform: uppercase;
+  width:300px;
+  position: relative;
+  margin:0px auto 20px auto;
+  cursor:pointer;
+}
+
+.fileUploader .fileSelectButton:disabled {
+  box-shadow: none;
+  border:1px solid var(--seethrough-black);
+  color: var(--seethrough-black);
+  cursor:default;
+}
