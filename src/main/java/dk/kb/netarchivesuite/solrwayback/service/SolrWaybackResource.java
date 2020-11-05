@@ -275,41 +275,48 @@ public class SolrWaybackResource {
   @GET
   @Path("/export/warc")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
-  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") List<String> fq) throws SolrWaybackServiceException {
+  public Response exportWarc(@QueryParam("query") String q, @QueryParam("fq") List<String> fq, @QueryParam("gzip") boolean gzip) throws SolrWaybackServiceException {
    
     //This is also required even if the option is removed on the web-page.
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
       throw new InvalidArgumentServiceException("Export to warc not allowed!");
     }    
-    return exportWarcImpl(q, fq, false, false);
+    return exportWarcImpl(q, fq, gzip, false, false);
   }
   
   @GET
   @Path("/export/warcExpanded")    
   @Produces(MediaType.APPLICATION_OCTET_STREAM)    
-  public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") List<String> fq) throws SolrWaybackServiceException {
+  public Response exportWarcExpanded(@QueryParam("query") String q, @QueryParam("fq") List<String> fq,  @QueryParam("gzip") boolean gzip) throws SolrWaybackServiceException {
     //This is also required even if the option is removed on the web-page.
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_WARC){ 
       throw new InvalidArgumentServiceException("Export to warc not allowed!");
     }        
-    return exportWarcImpl(q, fq, true, true);
+    return exportWarcImpl(q, fq, gzip, true, true);
   }
   
   
   private Response exportWarcImpl(String q,
                                    List<String>  fqList,
+                                   boolean gzip,
                                    boolean expandResources,
                                    boolean avoidDuplicates) throws SolrWaybackServiceException {
     InputStream is = null;
     try {
-      log.debug("Export warc. query:"+q +" filterquery:"+fqList);
+      log.debug("Export warc. gzip="+gzip +" query:"+q +" filterquery:"+fqList);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
       String dateStr = formatOut.format(new Date());
 
       //Map FQ List<String> to String[]
       String[] fqArray = fqList.stream().toArray(String[]::new);
-      is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, q, fqArray);
-      return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".warc\"").build();
+      is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, gzip,q, fqArray);
+      
+      String filename="solrwayback_"+dateStr+".warc";
+      if (gzip) {
+          filename=filename+".gz";
+      }
+      
+      return Response.ok(is).header("Content-Disposition", "attachment; filename=\""+filename+"\"").build();
 
     } catch (Exception e) {
       if (is != null) { // We cannot use the Closeable-feature as we return the stream(?)

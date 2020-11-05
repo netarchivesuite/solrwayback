@@ -140,7 +140,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     FileUtils.copyInputStreamToFile( is, new File(fileFromBytesWarcInputStream)); 
     */
     
-    try (InputStream is1 = Facade.exportWarcStreaming(false, false, "hash:\"sha1:PROTE66RZ6GDXPZI3ZAHG6YPCXRKZMEN\"")) {
+    try (InputStream is1 = Facade.exportWarcStreaming(false, false, false, "hash:\"sha1:PROTE66RZ6GDXPZI3ZAHG6YPCXRKZMEN\"")) {
       FileUtils.copyInputStreamToFile(is1, new File("export_final.warc"));
     }
     
