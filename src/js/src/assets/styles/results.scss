@@ -267,7 +267,7 @@ margin: 1em 0 0 0;
 }
 // Kudos end
 
-.showAllButtonContainer button, .singleEntryImages button, .pagingContainer button, .exportContent .downloadButton, .wordcloudButton, .domainContentContainer .domainStatsButton  {
+.showAllButtonContainer .allDataButton, .singleEntryImages button, .pagingContainer button, .exportContent .downloadButton, .wordcloudButton, .domainContentContainer .domainStatsButton  {
   float:right;
   border:2px solid var(--secondary-bg-color);
   border-radius: 0;
@@ -278,6 +278,24 @@ margin: 1em 0 0 0;
   cursor:pointer;
   box-sizing: border-box;
   transition:all 0.2s linear 0s;
+}
+
+.showAllButtonContainer .allDataButton:last-of-type {
+  margin-right:10px;
+}
+
+.warcHeaderInfo {
+  height:auto;
+  white-space: pre-wrap;      /* CSS3 */   
+  white-space: -moz-pre-wrap; /* Firefox */    
+  white-space: -pre-wrap;     /* Opera <7 */   
+  white-space: -o-pre-wrap;   /* Opera 7 */    
+  word-wrap: break-word;      /* IE */
+}
+
+.warcHeaderInfo h2 {
+  margin-top:20px;
+  margin-bottom:10px;
 }
 
 .pagingContainer button {
@@ -328,7 +346,7 @@ margin: 1em 0 0 0;
   color:rgba(30,30,30, 0.5)
 }
 
-.showAllButtonContainer button:hover, .singleEntryImages button:hover, .pagingContainer button:hover, .exportContent .downloadButton:hover, .wordcloudButton:hover, .domainContentContainer .domainStatsButton:hover {
+.showAllButtonContainer .allDataButton:hover, .singleEntryImages button:hover, .pagingContainer button:hover, .exportContent .downloadButton:hover, .wordcloudButton:hover, .domainContentContainer .domainStatsButton:hover {
   border:2px solid var(--secondary-bg-color);
   color:white;
   background-color:var(--secondary-bg-color);

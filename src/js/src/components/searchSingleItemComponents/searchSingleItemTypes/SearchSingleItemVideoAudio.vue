@@ -22,7 +22,9 @@
         Download source file
       </a>
     </div>
-    <search-single-item-all-data :id="result.id" />
+    <search-single-item-all-data :id="result.id"
+                                 :source="result.source_file_path"
+                                 :offset="result.source_file_offset" />
   </div>
 </template>
 
