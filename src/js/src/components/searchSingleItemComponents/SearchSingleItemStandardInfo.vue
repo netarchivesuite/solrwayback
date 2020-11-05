@@ -4,7 +4,7 @@
       <p class="textAlignRight">
         #<span class="highlightText">{{ solrSettings.offset + rank + 1 }}</span>
       </p>
-      <p>score: <span class="highlightText"> {{ result.score }}</span></p>
+      <!-- <p>score: <span class="highlightText"> {{ result.score }}</span></p> -->
     </div>
    
     <p class="entryInfo">
