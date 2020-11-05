@@ -9,12 +9,15 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.math3.util.IntegerSequence;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.zip.GZIPInputStream;
 
@@ -60,7 +63,9 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     final long OFFSET = 881;
     final int EXPECTED_CONTENT_LENGTH = 246;
     final int EXPECTED_EXPORT_LENGTH = 1102;
-    final int recordCount = 2;
+    final int batchSize = 15;
+
+    final int EXPECTED_TOTAL_SIZE = EXPECTED_EXPORT_LENGTH*batchSize*2;
 
     byte[] upFrontBinary;
     {
@@ -70,21 +75,27 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
 
     {
-      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, recordCount);
+      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, batchSize);
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
-              StreamingSolrWarcExportBufferedInputStream(mockedSolr, recordCount, true);
+              StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize*2, true);
       GZIPInputStream gis = new GZIPInputStream(exportStream);
 
-      byte[] exportedBytes = new byte[recordCount*EXPECTED_EXPORT_LENGTH];
+      byte[] exportedBytes = new byte[EXPECTED_TOTAL_SIZE];
 
       int exported = IOUtils.read(gis, exportedBytes);
-      assertEquals("Expected the right number of bytes to be read", recordCount*EXPECTED_EXPORT_LENGTH, exported);
-      assertEquals("There should be no more content in the export stream", -1, exportStream.read());
+      int extra = 0;
+      while(gis.read() != -1) {
+        extra++;
+      }
+      if (extra == 0) {
+        extra = -1;
+      }
+      assertEquals("There should be no more content in the export stream", -1, extra);
+      assertEquals("Expected the right number of bytes to be read", EXPECTED_TOTAL_SIZE, exported);
 
       assertBinaryEnding(upFrontBinary, exportedBytes);
     }
-
   }
 
   /**
@@ -146,22 +157,27 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     
   }
 
+  // Returns 2 batches, each of size docCount
   private SolrGenericStreaming getMockedSolrStream(String WARC, long OFFSET, int docCount) throws Exception {
-    SolrDocumentList docs = new SolrDocumentList();
-    docs.setMaxScore(1.0f);
-    docs.setNumFound(1);
-    docs.setStart(System.currentTimeMillis());
+    List<SolrDocumentList> docList = new ArrayList<>(2);
+    for (int dl = 0 ; dl < 2 ; dl++) {
+      SolrDocumentList docs = new SolrDocumentList();
+      docs.setMaxScore(1.0f);
+      docs.setNumFound(1);
+      docs.setStart(System.currentTimeMillis());
 
-    for (int i = 0 ; i < docCount ; i++) {
-      SolrDocument doc = new SolrDocument();
-      doc.addField("id", "MockedDocument_" + i);
-      doc.addField("source_file_path", WARC);
-      doc.addField("source_file_offset", OFFSET);
-      docs.add(doc);
-    };
+      for (int i = 0; i < docCount; i++) {
+        SolrDocument doc = new SolrDocument();
+        doc.addField("id", "MockedDocument_" + dl + "_" + i);
+        doc.addField("source_file_path", WARC);
+        doc.addField("source_file_offset", OFFSET);
+        docs.add(doc);
+      }
+      docList.add(docs);
+    }
 
     SolrGenericStreaming mockedSolr = mock(SolrGenericStreaming.class);
-    when(mockedSolr.nextDocuments()).thenReturn(docs).thenReturn(null); // Return docs on first call, then null
+    when(mockedSolr.nextDocuments()).thenReturn(docList.get(0)).thenReturn(docList.get(1)).thenReturn(null);
     return mockedSolr;
   }
 
