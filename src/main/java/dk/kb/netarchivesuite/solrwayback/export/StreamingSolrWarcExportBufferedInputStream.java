@@ -23,7 +23,6 @@ import dk.kb.netarchivesuite.solrwayback.parsers.ArcHeader2WarcHeader;
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.WarcParser;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-import sun.nio.ch.IOUtil;
 
 public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
@@ -104,6 +103,8 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
         return;
       }
 
+      List<Consumer<OutputStream>> providers = gzip ? new ArrayList<>(docs.size()) : null;
+
       for  (SolrDocument doc : docs){
         String source_file_path = (String) doc.getFieldValue("source_file_path");
         long offset = (Long) doc.getFieldValue("source_file_offset");
@@ -117,7 +118,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
 
         if (gzip) { // Lazy writer for the different parts of the WARC entry as a single gzip block
-          Consumer<OutputStream> provider = out -> {
+          providers.add(StreamBridge.gzip(out -> { // Add the lambda to the list for later activation
             try {
               IOUtils.copy(entryAndHeaders.headers, out);
               if (entryAndHeaders.entry.getBinaryArraySize() > 0) {
@@ -128,8 +129,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
               throw new RuntimeException(
                       "Exception writing entry to gzip stream: " + entryAndHeaders.entry.getUrl(), e);
             }
-          };
-          entryStreams.add(StreamBridge.outputToGzipInput(provider));
+          }));
         } else { // No compression: Just add the streams
           entryStreams.add(entryAndHeaders.headers);
           if (entryAndHeaders.entry.getBinaryArraySize() > 0) {
@@ -137,6 +137,13 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
           }
           entryStreams.add(new ByteArrayInputStream("\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING)));
         }
+      }
+
+      if (gzip) {
+        // All the providers are added in a single call, so that they will all be processed by the same thread.
+        // If they are added one at a time, they will require a thread for each call.
+        log.debug("loadMore() adding " + providers.size() + " lazy resolved records");
+        entryStreams.add(StreamBridge.outputToInput(providers));
       }
     } catch (Exception e) {
       log.error("Unhandled exception in loadMore", e);

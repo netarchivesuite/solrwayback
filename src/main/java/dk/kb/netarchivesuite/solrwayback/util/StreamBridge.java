@@ -19,6 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.AccountLockedException;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
@@ -29,7 +33,7 @@ import java.util.zip.GZIPOutputStream;
 public class StreamBridge {
     private static final Logger log = LoggerFactory.getLogger(StreamBridge.class);
 
-    // We use an unbounded executor to avoid deadlocks between multiple concurrent calls to outputToInput
+    // An unbounded executor to avoid deadlocks between multiple concurrent calls to outputToInput
     private static int threadID = 0;
     private static final ExecutorService executor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r, "StreamBridge_" + threadID++);
@@ -52,10 +56,31 @@ public class StreamBridge {
      * @return an InputStream which will be populated with data from the provider.
      */
     public static InputStream outputToInput(Consumer<OutputStream> provider) throws IOException {
+        return outputToInput(Collections.singletonList(provider));
+    }
+
+    /**
+     * The providers are responsible for adding content to the provided OutputStream. The added content will be
+     * available in the form of the returned InputStream.
+     *
+     * The providers will be called inside of a Thread and the coupling of the OutputStream and the InputStream will be
+     * buffer-based, so there is low memory overhead, no matter how much content is produced.
+     *
+     * The stream will be automatically closed after the producer has finished processing or if processing fails.
+     *
+     * Important: This method uses a thread from {@link #executor}. Do not make thousands of call to this method without
+     * ensuring that the InputStreams from previous calls has been depleted. The number of providers in a single call
+     * has no limit per se.
+     * @param providers the providers of the bytes to pipe to the returned InputStream.
+     * @return an InputStream which will be populated with data from the provider.
+     */
+    public static InputStream outputToInput(Collection<Consumer<OutputStream>> providers) throws IOException {
         PipedOutputStream out = new PipedOutputStream();
         PipedInputStream in = new PipedInputStream(out);
+
+        OutputStream noCloseOut = new NonClosingOutputStream(out); // The sub-streams are concatenated
         executor.submit(() -> {
-            provider.accept(out);
+            providers.forEach(provider -> provider.accept(noCloseOut));
             try {
                 out.close();
             } catch (IOException e) {
@@ -66,21 +91,27 @@ public class StreamBridge {
     }
 
     /**
-     * The provider is responsible for adding content to the provided OutputStream. The added content will be available
-     * in the form of the returned InputStream, which will automatically be gzipped.
-     *
-     * The provider will be called inside of a Thread and the coupling of the OutputStream and the InputStream will be
-     * buffer-based, so there is low memory overhead, no matter how much content is produced.
-     *
-     * The stream will be automatically closed after the producer has finished processing.
-     *
-     * Important: This method uses a thread from {@link #executor}. Do not make thousands of call to this method without
-     * ensuring that the InputStreams from previous calls has been depleted.
-     * @param provider the provider of the bytes to pipe to the returned InputStream.
-     * @return an InputStream which will be populated with data from the provider and gzipped.
+     * Wrapper for an Outputstream that ignores calls to {@link OutputStream#close()}.
+     * Used for ensuring that sub-providers in a list of providers does not close the overall OutputStream.
      */
-    public static InputStream outputToGzipInput(Consumer<OutputStream> provider) throws IOException {
-        return outputToInput(out -> {
+    private static class NonClosingOutputStream extends FilterOutputStream {
+        public NonClosingOutputStream(OutputStream out) {
+            super(out);
+        }
+
+        @Override
+        public void close() throws IOException {
+            // no-op
+        }
+    }
+
+    /**
+     * Makes the provider output a gzip stream.
+     * @param provider any provider.
+     * @return the given provider wrapped in a gzipping provider.
+     */
+    public static Consumer<OutputStream> gzip(Consumer<OutputStream> provider) {
+        return out -> {
             try {
                 GZIPOutputStream gzip = new GZIPOutputStream(out);
                 provider.accept(gzip);
@@ -88,6 +119,6 @@ public class StreamBridge {
             } catch (IOException e) {
                 throw new RuntimeException("IOException with gzip", e);
             }
-        });
+        };
     }
 }

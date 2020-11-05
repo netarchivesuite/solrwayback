@@ -73,7 +73,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
       SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, recordCount);
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
-              StreamingSolrWarcExportBufferedInputStream(mockedSolr, 1, true);
+              StreamingSolrWarcExportBufferedInputStream(mockedSolr, recordCount, true);
       GZIPInputStream gis = new GZIPInputStream(exportStream);
 
       byte[] exportedBytes = new byte[recordCount*EXPECTED_EXPORT_LENGTH];
