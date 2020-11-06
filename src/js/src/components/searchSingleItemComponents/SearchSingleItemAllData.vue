@@ -105,10 +105,12 @@ export default {
       }
     },
     orderResult(result) {
+
       let orderedResult = {}
       Object.keys(result).sort().forEach(function(key) {
         orderedResult[key] = result[key]
       })
+      delete orderedResult['score']
       return orderedResult
     },
     specificValueButtonText(index) {
