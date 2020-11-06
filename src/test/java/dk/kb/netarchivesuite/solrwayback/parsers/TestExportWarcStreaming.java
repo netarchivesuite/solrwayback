@@ -7,6 +7,7 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrDocument;
@@ -15,11 +16,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertEquals;
@@ -81,7 +83,13 @@ public class TestExportWarcStreaming extends UnitTestUtils {
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
               StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize*2, true);
-      GZIPInputStream gis = new GZIPInputStream(exportStream);
+      //GZIPInputStream gis = new GZIPInputStream(new BufferedInputStream(exportStream, 100)); // Fails after 6612
+      //GZIPInputStream gis = new GZIPInputStream(new BufferedInputStream(exportStream, 100000)); // Does not fail
+
+      // The build-in GZIPInputStream does not handle concatenated gzip-blocks well at all, if the inner stream
+      // does not deliver the maximum possible bytes from calls to read(buf, offset, length). Or something like that.
+      // Apache's GzipCompressorInputStream has explicit support for multi-block gzip-streams
+      GzipCompressorInputStream gis = new GzipCompressorInputStream(exportStream, true);
 
       byte[] exportedBytes = new byte[EXPECTED_TOTAL_SIZE];
 
@@ -98,6 +106,76 @@ public class TestExportWarcStreaming extends UnitTestUtils {
 
       assertBinaryEnding(upFrontBinary, exportedBytes);
     }
+  }
+
+  @Test
+  public void testGzipExportIntermediateBuffer() throws Exception {
+    final String WARC = getFile("compressions_warc/transfer_compression_none.warc.gz").getCanonicalPath();
+    final long OFFSET = 881;
+    final int EXPECTED_CONTENT_LENGTH = 246;
+    final int EXPECTED_EXPORT_LENGTH = 1102;
+    final int batchSize = 30;
+
+    final int EXPECTED_TOTAL_SIZE = EXPECTED_EXPORT_LENGTH*batchSize*2;
+
+    byte[] upFrontBinary;
+    {
+      ArcEntry warcEntry = WarcParser.getWarcEntry(WARC, OFFSET, true);
+      upFrontBinary = warcEntry.getBinary();
+      assertEquals("Length for up front load should be as expected", EXPECTED_CONTENT_LENGTH, upFrontBinary.length);
+    }
+
+    {
+      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, batchSize);
+
+      StreamingSolrWarcExportBufferedInputStream exportStream = new
+              StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize*2, true);
+
+      byte[] intermediate = new byte[EXPECTED_EXPORT_LENGTH*2*batchSize];
+      int copied = IOUtils.read(exportStream, intermediate);
+      log.info("Copied " + copied + " bytes");
+      GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(intermediate, 0, copied));
+
+      byte[] exportedBytes = new byte[EXPECTED_TOTAL_SIZE];
+
+      log.info("Attempting to read " + exportedBytes.length + " bytes from GZIPInputStream(exportStream)");
+      int exported = IOUtils.read(gis, exportedBytes);
+
+      log.info("Got " + exported + " bytes, checking for trailing bytes");
+      int extra = 0;
+      while (gis.read() != -1) {
+        extra++;
+      }
+      assertEquals("Expected the right number of bytes to be read", EXPECTED_TOTAL_SIZE, exported);
+      assertEquals("There should be no more content in the export stream", 0, extra);
+
+      assertBinaryEnding(upFrontBinary, exportedBytes);
+    }
+  }
+
+  @Test
+  public void testPipedIO() throws IOException {
+    PipedOutputStream out = new PipedOutputStream();
+    PipedInputStream in = new PipedInputStream(out);
+    int CONTENT_LENGTH = 100000;
+
+    ExecutorService executor = Executors.newCachedThreadPool();
+    executor.submit(() -> {
+      try {
+        for (int i = 0; i < CONTENT_LENGTH; i++) {
+          out.write(87);
+        }
+        out.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    });
+
+    byte[] result = new byte[CONTENT_LENGTH];
+    int read = IOUtils.read(in, result);
+
+    assertEquals("The full content should be read", CONTENT_LENGTH, read);
+    assertEquals("Attempting to read further than " + CONTENT_LENGTH + " should yield EOF", -1, in.read());
   }
 
   @Test
