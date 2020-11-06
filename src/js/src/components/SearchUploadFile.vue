@@ -1,11 +1,13 @@
 <template>
   <div class="fileUploader">
-    <label>
-      <input ref="file" type="file" @change="selectFileToUpload">
-    </label>
-
-    <button :disabled="fileToUpload.length === 0" @click="uploadFile">
-      Upload and search for file
+    <div class="fileSelector">
+      <input
+        ref="file"
+        type="file"
+        @change="selectFileToUpload">
+    </div>
+    <button class="fileSelectButton" :disabled="fileToUpload.length === 0" @click="uploadFile">
+      Search with file
     </button>
   </div>
 </template>
