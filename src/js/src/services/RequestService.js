@@ -227,7 +227,7 @@ function getPWID(sourceFilePath, offset) {
 }
 
 function getWarcHeader(sourceFilePath, offset) {
-  const url = `/services/warc/header/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
+  const url = `services/warc/header/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
   return axios.get(
     url).then(response => {
     return response.data

@@ -1,11 +1,9 @@
 <template>
   <div class="SingleEntryAllData">
     <div class="showAllButtonContainer">
-      <button class="allDataButton" @click="toggleAllDataShown">
+      <button title="View warc header" :class="warcHeaderShown ? 'warcHeaderDataButton active' : 'warcHeaderDataButton'" @click="toggleWarcHeader" />
+      <button :class="allDataShown ? 'allDataButton active' : 'allDataButton'" @click="toggleAllDataShown">
         {{ allDataButtonText }}
-      </button>
-      <button class="allDataButton" @click="toggleWarcHeader">
-        {{ warcHeaderButtonText }}
       </button>
     </div>
     <div v-if="warcHeaderShown && warcHeaderData !== ''" class="warcHeaderInfo">
@@ -119,7 +117,7 @@ export default {
     },
     toggleAllDataShown() {
       this.allDataShown = !this.allDataShown
-      this.allDataShown === true ? this.warcHeaderShown = false : null
+      this.allDataShown ? this.warcHeaderShown = false : null
       if(Object.keys(this.allData).length === 0) {
         requestService.fireLookupRequest(encodeURIComponent(this.id))
           .then(result => 
@@ -151,7 +149,7 @@ export default {
     },
     toggleWarcHeader() {
       this.warcHeaderShown = !this.warcHeaderShown
-      this.warcHeaderShown === true ? this.allDataShown = false : null
+      this.warcHeaderShown ? this.allDataShown = false : null
       if(this.warcHeaderData === '' && this.warcHeaderShown === true) {
         requestService.getWarcHeader(this.source, this.offset)
           .then(result => 
