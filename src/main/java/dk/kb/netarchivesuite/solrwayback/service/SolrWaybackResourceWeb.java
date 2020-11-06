@@ -327,6 +327,20 @@ public class SolrWaybackResourceWeb {
       }
     }
     
+
+    //No results, only facets
+    @GET
+    @Path("solr/search/facets/loadmore") 
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public String  solrSearchFacetsLoadMore(@QueryParam("query") String query, @QueryParam("fq") List<String> fg ,  @QueryParam("facetfield") String facetField, @QueryParam("revisits") boolean revisits) throws SolrWaybackServiceException {
+      try {
+       String res = Facade.solrSearchFacetsOnlyLoadMore(query,fg, facetField,revisits);          
+       return res;
+      } catch (Exception e) {        
+        throw handleServiceExceptions(e);
+      }
+    }
+
     
     
     
