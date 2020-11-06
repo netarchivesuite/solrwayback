@@ -267,7 +267,7 @@ margin: 1em 0 0 0;
 }
 // Kudos end
 
-.showAllButtonContainer button, .singleEntryImages button, .pagingContainer button, .exportContent .downloadButton, .wordcloudButton, .domainContentContainer .domainStatsButton  {
+.showAllButtonContainer .allDataButton, .singleEntryImages button, .pagingContainer button, .exportContent .downloadButton, .wordcloudButton, .domainContentContainer .domainStatsButton  {
   float:right;
   border:2px solid var(--secondary-bg-color);
   border-radius: 0;
@@ -278,6 +278,24 @@ margin: 1em 0 0 0;
   cursor:pointer;
   box-sizing: border-box;
   transition:all 0.2s linear 0s;
+}
+
+.showAllButtonContainer .allDataButton:last-of-type {
+  margin-right:10px;
+}
+
+.warcHeaderInfo {
+  height:auto;
+  white-space: pre-wrap;      /* CSS3 */   
+  white-space: -moz-pre-wrap; /* Firefox */    
+  white-space: -pre-wrap;     /* Opera <7 */   
+  white-space: -o-pre-wrap;   /* Opera 7 */    
+  word-wrap: break-word;      /* IE */
+}
+
+.warcHeaderInfo h2 {
+  margin-top:20px;
+  margin-bottom:10px;
 }
 
 .pagingContainer button {
@@ -328,7 +346,7 @@ margin: 1em 0 0 0;
   color:rgba(30,30,30, 0.5)
 }
 
-.showAllButtonContainer button:hover, .singleEntryImages button:hover, .pagingContainer button:hover, .exportContent .downloadButton:hover, .wordcloudButton:hover, .domainContentContainer .domainStatsButton:hover {
+.showAllButtonContainer .allDataButton:hover, .singleEntryImages button:hover, .pagingContainer button:hover, .exportContent .downloadButton:hover, .wordcloudButton:hover, .domainContentContainer .domainStatsButton:hover {
   border:2px solid var(--secondary-bg-color);
   color:white;
   background-color:var(--secondary-bg-color);
@@ -1119,4 +1137,47 @@ margin-left:40px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.warcHeaderDataButton {
+  transition:all 0.2s linear 0s;
+  background-color: transparent;
+	float: right;
+	height: 29px;
+	width: 29px;
+	padding: 2px;
+	box-sizing: border-box;
+	cursor: pointer;
+	border: 2px solid var(--main-highlight-color);
+	box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.35);
+}
+
+.warcHeaderDataButton:after {
+  transition:all 0.2s linear 0s;
+  content: '';
+  position: absolute;
+  margin-top:-15px;
+  margin-left:-15px;
+  height: 29px;
+	width: 29px;
+  background: url('../icons/warc.svg') no-repeat center;
+  background-size: 19px 19px;
+}
+
+.warcHeaderDataButton.active, .allDataButton.active {
+  background-color:var(--main-highlight-color);
+  color:white;
+}
+
+.warcHeaderDataButton.active:after {
+  filter:invert(1);
+}
+
+.warcHeaderDataButton:hover {
+  background-color:var(--main-highlight-color);
+
+}
+
+.warcHeaderDataButton:hover:after {
+  filter:invert(1);
 }

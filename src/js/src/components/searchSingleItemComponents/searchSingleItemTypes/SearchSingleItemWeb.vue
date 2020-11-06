@@ -6,7 +6,9 @@
                                :source="result.source_file_path" 
                                :offset="result.source_file_offset" 
                                input-type="multiple" />
-    <search-single-item-all-data :id="result.id" />
+    <search-single-item-all-data :id="result.id"
+                                 :source="result.source_file_path"
+                                 :offset="result.source_file_offset" />
   </div>
 </template>
 
