@@ -121,9 +121,18 @@ export default {
       if(Object.keys(this.allData).length === 0) {
         requestService.fireLookupRequest(encodeURIComponent(this.id))
           .then(result => 
-            (this.allData = result.response.docs[0], this.allData === {} ? console.log('request successfull, no data!') : null),
+            (this.allData = this.orderResult(result.response.docs[0]), this.allData === {} ? console.log('request successfull, no data!') : null),
             error => (console.log('Error in getting full post'), this.allData = {}))
       }
+    },
+    orderResult(result) {
+
+      let orderedResult = {}
+      Object.keys(result).sort().forEach(function(key) {
+        orderedResult[key] = result[key]
+      })
+      delete orderedResult['score']
+      return orderedResult
     },
     specificValueButtonText(index) {
       return index === this.currentDataShown ? 'Show less ↑' : 'Show all ↓'
