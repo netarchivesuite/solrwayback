@@ -150,7 +150,7 @@ export default {
     toggleWarcHeader() {
       this.warcHeaderShown = !this.warcHeaderShown
       this.warcHeaderShown ? this.allDataShown = false : null
-      if(this.warcHeaderData === '' && this.warcHeaderShown === true) {
+      if(this.warcHeaderData === '' && this.warcHeaderShown) {
         requestService.getWarcHeader(this.source, this.offset)
           .then(result => 
             (this.warcHeaderData = result, this.warcHeaderData === '' ? console.log('request successfull, no data!') : null),
