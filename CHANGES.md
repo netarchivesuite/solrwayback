@@ -1,3 +1,25 @@
+
+4.0.2
+-----
+Added icon on search result to show warc headers for that record.  
+Facet counts are formatted to be more readable for large numbers.(thousand delimiters)
+Data fields on records new listed in alphabetical order.
+Export to warc file also has option to export to a zipped warc.gz file. (stll bugged)
+
+
+
+
+
+
+
+Added optional proprerty to solrwaybackweb.properties. Default value is 1998 is not set. Start year of the collection is used in several visualizations.
+
+```
+#n-gram and domain statistics  etc. needs a start year for the visualizations. Will default to 1998 if not defined.
+archive.start.year=1998
+```
+
+
 4.0.1
 -----
 Playback support for chunked transfer encoding. This also require new version of the warc-indexer when indexing (https://github.com/ukwa/webarchive-discovery/pull/232)
