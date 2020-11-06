@@ -691,7 +691,7 @@ public class Facade {
         props.put(PropertiesLoaderWeb.MAPS_RADIUS_PROPERTY, PropertiesLoaderWeb.MAPS_RADIUS);
         props.put(PropertiesLoaderWeb.LEAFLET_SOURCE_PROPERTY, PropertiesLoaderWeb.LEAFLET_SOURCE);
         props.put(PropertiesLoaderWeb.LEAFLET_ATTRIBUTION_PROPERTY, PropertiesLoaderWeb.LEAFLET_ATTRIBUTION);
-
+        props.put(PropertiesLoaderWeb.ARCHIVE_START_YEAR_PROPERTY, ""+PropertiesLoaderWeb.ARCHIVE_START_YEAR);
         return props;
     }
 
