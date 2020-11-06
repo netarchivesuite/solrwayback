@@ -94,7 +94,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   private void loadMore() {
     try {
       if (docsWarcRead > maxRecords) { //Stop loading more
-        log.info("Max documents reached. Stopping loading more documents");
+        log.info("Max documents reached (" + maxRecords + "). Stopping loading more documents");
         return;
       }
 
@@ -120,11 +120,12 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
         if (gzip) { // Lazy writer for the different parts of the WARC entry as a single gzip block
           providers.add(StreamBridge.gzip(out -> { // Add the lambda to the list for later activation
             try {
-              log.debug("Writing WARC entry #" + c.incrementAndGet() +
-                        ": " + entryAndHeaders.entry.getFileName() + "#" + entryAndHeaders.entry.getOffset());
               IOUtils.copy(entryAndHeaders.headers, out);
               if (entryAndHeaders.entry.getBinaryArraySize() > 0) {
-                IOUtils.copy(entryAndHeaders.entry.getBinaryLazyLoad(), out);
+                try (InputStream payload = entryAndHeaders.entry.getBinaryLazyLoad()) {
+                  IOUtils.copy(payload, out);
+                }
+
               }
               IOUtils.copy(new ByteArrayInputStream("\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING)), out);
             } catch (Exception e) {
