@@ -8,10 +8,6 @@ Export to warc file also has option to export to a zipped warc.gz file. (stll bu
 
 
 
-
-
-
-
 Added optional proprerty to solrwaybackweb.properties. Default value is 1998 is not set. Start year of the collection is used in several visualizations.
 
 ```
