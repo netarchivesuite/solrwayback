@@ -19,10 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.AccountLockedException;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
@@ -79,11 +76,21 @@ public class StreamBridge {
         PipedOutputStream out = new PipedOutputStream();
         PipedInputStream in = new PipedInputStream(out);
 
+        List<Consumer<OutputStream>> providerList = new ArrayList<>(providers);
+        log.debug("Received " + providers.size() + " providers");
         OutputStream noCloseOut = new NonClosingOutputStream(out); // The sub-streams are concatenated
+
         executor.submit(() -> {
-            providers.forEach(provider -> provider.accept(noCloseOut));
+            for (int i = 0 ; i < providerList.size() ; i++) {
+                log.debug(String.format(Locale.ENGLISH, "Activating provider #%d/%d", (i + 1), providers.size()));
+                providerList.get(i).accept(noCloseOut);
+                log.debug(String.format(Locale.ENGLISH, "Finished provider #%d/%d", (i + 1), providers.size()));
+            }
+            //providers.forEach(provider -> provider.accept(noCloseOut));
             try {
+                log.debug("Flushing PipedOutputStream");
                 out.flush();
+                log.debug("Closing PipedOutputStream (only affects current result block)");
                 out.close();
             } catch (IOException e) {
                 log.error("IOException closing piped stream", e);
@@ -115,10 +122,13 @@ public class StreamBridge {
     public static Consumer<OutputStream> gzip(Consumer<OutputStream> provider) {
         return out -> {
             try {
+                log.debug("Creating entry-level gzip stream");
                 GZIPOutputStream gzip = new GZIPOutputStream(out);
                 provider.accept(gzip);
+                log.debug("Closing entry-level gzip stream");
                 gzip.close();
             } catch (IOException e) {
+                log.error("IOException with gzip", e);
                 throw new RuntimeException("IOException with gzip", e);
             }
         };

@@ -74,6 +74,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
       // There is content. Read up to max requested
       int read = entryStreams.get(0).read(b, off, len);
       if (read == -1) { // The entryStream is empty. Remove it and go to the next
+        log.debug("Emptied entryStream. Switching to next one or loadMore() if the buffer is empty");
         try {
           entryStreams.get(0).close();
         } catch (Exception e) {
@@ -88,17 +89,24 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
       off += read;
       len -= read;
     }
+    if (totalRead == 0) {
+      log.debug("No more content in last remaining stream. Closing export. " +
+                "WARCS read: " + docsWarcRead + " ARCs read: " + docsArcRead);
+    }
     return totalRead == 0 ? -1 : totalRead; // -1 signals EOS
   }
   AtomicInteger c = new AtomicInteger(0);
+  AtomicInteger cLazy = new AtomicInteger(0);
   private void loadMore() {
+    log.debug("loadMore called");
     try {
       if (docsWarcRead > maxRecords) { //Stop loading more
         log.info("Max documents reached (" + maxRecords + "). Stopping loading more documents");
         return;
       }
-
+      log.debug("Requesting more Solr documents");
       SolrDocumentList docs = solrClient.nextDocuments();
+      log.debug("Got " + (docs == null ? 0 : docs.size()) + " Solr documents");
       if (docs == null || docs.isEmpty()) {
         log.info("No more documents available");
         return;
@@ -108,8 +116,9 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
       for  (SolrDocument doc : docs){
         String source_file_path = (String) doc.getFieldValue("source_file_path");
         long offset = (Long) doc.getFieldValue("source_file_offset");
-
+        log.debug("Getting WARC entry representation for " + source_file_path + "#" + offset);
         EntryAndHeaders entryAndHeaders = getWARCEntryAndHeaderStream(source_file_path, offset);
+        log.debug("Got WARC entry representation for " + source_file_path + "#" + offset);
         if (entryAndHeaders == null) {
           log.warn(String.format(Locale.ROOT, "Unable to resolve (W)ARC entry %s#%d for %s",
                                  source_file_path, offset, doc.getFieldValue("id")));
@@ -118,8 +127,12 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
 
         if (gzip) { // Lazy writer for the different parts of the WARC entry as a single gzip block
+          log.debug(String.format(Locale.ENGLISH, "Adding export lambda #%d with payload size %d bytes for URL '%s'",
+                                  c.incrementAndGet(), entryAndHeaders.entry.getBinaryArraySize(), entryAndHeaders.entry.getUrl()));
           providers.add(StreamBridge.gzip(out -> { // Add the lambda to the list for later activation
             try {
+              log.debug(String.format(Locale.ENGLISH, "Executing export lambda #%d with payload size %d bytes for URL '%s'",
+                                      cLazy.incrementAndGet(), entryAndHeaders.entry.getBinaryArraySize(), entryAndHeaders.entry.getUrl()));
               IOUtils.copy(entryAndHeaders.headers, out);
               if (entryAndHeaders.entry.getBinaryArraySize() > 0) {
                 try (InputStream payload = entryAndHeaders.entry.getBinaryLazyLoad()) {
@@ -128,6 +141,8 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
               }
               IOUtils.copy(new ByteArrayInputStream("\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING)), out);
+              log.debug(String.format(Locale.ENGLISH, "Finished export lambda #%d with payload size %d bytes for URL '%s'",
+                                      cLazy.get(), entryAndHeaders.entry.getBinaryArraySize(), entryAndHeaders.entry.getUrl()));
             } catch (Exception e) {
               throw new RuntimeException(
                       "Exception writing entry to gzip stream: " + entryAndHeaders.entry.getUrl(), e);
