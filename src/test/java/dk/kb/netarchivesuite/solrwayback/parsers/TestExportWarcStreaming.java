@@ -13,12 +13,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.Test;
+import org.mockito.stubbing.OngoingStubbing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,7 +46,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
 
     {
-      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, 1);
+      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, 1, 1);
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
               StreamingSolrWarcExportBufferedInputStream(mockedSolr, 1, false);
@@ -68,8 +67,9 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     final int EXPECTED_CONTENT_LENGTH = 246;
     final int EXPECTED_EXPORT_LENGTH = 1102;
     final int batchSize = 30;
+    final int batches = 3;
 
-    final int EXPECTED_TOTAL_SIZE = EXPECTED_EXPORT_LENGTH*batchSize*2;
+    final int EXPECTED_TOTAL_SIZE = EXPECTED_EXPORT_LENGTH*batchSize*batches;
 
     byte[] upFrontBinary;
     {
@@ -79,10 +79,10 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
 
     {
-      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, batchSize);
+      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, batchSize, batches);
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
-              StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize*2, true);
+              StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize*batches, true);
       //GZIPInputStream gis = new GZIPInputStream(new BufferedInputStream(exportStream, 100)); // Fails after 6612
       //GZIPInputStream gis = new GZIPInputStream(new BufferedInputStream(exportStream, 100000)); // Does not fail
 
@@ -109,76 +109,6 @@ public class TestExportWarcStreaming extends UnitTestUtils {
   }
 
   @Test
-  public void testGzipExportIntermediateBuffer() throws Exception {
-    final String WARC = getFile("compressions_warc/transfer_compression_none.warc.gz").getCanonicalPath();
-    final long OFFSET = 881;
-    final int EXPECTED_CONTENT_LENGTH = 246;
-    final int EXPECTED_EXPORT_LENGTH = 1102;
-    final int batchSize = 30;
-
-    final int EXPECTED_TOTAL_SIZE = EXPECTED_EXPORT_LENGTH*batchSize*2;
-
-    byte[] upFrontBinary;
-    {
-      ArcEntry warcEntry = WarcParser.getWarcEntry(WARC, OFFSET, true);
-      upFrontBinary = warcEntry.getBinary();
-      assertEquals("Length for up front load should be as expected", EXPECTED_CONTENT_LENGTH, upFrontBinary.length);
-    }
-
-    {
-      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, batchSize);
-
-      StreamingSolrWarcExportBufferedInputStream exportStream = new
-              StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize*2, true);
-
-      byte[] intermediate = new byte[EXPECTED_EXPORT_LENGTH*2*batchSize];
-      int copied = IOUtils.read(exportStream, intermediate);
-      log.info("Copied " + copied + " bytes");
-      GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(intermediate, 0, copied));
-
-      byte[] exportedBytes = new byte[EXPECTED_TOTAL_SIZE];
-
-      log.info("Attempting to read " + exportedBytes.length + " bytes from GZIPInputStream(exportStream)");
-      int exported = IOUtils.read(gis, exportedBytes);
-
-      log.info("Got " + exported + " bytes, checking for trailing bytes");
-      int extra = 0;
-      while (gis.read() != -1) {
-        extra++;
-      }
-      assertEquals("Expected the right number of bytes to be read", EXPECTED_TOTAL_SIZE, exported);
-      assertEquals("There should be no more content in the export stream", 0, extra);
-
-      assertBinaryEnding(upFrontBinary, exportedBytes);
-    }
-  }
-
-  @Test
-  public void testPipedIO() throws IOException {
-    PipedOutputStream out = new PipedOutputStream();
-    PipedInputStream in = new PipedInputStream(out);
-    int CONTENT_LENGTH = 100000;
-
-    ExecutorService executor = Executors.newCachedThreadPool();
-    executor.submit(() -> {
-      try {
-        for (int i = 0; i < CONTENT_LENGTH; i++) {
-          out.write(87);
-        }
-        out.close();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    });
-
-    byte[] result = new byte[CONTENT_LENGTH];
-    int read = IOUtils.read(in, result);
-
-    assertEquals("The full content should be read", CONTENT_LENGTH, read);
-    assertEquals("Attempting to read further than " + CONTENT_LENGTH + " should yield EOF", -1, in.read());
-  }
-
-  @Test
   public void testMultiExport() throws Exception {
     final String WARC = getFile("compressions_warc/transfer_compression_none.warc.gz").getCanonicalPath();
     final long OFFSET = 881;
@@ -188,7 +118,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     final int EXPECTED_TOTAL_SIZE = EXPECTED_EXPORT_LENGTH*batchSize*2;
 
     {
-      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, batchSize);
+      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, batchSize, 2);
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
               StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize*2, false);
@@ -269,9 +199,11 @@ public class TestExportWarcStreaming extends UnitTestUtils {
   }
 
   // Returns 2 batches, each of size docCount
-  private SolrGenericStreaming getMockedSolrStream(String WARC, long OFFSET, int docCount) throws Exception {
-    List<SolrDocumentList> docList = new ArrayList<>(2);
-    for (int dl = 0 ; dl < 2 ; dl++) {
+  private SolrGenericStreaming getMockedSolrStream(String WARC, long OFFSET, int docCount, int batches) throws Exception {
+    SolrGenericStreaming mockedSolr = mock(SolrGenericStreaming.class);
+    OngoingStubbing<SolrDocumentList> stub = when(mockedSolr.nextDocuments());
+
+    for (int dl = 0 ; dl < batches ; dl++) {
       SolrDocumentList docs = new SolrDocumentList();
       docs.setMaxScore(1.0f);
       docs.setNumFound(docCount*2);
@@ -284,13 +216,10 @@ public class TestExportWarcStreaming extends UnitTestUtils {
         doc.addField("source_file_offset", OFFSET);
         docs.add(doc);
       }
-      docList.add(docs);
+      stub = stub.thenReturn(docs);
     }
-
-    SolrGenericStreaming mockedSolr = mock(SolrGenericStreaming.class);
-    when(mockedSolr.nextDocuments()).thenReturn(docList.get(0)).thenReturn(docList.get(1)).thenReturn(null);
+    stub.thenReturn(null);
     return mockedSolr;
   }
-
 
 }
