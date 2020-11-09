@@ -51,16 +51,12 @@ export default {
     },
     checkForFacets(facets) {
     //we test if the variable exists first - can cause problems if it's not set yet.
-    if(facets) {
       let fate = false
-      Object.keys(facets).forEach(function(item) {
-        facets[item].length !== 0 ? fate = true : null
-      })
-      return fate
-      }
-      else {
-        return false
-      }
+      if(facets) { 
+        Object.keys(facets).forEach(function(item) {
+          facets[item].length !== 0 ? fate = true : null 
+        }) 
+      } return fate
     }
   }
 }
