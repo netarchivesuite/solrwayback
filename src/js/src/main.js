@@ -20,7 +20,8 @@ Axios.get('services/frontend/properties/solrwaybackweb/')
         configs.leaflet.source = response.data['leaflet.source']
         configs.leaflet.map.latitude = response.data['maps.latitude']
         configs.leaflet.map.longitude = response.data['maps.longitude']
-        configs.leaflet.map.radius = response.data['maps.radius']        
+        configs.leaflet.map.radius = response.data['maps.radius']
+        configs.visualizations.ngram.startYear = response.data['archive.start.year']       
         initializeVue()
     })
     .catch(error => initializeVue())
