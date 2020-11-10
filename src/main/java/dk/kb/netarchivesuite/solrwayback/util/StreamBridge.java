@@ -17,7 +17,6 @@ package dk.kb.netarchivesuite.solrwayback.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.AccountLockedException;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -83,7 +82,13 @@ public class StreamBridge {
         executor.submit(() -> {
             for (int i = 0 ; i < providerList.size() ; i++) {
                 log.debug(String.format(Locale.ENGLISH, "Activating provider #%d/%d", (i + 1), providers.size()));
-                providerList.get(i).accept(noCloseOut);
+                try {
+                    providerList.get(i).accept(noCloseOut);
+                } catch (Exception e) {
+                    log.warn(String.format(
+                            Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d",
+                            i+1, providerList.size()));
+                }
                 log.debug(String.format(Locale.ENGLISH, "Finished provider #%d/%d", (i + 1), providers.size()));
             }
             //providers.forEach(provider -> provider.accept(noCloseOut));
