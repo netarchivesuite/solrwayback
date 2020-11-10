@@ -309,10 +309,9 @@ public class Facade {
             urlQueryPath = "";
         }
 
-        String urlPunied = "http://" + hostNameEncoded + path + urlQueryPath;
+        String urlPunied = "http://" + hostNameEncoded + path +"?"+ urlQueryPath;
         String urlPuniedAndNormalized = Normalisation.canonicaliseURL(urlPunied);
 
-        log.info("normalizing url:" + url + " url_norm:" + urlPuniedAndNormalized);
         return urlPuniedAndNormalized;
     }
 
