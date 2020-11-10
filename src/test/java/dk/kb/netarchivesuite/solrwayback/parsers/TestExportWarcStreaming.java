@@ -18,10 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -106,6 +104,33 @@ public class TestExportWarcStreaming extends UnitTestUtils {
 
       assertBinaryEnding(upFrontBinary, exportedBytes);
     }
+  }
+
+  @Test
+  public void testGzipExportTruncated() throws Exception {
+    final String[][] ENTRIES = new String[][]{
+            {"compressions_warc/transfer_compression_none_truncated.warc.gz", "881"},
+            {"compressions_warc/transfer_compression_none.warc.gz", "881"}
+    };
+    SolrGenericStreaming mockedSolr = getMockedSolrStream(ENTRIES);
+    final int EXPECTED_TOTAL_SIZE = 1102; // Only the non-truncated will make it through
+
+    StreamingSolrWarcExportBufferedInputStream exportStream = new
+            StreamingSolrWarcExportBufferedInputStream(mockedSolr, ENTRIES.length, true);
+    GzipCompressorInputStream gis = new GzipCompressorInputStream(exportStream, true);
+
+    byte[] exportedBytes = new byte[EXPECTED_TOTAL_SIZE];
+
+    log.info("Attempting to read " + exportedBytes.length + " bytes from GZIPInputStream(exportStream)");
+    int exported = IOUtils.read(gis, exportedBytes);
+
+    log.info("Got " + exported + " bytes, checking for trailing bytes");
+    int extra = 0;
+    while (gis.read() != -1) {
+      extra++;
+    }
+    assertEquals("Expected the right number of bytes to be read", EXPECTED_TOTAL_SIZE, exported);
+    assertEquals("There should be no more content in the export stream", 0, extra);
   }
 
   @Test
@@ -221,5 +246,30 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     stub.thenReturn(null);
     return mockedSolr;
   }
+
+  /**
+   * @param entries Pairs of [warcfile, offset]
+   * @return a mocked SolrGenericStreaming delivering the stated entries.
+   */
+  private SolrGenericStreaming getMockedSolrStream(String[][] entries) throws Exception {
+    SolrGenericStreaming mockedSolr = mock(SolrGenericStreaming.class);
+
+    SolrDocumentList docs = new SolrDocumentList();
+    docs.setMaxScore(1.0f);
+    docs.setNumFound(entries.length);
+    docs.setStart(System.currentTimeMillis());
+
+    for (int i = 0; i < entries.length; i++) {
+      SolrDocument doc = new SolrDocument();
+      doc.addField("id", "MockedDocument_" + i);
+      doc.addField("source_file_path", getFile(entries[i][0]).getCanonicalPath());
+      doc.addField("source_file_offset", Long.valueOf(entries[i][1]));
+      docs.add(doc);
+    }
+
+    when(mockedSolr.nextDocuments()).thenReturn(docs).thenReturn(null);
+    return mockedSolr;
+  }
+
 
 }

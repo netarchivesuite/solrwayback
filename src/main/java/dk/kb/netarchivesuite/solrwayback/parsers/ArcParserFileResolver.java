@@ -70,7 +70,7 @@ public class ArcParserFileResolver {
        
      } catch (Exception e) {
        // It CAN happen, but crazy unlikely, and not critical at all... (took 10 threads spamming 1M+ requests/sec for it to happen in a test.):
-       log.error("Critical error resolving warc:"+source_file_path +" and offset:"+offset +" Error:",e.getMessage());
+       log.error("Critical error resolving warc:"+source_file_path +" and offset:"+offset +" Error:" + e.getMessage());
        throw new Exception(e);
      }
 

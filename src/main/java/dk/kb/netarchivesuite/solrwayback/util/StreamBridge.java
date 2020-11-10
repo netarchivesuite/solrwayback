@@ -14,10 +14,13 @@
  */
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.nio.ch.IOUtil;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
@@ -79,17 +82,20 @@ public class StreamBridge {
         log.debug("Received " + providers.size() + " providers");
         OutputStream noCloseOut = new NonClosingOutputStream(out); // The sub-streams are concatenated
 
+        // Iterate all providers, sending their content to the piped stream
+        // If a provider fails, the Exception is logged and processing continues with the next provider
         executor.submit(() -> {
             for (int i = 0 ; i < providerList.size() ; i++) {
                 log.debug(String.format(Locale.ENGLISH, "Activating provider #%d/%d", (i + 1), providers.size()));
                 try {
                     providerList.get(i).accept(noCloseOut);
+                    log.debug(String.format(Locale.ENGLISH, "Finished provider #%d/%d", (i + 1), providers.size()));
                 } catch (Exception e) {
                     log.warn(String.format(
-                            Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d",
+                            Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d. " +
+                                            "Switching to next sub-provider",
                             i+1, providerList.size()));
                 }
-                log.debug(String.format(Locale.ENGLISH, "Finished provider #%d/%d", (i + 1), providers.size()));
             }
             //providers.forEach(provider -> provider.accept(noCloseOut));
             try {
@@ -138,4 +144,166 @@ public class StreamBridge {
             }
         };
     }
+
+    /**
+     * Retrieves the content from the given {@code is} and stores it in a cache, handling Exceptions by marking them in
+     * the returned {@link StatusInputStream}. Guaranteed to return a StatusInputStream, unless it runs out of heap or
+     * storage space.
+     *
+     * This method does a best effort attempt to read as much as possible, keeping the bytes received from is if an
+     * Exception is raised.
+     * @param is stream with potential problems.
+     * @param heapBuffer the maximum number of bytes to hold in memory.
+     * @return a stream with the content from {@code is}.
+     */
+    public static StatusInputStream guaranteedStream(InputStream is, int heapBuffer) {
+        final byte[] buf = new byte[GUARANTEED_BUFFER];
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        int read = 0;
+
+        // Read up to heapBuffer bytes onto the heap
+        while (read < heapBuffer+1) { // +1 to match the case where heapBuffer = stream size
+            try {
+                int r = is.read(buf, 0, Math.min(buf.length, heapBuffer+1-read));
+                if (r == -1) {
+                    // All OK
+                    safeClose(is);
+                    return new StatusInputStream(
+                            new ByteArrayInputStream(bos.toByteArray()), StatusInputStream.STATUS.ok, read);
+                } else {
+                    bos.write(buf, 0, r);
+                }
+                read += r;
+            } catch (IOException e) {
+                // Fail read
+                log.info("guaranteedStream: Exception reading from input stream", e);
+                return new StatusInputStream(new ByteArrayInputStream(bos.toByteArray()), e, read);
+            }
+        }
+
+        // Content exceeds heapBuffer. Switch to storage based buffering
+        return guaranteedStream(is, bos.toByteArray());
+    }
+
+    /**
+     * Copies the content of {@code alreadyRead} into a temporary file, followed by the remaining content in {@code is}.
+     * An InputStream is returned that delivers the bytes from {@code alreadyRead} + {@code is}.
+     * Any Exceptions encountered during the process are caught and stored in the returne StatusInputStream.
+     * @param is a potentially unreliable InputStream.
+     * @param alreadyRead bytes already read. Can be null.
+     * @return
+     */
+    private static StatusInputStream guaranteedStream(InputStream is, byte[] alreadyRead) {
+        if (alreadyRead == null) {
+            alreadyRead = new byte[0];
+        }
+
+        // Create a temporary file
+        final File tmp;
+        FileOutputStream fos;
+        try {
+            tmp = File.createTempFile("solrwayback.guaranteedStream", "dat");
+            tmp.deleteOnExit(); // In case is was not deleted on close
+            fos = new FileOutputStream(tmp);
+        } catch (IOException e) {
+            log.error("Unable to create temporary file", e);
+            return new StatusInputStream(new ByteArrayInputStream(alreadyRead), e, alreadyRead.length);
+        }
+
+        // Copy alreadyRead to the file
+        try {
+            IOUtils.copy(new ByteArrayInputStream(alreadyRead), fos);
+        } catch (IOException e) {
+            safeClose(is);
+            closeAndDelete(tmp, fos);
+            log.warn("guaranteedStream: Unable to copy heap cached buffer of size " + alreadyRead.length +
+                     " to temp file " + tmp, e);
+            return new StatusInputStream(new ByteArrayInputStream(alreadyRead), e, alreadyRead.length);
+        }
+
+        // Retrieve the rest of the bytes from is and store them in the file
+        long readSecond;
+        try {
+            readSecond = IOUtils.copy(is, fos);
+            fos.close();
+        } catch (IOException e) {
+            safeClose(is);
+            closeAndDelete(tmp, fos);
+            log.warn("guaranteedStream: Unable to copy content from the privided InputStream to temp file " + tmp, e);
+            return new StatusInputStream(new ByteArrayInputStream(alreadyRead), e, alreadyRead.length);
+        }
+
+        // Create an InputStream from the file
+        FileInputStream fis;
+        try {
+            fis = new FileInputStream(tmp);
+        } catch (FileNotFoundException e) {
+            log.warn("guaranteedStream: Unable to construct FileInputStream(" + tmp + ")", e);
+            return new StatusInputStream(new ByteArrayInputStream(alreadyRead), e, alreadyRead.length);
+        }
+
+        // Return the Inputstream with the full content, wrapped in a StatusInputstream that deletes the temporary
+        // file when closed.
+        return new StatusInputStream(fis, StatusInputStream.STATUS.ok, alreadyRead.length + readSecond) {
+            @Override
+            public void close() throws IOException {
+                super.close();
+                try {
+                    Files.delete(tmp.toPath());
+                } catch (IOException e) {
+                    log.warn("guaranteedStream: Non-critical exception while deleting '" + tmp + "'", e);
+                }
+            }
+        };
+    }
+
+    private final static int GUARANTEED_BUFFER = 1024; // Not too large as we want what we can get
+
+    /**
+     * Close {@code fos} and delete {@code file}, catching and logging any thrown Exceptions.
+     * @param file a file that was the source of {@code fos}.
+     * @param fos a FileOutputStream created form {@code file}.
+     */
+    private static void closeAndDelete(File file, FileOutputStream fos) {
+        try {
+            fos.close();
+        } catch (Exception e) {
+            log.warn("closeAndDelete: Non-critical exception while closing FileOutputStream(" + file + ")", e);
+        }
+        try {
+            Files.delete(file.toPath());
+        } catch (Exception e) {
+            log.warn("closeAndDelete: Non-critical exception while deleting '" + file + "'", e);
+        }
+    }
+
+    /**
+     * Close {@code is}, catching and logging any Exceptions.
+     * @param is any InputStream.
+     */
+    public static void safeClose(InputStream is) {
+        try {
+            is.close();
+        } catch (Exception e) {
+            log.warn("close: Non-critical exception while closing InputStream", e);
+        }
+    }
+
+
+    /**
+     * Construct an InputStream that is the concatenation of all the given {@code is}s.
+     * @param is 0 or more InputStreams.
+     * @return a delayed concatenation of the given InputStreams og null if there are no InputStreams.
+     */
+    public static InputStream concat(InputStream... is) {
+        if (is.length == 0) {
+            return null;
+        }
+        InputStream result = is[0];
+        for (int i = 1 ; i < is.length ; i++) {
+            result = new SequenceInputStream(result, is[i]);
+        }
+        return result;
+    }
+
 }
