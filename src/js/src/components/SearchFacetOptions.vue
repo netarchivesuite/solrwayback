@@ -1,8 +1,10 @@
 <template>
   <div class="facets">
-    <h2>Facets</h2>
+    <h2 v-if="checkForFacets(facets.facet_fields)">
+      Facets
+    </h2>
     <div v-if="facetLoading && !loading" class="spinner" />
-    <div v-if="!facetLoading && facets.facet_fields" class="allFacets">
+    <div v-if="!facetLoading && checkForFacets(facets.facet_fields)" class="allFacets">
       <div v-for="(facetCategory, index) in Object.entries(facets.facet_fields)" :key="index" class="facetCategory">
         <div class="facetCategoryName">
           {{ facetCategory[0] }}
@@ -46,6 +48,15 @@ export default {
       this.updateSolrSettingOffset(0)
       this.addToSearchAppliedFacets(newFacet)
       this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+    },
+    checkForFacets(facets) {
+    //we test if the variable exists first - can cause problems if it's not set yet.
+      let fate = false
+      if(facets) { 
+        Object.keys(facets).forEach(function(item) {
+          facets[item].length !== 0 ? fate = true : null 
+        }) 
+      } return fate
     }
   }
 }
