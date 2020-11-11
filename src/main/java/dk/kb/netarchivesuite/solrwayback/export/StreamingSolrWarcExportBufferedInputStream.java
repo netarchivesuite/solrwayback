@@ -226,14 +226,14 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
             log.debug(String.format(
                     Locale.ENGLISH, "Finished export lambda #%d with payload size %d bytes for URL '%s'",
                     cLazy.get(), entry.getBinaryArraySize(), entry.getUrl()));
-          } catch (IOException e) {
+          } catch (Exception e) {
             log.debug(String.format(
                     Locale.ENGLISH, "Exception during copying of bytes from export lambda #%d with payload size %d bytes for URL '%s'",
                     cLazy.get(), entry.getBinaryArraySize(), entry.getUrl()), e);
           }
         }));
       } catch (Exception e) {
-        log.debug(String.format(
+        log.error(String.format(
                 Locale.ENGLISH, "Exception getting delayed stream for export lambda #%d with payload size %d bytes for URL '%s'",
                 c.incrementAndGet(), entry.getBinaryArraySize(), entry.getUrl()), e);
       }
