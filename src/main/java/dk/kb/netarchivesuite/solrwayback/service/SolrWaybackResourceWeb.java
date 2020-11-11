@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
@@ -69,8 +70,8 @@ public class SolrWaybackResourceWeb {
     @Produces({ MediaType.APPLICATION_JSON})
     public  SmurfYearBuckets smurfNetarchiveText( @QueryParam("q") String q , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
         try {                                                                                                
-          if (startyear == null){
-            startyear=1990;
+          if (startyear == null || startyear == 0){
+             startyear=PropertiesLoaderWeb.ARCHIVE_START_YEAR;
           }
           return Facade.generateNetarchiveTextSmurfData(q, filterQuery,startyear);                  
         } catch (Exception e) {         
@@ -83,9 +84,9 @@ public class SolrWaybackResourceWeb {
     @Produces({ MediaType.APPLICATION_JSON})
     public  SmurfYearBuckets smurfNetarchiveTags( @QueryParam("tag") String tag , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
         try {                                                                                      
-          
-          if (startyear == null){
-            startyear=1990;
+            
+         if (startyear == null  || startyear == 0){
+             startyear=PropertiesLoaderWeb.ARCHIVE_START_YEAR;             
           }
           return Facade.generateNetarchiveSmurfData(tag, filterQuery,startyear);                  
         } catch (Exception e) {         
@@ -98,7 +99,6 @@ public class SolrWaybackResourceWeb {
     @Path("graph/domain_result")
     @Produces({ MediaType.TEXT_PLAIN})
     public String domainResultGraph(@QueryParam("q") String q, @QueryParam("fq") List<String> fq ) throws SolrWaybackServiceException {
-
      try {
        return Facade.generateDomainResultGraph(q,fq);
       } catch (Exception e) {           
