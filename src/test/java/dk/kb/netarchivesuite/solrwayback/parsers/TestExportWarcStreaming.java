@@ -112,25 +112,55 @@ public class TestExportWarcStreaming extends UnitTestUtils {
             {"compressions_warc/transfer_compression_none_truncated.warc.gz", "881"},
             {"compressions_warc/transfer_compression_none.warc.gz", "881"}
     };
-    SolrGenericStreaming mockedSolr = getMockedSolrStream(ENTRIES);
-    final int EXPECTED_TOTAL_SIZE = 1102; // Only the non-truncated will make it through
+    assertExportSize(ENTRIES, 1102, true);
+  }
 
-    StreamingSolrWarcExportBufferedInputStream exportStream = new
-            StreamingSolrWarcExportBufferedInputStream(mockedSolr, ENTRIES.length, true);
-    GzipCompressorInputStream gis = new GzipCompressorInputStream(exportStream, true);
+  @Test
+  public void testGzipExportIntermediateFail() throws Exception {
+    final String[][] ENTRIES = new String[][]{
+            {"compressions_warc/transfer_compression_none_truncated.warc.gz", "123"} // Faulty offset
+    };
+    assertExportSize(ENTRIES, 0, false);
+  }
 
-    byte[] exportedBytes = new byte[EXPECTED_TOTAL_SIZE];
+  @Test
+  public void testARCExport() throws Exception {
+    final String[][] entries = new String[][]{
+            {"example_arc/IAH-20080430204825-00000-blackbook.arc.gz", "124759"} // 491 bytes uncompressed?
+    };
+    assertExportSize(entries, 703, true);
+  }
+
+  @Test
+  public void testWARCPlusARCExport2() throws Exception {
+    final String[][] entries = new String[][]{
+            {"example_arc/IAH-20080430204825-00000-blackbook.arc.gz", "124759"},  // 703
+            {"compressions_warc/transfer_compression_none.warc.gz", "881"}  // 1102
+    };
+    assertExportSize(entries, 1805, true);
+  }
+
+  private byte[] assertExportSize(String[][] entries, int expectedSize, boolean gunzip) throws Exception {
+    SolrGenericStreaming mockedSolr = getMockedSolrStream(entries);
+
+    InputStream exportStream = new StreamingSolrWarcExportBufferedInputStream(mockedSolr, entries.length, true);
+    if (gunzip) {
+      exportStream = new GzipCompressorInputStream(exportStream, true);
+    }
+
+    byte[] exportedBytes = new byte[expectedSize];
 
     log.info("Attempting to read " + exportedBytes.length + " bytes from GZIPInputStream(exportStream)");
-    int exported = IOUtils.read(gis, exportedBytes);
+    int exported = IOUtils.read(exportStream, exportedBytes);
 
     log.info("Got " + exported + " bytes, checking for trailing bytes");
     int extra = 0;
-    while (gis.read() != -1) {
+    while (exportStream.read() != -1) {
       extra++;
     }
-    assertEquals("Expected the right number of bytes to be read", EXPECTED_TOTAL_SIZE, exported);
+    assertEquals("Expected the right number of bytes to be read", expectedSize, exported);
     assertEquals("There should be no more content in the export stream", 0, extra);
+    return exportedBytes;
   }
 
   @Test
