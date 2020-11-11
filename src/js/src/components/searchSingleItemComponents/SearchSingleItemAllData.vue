@@ -90,7 +90,7 @@ export default {
     ...mapActions('Search', {
       updateQuery: 'updateQuery',
       emptySearchAppliedFacets:'emptySearchAppliedFacets',
-
+      updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch'
     }),
     determinePlaceAndVisiblity(place, lineNumber) {
       return place === this.currentDataShown ? 'singleEntry' : lineNumber < this.arrayShownLimit ? 'singleEntry' : 'singleEntry hidden'
@@ -114,6 +114,7 @@ export default {
       this.allDataShown = !this.allDataShown
       const searchString = attribute + ':"' + encodeURIComponent(value) + '"'
       this.updateQuery(searchString)
+      this.updateSolrSettingUrlSearch(false)
       this.emptySearchAppliedFacets()
       this.$_pushSearchHistory('Search', searchString, this.searchAppliedFacets, this.solrSettings)
     },
