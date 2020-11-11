@@ -94,7 +94,7 @@ public class StreamBridge {
                     log.warn(String.format(
                             Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d. " +
                                             "Switching to next sub-provider",
-                            i+1, providerList.size()));
+                            i+1, providerList.size()), e);
                 }
             }
             //providers.forEach(provider -> provider.accept(noCloseOut));
