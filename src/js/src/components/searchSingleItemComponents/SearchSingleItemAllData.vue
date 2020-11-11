@@ -1,9 +1,16 @@
 <template>
   <div class="SingleEntryAllData">
     <div class="showAllButtonContainer">
-      <button class="allDataButton" @click="toggleAllDataShown">
+      <button title="View warc header" :class="warcHeaderShown ? 'warcHeaderDataButton active' : 'warcHeaderDataButton'" @click="toggleWarcHeader" />
+      <button :class="allDataShown ? 'allDataButton active' : 'allDataButton'" @click="toggleAllDataShown">
         {{ allDataButtonText }}
       </button>
+    </div>
+    <div v-if="warcHeaderShown && warcHeaderData !== ''" class="warcHeaderInfo">
+      <hr class="informationDivider">
+      <h2>Warc header</h2>
+      <br>
+      {{ warcHeaderData }}
     </div>
     <div v-if="allDataShown && allData !== {}">
       <hr class="informationDivider">
@@ -63,6 +70,14 @@ export default {
       type: String,
       required: true
     },
+    source: {
+      type: String,
+      required: true
+    },
+    offset: {
+      type: Number,
+      required: true
+    },
   },
   data () {
     return {
@@ -71,7 +86,9 @@ export default {
       allContentShown:false,
       currentDataShown:null,
       contentShownLength:300,
-      arrayShownLimit:4
+      arrayShownLimit:4,
+      warcHeaderShown:false,
+      warcHeaderData:''
     }
   },
   computed: {
@@ -80,10 +97,13 @@ export default {
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
     }),
     allDataButtonText: function () {
-      return this.allDataShown ? 'Hide raw data' : 'See raw data'
+      return this.allDataShown ? 'Hide data fields' : 'View data fields'
     },
     contentButtonText: function () {
       return this.allContentShown ? 'Show less ↑' : 'Show all ↓'
+    },
+    warcHeaderButtonText: function () {
+      return this.warcHeaderShown ? 'Hide warc header' : 'View warc header'
     },
   },
   methods: {
@@ -97,12 +117,22 @@ export default {
     },
     toggleAllDataShown() {
       this.allDataShown = !this.allDataShown
+      this.allDataShown ? this.warcHeaderShown = false : null
       if(Object.keys(this.allData).length === 0) {
         requestService.fireLookupRequest(encodeURIComponent(this.id))
           .then(result => 
-            (this.allData = result.response.docs[0], this.allData === {} ? console.log('request successfull, no data!') : null),
+            (this.allData = this.orderResult(result.response.docs[0]), this.allData === {} ? console.log('request successfull, no data!') : null),
             error => (console.log('Error in getting full post'), this.allData = {}))
       }
+    },
+    orderResult(result) {
+
+      let orderedResult = {}
+      Object.keys(result).sort().forEach(function(key) {
+        orderedResult[key] = result[key]
+      })
+      delete orderedResult['score']
+      return orderedResult
     },
     specificValueButtonText(index) {
       return index === this.currentDataShown ? 'Show less ↑' : 'Show all ↓'
@@ -126,6 +156,16 @@ export default {
     },
     displayContentValue(content) {
       return this.allContentShown ? content : content.substring(0,this.contentShownLength)
+    },
+    toggleWarcHeader() {
+      this.warcHeaderShown = !this.warcHeaderShown
+      this.warcHeaderShown ? this.allDataShown = false : null
+      if(this.warcHeaderData === '' && this.warcHeaderShown) {
+        requestService.getWarcHeader(this.source, this.offset)
+          .then(result => 
+            (this.warcHeaderData = result, this.warcHeaderData === '' ? console.log('request successfull, no data!') : null),
+            error => (console.log('Error in getting warc header'), this.allData = ''))
+      }
     }
   }
 }

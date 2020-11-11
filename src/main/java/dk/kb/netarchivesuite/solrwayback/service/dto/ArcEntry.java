@@ -271,9 +271,20 @@ public void setFormat(FORMAT format) {
       InputStream maybeDechunked = maybeDechunk(binaryStream);
       InputStream maybeUnziped = maybeUnzip(maybeDechunked);
       InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeUnziped);
-          
-       hasBeenDecompressed=true;
-      return IOUtils.toString(maybeBrotliDecoded, "UTF-8"); //READ below!                       
+     
+      hasBeenDecompressed=true;
+      String encoding = this.getContentCharset();
+      if (encoding == null) {
+          encoding = "UTF-8";
+      }
+      
+      
+      String uncomressed =IOUtils.toString(maybeBrotliDecoded, encoding);     
+      return uncomressed;
+      
+     
+     /*
+      ((return IOUtils.toString(maybeBrotliDecoded, "UTF-8"); //READ below!                       
                           
       //IMPORTANT! If no encoding is applied , maybe replace UTF-8 with below
       /*    

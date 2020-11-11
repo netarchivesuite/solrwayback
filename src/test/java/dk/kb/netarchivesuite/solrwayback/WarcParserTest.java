@@ -5,15 +5,12 @@ import static org.junit.Assert.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
 
 import org.junit.Test;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
-import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
+
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 

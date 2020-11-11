@@ -104,11 +104,18 @@ public class Facade {
     }
 
     public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {
-        SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:image OR content_type_norm:html", 500); // only search
-                                                                                                                                               // these two
-                                                                                                                                               // types
-        // multithreaded call solr to find arc file and offset
-        ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(result.getResults(), false);
+        long start=System.currentTimeMillis();
+        // only search these two types
+        //Since the HTML boost split up in two searches to also get image hits. The image hits is a very fast search.
+        
+        //Images search are fast and also very accurate. But also search html pages for text and extract images. 400/100 seems a good split.
+        SearchResult result1 = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:image", 400); // only images.                 
+        SearchResult result2 = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:html", 100);  // Find images on page where text is found
+        // multithreaded call solr to find arc file and offset        
+        List<IndexDoc> bothResults = result1.getResults();
+        bothResults.addAll(result2.getResults());        
+        ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(bothResults);        
+        log.info("Image search for query"+searchText +" took "+(System.currentTimeMillis()-start) +"millis)");
         return extractImages;
     }
 
@@ -302,10 +309,9 @@ public class Facade {
             urlQueryPath = "";
         }
 
-        String urlPunied = "http://" + hostNameEncoded + path + urlQueryPath;
+        String urlPunied = "http://" + hostNameEncoded + path +"?"+ urlQueryPath;
         String urlPuniedAndNormalized = Normalisation.canonicaliseURL(urlPunied);
 
-        log.info("normalizing url:" + url + " url_norm:" + urlPuniedAndNormalized);
         return urlPuniedAndNormalized;
     }
 
@@ -327,26 +333,40 @@ public class Facade {
         return imagesFromHtmlPage;
     }
 
-    public static String queryStringForImages(List<String> imageLinks) {
-        if (imageLinks.size() > 1000) {
-            imageLinks = imageLinks.subList(0, 1000);
-        }
+    
+    /*
+    *
+    * Notice only maximum of 50 images will be searched. 
+    * This method is only called for image-search and we dont want too many hits from same site.
+    * 
+    */
+  public static String queryStringForImages(List<String> imageLinks) {
+     if (imageLinks.size() > 50) {
+          imageLinks = imageLinks.subList(0, 50);
+     }
+      
+      StringBuilder query = new StringBuilder();
+     query.append("(");
+     for (String imageUrl : imageLinks ){         
+       //fix https!        
+       try {
+        String fixedUrl = Normalisation.canonicaliseURL(imageUrl);
 
-        StringBuilder query = new StringBuilder();
-        query.append("(");
-        for (String imageUrl : imageLinks) {
-            // fix https!
-            String fixedUrl = imageUrl;
-            if (imageUrl.startsWith("https:")) {
-                fixedUrl = "http:" + imageUrl.substring(6); // because image_links are not normlized as url_norm
-            }
-            query.append(" url_norm:\"" + fixedUrl + "\" OR");
+         query.append(" url_norm:\""+fixedUrl+"\" OR");           
+         
+         }
+         catch(Exception e) {
+            //This can happen since url's from HTML are extacted without any sanity-check by the warc-indexer. Just ignore
+           log.info("Could not normalise image url:"+imageUrl);                            
         }
-        query.append(" url_norm:none)"); // just close last OR
-        String queryStr = query.toString();
-        return queryStr;
-    }
-
+     }
+     query.append(" url_norm:none)"); //just close last OR
+     String queryStr= query.toString();
+     return queryStr;
+   }
+   
+    
+    
     /*
      * Find images on a HTML page. THIS IS NOT WORKING REALLY. To many searches
      * before enough images with exif loc is found. TODO: Use graph search 1) Find
@@ -355,6 +375,7 @@ public class Facade {
      * location data
      * 
      */
+    /*
     public static ArrayList<ArcEntryDescriptor> getImagesWithExifLocationForHtmlPageNewThreaded(String source_file_path, long offset) throws Exception {
 
         IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
@@ -378,7 +399,7 @@ public class Facade {
 
         return imagesFromHtmlPage;
     }
-
+*/
     public static String getEncoding(String source_file_path, String offset) throws Exception {
 
         SearchResult search = NetarchiveSolrClient.getInstance().search("source_file_path:\"" + source_file_path + "\" AND source_file_offset:" + offset, 1);
@@ -691,7 +712,7 @@ public class Facade {
         props.put(PropertiesLoaderWeb.MAPS_RADIUS_PROPERTY, PropertiesLoaderWeb.MAPS_RADIUS);
         props.put(PropertiesLoaderWeb.LEAFLET_SOURCE_PROPERTY, PropertiesLoaderWeb.LEAFLET_SOURCE);
         props.put(PropertiesLoaderWeb.LEAFLET_ATTRIBUTION_PROPERTY, PropertiesLoaderWeb.LEAFLET_ATTRIBUTION);
-
+        props.put(PropertiesLoaderWeb.ARCHIVE_START_YEAR_PROPERTY, ""+PropertiesLoaderWeb.ARCHIVE_START_YEAR);
         return props;
     }
 

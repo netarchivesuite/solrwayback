@@ -1097,7 +1097,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(0);
         solrQuery.set("facet", "false");
 
-        String startYear = "1998"; // maybe configure
+        String startYear = PropertiesLoaderWeb.ARCHIVE_START_YEAR_PROPERTY;
         int endYear = LocalDate.now().getYear() + 1; // add one since it is not incluced
 
         solrQuery.setParam("json.facet",

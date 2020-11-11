@@ -18,7 +18,8 @@ export const requestService = {
   getSearchGuidelines,
   getNgramNetarchive,
   fireGeoImageSearchRequest,
-  getPWID
+  getPWID,
+  getWarcHeader
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -196,8 +197,6 @@ function getNgramNetarchive(query){
     return Promise.reject(error)
   })
 }
-
-
     
 function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
   const url = 'services/frontend/images/search/location/' + `?query=${query}&latitude=${latitude}&longitude=${longitude}&d=${radius}`
@@ -219,6 +218,16 @@ function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
  
 function getPWID(sourceFilePath, offset) {
   const url = `services/generatepwid/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function getWarcHeader(sourceFilePath, offset) {
+  const url = `services/warc/header/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
   return axios.get(
     url).then(response => {
     return response.data

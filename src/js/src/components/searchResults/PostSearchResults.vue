@@ -9,7 +9,7 @@
       <span class="highlightText">{{ results.cardinality.toLocaleString("en") }}</span> unique entries matching query 
       <span class="tonedDownText">(total hits: {{ results.numFound.toLocaleString("en") }})</span>.
     </span>
-    <div class="pagingContainer">
+    <div v-if="results.cardinality !== 0 && results.numFound !== 0" class="pagingContainer">
       <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
         Previous 20
       </button>
@@ -24,7 +24,7 @@
                  :result="result"
                  :rank-number="index" />
     </div>
-    <div class="pagingContainer">
+    <div v-if="results.cardinality !== 0 && results.numFound !== 0" class="pagingContainer">
       <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
         Previous 20
       </button>
