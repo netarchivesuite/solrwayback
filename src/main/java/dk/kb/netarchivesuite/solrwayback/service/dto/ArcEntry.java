@@ -32,7 +32,7 @@ public class ArcEntry {
 
     
     
-  private static FORMAT format;
+  private FORMAT format;
     
   private static final Logger log = LoggerFactory.getLogger(ArcEntry.class);
   private String sourceFilePath; //full path
@@ -218,7 +218,7 @@ public  FORMAT getFormat() {
     return format;
 }
 public void setFormat(FORMAT format) {
-    ArcEntry.format = format;
+    this.format = format;
 }
 /*
  * Will wrap the byte[] in a BufferedInputStream
