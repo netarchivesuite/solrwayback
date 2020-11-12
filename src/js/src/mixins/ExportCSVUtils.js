@@ -4,7 +4,7 @@
  */
 
 import {mapActions, mapState} from 'vuex'
-import Config from '../components/ngrams/netarchive/configs'
+import APP_CONFIGS from '../configs'
 
 
  export default {
@@ -55,7 +55,7 @@ import Config from '../components/ngrams/netarchive/configs'
     createFinalDataSet(totalCount, yearCount, description){
       let finalDataset = []
        // We need to get the start year so we know how many 'year rows' to generate 
-      let startYear = Config.START_YEAR
+      let startYear = APP_CONFIGS.visualizations.ngram.startYear
       // Push this first row to the final dataset (holds the queries)
       finalDataset.push(description)
       //Loop the total count pr. year and create all the rows with [year, total_count (for year), count for query, count for query...]
