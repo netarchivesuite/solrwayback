@@ -1,5 +1,6 @@
 import Config from '../../netarchive/configs'
 import SearchHelper from '../../searchHelper'
+import APP_CONFIGS from '../../../../configs'
 
 /**
  * Here we keep all the specific logic and options
@@ -13,7 +14,7 @@ export default {
   */
   getChartLabels: () => {
     let labels = []
-    let start = Config.START_YEAR
+    let start = APP_CONFIGS.visualizations.ngram.startYear
     const end = Config.END_YEAR
       while (start < end) {
         labels.push(start)

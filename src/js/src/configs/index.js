@@ -8,6 +8,13 @@ export default {
     csvAllowed:false,
     csvFields:''
   },
+
+  visualizations:{
+    ngram:{
+      startYear:''
+    }
+  },
+
   leaflet: {
     attribution:'',
     source:'',
