@@ -1,6 +1,6 @@
 import axios from 'axios'
 import dataTransformationHelper from './dataTransformationHelper'
-import NgramConfig from '../components/ngrams/netarchive/configs'
+import APP_CONFIGS from '../configs'
 
 export const requestService = {
   fireSearchRequest,
@@ -190,7 +190,7 @@ function getDomainStatistics(domain) {
 }
 
 function getNgramNetarchive(query){
-  const url = `services/frontend/smurf/text/?q=${encodeURIComponent(query)}&startyear=${NgramConfig.START_YEAR}`
+  const url = `services/frontend/smurf/text/?q=${encodeURIComponent(query)}&startyear=${APP_CONFIGS.visualizations.ngram.startYear}`
   return axios.get(url).then(response => {
     return response.data
   }).catch(error => {
