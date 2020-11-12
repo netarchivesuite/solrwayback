@@ -113,17 +113,15 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
    * Resolve more content streams and add them to {@link #entryStreams}.
    */
   private void loadMore() {
-    log.debug("loadMore called");
     try {
-      if (docsWarcRead > maxRecords) { //Stop loading more
-        log.info("Max documents reached (" + maxRecords + "). Stopping loading more documents");
+      if (docsWarcRead+docsArcRead > maxRecords) { //Stop loading more
+        log.info("loadMore(): Max documents reached (" + maxRecords + "). Stopping loading of more documents");
         return;
       }
-      log.debug("Requesting more Solr documents");
       SolrDocumentList docs = solrClient.nextDocuments();
-      log.debug("Got " + (docs == null ? 0 : docs.size()) + " Solr documents");
+      // log.debug("Got " + (docs == null ? 0 : docs.size()) + " Solr documents");
       if (docs == null || docs.isEmpty()) {
-        log.info("No more documents available");
+        log.info("loadMore(): No more documents available after " + (docsWarcRead+docsArcRead) + " docs read");
         return;
       }
 
@@ -131,7 +129,6 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
     } catch (Exception e) {
       log.error("Unhandled exception in loadMore", e);
-      e.printStackTrace();
     }
   }
 
@@ -169,9 +166,6 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
     warcsResolveAttempt++;
     String source_file_path = (String) doc.getFieldValue("source_file_path");
     long offset = (Long) doc.getFieldValue("source_file_offset");
-    log.debug(String.format(Locale.ENGLISH, "Getting (W)ARC entry representation #%d for %s#%d",
-                            warcsResolveAttempt + 1, source_file_path, offset));
-
     EntryAndHeaders singleEntry;
     try {
       singleEntry = getWARCEntryAndHeaderStream(source_file_path, offset);
@@ -183,9 +177,6 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
     if (singleEntry == null) {
       log.warn(String.format(Locale.ENGLISH, "Unable to resolve (W)ARC entry representation #%d for %s#%d",
                              warcsResolveAttempt + 1, source_file_path, offset));
-    } else {
-      log.debug(String.format(Locale.ENGLISH, "Got (W)ARC entry representation #%d for %s#%d",
-                              warcsResolveAttempt + 1, source_file_path, offset));
     }
     return singleEntry;
   }
@@ -216,16 +207,10 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
     for (EntryAndHeaders entryAndHeader: entriesAndHeaders) {
       ArcEntry entry = entryAndHeader.entry;
       try {
-        log.debug(String.format(Locale.ENGLISH, "Adding export lambda #%d with payload size %d bytes for URL '%s'",
-                                c.incrementAndGet(), entry.getBinaryArraySize(), entry.getUrl()));
         providers.add(StreamBridge.gzip(out -> { // Add the lambda to the list for later activation
-          log.debug(String.format(Locale.ENGLISH, "Executing export lambda #%d with payload size %d bytes for URL '%s'",
-                                  cLazy.incrementAndGet(), entry.getBinaryArraySize(), entry.getUrl()));
+          cLazy.incrementAndGet();
           try {
             IOUtils.copy(getWARCEntryStream(entryAndHeader), out);
-            log.debug(String.format(
-                    Locale.ENGLISH, "Finished export lambda #%d with payload size %d bytes for URL '%s'",
-                    cLazy.get(), entry.getBinaryArraySize(), entry.getUrl()));
           } catch (Exception e) {
             log.debug(String.format(
                     Locale.ENGLISH, "Exception during copying of bytes from export lambda #%d with payload size %d bytes for URL '%s'",
@@ -254,7 +239,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
    * were encountered.
    */
   private InputStream getWARCEntryStream(EntryAndHeaders entryAndHeaders) {
-    final String id = entryAndHeaders.entry.getUrl();
+    final String id = entryAndHeaders.entry.getSourceFilePath() + "#" + entryAndHeaders.entry.getOffset();
     try {
       // Retrieve the payload to local cache (heap or storage, depending on size)
       StatusInputStream payload = entryAndHeaders.entry.getBinaryArraySize() > 0 ?

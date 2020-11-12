@@ -17,7 +17,6 @@ package dk.kb.netarchivesuite.solrwayback.util;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.nio.ch.IOUtil;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -35,7 +34,6 @@ public class StreamBridge {
     // An unbounded executor to avoid deadlocks between multiple concurrent calls to outputToInput
     private static int threadID = 0;
     private static final ExecutorService executor = Executors.newCachedThreadPool(r -> {
-        log.debug("Creating StreamBridge thread #" + threadID);
         Thread t = new Thread(r, "StreamBridge_" + threadID++);
         t.setDaemon(true);
         return t;
@@ -79,17 +77,14 @@ public class StreamBridge {
         PipedInputStream in = new PipedInputStream(out);
 
         List<Consumer<OutputStream>> providerList = new ArrayList<>(providers);
-        log.debug("Received " + providers.size() + " providers");
         OutputStream noCloseOut = new NonClosingOutputStream(out); // The sub-streams are concatenated
 
         // Iterate all providers, sending their content to the piped stream
         // If a provider fails, the Exception is logged and processing continues with the next provider
         executor.submit(() -> {
             for (int i = 0 ; i < providerList.size() ; i++) {
-                log.debug(String.format(Locale.ENGLISH, "Activating provider #%d/%d", (i + 1), providers.size()));
                 try {
                     providerList.get(i).accept(noCloseOut);
-                    log.debug(String.format(Locale.ENGLISH, "Finished provider #%d/%d", (i + 1), providers.size()));
                 } catch (Exception e) {
                     log.warn(String.format(
                             Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d. " +
@@ -99,9 +94,7 @@ public class StreamBridge {
             }
             //providers.forEach(provider -> provider.accept(noCloseOut));
             try {
-                log.debug("Flushing PipedOutputStream");
                 out.flush();
-                log.debug("Closing PipedOutputStream (only affects current result block)");
                 out.close();
             } catch (IOException e) {
                 log.error("IOException closing piped stream", e);
@@ -133,10 +126,8 @@ public class StreamBridge {
     public static Consumer<OutputStream> gzip(Consumer<OutputStream> provider) {
         return out -> {
             try {
-                log.debug("Creating entry-level gzip stream");
                 GZIPOutputStream gzip = new GZIPOutputStream(out);
                 provider.accept(gzip);
-                log.debug("Closing entry-level gzip stream");
                 gzip.close();
             } catch (IOException e) {
                 log.error("IOException with gzip", e);
