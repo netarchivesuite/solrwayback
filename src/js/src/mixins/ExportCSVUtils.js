@@ -59,7 +59,7 @@ import APP_CONFIGS from '../configs'
       // Push this first row to the final dataset (holds the queries)
       finalDataset.push(description)
       //Loop the total count pr. year and create all the rows with [year, total_count (for year), count for query, count for query...]
-      totalCount.forEach((entry, i) => {
+      totalCount[0].forEach((entry, i) => {
         let dataEntrySet = []
         dataEntrySet.push(startYear)
         dataEntrySet.push(entry)
