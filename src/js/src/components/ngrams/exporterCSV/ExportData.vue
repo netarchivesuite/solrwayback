@@ -32,9 +32,6 @@ import ExportHelper from '../../../mixins/ExportCSVUtils'
 export default {
   name: 'ExportData',
   
-  components: {  
-    
-  },
   mixins: [ExportHelper],
   data: function() {
     return {
