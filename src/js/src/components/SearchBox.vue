@@ -152,6 +152,7 @@ export default {
       updateCurrentModal:'updateCurrentModal'
     }),
     getSizeOfTextArea() {
+      console.log('we resize')
       let textarea = document.getElementById('query')
       textarea.style.height = '1px'
       textarea.style.height = (textarea.scrollHeight) + 'px'
@@ -171,11 +172,15 @@ export default {
       this.updateSolrSettingImgSearch(false)
       this.updateSolrSettingUrlSearch(false)
       this.futureQuery = ''
-      if(this.results !== {}) {
+      // Check if we gotta push a route (if we're on the frontpage and just deleting query and no results, we dont have to.)
+      if(Object.keys(this.results).length !== 0) {
         this.$_pushCleanHistory('SolrWayback')
       }
       this.preNormalizeQuery = null
       this.resetSearchState()
+      //Make sure the query textarea is returned to its original size, regardless of what it was before.
+      let textarea = document.getElementById('query')
+      textarea.style.height = '1px'
     },
     decideActiveClassesForQueryBox() {
       const isPrefixUrlNorm = this.futureQuery.substring(0,8) === 'url_norm'
