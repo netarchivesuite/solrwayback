@@ -26,7 +26,7 @@
               id="clearSubmit"
               title="Clear search and results"
               type="button"
-              @click="clearResultsAndSearch" />
+              @click="clearResultsAndSearch()" />
       <div class="sortOptions">
         <div @click.prevent="updateSolrSettingGrouping(!solrSettings.grouping)">
           <input id="groupedSearch"
@@ -151,16 +151,12 @@ export default {
       updateShowModal:'updateShowModal',
       updateCurrentModal:'updateCurrentModal'
     }),
-    textAreaClick() {
-      console.log('clicks!')
-    },
     getSizeOfTextArea() {
       let textarea = document.getElementById('query')
       textarea.style.height = '1px'
       textarea.style.height = (textarea.scrollHeight) + 'px'
     },
     selectSearchMethod(selected) {
-      console.log(selected)
       if(selected === 'imgSearch') {
         this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch)
         this.updateSolrSettingUrlSearch(false)
@@ -175,7 +171,9 @@ export default {
       this.updateSolrSettingImgSearch(false)
       this.updateSolrSettingUrlSearch(false)
       this.futureQuery = ''
-      this.$_pushCleanHistory('SolrWayback')
+      if(this.results !== {}) {
+        this.$_pushCleanHistory('SolrWayback')
+      }
       this.preNormalizeQuery = null
       this.resetSearchState()
     },
