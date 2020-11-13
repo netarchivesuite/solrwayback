@@ -108,7 +108,7 @@ module.exports = {
         changeOrigin: true
       },
       '^/services/frontend/images/search/location/': {
-        target: 'http://localhost:8080/solrwayback//services/frontend/images/search/location/',
+        target: 'http://localhost:8080/solrwayback/services/frontend/images/search/location/',
         pathRewrite: { '^/services/frontend/images/search/location/': '' },
         changeOrigin: true
       },
@@ -122,6 +122,12 @@ module.exports = {
         pathRewrite: { '^/services/warc/header/': '' },
         changeOrigin: true
       },
+      '^/services/frontend/tools/linkgraph/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/tools/linkgraph/',
+        pathRewrite: { '^/services/frontend/tools/linkgraph/': '' },
+        changeOrigin: true
+      },
+      
     }
   },
   publicPath: process.env.NODE_ENV === 'production'

@@ -19,7 +19,8 @@ export const requestService = {
   getNgramNetarchive,
   fireGeoImageSearchRequest,
   getPWID,
-  getWarcHeader
+  getWarcHeader,
+  getLinkGraph
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -236,3 +237,12 @@ function getWarcHeader(sourceFilePath, offset) {
   })
 }
 
+function getLinkGraph(domain, facetLimit, ingoing, dateStart, dateEnd) {
+  const url = `services/frontend/tools/linkgraph/?domain=${domain}&facetLimit=${facetLimit}&ingoing=${ingoing}&dateStart=${dateStart}&dateEnd=${dateEnd}`
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}

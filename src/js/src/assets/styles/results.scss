@@ -267,7 +267,13 @@ margin: 1em 0 0 0;
 }
 // Kudos end
 
-.showAllButtonContainer .allDataButton, .singleEntryImages button, .pagingContainer button, .exportContent .downloadButton, .wordcloudButton, .domainContentContainer .domainStatsButton  {
+.showAllButtonContainer .allDataButton, 
+.singleEntryImages button, 
+.pagingContainer button, 
+.exportContent .downloadButton, 
+.wordcloudButton, 
+.domainContentContainer .domainStatsButton,
+.linkGraphContainer .linkGraphButton  {
   float:right;
   border:2px solid var(--secondary-bg-color);
   border-radius: 0;
@@ -279,6 +285,20 @@ margin: 1em 0 0 0;
   box-sizing: border-box;
   transition:all 0.2s linear 0s;
 }
+
+.showAllButtonContainer .allDataButton:hover,
+.singleEntryImages button:hover, 
+.pagingContainer button:hover, 
+.exportContent .downloadButton:hover, 
+.wordcloudButton:hover, 
+.domainContentContainer .domainStatsButton:hover,
+.linkGraphContainer .linkGraphButton:hover {
+  border:2px solid var(--secondary-bg-color);
+  color:white;
+  background-color:var(--secondary-bg-color);
+  transition:all 0.2s linear 0s;
+}
+
 
 .showAllButtonContainer .allDataButton:last-of-type {
   margin-right:10px;
@@ -344,13 +364,6 @@ margin: 1em 0 0 0;
 
 .tonedDownText {
   color:rgba(30,30,30, 0.5)
-}
-
-.showAllButtonContainer .allDataButton:hover, .singleEntryImages button:hover, .pagingContainer button:hover, .exportContent .downloadButton:hover, .wordcloudButton:hover, .domainContentContainer .domainStatsButton:hover {
-  border:2px solid var(--secondary-bg-color);
-  color:white;
-  background-color:var(--secondary-bg-color);
-  transition:all 0.2s linear 0s;
 }
 
 .facets {
@@ -1180,4 +1193,21 @@ margin-left:40px;
 
 .warcHeaderDataButton:hover:after {
   filter:invert(1);
+}
+
+.sliderContainer {
+  padding-left:30px;
+  padding-right:30px;
+  margin-top:40px;
+}
+
+// vueSlider overwrite
+
+.vue-slider-dot-tooltip-inner, .vue-slider-dot-handle, .vue-slider-process {
+  background-color: var(--main-highlight-color) !important;
+  border-color: var(--main-highlight-color) !important;
+}
+
+.vue-slider-rail {
+  background-color: var(--secondary-highlight-color) !important;
 }

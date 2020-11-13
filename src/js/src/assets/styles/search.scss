@@ -360,7 +360,8 @@ color:var(--secondary-text-color);
 }
 
 .toolboxNavigation .activeTool {
-  font-weight: bold;
+  border-bottom: 1px solid var(--main-highlight-color);
+	text-shadow: 0px 0px 1px var(--main-highlight-color);
 }
 
 .wordcloudContainer {
@@ -393,7 +394,7 @@ color:var(--secondary-text-color);
   //border-right:1px solid var(--main-highlight-color);
 }
 
-.wordcloudContainer .wordcloudExplanation input, .domainContentContainer input {
+.wordcloudContainer .wordcloudExplanation input, .domainContentContainer input, .linkGraphContainer input {
   width:100%;
   border-radius: 0px;
 	border: 1px solid var(--seethrough-black);
@@ -403,6 +404,10 @@ color:var(--secondary-text-color);
 	color: var(--main-highlight-color);
 	height: 30px;
 	box-shadow: inset 0 0 7px var(--seethrough-black);
+}
+
+.linkGraphContainer input {
+  width:400px;
 }
 
 .wordcloudContainer .imgContainer img {
@@ -436,11 +441,26 @@ color:var(--secondary-text-color);
   width:300px;
 }
 
-.domainContentContainer .domainStatsButton {
+.domainContentContainer .domainStatsButton,
+.linkGraphContainer .linkGraphButton {
   float: unset !important;
 	position: relative;
 	top: -2px;
 	margin-left: 5px;
+}
+
+.linkNumberContainer {
+  display:inline-block;
+  width:300px;
+  padding:0px 15px;
+}
+
+.linkNumberContainer label {
+  display:inline-block;
+}
+
+.directionContainer {
+  display:inline-block;
 }
 
 .searchForm .sortOptions .marginRight {
