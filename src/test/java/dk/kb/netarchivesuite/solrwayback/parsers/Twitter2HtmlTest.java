@@ -10,12 +10,14 @@ import java.util.Set;
 
 import org.junit.Test;
 
-public class Twitter2HtmlTest {
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+
+public class Twitter2HtmlTest extends UnitTestUtils{
     @Test
     public void testReplaceTags() throws Exception {
 
         //First load and parse a tweet
-        String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/twitter2.json")));
+        String content = new String(Files.readAllBytes(Paths.get("src/test/resources/example_twitter/twitter2.json")));
         TwitterParser2 p = new TwitterParser2(content);
 
 
@@ -33,7 +35,7 @@ public class Twitter2HtmlTest {
         assertEquals(expectedAfter, replacedText);
 
     }
-
+/*
 
     @Test
     public void testRealWorld() {
@@ -80,5 +82,5 @@ public class Twitter2HtmlTest {
 
         assertEquals(EXPECTED, actual);
     }
-
+*/
 }

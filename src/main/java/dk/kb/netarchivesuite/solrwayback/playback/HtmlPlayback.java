@@ -1,5 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.playback;
 
+import java.nio.charset.Charset;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +23,19 @@ public class HtmlPlayback  extends PlaybackHandler{
   public ArcEntry playback() throws Exception{    
     log.debug(" Generate webpage from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset() +" content encoding:"+arc.getContentEncoding());
     long start = System.currentTimeMillis();
-    ParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);
+    
+     String raw = arc.getBinaryContentAsStringUnCompressed();
+    
+      String charset = arc.getContentCharset();
+      if (charset== null){
+          charset="UTF-8";
+          log.warn("no charset, default to UTF-8");
+      }
+      
+      arc.setBinary(raw.getBytes(Charset.forName(charset)));
+         
+    
+     ParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);
       String textReplaced=htmlReplaced.getReplaced();
 
       boolean xhtml =doc.getContentType().toLowerCase().indexOf("application/xhtml") > -1;            

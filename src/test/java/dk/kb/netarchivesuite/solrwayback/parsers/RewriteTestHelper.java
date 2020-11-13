@@ -14,7 +14,8 @@
  */
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
+
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 
@@ -41,22 +42,38 @@ public class RewriteTestHelper {
     /**
      * Creates a mock resolver that resolves all input that contains {@code _oXXX}, where XXX is a number.
      * @return a mock resolver.
+     * @param acceptNotFound
      */
-    static HtmlParserUrlRewriter.NearestResolver createMockResolver() {
-        final AtomicLong counter = new AtomicLong(0);
+    static HtmlParserUrlRewriter.NearestResolver createOXResolver(boolean acceptNotFound) {
         return (urls, timeStamp)-> urls.stream().
-                map(url -> makeIndexDoc(url, timeStamp, counter)).
+                map(url -> makeIndexDoc(url, acceptNotFound)).
                 filter(Objects::nonNull).
                 collect(Collectors.toList());
     }
 
+    /**
+     * @return a resolver that returns the URLs unchanged.
+     */
+    static HtmlParserUrlRewriter.NearestResolver createIdentityResolver() {
+        return (urls, timeStamp)-> urls.stream().
+                map(url -> {
+                    IndexDocShort doc = new IndexDocShort();
+                    doc.setUrl(url);
+                    doc.setUrl_norm(Normalisation.canonicaliseURL(url));
+                    doc.setSource_file_path("somesourcefile");
+                    doc.setOffset(0);
+                    return doc;
+                }).
+                collect(Collectors.toList());
+    }
+
     // Fake url_norm, url, source_file, source_file_offset
-    private static IndexDoc makeIndexDoc(String url, String timeStamp, AtomicLong counter) {
+    private static IndexDocShort makeIndexDoc(String url, boolean acceptNotFound) {
         if (!url.startsWith("http")) {
             log.warn("mockResolver is skipping '" + url + "' as it does not start with 'http'");
             return null;
         }
-        IndexDoc doc = new IndexDoc();
+        IndexDocShort doc = new IndexDocShort();
         doc.setUrl(url);
         doc.setUrl_norm(Normalisation.canonicaliseURL(url));
         doc.setSource_file_path("somesourcefile");
@@ -67,6 +84,9 @@ public class RewriteTestHelper {
             match = offsetMatcher.group(1);
         }
         if (match == null) {
+            if (acceptNotFound) {
+                return null;
+            }
             throw new IllegalArgumentException(
                     "This mock requires all URLs to contain a substring matching '" + OFFSET_PATTERN.pattern() + "'. " +
                     "The URL with match was '" + url + "'. Please adjust unit test accordingly");

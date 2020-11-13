@@ -66,7 +66,7 @@ public class SmurfUtil {
     DecimalFormat df = (DecimalFormat)nf;
     df.applyPattern("#.##########");   
     double percent=  (double) l1  /  (double) l2;     
-    return Double.parseDouble(df.format(percent));    
+    return 100*Double.parseDouble(df.format(percent));    
   }
   
 

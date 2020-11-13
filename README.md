@@ -256,7 +256,8 @@ Using the wget command is an easy way to harvest websites compared to using Heri
 Create a new folder since there will be several files written in this folder. Navigate to that folder in a prompt.  
 Create a text file call `url_list.txt` with one URL pr. line in that folder.  
 Type the following in a prompt:  
-`wget  --level=0  --warc-cdx   --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt`    
+`wget  --span-hosts  --level=0 --recursive --warc-cdx   --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt`    
+
 (rename the warcfilename to your liking)  
 The script will harvest all pages in the `url_list.txt` file with all resources required for that page (images, css etc.) and be written to a warc file(s) called `warcfilename.warc`  
 Change `--level=0` to `--level=1` for following links. This will substantially increase the size of the warc file(s).  

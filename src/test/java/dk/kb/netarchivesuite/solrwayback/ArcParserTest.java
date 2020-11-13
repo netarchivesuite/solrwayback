@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback;
 import static org.junit.Assert.*;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,6 +39,31 @@ public class ArcParserTest extends UnitTestUtils{
         System.out.println(arcEntry.getRedirectUrl());
                      
     }
+    
+    
+    @Test
+    public void testLazyLoadBinary() throws Exception {
+        
+        File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc");        
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767, false); //Image entry
+        
+        assertNull(arcEntry.getBinary());
+        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767); //Image entry and load binary
+        byte[] orgBinary = arcEntry.getBinary();        
+        try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
+            byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
+            assertEquals("The expected number of bytes should be read from the lazy stream",
+                         newBinary.length, buf.read(newBinary));
+            assertEquals(orgBinary.length, newBinary.length); //Same length
+            assertArrayEquals(orgBinary, newBinary); //Same binary
+            assertEquals("There should be no more content in the lazy loaded stream", -1, buf.read());
+        }
+    }
+
+    
+    
+    
+    
     @Test
     public void testArcParserRedirect() throws Exception {
       

@@ -1,0 +1,17 @@
+{
+  
+  "files.exclude": {
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "eslint.validate": ["javascript", "vue"],
+  "eslint.workingDirectories": [
+    "./src/js"
+  ]
+ 
+}

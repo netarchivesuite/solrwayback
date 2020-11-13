@@ -38,6 +38,12 @@ public class HtmlParserUrlRewriterTest {
         assertRewrite("simple", 11);
     }
 
+    // No verification of result, only count of replaced
+    @Test
+    public void testSimpleRewritingCount() throws Exception {
+        assertCount("simple", 11);
+    }
+
     @Test
     public void testMultiSourceRewriting() throws Exception {
         assertRewrite("multisource", 16);
@@ -46,6 +52,11 @@ public class HtmlParserUrlRewriterTest {
     @Test
     public void testCSSRewriting() throws Exception {
         assertRewrite("css", 13);
+    }
+
+    @Test
+    public void testCSS2Rewriting() throws Exception {
+        assertRewrite("css2", 3, 2);
     }
 
     @Test
@@ -60,25 +71,56 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testScriptRewriting() throws Exception {
-        // TODO: Why is it not 7?
-        assertRewrite("script", 8);
+        // TODO: Make a better counter for replaced
+        assertRewrite("script", 0);
+    }
+
+    @Test
+    public void testScript2Rewriting() throws Exception {
+        assertRewrite("script2", 0);
+    }
+
+    @Test
+    public void testScriptEscaping() throws Exception {
+        assertRewrite("script_escape", 0);
     }
 
     /* *************************************************************************************
      * Helpers below
      ************************************************************************************* */
 
+    // All links must contain {@code _oX} where X is an integer.
     private void assertRewrite(String testPrefix, int expectedReplaced) throws Exception {
+        assertRewrite(testPrefix, expectedReplaced, -1);
+    }
+
+    // Only links containing {@code _oX} where X is an integer, will be replaced.
+    private void assertRewrite(String testPrefix, int expectedReplaced, int expectedNotFound) throws Exception {
         final String input = RewriteTestHelper.fetchUTF8("example_rewrite/" + testPrefix + ".html");
         final String expected = RewriteTestHelper.fetchUTF8("example_rewrite/" + testPrefix + "_expected.html").
                 replaceAll(" +\n", "\n");
 
         ParseResult rewritten = HtmlParserUrlRewriter.replaceLinks(
                 input, "http://example.com/somefolder/", "2020-04-30T13:07:00",
-                RewriteTestHelper.createMockResolver());
+                RewriteTestHelper.createOXResolver(expectedNotFound >= 0));
 
         assertEquals("The result should be as expected for test '" + testPrefix + "'",
                      expected, rewritten.getReplaced().replaceAll(" +\n", "\n"));
+        assertEquals("The number of replaced links should be as expected",
+                     expectedReplaced, rewritten.getNumberOfLinksReplaced());
+        if (expectedNotFound >= 0) {
+            assertEquals("The number of not found links should be as expected",
+                         expectedNotFound, rewritten.getNumberOfLinksNotFound());
+        }
+    }
+
+    private void assertCount(String testPrefix, int expectedReplaced) throws Exception {
+        final String input = RewriteTestHelper.fetchUTF8("example_rewrite/" + testPrefix + ".html");
+
+        ParseResult rewritten = HtmlParserUrlRewriter.replaceLinks(
+                input, "http://example.com/somefolder/", "2020-04-30T13:07:00",
+                RewriteTestHelper.createIdentityResolver());
+
         assertEquals("The number of replaced links should be as expected",
                      expectedReplaced, rewritten.getNumberOfLinksReplaced());
     }

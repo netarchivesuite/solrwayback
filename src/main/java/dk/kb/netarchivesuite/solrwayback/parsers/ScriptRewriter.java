@@ -14,7 +14,8 @@
  */
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
+
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 
@@ -32,7 +33,7 @@ public class ScriptRewriter extends RewriterBase {
 
 	// TODO: How about escaped " in the values?
 	private static Pattern JSON_KEY_PATTERN = Pattern.compile(
-			"(?s)\"(?:uri|url|playable_url_dash|playable_url|playable_url_quality_hd)\"\\s*:\\s*\"([^\"]+)\"");
+			"(?s)\"?(?:href|uri|url|playable_url_dash|playable_url|playable_url_quality_hd)\"?\\s*[=:]\\s*\"([^\"]+)\"");
 	private static Pattern JSON_XML_BASEURL_PATTERN = Pattern.compile(
 			"(?s)(?:<|\\\\u003[cC]|&lt;)BaseURL(?:>|&gt;)(.+?)(?:<|\\\\u003[cC]|&lt;)\\\\?/BaseURL(?:>|&gt;)");
 
@@ -50,9 +51,12 @@ public class ScriptRewriter extends RewriterBase {
 	}
 
 	@Override
-	protected String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDoc> urlMap) {
+	protected String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap) {
+		// NOTE: We could also use SOLRWAYBACK_SERVICE.downloadRaw to make a best-guess for URLs in scripts
 		UnaryOperator<String> rawURLTransformer =
-				createURLTransformer(baseURL, true, SOLRWAYBACK_SERVICE.downloadRaw, null, urlMap);
+				createURLTransformer(baseURL, crawlDate, true,
+									 SOLRWAYBACK_SERVICE.fail, SOLRWAYBACK_SERVICE_FALLBACK.delay,
+									 null, urlMap);
 		UnaryOperator<String> rawProcessor = createProcessorChain(rawURLTransformer);
 		return rawProcessor.apply(content);
 	}
@@ -75,9 +79,10 @@ public class ScriptRewriter extends RewriterBase {
 	 * @param content script content.
 	 * @return unescaped content.
 	 */
-	private static String unescape(String content) {
-		return SLASH_PATTERN.matcher(content).replaceAll("/");
+	public static String unescape(String content) {
+		return UNSLASH_PATTERN.matcher(content).replaceAll("/");
 	}
+	static final Pattern UNSLASH_PATTERN = Pattern.compile("\\\\[/]");
 
 	/**
 	 * Runs the content through all patterns supported by ScriptRewriter, unescapes extracted URLs and runs them
