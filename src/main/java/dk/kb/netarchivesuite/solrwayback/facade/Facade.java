@@ -162,19 +162,16 @@ public class Facade {
 
     }
 
-    public static SmurfYearBuckets generateNetarchiveTextSmurfData(String q, String filterQuery, int startyear) throws Exception {
+    public static SmurfYearBuckets generateNetarchiveTextSmurfData(String query, String filterQuery, int startyear) throws Exception {
 
-        // No Little Toke Tabels tricks allowed
-        String qReplaced = q.replace("\"", "");
-        qReplaced = qReplaced.replace(":", "");
-        if (q == null || q.length() == 0) {
-            throw new InvalidArgumentServiceException("tag must not be empty");
+        if (query == null || query.length() == 0) {
+            throw new InvalidArgumentServiceException("query must not be empty");
         }
 
-        log.info("netarchive content smurf query:" + qReplaced + " for startyear:" + startyear);
+        log.info("netarchive content smurf query:" + query + " for startyear:" + startyear);
         try {
 
-            HashMap<Integer, Long> yearContentQuery = NetarchiveSolrClient.getInstance().getYearTextHtmlFacets(qReplaced);
+            HashMap<Integer, Long> yearContentQuery = NetarchiveSolrClient.getInstance().getYearTextHtmlFacets(query);
             HashMap<Integer, Long> yearFacetsAll = NetarchiveYearCountCache.getYearFacetsAllQuery();
 
             SmurfYearBuckets buckets = SmurfUtil.generateYearBuckets(yearContentQuery, yearFacetsAll, startyear, null);
