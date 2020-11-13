@@ -4,7 +4,7 @@
 Added icon on search result to show warc headers for that record.  
 Facet counts are formatted to be more readable for large numbers.(thousand delimiters)
 Data fields on records new listed in alphabetical order.
-Export to warc file also has option to export to a zipped warc.gz file. (stll bugged)
+Export to warc file also has option to export to a zipped warc.gz file.(still waiting frontend enabling)
 Fixed encoding bug for playback (html content charset) that was introduced in 4.0.1 due to switch to chaining inputstreams.
 
 

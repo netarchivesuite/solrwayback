@@ -180,7 +180,7 @@ public class NetarchiveSolrClient {
         stats.setHarvestDate(crawlDate);
         final String statsField = "crawl_date";
 
-        int results = 0;
+        long results = 0;
 
         String query = "url_norm:\"" + url_norm + "\" AND crawl_date:{\"" + crawlDate + "\" TO *]";
 
