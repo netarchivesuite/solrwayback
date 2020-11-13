@@ -15,9 +15,7 @@
               id="clearSubmit"
               title="Clear search and results"
               type="button"
-              @click.prevent="resetState()">
-        X
-      </button>
+              @click.prevent="resetState()" />
       <div v-show="datasets.length !== 0" class="exportModalTrigger" @click.prevent="toggleExporter()">
         Export graph data
       </div>
