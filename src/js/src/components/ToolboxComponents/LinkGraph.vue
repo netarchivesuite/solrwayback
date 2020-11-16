@@ -83,7 +83,7 @@ export default {
   mounted () {
     window.addEventListener('resize', function() {
      let height = document.getElementById('linkGraphContainer').offsetHeight - document.getElementById('graphControlsContainer').offsetHeight
-     document.getElementById('svgDiagram').height = height
+     document.getElementById('svgDiagram').setAttribute('height', height + 'px')
     })
     let interval = (this.maxValue - this.minValue) / 4
     //this.sliderValues = [Math.floor(this.minValue + interval), Math.floor(this.minValue + (interval * 3)) ]
