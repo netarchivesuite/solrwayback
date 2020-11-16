@@ -44,7 +44,9 @@ public class NetarchiveSolrClient {
     protected static SolrClient solrServer;
     protected static NetarchiveSolrClient instance = null;
     protected static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+");
-
+    private static String NO_REVISIT_FILTER ="record_type:response OR record_type:arc";
+    
+    
     protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_full,content_type_norm,hash,type,crawl_date,content_encoding,exif_location,status_code,last_modified,redirect_to_norm";
     protected static String indexDocFieldListShort = "url,url_norm,source_file_path,source_file,source_file_offset,crawl_date";
 
@@ -593,7 +595,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
         solrQuery.add("fl", fieldList);
 
-        solrQuery.setFilterQueries("record_type:response OR record_type:arc"); // No binary for revists.
+        solrQuery.setFilterQueries(NO_REVISIT_FILTER); // No binary for revists.
 
         long solrNS = -System.nanoTime();
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
@@ -662,7 +664,7 @@ public class NetarchiveSolrClient {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 
-        solrQuery.setFilterQueries("record_type:response OR record_type:arc"); // No binary for revists.
+        solrQuery.setFilterQueries(NO_REVISIT_FILTER); // No binary for revists.
 
         solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
         solrQuery.add("sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
@@ -793,14 +795,16 @@ public class NetarchiveSolrClient {
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*:*");
-        solrQuery.setFilterQueries("content_type_norm:html"); // only html pages
         solrQuery.setRows(0); // 1 page only
         solrQuery.add("fl", "id");// rows are 0 anyway
         solrQuery.set("facet", "true");
         solrQuery.set("facet.field", "crawl_year");
         solrQuery.set("facet.sort", "index");
         solrQuery.set("facet.limit", "500"); // 500 is higher than number of different years
-
+        
+        solrQuery.add("fq","content_type_norm:html"); // only html pages
+        solrQuery.add("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
+        
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
 
         FacetField facetField = rsp.getFacetField("crawl_year");
@@ -822,8 +826,7 @@ public class NetarchiveSolrClient {
          */
 
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("text:\"" + query + "\"");
-        solrQuery.setFilterQueries("content_type_norm:html"); // only html pages
+        solrQuery.setQuery(query); //Smurf labs forces text:query               
         solrQuery.setRows(0); // 1 page only
         solrQuery.add("fl", "id");// rows are 0 anyway
         solrQuery.set("facet", "true");
@@ -831,6 +834,9 @@ public class NetarchiveSolrClient {
         solrQuery.set("facet.sort", "index");
         solrQuery.set("facet.limit", "500"); // 500 is higher than number of different years
 
+        solrQuery.add("fq","content_type_norm:html"); // only html pages
+        solrQuery.add("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
+        
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
 
         FacetField facetField = rsp.getFacetField("crawl_year");
@@ -877,7 +883,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("f.crawl_year.facet.sort", "index"); // Sort by year and not count.
 
         if (!revisits) {
-            solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
+            solrQuery.set("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
         }
         if (fq != null) {
             for (String filter : fq) {
@@ -927,7 +933,7 @@ public class NetarchiveSolrClient {
            
       
       if (!revisits){
-        solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
+        solrQuery.set("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
       }
       if ( fq != null) {
         for (String filter : fq) {
@@ -961,8 +967,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("rows", "20"); // Hardcoded pt.
         solrQuery.set("start", startStr);
         solrQuery.set("q", query);
-        solrQuery.set("fl",
-                "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
+        solrQuery.set("fl", "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
         solrQuery.set("wt", "json");
         solrQuery.set("hl", "on");
         solrQuery.set("q.op", "AND");
@@ -980,7 +985,7 @@ public class NetarchiveSolrClient {
         }
 
         if (!revisits) {
-            solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
+            solrQuery.set("fq", NO_REVISIT_FILTER); // do not include record_type:revisit
         }
         if (fq != null) {
             for (String filter : fq) {
