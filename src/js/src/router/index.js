@@ -53,7 +53,19 @@ const routes = [
     },
     component: () =>
       import(/* webpackChunkName: "PWID" */ '../views/PWID.vue')
-  }
+  },
+  {
+    path: '/linkgraph',
+    name: 'Linkgraph',
+    meta: {
+      title: 'Link graph'
+    },
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "about" */ '../components/ToolboxComponents/LinkGraph.vue')
+  },
 ]
 
 const router = new VueRouter({

@@ -9,7 +9,7 @@
           <input v-model="domain"
                  placeholder="Enter domain, like 'kb.dk'"
                  :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
-                 @keyup.enter="loadLinkGraph(domain)">
+                 @keyup.enter="!loading ? loadLinkGraph(domain) : null">
         </div>
         <div class="generateButtonContainer contain">
           <button :disabled="loading" class="linkGraphButton" @click.prevent="loadLinkGraph(domain)">
@@ -50,7 +50,8 @@
       </div>
       <hr class="informationDivider">
     </div>
-    <div id="graphContainer" />
+    <div v-if="loading" class="spinner" />
+    <div id="graphContainer" :class="loading ? 'hideGraph' : ''" />
   </div>
 </template>
 
@@ -60,7 +61,6 @@ import 'vue-slider-component/theme/default.css'
 import StringManipulationUtils from './../../mixins/StringManipulationUtils'
 import { requestService } from '../../services/RequestService'
 import * as d3 from 'd3'
-//import linkGraph from './ToolboxResources/linkGraph'
 
 export default {
   name: 'LinkGraph',
@@ -77,7 +77,7 @@ export default {
       linkNumber:10,
       ingoing:false,
       loading:false,
-      domain:'politiken.dk'
+      domain:''
     }
   },
   mounted () {
@@ -85,13 +85,23 @@ export default {
      let height = document.getElementById('linkGraphContainer').offsetHeight - document.getElementById('graphControlsContainer').offsetHeight
      document.getElementById('svgDiagram').setAttribute('height', height + 'px')
     })
-    let interval = (this.maxValue - this.minValue) / 4
-    //this.sliderValues = [Math.floor(this.minValue + interval), Math.floor(this.minValue + (interval * 3)) ]
-    requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1]).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
+    const routerQuery = this.$router.history.current.query
+    if(routerQuery.domain && routerQuery.dateStart && routerQuery.dateEnd && routerQuery.facetLimit && routerQuery.ingoing) {
+      routerQuery.domain ? this.domain = routerQuery.domain : null
+      routerQuery.dateStart ? this.sliderValues[0] = parseInt(routerQuery.dateStart) : null
+      routerQuery.dateEnd ? this.sliderValues[1] = parseInt(routerQuery.dateEnd) : null
+      routerQuery.facetLimit ? this.linkNumber = parseInt(routerQuery.facetLimit) : null
+      routerQuery.ingoing 
+        ? routerQuery.ingoing === 'true' 
+          ? this.ingoing = true 
+          : this.ingoing = false 
+        : null
+      this.loading = true
+      requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1]).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
+    }
   },
   methods: {
     loadLinkGraph(domain) {
-      console.log('we firing!')
       this.loading = true
       requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1]).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
     },
