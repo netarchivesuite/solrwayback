@@ -459,7 +459,6 @@ margin-left:40px;
 }
 
 .singleEntryImages .previewImageContainer {
-  overflow: hidden;
   display: inline-block;
   margin: 1em;
   margin-bottom: 2em;
@@ -498,6 +497,7 @@ margin-left:40px;
 }
 
 .singleEntryImages img {
+  max-width: 100%;
   object-fit: cover;
   cursor: pointer;
   box-sizing: border-box;
