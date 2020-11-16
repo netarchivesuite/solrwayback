@@ -568,6 +568,10 @@ public class Facade {
 
         ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFullFields(resources, arc.getCrawlDate());
 
+       
+        long maximumTimeDifferenceBackward=0; //Will be negative
+        long maximumTimeDifferenceForward=0;//Will be posive
+        
         for (IndexDoc doc : docs) { // These are the resources found
             String docUrl = doc.getUrl_norm();
             PageResource pageResource = new PageResource();
@@ -582,12 +586,24 @@ public class Facade {
 
             long timeDif = resourceDate.getTime() - pageCrawlDate.getTime();
 
+             if (timeDif <= maximumTimeDifferenceBackward){
+                 maximumTimeDifferenceBackward=timeDif;
+             }
+             if (timeDif >= maximumTimeDifferenceForward){
+                 maximumTimeDifferenceForward=timeDif;
+             }
+             
+             
+            
             pageResource.setTimeDifference(millisToDuration(timeDif));
 
             pageResources.add(pageResource);
             resources.remove(docUrl);
         }
-        log.info("Url not matched:" + resources);
+
+        ts.setMaximumTimeDifferenceBackward(millisToDuration(maximumTimeDifferenceBackward));
+        ts.setMaximumTimeDifferenceForward(millisToDuration(maximumTimeDifferenceForward));
+                
         ts.setNotHarvested(new ArrayList<String>(resources));
 
         return ts;

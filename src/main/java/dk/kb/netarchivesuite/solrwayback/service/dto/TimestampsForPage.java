@@ -11,9 +11,11 @@ public class TimestampsForPage {
   private Date pageCrawlDate;
   private String pageUrl;
   private String pagePreviewUrl;
-  private String waybackUrl;
+  private String maximumTimeDifferenceBackward;
+  private String maximumTimeDifferenceForward;
   private ArrayList<PageResource> resources = new ArrayList<PageResource>();
   private ArrayList<String> notHarvested =  new ArrayList<String>();
+
   
   public Date getPageCrawlDate() {
     return pageCrawlDate;
@@ -39,13 +41,7 @@ public class TimestampsForPage {
     this.pagePreviewUrl = pagePreviewUrl;
   }
 
-  public String getWaybackUrl() {
-    return waybackUrl;
-  }
-
-  public void setWaybackUrl(String waybackUrl) {
-    this.waybackUrl = waybackUrl;
-  }
+ 
 
   public ArrayList<PageResource> getResources() {
     return resources;
@@ -62,6 +58,22 @@ public class TimestampsForPage {
   public void setNotHarvested(ArrayList<String> notHarvested) {
     this.notHarvested = notHarvested;
   }
+
+public String getMaximumTimeDifferenceBackward() {
+    return maximumTimeDifferenceBackward;
+}
+
+public void setMaximumTimeDifferenceBackward(String maximumTimeDifferenceBackward) {
+    this.maximumTimeDifferenceBackward = maximumTimeDifferenceBackward;
+}
+
+public String getMaximumTimeDifferenceForward() {
+    return maximumTimeDifferenceForward;
+}
+
+public void setMaximumTimeDifferenceForward(String maximumTimeDifferenceForward) {
+    this.maximumTimeDifferenceForward = maximumTimeDifferenceForward;
+}
   
   
 }
