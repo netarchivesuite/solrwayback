@@ -1,7 +1,4 @@
-import * as d3 from 'd3'
-
 //action to take on mouse click
-
 function click() {
   d3.select(this).select('text').transition()
       .duration(750)
@@ -15,17 +12,18 @@ function click() {
       .attr('r', 16)
       .style('fill', 'lightsteelblue')
 }
-
 //action to take on mouse double click
-function dblclick(min, max) {
+function dblclick() {
 var newDomain= d3.select(this).select('text').text()
-var min = $('#rangeslider').dateRangeSlider('min').getTime()
-var max = $('#rangeslider').dateRangeSlider('max').getTime()
+var min=  $('#rangeslider').dateRangeSlider('min').getTime()
+var max=  $('#rangeslider').dateRangeSlider('max').getTime()
 location.href='/solrwayback/waybacklinkgraph.jsp?domain='+newDomain+'&facetLimit=14&ingoing=true&dateStart='+min+'&dateEnd='+max
 }
 
-var width =  1920, height = 1000
-var svg = d3.select('#graphContainer').append('svg')   
+var width =  1920,
+  height = 1000
+
+  var svg = d3.select('body').append('svg')   
   .attr('width', width)
   .attr('height', height)
   .call(d3.behavior.zoom().on('zoom', function () {
@@ -47,6 +45,7 @@ svg.append('defs').selectAll('marker')
 .attr('d', 'M0,-5L10,0L0,5 L10,0 L0, -5')
 .style('stroke', '#4679BD')
 .style('opacity', '0.6')
+
 
 var force = d3.layout.force()
   .gravity(.05)
@@ -103,6 +102,8 @@ function getServiceParameters(){
   var min=  $('#rangeslider').dateRangeSlider('min').getTime()
   var max=  $('#rangeslider').dateRangeSlider('max').getTime()
   
-  var serviceParameters='?domain=flickr.com&facetLimit='+facets+'&ingoing='+checked+'&dateStart='+ min+'&dateEnd='+ max
+  var serviceParameters='?domain=clausbang.com&facetLimit='+facets+'&ingoing='+checked+'&dateStart='+ min+'&dateEnd='+ max
   return serviceParameters
 }
+
+

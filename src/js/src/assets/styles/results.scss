@@ -766,12 +766,23 @@ margin-left:40px;
   border-top:2px solid var(--main-highlight-color);
 
 }
-
 .exportButton:hover {
   color: var(--main-highlight-color);
   border:2px solid var(--main-highlight-color);
   background-color:white !important;
   //border-bottom:2px solid var(--secondary-highlight-color);
+}
+
+
+//d3 setup css
+#graphContainer .link {
+  stroke: var(--main-highlight-color);
+}
+
+#graphContainer .node circle {
+    stroke: #fff;
+    stroke-width: 3px;
+    fill: #555;
 }
 
 .downloadSearchResultDropdown {
