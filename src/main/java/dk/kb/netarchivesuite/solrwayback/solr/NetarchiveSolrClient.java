@@ -296,10 +296,9 @@ public class NetarchiveSolrClient {
         solrQuery.add("group", "true");
         solrQuery.add("group.field", "url_norm");
         solrQuery.add("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
-        solrQuery.setFilterQueries("content_type_norm:image"); // only images
-        solrQuery.setFilterQueries("record_type:response"); // No binary for revists. //TODO record_type arc missing!
-
-        solrQuery.setFilterQueries("image_size:[2000 TO *]"); // No small images. (fillers etc.)
+        solrQuery.add("fq","content_type_norm:image"); // only images
+        solrQuery.add("fq",NO_REVISIT_FILTER); // No binary for revists.         
+        solrQuery.add("fq","image_size:[2000 TO *]"); // No small images. (fillers etc.)
         solrQuery.add("fl", indexDocFieldList);
 
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
@@ -859,7 +858,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("group.size", "10");
         solrQuery.set("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
         solrQuery.add("fl", indexDocFieldList);
-        solrQuery.setFilterQueries("record_type:response"); // No binary for revists.
+        solrQuery.setFilterQueries(NO_REVISIT_FILTER); // No binary for revists.
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = groupsToDoc(rsp);
         return solrDocList2IndexDoc(docs);
@@ -883,7 +882,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("f.crawl_year.facet.sort", "index"); // Sort by year and not count.
 
         if (!revisits) {
-            solrQuery.set("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
+            solrQuery.add("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
         }
         if (fq != null) {
             for (String filter : fq) {
