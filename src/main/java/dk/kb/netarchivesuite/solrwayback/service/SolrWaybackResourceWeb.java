@@ -475,16 +475,7 @@ public class SolrWaybackResourceWeb {
         throw handleServiceExceptions(e);
       }
     }
-
-    
-    @GET
-    @Path("/timestampsforpage")
-    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public TimestampsForPage timestamps(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
-      log.debug("timestamps:" + source_file_path + " offset:" + offset);
-      TimestampsForPage ts = Facade.timestampsForPage(source_file_path, offset);                                                                
-      return ts;
-    }
+   
     
     private Response convertToPng(BufferedImage image)  throws Exception { 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
