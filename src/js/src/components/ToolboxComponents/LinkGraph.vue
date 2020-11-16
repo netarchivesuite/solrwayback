@@ -1,28 +1,46 @@
 <template>
-  <div class="linkGraphContainer">
-    <div class="graphControlsContainer">
+  <div id="linkGraphContainer" class="linkGraphContainer">
+    <div id="graphControlsContainer" class="graphControlsContainer">
       <h2 class="toolboxHeadline">
         Link graph
       </h2>
-      <input v-model="domain"
-             placeholder="Enter domain, like 'kb.dk'"
-             :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
-             @keyup.enter="loadLinkGraph(domain)">
-      <button :disabled="loading" class="linkGraphButton" @click.prevent="loadLinkGraph(domain)">
-        Generate
-      </button>
-      <div class="directionContainer">
-        dir
-      </div> 
-      <label>Number of links:</label>
-      <div class="linkNumberContainer">
-        <vue-slider v-model="linkNumber"
-                    tooltip="always"
-                    :min="0"
-                    :max="25" />
+      <div class="linkGraphSettings">
+        <div class="linkGraphDomainContainer contain">
+          <input v-model="domain"
+                 placeholder="Enter domain, like 'kb.dk'"
+                 :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
+                 @keyup.enter="loadLinkGraph(domain)">
+        </div>
+        <div class="generateButtonContainer contain">
+          <button :disabled="loading" class="linkGraphButton" @click.prevent="loadLinkGraph(domain)">
+            Generate
+          </button>
+        </div>
+        <div class="linkNumberContainer contain">
+          <label class="linkGraphLabel">Number of links:</label>
+          <div class="linkNumbersliderContainer">
+            <vue-slider v-model="linkNumber"
+                        tooltip="always"
+                        :min="0"
+                        :max="25" />
+          </div>
+        </div>
+        <div class="directionContainer contain">
+          <label class="linkGraphLabel label">Link direction:</label>
+          <input id="linkGraphRadioOne"
+                 v-model="ingoing"
+                 type="radio"
+                 value="true">
+          <label class="label" for="linkGraphRadioTwo">Ingoing</label>
+          <input id="linkGraphRadioTwo"
+                 v-model="ingoing"
+                 type="radio"
+                 value="false">
+          <label class="label" for="linkGraphRadioTwo">Outgoing</label>
+        </div> 
       </div>
       <div class="sliderContainer">
-        <label>Timeframe</label>
+        <label class="linkGraphLabel">Timeframe:</label>
         <vue-slider v-model="sliderValues"
                     tooltip="always"
                     :min="minValue"
@@ -30,7 +48,7 @@
                     :interval="1"
                     :tooltip-formatter="getDate" />
       </div>
-      <hr>
+      <hr class="informationDivider">
     </div>
     <div id="graphContainer" />
   </div>
@@ -63,13 +81,19 @@ export default {
     }
   },
   mounted () {
+    window.addEventListener('resize', function() {
+     let height = document.getElementById('linkGraphContainer').offsetHeight - document.getElementById('graphControlsContainer').offsetHeight
+     document.getElementById('svgDiagram').height = height
+    })
     let interval = (this.maxValue - this.minValue) / 4
     //this.sliderValues = [Math.floor(this.minValue + interval), Math.floor(this.minValue + (interval * 3)) ]
     requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1]).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
   },
   methods: {
     loadLinkGraph(domain) {
-
+      console.log('we firing!')
+      this.loading = true
+      requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1]).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
     },
     createDateFromNumber(date) {
       let time = new Date(date)
@@ -81,10 +105,9 @@ export default {
     buildSvg(result) {
       document.getElementById('graphContainer').innerHTML = ''
       let _this = this
-      console.log(result)
-      console.log(document.getElementById('graphContainer').offsetWidth)
       var width =  document.getElementById('graphContainer').offsetWidth, height = document.getElementById('graphContainer').offsetHeight
-      var svg = d3.select('#graphContainer').append('svg')   
+      var svg = d3.select('#graphContainer').append('svg')  
+        .attr('id', 'svgDiagram')
         .attr('width', width)
         .attr('height', height)
         .call(d3.behavior.zoom().on('zoom', function () {
@@ -185,6 +208,7 @@ export default {
             .attr('y2', function(d) { return d.target.y })
         node.attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')' })
       })
+      this.loading = false
     },
   }
 }
