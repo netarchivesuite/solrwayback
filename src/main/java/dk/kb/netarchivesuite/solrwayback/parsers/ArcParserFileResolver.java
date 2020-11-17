@@ -31,10 +31,7 @@ public class ArcParserFileResolver {
     resolver = resolverImpl;
   }
 
- 
-  
-
-  
+   
   /*  
   * 
   * @param file_path is the file location, the file location must be resolved first. 
@@ -63,7 +60,7 @@ public class ArcParserFileResolver {
        } else {
          fileLocation = resolver.resolveArcFileLocation(source_file_path);
          cache.put(source_file_path, fileLocation);
-         log.debug("Resolved arcfile location:" + source_file_path + "->" + fileLocation);
+        // log.debug("Resolved arcfile location:" + source_file_path + "->" + fileLocation);
        }
        
        return ArcFileParserFactory.getArcEntry(fileLocation, offset, loadBinary);

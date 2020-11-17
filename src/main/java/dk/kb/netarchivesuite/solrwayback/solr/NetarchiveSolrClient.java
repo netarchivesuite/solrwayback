@@ -357,6 +357,7 @@ public class NetarchiveSolrClient {
     }
 
     public String getTextForDomain(String domain) throws Exception {
+
         SolrQuery solrQuery = new SolrQuery();
         solrQuery = new SolrQuery("(domain:\"" + domain + "\"");
 
@@ -376,7 +377,7 @@ public class NetarchiveSolrClient {
             b.append(doc.getFieldValue(" "));// Space between next document.
             totaltLength += ((int) doc.getFieldValue("content_text_length"));
         }
-        log.info(String.format("Total extracted content length for wordCloud:%d, total hits:%d only using first 10000 hits" + "in %d ms (qtime=%d ms)",
+        log.info(String.format("Total extracted content length for wordcloud:%d, total hits:%d only using first 10000 hits" + " in %d ms (qtime=%d ms)",
                 totaltLength, rsp.getResults().getNumFound(), solrNS / M, rsp.getQTime()));
         return b.toString();
     }
@@ -416,7 +417,8 @@ public class NetarchiveSolrClient {
         solrQuery.setQuery(query);
         solrQuery.setRows(1);
 
-        QueryResponse rsp = loggedSolrQuery("getArchEntry", solrQuery);
+       // QueryResponse rsp = loggedSolrQuery("getArchEntry", solrQuery); //Timing disabled due to spam. Also only took 1-5 millis
+         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = rsp.getResults();
 
         if (docs.getNumFound() == 0) {
@@ -1219,7 +1221,7 @@ public class NetarchiveSolrClient {
         solrNS += System.nanoTime();
         String query = solrQuery.getQuery();
         query = query == null ? null : query.length() > 200 ? query.substring(0, 200) + "..." : query;
-        log.info(String.format("%s Solr response in %d ms (qtime=%d ms) with %d hits for query %s", caller, solrNS / M, rsp.getQTime(),
+        log.debug(String.format("%s Solr response in %d ms (qtime=%d ms) with %d hits for query %s", caller, solrNS / M, rsp.getQTime(),
                 rsp.getResults().getNumFound(), query));
         return rsp;
     }

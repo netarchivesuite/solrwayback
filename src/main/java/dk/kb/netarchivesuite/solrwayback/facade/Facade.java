@@ -2,7 +2,6 @@ package dk.kb.netarchivesuite.solrwayback.facade;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,13 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriBuilder;
-
-import org.apache.commons.httpclient.ChunkedInputStream;
-import org.apache.commons.io.IOUtils;
-import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -204,11 +196,12 @@ public class Facade {
         String proxyUrl = getPreviewUrl();
 
         int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT * 1000;
-        log.info("generate temp preview file:" + filename);
+
 //     pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=10000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
         // no socks proxy
         pb = new ProcessBuilder(chromeCommand, "--headless", "--disable-gpu", "--ipc-connection-timeout=10000", "--timeout=" + timeoutMillis,
                 "--screenshot=" + filename, "--window-size=1280,1024", url);
+
         log.info(chromeCommand + " --headless --disable-gpu --ipc-connection-timeout=10000 --timeout=" + timeoutMillis + " --screenshot=" + filename
                 + " --window-size=1280,1024", url);
         // chromium-browser --headless --disable-gpu --ipc-connection-timeout=3000
@@ -227,7 +220,7 @@ public class Facade {
         // return image even if timeout.
         InputStream is = start.getInputStream();
         String conlog = getStringFromInputStream(is);
-        log.info("conlog:" + conlog); // No need to log this, can be spammy. But usefull when debugging
+//        log.debug("conlog:" + conlog); // No need to log this, can be spammy. But usefull when debugging
         BufferedImage image = ImageIO.read(new File(filename));
         return image;
 
@@ -472,7 +465,6 @@ public class Facade {
                 allDomains.add(f.getValue());
             }
         }
-        log.info("Total number of nodes:" + allDomains.size());
 
         // First map all urls to a number due to the graph id naming contraints.
         HashMap<String, Integer> domainNumberMap = new HashMap<String, Integer>();
@@ -622,9 +614,9 @@ public class Facade {
         URL originalURL = new URL(doc.getUrl());
         String resolvedUrl = new URL(originalURL, leakUrl).toString();
 
-        log.info("stripped leakUrl:" + leakUrl);
-        log.info("url origin:" + doc.getUrl());
-        log.info("resolved URL:" + resolvedUrl);
+        log.debug("stripped leakUrl:" + leakUrl);
+        log.debug("url origin:" + doc.getUrl());
+        log.debug("resolved URL:" + resolvedUrl);
 
         // First see if we have the given URL as excact match.
         IndexDoc docFound = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, doc.getCrawlDate());
@@ -678,7 +670,7 @@ public class Facade {
         }
         ArcEntry arc = ArcParserFileResolver.getArcEntry(source_file_path, offset);
 
-        log.info("from arch contenttype:" + arc.getContentType());
+        log.info("View html Warc content-type:" + arc.getContentType());
 
         String encoding = arc.getContentCharset();
 

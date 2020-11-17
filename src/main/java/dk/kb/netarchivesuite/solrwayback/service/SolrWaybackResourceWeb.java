@@ -267,7 +267,7 @@ public class SolrWaybackResourceWeb {
        
         //also rewrite to puny code
         String url_norm =  Facade.punyCodeAndNormaliseUrl(url);       
-        log.info("Normalize url"+url +" ->" +  url_norm);        
+        log.info("Normalize url:"+url +" -> " +  url_norm);        
         UrlWrapper wrapper = new UrlWrapper();
         wrapper.setUrl(url_norm);      
         return wrapper;
@@ -364,7 +364,6 @@ public class SolrWaybackResourceWeb {
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
     public HashMap<String,String>  getPropertiesWeb() throws SolrWaybackServiceException {
       try {                    
-        log.info("PropertiesWeb returned");
         return Facade.getPropertiesWeb();          
       } catch (Exception e) {
         throw handleServiceExceptions(e);
