@@ -101,9 +101,12 @@ h2.previewHeader {
   font-weight:normal;
 }
 
-.pageHarvestDate {
+ .headerData {
   color: var(--main-highlight-color);
   margin: .5rem 0 0 1rem;
+  border: 1px solid var(--main-highlight-color);
+width: 40%;
+padding: 5px;
 }
 
 .copyToClipboard {
@@ -122,4 +125,18 @@ h2.previewHeader {
 
 .checkmarkIcon {
   background: url(../assets/icons/Icons8_flat_checkmark.svg) no-repeat 0px 0px;
+}
+
+.maximumDifferenceHeader {
+  color:black;
+  margin: 10px 0 3px 0;
+}
+
+.timeDifferenceArrow {
+  margin:5px;
+}
+
+.timeDifference .forward, .timeDifference .backward{
+  width: 65px;
+  display: inline-block;
 }

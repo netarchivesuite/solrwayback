@@ -2,8 +2,19 @@
   <div class="contentContainerHarvestTimes">
     <notifications />
     <div v-if="harvestTimesData">
-      <div class="pageHarvestDate">
-        Page crawl date: {{ getPrettyDate(harvestTimesData.pageCrawlDate) }}
+      <div class="headerData">
+        <div class="pageHarvestDate">
+          Page crawl date: {{ getPrettyDate(harvestTimesData.pageCrawlDate) }}
+        </div>
+        <div class="maximumDifferenceHeader">
+          Maximum time difference for ressources:
+        </div>
+        <div class="timeDifference">
+          <span class="backward">Backward</span> <span class="timeDifferenceArrow">&larr;</span> {{ harvestTimesData.maximumTimeDifferenceBackward }} 
+        </div>
+        <div class="timeDifference">
+          <span class="forward">Forward</span> <span class="timeDifferenceArrow">&rarr;</span> {{ harvestTimesData.maximumTimeDifferenceForward }} 
+        </div>
       </div>
       <h2>
         {{ harvestTimesData.pageUrl }}
