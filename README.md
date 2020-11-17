@@ -1,6 +1,6 @@
 # SolrWayback
 
-## SolrWayback 4.0 software bundle released will be released in November 2020.
+## SolrWayback 4.0 software bundle will be released in November 2020.
 It is currently on the newfrontend branch
 
 
