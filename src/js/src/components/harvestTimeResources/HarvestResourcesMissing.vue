@@ -19,7 +19,6 @@
 </template>
 
 <script>
-import { requestService } from '../../services/RequestService'
 
 export default {
   name: 'HarvestResourcesMissing',

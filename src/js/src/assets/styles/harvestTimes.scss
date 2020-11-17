@@ -63,13 +63,13 @@ max-height: 100px;
 max-width: 100px;
 }
 
-.missingResourcesContainer {
+.missingResourcesContainer, .maxTimeDiffContainer {
   float:right;
   margin-right: 1rem;
   width:50%;
 }
 
-.missingResourcesHeader h2 {
+.missingResourcesHeader h2, .maxTimeDiffHeader h2 {
   font-weight:normal;
 }
 
@@ -101,13 +101,7 @@ h2.previewHeader {
   font-weight:normal;
 }
 
- .headerData {
-  color: var(--main-highlight-color);
-  margin: .5rem 0 0 1rem;
-  border: 1px solid var(--main-highlight-color);
-width: 40%;
-padding: 5px;
-}
+
 
 .copyToClipboard {
   display: block;
@@ -127,16 +121,25 @@ padding: 5px;
   background: url(../assets/icons/Icons8_flat_checkmark.svg) no-repeat 0px 0px;
 }
 
-.maximumDifferenceHeader {
-  color:black;
-  margin: 10px 0 3px 0;
-}
+
 
 .timeDifferenceArrow {
-  margin:5px;
+  margin: 0 20px 0 3px;
 }
 
 .timeDifference .forward, .timeDifference .backward{
   width: 65px;
   display: inline-block;
+}
+
+.pageHarvestDate {
+  color: var(--main-highlight-color);
+  margin: .5rem 0 0 1rem;
+
+padding: 5px;
+  
+}
+
+.maximumDIfferenceBox{
+  
 }

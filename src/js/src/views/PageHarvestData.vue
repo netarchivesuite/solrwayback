@@ -2,23 +2,13 @@
   <div class="contentContainerHarvestTimes">
     <notifications />
     <div v-if="harvestTimesData">
-      <div class="headerData">
-        <div class="pageHarvestDate">
-          Page crawl date: {{ getPrettyDate(harvestTimesData.pageCrawlDate) }}
-        </div>
-        <div class="maximumDifferenceHeader">
-          Maximum time difference for ressources:
-        </div>
-        <div class="timeDifference">
-          <span class="backward">Backward</span> <span class="timeDifferenceArrow">&larr;</span> {{ harvestTimesData.maximumTimeDifferenceBackward }} 
-        </div>
-        <div class="timeDifference">
-          <span class="forward">Forward</span> <span class="timeDifferenceArrow">&rarr;</span> {{ harvestTimesData.maximumTimeDifferenceForward }} 
-        </div>
-      </div>
       <h2>
         {{ harvestTimesData.pageUrl }}
       </h2>
+      <div class="pageHarvestDate">
+        Page crawl date: {{ getPrettyDate(harvestTimesData.pageCrawlDate) }}
+      </div>
+      <harvest-max-time-difference :harvest-times-data="harvestTimesData" />                                                                                                                      
       <harvest-page-preview :harvest-times-data="harvestTimesData" />
       <harvest-resources-missing :harvest-times-data="harvestTimesData" />
       <harvest-resources 
@@ -41,6 +31,8 @@ import { requestService } from '../services/RequestService'
 import HarvestResources from '../components/harvestTimeResources/HarvestResources'
 import HarvestResourcesMissing from '../components/harvestTimeResources/HarvestResourcesMissing'
 import HarvestPagePreview from '../components/harvestTimeResources/HarvestPagePreview'
+import HarvestMaxTimeDifference from '../components/harvestTimeResources/HarvestMaxTimeDifference'
+
 import Notifications from '../components/notifications/Notifications'
 import {toHumanDate} from '../components/harvestCalendar/util'
 import {mapActions} from 'vuex'
@@ -51,6 +43,7 @@ export default {
      HarvestResources,
      HarvestResourcesMissing,
      HarvestPagePreview,
+     HarvestMaxTimeDifference,
      Notifications
   },
 
