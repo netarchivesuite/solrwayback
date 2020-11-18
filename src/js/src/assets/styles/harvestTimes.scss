@@ -63,13 +63,13 @@ max-height: 100px;
 max-width: 100px;
 }
 
-.missingResourcesContainer {
+.missingResourcesContainer, .maxTimeDiffContainer {
   float:right;
   margin-right: 1rem;
   width:50%;
 }
 
-.missingResourcesHeader h2 {
+.missingResourcesHeader h2, .maxTimeDiffHeader h2 {
   font-weight:normal;
 }
 
@@ -101,10 +101,7 @@ h2.previewHeader {
   font-weight:normal;
 }
 
-.pageHarvestDate {
-  color: var(--main-highlight-color);
-  margin: .5rem 0 0 1rem;
-}
+
 
 .copyToClipboard {
   display: block;
@@ -122,4 +119,22 @@ h2.previewHeader {
 
 .checkmarkIcon {
   background: url(../assets/icons/Icons8_flat_checkmark.svg) no-repeat 0px 0px;
+}
+
+
+
+.timeDifferenceArrow {
+  margin: 0 20px 0 3px;
+}
+
+.timeDifference .forward, .timeDifference .backward{
+  width: 4rem;
+  display: inline-block;
+  margin-right: 1rem;
+}
+
+.pageHarvestDate {
+  color: var(--main-highlight-color);
+  margin: .5rem 0 0 1rem;
+padding: 5px;
 }

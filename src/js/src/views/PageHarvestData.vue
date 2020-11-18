@@ -2,12 +2,13 @@
   <div class="contentContainerHarvestTimes">
     <notifications />
     <div v-if="harvestTimesData">
-      <div class="pageHarvestDate">
-        Page crawl date: {{ getPrettyDate(harvestTimesData.pageCrawlDate) }}
-      </div>
       <h2>
         {{ harvestTimesData.pageUrl }}
       </h2>
+      <div class="pageHarvestDate">
+        Page crawl date: {{ getPrettyDate(harvestTimesData.pageCrawlDate) }}
+      </div>
+      <harvest-max-time-difference :harvest-times-data="harvestTimesData" />                                                                                                                      
       <harvest-page-preview :harvest-times-data="harvestTimesData" />
       <harvest-resources-missing :harvest-times-data="harvestTimesData" />
       <harvest-resources 
@@ -30,6 +31,8 @@ import { requestService } from '../services/RequestService'
 import HarvestResources from '../components/harvestTimeResources/HarvestResources'
 import HarvestResourcesMissing from '../components/harvestTimeResources/HarvestResourcesMissing'
 import HarvestPagePreview from '../components/harvestTimeResources/HarvestPagePreview'
+import HarvestMaxTimeDifference from '../components/harvestTimeResources/HarvestMaxTimeDifference'
+
 import Notifications from '../components/notifications/Notifications'
 import {toHumanDate} from '../components/harvestCalendar/util'
 import {mapActions} from 'vuex'
@@ -40,6 +43,7 @@ export default {
      HarvestResources,
      HarvestResourcesMissing,
      HarvestPagePreview,
+     HarvestMaxTimeDifference,
      Notifications
   },
 
