@@ -364,7 +364,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
     }
     else if (headerLine.toLowerCase().startsWith("transfer-encoding:")) {                                      
         String transferEncoding=headerLine.substring(18).trim();
-        log.debug("transfer-encoding:"+transferEncoding);
+//        log.debug("transfer-encoding:"+transferEncoding);
         if (transferEncoding.equalsIgnoreCase("chunked")) {
             arcEntry.setChunked(true);
          }

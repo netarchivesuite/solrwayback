@@ -154,19 +154,16 @@ public class Facade {
 
     }
 
-    public static SmurfYearBuckets generateNetarchiveTextSmurfData(String q, String filterQuery, int startyear) throws Exception {
+    public static SmurfYearBuckets generateNetarchiveTextSmurfData(String query, String filterQuery, int startyear) throws Exception {
 
-        // No Little Toke Tabels tricks allowed
-        String qReplaced = q.replace("\"", "");
-        qReplaced = qReplaced.replace(":", "");
-        if (q == null || q.length() == 0) {
-            throw new InvalidArgumentServiceException("tag must not be empty");
+        if (query == null || query.length() == 0) {
+            throw new InvalidArgumentServiceException("query must not be empty");
         }
 
-        log.info("netarchive content smurf query:" + qReplaced + " for startyear:" + startyear);
+        log.info("netarchive content smurf query:" + query + " for startyear:" + startyear);
         try {
 
-            HashMap<Integer, Long> yearContentQuery = NetarchiveSolrClient.getInstance().getYearTextHtmlFacets(qReplaced);
+            HashMap<Integer, Long> yearContentQuery = NetarchiveSolrClient.getInstance().getYearTextHtmlFacets(query);
             HashMap<Integer, Long> yearFacetsAll = NetarchiveYearCountCache.getYearFacetsAllQuery();
 
             SmurfYearBuckets buckets = SmurfUtil.generateYearBuckets(yearContentQuery, yearFacetsAll, startyear, null);
@@ -199,11 +196,12 @@ public class Facade {
         String proxyUrl = getPreviewUrl();
 
         int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT * 1000;
-        log.info("generate temp preview file:" + filename);
+
 //     pb = new ProcessBuilder(chromeCommand, "--headless" ,"--disable-gpu" ,"--ipc-connection-timeout=10000","--timeout="+timeoutMillis,"--screenshot="+filename,"--window-size=1280,1024","--proxy-server="+proxyUrl,  url);
         // no socks proxy
         pb = new ProcessBuilder(chromeCommand, "--headless", "--disable-gpu", "--ipc-connection-timeout=10000", "--timeout=" + timeoutMillis,
                 "--screenshot=" + filename, "--window-size=1280,1024", url);
+
         log.info(chromeCommand + " --headless --disable-gpu --ipc-connection-timeout=10000 --timeout=" + timeoutMillis + " --screenshot=" + filename
                 + " --window-size=1280,1024", url);
         // chromium-browser --headless --disable-gpu --ipc-connection-timeout=3000
@@ -222,7 +220,7 @@ public class Facade {
         // return image even if timeout.
         InputStream is = start.getInputStream();
         String conlog = getStringFromInputStream(is);
-        log.info("conlog:" + conlog); // No need to log this, can be spammy. But usefull when debugging
+//        log.debug("conlog:" + conlog); // No need to log this, can be spammy. But usefull when debugging
         BufferedImage image = ImageIO.read(new File(filename));
         return image;
 
@@ -462,7 +460,6 @@ public class Facade {
                 allDomains.add(f.getValue());
             }
         }
-        log.info("Total number of nodes:" + allDomains.size());
 
 
         D3Graph g = mapDomainsToD3LinkGraph(domain, ingoing, domainFacetMap, allDomains);
@@ -563,6 +560,10 @@ public class Facade {
 
         ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFullFields(resources, arc.getCrawlDate());
 
+       
+        long maximumTimeDifferenceBackward=0; //Will be negative
+        long maximumTimeDifferenceForward=0;//Will be posive
+        
         for (IndexDoc doc : docs) { // These are the resources found
             String docUrl = doc.getUrl_norm();
             PageResource pageResource = new PageResource();
@@ -577,12 +578,24 @@ public class Facade {
 
             long timeDif = resourceDate.getTime() - pageCrawlDate.getTime();
 
+             if (timeDif <= maximumTimeDifferenceBackward){
+                 maximumTimeDifferenceBackward=timeDif;
+             }
+             if (timeDif >= maximumTimeDifferenceForward){
+                 maximumTimeDifferenceForward=timeDif;
+             }
+             
+             
+            
             pageResource.setTimeDifference(millisToDuration(timeDif));
 
             pageResources.add(pageResource);
             resources.remove(docUrl);
         }
-        log.info("Url not matched:" + resources);
+
+        ts.setMaximumTimeDifferenceBackward(millisToDuration(maximumTimeDifferenceBackward));
+        ts.setMaximumTimeDifferenceForward(millisToDuration(maximumTimeDifferenceForward));
+                
         ts.setNotHarvested(new ArrayList<String>(resources));
 
         return ts;
@@ -601,9 +614,9 @@ public class Facade {
         URL originalURL = new URL(doc.getUrl());
         String resolvedUrl = new URL(originalURL, leakUrl).toString();
 
-        log.info("stripped leakUrl:" + leakUrl);
-        log.info("url origin:" + doc.getUrl());
-        log.info("resolved URL:" + resolvedUrl);
+        log.debug("stripped leakUrl:" + leakUrl);
+        log.debug("url origin:" + doc.getUrl());
+        log.debug("resolved URL:" + resolvedUrl);
 
         // First see if we have the given URL as excact match.
         IndexDoc docFound = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, doc.getCrawlDate());
@@ -657,7 +670,7 @@ public class Facade {
         }
         ArcEntry arc = ArcParserFileResolver.getArcEntry(source_file_path, offset);
 
-        log.info("from arch contenttype:" + arc.getContentType());
+        log.info("View html Warc content-type:" + arc.getContentType());
 
         String encoding = arc.getContentCharset();
 

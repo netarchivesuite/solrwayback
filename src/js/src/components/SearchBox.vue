@@ -2,20 +2,23 @@
   <div class="searchBoxContainer">
     <form class="searchForm" @submit.prevent="launchNewSearch()">
       <span v-if="preNormalizedQuery !== null" class="orgQuery">Original query: <span class="preQuery">{{ preNormalizedQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
-      <input id="query"
-             v-model="futureQuery"
-             type="text"
-             autofocus
-             :class="solrSettings.urlSearch 
-               ? decideActiveClassesForQueryBox()
-               : ''"
-             :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'">
+      <transition name="url-search-helper">
+        <span v-if="solrSettings.urlSearch" class="urlSearchHelper">URL:</span>
+      </transition>
+      <textarea id="query"
+                v-model="futureQuery"
+                type="text"
+                rows="1"
+                autofocus
+                :class="solrSettings.urlSearch 
+                  ? decideActiveClassesForQueryBox()
+                  : ''"
+                :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'"
+                @keydown.enter.prevent="launchNewSearch()"
+                @input="getSizeOfTextArea()" />
       <button type="button" class="searchGuidelinesButton" @click.prevent="openSelectedModal('guidelines')">
         ?
       </button>
-      <transition name="url-search-helper">
-        <span v-if="solrSettings.urlSearch && !$_validateUrlSearchPrefix(futureQuery)" class="urlSearchHelper">URL:</span>
-      </transition>
       <button id="querySubmit" title="Search" type="submit">
         <div id="magnifyingGlass" />
       </button>
@@ -23,7 +26,7 @@
               id="clearSubmit"
               title="Clear search and results"
               type="button"
-              @click="clearResultsAndSearch" />
+              @click="clearResultsAndSearch()" />
       <div class="sortOptions">
         <div @click.prevent="updateSolrSettingGrouping(!solrSettings.grouping)">
           <input id="groupedSearch"
@@ -148,8 +151,13 @@ export default {
       updateShowModal:'updateShowModal',
       updateCurrentModal:'updateCurrentModal'
     }),
+    getSizeOfTextArea() {
+      console.log('we resize')
+      let textarea = document.getElementById('query')
+      textarea.style.height = '1px'
+      textarea.style.height = (textarea.scrollHeight) + 'px'
+    },
     selectSearchMethod(selected) {
-      console.log(selected)
       if(selected === 'imgSearch') {
         this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch)
         this.updateSolrSettingUrlSearch(false)
@@ -164,19 +172,25 @@ export default {
       this.updateSolrSettingImgSearch(false)
       this.updateSolrSettingUrlSearch(false)
       this.futureQuery = ''
-      this.$_pushCleanHistory('SolrWayback')
+      // Check if we gotta push a route (if we're on the frontpage and just deleting query and no results, we dont have to.)
+      if(Object.keys(this.results).length !== 0) {
+        this.$_pushCleanHistory('SolrWayback')
+      }
       this.preNormalizeQuery = null
       this.resetSearchState()
+      //Make sure the query textarea is returned to its original size, regardless of what it was before.
+      let textarea = document.getElementById('query')
+      textarea.style.height = '1px'
     },
     decideActiveClassesForQueryBox() {
       const isPrefixUrlNorm = this.futureQuery.substring(0,8) === 'url_norm'
       return !this.$_validateUrlSearchPrefix(this.futureQuery) 
                  ? isPrefixUrlNorm === 'url_norm' 
                     ? 'urlNotTrue' 
-                    : 'urlNotTrue urlSearchActivated'
+                    : 'urlNotTrue'
                  : isPrefixUrlNorm !== 'url_norm' 
                     ? '' 
-                    : 'urlSearchActivated' 
+                    : '' 
     },
     launchNewSearch() {
       this.emptySearchAppliedFacets()

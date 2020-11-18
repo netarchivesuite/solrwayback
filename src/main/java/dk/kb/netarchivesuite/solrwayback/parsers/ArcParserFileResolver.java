@@ -31,10 +31,7 @@ public class ArcParserFileResolver {
     resolver = resolverImpl;
   }
 
- 
-  
-
-  
+   
   /*  
   * 
   * @param file_path is the file location, the file location must be resolved first. 
@@ -63,14 +60,14 @@ public class ArcParserFileResolver {
        } else {
          fileLocation = resolver.resolveArcFileLocation(source_file_path);
          cache.put(source_file_path, fileLocation);
-         log.debug("Resolved arcfile location:" + source_file_path + "->" + fileLocation);
+        // log.debug("Resolved arcfile location:" + source_file_path + "->" + fileLocation);
        }
        
        return ArcFileParserFactory.getArcEntry(fileLocation, offset, loadBinary);
        
      } catch (Exception e) {
        // It CAN happen, but crazy unlikely, and not critical at all... (took 10 threads spamming 1M+ requests/sec for it to happen in a test.):
-       log.error("Critical error resolving warc:"+source_file_path +" and offset:"+offset +" Error:",e.getMessage());
+       log.error("Critical error resolving warc:"+source_file_path +" and offset:"+offset +" Error:" + e.getMessage());
        throw new Exception(e);
      }
 

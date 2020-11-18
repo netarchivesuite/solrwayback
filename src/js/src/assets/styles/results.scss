@@ -306,10 +306,10 @@ margin: 1em 0 0 0;
 
 .warcHeaderInfo {
   height:auto;
-  white-space: pre-wrap;      /* CSS3 */   
-  white-space: -moz-pre-wrap; /* Firefox */    
-  white-space: -pre-wrap;     /* Opera <7 */   
-  white-space: -o-pre-wrap;   /* Opera 7 */    
+  white-space: pre-line;      /* CSS3 */   
+  white-space: -moz-pre-line; /* Firefox */    
+  white-space: -pre-line;     /* Opera <7 */   
+  white-space: -o-pre-line;   /* Opera 7 */    
   word-wrap: break-word;      /* IE */
 }
 
@@ -390,7 +390,8 @@ margin-left:40px;
 	vertical-align: top;
 	-webkit-box-flex: 1;
 	-ms-flex: 1 1 0px;
-	flex: 1 1 0;
+  flex: 1 1 0;
+  margin-bottom: 20px;
 }
 
 .facetItem {
@@ -509,6 +510,7 @@ margin-left:40px;
 }
 
 .singleEntryImages img {
+  max-width: 100%;
   object-fit: cover;
   cursor: pointer;
   box-sizing: border-box;

@@ -17,6 +17,8 @@
 
  <!--Shut them up-->    
     <logger name="org" level="WARN"/>
+    <logger name="com.kennycason.kumo" level="WARN"/>
+
 
     <root level="debug">
         <appender-ref ref="R" />

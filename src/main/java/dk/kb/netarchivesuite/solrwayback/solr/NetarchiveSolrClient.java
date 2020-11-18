@@ -1,3 +1,4 @@
+
 package dk.kb.netarchivesuite.solrwayback.solr;
 
 import java.io.IOException;
@@ -44,7 +45,9 @@ public class NetarchiveSolrClient {
     protected static SolrClient solrServer;
     protected static NetarchiveSolrClient instance = null;
     protected static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+");
-
+    private static String NO_REVISIT_FILTER ="record_type:response OR record_type:arc";
+    
+    
     protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_full,content_type_norm,hash,type,crawl_date,content_encoding,exif_location,status_code,last_modified,redirect_to_norm";
     protected static String indexDocFieldListShort = "url,url_norm,source_file_path,source_file,source_file_offset,crawl_date";
 
@@ -103,8 +106,8 @@ public class NetarchiveSolrClient {
         solrQuery.add("facet.limit", "" + facetLimit);
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
 
-      // only request fields used
-        solrQuery.add("fl","id"); 
+        solrQuery.add("fl","id");
+
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         List<FacetCount> facetList = new ArrayList<FacetCount>();
         FacetField facet = rsp.getFacetField("domain");
@@ -131,11 +134,12 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(0);
         solrQuery.set("facet", "true");
         solrQuery.add("facet.field", "links_domains");
-        solrQuery.add("facet.limit", "" + (facetLimit + 1)); // +1 because itself will be removed and is almost certain of resultset if
-                                                             // self-linking
+        solrQuery.add("facet.limit", "" + (facetLimit + 1)); // +1 because itself will be removed and is almost certain of resultset is self-linking
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
-        solrQuery.add("fl","id");
-                                 
+        solrQuery.add("fl","id");                                                                                                                                                                  // request
+                                                                                                                                                                  // fields
+                                                                                                                                                                  // used
+
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         List<FacetCount> facetList = new ArrayList<FacetCount>();
         FacetField facet = rsp.getFacetField("links_domains");
@@ -172,7 +176,7 @@ public class NetarchiveSolrClient {
         stats.setHarvestDate(crawlDate);
         final String statsField = "crawl_date";
 
-        int results = 0;
+        long results = 0;
 
         String query = "url_norm:\"" + url_norm + "\" AND crawl_date:{\"" + crawlDate + "\" TO *]";
 
@@ -286,10 +290,9 @@ public class NetarchiveSolrClient {
         solrQuery.add("group", "true");
         solrQuery.add("group.field", "url_norm");
         solrQuery.add("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
-        solrQuery.setFilterQueries("content_type_norm:image"); // only images
-        solrQuery.setFilterQueries("record_type:response"); // No binary for revists. //TODO record_type arc missing!
-
-        solrQuery.setFilterQueries("image_size:[2000 TO *]"); // No small images. (fillers etc.)
+        solrQuery.add("fq","content_type_norm:image"); // only images
+        solrQuery.add("fq",NO_REVISIT_FILTER); // No binary for revists.         
+        solrQuery.add("fq","image_size:[2000 TO *]"); // No small images. (fillers etc.)
         solrQuery.add("fl", indexDocFieldList);
 
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
@@ -346,28 +349,9 @@ public class NetarchiveSolrClient {
         }
         return dates;
     }
-  
-    
-    
-    //Inactive for now.
-    /*
-    public boolean anyHtmlPagesForDomain(String domain) throws Exception {
-
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery = new SolrQuery("domain:\"" + domain + "\"");
-        solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
-        solrQuery.add("fl", "id");
-        solrQuery.add("fq","content_type_norm:html");
-        solrQuery.setRows(0);
-
-        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
-
-        long number = rsp.getResults().getNumFound();
-        return (number > 0);
-    }
-*/
 
     public String getTextForDomain(String domain) throws Exception {
+
         SolrQuery solrQuery = new SolrQuery();
         solrQuery = new SolrQuery("(domain:\"" + domain + "\"");
 
@@ -387,7 +371,7 @@ public class NetarchiveSolrClient {
             b.append(doc.getFieldValue(" "));// Space between next document.
             totaltLength += ((int) doc.getFieldValue("content_text_length"));
         }
-        log.info(String.format("Total extracted content length for wordCloud:%d, total hits:%d only using first 10000 hits" + "in %d ms (qtime=%d ms)",
+        log.info(String.format("Total extracted content length for wordcloud:%d, total hits:%d only using first 10000 hits" + " in %d ms (qtime=%d ms)",
                 totaltLength, rsp.getResults().getNumFound(), solrNS / M, rsp.getQTime()));
         return b.toString();
     }
@@ -427,7 +411,8 @@ public class NetarchiveSolrClient {
         solrQuery.setQuery(query);
         solrQuery.setRows(1);
 
-        QueryResponse rsp = loggedSolrQuery("getArchEntry", solrQuery);
+       // QueryResponse rsp = loggedSolrQuery("getArchEntry", solrQuery); //Timing disabled due to spam. Also only took 1-5 millis
+         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = rsp.getResults();
 
         if (docs.getNumFound() == 0) {
@@ -605,7 +590,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
         solrQuery.add("fl", fieldList);
 
-        solrQuery.setFilterQueries("record_type:response OR record_type:arc"); // No binary for revists.
+        solrQuery.setFilterQueries(NO_REVISIT_FILTER); // No binary for revists.
 
         long solrNS = -System.nanoTime();
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
@@ -674,7 +659,7 @@ public class NetarchiveSolrClient {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 
-        solrQuery.setFilterQueries("record_type:response OR record_type:arc"); // No binary for revists.
+        solrQuery.setFilterQueries(NO_REVISIT_FILTER); // No binary for revists.
 
         solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
         solrQuery.add("sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
@@ -805,14 +790,16 @@ public class NetarchiveSolrClient {
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*:*");
-        solrQuery.setFilterQueries("content_type_norm:html"); // only html pages
         solrQuery.setRows(0); // 1 page only
         solrQuery.add("fl", "id");// rows are 0 anyway
         solrQuery.set("facet", "true");
         solrQuery.set("facet.field", "crawl_year");
         solrQuery.set("facet.sort", "index");
         solrQuery.set("facet.limit", "500"); // 500 is higher than number of different years
-
+        
+        solrQuery.add("fq","content_type_norm:html"); // only html pages
+        solrQuery.add("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
+        
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
 
         FacetField facetField = rsp.getFacetField("crawl_year");
@@ -834,8 +821,7 @@ public class NetarchiveSolrClient {
          */
 
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("text:\"" + query + "\"");
-        solrQuery.setFilterQueries("content_type_norm:html"); // only html pages
+        solrQuery.setQuery(query); //Smurf labs forces text:query               
         solrQuery.setRows(0); // 1 page only
         solrQuery.add("fl", "id");// rows are 0 anyway
         solrQuery.set("facet", "true");
@@ -843,6 +829,9 @@ public class NetarchiveSolrClient {
         solrQuery.set("facet.sort", "index");
         solrQuery.set("facet.limit", "500"); // 500 is higher than number of different years
 
+        solrQuery.add("fq","content_type_norm:html"); // only html pages
+        solrQuery.add("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
+        
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
 
         FacetField facetField = rsp.getFacetField("crawl_year");
@@ -865,7 +854,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("group.size", "10");
         solrQuery.set("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
         solrQuery.add("fl", indexDocFieldList);
-        solrQuery.setFilterQueries("record_type:response"); // No binary for revists.
+        solrQuery.setFilterQueries(NO_REVISIT_FILTER); // No binary for revists.
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = groupsToDoc(rsp);
         return solrDocList2IndexDoc(docs);
@@ -889,7 +878,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("f.crawl_year.facet.sort", "index"); // Sort by year and not count.
 
         if (!revisits) {
-            solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
+            solrQuery.add("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
         }
         if (fq != null) {
             for (String filter : fq) {
@@ -939,7 +928,7 @@ public class NetarchiveSolrClient {
            
       
       if (!revisits){
-        solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
+        solrQuery.set("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
       }
       if ( fq != null) {
         for (String filter : fq) {
@@ -973,8 +962,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("rows", "20"); // Hardcoded pt.
         solrQuery.set("start", startStr);
         solrQuery.set("q", query);
-        solrQuery.set("fl",
-                "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
+        solrQuery.set("fl", "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
         solrQuery.set("wt", "json");
         solrQuery.set("hl", "on");
         solrQuery.set("q.op", "AND");
@@ -992,7 +980,7 @@ public class NetarchiveSolrClient {
         }
 
         if (!revisits) {
-            solrQuery.set("fq", "record_type:response OR record_type:arc"); // do not include record_type:revisit
+            solrQuery.set("fq", NO_REVISIT_FILTER); // do not include record_type:revisit
         }
         if (fq != null) {
             for (String filter : fq) {
@@ -1109,7 +1097,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(0);
         solrQuery.set("facet", "false");
 
-        String startYear = PropertiesLoaderWeb.ARCHIVE_START_YEAR_PROPERTY;
+        int startYear = PropertiesLoaderWeb.ARCHIVE_START_YEAR;        
         int endYear = LocalDate.now().getYear() + 1; // add one since it is not incluced
 
         solrQuery.setParam("json.facet",
@@ -1227,9 +1215,7 @@ public class NetarchiveSolrClient {
         solrNS += System.nanoTime();
         String query = solrQuery.getQuery();
         query = query == null ? null : query.length() > 200 ? query.substring(0, 200) + "..." : query;
-        log.info(String.format("%s Solr response in %d ms (qtime=%d ms) with %d hits for query %s", caller, solrNS / M, rsp.getQTime(),
+        log.debug(String.format("%s Solr response in %d ms (qtime=%d ms) with %d hits for query %s", caller, solrNS / M, rsp.getQTime(),
                 rsp.getResults().getNumFound(), query));
         return rsp;
     }
-
-}

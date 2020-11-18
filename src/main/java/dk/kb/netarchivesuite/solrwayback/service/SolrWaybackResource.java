@@ -153,7 +153,8 @@ public class SolrWaybackResource {
   public Response getImage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("height") int height, @QueryParam("width") int width)
       throws SolrWaybackServiceException {
     try {
-      log.debug("Getting image from source_file_path:" + source_file_path + " offset:" + offset + " targetWidth:" + width + " targetHeight:" + height);
+
+      //log.debug("Getting image from source_file_path:" + source_file_path + " offset:" + offset + " targetWidth:" + width + " targetHeight:" + height);
 
       ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
 
@@ -200,7 +201,7 @@ public class SolrWaybackResource {
   public Response downloadRaw(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
     try {
 
-      log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
+  //  log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
       ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,false); //DO not load binary in memory
       
       //Only solr lookup if redirect.
@@ -221,7 +222,9 @@ public class SolrWaybackResource {
         }
         else {                          
             IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
-            log.warn("No contenttype in warc-header, using content_type from tika:"+doc.getContentType() + " for  "+source_file_path +" offset:"+offset);            
+
+            //is this the case for all images and binaries etc?
+            log.info("No content charset in warc-header, using full contentType from tika:"+doc.getContentType() + " for  "+source_file_path +" offset:"+offset +" content-type:"+doc.getContentType());            
             contentType=doc.getContentType(); 
         }               
         response= Response.ok((Object) in).type(contentType);          
@@ -240,7 +243,7 @@ public class SolrWaybackResource {
         response.header("Content-Encoding", arcEntry.getContentEncoding());            
       }
       
-      log.debug("Download from source_file_path:" + source_file_path + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());      
+//      log.debug("Download from source_file_path:" + source_file_path + " offset:" + offset + " is mimetype:" + arcEntry.getContentType() + " and has filename:" + arcEntry.getFileName());      
       return response.build();
 
     } catch (Exception e) {
@@ -358,7 +361,7 @@ public class SolrWaybackResource {
       throw new InvalidArgumentServiceException("Export to csv not allowed!");
     }
     try {               
-      log.debug("Export full. query:"+q +" filterquery:"+fq);
+      log.debug("Csv export. Query:"+q +" filterquery:"+fq);
       DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                                                                                                         
       String dateStr = formatOut.format(new Date());                        
       InputStream is = Facade.exportCvsStreaming(q, fq,fields);
@@ -621,7 +624,7 @@ public class SolrWaybackResource {
   public Response viewForward(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws SolrWaybackServiceException {
     try {
       IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
-      log.info("loading crawlDate:"+arcEntry.getCrawlDate());
+
       String url =  arcEntry.getUrl();
       String crawlDate = arcEntry.getCrawlDate();           
       String waybackDate = DateUtils.convertUtcDate2WaybackDate(crawlDate);      
@@ -632,7 +635,6 @@ public class SolrWaybackResource {
       //Below is for Open wayback at KB
     // String newUrl="http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url="+url+"&time="+waybackDate;
       //http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url=http%3A%2F%2Fwww.stiften.dk%2F&time=20120328044226
-      log.info("forward url:"+newUrl);
             
       URI uri =new URI(newUrl);
       log.info("forwarding to:"+uri.toString());
@@ -651,8 +653,7 @@ public class SolrWaybackResource {
     //this method is only called from the tomcat solrwaybackrootproxy if that proxy mode is used.
     try {
 
-      log.info("viewFromLeakedResource called: source_file_path:"+source_file_path +" offset:"+offset);      
-      log.info("urlPath:"+urlPart);
+      log.info("viewFromLeakedResource called: source_file_path:"+source_file_path +" offset:"+offset +" urlPath:"+urlPart);      
 
       //This is from the URL where the leak came from      
       IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
@@ -695,6 +696,7 @@ public class SolrWaybackResource {
 
   @GET
   @Path("/timestampsforpage")
+  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
   public TimestampsForPage timestamps(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
     log.debug("timestamps:" + source_file_path + " offset:" + offset);
     TimestampsForPage ts = Facade.timestampsForPage(source_file_path, offset);                                                                
@@ -712,7 +714,7 @@ public class SolrWaybackResource {
 */
 
   private Response viewImpl(String source_file_path, long offset,Boolean showToolbar) throws Exception{    	    	
-    log.debug("View from FilePath:" + source_file_path + " offset:" + offset);
+//    log.debug("View from FilePath:" + source_file_path + " offset:" + offset);
     IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
    
     Response redirect = getRedirect(doc, null);
@@ -726,8 +728,7 @@ public class SolrWaybackResource {
     String contentType = arcEntry.getContentType();
     
     
-    log.info("content charset from arc:"+arcEntry.getContentCharset());
-    log.info("content type from arc:"+arcEntry.getContentType());
+    log.info("warc content charset:"+arcEntry.getContentCharset() +" warc content type:"+arcEntry.getContentType());
    if (contentType ==  null){    
     log.warn("no contenttype, using content_type from tika:"+doc.getContentType());
     contentType=doc.getContentType(); 
@@ -739,7 +740,7 @@ public class SolrWaybackResource {
      contentType=doc.getContent_type_full();     
    }     
     //ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
-   log.info("seting contentype:"+contentType);
+   log.info("setting contentype:"+contentType);
 //          
    
    InputStream in = new ByteArrayInputStream(arcEntry.getBinary());

@@ -47,7 +47,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.2</version>
+            <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -118,12 +118,12 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <!--Project only uses com.google.common.collect.Iterables  to split in blocks. Can be implemented simple and dependency removed-->
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>20.0</version>
-        </dependency>
-
+           <groupId>com.google.guava</groupId>
+           <artifactId>guava</artifactId>
+           <version>30.0-jre</version>
+         </dependency>
 
         <!-- SOLR -->
         <dependency>
@@ -138,6 +138,16 @@
             <version>7.1.0</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.20</version>
+            <!-- Used to get a reliable decompression of multi-part gzip stream in test -->
+            <scope>test</scope>
+        </dependency>
+
 
         <!-- Content encoding -->
         <dependency>

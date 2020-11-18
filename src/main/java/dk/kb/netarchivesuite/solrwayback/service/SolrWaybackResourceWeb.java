@@ -72,8 +72,8 @@ public class SolrWaybackResourceWeb {
     @Produces({ MediaType.APPLICATION_JSON})
     public  SmurfYearBuckets smurfNetarchiveText( @QueryParam("q") String q , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
         try {                                                                                                
-          if (startyear == null){
-            startyear=1990;
+          if (startyear == null || startyear == 0){
+             startyear=PropertiesLoaderWeb.ARCHIVE_START_YEAR;
           }
           return Facade.generateNetarchiveTextSmurfData(q, filterQuery,startyear);                  
         } catch (Exception e) {         
@@ -86,9 +86,9 @@ public class SolrWaybackResourceWeb {
     @Produces({ MediaType.APPLICATION_JSON})
     public  SmurfYearBuckets smurfNetarchiveTags( @QueryParam("tag") String tag , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
         try {                                                                                      
-          
-          if (startyear == null){
-            startyear=1990;
+            
+         if (startyear == null  || startyear == 0){
+             startyear=PropertiesLoaderWeb.ARCHIVE_START_YEAR;             
           }
           return Facade.generateNetarchiveSmurfData(tag, filterQuery,startyear);                  
         } catch (Exception e) {         
@@ -101,7 +101,6 @@ public class SolrWaybackResourceWeb {
     @Path("graph/domain_result")
     @Produces({ MediaType.TEXT_PLAIN})
     public String domainResultGraph(@QueryParam("q") String q, @QueryParam("fq") List<String> fq ) throws SolrWaybackServiceException {
-
      try {
        return Facade.generateDomainResultGraph(q,fq);
       } catch (Exception e) {           
@@ -270,7 +269,7 @@ public class SolrWaybackResourceWeb {
        
         //also rewrite to puny code
         String url_norm =  Facade.punyCodeAndNormaliseUrl(url);       
-        log.info("Normalize url"+url +" ->" +  url_norm);        
+        log.info("Normalize url:"+url +" -> " +  url_norm);        
         UrlWrapper wrapper = new UrlWrapper();
         wrapper.setUrl(url_norm);      
         return wrapper;
@@ -367,7 +366,6 @@ public class SolrWaybackResourceWeb {
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
     public HashMap<String,String>  getPropertiesWeb() throws SolrWaybackServiceException {
       try {                    
-        log.info("PropertiesWeb returned");
         return Facade.getPropertiesWeb();          
       } catch (Exception e) {
         throw handleServiceExceptions(e);
@@ -485,16 +483,7 @@ public class SolrWaybackResourceWeb {
         throw handleServiceExceptions(e);
       }
     }
-
-    
-    @GET
-    @Path("/timestampsforpage")
-    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public TimestampsForPage timestamps(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws Exception {
-      log.debug("timestamps:" + source_file_path + " offset:" + offset);
-      TimestampsForPage ts = Facade.timestampsForPage(source_file_path, offset);                                                                
-      return ts;
-    }
+   
     
     private Response convertToPng(BufferedImage image)  throws Exception { 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
