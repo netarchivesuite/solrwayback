@@ -180,8 +180,8 @@ export default {
     buildSvg(result) {
       document.getElementById('graphContainer').innerHTML = ''
       let _this = this
-      var width =  document.getElementById('graphContainer').offsetWidth, height = document.getElementById('graphContainer').offsetHeight
-      var svg = d3.select('#graphContainer').append('svg')  
+      let width =  document.getElementById('graphContainer').offsetWidth, height = document.getElementById('graphContainer').offsetHeight
+      let svg = d3.select('#graphContainer').append('svg')  
         .attr('id', 'svgDiagram')
         .attr('width', width)
         .attr('height', height)
@@ -235,8 +235,6 @@ export default {
           .attr('id', function(d, i) { return 'link-' + i })
           .style('marker-end',  'url(#suit)') // Modified line 
           .style('stroke-width', function(d) { return Math.sqrt(d.weight) })
-
-      console.log(result.nodes, result.links)
 
       let node = svg.selectAll('.node')
           .data(result.nodes)
