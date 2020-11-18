@@ -1,11 +1,11 @@
 <template>
   <div class="searchBoxContainer">
-    <form class="searchForm" @submit.prevent="submitSearch">
+    <form class="searchForm ngram" @submit.prevent="submitSearch">
       <input id="query"
              v-model="searchQuery"
              type="text"
              autofocus
-             placeholder="Enter search term">
+             :placeholder="getPlaceholder()">
       <button id="querySubmit"
               title="Search"
               type="submit">
@@ -16,9 +16,24 @@
               title="Clear search and results"
               type="button"
               @click.prevent="resetState()" />
-      <div v-show="datasets.length !== 0" class="exportModalTrigger" @click.prevent="toggleExporter()">
-        Export graph data
-      </div>
+      <div class="searchChoices">
+        <div class="searchTypeContainer contain">
+          <label class="linkGraphLabel label">Search in:</label>
+          <input id="searchTypeRadioOne"
+                 v-model="searchType"
+                 type="radio"
+                 value="text">
+          <label class="label" for="searchTypeRadioOne">Page contents</label>
+          <input id="searchTypeRadioTwo"
+                 v-model="searchType"
+                 type="radio"
+                 value="tags">
+          <label class="label" for="searchTypeRadioTwo">Tags</label>
+        </div>
+        <span v-show="datasets.length !== 0" class="exportModalTrigger" @click.prevent="toggleExporter()">
+          Export graph data
+        </span>
+      </div> 
     </form>
     <exporter v-if="showExporter" @close-exporter="toggleExporter()" />
     <div v-if="searchQuery === '' || datasets.length === 0">
@@ -50,7 +65,8 @@ export default {
   data () {
     return {    
         searchQuery:'',
-        showExporter:false
+        showExporter:false,
+        searchType:'text'
     }
   },
   
@@ -60,6 +76,7 @@ export default {
      datasets: state => state.Ngram.datasets,
      loading: state => state.Ngram.loading,
      datasetQueries: state => state.Ngram.datasetQueries
+    
     })
   },
   
@@ -67,6 +84,10 @@ export default {
     query: function (val) {
       this.searchQuery  = val
     },
+    
+    searchType: function (val){
+      this.resetSearchState()
+    }
   },
 
   beforeDestroy() {
@@ -93,13 +114,18 @@ export default {
             timeout: false
           })
       } else {
-          this.doSearch(this.searchQuery)
+          this.doSearch({query:this.searchQuery, searchType:this.searchType})
       }
+    },
+
+    getPlaceholder() {
+      return  this.searchType === 'tags' ? 'Search for a HTML tag without < >' : 'Enter search term'
     },
 
     resetState() {
       this.resetSearchState()
     },
+  
     toggleExporter() {
        this.showExporter = !this.showExporter
     }

@@ -26,7 +26,7 @@ const actions = {
     this.dispatch('Search/setLoadingStatus', true)
    
     requestService.getNgramNetarchive(params)
-   .then(results => {this.dispatch('Ngram/updateQuery', params), commit('doSearchSuccess', results)}, error =>
+   .then(results => {this.dispatch('Ngram/updateQuery', params.query), commit('doSearchSuccess', results)}, error =>
    commit('doSearchError', error))
   },
   resetState({ commit }) {

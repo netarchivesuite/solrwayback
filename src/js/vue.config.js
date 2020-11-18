@@ -107,6 +107,11 @@ module.exports = {
         pathRewrite: { '^/services/frontend/smurf/text/': '' },
         changeOrigin: true
       },
+      '^/services/frontend/smurf/tags/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/smurf/tags/',
+        pathRewrite: { '^/services/frontend/smurf/tags/': '' },
+        changeOrigin: true
+      },
       '^/services/frontend/images/search/location/': {
         target: 'http://localhost:8080/solrwayback/services/frontend/images/search/location/',
         pathRewrite: { '^/services/frontend/images/search/location/': '' },
