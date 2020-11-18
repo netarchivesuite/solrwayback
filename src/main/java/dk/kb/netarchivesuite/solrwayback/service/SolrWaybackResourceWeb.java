@@ -5,6 +5,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -30,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.encoders.Sha1Hash;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
@@ -376,7 +379,6 @@ public class SolrWaybackResourceWeb {
     @Produces(MediaType.APPLICATION_JSON)
     public D3Graph waybackgraph(@QueryParam("domain") String domain, @QueryParam("ingoing") Boolean ingoing, @QueryParam("facetLimit") Integer facetLimit, @QueryParam("dateStart") String dateStart, @QueryParam("dateEnd") String dateEnd) throws SolrWaybackServiceException {
       try{        
-        log.info("ingoing:"+ingoing +" facetLimit:"+facetLimit +" dateStart:"+dateStart +" dateEnd:"+dateEnd);
         int fLimit =10;//Default
         boolean in=false;//Default
         if (facetLimit != null){
@@ -386,7 +388,15 @@ public class SolrWaybackResourceWeb {
           in=ingoing.booleanValue();
         }
 
-        //TODO use ingoing, facetlimit. with defaults
+        // Default dates if not in input        
+       if (dateStart == null) {
+          int startYear=PropertiesLoaderWeb.ARCHIVE_START_YEAR;        
+          dateStart = ""+new GregorianCalendar(startYear, 00, 1).getTime();
+       }
+       if (dateEnd== null) {
+           dateEnd=""+System.currentTimeMillis();
+       }
+        
         return Facade.waybackgraph(domain, fLimit,in,dateStart,dateEnd);        
 
       } catch (Exception e) {

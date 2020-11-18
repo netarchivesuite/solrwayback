@@ -103,12 +103,8 @@ public class NetarchiveSolrClient {
         solrQuery.add("facet.limit", "" + facetLimit);
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
 
-        solrQuery.add("fl",
-                "id,score,title,source_file, source_file_path,source_file_offset,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); // only
-                                                                                                                                                                   // request
-                                                                                                                                                                   // fields
-                                                                                                                                                                   // used
-
+      // only request fields used
+        solrQuery.add("fl","id"); 
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         List<FacetCount> facetList = new ArrayList<FacetCount>();
         FacetField facet = rsp.getFacetField("domain");
@@ -138,12 +134,8 @@ public class NetarchiveSolrClient {
         solrQuery.add("facet.limit", "" + (facetLimit + 1)); // +1 because itself will be removed and is almost certain of resultset if
                                                              // self-linking
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
-        solrQuery.add("fl",
-                "id,score,title,source_file,source_file_path,source_file_offset,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); // only
-                                                                                                                                                                  // request
-                                                                                                                                                                  // fields
-                                                                                                                                                                  // used
-
+        solrQuery.add("fl","id");
+                                 
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         List<FacetCount> facetList = new ArrayList<FacetCount>();
         FacetField facet = rsp.getFacetField("links_domains");
@@ -354,6 +346,26 @@ public class NetarchiveSolrClient {
         }
         return dates;
     }
+  
+    
+    
+    //Inactive for now.
+    /*
+    public boolean anyHtmlPagesForDomain(String domain) throws Exception {
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery = new SolrQuery("domain:\"" + domain + "\"");
+        solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
+        solrQuery.add("fl", "id");
+        solrQuery.add("fq","content_type_norm:html");
+        solrQuery.setRows(0);
+
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+
+        long number = rsp.getResults().getNumFound();
+        return (number > 0);
+    }
+*/
 
     public String getTextForDomain(String domain) throws Exception {
         SolrQuery solrQuery = new SolrQuery();
