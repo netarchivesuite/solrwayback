@@ -245,7 +245,6 @@ export default {
           .attr('data-name', function(d) { return d.name })
           .call(startDrag)
           .on('mouseover', function() {
-            console.log('sup')
              _this.highlighted ? null : _this.mouseoverNode(this)
           })
           .on('mouseout', function() {
