@@ -22,7 +22,7 @@
             <vue-slider v-model="linkNumber"
                         tooltip="always"
                         :min="0"
-                        :max="25" />
+                        :max="40" />
           </div>
         </div>
         <div class="directionContainer contain">
@@ -245,6 +245,7 @@ export default {
           .attr('data-name', function(d) { return d.name })
           .call(startDrag)
           .on('mouseover', function() {
+            console.log('sup')
              _this.highlighted ? null : _this.mouseoverNode(this)
           })
           .on('mouseout', function() {
@@ -290,7 +291,9 @@ export default {
           .on('dblclick', function() {
             let domain = d3.select(this).select('text').text()
             document.getElementById('graphContainer').innerHTML = ''
-            this.loading = true
+            _this.loading = true
+            _this.domain = domain
+            _this.highlighted = false
             requestService.getLinkGraph(domain,_this.linkNumber, _this.ingoing, _this.sliderValues[0], _this.sliderValues[1])
             .then(result => (_this.buildSvg(result)), error => console.log('Error, no link graph created.'))
           })
