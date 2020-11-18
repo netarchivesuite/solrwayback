@@ -1219,3 +1219,5 @@ public class NetarchiveSolrClient {
                 rsp.getResults().getNumFound(), query));
         return rsp;
     }
+    
+}
