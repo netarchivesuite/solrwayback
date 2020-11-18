@@ -40,7 +40,7 @@
         </div> 
       </div>
       <div class="sliderContainer">
-        <label class="linkGraphLabel">Timeframe:</label>
+        <label class="linkGraphLabel">Time frame:</label>
         <vue-slider v-model="sliderValues"
                     tooltip="always"
                     :min="minValue"
@@ -61,6 +61,7 @@ import 'vue-slider-component/theme/default.css'
 import StringManipulationUtils from './../../mixins/StringManipulationUtils'
 import { requestService } from '../../services/RequestService'
 import * as d3 from 'd3'
+import configs from './../../configs'
 
 export default {
   name: 'LinkGraph',
@@ -70,23 +71,26 @@ export default {
   mixins: [StringManipulationUtils],
   data() {
     return {
+      sliderValues:[new Date(configs.visualizations.ngram.startYear,0,1).getTime(),new Date().getTime()],
       maxValue:new Date().getTime(),
-      minValue:788914800000,
-      sliderValues:[788914800000,new Date().getTime()],
+      minValue:new Date(configs.visualizations.ngram.startYear,0,1).getTime(),
       getDate: v => `${this.createDateFromNumber(v)}`,
-      linkNumber:10,
+      linkNumber:25,
       ingoing:false,
       loading:false,
-      domain:''
+      domain:'',
+      dragging:false
     }
   },
   mounted () {
     window.addEventListener('resize', function() {
-     let height = document.getElementById('linkGraphContainer').offsetHeight - document.getElementById('graphControlsContainer').offsetHeight
-     document.getElementById('svgDiagram').setAttribute('height', height + 'px')
+      if(document.getElementById('svgDiagram') !== null) {
+        let height = document.getElementById('linkGraphContainer').offsetHeight - document.getElementById('graphControlsContainer').offsetHeight
+        document.getElementById('svgDiagram').setAttribute('height', height + 'px')
+      }
     })
     const routerQuery = this.$router.history.current.query
-    if(routerQuery.domain && routerQuery.dateStart && routerQuery.dateEnd && routerQuery.facetLimit && routerQuery.ingoing) {
+    if(routerQuery.domain) {
       routerQuery.domain ? this.domain = routerQuery.domain : null
       routerQuery.dateStart ? this.sliderValues[0] = parseInt(routerQuery.dateStart) : null
       routerQuery.dateEnd ? this.sliderValues[1] = parseInt(routerQuery.dateEnd) : null
@@ -106,11 +110,59 @@ export default {
       requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1]).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
     },
     createDateFromNumber(date) {
-      let time = new Date(date)
-      let day = time.getDay()
-      let month = time.getMonth() >= 9 ? ((+time.getMonth()) + (+1)) : '0' + ((+time.getMonth()) + (+1))
-      let year = time.getFullYear()
+      const time = new Date(date)
+      // get the date - and if it's below 9, add a 0 before it (so we get 04 fx)
+      const day = time.getDate() >= 9 ? time.getDate() : '0' + (+time.getDate())
+      // get the month, add 1 to it (because javascript, lol) and add a 0 before it (so we get 04/08 fx)
+      const month = time.getMonth() >= 9 ? ((+time.getMonth()) + (+1)) : '0' + ((+time.getMonth()) + (+1))
+      // get the year - which is a nice method.
+      const year = time.getFullYear()
       return day + '-' + month + '/' + year
+    },
+    highlightNode(node) {
+      d3.select(node).select('text').transition()
+                .duration(750)
+                .attr('x', 22)
+                .style('fill', '#002E70')
+                .style('stroke', 'null')
+                .style('stroke-width', '.5px')
+                .style('font', '40px sans-serif')
+              if(d3.select(node).select('circle').attr('style') !== 'fill: red;') {
+                d3.select(node).select('circle').transition()
+                  .duration(750)
+                  .attr('r', 16)
+                  .style('fill', ' #002E70')
+              }
+    },
+    normalNode(node) {
+      d3.select(node).select('text').transition()
+                .duration(750)
+                .attr('x', null)
+                .style('fill', 'black')
+                .style('stroke', 'null')
+                .style('stroke-width', '1px')
+                .style('font', '16px "Trebuchet MS", Ubuntu')
+              if(d3.select(node).select('circle').attr('style') !== 'fill: red;') {
+                d3.select(node).select('circle').transition()
+                  .duration(750)
+                  .attr('r', 5)
+                  .style('fill', 'black')
+                }
+    },
+    irrelevantNode(node) {
+      d3.select(node).select('text').transition()
+                .duration(750)
+                .attr('x', null)
+                .style('fill', '#ddd')
+                .style('stroke', 'null')
+                .style('stroke-width', '1px')
+                .style('font', '16px "Trebuchet MS", Ubuntu')
+              if(d3.select(node).select('circle').attr('style') !== 'fill: red;') {
+                d3.select(node).select('circle').transition()
+                  .duration(750)
+                  .attr('r', 5)
+                  .style('fill', '#ddd')
+                }
     },
     buildSvg(result) {
       document.getElementById('graphContainer').innerHTML = ''
@@ -142,65 +194,73 @@ export default {
 
       let force = d3.layout.force()
         .gravity(.05)
-        .distance(100)
-        .charge(-100)
+        .distance(300)
+        .charge(-300)
         .size([width, height])
 
-      let drag = force.drag().on('dragstart', function() { d3.event.sourceEvent.stopPropagation() })
+      let startDrag = force.drag().on('dragstart', function() { d3.event.sourceEvent.stopPropagation() })
 
       force.nodes(result.nodes)
            .links(result.links)
            .start()
       let link = svg.selectAll('.link')
           .data(result.links)
-        .enter().append('line')
-          .attr('class', 'link')
+          .enter().append('line')
+          .attr('class', 'link active')
+          .attr('id', function(d, i) { return 'link-' + i })
           .style('marker-end',  'url(#suit)') // Modified line 
-        .style('stroke-width', function(d) { return Math.sqrt(d.weight) })
+          .style('stroke-width', function(d) { return Math.sqrt(d.weight) })
+
+      console.log(result.nodes, result.links)
 
       let node = svg.selectAll('.node')
           .data(result.nodes)
           .enter().append('g')
-          .attr('class', 'node') 
+          .attr('class', 'node')
+          .attr('id', function(d) { return 'point-' + d.group })
+          .attr('data-name', function(d) { return d.name })
+          .call(startDrag)
           .on('click', function() {
-            if(d3.select(this).select('circle').attr('r') === '16') {
-              d3.select(this).select('text').transition()
-                .duration(750)
-                .attr('x', null)
-                .style('fill', 'black')
-                .style('stroke', 'null')
-                .style('stroke-width', '1px')
-                .style('font', '16px "Trebuchet MS", Ubuntu')
-              if(d3.select(this).select('circle').attr('style') !== 'fill: red;') {
-                d3.select(this).select('circle').transition()
-                  .duration(750)
-                  .attr('r', 5)
-                  .style('fill', 'black')
+            let highlight = d3.select(this).select('circle').attr('r') === '16'
+            let prime = d3.select(this)[0][0].dataset.name
+            let connected = []
+            let nonConnected = []
+            result.links.forEach((item, index) => {
+              let point = d3.select('#point-' + item.target.group)
+              let link = d3.select('#link-' + index)
+                if(item.source.name === prime  || item.target.name === prime) {
+                  item.number = index
+                  connected.push(item)
                 }
-            }
-            else {
-              d3.select(this).select('text').transition()
-                .duration(750)
-                .attr('x', 22)
-                .style('fill', '#002E70')
-                .style('stroke', 'null')
-                .style('stroke-width', '.5px')
-                .style('font', '40px sans-serif')
-              if(d3.select(this).select('circle').attr('style') !== 'fill: red;') {
-                d3.select(this).select('circle').transition()
-                  .duration(750)
-                  .attr('r', 16)
-                  .style('fill', ' #002E70')
-              }
-            }
+                else {
+                  item.number = index
+                  nonConnected.push(item)
+                }
+            })
+            nonConnected.forEach((item) => {
+              let point1 = d3.select('#point-' + item.target.group)
+              let point2 = d3.select('#point-' + item.source.group)
+              let link = d3.select('#link-' + item.number)
+              highlight ? _this.normalNode(point1[0][0]) : _this.irrelevantNode(point1[0][0])
+              highlight ? _this.normalNode(point2[0][0]) : _this.irrelevantNode(point2[0][0])
+              highlight ? link.attr('class', 'link') : link.attr('class', 'link inactive')
+            })
+            connected.forEach((item) => {
+              let point1 = d3.select('#point-' + item.target.group)
+              let point2 = d3.select('#point-' + item.source.group)
+              let link = d3.select('#link-' + item.number)
+              highlight ? _this.normalNode(point1[0][0]) : _this.highlightNode(point1[0][0])
+              highlight ? _this.normalNode(point2[0][0]) : _this.highlightNode(point2[0][0])
+              highlight ? link.attr('class', 'link') : link.attr('class', 'link')
+            })
           })
           .on('dblclick', function() {
             let domain = d3.select(this).select('text').text()
+            document.getElementById('graphContainer').innerHTML = ''
+            this.loading = true
             requestService.getLinkGraph(domain,_this.linkNumber, _this.ingoing, _this.sliderValues[0], _this.sliderValues[1])
             .then(result => (_this.buildSvg(result)), error => console.log('Error, no link graph created.'))
-            console.log(requestService)
           })
-          .call(drag)
 
       node.append('circle')
           .attr('r',function(d){return d.size})

@@ -776,7 +776,21 @@ margin-left:40px;
 
 //d3 setup css
 #graphContainer .link {
+  transition: all 750ms linear 0s;
   stroke: var(--main-highlight-color);
+}
+
+#graphContainer .link.active {
+  stroke: var(--main-highlight-color);
+}
+
+#graphContainer .link.inactive {
+  stroke:var(--main-highlight-color);
+  opacity:0.1
+}
+
+#graphContainer .node {
+  cursor:pointer;
 }
 
 #graphContainer .node circle {
@@ -1207,8 +1221,8 @@ margin-left:40px;
 }
 
 .sliderContainer {
-  padding-left:30px;
-  padding-right:30px;
+  padding-left: 45px;
+	padding-right: 45px;
   margin-top:40px;
 }
 

@@ -412,10 +412,12 @@ color:var(--secondary-text-color);
 
 .linkGraphContainer .linkGraphSettings {
   display: flex;
+  flex-wrap: wrap;
+  margin-top: 15px;
 }
 
 .linkGraphContainer .linkGraphSettings .contain {
-    padding: 0px 20px;
+  padding: 5px 3px;
 }
 
 .linkGraphContainer input[type=radio] {
@@ -437,7 +439,7 @@ color:var(--secondary-text-color);
 .linkGraphContainer .generateButtonContainer {
   box-sizing: border-box;
   //background-color:var(--secondary-highlight-color);
-  height:30px;
+  height:40px;
   //border-bottom:1px solid var(--secondary-highlight-color);
   padding:0px 20px;
 }
@@ -451,13 +453,13 @@ color:var(--secondary-text-color);
 }
 
 .graphControlsContainer {
-  height:150px;
+  height:170px;
   width:100%
 }
 
 #graphContainer {
   display:block;
-  height:calc(100% - 150px);
+  height:calc(100% - 170px);
   width:100%;
   overflow:hidden;
 }
