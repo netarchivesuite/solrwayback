@@ -124,7 +124,7 @@ export default {
                 .style('fill', '#002E70')
                 .style('stroke', 'null')
                 .style('stroke-width', '.5px')
-                .style('font', '40px sans-serif')
+                .style('font', '30px sans-serif')
               if(d3.select(node).select('circle').attr('style') !== 'fill: red;') {
                 d3.select(node).select('circle').transition()
                   .duration(300)
@@ -189,6 +189,7 @@ export default {
         svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scale + ')')
       }))
       .on('click', function() {
+        if(event.defaultPrevented) { return }
         if(_this.highlighted === true) {
           result.links.forEach((item, index) => {
             let point1 = d3.select('#point-' + item.target.group)
@@ -250,6 +251,7 @@ export default {
              _this.highlighted ? null : _this.normalNode(this)
           })
           .on('click', function() {
+            if(event.defaultPrevented) { return }
             event.stopPropagation()
             let highlight = d3.select(this).select('circle').attr('r') === '16'
             highlight ? _this.highlighted = false : _this.highlighted = true
