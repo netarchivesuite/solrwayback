@@ -1,3 +1,4 @@
+
 package dk.kb.netarchivesuite.solrwayback.solr;
 
 import java.io.IOException;
@@ -105,11 +106,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("facet.limit", "" + facetLimit);
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
 
-        solrQuery.add("fl",
-                "id,score,title,source_file, source_file_path,source_file_offset,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); // only
-                                                                                                                                                                   // request
-                                                                                                                                                                   // fields
-                                                                                                                                                                   // used
+        solrQuery.add("fl","id");
 
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         List<FacetCount> facetList = new ArrayList<FacetCount>();
@@ -137,12 +134,9 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(0);
         solrQuery.set("facet", "true");
         solrQuery.add("facet.field", "links_domains");
-        solrQuery.add("facet.limit", "" + (facetLimit + 1)); // +1 because itself will be removed and is almost certain of resultset if
-                                                             // self-linking
+        solrQuery.add("facet.limit", "" + (facetLimit + 1)); // +1 because itself will be removed and is almost certain of resultset is self-linking
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
-        solrQuery.add("fl",
-                "id,score,title,source_file,source_file_path,source_file_offset,url, url_norm,content_type_norm,hash,crawl_date,content_type, content_encoding"); // only
-                                                                                                                                                                  // request
+        solrQuery.add("fl","id");                                                                                                                                                                  // request
                                                                                                                                                                   // fields
                                                                                                                                                                   // used
 
@@ -1225,5 +1219,5 @@ public class NetarchiveSolrClient {
                 rsp.getResults().getNumFound(), query));
         return rsp;
     }
-
+    
 }

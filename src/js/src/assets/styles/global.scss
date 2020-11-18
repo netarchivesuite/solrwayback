@@ -209,7 +209,12 @@ color:white;
 	margin-top: 75px !important;
  }
 
- .previewImg .spinner, .searchVisualizationContainer .spinner, .imgContainer .spinner, .facetContainer .spinner, .domainContentContainer .spinner {
+ .previewImg .spinner,
+ .searchVisualizationContainer .spinner, 
+ .imgContainer .spinner, 
+ .facetContainer .spinner, 
+ .domainContentContainer .spinner,
+ .linkGraphContainer .spinner {
   width: 40px;
   height: 40px;
   padding:15px;
@@ -219,7 +224,7 @@ color:white;
   animation: sk-rotateplane 1.2s infinite ease-in-out;
 }
 
-.imgContainer .spinner, .domainContentContainer .spinner, .facetContainer .spinner {
+.imgContainer .spinner, .domainContentContainer .spinner, .facetContainer .spinner, .linkGraphContainer .spinner {
   position: relative;
   top:150px;
   margin:auto;

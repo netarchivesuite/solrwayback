@@ -430,20 +430,15 @@ public class Facade {
     }
 
     public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing, String dateStart, String dateEnd) throws Exception {
+        
+        
+         Date start = new Date(Long.valueOf(dateStart));  
+         Date end = new Date(Long.valueOf(dateEnd));
 
-        // Default dates
-        Date start = new Date(System.currentTimeMillis() - 25L * 365 * 86400 * 1000L); // 25 years ago
-        Date end = new Date();
+         log.info("Creating graph for domain:" + domain + " ingoing:" + ingoing + " and facetLimit:" + facetLimit +" start:"+start +" end:"+end);
+         
+         List<FacetCount> facets = NetarchiveSolrClient.getInstance().getDomainFacets(domain, facetLimit, ingoing, start, end);
 
-        if (dateStart != null) {
-            start = new Date(Long.valueOf(dateStart));
-        }
-        if (dateEnd != null) {
-            end = new Date(Long.valueOf(dateEnd));
-        }
-
-        List<FacetCount> facets = NetarchiveSolrClient.getInstance().getDomainFacets(domain, facetLimit, ingoing, start, end);
-        log.info("Creating graph for domain:" + domain + " ingoing:" + ingoing + " and facetLimit:" + facetLimit);
 
         HashMap<String, List<FacetCount>> domainFacetMap = new HashMap<String, List<FacetCount>>();
         // Also find facet for all facets from first call.
@@ -466,6 +461,13 @@ public class Facade {
             }
         }
 
+
+        D3Graph g = mapDomainsToD3LinkGraph(domain, ingoing, domainFacetMap, allDomains);
+        return g;
+    }
+
+    private static D3Graph mapDomainsToD3LinkGraph(String domain, boolean ingoing, HashMap<String, List<FacetCount>> domainFacetMap, HashSet<String> allDomains) {
+
         // First map all urls to a number due to the graph id naming contraints.
         HashMap<String, Integer> domainNumberMap = new HashMap<String, Integer>();
         int number = 0; // start number
@@ -474,8 +476,7 @@ public class Facade {
             domainNumberMap.put(d, number++);
         }
 
-        // Notice we add same egde multiple times, but d3 has no problem with this.
-
+        
         D3Graph g = new D3Graph();
         List<Node> nodes = new ArrayList<Node>();
         g.setNodes(nodes);
@@ -506,7 +507,6 @@ public class Facade {
             }
 
         }
-
         return g;
     }
 
