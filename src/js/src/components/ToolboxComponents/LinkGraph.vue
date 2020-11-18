@@ -79,7 +79,7 @@ export default {
       ingoing:false,
       loading:false,
       domain:'',
-      dragging:false
+      highlighted:false
     }
   },
   mounted () {
@@ -95,11 +95,9 @@ export default {
       routerQuery.dateStart ? this.sliderValues[0] = parseInt(routerQuery.dateStart) : null
       routerQuery.dateEnd ? this.sliderValues[1] = parseInt(routerQuery.dateEnd) : null
       routerQuery.facetLimit ? this.linkNumber = parseInt(routerQuery.facetLimit) : null
-      routerQuery.ingoing 
-        ? routerQuery.ingoing === 'true' 
-          ? this.ingoing = true 
-          : this.ingoing = false 
-        : null
+      if(routerQuery.ingoing) {
+        routerQuery.ingoing === 'true' ? this.ingoing = true : this.ingoing = false
+      }
       this.loading = true
       requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1]).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
     }
@@ -119,24 +117,39 @@ export default {
       const year = time.getFullYear()
       return day + '-' + month + '/' + year
     },
-    highlightNode(node) {
+    mouseoverNode(node) {
       d3.select(node).select('text').transition()
-                .duration(750)
-                .attr('x', 22)
+                .duration(300)
+                .attr('x', 10)
                 .style('fill', '#002E70')
                 .style('stroke', 'null')
                 .style('stroke-width', '.5px')
                 .style('font', '40px sans-serif')
               if(d3.select(node).select('circle').attr('style') !== 'fill: red;') {
                 d3.select(node).select('circle').transition()
-                  .duration(750)
+                  .duration(300)
+                  .attr('r', 15)
+                  .style('fill', ' #002E70')
+              }
+    },
+    highlightNode(node) {
+      d3.select(node).select('text').transition()
+                .duration(300)
+                .attr('x', 10)
+                .style('fill', '#002E70')
+                .style('stroke', 'null')
+                .style('stroke-width', '.5px')
+                .style('font', '40px sans-serif')
+              if(d3.select(node).select('circle').attr('style') !== 'fill: red;') {
+                d3.select(node).select('circle').transition()
+                  .duration(300)
                   .attr('r', 16)
                   .style('fill', ' #002E70')
               }
     },
     normalNode(node) {
       d3.select(node).select('text').transition()
-                .duration(750)
+                .duration(300)
                 .attr('x', null)
                 .style('fill', 'black')
                 .style('stroke', 'null')
@@ -144,14 +157,14 @@ export default {
                 .style('font', '16px "Trebuchet MS", Ubuntu')
               if(d3.select(node).select('circle').attr('style') !== 'fill: red;') {
                 d3.select(node).select('circle').transition()
-                  .duration(750)
+                  .duration(300)
                   .attr('r', 5)
                   .style('fill', 'black')
                 }
     },
     irrelevantNode(node) {
       d3.select(node).select('text').transition()
-                .duration(750)
+                .duration(300)
                 .attr('x', null)
                 .style('fill', '#ddd')
                 .style('stroke', 'null')
@@ -159,7 +172,7 @@ export default {
                 .style('font', '16px "Trebuchet MS", Ubuntu')
               if(d3.select(node).select('circle').attr('style') !== 'fill: red;') {
                 d3.select(node).select('circle').transition()
-                  .duration(750)
+                  .duration(300)
                   .attr('r', 5)
                   .style('fill', '#ddd')
                 }
@@ -175,6 +188,18 @@ export default {
         .call(d3.behavior.zoom().on('zoom', function () {
         svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scale + ')')
       }))
+      .on('click', function() {
+        if(_this.highlighted === true) {
+          result.links.forEach((item, index) => {
+            let point1 = d3.select('#point-' + item.target.group)
+            let point2 = d3.select('#point-' + item.source.group)
+            let link = d3.select('#link-' + index)
+            _this.normalNode(point1[0][0])
+            _this.normalNode(point2[0][0])
+            link.attr('class', 'link')
+          })
+        }
+      })
       .append('g')
 
       svg.append('defs').selectAll('marker')
@@ -220,8 +245,16 @@ export default {
           .attr('id', function(d) { return 'point-' + d.group })
           .attr('data-name', function(d) { return d.name })
           .call(startDrag)
+          .on('mouseover', function() {
+             _this.highlighted ? null : _this.mouseoverNode(this)
+          })
+          .on('mouseout', function() {
+             _this.highlighted ? null : _this.normalNode(this)
+          })
           .on('click', function() {
+            event.stopPropagation()
             let highlight = d3.select(this).select('circle').attr('r') === '16'
+            highlight ? _this.highlighted = false : _this.highlighted = true
             let prime = d3.select(this)[0][0].dataset.name
             let connected = []
             let nonConnected = []
@@ -267,7 +300,7 @@ export default {
           .style('fill', function(d){return d.color})
 
       node.append('text')
-          .attr('dx', 12)
+          .attr('dx', 5)
           .attr('dy', '.35em')
           .text(function(d) { return d.name })
 
