@@ -601,7 +601,7 @@ public class Facade {
             resources.remove(docUrl);
         }
 
-        ts.setMaximumTimeDifferenceBackward(millisToDuration(maximumTimeDifferenceBackward));
+        ts.setMaximumTimeDifferenceBackward(millisToDuration(-maximumTimeDifferenceBackward));  //Remove the minus
         ts.setMaximumTimeDifferenceForward(millisToDuration(maximumTimeDifferenceForward));
                 
         ts.setNotHarvested(new ArrayList<String>(resources));
