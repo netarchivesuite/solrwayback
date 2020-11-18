@@ -2,7 +2,7 @@
 4.0.2
 -----
 Clean up in logging to the tomcat log-file.
-Linkgraph remimplemeted with improve GUI. Less spaghetti for large graphs and local sub-graph highlighting for a node by click.
+Linkgraph remimplemeted with improved GUI. Less spaghetti for large graphs and local sub-graph highlighting for a node by click. Maximum node degree increased to 40.
 CVS export option for the n-gram query visualization
 Page resources (playback toolbar) shows total timespan for resources in top so it is easier to see how far apart the resources are from the main page.
 Added icon on search result to show warc headers for that record.  
@@ -10,7 +10,6 @@ Facet counts are formatted to be more readable for large numbers.(thousand delim
 Data fields on records new listed in alphabetical order.
 Export to warc file also has option to export to a zipped warc.gz file.(still waiting frontend enabling)
 Fixed encoding bug for playback (html content charset) that was introduced in 4.0.1 due to switch to chaining inputstreams.
-
 
 Added optional proprerty to solrwaybackweb.properties. Default value is 1998 is not set. Start year of the collection is used in several visualizations.
 
