@@ -17,7 +17,7 @@
           </button>
         </div>
         <div class="linkNumberContainer contain">
-          <label class="linkGraphLabel">Number of links:</label>
+          <label class="linkGraphLabel">Max. node degree:</label>
           <div class="linkNumbersliderContainer">
             <vue-slider v-model="linkNumber"
                         tooltip="always"
