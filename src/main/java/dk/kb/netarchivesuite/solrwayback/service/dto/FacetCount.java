@@ -1,4 +1,4 @@
-package dk.kb.netarchivesuite.solrwayback.solr;
+package dk.kb.netarchivesuite.solrwayback.service.dto;
 
 public class FacetCount {
 private long count;

@@ -245,10 +245,10 @@ public class Facade {
         return datesVO;
     }
 
-    public static ArrayList<PagePreview> getPagePreviewsForUrl(String url) throws Exception {
-        log.info("getting pagePreviews for url:" + url);
+    public static ArrayList<PagePreview> getPagePreviewsForUrl(int year,String url) throws Exception {
+        log.info("getting pagePreview for year:"+year +" and url:" + url);
 
-        ArrayList<IndexDoc> indexDocs = NetarchiveSolrClient.getInstance().getHarvestPreviewsForUrl(url); // Only contains the required fields for this method
+        ArrayList<IndexDoc> indexDocs = NetarchiveSolrClient.getInstance().getHarvestPreviewsForUrl(year,url); // Only contains the required fields for this method
         // Convert to PagePreview
         ArrayList<PagePreview> previews = new ArrayList<PagePreview>();
 
@@ -268,6 +268,15 @@ public class Facade {
         return previews;
     }
 
+    
+    
+    public static ArrayList<FacetCount> getPagePreviewsYearInfo(String url) throws Exception {
+      log.info("getting pagePreviewsinfo for url:" + url);
+
+       ArrayList<FacetCount> facetCounts = NetarchiveSolrClient.getInstance().getPagePreviewsYearInfo(url);
+
+      return facetCounts;
+  }
     public static BufferedImage wordCloudForDomain(String domain) throws Exception {
         log.info("getting wordcloud for url:" + domain);
         String text = NetarchiveSolrClient.getInstance().getTextForDomain(domain); // Only contains the required fields for this method
