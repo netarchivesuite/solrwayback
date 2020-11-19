@@ -2,13 +2,19 @@
   <div>
     <div v-if="configs.exportOptions.warcAllowed === 'true' || configs.exportOptions.csvAllowed === 'true'" class="downloadSearchResultDropdown">
       <div class="downloadSearchResultButton">
-        See export options
+        See available export options
       </div>
       <a v-if="configs.exportOptions.warcAllowed === 'true'" class="exportButton" :href="exportToWARC()">
         WARC export
       </a>
+      <a v-if="configs.exportOptions.warcAllowed === 'true'" class="exportButton" :href="exportToWARCGZ()">
+        WARC.GZ export
+      </a>
       <a v-if="configs.exportOptions.warcAllowed === 'true'" class="exportButton" :href="exportToExtendedWARC()">
         expanded WARC export
+      </a>
+      <a v-if="configs.exportOptions.warcAllowed === 'true'" class="exportButton" :href="exportToExtendedWARCGZ()">
+        expanded WARC.GZ export
       </a>
       <button v-if="configs.exportOptions.csvAllowed === 'true'" class="exportButton" @click="toggleCsvExportOptions()">
         CSV export
@@ -106,6 +112,16 @@ export default {
       return this.searchAppliedFacets ? 
       this.returnExportUrl() + 'warcExpanded?query=' + this.query + this.searchAppliedFacets.join('') :
       this.returnExportUrl() + 'warcExpanded?query=' + this.query
+    },
+    exportToWARCGZ() {
+      return this.searchAppliedFacets ? 
+      this.returnExportUrl() + 'warc?gzip=true&query=' + this.query + this.searchAppliedFacets.join('') :
+      this.returnExportUrl() + 'warc?gzip=true&query=' + this.query
+    },
+    exportToExtendedWARCGZ() {
+      return this.searchAppliedFacets ? 
+      this.returnExportUrl() + 'warcExpanded?gzip=true&query=' + this.query + this.searchAppliedFacets.join(''):
+      this.returnExportUrl() + 'warcExpanded?gzip=true&query=' + this.query
     },
     exportToCSV() {
       let fields = this.selectedArray.join(',')
