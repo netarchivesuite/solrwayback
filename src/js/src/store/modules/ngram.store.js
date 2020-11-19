@@ -10,6 +10,7 @@ const initialState = () => ({
   datasetQueries:[],
   datasets:[],
   emptyResult: false,
+  searchType:'text'
 
 })
 
@@ -18,6 +19,9 @@ const state = initialState()
 const actions = {
   setLoadingStatus( {commit}, param) {
     commit('setLoadingStatus', param)
+  },
+  setSearchType( {commit}, param) {
+    commit('setSearchType', param)
   },
   updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
@@ -83,6 +87,10 @@ const mutations = {
 
   setLoadingStatus(state, status) {
     state.loading = status
+  },
+  
+  setSearchType(state, type) {
+    state.searchType = type
   },
 
   resetState(state) {

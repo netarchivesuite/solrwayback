@@ -19,8 +19,8 @@ export default {
   * Generate options for chart.
   * - Override with own options config as you see fit -
   */
-  getChartOptions: () => {
-   return ChartOptionsCore.getChartOptions()
+  getChartOptions: (searchType) => {
+   return ChartOptionsCore.getChartOptions(searchType)
   },
 
   /**

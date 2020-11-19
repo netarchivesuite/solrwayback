@@ -87,6 +87,7 @@ export default {
     
     searchType: function (val){
       this.resetSearchState()
+      this.setSearchType(val)
     }
   },
 
@@ -97,7 +98,8 @@ export default {
   methods: {
     ...mapActions('Ngram', {
       resetSearchState:'resetState',
-      doSearch:'doSearch'
+      doSearch:'doSearch',
+      setSearchType:'setSearchType'
     }),
 
     ...mapActions('Notifier', {
