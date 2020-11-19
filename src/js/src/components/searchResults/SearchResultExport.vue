@@ -7,13 +7,13 @@
       <a v-if="configs.exportOptions.warcAllowed === 'true'" class="exportButton" :href="exportToWARC()">
         WARC export
       </a>
-      <a v-if="configs.exportOptions.csvAllowed === 'true'" class="exportButton" :href="exportToWARCGZ()">
+      <a v-if="configs.exportOptions.warcAllowed === 'true'" class="exportButton" :href="exportToWARCGZ()">
         WARC.GZ export
       </a>
       <a v-if="configs.exportOptions.warcAllowed === 'true'" class="exportButton" :href="exportToExtendedWARC()">
         expanded WARC export
       </a>
-      <a v-if="configs.exportOptions.csvAllowed === 'true'" class="exportButton" :href="exportToExtendedWARCGZ()">
+      <a v-if="configs.exportOptions.warcAllowed === 'true'" class="exportButton" :href="exportToExtendedWARCGZ()">
         expanded WARC.GZ export
       </a>
       <button v-if="configs.exportOptions.csvAllowed === 'true'" class="exportButton" @click="toggleCsvExportOptions()">
