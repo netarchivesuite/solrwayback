@@ -11,7 +11,7 @@ Data fields on records new listed in alphabetical order.
 Export to warc file also has option to export to a zipped warc.gz file.(still waiting frontend enabling)
 Fixed encoding bug for playback (html content charset) that was introduced in 4.0.1 due to switch to chaining inputstreams.
 
-Added optional property to solrwaybackweb.properties. Default value is 1998 is not set. Start year of the collection is used in several visualizations.
+Added optional property to solrwaybackweb.properties. Default value is  1998 if property not set. Start year of the collection is used in several visualizations.
 
 ```
 #n-gram and domain statistics  etc. needs a start year for the visualizations. Will default to 1998 if not defined.
