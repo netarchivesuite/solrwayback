@@ -27,14 +27,14 @@ export default {
   * Generate options for chart.
   * 
   */
-  getChartOptions() {
+  getChartOptions(searchType) {
     return {
      tooltips:this.getTooltipOptions(),
      scales: this.getScalesOptions(),   
      //responsive: true,
      maintainAspectRatio: true,
      onClick: (evt, chartObj) => {
-       this.getChartPointCallback(evt, chartObj)
+       this.getChartPointCallback(evt, chartObj, searchType)
     }
    }
   },
@@ -46,7 +46,7 @@ export default {
    * Generates and executes a search (new tab) when user
    * clicks a a point    
    */
-  getChartPointCallback(evt, chartObj) {
+  getChartPointCallback(evt, chartObj, searchType) {
     // We have to fetch the chart instance this way because direct 
     // access to the vue chart instance is out of scope here (resides LineChart.js).
     // If you try to go the "correct way" and enrich options on render in LineChart.js
@@ -57,7 +57,7 @@ export default {
     if (activeElement.length > 0) {
       const yearFromClick = activeElement[0]._xScale.ticks[activeElement[0]._index]
       const queryFromClick = chartInstance.config.data.datasets[activeElement[0]._datasetIndex].label
-      SearchHelper.handleSearch(queryFromClick, yearFromClick)
+      SearchHelper.handleSearch(queryFromClick, yearFromClick, searchType)
     }
   }
   },

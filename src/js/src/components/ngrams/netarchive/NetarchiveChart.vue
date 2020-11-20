@@ -36,13 +36,18 @@
     computed: {
     ...mapState({
       query: state => state.Ngram.query,
-     datasets: state => state.Ngram.datasets
+     datasets: state => state.Ngram.datasets,
+     searchType:state => state.Ngram.searchType
     })
     },
 
     watch: {
-    datasets: function (newVal) {
+      datasets: function (newVal) {
       this.fillData(newVal)
+      },
+      
+      searchType: function (newVal) {
+        this.options = ChartHelpers.getChartOptions(newVal)
       }
     },
     

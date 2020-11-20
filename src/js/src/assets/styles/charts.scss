@@ -70,9 +70,12 @@
 }
 
 .exportModalTrigger{
-  margin: 10px 330px 10px 0;
-  text-decoration: underline;
+  //margin: 10px 330px 10px 0;
+  border-bottom: 1px solid;
   cursor:pointer;
+  color: var(--main-highlight-color);
+background-color: transparent;
+  
 }
 
 .exportboxContent h1{
@@ -89,4 +92,21 @@
   color: var(--main-highlight-color);
 }
 
+.searchTypeContainer {
+  box-sizing: border-box;
+margin: 0 11rem 0 0;
+display:inline;
+}
+
+.searchChoices{
+  margin-top:10px;
+}
+
+.searchForm.ngram #query  {
+  width: calc(100% - 60px);
+}
+
+.searchForm.ngram #clearSubmit {
+margin-left:70px;
+}
 

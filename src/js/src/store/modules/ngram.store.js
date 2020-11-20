@@ -10,6 +10,7 @@ const initialState = () => ({
   datasetQueries:[],
   datasets:[],
   emptyResult: false,
+  searchType:'text'
 
 })
 
@@ -19,6 +20,9 @@ const actions = {
   setLoadingStatus( {commit}, param) {
     commit('setLoadingStatus', param)
   },
+  setSearchType( {commit}, param) {
+    commit('setSearchType', param)
+  },
   updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
   },
@@ -26,7 +30,7 @@ const actions = {
     this.dispatch('Search/setLoadingStatus', true)
    
     requestService.getNgramNetarchive(params)
-   .then(results => {this.dispatch('Ngram/updateQuery', params), commit('doSearchSuccess', results)}, error =>
+   .then(results => {this.dispatch('Ngram/updateQuery', params.query), commit('doSearchSuccess', results)}, error =>
    commit('doSearchError', error))
   },
   resetState({ commit }) {
@@ -83,6 +87,10 @@ const mutations = {
 
   setLoadingStatus(state, status) {
     state.loading = status
+  },
+  
+  setSearchType(state, type) {
+    state.searchType = type
   },
 
   resetState(state) {

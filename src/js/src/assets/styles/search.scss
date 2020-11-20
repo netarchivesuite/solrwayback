@@ -491,7 +491,7 @@ color:var(--secondary-text-color);
   overflow:hidden;
 }
 
-.wordcloudContainer .wordcloudExplanation input, .domainContentContainer input, .linkGraphContainer input {
+.wordcloudContainer .wordcloudExplanation input, .domainContentContainer input, .linkGraphContainer input, .searchTypeContainer input{
   width:100%;
   border-radius: 0px;
 	border: 1px solid var(--seethrough-black);
