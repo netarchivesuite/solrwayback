@@ -23,12 +23,12 @@
                  v-model="searchType"
                  type="radio"
                  value="text">
-          <label class="label" for="searchTypeRadioOne">Page contents</label>
+          <label class="label" for="searchTypeRadioOne">Text in HTML-pages</label>
           <input id="searchTypeRadioTwo"
                  v-model="searchType"
                  type="radio"
                  value="tags">
-          <label class="label" for="searchTypeRadioTwo">Tags</label>
+          <label class="label" for="searchTypeRadioTwo">HTML-tags in HTML-pages</label>
         </div>
         <span v-show="datasets.length !== 0" class="exportModalTrigger" @click.prevent="toggleExporter()">
           Export graph data
