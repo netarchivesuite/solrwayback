@@ -18,7 +18,7 @@
               @click.prevent="resetState()" />
       <div class="searchChoices">
         <div class="searchTypeContainer contain">
-          <label class="linkGraphLabel label">Search in:</label>
+          <label class="linkGraphLabel label">Search for:</label>
           <input id="searchTypeRadioOne"
                  v-model="searchType"
                  type="radio"
