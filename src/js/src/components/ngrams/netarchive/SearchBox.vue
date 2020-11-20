@@ -4,7 +4,7 @@
       <input id="query"
              v-model="searchQuery"
              type="text"
-             :class="searcBoxClass()"
+             :class="searchType === 'tags' ? searcBoxClass() : ''"
              autofocus
              :placeholder="getPlaceholder()">
       <button id="querySubmit"
@@ -17,6 +17,9 @@
               title="Clear search and results"
               type="button"
               @click.prevent="resetState()" />
+      <div v-if="searcBoxClass() === 'urlNotTrue' && searchType === 'tags'" class="badTagQueryNotice">
+        Remove <span v-if="searchQuery.includes('<')" class="queryErrorColor">&lt;</span><span v-if="searchQuery.includes('>')" class="queryErrorColor">&gt;</span> from tag query
+      </div>
       <div class="searchChoices">
         <div class="searchTypeContainer contain">
           <label class="linkGraphLabel label">Search for:</label>

@@ -110,3 +110,12 @@ display:inline;
 margin-left:70px;
 }
 
+.queryErrorColor {
+  color:red;
+}
+
+.badTagQueryNotice {
+font-weight: bold;
+margin-top: 5px;
+color: var(--secondary-text-color);
+}
