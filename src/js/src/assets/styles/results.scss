@@ -72,7 +72,21 @@
   margin-top:15px;
 }
 
-.SingleEntryAllData .tr { 
+.gephiQueryContainer table {
+  display: table; 
+  margin-top:5px;
+  margin-bottom:15px;
+}
+
+.gephiQueryContainer th {
+  padding-top: 10px;
+	padding-bottom: 10px;
+  color:var(--main-highlight-color);
+  font-weight: bold;
+  background-color: rgba(30,30,30,0.05);
+} 
+
+.SingleEntryAllData .tr, .gephiQueryContainer tr { 
   display: table-row;
 }
 
@@ -80,19 +94,19 @@
   cursor: pointer;
 }
 
-.SingleEntryAllData .td.clickAble:hover { 
+.SingleEntryAllData .td.clickAble:hover, .gephiQueryContainer td:hover { 
   background-color:var(--secondary-highlight-color)
 }
 
-.SingleEntryAllData .tr:nth-child(even) {
+.SingleEntryAllData .tr:nth-child(even), .gephiQueryContainer tr:nth-child(odd) {
   background-color:rgba(30,30,30,0.05);
 }
 
-.SingleEntryAllData .tr:nth-child(odd) {
+.SingleEntryAllData .tr:nth-child(odd), .gephiQueryContainer tr:nth-child(even) {
   background-color:white;
 }
 
-.SingleEntryAllData .td { 
+.SingleEntryAllData .td, .gephiQueryContainer td { 
   display: table-cell;
   min-width:200px;
   padding-top:10px;
@@ -853,6 +867,66 @@ margin-left:40px;
   box-sizing: border-box;
 	overflow-y: scroll;
   background-color: white;
+}
+
+.gephiExportContainer {
+  width: 100%;
+  height: 75%;
+  box-sizing: border-box;
+}
+
+.gephiExportInterface {
+  display:flex;
+}
+
+.gephiExportInterface h3 {
+  color: var(--main-highlight-color);
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.gephiQueryContainer {
+  display: inline-block;
+	width: 50%;
+  height: 100%;
+  padding:15px;
+  box-sizing: border-box;
+  ul {
+	padding-left: 25px;
+  }
+}
+
+
+.gephiQueryContainer textarea {
+  width:100%;
+  min-height:70px;
+}
+
+.gephiExportContainer h3 {
+  margin-bottom:10px;
+}
+
+.gephiQueryContainer button {
+  display:block;
+  margin:auto;
+  position: relative;
+  padding:5px 10px;
+  margin-top:10px;
+  margin-bottom:5px;
+  border-radius: 0px;
+  border:2px solid var(--main-highlight-color);
+  background-color:white;
+  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.35);
+  cursor:pointer;
+}
+
+.gephiGuideContainer {
+	width: 50%;
+  height: 100%;
+  white-space: pre-wrap;
+  display: inline-block;
+  padding:15px;
+  box-sizing: border-box;
 }
 
 .csvExportOptions .csvExportContent {
