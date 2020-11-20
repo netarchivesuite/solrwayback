@@ -6,16 +6,20 @@
       <div class="gpsControls">
         <span>Longitude:</span>
         <input v-model="longitude"
-               placeholder="Longitude">
+               placeholder="Longitude"
+               @keyup.enter="doGeoSearch()">
         <span>Latitude:</span>
         <input v-model="latitude"
-               placeholder="Latitude">
+               placeholder="Latitude"
+               @keyup.enter="doGeoSearch()">
         <span>Radius in KM:</span>
         <input v-model="radius"
-               placeholder="Radius">
+               placeholder="Radius"
+               @keyup.enter="doGeoSearch()">
         <span>Query:</span>
         <input v-model="imgQuery"
-               placeholder="Search term">       
+               placeholder="Search term"
+               @keyup.enter="doGeoSearch()">       
         <button :disabled="longitude === 0 || longitude === '' || latitude === 0 || latitude === ''" class="searchButton" @click="doGeoSearch()">
           Search
         </button>
@@ -70,6 +74,7 @@ export default {
     mapSize:'full',
     imgResults:{},
     imageLayer:null,
+    maxImagesReturned:500
   }),
   computed: {
     latLngRad() {
@@ -90,6 +95,10 @@ export default {
   methods: {
     ...mapActions('Search', {
       setLoadingStatus:'setLoadingStatus'
+    }),
+    ...mapActions('Notifier', {
+      setNotification: 'setNotification'
+     
     }),
     createMap() {
         this.searchMap = L.map('gpsMap', null, { zoomControl: false }).setView([this.latitude, this.longitude], 7)
@@ -118,8 +127,26 @@ export default {
       this.setLoadingStatus(true)
       this.imgResults = {}
       requestService.fireGeoImageSearchRequest(this.imgQuery,this.latitude,this.longitude,this.radius)
-      .then(result => (this.imgResults = result.response, this.setScreenOnSuccessfullResult()),
-            error => (console.log('Error in seaching for images by location.'), this.setLoadingStatus(false)))
+      .then(result => (this.imgResults = result.response, this.checkForResultNumber(result.response.images.length), this.setScreenOnSuccessfullResult()),
+            error => (console.log('Error in seaching for images by location.'),this.setServerSideErrorNotification(), this.setLoadingStatus(false)))
+    },
+    checkForResultNumber(imageNumber) {
+      if(imageNumber >= this.maxImagesReturned) {
+        this.setNotification({
+          	title: 'Max limit images reached',
+            text: 'The maximum of 500 images has been found. Decrease radius to narrow the search further.',
+            type: 'error',
+            timeout: true
+          })
+      }
+    },
+    setServerSideErrorNotification() {
+      this.setNotification({
+          	title: 'We are so sorry!',
+            text: 'Something went wrong when searching - If this persists, contact an administrator.',
+            type: 'error',
+            timeout: false
+      })
     },
     setScreenOnSuccessfullResult() {
       this.mapSize = 'half'
