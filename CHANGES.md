@@ -1,3 +1,6 @@
+4.0.3
+-----
+
 
 4.0.2
 -----
@@ -10,6 +13,7 @@ Facet counts are formatted to be more readable for large numbers.(thousand delim
 Data fields on records new listed in alphabetical order.
 Export to warc file also has option to export to a zipped warc.gz file.(still waiting frontend enabling)
 Fixed encoding bug for playback (html content charset) that was introduced in 4.0.1 due to switch to chaining inputstreams.
+Backend + GUI refactoring
 
 Added optional proprerty to solrwaybackweb.properties. Default value is 1998 is not set. Start year of the collection is used in several visualizations.
 
