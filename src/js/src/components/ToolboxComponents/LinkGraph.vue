@@ -79,7 +79,6 @@ export default {
       ingoing:false,
       loading:false,
       domain:'',
-      highlighted:false
     }
   },
   mounted () {
@@ -129,10 +128,11 @@ export default {
                 d3.select(node).select('circle').transition()
                   .duration(300)
                   .attr('r', 15)
-                  .style('fill', ' #002E70')
-              }
+                  .style('fill', '#002E70')
+        }
     },
-    highlightNode(node) {
+    highlightNode(node, main) {
+      d3.select(node).attr('data-highlight', main)
       d3.select(node).select('text').transition()
                 .duration(300)
                 .attr('x', 10)
@@ -144,10 +144,11 @@ export default {
                 d3.select(node).select('circle').transition()
                   .duration(300)
                   .attr('r', 16)
-                  .style('fill', ' #002E70')
+                  .style('fill', '#002E70')
               }
     },
     normalNode(node) {
+      d3.select(node).attr('data-highlight', 'none')
       d3.select(node).select('text').transition()
                 .duration(300)
                 .attr('x', null)
@@ -163,6 +164,7 @@ export default {
                 }
     },
     irrelevantNode(node) {
+      d3.select(node).attr('data-highlight', 'irrelevant')
       d3.select(node).select('text').transition()
                 .duration(300)
                 .attr('x', null)
@@ -190,7 +192,6 @@ export default {
       }))
       .on('click', function() {
         if(event.defaultPrevented) { return }
-        if(_this.highlighted === true) {
           result.links.forEach((item, index) => {
             let point1 = d3.select('#point-' + item.target.group)
             let point2 = d3.select('#point-' + item.source.group)
@@ -199,7 +200,6 @@ export default {
             _this.normalNode(point2[0][0])
             link.attr('class', 'link')
           })
-        }
       })
       .append('g')
 
@@ -243,19 +243,20 @@ export default {
           .attr('class', 'node')
           .attr('id', function(d) { return 'point-' + d.group })
           .attr('data-name', function(d) { return d.name })
+          .attr('data-highlight', 'none')
           .call(startDrag)
           .on('mouseover', function() {
-             _this.highlighted ? null : _this.mouseoverNode(this)
+            d3.select(this).attr('data-highlight') === 'none' ? _this.mouseoverNode(this) : null
           })
           .on('mouseout', function() {
-             _this.highlighted ? null : _this.normalNode(this)
+              d3.select(this).attr('data-highlight') === 'none' ? _this.normalNode(this) : null
           })
           .on('click', function() {
+            let prime = d3.select(this)[0][0].dataset.name
+            let highlight
+            d3.select(this).attr('data-highlight') !== prime ? highlight = true : highlight = false
             if(event.defaultPrevented) { return }
             event.stopPropagation()
-            let highlight = d3.select(this).select('circle').attr('r') === '16'
-            highlight ? _this.highlighted = false : _this.highlighted = true
-            let prime = d3.select(this)[0][0].dataset.name
             let connected = []
             let nonConnected = []
             result.links.forEach((item, index) => {
@@ -274,17 +275,17 @@ export default {
               let point1 = d3.select('#point-' + item.target.group)
               let point2 = d3.select('#point-' + item.source.group)
               let link = d3.select('#link-' + item.number)
-              highlight ? _this.normalNode(point1[0][0]) : _this.irrelevantNode(point1[0][0])
-              highlight ? _this.normalNode(point2[0][0]) : _this.irrelevantNode(point2[0][0])
-              highlight ? link.attr('class', 'link') : link.attr('class', 'link inactive')
+              highlight ? _this.irrelevantNode(point1[0][0]) : _this.normalNode(point1[0][0])
+              highlight ? _this.irrelevantNode(point2[0][0]) : _this.normalNode(point2[0][0])
+              highlight ? link.attr('class', 'link inactive') : link.attr('class', 'link')
             })
             connected.forEach((item) => {
               let point1 = d3.select('#point-' + item.target.group)
               let point2 = d3.select('#point-' + item.source.group)
               let link = d3.select('#link-' + item.number)
-              highlight ? _this.normalNode(point1[0][0]) : _this.highlightNode(point1[0][0])
-              highlight ? _this.normalNode(point2[0][0]) : _this.highlightNode(point2[0][0])
-              highlight ? link.attr('class', 'link') : link.attr('class', 'link')
+              highlight ? _this.highlightNode(point1[0][0], prime) : _this.normalNode(point1[0][0])
+              highlight ? _this.highlightNode(point2[0][0], prime) : _this.normalNode(point2[0][0])
+              link.attr('class', 'link')
             })
           })
           .on('dblclick', function() {
@@ -292,7 +293,6 @@ export default {
             document.getElementById('graphContainer').innerHTML = ''
             _this.loading = true
             _this.domain = domain
-            _this.highlighted = false
             requestService.getLinkGraph(domain,_this.linkNumber, _this.ingoing, _this.sliderValues[0], _this.sliderValues[1])
             .then(result => (_this.buildSvg(result)), error => console.log('Error, no link graph created.'))
           })
