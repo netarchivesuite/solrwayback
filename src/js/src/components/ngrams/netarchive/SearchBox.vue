@@ -4,6 +4,7 @@
       <input id="query"
              v-model="searchQuery"
              type="text"
+             :class="searcBoxClass()"
              autofocus
              placeholder="Enter search term">
       <button id="querySubmit"
@@ -102,7 +103,10 @@ export default {
     },
     toggleExporter() {
        this.showExporter = !this.showExporter
-    }
+    },
+    searcBoxClass() {
+      return this.searchQuery.includes('<') || this.searchQuery.includes('>') ?  'urlNotTrue' : ''
+    },
     
   }
   
