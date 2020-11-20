@@ -35,10 +35,12 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
+import dk.kb.netarchivesuite.solrwayback.service.dto.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
+import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreviewYearsInfo;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
@@ -171,15 +173,33 @@ public class SolrWaybackResourceWeb {
     
     @GET
     @Path("/pagepreviews")
-    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-    public ArrayList<PagePreview> search(@QueryParam("url") String url) throws SolrWaybackServiceException {
+    @Produces(MediaType.APPLICATION_JSON)
+    public ArrayList<PagePreview> pagepreviews(@QueryParam("year") int year,@QueryParam("url") String url) throws SolrWaybackServiceException {
       try {                    
-        return Facade.getPagePreviewsForUrl(url);
+        if(year == 0) {
+          throw new InvalidArgumentServiceException("Year parameter is missing.");
+        }
+        if(url==null) {
+          throw new InvalidArgumentServiceException("Url parameter is missing.");
+        }
+        
+        return Facade.getPagePreviewsForUrl(year,url);
       } catch (Exception e) {           
         throw handleServiceExceptions(e);
       }
     }
 
+    
+    @GET
+    @Path("/pagepreviewsyearinfo")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ArrayList<FacetCount> pagePreviewYearInfo(@QueryParam("url") String url) throws SolrWaybackServiceException {
+      try {                    
+        return Facade.getPagePreviewsYearInfo(url);
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
 
     @GET
     @Path("/help/about")

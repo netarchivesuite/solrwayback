@@ -9,7 +9,7 @@ import java.util.TreeSet;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
+import dk.kb.netarchivesuite.solrwayback.service.dto.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 
 public class DomainStatisticsForDomainParser {

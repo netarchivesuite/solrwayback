@@ -30,9 +30,10 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.service.dto.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
-import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
+
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.WaybackStatistics;
 
@@ -98,7 +99,7 @@ public class SolrClientTest {
     NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();
 
 
-    ArrayList<IndexDoc> indexDocs = solr.getHarvestPreviewsForUrl("http://denstoredanske.dk/");                 
+    ArrayList<IndexDoc> indexDocs = solr.getHarvestPreviewsForUrl(2019,"http://denstoredanske.dk/");                 
 
     System.out.println(indexDocs.size());
   }

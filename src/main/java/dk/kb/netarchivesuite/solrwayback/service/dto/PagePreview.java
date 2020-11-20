@@ -1,8 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.service.dto;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
-@XmlRootElement
 public class PagePreview {
 
   private String pagePreviewUrl;

@@ -31,8 +31,10 @@ import dk.kb.netarchivesuite.solrwayback.parsers.NormalisationWWWremove;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
+import dk.kb.netarchivesuite.solrwayback.service.dto.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
+import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreviewYearsInfo;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -376,7 +378,7 @@ public class NetarchiveSolrClient {
         return b.toString();
     }
 
-    public ArrayList<IndexDoc> getHarvestPreviewsForUrl(String url) throws Exception {
+    public ArrayList<IndexDoc> getHarvestPreviewsForUrl(int year,String url) throws Exception {
 
         String urlNormFixed = normalizeUrl(url);
         urlNormFixed = urlNormFixed.replace("\\", "\\\\");
@@ -385,6 +387,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
         solrQuery.add("fl", "id, crawl_date,source_file_path, source_file, source_file_offset, score");
         solrQuery.add("sort", "crawl_date asc");
+        solrQuery.add("fq","crawl_year:"+year);
         solrQuery.setRows(1000000);
 
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
@@ -394,6 +397,34 @@ public class NetarchiveSolrClient {
         return indexDocs;
     }
 
+    
+    public ArrayList<FacetCount> getPagePreviewsYearInfo(String url) throws Exception {
+
+      String urlNormFixed = normalizeUrl(url);
+      urlNormFixed = urlNormFixed.replace("\\", "\\\\");
+      SolrQuery solrQuery = new SolrQuery();
+      solrQuery = new SolrQuery("(url_norm:\"" + urlNormFixed + "\"");
+     
+      solrQuery.set("facet", "true");
+      solrQuery.add("facet.field", "crawl_year");
+      solrQuery.add("facet.limit", "100"); //All years...
+      solrQuery.add("fl","id");
+      solrQuery.setRows(0);
+      QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+      ArrayList<FacetCount> facetList = new ArrayList<FacetCount>();
+      FacetField facet = rsp.getFacetField("crawl_year");
+      for (Count c : facet.getValues()) {
+          FacetCount fc = new FacetCount();
+          fc.setValue(c.getName());
+          fc.setCount(c.getCount());
+          facetList.add(fc);
+      }
+      
+      
+      return facetList;
+  }
+    
+    
     public IndexDoc getArcEntry(String source_file_path, long offset) throws Exception {
 
         SolrQuery solrQuery = new SolrQuery();
