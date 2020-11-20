@@ -6,8 +6,21 @@
     <div class="gephiExportInterface">
       <div class="gephiQueryContainer">
         <h3>Query</h3>
-        <textarea />
-        <button>Generate gephi export</button>
+        <textarea id="gephiQuery"
+                  v-model="query"
+                  type="text"
+                  rows="1"
+                  autofocus
+
+                  placeholder="Enter query"
+                  @keydown.enter.prevent="getGephiDataset()"
+                  @input="$_getSizeOfTextArea('gephiQuery')" />
+        <br><br>
+        <a :href="getGephiDataset()">
+          Generate gephi export
+        </a>
+        <br>
+        <br>
         <div>
           <h3>Query examples</h3>
           <table border="1">
@@ -93,16 +106,24 @@
 
 <script>
 
+import configs from '../../configs'
+import SearchboxUtils from '../../mixins/SearchboxUtils'
+
 export default {
   name: 'GephiExport',
+  mixins: [SearchboxUtils],
   data() {
     return {
+      query:''
     }
   },
-  mounted () {
-
-  },
   methods: {
+    returnExportUrl() {
+      return configs.playbackConfig.solrwaybackBaseURL + 'services/export/'
+    },
+    getGephiDataset() {
+      return this.returnExportUrl() + 'linkgraph?query=' + encodeURIComponent(this.query)
+    }
   }
 }
 </script>

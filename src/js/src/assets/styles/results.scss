@@ -114,6 +114,11 @@
   padding-left:5px;
 }
 
+.gephiQueryContainer td {
+  word-break: break-word;
+	min-width: 0;
+}
+
 .SingleEntryAllData .td.content {
 	display: block;
 	overflow: hidden;
@@ -900,6 +905,25 @@ margin-left:40px;
 .gephiQueryContainer textarea {
   width:100%;
   min-height:70px;
+  margin: 0px;
+	padding-top: 12px;
+	padding-bottom: 12px;
+	font-family: Trebuchet MS,Ubuntu;
+	border-radius: 0px;
+	border: 1px solid var(--seethrough-black);
+	box-sizing: border-box;
+	padding-left: 15px;
+	font-size: 120%;
+	color: var(--main-highlight-color);
+	height: 50px;
+	box-shadow: inset 0 0 7px var(--seethrough-black);
+	padding-right: 15px;
+	display: inline-block;
+	text-overflow: ellipsis;
+	word-break: break-word;
+	white-space: pre-wrap;
+  overflow-y: hidden;
+  resize:none;
 }
 
 .gephiExportContainer h3 {
