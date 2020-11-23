@@ -77,7 +77,7 @@
           </ul>
           <br>
           <p class="highlightText">
-            Examples of linkgraphs create with SolrWayback, Gephi and Graph Presenter can be seen at <a href="https://labs.statsbiblioteket.dk/linkgraph/">linkgraphs examples from the Danish Netarchive</a>.
+            Examples of linkgraphs create with SolrWayback, Gephi and Graph Presenter can be seen at <a target="_blank" href="https://labs.statsbiblioteket.dk/linkgraph/">linkgraphs examples from the Danish Netarchive</a>.
           </p>
         </div>
       </div>
@@ -100,7 +100,7 @@
         <br>
         <p><span class="highlightText">8)</span> To export click 'Export SVG/PDF/PNG'.</p>
         <br>
-        <p><span class="highlightText">9)</span> Use <a href="https://github.com/statsbiblioteket/graph_presenter">Graph Presenter</a> to convert the SVG into an interactive zoomable image.</p>
+        <p><span class="highlightText">9)</span> Use <a target="_blank" href="https://github.com/statsbiblioteket/graph_presenter">Graph Presenter</a> to convert the SVG into an interactive zoomable image.</p>
         <br>
         <p>
           Note:
