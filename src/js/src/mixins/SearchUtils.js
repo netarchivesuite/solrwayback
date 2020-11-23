@@ -71,7 +71,7 @@ export default {
       this.updatePreNormalizedQuery(null)
       this.clearResults()
       !pagnation ? this.clearFacets() : null
-      this.updateQuery(futureQuery)
+      //this.updateQuery(futureQuery)
     },
     // Disect the query for URL searching
     DisectQueryForNewUrlSearch(futureQuery) {

@@ -14,7 +14,7 @@
                   ? decideActiveClassesForQueryBox()
                   : ''"
                 :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'"
-                @keydown.enter.prevent="launchNewSearch()"
+                @keydown.enter="checkKeyPresses()"
                 @input="getSizeOfTextArea()" />
       <button type="button" class="searchGuidelinesButton" @click.prevent="openSelectedModal('guidelines')">
         ?
@@ -134,6 +134,8 @@ export default {
         //If this is resulted by a backbutton going to the first time the user landed on the page, we want a clean slate.
         this.resetSearchState()
       }
+      document.getElementById('query').value = this.futureQuery
+      this.getSizeOfTextArea()
   },
   
   methods: {
@@ -152,10 +154,12 @@ export default {
       updateCurrentModal:'updateCurrentModal'
     }),
     getSizeOfTextArea() {
-      console.log('we resize')
       let textarea = document.getElementById('query')
       textarea.style.height = '1px'
       textarea.style.height = (textarea.scrollHeight) + 'px'
+    },
+    checkKeyPresses() {
+      !event.shiftKey ? (event.preventDefault(),this.launchNewSearch()) : null
     },
     selectSearchMethod(selected) {
       if(selected === 'imgSearch') {
