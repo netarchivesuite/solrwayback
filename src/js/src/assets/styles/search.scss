@@ -108,6 +108,10 @@ color:var(--secondary-text-color);
   resize: none;
 }
 
+.searchForm .ngramQuery {
+  width: calc(100% - 60px) !important;
+}
+
 .searchGuidelinesButton {
   height:50px;
   box-sizing: border-box;

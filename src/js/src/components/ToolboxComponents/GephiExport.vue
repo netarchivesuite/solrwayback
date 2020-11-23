@@ -16,7 +16,7 @@
                   @keydown.enter.prevent="getGephiDataset()"
                   @input="$_getSizeOfTextArea('gephiQuery')" />
         <br><br>
-        <a :href="getGephiDataset()">
+        <a class="gephiExportLink" :href="getGephiDataset()">
           Generate gephi export
         </a>
         <br>
@@ -68,6 +68,11 @@
           <h3>
             Limitations
           </h3>
+          <p class="highlightText">
+            Examples of linkgraphs create with SolrWayback, Gephi and Graph Presenter can be seen here
+            Linkgraphs examples from <a href="https://labs.statsbiblioteket.dk/linkgraph/">the Danish Netarchive</a>.
+          </p>
+          <br>
           <ul>
             <li>Extraction will stop after 1 million different domains has been extrated.</li>
             <li>Only extract links from 'slashpage' of a given domain: etc http://test.dk/ or http://test.dk/index.html</li>
@@ -80,8 +85,8 @@
         <h3>Gephi quick guide</h3>
         <p><span class="highlightText">1)</span> File -> Open -> (select csv file) -> next -> finished -> ok.</p>
         <br>
-        <p><span class="highlightText">2)</span> overview tab (default). See #nodes in top right corner.</p>
-        <p>If more than 10.000 nodes, consider: filter tab (right), open topology, drag 'giant compontent' down to filters. Click 'filter'.</p>
+        <p><span class="highlightText">2)</span> Overview tab (default). See #nodes in top right corner.</p>
+        <p>If more than 10.000 nodes, consider: filter tab (right), open topology, drag 'giant component' down to filters. Click 'filter'.</p>
         <br>
         <p><span class="highlightText">3)</span> Select layout -> Yifan Hu. Click 'Run' and wait. Repeat and clicking 'Run' until graph looks 'nice'. This can take hours for graphs with 1 million nodes.</p>
         <br>
@@ -94,6 +99,8 @@
         <p><span class="highlightText">7)</span> Click preview tab (top), click "Refresh".</p>
         <br>
         <p><span class="highlightText">8)</span> To export click 'Export SVG/PDF/PNG'.</p>
+        <br>
+        <p><span class="highlightText">9)</span> Use <a href="https://github.com/statsbiblioteket/graph_presenter">Graph Presenter</a> to convert the SVG into an interactive zoomable image.</p>
         <br>
         <p>
           Note:

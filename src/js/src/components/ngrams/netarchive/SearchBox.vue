@@ -3,6 +3,7 @@
     <form class="searchForm" @submit.prevent="submitSearch">
       <input id="query"
              v-model="searchQuery"
+             class="ngramQuery"
              type="text"
              autofocus
              placeholder="Enter search term">
