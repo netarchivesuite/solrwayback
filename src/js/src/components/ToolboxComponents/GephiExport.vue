@@ -77,8 +77,7 @@
           </ul>
           <br>
           <p class="highlightText">
-            Examples of linkgraphs create with SolrWayback, Gephi and Graph Presenter can be seen here
-            Linkgraphs examples from <a href="https://labs.statsbiblioteket.dk/linkgraph/">the Danish Netarchive</a>.
+            Examples of linkgraphs create with SolrWayback, Gephi and Graph Presenter can be seen at <a href="https://labs.statsbiblioteket.dk/linkgraph/">linkgraphs examples from the Danish Netarchive</a>.
           </p>
         </div>
       </div>
