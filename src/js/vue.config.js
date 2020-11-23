@@ -107,6 +107,11 @@ module.exports = {
         pathRewrite: { '^/services/frontend/smurf/text/': '' },
         changeOrigin: true
       },
+      '^/services/frontend/smurf/tags/': {
+        target: 'http://localhost:8080/solrwayback/services/frontend/smurf/tags/',
+        pathRewrite: { '^/services/frontend/smurf/tags/': '' },
+        changeOrigin: true
+      },
       '^/services/frontend/images/search/location/': {
         target: 'http://localhost:8080/solrwayback/services/frontend/images/search/location/',
         pathRewrite: { '^/services/frontend/images/search/location/': '' },
@@ -127,7 +132,11 @@ module.exports = {
         pathRewrite: { '^/services/frontend/tools/linkgraph/': '' },
         changeOrigin: true
       },
-      
+      '^/services/export/linkgraph/': {
+        target: 'http://localhost:8080/solrwayback/services/export/linkgraph',
+        pathRewrite: { '^/services/export/linkgraph/': '' },
+        changeOrigin: true
+      },
     }
   },
   publicPath: process.env.NODE_ENV === 'production'

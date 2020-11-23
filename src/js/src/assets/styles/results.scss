@@ -72,7 +72,21 @@
   margin-top:15px;
 }
 
-.SingleEntryAllData .tr { 
+.gephiQueryContainer table {
+  display: table; 
+  margin-top:5px;
+  margin-bottom:15px;
+}
+
+.gephiQueryContainer th {
+  padding-top: 10px;
+	padding-bottom: 10px;
+  color:var(--main-highlight-color);
+  font-weight: bold;
+  background-color: rgba(30,30,30,0.05);
+} 
+
+.SingleEntryAllData .tr, .gephiQueryContainer tr { 
   display: table-row;
 }
 
@@ -80,24 +94,29 @@
   cursor: pointer;
 }
 
-.SingleEntryAllData .td.clickAble:hover { 
+.SingleEntryAllData .td.clickAble:hover, .gephiQueryContainer td:hover { 
   background-color:var(--secondary-highlight-color)
 }
 
-.SingleEntryAllData .tr:nth-child(even) {
+.SingleEntryAllData .tr:nth-child(even), .gephiQueryContainer tr:nth-child(odd) {
   background-color:rgba(30,30,30,0.05);
 }
 
-.SingleEntryAllData .tr:nth-child(odd) {
+.SingleEntryAllData .tr:nth-child(odd), .gephiQueryContainer tr:nth-child(even) {
   background-color:white;
 }
 
-.SingleEntryAllData .td { 
+.SingleEntryAllData .td, .gephiQueryContainer td { 
   display: table-cell;
   min-width:200px;
   padding-top:10px;
   padding-bottom:10px;
   padding-left:5px;
+}
+
+.gephiQueryContainer td {
+  word-break: break-word;
+	min-width: 0;
 }
 
 .SingleEntryAllData .td.content {
@@ -855,6 +874,85 @@ margin-left:40px;
   background-color: white;
 }
 
+.gephiExportContainer {
+  width: 100%;
+  height: 75%;
+  box-sizing: border-box;
+}
+
+.gephiExportInterface {
+  display:flex;
+}
+
+.gephiExportInterface h3 {
+  color: var(--main-highlight-color);
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.gephiQueryContainer {
+  display: inline-block;
+	width: 50%;
+  height: 100%;
+  padding:15px;
+  box-sizing: border-box;
+  ul {
+	padding-left: 25px;
+  }
+}
+
+
+.gephiQueryContainer textarea {
+  width:100%;
+  min-height:70px;
+  margin: 0px;
+	padding-top: 12px;
+	padding-bottom: 12px;
+	font-family: Trebuchet MS,Ubuntu;
+	border-radius: 0px;
+	border: 1px solid var(--seethrough-black);
+	box-sizing: border-box;
+	padding-left: 15px;
+	font-size: 120%;
+	color: var(--main-highlight-color);
+	height: 50px;
+	box-shadow: inset 0 0 7px var(--seethrough-black);
+	padding-right: 15px;
+	display: inline-block;
+	text-overflow: ellipsis;
+	word-break: break-word;
+	white-space: pre-wrap;
+  overflow-y: hidden;
+  resize:none;
+}
+
+.gephiExportContainer h3 {
+  margin-bottom:10px;
+}
+
+.gephiQueryContainer button {
+  display:block;
+  margin:auto;
+  position: relative;
+  padding:5px 10px;
+  margin-top:10px;
+  margin-bottom:5px;
+  border-radius: 0px;
+  border:2px solid var(--main-highlight-color);
+  background-color:white;
+  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.35);
+  cursor:pointer;
+}
+
+.gephiGuideContainer {
+	width: 50%;
+  height: 100%;
+  white-space: pre-wrap;
+  display: inline-block;
+  padding:15px;
+  box-sizing: border-box;
+}
+
 .csvExportOptions .csvExportContent {
   top:0px;
   left:0px;
@@ -1237,4 +1335,27 @@ margin-left:40px;
 
 .vue-slider-rail {
   background-color: var(--secondary-highlight-color) !important;
+}
+
+.gephiExportLink {
+  display:block;
+  margin:auto;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+	border: 2px solid var(--secondary-bg-color);
+	border-radius: 0;
+	background-color: white;
+	color: var(--secondary-bg-color);
+	padding: 5px 10px 5px 10px;
+	box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.25);
+	cursor: pointer;
+	box-sizing: border-box;
+  transition: all 0.2s linear 0s;
+  max-width:300px;
+}
+
+.gephiExportLink:hover {
+  background-color:var(--secondary-bg-color);
+  color:white;
 }

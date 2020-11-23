@@ -15,7 +15,7 @@
                   : ''"
                 :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'"
                 @keydown.enter="checkKeyPresses()"
-                @input="getSizeOfTextArea()" />
+                @input="$_getSizeOfTextArea('query')" />
       <button type="button" class="searchGuidelinesButton" @click.prevent="openSelectedModal('guidelines')">
         ?
       </button>
@@ -77,6 +77,7 @@
 import { mapState, mapActions } from 'vuex'
 import AppliedSearchFacets from './AppliedSearchFacets.vue'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
+import SearchboxUtils from './../mixins/SearchboxUtils'
 import SearchUtils from './../mixins/SearchUtils'
 import SearchUploadFile from './SearchUploadFile.vue'
 import Toolbox from './Toolbox.vue'
@@ -87,7 +88,7 @@ export default {
     SearchUploadFile,
     Toolbox
   },
-  mixins: [HistoryRoutingUtils, SearchUtils],
+  mixins: [HistoryRoutingUtils, SearchUtils, SearchboxUtils],
   data () {
     return {    
       futureQuery:'',
@@ -135,7 +136,7 @@ export default {
         this.resetSearchState()
       }
       document.getElementById('query').value = this.futureQuery
-      this.getSizeOfTextArea()
+      this.$_getSizeOfTextArea('query')
   },
   
   methods: {
@@ -153,11 +154,6 @@ export default {
       updateShowModal:'updateShowModal',
       updateCurrentModal:'updateCurrentModal'
     }),
-    getSizeOfTextArea() {
-      let textarea = document.getElementById('query')
-      textarea.style.height = '1px'
-      textarea.style.height = (textarea.scrollHeight) + 'px'
-    },
     checkKeyPresses() {
       !event.shiftKey ? (event.preventDefault(),this.launchNewSearch()) : null
     },

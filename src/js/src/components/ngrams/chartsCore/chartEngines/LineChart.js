@@ -21,6 +21,12 @@ export default {
     this.renderChart(this.chartData,  this.options)
   },
 
+  watch: {
+    options () {
+       this.renderChart(this.chartData, this.options)
+    }
+  },
+
   beforeDestroy() {
     this._data._chart.destroy()
 },

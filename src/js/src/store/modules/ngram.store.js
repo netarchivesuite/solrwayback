@@ -10,6 +10,7 @@ const initialState = () => ({
   datasetQueries:[],
   datasets:[],
   emptyResult: false,
+  searchType:'text'
 
 })
 
@@ -19,6 +20,9 @@ const actions = {
   setLoadingStatus( {commit}, param) {
     commit('setLoadingStatus', param)
   },
+  setSearchType( {commit}, param) {
+    commit('setSearchType', param)
+  },
   updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
   },
@@ -26,7 +30,7 @@ const actions = {
     this.dispatch('Search/setLoadingStatus', true)
    
     requestService.getNgramNetarchive(params)
-   .then(results => {this.dispatch('Ngram/updateQuery', params), commit('doSearchSuccess', results)}, error =>
+   .then(results => {this.dispatch('Ngram/updateQuery', params.query), commit('doSearchSuccess', results)}, error =>
    commit('doSearchError', error))
   },
   resetState({ commit }) {
@@ -70,6 +74,15 @@ const mutations = {
   },
 
   doSearchError(state, message) {
+    if (message.response.status === 400 && message.response.data.startsWith('Tag syntax not accepted')) {
+      this.dispatch('Notifier/setNotification', {
+        title: 'We are so sorry!',
+        text: 'Please remove all < and > from your query and try again',
+        srvMessage: message.response.data,
+        type: 'error',
+        timeout: false
+      })
+    } else {
     this.dispatch('Notifier/setNotification', {
         title: 'We are so sorry!',
         text: 'Something went wrong with your search - please try again',
@@ -77,12 +90,16 @@ const mutations = {
         type: 'error',
         timeout: false
       })
+    }
       this.dispatch('Search/setLoadingStatus', false)
-  
   },
 
   setLoadingStatus(state, status) {
     state.loading = status
+  },
+  
+  setSearchType(state, type) {
+    state.searchType = type
   },
 
   resetState(state) {

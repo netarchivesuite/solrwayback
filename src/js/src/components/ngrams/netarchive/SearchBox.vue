@@ -1,11 +1,16 @@
 <template>
   <div class="searchBoxContainer">
-    <form class="searchForm" @submit.prevent="submitSearch">
+    <div v-if="searcBoxClass() === 'urlNotTrue' && searchType === 'tags'" class="badTagQueryNotice">
+      You don't need <span v-if="searchQuery.includes('<')" class="queryErrorColor">&lt;</span><span v-if="searchQuery.includes('>')" class="queryErrorColor">&gt;</span> when searching for tags
+    </div>
+    <form class="searchForm ngram" @submit.prevent="submitSearch">
       <input id="query"
              v-model="searchQuery"
+             class="ngramQuery"
              type="text"
+             :class="searchType === 'tags' ? searcBoxClass() : ''"
              autofocus
-             placeholder="Enter search term">
+             :placeholder="getPlaceholder()">
       <button id="querySubmit"
               title="Search"
               type="submit">
@@ -16,9 +21,24 @@
               title="Clear search and results"
               type="button"
               @click.prevent="resetState()" />
-      <div v-show="datasets.length !== 0" class="exportModalTrigger" @click.prevent="toggleExporter()">
-        Export graph data
-      </div>
+      <div class="searchChoices">
+        <div class="searchTypeContainer contain">
+          <label class="linkGraphLabel label">Search for:</label>
+          <input id="searchTypeRadioOne"
+                 v-model="searchType"
+                 type="radio"
+                 value="text">
+          <label class="label" for="searchTypeRadioOne">Text in HTML-pages</label>
+          <input id="searchTypeRadioTwo"
+                 v-model="searchType"
+                 type="radio"
+                 value="tags">
+          <label class="label" for="searchTypeRadioTwo">HTML-tags in HTML-pages</label>
+        </div>
+        <span v-show="datasets.length !== 0" class="exportModalTrigger" @click.prevent="toggleExporter()">
+          Export graph data
+        </span>
+      </div> 
     </form>
     <exporter v-if="showExporter" @close-exporter="toggleExporter()" />
     <div v-if="searchQuery === '' || datasets.length === 0">
@@ -50,7 +70,8 @@ export default {
   data () {
     return {    
         searchQuery:'',
-        showExporter:false
+        showExporter:false,
+        searchType:'text'
     }
   },
   
@@ -60,6 +81,7 @@ export default {
      datasets: state => state.Ngram.datasets,
      loading: state => state.Ngram.loading,
      datasetQueries: state => state.Ngram.datasetQueries
+    
     })
   },
   
@@ -67,6 +89,11 @@ export default {
     query: function (val) {
       this.searchQuery  = val
     },
+    
+    searchType: function (val){
+      this.resetSearchState()
+      this.setSearchType(val)
+    }
   },
 
   beforeDestroy() {
@@ -76,7 +103,8 @@ export default {
   methods: {
     ...mapActions('Ngram', {
       resetSearchState:'resetState',
-      doSearch:'doSearch'
+      doSearch:'doSearch',
+      setSearchType:'setSearchType'
     }),
 
     ...mapActions('Notifier', {
@@ -93,15 +121,31 @@ export default {
             timeout: false
           })
       } else {
-          this.doSearch(this.searchQuery)
+          if (this.searchType === 'tags') {
+            this.rinseQuery()
+          }
+          this.doSearch({query:this.searchQuery, searchType:this.searchType})
       }
+    },
+
+    getPlaceholder() {
+      return  this.searchType === 'tags' ? 'Search for a HTML tag without < >' : 'Enter search term'
     },
 
     resetState() {
       this.resetSearchState()
     },
+  
     toggleExporter() {
        this.showExporter = !this.showExporter
+    },
+    searcBoxClass() {
+      return this.searchQuery.includes('<') || this.searchQuery.includes('>') ?  'urlNotTrue' : ''
+    },
+
+    rinseQuery() {
+      this.searchQuery = this.searchQuery.replace(/[<>]/g, '')
+
     }
     
   }

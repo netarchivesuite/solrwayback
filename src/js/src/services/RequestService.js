@@ -190,8 +190,12 @@ function getDomainStatistics(domain) {
   })
 }
 
-function getNgramNetarchive(query){
-  const url = `services/frontend/smurf/text/?q=${encodeURIComponent(query)}&startyear=${APP_CONFIGS.visualizations.ngram.startYear}`
+function getNgramNetarchive(params){
+  let url
+  params.searchType ==='tags' ? 
+  url = `services/frontend/smurf/tags/?tag=${encodeURIComponent(params.query)}&startyear=${APP_CONFIGS.visualizations.ngram.startYear}`
+  :
+  url = `services/frontend/smurf/text/?q=${encodeURIComponent(params.query)}&startyear=${APP_CONFIGS.visualizations.ngram.startYear}`
   return axios.get(url).then(response => {
     return response.data
   }).catch(error => {
