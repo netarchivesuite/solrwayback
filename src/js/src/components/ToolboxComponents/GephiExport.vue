@@ -68,10 +68,6 @@
           <h3>
             Limitations
           </h3>
-          <p class="highlightText">
-            Examples of linkgraphs create with SolrWayback, Gephi and Graph Presenter can be seen here
-            Linkgraphs examples from <a href="https://labs.statsbiblioteket.dk/linkgraph/">the Danish Netarchive</a>.
-          </p>
           <br>
           <ul>
             <li>Extraction will stop after 1 million different domains has been extrated.</li>
@@ -79,6 +75,11 @@
             <li>Only extract links once from a domain, will skip later hits from the same domain</li>
             <li>This filter is added to the query: content_type_norm:html AND links_domains:* AND url_type:slashpage</li>
           </ul>
+          <br>
+          <p class="highlightText">
+            Examples of linkgraphs create with SolrWayback, Gephi and Graph Presenter can be seen here
+            Linkgraphs examples from <a href="https://labs.statsbiblioteket.dk/linkgraph/">the Danish Netarchive</a>.
+          </p>
         </div>
       </div>
       <div class="gephiGuideContainer">
