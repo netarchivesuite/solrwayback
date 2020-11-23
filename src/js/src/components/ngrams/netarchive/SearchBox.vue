@@ -1,5 +1,9 @@
 <template>
   <div class="searchBoxContainer">
+    <div v-if="searcBoxClass() === 'urlNotTrue' && searchType === 'tags'" class="badTagQueryNotice">
+      You don't need <span v-if="searchQuery.includes('<')" class="queryErrorColor">&lt;</span><span v-if="searchQuery.includes('>')" class="queryErrorColor">&gt;</span> when searching for tags
+    </div>
+     
     <form class="searchForm ngram" @submit.prevent="submitSearch">
       <input id="query"
              v-model="searchQuery"
@@ -17,9 +21,6 @@
               title="Clear search and results"
               type="button"
               @click.prevent="resetState()" />
-      <div v-if="searcBoxClass() === 'urlNotTrue' && searchType === 'tags'" class="badTagQueryNotice">
-        Remove <span v-if="searchQuery.includes('<')" class="queryErrorColor">&lt;</span><span v-if="searchQuery.includes('>')" class="queryErrorColor">&gt;</span> from tag query
-      </div>
       <div class="searchChoices">
         <div class="searchTypeContainer contain">
           <label class="linkGraphLabel label">Search for:</label>
@@ -120,6 +121,9 @@ export default {
             timeout: false
           })
       } else {
+          if (this.searchType === 'tags') {
+            this.rinseQuery()
+          }
           this.doSearch({query:this.searchQuery, searchType:this.searchType})
       }
     },
@@ -138,6 +142,11 @@ export default {
     searcBoxClass() {
       return this.searchQuery.includes('<') || this.searchQuery.includes('>') ?  'urlNotTrue' : ''
     },
+
+    rinseQuery() {
+      this.searchQuery = this.searchQuery.replace(/[<>]/g, '')
+
+    }
     
   }
   

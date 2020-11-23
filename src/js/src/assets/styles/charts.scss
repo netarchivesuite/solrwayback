@@ -110,8 +110,12 @@ display:inline;
 margin-left:70px;
 }
 
-.queryErrorColor {
-  color:red;
+.searchForm.ngram {
+  margin-top:10px;
+  }
+
+.queryErrorColor, .searchForm.ngram .urlNotTrue {
+  color:brown !important;
 }
 
 .badTagQueryNotice {
