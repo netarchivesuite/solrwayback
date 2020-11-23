@@ -132,7 +132,11 @@ module.exports = {
         pathRewrite: { '^/services/frontend/tools/linkgraph/': '' },
         changeOrigin: true
       },
-      
+      '^/services/export/linkgraph/': {
+        target: 'http://localhost:8080/solrwayback/services/export/linkgraph',
+        pathRewrite: { '^/services/export/linkgraph/': '' },
+        changeOrigin: true
+      },
     }
   },
   publicPath: process.env.NODE_ENV === 'production'

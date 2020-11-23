@@ -15,7 +15,7 @@
                   : ''"
                 :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'"
                 @keydown.enter.prevent="launchNewSearch()"
-                @input="getSizeOfTextArea()" />
+                @input="$_getSizeOfTextArea('query')" />
       <button type="button" class="searchGuidelinesButton" @click.prevent="openSelectedModal('guidelines')">
         ?
       </button>
@@ -77,6 +77,7 @@
 import { mapState, mapActions } from 'vuex'
 import AppliedSearchFacets from './AppliedSearchFacets.vue'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
+import SearchboxUtils from './../mixins/SearchboxUtils'
 import SearchUtils from './../mixins/SearchUtils'
 import SearchUploadFile from './SearchUploadFile.vue'
 import Toolbox from './Toolbox.vue'
@@ -87,7 +88,7 @@ export default {
     SearchUploadFile,
     Toolbox
   },
-  mixins: [HistoryRoutingUtils, SearchUtils],
+  mixins: [HistoryRoutingUtils, SearchUtils, SearchboxUtils],
   data () {
     return {    
       futureQuery:'',
@@ -151,12 +152,6 @@ export default {
       updateShowModal:'updateShowModal',
       updateCurrentModal:'updateCurrentModal'
     }),
-    getSizeOfTextArea() {
-      console.log('we resize')
-      let textarea = document.getElementById('query')
-      textarea.style.height = '1px'
-      textarea.style.height = (textarea.scrollHeight) + 'px'
-    },
     selectSearchMethod(selected) {
       if(selected === 'imgSearch') {
         this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch)

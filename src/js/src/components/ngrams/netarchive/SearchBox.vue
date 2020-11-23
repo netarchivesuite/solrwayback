@@ -6,6 +6,7 @@
     <form class="searchForm ngram" @submit.prevent="submitSearch">
       <input id="query"
              v-model="searchQuery"
+             class="ngramQuery"
              type="text"
              :class="searchType === 'tags' ? searcBoxClass() : ''"
              autofocus
