@@ -3,6 +3,8 @@ package dk.kb.netarchivesuite.solrwayback.service;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +28,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.zookeeper.client.FourLetterWordMain;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +50,11 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
-
+import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 
 
 @Path("/frontend/")
@@ -422,9 +426,41 @@ public class SolrWaybackResourceWeb {
       }
 
     }
-
     
 
+    @GET
+    @Path("/images/logo")
+    public Response imageLogo() throws SolrWaybackServiceException {
+      try {
+          String logoFile = PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE;
+          if (logoFile == null) {
+              log.warn("No logo property top.left.logo.image defined in propertyfile solrwaybackweb.properties");
+              throw new NotFoundServiceException("No logo property top.left.logo.image defined in propertyfile solrwaybackweb.properties");
+          }                     
+          File resolvedFile = FileUtil.fetchFile(logoFile);                      
+          FileInputStream is = new FileInputStream(resolvedFile); 
+          ResponseBuilder response = null;
+                   
+          String contentType= null;
+          String fileName=PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE.toLowerCase();
+          if (fileName.endsWith(".png")){
+              contentType="image/png";
+          }
+          else if (fileName.endsWith(".svg")){
+              contentType="image/svg+xml";
+          }
+          else{
+              contentType="image/jpeg";
+          }
+          
+          response= Response.ok((Object) is).type(contentType);
+          return response.build();
+                   
+      } catch (Exception e) {          
+           throw handleServiceExceptions(e);
+     }    
+    }
+      
     //TODO want to remove this method from web frontend
     @GET
     @Path("/downloadRaw")
