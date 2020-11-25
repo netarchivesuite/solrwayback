@@ -6,6 +6,7 @@
         <span v-if="solrSettings.urlSearch" class="urlSearchHelper">URL:</span>
       </transition>
       <textarea id="query"
+                ref="query"
                 v-model="futureQuery"
                 type="text"
                 rows="1"
@@ -135,7 +136,7 @@ export default {
         //If this is resulted by a backbutton going to the first time the user landed on the page, we want a clean slate.
         this.resetSearchState()
       }
-      document.getElementById('query').value = this.futureQuery
+      this.$refs.query.value = this.futureQuery
       this.$_getSizeOfTextArea('query')
   },
   
@@ -179,8 +180,7 @@ export default {
       this.preNormalizeQuery = null
       this.resetSearchState()
       //Make sure the query textarea is returned to its original size, regardless of what it was before.
-      let textarea = document.getElementById('query')
-      textarea.style.height = '1px'
+      this.$refs.query.style.height = '1px'
     },
     decideActiveClassesForQueryBox() {
       const isPrefixUrlNorm = this.futureQuery.substring(0,8) === 'url_norm'
