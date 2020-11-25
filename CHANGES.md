@@ -1,3 +1,6 @@
+4.0.4
+-----
+
 4.0.3
 -----
 Gephi link-graph (search toolbox) implemented with new GUI. Description+help text improved.
@@ -5,7 +8,7 @@ HTML tags n-gram implemented(seacrh toolbox). Found on same tab as the normal n-
 Notification if the cap of 500 images is reach for image  geo-search.
 Both warc-file exports also have the option to export in warc.gz format now (zipped).
 Page resouce page (playback toolbox) now also shows maximum timespam back- and forward for the resources.
-
+Custom logo can be inserted top left corner. Defined in solrwaybackweb.properties
 
 4.0.2
 -----
