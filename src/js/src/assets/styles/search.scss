@@ -923,3 +923,21 @@ color:var(--secondary-text-color);
   color: var(--seethrough-black);
   cursor:default;
 }
+
+.searchHints {
+  position: absolute;
+width: 20%;
+font-size: 70%;
+border:1px solid var(--main-highlight-color);
+margin-top: 2.2rem;
+padding: .2rem 0.2rem .2rem 1rem;
+margin-left:.2rem;
+}
+
+.searchHintHeading {
+  color:brown;
+}
+
+.searchHints h2 {
+  text-align:center;
+}

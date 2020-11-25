@@ -62,6 +62,27 @@ export function copyTextToClipboard(text) {
   
   document.body.removeChild(textArea)
   return copyWentOK
+}
+
+
+  /**
+ * Standard debounce code deduced from the lodash implementation
+ * Kudos:
+ * https://gist.github.com/nmsdvid/8807205 
+ * 
+ * @param {Function} callback
+ * @param {Int} delay
+ *   
+ */
+export function debounce(callback, delay = 250) {
+  let timeoutId
+  return (...args) => {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => {
+      timeoutId = null
+      callback(...args)
+    }, delay)
   }
+}
   
   
