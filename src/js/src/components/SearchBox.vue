@@ -7,7 +7,7 @@
       </transition>
       <textarea id="query"
                 ref="query"
-                v-model="decodedFutureQuery"
+                v-model="futureQuery"
                 type="text"
                 rows="1"
                 autofocus
@@ -98,9 +98,6 @@ export default {
     }
   },
   computed: {
-    decodedFutureQuery: function() {
-      return decodeURIComponent(this.futureQuery)
-    },
     ...mapState({
       query: state => state.Search.query,
       preNormalizedQuery: state => state.Search.preNormalizedQuery,
@@ -114,7 +111,7 @@ export default {
   },
   watch: {
     query: function (val) {
-      this.futureQuery  = val
+      this.futureQuery  = decodeURIComponent(val)
     },
   },
   mounted () {

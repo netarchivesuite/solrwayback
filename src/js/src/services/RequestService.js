@@ -68,7 +68,7 @@ function fireImageSearchRequest(query) {
 function fireFacetRequest (query, facets, options) {
   let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
   // Split url and move to config
-  const url = 'services/frontend/solr/search/facets/' + `?query=${query + facets.join('') + optionString}`
+  const url = 'services/frontend/solr/search/facets/' + `?query=${encodeURIComponent(query) + facets.join('') + optionString}`
   return axios.get(
     url).then(response => {
     //console.log('facets', response.data.facet_counts)

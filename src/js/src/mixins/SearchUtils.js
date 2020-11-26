@@ -23,6 +23,7 @@ export default {
       requestSearch:'requestSearch',
       requestImageSearch:'requestImageSearch',
       requestUrlSearch:'requestUrlSearch',
+      requestNormalizedFacets:'requestNormalizedFacets',
       requestFacets:'requestFacets'
 
     }),
@@ -45,7 +46,7 @@ export default {
       this.updatePreNormalizedQuery(futureQuery)
       if(this.$_validateUrlSearchPrefix(this.DisectQueryForNewUrlSearch(futureQuery))) {
         this.requestUrlSearch({query:this.DisectQueryForNewUrlSearch(futureQuery), facets:this.searchAppliedFacets, options:this.solrSettings})
-        this.requestFacets({query:'url_norm:"' + this.DisectQueryForNewUrlSearch(futureQuery) + '"', facets:this.searchAppliedFacets, options:this.solrSettings})
+        this.requestNormalizedFacets({query:this.DisectQueryForNewUrlSearch(futureQuery), facets:this.searchAppliedFacets, options:this.solrSettings})
         updateHistory ? this.$_pushSearchHistory('Search', this.DisectQueryForNewUrlSearch(futureQuery), this.searchAppliedFacets, this.solrSettings) : null
       }
       else {
@@ -98,7 +99,7 @@ export default {
         this.deliverUrlSearchRequest(futureQuery , updateHistory)
       }
       else {
-        this.deliverSearchRequest(encodeURIComponent(futureQuery), updateHistory, pagnation)
+        this.deliverSearchRequest(futureQuery, updateHistory, pagnation)
       }
     }
   }
