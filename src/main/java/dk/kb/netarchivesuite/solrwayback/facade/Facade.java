@@ -730,6 +730,7 @@ public class Facade {
         
         if (PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE != null) {
             props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_PROPERTY,PropertiesLoader.WAYBACK_BASEURL + "services/frontend/images/logo");    
+            props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY,PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_LINK);
         }
         
         return props;
