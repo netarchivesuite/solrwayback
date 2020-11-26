@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="logo">
+    <div class="topMenu">
       <img :src="logoUrl" height="40px" alt="logo">
     </div>
     <div class="contentContainer">
