@@ -10,7 +10,7 @@
           </li>
         </ul>
       </div>
-    </transition>
+    </transition>   
     <div class="searchBoxContainer">
       <form class="searchForm" @submit.prevent="launchNewSearch()">
         <span v-if="preNormalizedQuery !== null" class="orgQuery">Original query: <span class="preQuery">{{ preNormalizedQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
@@ -18,6 +18,7 @@
           <span v-if="solrSettings.urlSearch" class="urlSearchHelper">URL:</span>
         </transition>
         <textarea id="query"
+                  ref="query"
                   v-model="futureQuery"
                   type="text"
                   rows="1"
@@ -26,7 +27,7 @@
                     ? decideActiveClassesForQueryBox()
                     : ''"
                   :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'"
-                  @keydown.enter.prevent="launchNewSearch()"
+                  @keydown.enter="checkKeyPresses()"
                   @keyup.prevent="solrSettings.urlSearch ? null : checkQuery()"
                   @input="$_getSizeOfTextArea('query')" />
         <button type="button" class="searchGuidelinesButton" @click.prevent="openSelectedModal('guidelines')">
@@ -126,7 +127,7 @@ export default {
   },
   watch: {
     query: function (val) {
-      this.futureQuery  = val
+      this.futureQuery  = decodeURIComponent(val)
     },
   },
   mounted () {
@@ -151,6 +152,8 @@ export default {
         //If this is resulted by a backbutton going to the first time the user landed on the page, we want a clean slate.
         this.resetSearchState()
       }
+      this.$refs.query.value = this.futureQuery
+      this.$_getSizeOfTextArea('query')
   },
 
   created() {
@@ -173,6 +176,9 @@ export default {
       updateShowModal:'updateShowModal',
       updateCurrentModal:'updateCurrentModal'
     }),
+    checkKeyPresses() {
+      !event.shiftKey ? (event.preventDefault(),this.launchNewSearch()) : null
+    },
     selectSearchMethod(selected) {
       if(selected === 'imgSearch') {
         this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch)
@@ -195,8 +201,7 @@ export default {
       this.preNormalizeQuery = null
       this.resetSearchState()
       //Make sure the query textarea is returned to its original size, regardless of what it was before.
-      let textarea = document.getElementById('query')
-      textarea.style.height = '1px'
+      this.$refs.query.style.height = '1px'
     },
     decideActiveClassesForQueryBox() {
       const isPrefixUrlNorm = this.futureQuery.substring(0,8) === 'url_norm'
