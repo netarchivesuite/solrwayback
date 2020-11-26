@@ -81,15 +81,13 @@ Search by gps location for images having exif location information.
 </p>
 
  
-
-
 ## Root servlet. Catching and forwarding live leaks.
 Installing the root-servlet will improve playback of sites that are leaking urls. The root-servlet will
 catch relative leaks (same domain) even without using proxy mode. The leaks will then be redirected back into SolrWayback to the correct URL and crawltime.
 The root-servlet is included in the bundle install. In Tomcat it must be named ROOT.war.
 Link to SolrWayback root proxy:
 https://github.com/netarchivesuite/solrwaybackrootproxy
-
+Absolute URL live-leaks (starting with http://domain...) will not be caught and can leak to the open web. Open network (F12) to see if any resources are leaking, or turn-off the internet connection to be sure there is no live leaks during playback.
 
 ## API
 The API for linking to and browsing archived webpages is the same as for Internet Archive:<br>
@@ -123,7 +121,7 @@ Feel free to send emails with comments and questions.
 
 ## Warc-indexer/Solr 
 All entries in Warc files are indexed as separate documents using the WARC-Indexer in Solr with the defined schema (solrconfig.xml)
-A document is Solr can be html, image, video, audio, js etc. (`content_type_norm`)
+A document is Solr can be html, image, video, audio, js etc. This is the value of the field content_type_norm.
 Filename and offset of the entries  warc files is stored in solr and will be used and loaded during playback.
  
 
