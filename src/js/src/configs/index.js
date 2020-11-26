@@ -15,6 +15,10 @@ export default {
     }
   },
 
+  logo:{
+    url: ''
+  },
+
   leaflet: {
     attribution:'',
     source:'',
