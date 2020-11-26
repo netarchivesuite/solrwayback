@@ -1,3 +1,7 @@
+4.0.4
+-----
+Custom logo can be inserted top left corner. Defined in solrwaybackweb.properties
+
 4.0.3
 -----
 Gephi link-graph (search toolbox) implemented with new GUI. Description+help text improved.
