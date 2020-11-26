@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="topMenu">
-      <img :src="logoUrl" height="40px" alt="logo">
+      <a :href="logoLink">
+        <img :src="logoUrl" height="40px" alt="logo">
+      </a>
     </div>
     <div class="contentContainer">
       <transition name="loading-overlay">
@@ -48,7 +50,8 @@ export default {
   mixins: [SearchUtils],
   data: () => ({
         scrolledFromTop:false,
-        logoUrl: Configs.logo.url
+        logoUrl: Configs.logo.url,
+        logoLink: Configs.logo.link
   }),
   computed: {
     ...mapState({

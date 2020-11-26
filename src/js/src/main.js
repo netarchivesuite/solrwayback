@@ -22,7 +22,8 @@ Axios.get('services/frontend/properties/solrwaybackweb/')
         configs.leaflet.map.longitude = response.data['maps.longitude']
         configs.leaflet.map.radius = response.data['maps.radius']
         configs.visualizations.ngram.startYear = response.data['archive.start.year']
-        configs.logo.url = response.data['top.left.logo.image']       
+        configs.logo.url = response.data['top.left.logo.image']
+        configs.logo.link = response.data['top.left.logo.image.link']  
         initializeVue()
     })
     .catch(error => initializeVue())
