@@ -1,6 +1,11 @@
 4.0.4
 -----
-Custom logo can be inserted top left corner. Defined in solrwaybackweb.properties
+Custom logo+link can be inserted top left corner. Defined in solrwaybackweb.properties
+
+#Show a custom image in top left corner. (png,gif,svg etc.). 
+#Link when clicking the logo
+top.left.logo.image=/kb_logo_desktop_blue.svg
+top.left.logo.image.link=https://www.kb.dk/
 
 4.0.3
 -----
