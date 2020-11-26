@@ -1115,11 +1115,8 @@ public class NetarchiveSolrClient {
 
     // returns JSON. Response not supported by SolrJ
     /*
-     * Example query: time curl -s -d
-     * 'q=demokrati&rows=0&json.facet={domains:{type:terms,field:domain,limit:25
-     * facet:{years:{type:range,field:crawl_year,start:2000,end:2020,gap:1}}}}'
-     * 'http://localhost:52300/solr/ns/select' > demokrati.json
-     * 
+     * Example query: 
+     * curl -s -d 'q=demokrati&rows=0&json.facet={domains:{type:terms,field:domain,limit:100 facet:{years:{type:range,field:crawl_year,start:2000,end:2020,gap:1}}}}' 'http://localhost:52300/solr/ns/select' > demokrati.json
      * 
      */
     public String domainStatisticsForQuery(String query, List<String> fq) throws Exception {

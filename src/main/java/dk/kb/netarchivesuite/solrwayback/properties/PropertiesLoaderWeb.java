@@ -32,7 +32,9 @@ public class PropertiesLoaderWeb {
 
     public static final String LEAFLET_SOURCE_PROPERTY = "leaflet.source";
     public static final String LEAFLET_ATTRIBUTION_PROPERTY = "leaflet.attribution";
-
+    public static final String TOP_LEFT_LOGO_IMAGE_PROPERTY = "top.left.logo.image";
+    
+ 
 
     public static String OPENWAYBACK_SERVER;
     public static int ARCHIVE_START_YEAR;
@@ -49,7 +51,7 @@ public class PropertiesLoaderWeb {
     public static String LEAFLET_ATTRIBUTION;
     public static String ABOUT_TEXT_FILE;
     public static String SEARCH_HELP_TEXT_FILE;
-
+    public static String TOP_LEFT_LOGO_IMAGE;
 
     private static Properties serviceProperties = null;
     //Default values.
@@ -93,7 +95,7 @@ public class PropertiesLoaderWeb {
             SEARCH_HELP_TEXT_FILE = serviceProperties.getProperty(SEARCH_HELP_FILE_PROPERTY).trim();
             LEAFLET_SOURCE = serviceProperties.getProperty(LEAFLET_SOURCE_PROPERTY);
             LEAFLET_ATTRIBUTION = serviceProperties.getProperty(LEAFLET_ATTRIBUTION_PROPERTY);
-
+            TOP_LEFT_LOGO_IMAGE = serviceProperties.getProperty(TOP_LEFT_LOGO_IMAGE_PROPERTY);
 
             // start year
             String startYearStr = serviceProperties.getProperty(ARCHIVE_START_YEAR_PROPERTY);
@@ -125,7 +127,8 @@ public class PropertiesLoaderWeb {
             log.info("Property:"+ ARCHIVE_START_YEAR_PROPERTY +" = " + ARCHIVE_START_YEAR);			
             log.info("Property:"+ LEAFLET_SOURCE_PROPERTY +" = " + LEAFLET_SOURCE);
             log.info("Property:"+ LEAFLET_ATTRIBUTION_PROPERTY +" = " + LEAFLET_ATTRIBUTION);
-
+            log.info("Property:"+ TOP_LEFT_LOGO_IMAGE_PROPERTY +" = " + TOP_LEFT_LOGO_IMAGE);
+            
         }
         catch (Exception e) {
             e.printStackTrace();
