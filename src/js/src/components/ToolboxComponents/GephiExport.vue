@@ -7,6 +7,7 @@
       <div class="gephiQueryContainer">
         <h3>Query</h3>
         <textarea id="gephiQuery"
+                  ref="gephiQuery"
                   v-model="query"
                   type="text"
                   rows="1"
