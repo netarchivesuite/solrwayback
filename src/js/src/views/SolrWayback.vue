@@ -1,8 +1,7 @@
 <template>
   <div>
     <div class="logo">
-      <!--TODO we need configurable url link-->
-      <a href="https://www.kb.dk"><img :src="logoUrl" height="40px"></a>
+      <img :src="logoUrl" height="40px" alt="logo">
     </div>
     <div class="contentContainer">
       <transition name="loading-overlay">
