@@ -1,9 +1,8 @@
 export default {
   methods: {
     $_getSizeOfTextArea(id) {
-      let textarea = document.getElementById(id)
-      textarea.style.height = '1px'
-      textarea.style.height = textarea.scrollHeight + 'px'
+      this.$refs[id].style.height = '1px'
+      this.$refs[id].style.height = this.$refs[id].scrollHeight + 'px'
     },
   }
 }
