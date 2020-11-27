@@ -49,7 +49,7 @@ function fireSearchRequest (query, facets, options) {
 
 function fireImageSearchRequest(query) {
   // Split url and move to config
-  const url = 'services/frontend/images/search/' + `?query=${query}`
+  const url = 'services/frontend/images/search/' + `?query=${encodeURIComponent(query)}`
   return axios.get(
     url, {
       transformResponse: [
@@ -79,7 +79,7 @@ function fireFacetRequest (query, facets, options) {
 }
 
 function fireImagesRequest (source_file_path, offset) {
-  const url = 'services/frontend/images/htmlpage/' + `?source_file_path=${source_file_path}&offset=${offset}`
+  const url = 'services/frontend/images/htmlpage/' + `?source_file_path=${encodeURIComponent(source_file_path)}&offset=${offset}`
   return axios.get(
     url).then(response => {
     return response.data
