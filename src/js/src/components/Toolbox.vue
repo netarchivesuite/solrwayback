@@ -18,9 +18,6 @@
         <button :class="currentTool === 'domainstats' ? 'activeTool' : ''" @click="setCurrentTool('domainstats')">
           Domain stats
         </button>
-        <button :class="currentTool === 'htmltags' ? 'activeTool' : ''" @click="setCurrentTool('htmltags')">
-          HTML-tags
-        </button>
         <button :class="currentTool === 'gephiexport' ? 'activeTool' : ''" @click="setCurrentTool('gephiexport')">
           Link graph Gephi export
         </button>
@@ -32,7 +29,6 @@
       <wordcloud v-if="currentTool === 'wordcloud'" />
       <link-graph v-if="currentTool === 'linkgraph'" />
       <domain-stats v-if="currentTool === 'domainstats'" />
-      <html-tags v-if="currentTool === 'htmltags'" />
       <gephi-export v-if="currentTool === 'gephiexport'" />
       <ngram-netarchive v-if="currentTool === 'ngramnetarchive'" />
     </div>
@@ -43,7 +39,6 @@
 import Wordcloud from './ToolboxComponents/Wordcloud'
 import LinkGraph from './ToolboxComponents/LinkGraph'
 import DomainStats from './ToolboxComponents/DomainStats'
-import HtmlTags from './ToolboxComponents/HtmlTags'
 import GephiExport from './ToolboxComponents/GephiExport'
 import NgramNetarchive from './ToolboxComponents/NgramNetarchive'
 
@@ -54,7 +49,6 @@ export default {
     Wordcloud, 
     LinkGraph, 
     DomainStats,
-    HtmlTags,
     GephiExport,
     NgramNetarchive
    
