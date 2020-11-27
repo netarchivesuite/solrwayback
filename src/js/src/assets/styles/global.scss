@@ -100,10 +100,8 @@ h2 {
 }
 
 .topMenu {
-  width:100%;
-  height:40px;
-  padding:10px;
-  background-color: var(--secondary-highlight-color);
+  position: absolute;
+  margin: 10px;
 }
 
 .inline {

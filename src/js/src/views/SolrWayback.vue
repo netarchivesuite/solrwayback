@@ -2,7 +2,10 @@
   <div>
     <div class="topMenu">
       <a :href="logoLink">
-        <img :src="logoUrl" height="40px" alt="logo">
+        <img :src="logoUrl"
+             width="100"
+             height="40"
+             alt="logo">
       </a>
     </div>
     <div class="contentContainer">
