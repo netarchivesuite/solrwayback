@@ -26,9 +26,9 @@
                class="td content clickAble">
             <span v-for="(singleLine, newIndex) in singleObject[1]"
                   :key="newIndex"
-                  :class="determinePlaceAndVisiblity(index, newIndex)"
-                  @click="singleObject[0] !== 'content' ? searchFromAllValues(singleObject[0], singleLine) : null">
-              {{ singleLine }} <br>
+                  :class="determinePlaceAndVisiblity(index, newIndex)">
+              <a v-if="singleObject[0] !== 'content'" :href="createLinkToValueSearch(singleObject[0], singleLine)"> {{ singleLine }}</a>
+              <br>
             </span>
             <button v-if="singleObject[1].length > arrayShownLimit"
                     :key="index + '-button' "
@@ -38,10 +38,12 @@
             </button>
           </div>
           <div v-if="singleObject[1].constructor !== Array" 
-               :class="singleObject[0] === 'content' ? 'td content' : 'td content clickAble'" 
-               @click="singleObject[0] === 'content' ? null : searchFromAllValues(singleObject[0], singleObject[1])">
-            <span :class="singleObject[0] === 'content' ? '' : 'singleEntry'">
-              {{ singleObject[0] === 'content' ? displayContentValue(singleObject[1]) : singleObject[1] }}
+               :class="singleObject[0] === 'content' ? 'td content' : 'td content clickAble'">
+            <a v-if="singleObject[0] !== 'content'" :href="createLinkToValueSearch(singleObject[0], singleObject[1])" class="singleEntry">
+              {{ singleObject[1] }}
+            </a>
+            <span v-if="singleObject[0] === 'content'">
+              {{ displayContentValue(singleObject[1]) }}
             </span>
           </div>
           <button v-if="singleObject[0] === 'content' && singleObject[1].length > contentShownLength" 
@@ -147,6 +149,9 @@ export default {
       this.updateSolrSettingUrlSearch(false)
       this.emptySearchAppliedFacets()
       this.$_pushSearchHistory('Search', searchString, this.searchAppliedFacets, this.solrSettings)
+    },
+    createLinkToValueSearch(attribute, value) {
+      return `/search?query=${attribute}:${encodeURIComponent(value)}&offset=0&grouping=${this.solrSettings.grouping}&imgSearch=false&urlSearch=false&facets=${this.searchAppliedFacets.join('')}`
     },
     toggleShownData(index) {
       index === this.currentDataShown ? this.currentDataShown = null : this.currentDataShown = index
