@@ -110,6 +110,7 @@ export default {
     * https://jsfiddle.net/bsc6zkxy/12/   
     **/  
     $_checkQueryForBadSyntax(q) {
+        q = q.replace('\n', ' ')
         let responses = []
         if (((q.includes(' AND ')  || q.includes(' && ')) &&
             (q.includes(' OR ') || q.includes(' || '))) && 
