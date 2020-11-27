@@ -142,7 +142,7 @@ export default {
     },
     searchFromAllValues(attribute, value) {
       this.allDataShown = !this.allDataShown
-      const searchString = attribute + ':"' + encodeURIComponent(value) + '"'
+      const searchString = attribute + ':"' + value + '"'
       this.updateQuery(searchString)
       this.updateSolrSettingUrlSearch(false)
       this.emptySearchAppliedFacets()
