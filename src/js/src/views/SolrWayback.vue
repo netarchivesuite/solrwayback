@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="topMenu">
-      <a :href="logoLink">
+      <a :href="logoLink" target="_blank">
         <img :src="logoUrl"
              width="100"
              height="40"
