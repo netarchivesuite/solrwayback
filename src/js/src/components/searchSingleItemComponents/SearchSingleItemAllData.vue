@@ -151,7 +151,7 @@ export default {
       this.$_pushSearchHistory('Search', searchString, this.searchAppliedFacets, this.solrSettings)
     },
     createLinkToValueSearch(attribute, value) {
-      return `/search?query=${attribute}:${encodeURIComponent(value)}&offset=0&grouping=${this.solrSettings.grouping}&imgSearch=false&urlSearch=false&facets=${this.searchAppliedFacets.join('')}`
+      return `/search?query=${attribute}:"${encodeURIComponent(value)}"&offset=0&grouping=${this.solrSettings.grouping}&imgSearch=false&urlSearch=false&facets=${encodeURIComponent(this.searchAppliedFacets.join(''))}`
     },
     toggleShownData(index) {
       index === this.currentDataShown ? this.currentDataShown = null : this.currentDataShown = index
