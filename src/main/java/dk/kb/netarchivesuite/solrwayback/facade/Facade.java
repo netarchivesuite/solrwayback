@@ -728,7 +728,7 @@ public class Facade {
         props.put(PropertiesLoaderWeb.LEAFLET_ATTRIBUTION_PROPERTY, PropertiesLoaderWeb.LEAFLET_ATTRIBUTION);
         props.put(PropertiesLoaderWeb.ARCHIVE_START_YEAR_PROPERTY, ""+PropertiesLoaderWeb.ARCHIVE_START_YEAR);
         
-        if (PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE != null) {
+        if (PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE != null && !"".equals(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE.trim())) {
             props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_PROPERTY,PropertiesLoader.WAYBACK_BASEURL + "services/frontend/images/logo");    
             props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY,PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_LINK);
         }
