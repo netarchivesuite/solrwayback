@@ -26,11 +26,13 @@
                class="td content clickAble">
             <span v-for="(singleLine, newIndex) in singleObject[1]"
                   :key="newIndex"
+                  
                   :class="determinePlaceAndVisiblity(index, newIndex)">
-              <a v-if="singleObject[0] !== 'content'" :href="createLinkToValueSearch(singleObject[0], singleLine)"> {{ singleLine }}</a>
+              <router-link v-if="singleObject[0] !== 'content'" :to="{ path: createLinkToValueSearch(singleObject[0], singleLine) }"> {{ singleLine }} </router-link>
               <br>
             </span>
-            <button v-if="singleObject[1].length > arrayShownLimit"
+            <button v-if="
+                      single-object-1-length> arrayShownLimit"
                     :key="index + '-button' "
                     class="attributeButton"
                     @click="toggleShownData(index)">
@@ -39,9 +41,9 @@
           </div>
           <div v-if="singleObject[1].constructor !== Array" 
                :class="singleObject[0] === 'content' ? 'td content' : 'td content clickAble'">
-            <a v-if="singleObject[0] !== 'content'" :href="createLinkToValueSearch(singleObject[0], singleObject[1])" class="singleEntry">
+            <router-link v-if="singleObject[0] !== 'content'" :to="{ path: createLinkToValueSearch(singleObject[0], singleObject[1]) }" class="singleEntry">
               {{ singleObject[1] }}
-            </a>
+            </router-link>
             <span v-if="singleObject[0] === 'content'">
               {{ displayContentValue(singleObject[1]) }}
             </span>

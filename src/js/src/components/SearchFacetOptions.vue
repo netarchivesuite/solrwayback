@@ -12,7 +12,9 @@
         <div v-for="(facet, facetIndex) in facetCategory[1]"
              :key="facetIndex"
              :class="facetIndex % 2 === 0 ? 'facetItem' : 'facetCount'">
-          <a v-if="facetIndex % 2 === 0" :href="getFacetSelectionLink(facetCategory, facet)"> {{ facet || 'Unknown' }}</a>
+          <router-link v-if="facetIndex % 2 === 0" :to="{ path: getFacetSelectionLink(facetCategory, facet) }">
+            {{ facet || 'Unknown' }}
+          </router-link>
           <span v-else>{{ "(" + facet.toLocaleString("en") + ")" }}</span>
         </div>
       </div>
