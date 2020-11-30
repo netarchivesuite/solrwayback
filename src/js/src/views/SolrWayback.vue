@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="topMenu">
+    <div v-if="logoLink && logoLink !== ''" class="topMenu">
       <a :href="logoLink" target="_blank">
         <img :src="logoUrl"
              width="150"
@@ -68,6 +68,7 @@ export default {
   mounted() {
     window.addEventListener('scroll', this.onScroll)
   },
+  
   methods: {
     ...mapActions('Search', {
       resetState:'resetState',
