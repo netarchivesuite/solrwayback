@@ -143,5 +143,14 @@ module.exports = {
   ? '/solrwayback/'
   : '/',
   assetsDir: 'static',
-  indexPath: 'solrwayback_index_page.html' 
+  indexPath: 'solrwayback_index_page.html',
+  chainWebpack: config => {
+    config
+        .plugin('html')
+        .tap(args => {
+            args[0].template = './public/solrwayback_index_page.html'
+            args[0].title = 'SolrWayback'
+            return args
+        })
+} 
 }
