@@ -1,20 +1,31 @@
 <template>
-  <div class="contentContainer">
-    <transition name="loading-overlay">
-      <loading-overlay />
-    </transition>
-    <notifications />
-    <h1>Solr<span>Wayback</span></h1>
-    <search-box />
-    <all-search-results />
-    <about-component />
-    <primary-modal v-if="showModal" />
-    <transition name="loading-overlay">
-      <div v-if="scrolledFromTop" class="topTopArrow" @click="backToTop">
-        ↑
-      </div>
-    </transition>
+  <div>
+    <div class="topMenu">
+      <a :href="logoLink" target="_blank">
+        <img :src="logoUrl"
+             width="150"
+             height="60"
+             alt="logo">
+      </a>
+    </div>
+    <div class="contentContainer">
+      <transition name="loading-overlay">
+        <loading-overlay />
+      </transition>
+      <notifications />
+      <h1>Solr<span>Wayback</span></h1>
+      <search-box />
+      <all-search-results />
+      <about-component />
+      <primary-modal v-if="showModal" />
+      <transition name="loading-overlay">
+        <div v-if="scrolledFromTop" class="topTopArrow" @click="backToTop">
+          ↑
+        </div>
+      </transition>
     <!--<router-link class="aboutLink" to="/about">Om Solrwayback search</router-link> -->
+    </div>
+    <div />
   </div>
 </template>
 
@@ -27,6 +38,7 @@
  import SearchUtils from './../mixins/SearchUtils'
  import { mapState, mapActions } from 'vuex'
  import PrimaryModal from './../components/modalComponents/PrimaryModal'
+ import Configs from '../configs'
 
 export default {
   name: 'SolrWayback',
@@ -40,7 +52,9 @@ export default {
   },
   mixins: [SearchUtils],
   data: () => ({
-        scrolledFromTop:false
+        scrolledFromTop:false,
+        logoUrl: Configs.logo.url,
+        logoLink: Configs.logo.link
   }),
   computed: {
     ...mapState({
