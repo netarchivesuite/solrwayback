@@ -3,8 +3,8 @@
     <div class="topMenu">
       <a :href="logoLink" target="_blank">
         <img :src="logoUrl"
-             width="100"
-             height="40"
+             width="150"
+             height="60"
              alt="logo">
       </a>
     </div>
