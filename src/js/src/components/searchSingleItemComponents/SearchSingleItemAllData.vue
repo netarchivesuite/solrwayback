@@ -31,8 +31,7 @@
               <router-link v-if="singleObject[0] !== 'content'" :to="{ path: createLinkToValueSearch(singleObject[0], singleLine) }"> {{ singleLine }} </router-link>
               <br>
             </span>
-            <button v-if="
-                      single-object-1-length> arrayShownLimit"
+            <button v-if="singleObject[1].length > arrayShownLimit"
                     :key="index + '-button' "
                     class="attributeButton"
                     @click="toggleShownData(index)">
