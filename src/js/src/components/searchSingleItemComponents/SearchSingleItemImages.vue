@@ -13,38 +13,28 @@
     </div>
     <div v-for="(item, index) in shownImages(imageSrcs)"
          :key="index"
-         class="previewImageContainer">
-      <img
-        loading="lazy"
-        :class="inputType === 'multiple' ? 'previewImage' : 'imageEntry'"
-        :src="inputType === 'multiple' ? item.imageUrl + '&height=200&width=200' : item"
-        @click="toggleFullImage(index)">
-      <search-single-item-focus-image v-if="showFullImage === index"
-                                      :image="inputType === 'multiple' ? item.downloadUrl : item"
-                                      :index="index"
-                                      @close-window="closeWindow" />
-      <div class="imageButtonContainer">
-        <router-link :to="{ path: $_startImageSearchFromImage(item.hash ? item.hash : hash )}">
-          <span>Search for image</span>
-        </router-link>
-        <router-link :to="{ path: $_startPageSearchFromImage(item.urlNorm ? item.urlNorm : urlNorm)}">
-          <span>Pages linking to image</span>
-        </router-link>
-      </div>
+         class="PreviewImageOuterContainer">
+      <single-search-item-preview-image :show-full-image="showFullImage"
+                                        :index="index"
+                                        :input-type="inputType"
+                                        :item="item"
+                                        :hash="hash"
+                                        :url-norm="urlNorm"
+                                        @toggle-fullimage="toggleFullImage" />
     </div>
   </div>
 </template>
 
 <script>
 import { requestService } from '../../services/RequestService'
-import SearchSingleItemFocusImage from './SearchSingleItemFocusImage.vue'
+import SingleSearchItemPreviewImage from './SearchSingleItemPreviewImage.vue'
 import configs from '../../configs'
 import ImageSearchUtils from './../../mixins/ImageSearchUtils'
 
 export default {
   name: 'SearchSingleItemImages',
   components: {  
-    SearchSingleItemFocusImage
+    SingleSearchItemPreviewImage
   },
   mixins: [ImageSearchUtils],
   props: {
@@ -131,9 +121,6 @@ export default {
     toggleFullImage(index) {
       this.showFullImage !== null ? this.showFullImage = null : this.showFullImage = index
     },
-    closeWindow(index) {
-      this.showFullImage = null
-    } 
   }
 }
 
