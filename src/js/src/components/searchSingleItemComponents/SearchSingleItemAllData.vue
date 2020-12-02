@@ -25,7 +25,7 @@
           <div v-if="singleObject[1].constructor === Array"
                class="td content clickAble">
             <span v-for="(singleLine, newIndex) in singleObject[1]"
-                  :key="newIndex" 
+                  :key="newIndex"
                   :class="determinePlaceAndVisiblity(index, newIndex)"
                   @click="singleObject[0] !== 'content' ? searchFromAllValues(singleObject[0], singleLine) : null">
               {{ singleLine }} <br>
