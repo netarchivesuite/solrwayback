@@ -923,3 +923,48 @@ color:var(--secondary-text-color);
   color: var(--seethrough-black);
   cursor:default;
 }
+
+.searchHints {
+  position: absolute;
+  background-color:white;
+  width: 25vw;
+  font-size: 80%;
+  border:1px dashed var(--main-highlight-color);
+  padding: .2rem 0.2rem .2rem 1rem;
+  margin:2.2rem 0 0 .5rem;
+}
+
+@media all and (max-width: 1720px) {
+  .searchHints {
+  width: 20vw;
+  margin-left:.2rem;
+  }
+}
+@media all and (max-width: 1420px) {
+  .searchHints {
+  width: 15vw;
+  margin-left:.2rem;
+  }
+}
+@media all and (max-width: 1024px) {
+  .searchHints {
+  width: 10vw;
+  margin-left:.2rem;
+  }
+}
+
+.searchHints ul {
+  list-style-type: none;
+}
+
+.searchHints li {
+  margin-top:.2rem;
+}
+
+.searchHintHeading {
+  color:brown;
+}
+
+.searchHints h2 {
+  text-align:center;
+}
