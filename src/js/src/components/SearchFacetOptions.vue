@@ -11,11 +11,9 @@
         </div> 
         <div v-for="(facet, facetIndex) in facetCategory[1]"
              :key="facetIndex"
-             :class="facetIndex % 2 === 0 ? 'facetItem' : 'facetCount'">
-          <router-link v-if="facetIndex % 2 === 0" :to="{ path: getFacetSelectionLink(facetCategory, facet) }">
-            {{ facet || 'Unknown' }}
-          </router-link>
-          <span v-else>{{ "(" + facet.toLocaleString("en") + ")" }}</span>
+             :class="facetIndex % 2 === 0 ? 'facetItem' : 'facetCount'"
+             @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet) : null">
+          {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
       </div>
     </div>
@@ -45,10 +43,11 @@ export default {
       updateSolrSettingOffset:'updateSolrSettingOffset',
       addToSearchAppliedFacets:'addToSearchAppliedFacets',
     }),
-    getFacetSelectionLink(facetCategory, facet) {
-      const newFacet = encodeURIComponent('&fq=' + facetCategory[0] + ':"' + facet + '"')
-      console.log(newFacet)
-      return `/search?query=${encodeURIComponent(this.query)}&offset=0&grouping=${this.solrSettings.grouping}&imgSearch=${this.solrSettings.imgSearch}&urlSearch=${this.solrSettings.urlSearch}&facets=${encodeURIComponent(this.searchAppliedFacets.join(''))}${newFacet}`
+    applyFacet(facetCategory, facet) {
+      let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
+      this.updateSolrSettingOffset(0)
+      this.addToSearchAppliedFacets(newFacet)
+      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     checkForFacets(facets) {
     //we test if the variable exists first - can cause problems if it's not set yet.

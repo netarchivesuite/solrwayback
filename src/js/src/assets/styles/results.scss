@@ -506,14 +506,24 @@ margin-left:40px;
 }
 
 .singleEntryImages .previewImageContainer {
+  position: relative;
+  width:100%;
+  //border-left: 1px solid var(--secondary-highlight-color);
+  height:200px;
+}
+
+.PreviewImageOuterContainer .loader {
+  top: calc(100px - 15px);
+}
+
+.singleEntryImages .PreviewImageOuterContainer {
   display: inline-block;
   margin: 1em;
   margin-bottom: 2em;
-  position: relative;
   flex-grow: 0;
   width: calc(25% -  2em);
+  position: relative;
   background-color: rgb(255, 250, 223);
-	//border-left: 1px solid var(--secondary-highlight-color);
   box-sizing: border-box;
   height:200px;
 }
@@ -638,6 +648,31 @@ margin-left:40px;
   margin-left: auto;
   margin-right: auto;
   transition: all 300ms linear 0s;
+}
+
+.images .column .columnImageContainer .loader, .previewImageContainer .loader {
+  content: '';
+	position: relative;
+	width: 30px;
+	margin-left: calc(50% - 15px);
+	height: 30px;
+	display: block;
+  z-index: 1;
+	border-radius: 90px;
+	border: 2px solid var(--main-highlight-color);
+	box-sizing: border-box;
+  border-style: dotted;
+  animation: imageLoader 3s linear infinite;
+}
+
+@keyframes imageLoader {
+  0% {
+    transform: rotateZ(0deg);
+  }
+  100% {
+    transform: rotateZ(360deg);
+
+  }
 }
 
 .images .column .columnImageContainer:hover {
