@@ -94,6 +94,11 @@
   cursor: pointer;
 }
 
+.SingleEntryAllData .td.clickAble a {
+  text-decoration: none;
+  color:black;
+}
+
 .SingleEntryAllData .td.clickAble:hover, .gephiQueryContainer td:hover { 
   background-color:var(--secondary-highlight-color)
 }
@@ -423,6 +428,16 @@ margin-left:40px;
 	text-overflow: ellipsis;
   cursor: pointer;
   text-transform: lowercase;
+}
+
+.facetItem a {
+  text-decoration: none;
+  color:black;
+}
+
+.facetItem a:hover {
+  text-decoration: none;
+  color:var(--main-highlight-color);
 }
 
 .facetItem:before {
