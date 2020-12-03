@@ -1,8 +1,15 @@
 4.0.4
 -----
+Upgraded vue-cli framework from 4.4.0 to 4.5.9  (frontend framework)
+Facets and links below images can be right clicked and open in a new tab.
+Spinner added  when loading images in result set for HTML pages.
+Realtime search hints if query seems faulty. The following query:  cats and dogs")
+   will result in 3 warnings. 1) lowercase 'and' 2) unbalanced quotes 3) unbalanced parentheses
+
+
 Custom logo+link can be inserted top left corner. Defined in solrwaybackweb.properties
 
-#Show a custom image in top left corner. (png,gif,svg etc.). 
+#Show a custom image in top left corner. (png,jpeg,svg). 
 #Link when clicking the logo
 top.left.logo.image=/kb_logo_desktop_blue.svg
 top.left.logo.image.link=https://www.kb.dk/
