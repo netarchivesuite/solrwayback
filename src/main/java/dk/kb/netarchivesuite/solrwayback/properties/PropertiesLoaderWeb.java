@@ -17,6 +17,7 @@ public class PropertiesLoaderWeb {
     private static final Logger log = LoggerFactory.getLogger(PropertiesLoaderWeb.class);
     private static final String DEFAULT_PROPERTY_WEB_FILE = "solrwaybackweb.properties";
 
+    
     public static final String WAYBACK_SERVER_PROPERTY="wayback.baseurl";
     public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";	
     public static final String FACETS_PROPERTY = "facets";	
@@ -36,6 +37,7 @@ public class PropertiesLoaderWeb {
     public static final String TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY = "top.left.logo.image.link";
  
 
+    public static String SOLRWAYBACK_VERSION; //Will be set from initialcontext-listener
     public static String OPENWAYBACK_SERVER;
     public static int ARCHIVE_START_YEAR;
     public static String WAYBACK_SERVER = null;
