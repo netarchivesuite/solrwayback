@@ -138,7 +138,9 @@ export default {
           responses.push('Slow single star searches. These searches are very slow, use *:* to match everything try ' + q.replace(/(^|\s)([*])($|\s)/, '$1*:*$3'))
         }
 
-        let quoteMatches = q.replace('\\\\', '').match(/(?<!\\)"/g)
+        //Old regex discontinued due to no support for 'look behind' in Safari and IE11
+        //let quoteMatches = q.replace('\\\\', '').match(/(?<!\\)"/g)
+        let quoteMatches = q.replace('\\\\', '').replace('\\"', '').match(/"/g)
         if (quoteMatches && quoteMatches.length % 2 != 0) {
           responses.push('Unbalanced quotes. Make sure to write both a start- and an end-quote "')
         }
