@@ -28,7 +28,7 @@ Gephi link-graph (search toolbox) implemented with new GUI. Description+help tex
 HTML tags n-gram implemented(seacrh toolbox). Found on same tab as the normal n-gram search(radio button)
 Notification if the cap of 500 images is reach for image  geo-search.
 Both warc-file exports also have the option to export in warc.gz format now (zipped).
-Page resouce page (playback toolbox) now also shows maximum timespam back- and forward for the resources.
+Page resources (playback toolbox) now also shows maximum timespam back- and forward for the resources.
 
 
 4.0.2
