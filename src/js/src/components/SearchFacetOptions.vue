@@ -15,6 +15,11 @@
              @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet) : null">
           {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
+        <div v-if="facetCategory[1].length >= 20">
+          <div @click="determineFacetAction(facetCategory[0], facetCategory[1].length)">
+            {{ determineText(facetCategory[0], facetCategory[1].length) }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -24,6 +29,8 @@
 
 import { mapState, mapActions } from 'vuex'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
+import { requestService } from '../services/RequestService'
+
 
 export default {
   name: 'SearchFacetOptions',
@@ -37,12 +44,44 @@ export default {
       facetLoading: state => state.Search.facetLoading,
       loading: state => state.Search.loading
     }),
+    shownEntities(facet) {
+      return facet
+    },
   },
   methods: {
     ...mapActions('Search', {
       updateSolrSettingOffset:'updateSolrSettingOffset',
       addToSearchAppliedFacets:'addToSearchAppliedFacets',
+      addSpecificRequestedFacets:'addSpecificRequestedFacets'
     }),
+    determineFacetAction(facet, length) {
+      console.log(length)
+      if(length === 20) {
+        this.requestAdditionalFacets(facet)
+      }
+      else if(length > 20) {
+
+      }
+      else {
+
+      }
+    },
+    determineText(facet, length) {
+      return length <= 20 ? 'more ' + facet + 's' : 'less ' + facet + 's'
+    },
+    requestAdditionalFacets(facetArea) {
+      console.log(this.query, this.facets)
+      let structuredQuery = this.query + this.searchAppliedFacets.join('')
+      let obj = {...this.facets}
+      requestService.getAddonFacets(facetArea, this.query).then(result => this.constructNewFacets(result, facetArea), error => console.log('No additional facets found.'))
+      this.addSpecificRequestedFacets(obj)
+    },
+    constructNewFacets(result, facetArea) {
+      console.log(result)
+      let facets = JSON.parse(JSON.stringify(this.facets))
+      facets['facet_fields'][facetArea] = result.facet_counts.facet_fields[facetArea]
+      this.addSpecificRequestedFacets(facets)
+    },
     applyFacet(facetCategory, facet) {
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
       this.updateSolrSettingOffset(0)

@@ -54,6 +54,9 @@ const actions = {
   emptySearchAppliedFacets ({commit}) {
     commit('emptySearchAppliedFacetsSuccess')
   },
+  addSpecificRequestedFacets ( {commit}, param ) {
+    commit('facetRequestSuccess', param)
+  },
   clearResults ( {commit} ) {
     commit('clearResultsSuccess')
   },

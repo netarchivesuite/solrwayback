@@ -137,6 +137,11 @@ module.exports = {
         pathRewrite: { '^/services/export/linkgraph/': '' },
         changeOrigin: true
       },
+      'services/frontend/solr/search/facets/loadmore/' : {
+        target: 'http://localhost:8080/solrwayback/services/frontend/solr/search/facets/loadmore/',
+        pathRewrite: { '^/services/frontend/solr/search/facets/loadmore/': '' },
+        changeOrigin: true
+      }
     }
   },
   publicPath: process.env.NODE_ENV === 'production'
