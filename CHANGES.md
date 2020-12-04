@@ -1,3 +1,11 @@
+
+4.0.5
+-----
+Fixed SolrWayback not loading at all in Safari browser (was due to regexp)
+Fixed facet query encoding regression error.
+Version of Solrwayback added to the web-properties method.
+
+
 4.0.4
 -----
 Upgraded vue-cli framework from 4.4.0 to 4.5.9  (frontend framework)
@@ -9,7 +17,7 @@ Realtime search hints if query seems faulty. The following query:  cats and dogs
 
 Custom logo+link can be inserted top left corner. Defined in solrwaybackweb.properties
 
-#Show a custom image in top left corner. (png,jpeg,svg). 
+#Show a custom image in top left corner. (png,jpeg,svg). (150x60 pixel) 
 #Link when clicking the logo
 top.left.logo.image=/kb_logo_desktop_blue.svg
 top.left.logo.image.link=https://www.kb.dk/
