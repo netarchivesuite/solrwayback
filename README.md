@@ -1,7 +1,7 @@
 # SolrWayback
 
 ## SolrWayback 4.0 software bundle will be released in November 2020.
-Prerelease SolrWayback bundle for 4.0 here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.0.3
+Prerelease SolrWayback bundle for 4.0 here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.0.5
 
 
 
