@@ -1,7 +1,7 @@
 # SolrWayback
 
 ## SolrWayback 4.0 software bundle will be released in November 2020.
-Prerelease SolrWayback bundle for 4.0 here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.0.3
+Prerelease SolrWayback bundle for 4.0 here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.0.5
 
 
 
@@ -100,10 +100,10 @@ If using a Solr search based web archive such as Shine (https://github.com/netar
  
  
 ## Requirements
- * JDK 8/9. (Not working on Java 10+ yet) 
+ * JDK 8/9/10/11 
  * A nice collection of Arc/Warc files or harvest your own with Heritrix,Webrecorder,Brozzler, Wget etc. 
  * Tomcat 8+  or another J2EE server for deploying the WAR-file
- * A Solr 7.1+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.1.0+ (Version 3.0.0 does not handle some transfer encodings correct)
+ * A Solr 7.1+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT +
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage
@@ -140,7 +140,7 @@ Unzip and follow the instructions below.
 ## Requirements:
 Works on MacOs/Linux/Windows.  
 For the Solrwayback software bundle you only need to have Java  (64 bit) installed. 
-Java version 8 is required for the indexing job, but not for Solr or Tomcat that can run on java 11.
+Java version 8,9,10 or 11 is required
 To check java is installed, type the following from a prompt: java -version  
 
 
@@ -171,8 +171,8 @@ To see Tomcat is running open: http://localhost:8080/solrwayback/
   
 Solr:  
 Start solr: `solrwayback_package/solr-7.7.3/bin/solr start`  
-Stop solr: `solrwayback_package/solr-7.7.3/bin/solr stop`  
-(For windows navigate to `solrwayback_package/solr-7.7.3/bin/` and type `solr.cmd start` or `solr.cmd stop`)    
+Stop solr: `solrwayback_package/solr-7.7.3/bin/solr stop -all`  
+(For windows navigate to `solrwayback_package/solr-7.7.3/bin/` and type `solr.cmd start` or `solr.cmd stop -all`)    
 To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
 ### 3) INDEXING
