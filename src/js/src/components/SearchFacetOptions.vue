@@ -15,9 +15,15 @@
              @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet) : null">
           {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
-        <div v-if="facetCategory[1].length >= 20">
-          <div @click="determineFacetAction(facetCategory[0], facetCategory[1].length)">
-            {{ determineText(facetCategory[0], facetCategory[1].length) }}
+        <div v-if="facetCategory[1].length >= 20" class="moreFacets">
+          <div v-if="facetCategory[1].length > 20" class="facetArrow">
+            ︿
+          </div>
+          <div class="moreFacetText" @click="determineFacetAction(facetCategory[0], facetCategory[1].length)">
+            {{ determineText(facetCategory[0], facetCategory[1].length) }} 
+          </div>
+          <div v-if="facetCategory[1].length === 20" class="facetArrow">
+            ﹀
           </div>
         </div>
       </div>
@@ -44,9 +50,6 @@ export default {
       facetLoading: state => state.Search.facetLoading,
       loading: state => state.Search.loading
     }),
-    shownEntities(facet) {
-      return facet
-    },
   },
   methods: {
     ...mapActions('Search', {
@@ -55,15 +58,11 @@ export default {
       addSpecificRequestedFacets:'addSpecificRequestedFacets'
     }),
     determineFacetAction(facet, length) {
-      console.log(length)
       if(length === 20) {
         this.requestAdditionalFacets(facet)
       }
       else if(length > 20) {
-
-      }
-      else {
-
+        this.removeAdditionalFacets(facet)
       }
     },
     determineText(facet, length) {
@@ -72,9 +71,13 @@ export default {
     requestAdditionalFacets(facetArea) {
       console.log(this.query, this.facets)
       let structuredQuery = this.query + this.searchAppliedFacets.join('')
-      let obj = {...this.facets}
       requestService.getAddonFacets(facetArea, this.query).then(result => this.constructNewFacets(result, facetArea), error => console.log('No additional facets found.'))
-      this.addSpecificRequestedFacets(obj)
+    },
+    removeAdditionalFacets(facetArea) {
+      let structuredQuery = this.query + this.searchAppliedFacets.join('')
+      let facets = JSON.parse(JSON.stringify(this.facets))
+      facets['facet_fields'][facetArea] = facets['facet_fields'][facetArea].splice(0,20)
+      this.addSpecificRequestedFacets(facets)
     },
     constructNewFacets(result, facetArea) {
       console.log(result)
