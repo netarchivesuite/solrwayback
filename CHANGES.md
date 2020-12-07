@@ -1,8 +1,23 @@
+
+4.0.5
+-----
+Fixed SolrWayback not loading at all in Safari browser (was due to regexp)
+Fixed facet query encoding regression error.
+Version of Solrwayback added to the web-properties method.
+
+
 4.0.4
 -----
+Upgraded vue-cli framework from 4.4.0 to 4.5.9  (frontend framework)
+Facets and links below images can be right clicked and open in a new tab.
+Spinner added  when loading images in result set for HTML pages.
+Realtime search hints if query seems faulty. The following query:  cats and dogs")
+   will result in 3 warnings. 1) lowercase 'and' 2) unbalanced quotes 3) unbalanced parentheses
+
+
 Custom logo+link can be inserted top left corner. Defined in solrwaybackweb.properties
 
-#Show a custom image in top left corner. (png,gif,svg etc.). 
+#Show a custom image in top left corner. (png,jpeg,svg). (150x60 pixel) 
 #Link when clicking the logo
 top.left.logo.image=/kb_logo_desktop_blue.svg
 top.left.logo.image.link=https://www.kb.dk/
@@ -13,7 +28,7 @@ Gephi link-graph (search toolbox) implemented with new GUI. Description+help tex
 HTML tags n-gram implemented(seacrh toolbox). Found on same tab as the normal n-gram search(radio button)
 Notification if the cap of 500 images is reach for image  geo-search.
 Both warc-file exports also have the option to export in warc.gz format now (zipped).
-Page resouce page (playback toolbox) now also shows maximum timespam back- and forward for the resources.
+Page resources (playback toolbox) now also shows maximum timespam back- and forward for the resources.
 
 
 4.0.2

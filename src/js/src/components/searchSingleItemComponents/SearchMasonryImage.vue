@@ -3,9 +3,11 @@
     <div class="number">
       #{{ row + number * rowNumber }}
     </div>
-    <img 
-      loading="lazy"
+    <div v-if="!imageLoaded" class="loader" />
+    <img
+      loading="lazy" 
       :src="result.imageUrl + '&height=200&width=200'"
+      @load="setImageLoaded(true)"
       @click="toggleFullImage(true)">
     <search-single-item-focus-image v-if="showFullImage === true"
                                     :image="result.downloadUrl"
@@ -54,7 +56,8 @@ export default {
   },
   data () {
     return {  
-      showFullImage:null
+      showFullImage:null,
+      imageLoaded:false,
     }
   },
   computed: {
@@ -68,6 +71,9 @@ export default {
       updateShowModal:'updateShowModal',
       updateCurrentModal:'updateCurrentModal'
     }),
+    setImageLoaded(value) {
+      this.imageLoaded = value
+    },
      toggleFullImage(index) {
       this.showFullImage !== null ? this.showFullImage = null : this.showFullImage = index
     },

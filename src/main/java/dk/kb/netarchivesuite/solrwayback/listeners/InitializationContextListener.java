@@ -35,7 +35,8 @@ public class InitializationContextListener implements ServletContextListener {
             version = props.getProperty("APPLICATION.VERSION");
             PropertiesLoader.initProperties(webbAppContext+".properties"); //backend. If contextroot is not solrwayback, it will first look for that context specific propertyfile                                  
             PropertiesLoaderWeb.initProperties(webbAppContext+"web.properties"); //frontend
-
+            PropertiesLoaderWeb.SOLRWAYBACK_VERSION = version;
+            
             // initialise the solrclient
             NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
             
