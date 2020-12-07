@@ -15,14 +15,15 @@
              @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet) : null">
           {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
-        <div v-if="facetCategory[1].length >= 20" class="moreFacets">
-          <div v-if="facetCategory[1].length > 20" class="facetArrow">
+        <div v-show="extraFacetsLoading" class="extraFacetsloading" />
+        <div v-if="facetCategory[1].length >= 20 && !extraFacetsLoading" class="moreFacets">
+          <div v-if="facetCategory[1].length > 20" class="facetArrow up">
             ︿
           </div>
           <div class="moreFacetText" @click="determineFacetAction(facetCategory[0], facetCategory[1].length)">
             {{ determineText(facetCategory[0], facetCategory[1].length) }} 
           </div>
-          <div v-if="facetCategory[1].length === 20" class="facetArrow">
+          <div v-if="facetCategory[1].length === 20" class="facetArrow down">
             ﹀
           </div>
         </div>
@@ -41,6 +42,11 @@ import { requestService } from '../services/RequestService'
 export default {
   name: 'SearchFacetOptions',
   mixins: [HistoryRoutingUtils],
+  data () {
+    return {  
+      extraFacetsLoading:false
+    }
+  },
   computed: {
     ...mapState({
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
@@ -69,9 +75,10 @@ export default {
       return length <= 20 ? 'more ' + facet + 's' : 'less ' + facet + 's'
     },
     requestAdditionalFacets(facetArea) {
+      this.extraFacetsLoading = true
       console.log(this.query, this.facets)
       let structuredQuery = this.query + this.searchAppliedFacets.join('')
-      requestService.getAddonFacets(facetArea, this.query).then(result => this.constructNewFacets(result, facetArea), error => console.log('No additional facets found.'))
+      requestService.getAddonFacets(facetArea, this.query).then(result => (this.constructNewFacets(result, facetArea), this.extraFacetsLoading = false), error => (console.log('No additional facets found.'),this.extraFacetsLoading = false))
     },
     removeAdditionalFacets(facetArea) {
       let structuredQuery = this.query + this.searchAppliedFacets.join('')

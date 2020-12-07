@@ -420,13 +420,18 @@ margin-left:40px;
 
 .facetCategory .moreFacets {
 	margin-top: 10px;
-	display: inline-block;
+  display: inline-block;
+  margin-left: 15px;
 }
 
 .facetCategory .moreFacets .facetArrow {
   color: var(--main-highlight-color);
   font-weight:bold;
   text-align: center;
+}
+
+.facetCategory .moreFacets .facetArrow.up {
+  margin-top: -10px;
 }
 
 .facetCategory .moreFacets .moreFacetText {
@@ -666,7 +671,11 @@ margin-left:40px;
   transition: all 300ms linear 0s;
 }
 
-.images .column .columnImageContainer .loader, .previewImageContainer .loader {
+.facets .extraFacetsloading {
+  margin-left:15px !important;
+}
+
+.images .column .columnImageContainer .loader, .previewImageContainer .loader, .facets .extraFacetsloading {
   content: '';
 	position: relative;
 	width: 30px;
