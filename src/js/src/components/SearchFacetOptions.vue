@@ -16,7 +16,8 @@
           {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
         <div v-show="extraFacetsLoading" class="extraFacetsloading" />
-        <div v-if="facetCategory[1].length >= 20 && !extraFacetsLoading" class="moreFacets">
+        <!-- here we're excluding the crawl_year facets, because OP don't want a show more on those -->
+        <div v-if="facetCategory[1].length >= 20 && !extraFacetsLoading && facetCategory[0] !== 'crawl_year'" class="moreFacets">
           <div v-if="facetCategory[1].length > 20" class="facetArrow up">
             ︿
           </div>
@@ -76,7 +77,6 @@ export default {
     },
     requestAdditionalFacets(facetArea) {
       this.extraFacetsLoading = true
-      console.log(this.query, this.facets)
       let structuredQuery = this.query + this.searchAppliedFacets.join('')
       requestService.getAddonFacets(facetArea, this.query).then(result => (this.constructNewFacets(result, facetArea), this.extraFacetsLoading = false), error => (console.log('No additional facets found.'),this.extraFacetsLoading = false))
     },
@@ -87,7 +87,6 @@ export default {
       this.addSpecificRequestedFacets(facets)
     },
     constructNewFacets(result, facetArea) {
-      console.log(result)
       let facets = JSON.parse(JSON.stringify(this.facets))
       facets['facet_fields'][facetArea] = result.facet_counts.facet_fields[facetArea]
       this.addSpecificRequestedFacets(facets)
