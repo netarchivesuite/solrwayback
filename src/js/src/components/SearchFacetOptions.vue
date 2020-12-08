@@ -62,14 +62,15 @@ export default {
     ...mapActions('Search', {
       updateSolrSettingOffset:'updateSolrSettingOffset',
       addToSearchAppliedFacets:'addToSearchAppliedFacets',
-      addSpecificRequestedFacets:'addSpecificRequestedFacets'
+      addSpecificRequestedFacets:'addSpecificRequestedFacets',
+      setFacetToInitialAmount:'setFacetToInitialAmount'
     }),
     determineFacetAction(facet, length) {
       if(length === 20) {
         this.requestAdditionalFacets(facet)
       }
       else if(length > 20) {
-        this.removeAdditionalFacets(facet)
+        this.setFacetToInitialAmount(facet)
       }
     },
     determineText(facet, length) {
@@ -78,18 +79,7 @@ export default {
     requestAdditionalFacets(facetArea) {
       this.extraFacetsLoading = true
       let structuredQuery = this.query + this.searchAppliedFacets.join('')
-      requestService.getAddonFacets(facetArea, this.query).then(result => (this.constructNewFacets(result, facetArea), this.extraFacetsLoading = false), error => (console.log('No additional facets found.'),this.extraFacetsLoading = false))
-    },
-    removeAdditionalFacets(facetArea) {
-      let structuredQuery = this.query + this.searchAppliedFacets.join('')
-      let facets = JSON.parse(JSON.stringify(this.facets))
-      facets['facet_fields'][facetArea] = facets['facet_fields'][facetArea].splice(0,20)
-      this.addSpecificRequestedFacets(facets)
-    },
-    constructNewFacets(result, facetArea) {
-      let facets = JSON.parse(JSON.stringify(this.facets))
-      facets['facet_fields'][facetArea] = result.facet_counts.facet_fields[facetArea]
-      this.addSpecificRequestedFacets(facets)
+      this.addSpecificRequestedFacets({facet:facetArea, query:structuredQuery}).then(this.extraFacetsLoading = false)
     },
     applyFacet(facetCategory, facet) {
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'

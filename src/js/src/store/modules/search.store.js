@@ -54,8 +54,14 @@ const actions = {
   emptySearchAppliedFacets ({commit}) {
     commit('emptySearchAppliedFacetsSuccess')
   },
-  addSpecificRequestedFacets ( {commit}, param ) {
-    commit('facetRequestSuccess', param)
+  addSpecificRequestedFacets ( {commit}, params ) {
+    requestService
+      .getMoreFacets(params.facet, params.query)
+      .then(result => commit('loadMorefacetsRequestSuccess', {result:result, selectedFacet:params.facet}), error =>
+        commit('loadMorefacetsRequestError', error))
+  },
+  setFacetToInitialAmount ( {commit}, param) {
+    commit('setFacetsToInitialAmountSuccess', param)
   },
   clearResults ( {commit} ) {
     commit('clearResultsSuccess')
@@ -130,6 +136,25 @@ const mutations = {
   },
   emptySearchAppliedFacetsSuccess(state) {
     state.searchAppliedFacets = []
+  },
+  loadMorefacetsRequestSuccess(state, param) {
+    let newFacets = JSON.parse(JSON.stringify(state.facets))
+    newFacets['facet_fields'][param.selectedFacet] = param.result.facet_counts.facet_fields[param.selectedFacet]
+    state.facets = newFacets
+  },
+  setFacetsToInitialAmountSuccess(state, facetArea) {
+    let newFacets = JSON.parse(JSON.stringify(state.facets))
+    newFacets['facet_fields'][facetArea] = newFacets['facet_fields'][facetArea].splice(0,20)
+    state.facets = newFacets
+  },
+  loadMorefacetsRequestError() {
+    this.dispatch('Notifier/setNotification', {
+      title: 'We are so sorry!',
+      text: 'Something went wrong when fetching more facets - please try again',
+      srvMessage: 'Facets not found.',
+      type: 'error',
+      timeout: false
+    })
   },
   facetRequestSuccess(state, result) {
       state.facets = result

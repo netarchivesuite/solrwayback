@@ -21,7 +21,7 @@ export const requestService = {
   getPWID,
   getWarcHeader,
   getLinkGraph,
-  getAddonFacets
+  getMoreFacets
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -252,7 +252,7 @@ function getLinkGraph(domain, facetLimit, ingoing, dateStart, dateEnd) {
   })
 }
 
-function getAddonFacets(domain, query) {
+function getMoreFacets(domain, query) {
   const url = `services/frontend/solr/search/facets/loadmore/?facetfield=${domain}&grouping=false&query=${encodeURIComponent(query)}`
   return axios.get(
     url).then(response => {
