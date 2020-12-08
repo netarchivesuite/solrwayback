@@ -50,8 +50,13 @@ public class ArcParserFileResolver {
    * @param offset offset in the warc file
    * @param loadBinary will load the byte[] with the content. Do mot use for video/audio etc. Use the InputStream method for this
     */
-   public static ArcEntry getArcEntry(String source_file_path, long offset, boolean loadBinary) throws Exception {
-     try {
+   public static ArcEntry getArcEntry(String source_file_path_org, long offset, boolean loadBinary) throws Exception {
+   
+       //Maybe this will stop code scan think parameter is used unvalidated.
+       //It is validated later to be .warc/.warcs.gz/.arc/.arc.gz
+       String source_file_path = source_file_path_org.trim();
+       
+       try {
        String cached = cache.get(source_file_path);
        String fileLocation = null;
        if (cached != null) {
