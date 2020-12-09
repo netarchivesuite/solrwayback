@@ -16,6 +16,7 @@ const initialState = () => ({
   },
   loading:false,
   facetLoading:false,
+  extraFacetLoading:false
 })
 
 const state = initialState()
@@ -26,6 +27,9 @@ const actions = {
   },
   setFacetLoadingStatus( {commit}, param) {
     commit('setFacetLoadingStatus', param)
+  },
+  setExtraFacetLoadingStatus( {commit}, param) {
+    commit('setExtraFacetLoadingStatus', param)
   },
   updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
@@ -55,6 +59,7 @@ const actions = {
     commit('emptySearchAppliedFacetsSuccess')
   },
   addSpecificRequestedFacets ( {commit}, params ) {
+    commit('setExtraFacetLoadingStatus', params.facet)
     requestService
       .getMoreFacets(params.facet, params.query)
       .then(result => commit('loadMorefacetsRequestSuccess', {result:result, selectedFacet:params.facet}), error =>
@@ -141,11 +146,14 @@ const mutations = {
     let newFacets = JSON.parse(JSON.stringify(state.facets))
     newFacets['facet_fields'][param.selectedFacet] = param.result.facet_counts.facet_fields[param.selectedFacet]
     state.facets = newFacets
+    state.extraFacetLoading = false
   },
   setFacetsToInitialAmountSuccess(state, facetArea) {
     let newFacets = JSON.parse(JSON.stringify(state.facets))
     newFacets['facet_fields'][facetArea] = newFacets['facet_fields'][facetArea].splice(0,20)
     state.facets = newFacets
+    state.extraFacetLoading = false
+
   },
   loadMorefacetsRequestError() {
     this.dispatch('Notifier/setNotification', {
@@ -155,6 +163,8 @@ const mutations = {
       type: 'error',
       timeout: false
     })
+    state.extraFacetLoading = false
+
   },
   facetRequestSuccess(state, result) {
       state.facets = result
@@ -218,6 +228,10 @@ const mutations = {
   },
   setFacetLoadingStatus(state, status) {
     state.facetLoading = status
+  },
+  setExtraFacetLoadingStatus(state, status) {
+    console.log('setting ', status)
+    state.extraFacetLoading = status
   },
   clearResultsSuccess(state) {
     state.results = {}

@@ -15,15 +15,15 @@
              @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet) : null">
           {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
-        <div v-show="extraFacetsLoading" class="extraFacetsloading" />
+        <div v-show="extraFacetLoading === facetCategory[0]" class="extraFacetsloading" />
         <!-- here we're excluding the crawl_year facets, because OP don't want a show more on those -->
-        <div v-if="facetCategory[1].length >= 20 && !extraFacetsLoading && facetCategory[0] !== 'crawl_year'" class="moreFacets">
+        <div v-if="facetCategory[1].length >= 20 && facetCategory[0] !== 'crawl_year'" class="moreFacets">
           <div v-if="facetCategory[1].length > 20" class="facetArrow up">
             ︿
           </div>
-          <div class="moreFacetText" @click="determineFacetAction(facetCategory[0], facetCategory[1].length)">
+          <button :disabled="!!extraFacetLoading" class="moreFacetText" @click="determineFacetAction(facetCategory[0], facetCategory[1].length)">
             {{ determineText(facetCategory[0], facetCategory[1].length) }} 
-          </div>
+          </button>
           <div v-if="facetCategory[1].length === 20" class="facetArrow down">
             ﹀
           </div>
@@ -43,19 +43,15 @@ import { requestService } from '../services/RequestService'
 export default {
   name: 'SearchFacetOptions',
   mixins: [HistoryRoutingUtils],
-  data () {
-    return {  
-      extraFacetsLoading:false
-    }
-  },
   computed: {
     ...mapState({
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       facets: state => state.Search.facets,
       query: state => state.Search.query,
       solrSettings: state => state.Search.solrSettings,
+      loading: state => state.Search.loading,
       facetLoading: state => state.Search.facetLoading,
-      loading: state => state.Search.loading
+      extraFacetLoading: state => state.Search.extraFacetLoading
     }),
   },
   methods: {
@@ -77,9 +73,8 @@ export default {
       return length <= 20 ? 'more ' + facet + 's' : 'less ' + facet + 's'
     },
     requestAdditionalFacets(facetArea) {
-      this.extraFacetsLoading = true
       let structuredQuery = this.query + this.searchAppliedFacets.join('')
-      this.addSpecificRequestedFacets({facet:facetArea, query:structuredQuery}).then(this.extraFacetsLoading = false)
+      this.addSpecificRequestedFacets({facet:facetArea, query:structuredQuery})
     },
     applyFacet(facetCategory, facet) {
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'

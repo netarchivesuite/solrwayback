@@ -437,6 +437,14 @@ margin-left:40px;
 .facetCategory .moreFacets .moreFacetText {
   cursor: pointer;
   color:var(--main-highlight-color);
+  background-color: transparent;
+  border:0px;
+  font-size: 100%;
+}
+
+.facetCategory .moreFacets .moreFacetText:disabled {
+  cursor: default;
+  color:var(--seethrough-black);
 }
 
 .facetItem {
