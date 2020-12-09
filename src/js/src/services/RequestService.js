@@ -20,7 +20,8 @@ export const requestService = {
   fireGeoImageSearchRequest,
   getPWID,
   getWarcHeader,
-  getLinkGraph
+  getLinkGraph,
+  getMoreFacets
 }
 
 function fireSearchRequest (query, facets, options) {
@@ -243,6 +244,16 @@ function getWarcHeader(sourceFilePath, offset) {
 
 function getLinkGraph(domain, facetLimit, ingoing, dateStart, dateEnd) {
   const url = `services/frontend/tools/linkgraph/?domain=${domain}&facetLimit=${facetLimit}&ingoing=${ingoing}&dateStart=${dateStart}&dateEnd=${dateEnd}`
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function getMoreFacets(domain, query) {
+  const url = `services/frontend/solr/search/facets/loadmore/?facetfield=${domain}&grouping=false&query=${encodeURIComponent(query)}`
   return axios.get(
     url).then(response => {
     return response.data

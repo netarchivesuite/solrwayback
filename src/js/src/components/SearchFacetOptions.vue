@@ -15,6 +15,19 @@
              @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet) : null">
           {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
+        <div v-show="extraFacetLoading === facetCategory[0]" class="extraFacetsloading" />
+        <!-- here we're excluding the crawl_year facets, because OP don't want a show more on those -->
+        <div v-if="facetCategory[1].length >= 20 && facetCategory[0] !== 'crawl_year'" class="moreFacets">
+          <div v-if="facetCategory[1].length > 20" class="facetArrow up">
+            ︿
+          </div>
+          <button :disabled="!!extraFacetLoading" class="moreFacetText" @click="determineFacetAction(facetCategory[0], facetCategory[1].length)">
+            {{ determineText(facetCategory[0], facetCategory[1].length) }} 
+          </button>
+          <div v-if="facetCategory[1].length === 20" class="facetArrow down">
+            ﹀
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -24,6 +37,8 @@
 
 import { mapState, mapActions } from 'vuex'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
+import { requestService } from '../services/RequestService'
+
 
 export default {
   name: 'SearchFacetOptions',
@@ -34,15 +49,33 @@ export default {
       facets: state => state.Search.facets,
       query: state => state.Search.query,
       solrSettings: state => state.Search.solrSettings,
+      loading: state => state.Search.loading,
       facetLoading: state => state.Search.facetLoading,
-      loading: state => state.Search.loading
+      extraFacetLoading: state => state.Search.extraFacetLoading
     }),
   },
   methods: {
     ...mapActions('Search', {
       updateSolrSettingOffset:'updateSolrSettingOffset',
       addToSearchAppliedFacets:'addToSearchAppliedFacets',
+      addSpecificRequestedFacets:'addSpecificRequestedFacets',
+      setFacetToInitialAmount:'setFacetToInitialAmount'
     }),
+    determineFacetAction(facet, length) {
+      if(length === 20) {
+        this.requestAdditionalFacets(facet)
+      }
+      else if(length > 20) {
+        this.setFacetToInitialAmount(facet)
+      }
+    },
+    determineText(facet, length) {
+      return length <= 20 ? 'more ' + facet + 's' : 'less ' + facet + 's'
+    },
+    requestAdditionalFacets(facetArea) {
+      let structuredQuery = this.query + this.searchAppliedFacets.join('')
+      this.addSpecificRequestedFacets({facet:facetArea, query:structuredQuery})
+    },
     applyFacet(facetCategory, facet) {
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
       this.updateSolrSettingOffset(0)

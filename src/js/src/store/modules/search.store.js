@@ -16,6 +16,7 @@ const initialState = () => ({
   },
   loading:false,
   facetLoading:false,
+  extraFacetLoading:false
 })
 
 const state = initialState()
@@ -26,6 +27,9 @@ const actions = {
   },
   setFacetLoadingStatus( {commit}, param) {
     commit('setFacetLoadingStatus', param)
+  },
+  setExtraFacetLoadingStatus( {commit}, param) {
+    commit('setExtraFacetLoadingStatus', param)
   },
   updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
@@ -53,6 +57,16 @@ const actions = {
   },
   emptySearchAppliedFacets ({commit}) {
     commit('emptySearchAppliedFacetsSuccess')
+  },
+  addSpecificRequestedFacets ( {commit}, params ) {
+    commit('setExtraFacetLoadingStatus', params.facet)
+    requestService
+      .getMoreFacets(params.facet, params.query)
+      .then(result => commit('loadMorefacetsRequestSuccess', {result:result, selectedFacet:params.facet}), error =>
+        commit('loadMorefacetsRequestError', error))
+  },
+  setFacetToInitialAmount ( {commit}, param) {
+    commit('setFacetsToInitialAmountSuccess', param)
   },
   clearResults ( {commit} ) {
     commit('clearResultsSuccess')
@@ -128,6 +142,30 @@ const mutations = {
   emptySearchAppliedFacetsSuccess(state) {
     state.searchAppliedFacets = []
   },
+  loadMorefacetsRequestSuccess(state, param) {
+    let newFacets = JSON.parse(JSON.stringify(state.facets))
+    newFacets['facet_fields'][param.selectedFacet] = param.result.facet_counts.facet_fields[param.selectedFacet]
+    state.facets = newFacets
+    state.extraFacetLoading = false
+  },
+  setFacetsToInitialAmountSuccess(state, facetArea) {
+    let newFacets = JSON.parse(JSON.stringify(state.facets))
+    newFacets['facet_fields'][facetArea] = newFacets['facet_fields'][facetArea].splice(0,20)
+    state.facets = newFacets
+    state.extraFacetLoading = false
+
+  },
+  loadMorefacetsRequestError() {
+    this.dispatch('Notifier/setNotification', {
+      title: 'We are so sorry!',
+      text: 'Something went wrong when fetching more facets - please try again',
+      srvMessage: 'Facets not found.',
+      type: 'error',
+      timeout: false
+    })
+    state.extraFacetLoading = false
+
+  },
   facetRequestSuccess(state, result) {
       state.facets = result
       state.facetLoading = false
@@ -190,6 +228,9 @@ const mutations = {
   },
   setFacetLoadingStatus(state, status) {
     state.facetLoading = status
+  },
+  setExtraFacetLoadingStatus(state, status) {
+    state.extraFacetLoading = status
   },
   clearResultsSuccess(state) {
     state.results = {}
