@@ -230,7 +230,6 @@ const mutations = {
     state.facetLoading = status
   },
   setExtraFacetLoadingStatus(state, status) {
-    console.log('setting ', status)
     state.extraFacetLoading = status
   },
   clearResultsSuccess(state) {
