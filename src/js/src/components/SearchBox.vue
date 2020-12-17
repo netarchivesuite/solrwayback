@@ -30,7 +30,10 @@
                   @keydown.enter="checkKeyPresses()"
                   @keyup.prevent="solrSettings.urlSearch ? null : checkQuery()"
                   @input="$_getSizeOfTextArea('query')" />
-        <button type="button" class="searchGuidelinesButton" @click.prevent="openSelectedModal('guidelines')">
+        <button type="button"
+                title="See search guidelines"
+                class="searchGuidelinesButton"
+                @click.prevent="openSelectedModal('guidelines')">
           ?
         </button>
         <button id="querySubmit" title="Search" type="submit">
@@ -56,7 +59,7 @@
                    type="checkbox"
                    name="urlSearch"
                    @click.stop="selectSearchMethod('urlSearch')">
-            <label for="urlSearch">URL search <span class="buttonExplanation" title="Explanation goes here.">[ ? ]</span></label>
+            <label for="urlSearch">URL search <span class="buttonExplanation" title="Search for a specific URL. The search will also puny encode the domain name and normalize the URL so all different representations of the same URL is found.">[ ? ]</span></label>
           </div>
           <div class="floatRight marginRight" @click.prevent="selectSearchMethod('imgSearch')">
             <input id="imgSearch"
@@ -64,7 +67,7 @@
                    type="checkbox"
                    name="imgSearch"
                    @click.stop="selectSearchMethod('imgSearch')">
-            <label for="imgSearch">Image search <span class="buttonExplanation" title="Explanation goes here">[ ? ]</span></label>
+            <label for="imgSearch">Image search <span class="buttonExplanation" title="Will show images found in  HTML pages near the search text and also include images where search text matches meta-data or resource name in URL.">[ ? ]</span></label>
           </div>
         </div>
         <div class="tools">
