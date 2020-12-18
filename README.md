@@ -35,28 +35,28 @@ SolrWayback comes with additional features:
 
 
 <p align="center"> 
-   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" width="600" height="400"/>
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" />
 </p>
 <p align="center">
  Lising of search results with facets.
 </p>
 
 <p align="center"> 
-   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/image_search.png?raw=true" width="600" height="400"/>
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/image_search.png?raw=true"/>
 </p>
 <p align="center">
   Image search, show only images as results.
 </p>
 
 <p align="center"> 
-   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_playback.png?raw=true" width="600" height="400"/>
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_playback.png?raw=true" />
 </p>
 <p align="center">
 Solrwayback showing the playback of an archived webpage with playback toolbox overlay.
 </p>
 
 <p align="center"> 
-   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_linkgraph.png?raw=true" width="600" height="400"/>
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_linkgraph.png?raw=true" />
 </p>
 <p align="center">
 Interactive domain link graph
