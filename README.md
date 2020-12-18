@@ -49,10 +49,10 @@ SolrWayback comes with additional features:
 </p>
 
 <p align="center"> 
-   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_demo.png?raw=true" width="600" height="400"/>
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_playback.png?raw=true" width="600" height="400"/>
 </p>
 <p align="center">
-Solrwayback showing an archived webpage with an overlay statistics and further navigation options.
+Solrwayback showing the playback of an archived webpage with playback toolbox overlay.
 </p>
 
 <p align="center"> 
