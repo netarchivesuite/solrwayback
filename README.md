@@ -35,10 +35,17 @@ SolrWayback comes with additional features:
 
 
 <p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" width="600" height="400"/>
+</p>
+<p align="center">
+ Lising of search results with facets.
+</p>
+
+<p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/image_search.png?raw=true" width="600" height="400"/>
 </p>
 <p align="center">
-  Google like image search in the web-archive
+  Image search, show only images as results.
 </p>
 
 <p align="center"> 
