@@ -1,10 +1,13 @@
+4.0.6
+-----
+Start year for domain statistics is not using the archive.start.year value in solrwaybackweb.properties
+Hover text added to search guidelines and the 2 questions marks (image/url search)
 
 4.0.5
 -----
 Fixed SolrWayback not loading at all in Safari browser (was due to regexp)
 Fixed facet query encoding regression error.
 Version of Solrwayback added to the web-properties method.
-
 
 4.0.4
 -----
