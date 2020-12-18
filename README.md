@@ -84,6 +84,13 @@ Search in images by gps location in images having exif location information abou
 Generate a wordcloud for a domain
 </p>
 
+<p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_ngram.png?raw=true" />
+</p>
+<p align="center">
+n-gram visualization of results by year, relative to the number of results that year.
+</p>
+
 
  
 ## Root servlet. Catching and forwarding live leaks.
