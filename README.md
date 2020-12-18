@@ -55,16 +55,6 @@ SolrWayback comes with additional features:
 Solrwayback showing an archived webpage with an overlay statistics and further navigation options.
 </p>
 
-
-<p align="center"> 
-   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/multiple_pagepreviews.png?raw=true" width="600" height="400"/>
-</p>
-<p align="center">
-Page previews for different harvest times of a given url. Images are generated real-time and uses the build in socks proxy to prevent leaking to the live web.
-</p>
-
-
-
 <p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_linkgraph.png?raw=true" width="600" height="400"/>
 </p>
@@ -84,8 +74,16 @@ Github like visualization of crawltimes
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/gps_exif_search.png?raw=true" />
 </p>
 <p align="center">
-Search by gps location for images having exif location information.
+Search in images by gps location in images having exif location information about the location.
 </p>
+
+<p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_wordcloud.png?raw=true" />
+</p>
+<p align="center">
+Generate a wordcloud for a domain
+</p>
+
 
  
 ## Root servlet. Catching and forwarding live leaks.
