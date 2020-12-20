@@ -37,6 +37,7 @@ Netsearch(Archon/Arctika): https://github.com/netarchivesuite/netsearch<br>
 Archon/Actika is a book keeping application for warc-files and can start multiple concurrent warc-indexer jobs for large scale netarchives. 
 
 ## SolrWayback Screenshots
+
 <p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" />
 </p>
@@ -129,10 +130,8 @@ Absolute URL live-leaks (starting with http://domain...) will not be caught and 
  * Open search interface: http://localhost:8080/solrwayback
 
 ## Contact
-* Thomas Egense (thomas.egense@gmail.com) 
-
-Feel free to send emails with comments and questions.
-
+Thomas Egense (thomas.egense@gmail.com) 
+Feel free to send emails with comments or questions.
 
 # SolrWayback software bundle 4.0 install guide
 
