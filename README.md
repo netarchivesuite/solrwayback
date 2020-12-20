@@ -201,8 +201,12 @@ If you want to index a new collection into solr and remove the old index.
 
 Faster indexing:  
 A powerful laptop can handle up to 6 simultaneous indexing processes with Solr running on the same laptop. 
-Using an SSD for the Solr-index will speed up indexing and also improve search/playback performance drastic.   
+Using an SSD for the Solr-index will speed up indexing and also improve search/playback performance.
 
+Windows only Solrwayback control GUI:
+For windows users there is a executable GUI set-up program that will start tomcat/solr and copy properties to the home-directory.
+From the GUI you can select warc-files with a file choose and start indexing. Click the /addOn/SolrSetup.exe file to start GUI.
+For more information see: https://github.com/MadsGreen/SolrSetup/
 
 ### 4) SEARCHING AND ADDITIONAL FEATURES  
 Click the question mark in the search-field to get help with the search syntax for more complex queries and using 
