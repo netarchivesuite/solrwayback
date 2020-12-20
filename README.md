@@ -21,7 +21,7 @@ SolrWayback comes with additional features:
 * Image search similar to google images
 * Search by uploading a file. (image/pdf etc.) See if the resource has been harvested and from where.
 * View all fields indexed for a resource and show warc-header for records.
-
+* Configure alternative playback engine to any playback engine using the playback-API such as Open Wayback or PyWb etc.
 
 
 ## Live demo
@@ -36,8 +36,7 @@ The Warc indexer is the indexing engine for documents in SolrWayback. It is main
 Netsearch(Archon/Arctika): https://github.com/netarchivesuite/netsearch<br>
 Archon/Actika is a book keeping application for warc-files and can start multiple concurrent warc-indexer jobs for large scale netarchives. 
 
-
-## Screenshots
+## SolrWayback Screenshots
 <p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" />
 </p>
@@ -96,8 +95,14 @@ n-gram visualization of results by year, relative to the number of results that 
 </p>
 
 
+## API
+The API for linking to and browsing archived webpages is the same as for Internet Archive:<br>
+
+Internet Archive:https://web.archive.org/web/20080213093319/http://www.statsbiblioteket.dk/ <br>
+SolrWayback: http://server/solrwayback/services/web/20140515140841/http://statsbiblioteket.dk/ <br>
  
-## Root servlet. Catching and forwarding live leaks.
+
+## Improving playback with the SolrWayback Root servlet.
 Installing the root-servlet will improve playback of sites that are leaking urls. The root-servlet will
 catch relative leaks (same domain) even without using proxy mode. The leaks will then be redirected back into SolrWayback to the correct URL and crawltime.
 The root-servlet is included in the bundle install. In Tomcat it must be named ROOT.war.
@@ -105,21 +110,14 @@ Link to SolrWayback root proxy:
 https://github.com/netarchivesuite/solrwaybackrootproxy
 Absolute URL live-leaks (starting with http://domain...) will not be caught and can leak to the open web. Open network (F12) to see if any resources are leaking, or turn-off the internet connection to be sure there is no live leaks during playback.
 
-## API
-The API for linking to and browsing archived webpages is the same as for Internet Archive:<br>
-
-Internet Archive:https://web.archive.org/web/20080213093319/http://www.statsbiblioteket.dk/ <br>
-SolrWayback: http://server/solrwayback/services/web/20140515140841/http://statsbiblioteket.dk/ <br>
-
-If using a Solr search based web archive such as Shine (https://github.com/netarchivesuite/shine) or Warclight (https://github.com/archivesunleashed/warclight) you only need to change to property pointing from the wayback server to the SolrWayback server.
- 
  
  
 ## Requirements
+ * Works on MacOs/Linux/Windows.  
  * JDK 8/9/10/11 
  * A nice collection of Arc/Warc files or harvest your own with Heritrix,Webrecorder,Brozzler, Wget etc. 
  * Tomcat 8+  or another J2EE server for deploying the WAR-file
- * A Solr 7.1+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT +
+ * A Solr 7.X server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT +
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage
@@ -135,29 +133,18 @@ If using a Solr search based web archive such as Shine (https://github.com/netar
 
 Feel free to send emails with comments and questions.
 
-## Warc-indexer/Solr 
-All entries in Warc files are indexed as separate documents using the WARC-Indexer in Solr with the defined schema (solrconfig.xml)
-A document is Solr can be html, image, video, audio, js etc. This is the value of the field content_type_norm.
-Filename and offset of the entries  warc files is stored in solr and will be used and loaded during playback.
- 
 
 # SolrWayback software bundle 4.0 install guide
-
 
 With this download you will be able to index, search and playback web pages from your warc-files.
 The bundle contains Solr, the warc-indexer tool and Solrwayback installed on a Tomcat webserver.
 Just unzip the bundle and copy two files to your home directory and explore your warc files. 
 
 ## Download
-Download : https://github.com/netarchivesuite/solrwayback/releases/download/3.2.1/solrwayback_package.zip  
+Download : https://github.com/netarchivesuite/solrwayback/releases/download/4.0.6/solrwayback_package.zip  
 Unzip and follow the instructions below.
  
 
-## Requirements:
-Works on MacOs/Linux/Windows.  
-For the Solrwayback software bundle you only need to have Java  (64 bit) installed. 
-Java version 8,9,10 or 11 is required
-To check java is installed, type the following from a prompt: java -version  
 
 
 ## Install instructions:
