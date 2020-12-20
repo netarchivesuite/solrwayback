@@ -1,39 +1,43 @@
 # SolrWayback
 
-## SolrWayback 4.0 software bundle will be released in December 2020.
-Prerelease SolrWayback bundle for 4.0 here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.0.5
-
-
-
-
+## SolrWayback 4.0.6 software bundle has been released
+SolrWayback bundle release for 4.0.6 here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.0.6
 
 ## About SolrWayback
 
 SolrWayback is web-application for browsing historical harvested ARC/WARC files similar
-to the Internet Archive Wayback Machine. The SolrWayback depends on a Solr server with
-Arc/Warc files indexed using the British Library WARC-Indexer. 
-Unlike the Wayback Machine the SolrWayback does not need the
-CDX-server with meta data for the harvest. It only uses the Solr server and the raw
-Arc/Warc files.
-
- Warc-indexer: https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer<br>
- Netsearch(Archon/Arctika): https://github.com/netarchivesuite/netsearch<br>
- Archon/Actika is a bookbooking and  can start multiple  concurrent warc-indexer jobs for large scale netarchives. 
-
+to the Internet Archive Wayback Machine. The SolrWayback uses on a Solr server with Arc/Warc files indexed using the warc-indexer.
 
 SolrWayback comes with additional features:
-* Image search similar to google images
-* Search by uploading a file. (image/pdf etc.) See if the resource has been harvested and from where.
-* Dynamic Link graph (ingoing/outgoing) for domains.
-* Export a search resultset to a Warc-file. Streaming download, no limit of size of resultset.
-* CSV text export of result with custom field selection.
+* Free text search in all resources (HTML pages, pdf's, meta data for different media types, urls etc.)
+* Interactive link graph (ingoing/outgoing) for domains.
+* Export of search results to a Warc-file. Streaming download, no limit of size of resultset.
+* CSV text export of searc result with custom field selection.
 * Wordcloud generation for domain
 * N-gram search visuzalisation
 * Visualization of search result by domain.
-* Large scale export of linkgraph in Gephi format. 
+* Visualization of various domain statistics over time such as size, number of in and out going links.
+* Large scale export of linkgraph in Gephi format. (See https://labs.statsbiblioteket.dk/linkgraph/ )
+* Image search similar to google images
+* Search by uploading a file. (image/pdf etc.) See if the resource has been harvested and from where.
+* View all fields indexed for a resource and show warc-header for records.
 
 
 
+## Live demo
+The National Széchényi Library of Hungary has kindly set up the following demo site for SolrWayback <br>
+http://webadmin.oszk.hu/solrwayback/
+
+
+## See also
+Warc-indexer: https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer<br>
+The Warc indexer is the indexing engine for documents in SolrWayback. It is maintained by the British Library.
+
+Netsearch(Archon/Arctika): https://github.com/netarchivesuite/netsearch<br>
+Archon/Actika is a book keeping application for warc-files and can start multiple concurrent warc-indexer jobs for large scale netarchives. 
+
+
+## Screenshots
 <p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" />
 </p>
