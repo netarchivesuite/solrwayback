@@ -148,7 +148,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
 //    "               <span title=\"View in- and out-going links\"class=\"dynamicData icon\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +
     "               <span title=\"View dates for harvest\" class=\"dynamicData icon\">"+generateCalendarImageLink("today-24px.svg",stats.getUrl_norm()) +"</span>" +
     "               <span title=\"View XML\" class=\"dynamicData icon\">"+generatePwid("text_snippet-24px.svg",source_file_path,offset) +"</span>" +
-    "               <span title=\"View website previews\" class=\"dynamicData icon\">"+generatePagePreviews("preview-24px.svg",stats.getUrl_norm()) +"</span>" +
+    "               <span title=\"Not implemented yet!\" class=\"dynamicData icon\">"+generatePagePreviews("preview-24px.svg",stats.getUrl_norm()) +"</span>" +
     "               <span title=\"View harvest time for page resources\" class=\"dynamicData icon\">"+generatePageResources("schedule-24dp.svg",source_file_path,offset) +"</span>" +
 //            "       <span title=\"View domain developement over time\" class=\"dynamicData icon\">" + generateDomainGrowthImageLink("growth_icon.png",stats.getDomain()) +"</span>" +
     "            </div>" +    
@@ -256,7 +256,11 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
   private static String generatePagePreviews(String image,String url) throws Exception{
 
     String urlEncoded=URLEncoder.encode(url, "UTF-8");
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pagepreviews.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">Website previews</span></a>";
+    
+     
+    //Not implemnted yet.
+    //return "<img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">Website previews</span>";
+    return "<a><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">Page previews</span></a>";
   }
   
   private static String generatePageResources(String image, String source_file_path, long offset) throws Exception{
