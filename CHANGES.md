@@ -4,6 +4,7 @@
 Start year for domain statistics is not using the archive.start.year value in solrwaybackweb.properties
 Hover text added to search guidelines and the 2 questions marks (image/url search)
 First production ready of release of SolrWayback 4.x on github. 
+README.md various grammer fixes (thanks Mat Kelly!)
 
 4.0.5
 -----
