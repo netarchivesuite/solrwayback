@@ -1,3 +1,7 @@
+4.0.7
+-----
+Fixed chuncked transfer encoding error when HTTP header declared it was chucked, but was not.
+
 
 4.0.6
 -----
