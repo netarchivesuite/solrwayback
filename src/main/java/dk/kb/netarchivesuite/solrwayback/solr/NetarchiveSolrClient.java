@@ -351,7 +351,22 @@ public class NetarchiveSolrClient {
         }
         return dates;
     }
+    
+    /*
+     * Fast solr method that counts number of results
+     */
+    public long countResults(String query, String[] filterQuery) throws Exception {        
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery = new SolrQuery(query);
+        solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
+        solrQuery.add("fl", "id");
+        solrQuery.setFilterQueries(filterQuery);
+        solrQuery.setRows(0);
 
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        return rsp.getResults().getNumFound();        
+    }
+    
     public String getTextForDomain(String domain) throws Exception {
 
         SolrQuery solrQuery = new SolrQuery();

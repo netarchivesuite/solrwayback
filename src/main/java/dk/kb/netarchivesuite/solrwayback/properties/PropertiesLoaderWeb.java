@@ -26,6 +26,19 @@ public class PropertiesLoaderWeb {
     public static final String MAPS_RADIUS_PROPERTY = "maps.radius";
     public static final String ALLOW_EXPORT_WARC_PROPERTY = "allow.export.warc";
     public static final String ALLOW_EXPORT_CSV_PROPERTY = "allow.export.csv";
+    
+    
+    public static final String EXPORT_WARC_MAXRESULTS_PROPERTY = "export.warc.maxresults";
+    public static final String EXPORT_CSV_MAXRESULTS_PROPERTY = "export.csv.maxresults";
+    public static final String EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY = "export.warc.maxresults";
+    
+    
+    /*
+    export.warc.maxresults=1000000; 
+    export.csv.maxresults=1000000;        
+    export.warc.expanded.maxresults=10000  
+    */
+    
     public static final String EXPORT_CSV_FIELDS_PROPERTY = "export.csv.fields";
     public static final String ABOUT_TEXT_FILE_PROPERTY = "about.text.file";
     public static final String SEARCH_HELP_FILE_PROPERTY = "search.help.text.file";
@@ -45,10 +58,13 @@ public class PropertiesLoaderWeb {
     public static String MAPS_LONGITUDE;
     public static String MAPS_RADIUS;
 
+    public static long EXPORT_CSV_MAXRESULTS=10000000;// 10M default
+    public static long EXPORT_WARC_MAXRESULTS=1000000; // 1M default
+    public static long EXPORT_WARC_EXPANDED_MAXRESULTS=100000; // 500K default   
     public static boolean ALLOW_EXPORT_WARC;
     public static boolean ALLOW_EXPORT_CSV;
     public static String  EXPORT_CSV_FIELDS;;
-
+    
     public static String LEAFLET_SOURCE;
     public static String LEAFLET_ATTRIBUTION;
     public static String ABOUT_TEXT_FILE;
@@ -101,6 +117,24 @@ public class PropertiesLoaderWeb {
             TOP_LEFT_LOGO_IMAGE = serviceProperties.getProperty(TOP_LEFT_LOGO_IMAGE_PROPERTY);
             TOP_LEFT_LOGO_IMAGE_LINK = serviceProperties.getProperty(TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY);
             
+            
+            String csv_max_results= serviceProperties.getProperty(EXPORT_CSV_MAXRESULTS_PROPERTY);
+            String warc_max_results= serviceProperties.getProperty(EXPORT_WARC_MAXRESULTS_PROPERTY);
+            String warc_expanded_max_results= serviceProperties.getProperty(EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY);
+            
+            if (csv_max_results != null) {
+                EXPORT_CSV_MAXRESULTS  = Long.parseLong(csv_max_results);                
+            }
+            
+            if (warc_max_results  != null) {
+                EXPORT_WARC_MAXRESULTS  = Long.parseLong(warc_max_results);               
+            }
+
+            if ( warc_expanded_max_results!= null) {                
+                EXPORT_WARC_EXPANDED_MAXRESULTS  = Long.parseLong( warc_expanded_max_results);               
+            }
+
+                        
             // start year
             String startYearStr = serviceProperties.getProperty(ARCHIVE_START_YEAR_PROPERTY);
             if (startYearStr != null) {
@@ -117,9 +151,13 @@ public class PropertiesLoaderWeb {
                 ARCHIVE_START_YEAR=1998;
             }
 
+            //Set max export sizes                                   
             log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
             log.info("Property:"+ ALLOW_EXPORT_WARC_PROPERTY +" = " + ALLOW_EXPORT_WARC);
             log.info("Property:"+ ALLOW_EXPORT_CSV_PROPERTY +" = " + ALLOW_EXPORT_CSV);
+            log.info("Property:"+ EXPORT_CSV_MAXRESULTS_PROPERTY +" = " + EXPORT_CSV_MAXRESULTS);
+            log.info("Property:"+ EXPORT_WARC_MAXRESULTS_PROPERTY +" = " + EXPORT_WARC_MAXRESULTS);
+            log.info("Property:"+ EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY +" = " + EXPORT_WARC_EXPANDED_MAXRESULTS);
             log.info("Property:"+ EXPORT_CSV_FIELDS_PROPERTY +" = " + EXPORT_CSV_FIELDS);
             log.info("Property:"+ WAYBACK_SERVER_PROPERTY +" = " + WAYBACK_SERVER);			
             log.info("Property:"+ MAPS_LATITUDE_PROPERTY+" = " +MAPS_LATITUDE);

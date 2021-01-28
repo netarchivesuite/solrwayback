@@ -28,11 +28,11 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   private static final Logger log = LoggerFactory.getLogger(StreamingSolrWarcExportBufferedInputStream.class);
 
   private final SolrGenericStreaming solrClient;
-  private final int maxRecords;
+  private final long maxRecords;
   private final boolean gzip;
   private final List<InputStream> entryStreams = new ArrayList<>(); // Ideally a FIFO buffer, but not worth the hassle
-  private int docsWarcRead;
-  private int docsArcRead;
+  private long docsWarcRead;
+  private long docsArcRead;
 
   private int heapCache = 10*1024*1024; // 10MB TODO: Make this an option
 
@@ -43,7 +43,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
    * @param maxRecords the maximum number of records to deliver.
    * @param gzip if true, the WARC-records will be gzipped. If false, they will be delivered as-is.
    */
-  public StreamingSolrWarcExportBufferedInputStream(SolrGenericStreaming solrClient, int maxRecords, boolean gzip) {
+  public StreamingSolrWarcExportBufferedInputStream(SolrGenericStreaming solrClient, long maxRecords, boolean gzip) {
     this.solrClient = solrClient;
     this.maxRecords = maxRecords;
     this.gzip = gzip;

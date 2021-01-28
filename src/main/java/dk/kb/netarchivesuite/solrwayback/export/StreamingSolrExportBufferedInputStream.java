@@ -11,8 +11,8 @@ public class StreamingSolrExportBufferedInputStream extends InputStream {
 
   private int index;
   private List<byte[]> inputBuffer = new ArrayList<>();
-  private final int maxLines;
-  private int linesRead;
+  private final long maxLines;
+  private long linesRead;
   private  SolrStreamingLineBasedExportClientInterface solrClient;
   private final int solrPagingBufferSize;
 
@@ -47,7 +47,7 @@ public class StreamingSolrExportBufferedInputStream extends InputStream {
     return result;
   }
 
-  public StreamingSolrExportBufferedInputStream(SolrStreamingLineBasedExportClientInterface solrClient, int maxLines) {
+  public StreamingSolrExportBufferedInputStream(SolrStreamingLineBasedExportClientInterface solrClient, long maxLines) {
     this.solrClient = solrClient;
     this.maxLines = maxLines;
     this.solrPagingBufferSize = solrClient.getPageSize();

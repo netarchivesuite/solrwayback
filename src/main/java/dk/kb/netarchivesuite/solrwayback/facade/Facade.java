@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.QueryParam;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -420,12 +421,27 @@ public class Facade {
         return ArcParserFileResolver.getArcEntry(source_file_path, offset, loadBinary);
     }
 
-    public static InputStream exportWarcStreaming(boolean expandResources, boolean avoidDuplicates, boolean gzip, String query, String... filterqueries) {
+    public static InputStream exportWarcStreaming(boolean expandResources, boolean avoidDuplicates, boolean gzip, String query, String... filterqueries)  throws Exception{
+
+        long max=0;
+        //Check size
+        long results = NetarchiveSolrClient.getInstance().countResults(query, filterqueries);        
+        if (!expandResources) {
+            max= PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS;
+         if (results > PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS) {
+             throw new InvalidArgumentServiceException("Number of results for warc export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS);            
+         }
+        }
+        else {
+            max= PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS;;
+            if (results > PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS) {
+                throw new InvalidArgumentServiceException("Number of results for warc expanded  export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);            
+            }            
+        }        
         SolrGenericStreaming solr = new SolrGenericStreaming(PropertiesLoader.SOLR_SERVER, 100, Arrays.asList("source_file_path", "source_file_offset"),
                 expandResources, avoidDuplicates, query, filterqueries);
 
-        // TODO: Why do we have a max of 1M?
-        return new StreamingSolrWarcExportBufferedInputStream(solr, 1000000, gzip); // 1M max. results just for now
+        return new StreamingSolrWarcExportBufferedInputStream(solr, max, gzip); // Use maximum export results from property-file
     }
 
     public static InputStream exportLinkGraphStreaming(String q) {
@@ -436,8 +452,14 @@ public class Facade {
     public static InputStream exportCvsStreaming(String q, String fq, String fields) throws Exception {
         // TODO test only allowed fields are selected!
 
+        //Check size
+        long results = NetarchiveSolrClient.getInstance().countResults(q,new String[] {fq});
+        if (results > PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS) {
+            throw new InvalidArgumentServiceException("Number of results for csv export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);            
+        }
+        
         SolrStreamingExportClient solr = SolrStreamingExportClient.createCvsExporter(PropertiesLoader.SOLR_SERVER, q, fields, fq);
-        return new StreamingSolrExportBufferedInputStream(solr, 1000000);
+        return new StreamingSolrExportBufferedInputStream(solr, PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
     }
 
     public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing, String dateStart, String dateEnd) throws Exception {
