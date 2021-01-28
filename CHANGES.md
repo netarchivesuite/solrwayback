@@ -1,6 +1,6 @@
 4.0.7
 -----
-Fixed chuncked transfer encoding error when HTTP header declared it was chucked, but was not.
+Fixed chunked transfer encoding error when HTTP header declared it was chunked, but was not.
 
 New optional properties can be added to solrwaybackweb.properties to limit maximum number of export results.
 These values is their default values.
