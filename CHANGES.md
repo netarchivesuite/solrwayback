@@ -1,5 +1,11 @@
 4.0.7
 -----
+Brotli encoding fix for javascript.
+Introduced JavascriptPlayback class. Does nothing but handle brotli, but can later be improved to do url-replacement in javascript files.
+
+
+4.0.7
+-----
 Fixed chunked transfer encoding error when HTTP header declared it was chunked, but was not.
 
 New optional properties can be added to solrwaybackweb.properties to limit maximum number of export results.
