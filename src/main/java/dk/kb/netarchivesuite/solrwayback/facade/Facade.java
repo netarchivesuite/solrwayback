@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import dk.kb.netarchivesuite.solrwayback.parsers.*;
 import dk.kb.netarchivesuite.solrwayback.playback.CssPlayback;
 import dk.kb.netarchivesuite.solrwayback.playback.HtmlPlayback;
+import dk.kb.netarchivesuite.solrwayback.playback.JavascriptPlayback;
 import dk.kb.netarchivesuite.solrwayback.playback.JodelPlayback;
 import dk.kb.netarchivesuite.solrwayback.playback.TwitterPlayback;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
@@ -728,10 +729,16 @@ public class Facade {
                                                                                                                                  // etc.)
             HtmlPlayback htmlPlayback = new HtmlPlayback(arc, doc, showToolbar);
             return htmlPlayback.playback();
-        } else if ("text/css".equals(arc.getContentType()) && arc.getContentEncoding() != null && !("br".equalsIgnoreCase(arc.getContentEncoding()))) {
+        } else if ("text/css".equals(arc.getContentType()) ) {
             CssPlayback cssPlayback = new CssPlayback(arc, doc, showToolbar); // toolbar is never shown anyway.
             return cssPlayback.playback();
-        } else { // Serve as it is. (Javascript, images, pdfs etc.)
+        }
+        else if ("text/javascript".equals(arc.getContentType()) ) {
+            JavascriptPlayback javascriptPlayback = new JavascriptPlayback(arc, doc, showToolbar); // toolbar is never shown anyway.
+            return javascriptPlayback.playback();
+        }
+        
+        else { // Serve as it is. (Javascript, images, pdfs etc.)
 
             return arc; // dont parse
         }

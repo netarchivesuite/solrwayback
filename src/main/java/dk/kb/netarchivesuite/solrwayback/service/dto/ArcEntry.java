@@ -240,12 +240,19 @@ public void setFormat(FORMAT format) {
   
   public InputStream getBinaryLazyLoadNoChucking() throws Exception{
       if (format.equals(FORMAT.ARC)) {
-         BufferedInputStream is = ArcParser.lazyLoadBinary(sourceFilePath, offset);
-         return maybeDechunk(is);
+         BufferedInputStream is = ArcParser.lazyLoadBinary(sourceFilePath, offset);              
+         InputStream maybeDechunked = maybeDechunk(is);
+         //InputStream maybeUnziped = maybeUnzip(maybeDechunked);
+         InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeDechunked);
+         
+         return maybeBrotliDecoded;
       }
       else {
-           InputStream is = WarcParser.lazyLoadBinary(sourceFilePath, offset);
-          return maybeDechunk(is);
+           InputStream is = WarcParser.lazyLoadBinary(sourceFilePath, offset);              
+           InputStream maybeDechunked = maybeDechunk(is);
+           //InputStream maybeUnziped = maybeUnzip(maybeDechunked);
+           InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeDechunked);
+           return maybeBrotliDecoded;
       }            
   }
   

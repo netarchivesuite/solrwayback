@@ -8,18 +8,20 @@ import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 
-public class CssPlayback  extends PlaybackHandler{
+public class JavascriptPlayback  extends PlaybackHandler{
   
   private static final Logger log = LoggerFactory.getLogger(CssPlayback.class);
   
-  public CssPlayback(ArcEntry arc, IndexDoc doc, boolean showToolbar){
+  public JavascriptPlayback(ArcEntry arc, IndexDoc doc, boolean showToolbar){
     super(arc,doc,showToolbar);
   }
 
   @Override
   public ArcEntry playback() throws Exception{    
     //Never show the toolbar.
-      arc.setBinary(IOUtils.toByteArray(arc.getBinaryContentAsStringUnCompressed())); //TODO charset;          
+      arc.setBinary(IOUtils.toByteArray(arc.getBinaryContentAsStringUnCompressed())); //TODO charset;
+      log.info("javascript playback");
+      
       
     String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);                
     if (!"gzip".equalsIgnoreCase(arc.getContentEncoding())){ 
