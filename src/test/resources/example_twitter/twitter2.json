@@ -1,0 +1,289 @@
+
+{
+   "quote_count":0,
+   "contributors":null,
+   "truncated":true,
+   "text":"Test text with link https://t.co/ABC123",
+   "is_quote_status":false,
+   "in_reply_to_status_id":null,
+   "reply_count":0,
+   "id":1238239313369935874,
+   "favorite_count":0,
+   "entities":{
+      "user_mentions":[
+
+      
+],
+      "symbols":[
+
+      
+],
+      "hashtags":[
+
+      
+],
+      "urls":[
+         {
+            "url":"https://t.co/Q7kIlBwS6b",
+            "indices":[
+               117,
+               140
+            
+],
+            "expanded_url":"https://twitter.com/i/web/status/1234",
+            "display_url":"twitter.com/i/web/status/1\u2026"
+         
+}
+      
+]
+   
+},
+   "retweeted":false,
+   "coordinates":null,
+   "timestamp_ms":"1584054232338",
+   "source":"<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+   "in_reply_to_screen_name":null,
+   "id_str":"1234",
+   "display_text_range":[
+      0,
+      140
+   
+],
+   "retweet_count":0,
+   "in_reply_to_user_id":null,
+   "favorited":false,
+   "user":{
+      "follow_request_sent":null,
+      "profile_use_background_image":true,
+      "default_profile_image":false,
+      "id":2600310521,
+      "default_profile":true,
+      "verified":false,
+      "profile_image_url_https":"https://pbs.twimg.com/profile_images/476622232870203393/ABC123_normal.jpeg",
+      "profile_sidebar_fill_color":"DDEEF6",
+      "profile_text_color":"333333",
+      "followers_count":1227,
+      "profile_sidebar_border_color":"C0DEED",
+      "id_str":"2600310521",
+      "profile_background_color":"C0DEED",
+      "listed_count":66,
+      "profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png",
+      "utc_offset":null,
+      "statuses_count":678,
+      "description":"Here is another description",
+      "friends_count":1121,
+      "location":null,
+      "profile_link_color":"1DA1F2",
+      "profile_image_url":"http://pbs.twimg.com/profile_images/1234/vHux2YUz_normal.jpeg",
+      "following":null,
+      "geo_enabled":true,
+      "profile_banner_url":"https://pbs.twimg.com/profile_banners/123456/654321",
+      "profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png",
+      "name":"Thomas Egense",
+      "lang":null,
+      "profile_background_tile":false,
+      "favourites_count":817,
+      "screen_name":"ThomasEgense",
+      "notifications":null,
+      "url":"http://thomas-egense.dk",
+      "created_at":"Wed Jun 11 06:37:28 +0000 2014",
+      "contributors_enabled":false,
+      "time_zone":null,
+      "protected":false,
+      "translator_type":"none",
+      "is_translator":false
+   
+},
+   "geo":null,
+   "in_reply_to_user_id_str":null,
+   "possibly_sensitive":false,
+   "lang":"da",
+   "extended_tweet":{
+      "display_text_range":[
+         0,
+         249
+      
+],
+      "entities":{
+         "user_mentions":[
+
+         
+],
+         "symbols":[
+
+         
+],
+         "hashtags":[
+            {
+               "indices":[
+                  243,
+                  249
+               
+],
+               "text":"math"
+            
+}
+         
+],
+         "urls":[
+            {
+               "url":"https://t.co/rABCD",
+               "indices":[
+                  219,
+                  242
+               
+],
+               "expanded_url":"http://thomas-egense.dk/math/",
+               "display_url":"thomas-egense.dk/math/"
+            
+}
+         
+],
+         "media":[
+            {
+               "expanded_url":"https://twitter.com/ThomasEgense/status/ABCDE/photo/1",
+               "display_url":"pic.twitter.com/ABCDE",
+               "url":"https://t.co/ABCDE",
+               "media_url_https":"https://pbs.twimg.com/media/ABCDE.jpg",
+               "id_str":"654321",
+               "sizes":{
+                  "small":{
+                     "h":680,
+                     "resize":"fit",
+                     "w":511
+                  
+},
+                  "large":{
+                     "h":2048,
+                     "resize":"fit",
+                     "w":1538
+                  
+},
+                  "medium":{
+                     "h":1200,
+                     "resize":"fit",
+                     "w":901
+                  
+},
+                  "thumb":{
+                     "h":150,
+                     "resize":"crop",
+                     "w":150
+                  
+}
+               
+},
+               "indices":[
+                  250,
+                  273
+               
+],
+               "type":"photo",
+               "id":654221,
+               "media_url":"http://pbs.twimg.com/media/ABCDE.jpg"
+            
+}
+         
+]
+      
+},
+      "extended_entities":{
+         "media":[
+            {
+               "expanded_url":"https://twitter.com/ThomasEgense/status/12345/photo/1",
+               "display_url":"pic.twitter.com/ABCDE",
+               "url":"https://t.co/ABCDE",
+               "media_url_https":"https://pbs.twimg.com/media/ABCDE.jpg",
+               "id_str":"123456",
+               "sizes":{
+                  "small":{
+                     "h":680,
+                     "resize":"fit",
+                     "w":511
+                  
+},
+                  "large":{
+                     "h":2048,
+                     "resize":"fit",
+                     "w":1538
+                  
+},
+                  "medium":{
+                     "h":1200,
+                     "resize":"fit",
+                     "w":901
+                  
+},
+                  "thumb":{
+                     "h":150,
+                     "resize":"crop",
+                     "w":150
+                  
+}
+               
+},
+               "indices":[
+                  250,
+                  273
+               
+],
+               "type":"photo",
+               "id":1238239306277359618,
+               "media_url":"http://pbs.twimg.com/media/ABCDE.jpg"
+            
+}
+         
+]
+      
+},
+      "full_text":"Test full text with tag and link: #math https://t.co/ABCDE"
+   
+},
+   "created_at":"Thu Mar 12 23:03:52 +0000 2020",
+   "filter_level":"low",
+   "in_reply_to_status_id_str":null,
+   "place":{
+      "full_name":"Thomas Egense",
+      "url":"https://api.twitter.com/1.1/geo/id/1234.json",
+      "country":"Danmark",
+      "place_type":"city",
+      "bounding_box":{
+         "type":"Polygon",
+         "coordinates":[
+            [
+               [
+                  12.453064,
+                  55.613717
+               
+],
+               [
+                  12.453064,
+                  55.731834
+               
+],
+               [
+                  12.652201,
+                  55.731834
+               
+],
+               [
+                  12.652201,
+                  55.613717
+               
+]
+            
+]
+         
+]
+      
+},
+      "country_code":"DK",
+      "attributes":{
+
+      
+},
+      "id":"936b83f20956cd4c",
+      "name":"Aarhus"
+   
+}
+}

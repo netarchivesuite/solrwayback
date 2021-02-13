@@ -1,0 +1,970 @@
+body {
+  background-color:white;
+  background-size:cover;
+}
+
+.contentContainer {
+  max-width:100vw;
+  margin:auto;
+}
+
+.contentContainer h1 {
+  text-align: center;
+  text-transform:uppercase;
+  font-size:200%;
+  color:var(--main-text-color);
+  padding-top:20px;
+}
+
+.contentContainer h1 span {
+font-weight: bold;
+color:var(--secondary-text-color);
+//border-bottom: 2px solid var(--secondary-highlight-color);
+}
+
+.searchBoxContainer {
+  width:60%;
+  display:block;
+  margin:auto;
+  //margin:0px 20% 0px 20%;
+  padding:15px;
+}
+
+@media only screen and (max-width: 1024px) {
+  .searchBoxContainer {
+    width: 70%;
+    display:block;
+    margin:auto;
+    //margin: 0px 15% 0px 15%;
+    padding: 15px;
+  }
+}
+
+.aboutContainer {
+  width: auto;
+	margin: 0px auto;
+	padding: 15px;
+	text-align: center;
+	display: block;
+}
+
+.aboutContainer button {
+  border: 0px;
+	position: relative;
+	border-bottom: 2px solid var(--main-highlight-color);
+	background-color: transparent;
+	cursor: pointer;
+}
+
+.aboutContainer .activated {
+	top: -30px;
+}
+
+.aboutTextContainer {
+  padding: 15px 15px 50px 15px;
+  background-color:var(--secondary-highlight-color);
+}
+
+.searchForm {
+  display: block;
+	margin-top: 20px;
+	margin-bottom: 20px;
+  width: 100%;
+  max-width: 800px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.searchForm #query {
+  margin: 0px;
+  padding-top: 12px;
+  padding-bottom:12px;
+	font-family: Trebuchet MS,Ubuntu;
+	border-radius: 0px;
+	border: 1px solid var(--seethrough-black);
+	box-sizing: border-box;
+  width: calc(100% - 110px);
+	padding-left: 15px;
+	font-size: 120%;
+	color: var(--main-highlight-color);
+	height:50px;
+	box-shadow: inset 0 0 7px var(--seethrough-black);
+	padding-right: 15px;
+	display: inline-block;
+	text-overflow: ellipsis;
+	word-break: break-word;
+	white-space: pre-wrap;
+  //transition: all 0.3s linear 0.3s;
+  overflow-y: hidden;
+  min-height: 50px;
+}
+
+.searchForm #query:focus {
+  outline: 0px solid var(--seethrough-black) !important;
+	box-shadow: inset 0 0 7px var(--main-highlight-color);
+}
+
+.searchForm textarea {
+  resize: none;
+}
+
+.searchForm .ngramQuery {
+  width: calc(100% - 60px) !important;
+}
+
+.searchGuidelinesButton {
+  height:50px;
+  box-sizing: border-box;
+  position: absolute;
+	z-index: 10;
+  width: 51px;
+  font-weight: bold;
+	font-size: 150%;
+	color: rgba(30,30,30,0.6);
+	background-color: var(--secondary-highlight-color);
+	margin-top: 0px;
+  border: 0px;
+	margin-left: -1px;
+  padding: 10px;
+  padding-right: 18px;
+  box-shadow: inset -5px 0px 7px var(--seethrough-black);
+  cursor:pointer;
+}
+
+.searchGuidelinesButton:before {
+  content: '';
+	display: block;
+	width: 20px;
+	height: 20px;
+	transform: rotateZ(45deg);
+	background-color: var(--secondary-highlight-color);
+	position: absolute;
+	top: 15px;
+	left: -10px;
+	z-index: 20;
+}
+
+.searchForm .buttonExplanation {
+  cursor:default;
+  color:rgba(30,30,30,0.5)
+}
+
+.searchForm #querySubmit {
+  box-sizing: border-box;
+  width:60px;
+  float:right;
+  cursor:pointer;
+  height:50px;
+  position: relative;
+  background-color:var(--main-highlight-color);
+  box-shadow: inset 0 0 7px var(--seethrough-black);
+  border-radius:0% 0 0% 0;
+  border:1px solid transparent;
+  //border-color:var(--seethrough-black) var(--seethrough-black) var(--seethrough-black) transparent;
+}
+
+.searchForm #querySubmit:before {
+  content:'';
+  display:block;
+  width:20px;
+  height:20px;
+  transform:rotateZ(45deg);
+  background-color:var(--main-highlight-color);
+  position: absolute;
+  top:15px;
+  left:-10px;
+  z-index:10;
+}
+
+.searchForm #magnifyingGlass {
+  position: relative;
+  left:7px;
+}
+
+.searchForm #magnifyingGlass:before {
+  content: '';
+	display: block;
+	width: 15px;
+	height: 15px;
+	top: 2px;
+	left: 3px;
+	position: relative;
+	border: 2px solid white;
+  border-radius: 180%;
+}
+
+.searchForm #magnifyingGlass:after {
+  content: '';
+	display: block;
+	width: 2px;
+	height: 15px;
+	background-color: white;
+	top: -4px;
+	left: 23px;
+	transform: rotateZ(-45deg);
+	position: relative;
+}
+
+.searchForm #clearSubmit {
+  width: 60px;
+	margin-left: 120px;
+	height: 50px;
+	box-sizing: border-box;
+	background-color: white;
+	box-shadow: inset 0 0 7px var(--seethrough-black);
+	border-radius: 0% 0 0% 0;
+	border: 2px solid var(--main-highlight-color);
+	position: absolute;
+	cursor: pointer;
+	vertical-align: top;
+}
+.searchForm #clearSubmit:before {
+  content:"";
+  display:block;
+  width:3px;
+  height:30px;
+  position: absolute;
+  background-color:var(--main-highlight-color);
+  transform:rotateZ(45deg);
+  top:8px;
+  left:27px;
+}
+
+.searchForm #clearSubmit:after {
+  content:"";
+  display:block;
+  width:3px;
+  height:30px;
+  position: absolute;
+  background-color:var(--main-highlight-color);
+  transform:rotateZ(-45deg);
+  top:8px;
+  left:27px;
+}
+
+
+.searchForm #querySubmit:focus, .searchForm #query:focus, .searchForm #clearSubmit:focus {
+  outline:1px solid var(--seethrough-black);
+  border-radius:0;
+}
+
+.searchForm input[type="checkbox"] {
+  position: relative;
+  top: 3px;
+  height: 15px;
+	width: 15px;
+}
+
+.searchForm label {
+  cursor:pointer;
+}
+
+.searchForm .sortOptions {
+  margin-top:10px;
+  width: calc(100%);
+  padding-bottom:15px;
+  border-bottom: 1px solid var(--secondary-highlight-color);
+  text-transform: uppercase;
+	font-size: 80%;
+}
+
+.searchForm .tools {
+  margin-top: 17px;
+	width: calc(100%);
+	padding-bottom: 10px;
+	text-transform: uppercase;
+	margin-bottom: 10px;
+	//display: flex;
+	//cursor: pointer;
+	//justify-content: space-between;
+	font-size: 80%;
+}
+
+.searchForm .tools span {
+  display:inline-block;
+  color: var(--main-highlight-color);
+  border-bottom:1px solid var(--secondary-highlight-color);
+  margin-right:10px;
+}
+
+.searchForm .tools .searchByFileButton {
+  background-color: white;
+	border: 0px;
+	cursor: pointer;
+	text-transform: uppercase;
+	color: var(--main-highlight-color);
+	margin-right: 10px;
+	padding: 0px;
+  border-bottom: 1px solid var(--secondary-highlight-color);
+}
+
+.searchForm .tools .toolbox {
+  text-transform: uppercase;
+  padding-left:0px;
+  padding-right:0px;
+  border: 0px;
+  margin:0px;
+  margin-top: -4px;
+	//border-bottom: 1px solid var(--secondary-highlight-color);
+	background-color: transparent;
+	color: var(--main-highlight-color);
+	cursor: pointer;
+	float: right;
+}
+
+.searchForm .tools .toolboxText, .searchForm .gpsText {
+  border-bottom: 1px solid var(--secondary-highlight-color);
+  margin-right:5px !important;
+}
+
+.searchForm .tools .toolboxIcon {
+  margin-right:0px !important;
+}
+
+.toolboxIcon {
+  background-image: url('../icons/tools.svg');
+  height: 16px;
+	position: relative;
+  width: 16px;
+  margin-right:10px;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+  top: 3px;
+  border-bottom: 0px !important;
+}
+
+.gpsSearchButton {
+  background-color:white;
+  border:0px;
+  cursor: pointer;
+  text-transform: uppercase;
+  color:var(--main-highlight-color);
+  margin-left:10px;
+  margin-right:10px;
+  padding:0px;
+  float:right;
+  margin-top:-4px;
+}
+
+.gpsIcon {
+  background-image: url('../icons/location.svg');
+  height: 16px;
+	position: relative;
+  width: 16px;
+  margin-right:10px;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+  top: 3px;
+  border-bottom: 0px !important;
+}
+
+.toolboxNavigation h3 {
+  display:inline-block;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.toolboxNavigation button {
+  border:0px;
+  color:var(--main-highlight-color);
+  background-color: transparent;
+  border-bottom:1px solid var(--secondary-highlight-color);
+  font-size:100%;
+  padding:0px 0px;
+  margin:0px 15px;
+  transition: all 0.2s linear 0s;
+  cursor:pointer;
+}
+
+.toolboxNavigation button:hover {
+  border-bottom:1px solid var(--main-highlight-color);
+}
+
+.toolboxNavigation hr {
+  height: 1px;
+	border: 0px;
+	border-bottom: 1px solid var(--main-highlight-color);
+}
+
+.toolboxNavigation .activeTool {
+  border-bottom: 1px solid var(--main-highlight-color);
+	text-shadow: 0px 0px 1px var(--main-highlight-color);
+}
+
+.wordcloudContainer {
+	display: grid;
+	grid-template-columns: 20% 80%;
+}
+
+.toolboxHeadline {
+  padding-left:15px;
+}
+
+.wordcloudContainer .wordcloudButton {
+  margin-top: 15px !important;
+  width: 100% !important;
+  margin-bottom: 15px !important;
+}
+
+.wordcloudContainer button:disabled {
+  color:rgba(30,30,30,0.5)
+}
+
+.wordcloudContainer button:disabled:hover {
+  color:rgba(30,30,30,0.5);
+  background-color:white;
+  cursor: default;
+}
+
+.wordcloudContainer .wordcloudExplanation {
+  padding:15px;
+  //border-right:1px solid var(--main-highlight-color);
+}
+
+
+
+.toolboxContent .linkGraphContainer {
+  position: relative;
+  height: 90%;
+  width:100%;
+	margin: auto;
+}
+
+.linkGraphContainer {
+  height:calc(98vh);
+  width: 95%;
+  position: relative;
+  margin: auto;
+}
+
+.linkGraphContainer .linkGraphSettings {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+
+.linkGraphContainer .linkGraphSettings .contain {
+  padding: 5px 3px;
+}
+
+.linkGraphContainer input[type=radio] {
+  width:20px;
+  height:20px;
+  border:1px solid var(--main-highlight-color);
+  box-shadow: none;
+  margin-left: 15px;
+}
+
+.sliderContainer .linkGraphLabel {
+  text-align: center;
+	display: block;
+}
+
+.linkGraphContainer .linkGraphDomainContainer,
+.linkGraphContainer .directionContainer,
+.linkGraphContainer .linkNumberContainer,
+.linkGraphContainer .generateButtonContainer {
+  box-sizing: border-box;
+  //background-color:var(--secondary-highlight-color);
+  height:40px;
+  //border-bottom:1px solid var(--secondary-highlight-color);
+  padding:0px 20px;
+}
+.linkGraphContainer .linkGraphButton {
+  top:0px !important;
+}
+
+.directionContainer .label {
+  position: relative;
+	top: -5px;
+}
+
+.graphControlsContainer {
+  height:170px;
+  width:100%
+}
+
+#graphContainer {
+  display:block;
+  height:calc(100% - 170px);
+  width:100%;
+  overflow:hidden;
+}
+
+.wordcloudContainer .wordcloudExplanation input, .domainContentContainer input, .linkGraphContainer input, .searchTypeContainer input{
+  width:100%;
+  border-radius: 0px;
+	border: 1px solid var(--seethrough-black);
+	box-sizing: border-box;
+	padding-left: 15px;
+	font-size: 120%;
+	color: var(--main-highlight-color);
+	height: 30px;
+	box-shadow: inset 0 0 7px var(--seethrough-black);
+}
+
+.linkGraphContainer input {
+  width:400px;
+}
+
+.linkGraphContainer .hideGraph {
+  opacity:0;
+}
+
+.wordcloudContainer .imgContainer img {
+  max-width: 800px;
+	display: block;
+	max-height: 600px;
+	margin-left: auto;
+  margin-right: auto;
+  padding: 15px;
+}
+
+.domainHelperText {
+  font-size: 75%;
+	text-transform: uppercase;
+	color: rgba(30, 30, 30, 0.3);
+}
+
+.wordcloudContainer .imgContainer .imageNotLoaded {
+  display:none;
+}
+
+.wordcloudContainer .imgContainer .imageLoaded {
+  display:block;
+}
+
+.domainContentContainer {
+  padding:5px 15px 5px 15px;
+}
+
+.domainContentContainer input {
+  width:300px;
+}
+
+.domainContentContainer .domainStatsButton,
+.linkGraphContainer .linkGraphButton {
+  float: unset !important;
+	position: relative;
+	top: -2px;
+	margin-left: 5px;
+}
+
+.linkNumbersliderContainer {
+  position: relative;
+	display: inline-block;
+	width: 300px;
+	padding: 0px 15px;
+	top: 6px;
+}
+
+.linkNumberContainer label {
+  display: inline-block;
+	position: relative;
+	top: 2px;
+}
+
+.directionContainer {
+  display:inline-block;
+}
+
+.searchForm .sortOptions .marginRight {
+  margin-right:15px;
+}
+
+.searchForm .sortOptions div {
+  display: inline-block;
+  color: var(--main-highlight-color);
+}
+
+.searchForm .sortOptions label {
+  user-select: none;
+}
+
+.searchForm #groupedSearch {
+  margin-left: 0px;
+}
+
+.searchForm .sortOptions .floatRight {
+  float:right;
+}
+
+.searchForm .orgQuery {
+  font-size: 75%;
+	text-transform: uppercase;
+	margin-top: -20px;
+  color: rgba(30,30,30,0.3);
+  position: absolute;
+}
+
+.searchForm .orgQuery .preQuery {
+  text-transform: none;
+  color: rgba(0,46,112,0.5);
+
+}
+
+.fileUploader {
+  margin:20px 0 20px 0;
+}
+
+.urlSearchHelper {
+  color: rgba(130,130,130,0.6);
+	position: absolute;
+  margin-left: -40px;
+  margin-top: 16px;
+  user-select: none;
+}
+
+.urlNotTrue {
+  color:red !important;
+}
+
+.url-search-helper-enter-active, .url-search-helper-leave-active {
+  transition: opacity 0.1s linear 0s;
+}
+
+.url-search-helper-enter, .url-search-helper-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transition: opacity 0.1s linear 0s;
+  opacity: 0;
+}
+
+.topTopArrow {
+  -webkit-box-shadow: 0px 5px 10px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 5px 10px 1px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  background-color: white;
+  position: fixed;
+  bottom: 20px;
+  border: 2px solid var(--secondary-highlight-color);
+  color: var(--main-highlight-color);
+  right: calc(20vw - 55px);
+  line-height: 30px;
+  text-align: center;
+  font-size: 200%;
+}
+
+.modalContainer {
+  position: fixed;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(30, 30, 30, 0.8);
+	top: 0px;
+  left: 0px;
+  z-index:10;
+}
+
+.modalContent {
+  top: 0px;
+  left: 0px;
+	position: relative;
+	width: calc(100vw - 80px);
+	height: calc(100vh - 80px);
+  margin: 40px 40px;
+  padding: 10px;
+  box-sizing: border-box;
+	overflow-y: scroll;
+  background-color: white;
+}
+
+.modalContent.gpssearch {
+  overflow-y:hidden;
+}
+
+.searchGuidelinesContainer {
+  line-height: 20px;
+  padding-left:15px;
+  padding-right:15px;
+  padding-bottom:25px;
+  h1 {
+    font-weight: bold;
+    padding-top: 60px;
+    color:var(--main-highlight-color);
+    text-transform: uppercase;
+    padding-bottom:15px;
+  }
+  h2 {
+    padding-bottom:15px;
+    text-transform: uppercase;
+
+  }
+  h3 {
+    color:var(--main-highlight-color);
+    font-size:120%;
+    padding-bottom:10px;
+    padding-top:20px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  b {
+    font-weight: bold;
+    color: var(--main-highlight-color);
+    padding-top:10px;
+    padding-bottom:10px;
+  }
+  table {
+    margin-top:10px;
+    max-width:90%;
+    min-width:70%;
+    position: relative;
+    margin-left:auto;
+    margin-right:auto;
+    //border:1px solid var(--main-highlight-color);
+    //text-align:center;
+    tr:hover {
+      background-color: var(--secondary-highlight-color) !important;
+    }
+    tr:nth-child(even) {
+      background-color: rgba(30, 30, 30, 0.05);
+    }
+    tr:nth-child(odd) {
+      background: transparent 
+    }
+
+    td {
+      padding:5px;
+    }
+  }
+}
+
+#gpsMap {
+  width:100%;
+  height:100%;
+}
+
+.GpsSearchContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.gpsMapContainer {
+  transition: width 0.3s ease-in-out 0s;
+  display:inline-block;
+  width:100%;
+  height:100%;
+}
+
+.gpsMapContainer.half {
+  width:50%;
+}
+
+.gpsMapContainer.hidden {
+  width:0%;
+}
+
+#gpsMap .leaflet-tile {
+  -webkit-filter: grayscale(100%); 
+	filter: grayscale(100%);
+}
+
+.gpsControls {
+  transition: all 0.3s ease-in-out 0s;
+  width: 200px;
+	height: 115px;
+	position: absolute;
+	right: 20px;
+	top: 20px;
+	background-color: rgba(255,255,255,0.8);
+	padding: 10px;
+  z-index: 500;
+  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.25);
+}
+
+.gpsMapContainer.half .gpsControls {
+  right:calc(50% + 20px);
+}
+
+.gpsMapContainer.hidden .gpsControls {
+  right:calc(100% + 20px);
+}
+
+.gpsResultsContainer {
+  transition: width 0.3s ease-in-out 0s;
+  float: right;
+  width:0%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y:scroll;
+}
+
+.gpsResultsContainer.half {
+  width:50%;
+}
+
+.gpsResultsContainer.full {
+  width:100%;
+}
+
+.gpsControls span {
+  padding:2px 0px;
+  display:inline-block;
+  width:110px;
+  font-size: 90%;
+}
+
+.dividerButtons {
+  transition: all 0.3s ease-in-out 0s;
+  position: absolute;
+  top:50%;
+  z-index:1000;
+  width:60px;
+  text-align: center;
+}
+
+.dividerButtons.start {
+  left:calc(0%);
+}
+
+.dividerButtons.half {
+  left:calc(50% - 30px);
+}
+
+.dividerButtons.end {
+  left:calc(100% - 60px);
+}
+
+.gpsControls input {
+  width:auto;
+  width:calc(100% - 110px);
+  padding:0px;
+  margin:0px;
+  box-sizing: border-box;
+  border-radius: 0px;
+	border: 1px solid var(--seethrough-black);
+	box-sizing: border-box;
+	padding-left: 2px;
+	box-shadow: inset 0 0 3px var(--seethrough-black);
+	display: inline-block;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+  overflow: hidden;
+}
+
+.GpsSearchContainer .searchButton {
+  margin-top:5px;
+  display:block;
+  width:100%;
+	border: 2px solid var(--secondary-bg-color);
+	border-radius: 0;
+	background-color: white;
+	color: var(--secondary-bg-color);
+	padding: 3px 10px 3px 10px;
+	box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.25);
+	cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s linear 0s;
+}
+
+.GpsSearchContainer .searchButton:disabled, .linkGraphContainer .linkGraphButton:disabled {
+  color:var(--seethrough-black);
+  border: 2px solid var(--seethrough-black);
+  cursor: default;
+  box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.25);
+}
+
+.linkGraphContainer .linkGraphButton:disabled:hover {
+  color:var(--seethrough-black);
+  background-color:white;
+  border: 2px solid var(--seethrough-black);
+  cursor: default;
+  box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.25);
+}
+
+.dividerButtons .dividerButton {
+  //border:2px solid var(--main-highlight-color);
+  border:0px;
+  box-sizing: border-box;
+  //background-color:white;
+  background-color: transparent;
+  font-size:200%;
+  color:var(--main-highlight-color);
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.fileUploader {
+  text-align: center;
+}
+
+.fileSelector {
+  text-align: center;
+	margin-bottom: 15px;
+}
+
+.fileSelector input {
+  background-color: var(--secondary-highlight-color);
+	padding: 10px;
+}
+
+.fileUploader .fileSelectButton {
+  display: block;
+  padding:5px;
+  border:1px solid var(--main-highlight-color);
+  color: var(--main-highlight-color);
+  box-shadow: 0px 5px 10px 1px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  font-size: 80%;
+  text-transform: uppercase;
+  width:300px;
+  position: relative;
+  margin:0px auto 20px auto;
+  cursor:pointer;
+}
+
+.fileUploader .fileSelectButton:disabled {
+  box-shadow: none;
+  border:1px solid var(--seethrough-black);
+  color: var(--seethrough-black);
+  cursor:default;
+}
+
+.searchHints {
+  position: absolute;
+  background-color:white;
+  width: 25vw;
+  font-size: 80%;
+  border:1px dashed var(--main-highlight-color);
+  padding: .2rem 0.2rem .2rem 1rem;
+  margin:2.2rem 0 0 .5rem;
+}
+
+@media all and (max-width: 1720px) {
+  .searchHints {
+  width: 20vw;
+  margin-left:.2rem;
+  }
+}
+@media all and (max-width: 1420px) {
+  .searchHints {
+  width: 15vw;
+  margin-left:.2rem;
+  }
+}
+@media all and (max-width: 1024px) {
+  .searchHints {
+  width: 10vw;
+  margin-left:.2rem;
+  }
+}
+
+.searchHints ul {
+  list-style-type: none;
+}
+
+.searchHints li {
+  margin-top:.2rem;
+}
+
+.searchHintHeading {
+  color:brown;
+}
+
+.searchHints h2 {
+  text-align:center;
+}

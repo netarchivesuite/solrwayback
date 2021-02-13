@@ -1,0 +1,4 @@
+<Context override="true" docBase="solrwayback.war">
+    <Valve className="org.apache.catalina.valves.rewrite.RewriteValve"/>
+
+</Context>

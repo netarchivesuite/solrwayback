@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.regex.Pattern;
 
@@ -52,6 +53,9 @@ public class Normalisation {
      */
    
     public static String canonicaliseURL(String url, boolean allowHighOrder, boolean createUnambiguous) {
+        if (url == null || url.isEmpty()) {
+            return url;
+        }
         // Basic normalisation, as shared with Heritrix, Wayback et al
         url = canon.canonicalize(url);
 
@@ -203,6 +207,16 @@ public class Normalisation {
     private static boolean isHex(byte b) {
         return (b >= '0' && b <= '9') || (b >= 'a' && b <= 'f') || (b >= 'A' && b <= 'F');
     }
-
+    
+    public static String resolveRelative(String url, String relative, boolean normalise) throws IllegalArgumentException {
+      try {
+          URL rurl = new URL(url);
+          String resolved = new URL(rurl, relative).toString();
+          return normalise ? canonicaliseURL(resolved) : resolved;
+      } catch (Exception e) {
+          throw new IllegalArgumentException(String.format(
+                  "Unable to resolve '%s' relative to '%s'", relative, url), e);
+      }
+  }
 
 }

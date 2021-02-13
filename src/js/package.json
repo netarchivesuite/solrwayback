@@ -1,0 +1,46 @@
+{
+  "name": "solrwayback",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "serve": "node_modules/.bin/vue-cli-service serve",
+    "build": "rimraf dist && node_modules/.bin/vue-cli-service build",
+    "lint": "node_modules/.bin/vue-cli-service lint"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "chart.js": "^2.9.4",
+    "core-js": "^3.6.5",
+    "d3": "3.5.17",
+    "date-fns": "^1.28.5",
+    "leaflet": "^1.7.1",
+    "leaflet.markercluster": "^1.4.1",
+    "vue": "^2.6.11",
+    "vue-chartjs": "^3.5.1",
+    "vue-router": "^3.2.0",
+    "vue-slider-component": "^3.2.10",
+    "vuex": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.6",
+    "@vue/cli-plugin-eslint": "~4.5.6",
+    "@vue/cli-plugin-router": "~4.5.6",
+    "@vue/cli-plugin-vuex": "~4.5.6",
+    "@vue/cli-service": "~4.5.6",
+    "@vue/eslint-config-prettier": "^6.0.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "eslint-plugin-vue": "^6.2.2",
+    "node-sass": "^4.12.0",
+    "prettier": "^1.19.1",
+    "sass-loader": "^8.0.2",
+    "v-tooltip": "^1.1.6",
+    "video.js": "^7.8.4",
+    "vue-template-compiler": "^2.6.11"
+  }
+}

@@ -4,9 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParseResult;
+import dk.kb.netarchivesuite.solrwayback.parsers.ParseResult;
 import dk.kb.netarchivesuite.solrwayback.parsers.Jodel2Html;
-import dk.kb.netarchivesuite.solrwayback.parsers.Twitter2Html;
 import dk.kb.netarchivesuite.solrwayback.parsers.WaybackToolbarInjecter;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
@@ -29,12 +28,12 @@ public class JodelPlayback extends PlaybackHandler{
 
     String encoding=arc.getContentEncoding();
     String json = new String(arc.getBinary(), encoding);
-    String html = Jodel2Html.render(json, arc.getCrawlDate());
+    String html = "TODO";//Jodel2Html.render(json, arc.getCrawlDate());
     arc.setBinary(html.getBytes());        
     arc.setContentType("text/html");
-    HtmlParseResult htmlReplaced = new HtmlParseResult(); //Do not parse.
-    htmlReplaced.setHtmlReplaced(html);
-    String textReplaced=htmlReplaced.getHtmlReplaced(); //TODO count linkes found, replaced          
+    ParseResult htmlReplaced = new ParseResult(); //Do not parse.
+    htmlReplaced.setReplaced(html);
+    String textReplaced=htmlReplaced.getReplaced(); //TODO count linkes found, replaced
     
     //Inject tooolbar
     if (showToolbar){ //If true or null.

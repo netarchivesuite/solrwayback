@@ -3,11 +3,14 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+//Has to be rewritten to use the new JSON Util class.
+
+
 // TODO: Show "Thanks! ❤" if 'got_thanks' is true
 // TODO: Rename ('replier' == 0) to 'OJ' (Original Jodler)
 // See src/test/resources/example_jodel/jodel.json for Jodel JSON structure
 public class Jodel2Html {
-
+/*
     public static final JSONUtil.JSONSingleValueRule LOCATION =
             JSONUtil.getSingleMatcher(".details.location.name", ".replies[].location.name", ".location.name")
                     .setDefault("Unknown location");
@@ -122,5 +125,5 @@ public class Jodel2Html {
     private static String getDesignation(JSONObject json) {
         return LOCATION.match(json) + " " + UPDATED.match(json);
     }
-
+*/
 }

@@ -1,15 +1,15 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import dk.kb.netarchivesuite.solrwayback.util.CountingMap;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import dk.kb.netarchivesuite.solrwayback.util.RegexpReplacer;
+import dk.kb.netarchivesuite.solrwayback.util.URLAbsoluter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,43 +19,37 @@ import org.slf4j.LoggerFactory;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
+// TODO: Support https://www.w3schools.com/TAGs/tag_base.asp
+// TODO: Refactor to extend RewriterBase for better re-use
 public class HtmlParserUrlRewriter {
 
 	private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriter.class);
     
-	
 	//Problem is jsoup text(...) or html(...) encodes & and for the <style> @import... </style> the HTML urls must not be encoded. (blame HTML standard)
 	//So it can not be set using JSOUP and must be replaced after.
 	private static final String AMPERSAND_REPLACE="_STYLE_AMPERSAND_REPLACE_";
 	
-	// private static Pattern backgroundUrlPattern = Pattern.compile(".*background:url\\([\"']?([^\"')]*)[\"']?\\).*"); is this better?
-	
-	//TODO use for more CSS replacement
-	private static Pattern urlPattern = Pattern.compile("[: ,]url\\([\"']?([^\"')]*)[\"']?\\)");
-	
-	private static Pattern backgroundUrlPattern = Pattern.compile(".*background:url\\((.*)\\).*");
-	private static final String CSS_IMPORT_PATTERN_STRING = 
+	private static final String CSS_IMPORT_PATTERN_STRING =
 			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css[^'\") ]*)['\"]?\\s*[)]?.*";
 	private static Pattern  CSS_IMPORT_PATTERN = Pattern.compile(CSS_IMPORT_PATTERN_STRING);
 
+	private static final String CSS_IMPORT_PATTERN_STRING2 =
+			"(?s)\\s*@import\\s+(?:url)?[(]?\\s*['\"]?([^'\")]*\\.css[^'\") ]*)['\"]?\\s*[)]?";
+	private static Pattern CSS_IMPORT_PATTERN2 = Pattern.compile(CSS_IMPORT_PATTERN_STRING2);
+
+	private static Pattern STYLE_ELEMENT_BACKGROUND_PATTERN = Pattern.compile(
+			"background(?:-image)?\\s*:([^;}]*)");
+	private static Pattern CSS_URL_PATTERN = Pattern.compile(
+			"url\\s*\\(\\s*[\"']?([^)\"']*)[\"']?\\s*\\)");
+
 	//replacing urls that points into the world outside solrwayback because they are never harvested
-    private static final String NOT_FOUND_LINK=PropertiesLoader.WAYBACK_BASEURL+"services/notfound/";
-	
+    public static final String NOT_FOUND_LINK = PropertiesLoader.WAYBACK_BASEURL + "services/notfound/";
+
 	public static void main(String[] args) throws Exception{
-
-	   
-	  
-	  
-		  String css1="@import url('gamespot_white-1b5761d5e5bc48746b24cb1d708223cd-blessed1.css?z=1384381230968');#moderation .user-history div.icon div.approved;"+"\n"+
-                "@import url(slidearrows.css);\n"+
-                "@import url(shadow_frames.css);\n"+
-                "body {";
-
-
-
-		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
+//		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
 
 //		System.out.println(css);
 /*
@@ -79,62 +73,23 @@ public class HtmlParserUrlRewriter {
 		System.out.println("done");
 		System.exit(1);
 */
-		String html="<?xml version=\"1.1\" encoding=\"iso-8859-1\"?>"+
-				"<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"da\">"+
-				"<head>"+
-				"   <title>kimse.rovfisk.dk/katte/</title>"+
-				"   <style type=\"text/css\" media=\"screen\">@import \"/css/forum.css\";</style>"+ 
-				"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />"+         
-				"   <link rel=\"stylesheet\" href=\"/style.css\"  type=\"text/css\" media=\"screen\" />"+
-				" <link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS 2.0\" href=\"/rss2.php\" />"+
-				"</head>"+
-				"<body>"+
-				" <style type=\"text/css\" media=\"screen\">@import \"//www.dr.dk/drdkGlobal/spot/spotGlobal.css\";</style> "+
-				" <style type=\"text/css\" media=\"screen\">@import \"/design/www/global/css/globalPrint.css\";</style> "+
-                "<style type=\"text/css\" media=\"screen\">@import url(http://en.statsbiblioteket.dk/portal_css/SB%20Theme/resourceplonetheme.sbtheme.stylesheetsmain-cachekey-7e976fa2b125f18f45a257c2d1882e00.css);</style> "+
-                "<a class=\"toplink\" href=\"test\" class=\"button\" style=\"background:url(img/homeico.png) no-repeat ; width:90px; margin:0px 0px 0px 16px;\">kimse.rovfisk.dk  </a><a class=\"toplink\" href=\"/katte/\">katte / </a><br /><br /><table cellspacing=\"8\"><tr><td></td><td class=\"itemw\"><a href=\"/katte/?browse=DSC00175.JPG\"><img class=\"lo\" src=\"/cache/katte/DSC00175.JPG\" /></a></td>"+
-                "<td></td><td class=\"itemw\"><a href=\"/katte/?browse=DSC00209.JPG\"><img class=\"lo\" src=\"/cache/katte/DSC00209.JPG\" /></a></td>"+
-                " <img  src=\"http://belinda.statsbiblioteket.dk:9721/solrwayback/services/downloadRaw?source_file_path=/netarkiv/0122/filedir/285330-279-20180113095114447-00002-kb-prod-har-001.kb.dk.warc.gz&amp;offset=685207223\" srcset=\"http://skraedderiet.dk/wp-content/uploads/2018/01/saks_watermark-001_transparent.jpg 477w, http://skraedderiet.dk/wp-content/uploads/2018/01/saks_watermark-001_transparent-150x150.jpg 150w, http://skraedderiet.dk/wp-content/uploads/2018/01/saks_watermark-001_transparent-298x300.jpg 298w\" sizes=\"(max-width: 235px) 100vw, 235px\">"+              
-                "</table><br />  </body>"+
-                "</html>";
+//	      System.exit(1);
 
-		HashSet<String> urlSet = new HashSet<String>();
-		
-		Document doc = Jsoup.parse(html,"http:/test.dk"); //TODO baseURI?
-		
-		collectRewriteUrlsForImgSrcset(urlSet,doc);
-	     
-	       
-	       
-		
-	      
-	      System.exit(1);
-		//collectStyleBackgroundRewrite(urlSet,doc, "a", "style", "http:/thomas.dk");
-
-
-		URL baseUrl = new URL("http:www.google.com/someFolder/");
-		URL url = new URL( baseUrl , "../test.html");
-		System.out.println(url.toString());
 
 
 	}
 
 
-	/* CSS can start witht the following and need to be url rewritten also.
+	/* CSS can start with the following and need to be url rewritten also.
 	 * @import "mystyle.css";
 	 * @import url(slidearrows.css);
 	 * @import url(shadow_frames.css) print;
 	 */
-
+	// TODO: Switch to RegexpReplacer for this
 	public static String replaceLinksCss(ArcEntry arc) throws Exception{
 
-		String type="downloadRaw"; //not supporting nested @imports...
-         String encoding = arc.getContentEncoding();
-         if (encoding == null){
-           encoding ="UTF-8";   
-         }
-		
-		String css = new String(arc.getBinary(),encoding);
+		String type="downloadRaw"; //not supporting nested @imports...        		
+		String css = arc.getBinaryContentAsStringUnCompressed();		
 		String url=arc.getUrl();
 
 		String[] result = css.split("\n", 100); //Doubt there will be more than 100 of these.
@@ -149,10 +104,10 @@ public class HtmlParserUrlRewriter {
 				String cssUrl= m.group(1);		   
 				URL base = new URL(url);
 				String resolvedUrl = new URL( base ,cssUrl).toString();
-						
-				IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getCrawlDate());		         
+				 resolvedUrl =  resolvedUrl.replace("/../", "/");
+				IndexDoc indexDoc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(resolvedUrl, arc.getWaybackDate());
 				if (indexDoc!=null){    		    			 
-					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&amp;offset="+indexDoc.getOffset(); 					
+					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset(); 					
 					css=css.replace(cssUrl, newUrl);					
 				}else{
 	                log.info("could not resolved CSS import url:"+resolvedUrl);  
@@ -167,67 +122,210 @@ public class HtmlParserUrlRewriter {
 		return css;
 	}
 
-	public static HtmlParseResult replaceLinks(ArcEntry arc) throws Exception{
-	  AtomicInteger numberOfLinksReplaced = new  AtomicInteger();
-	  AtomicInteger numberOfLinksNotFound = new  AtomicInteger(); 
-	  
-		long start = System.currentTimeMillis();
-		String encoding = arc.getContentEncoding();
-		if (encoding == null){
-		  encoding ="UTF-8";
+	/**
+	 * Extracts the HTML from the ArcEntry and replaces links and other URLs with the archived versions that are
+	 * closest to the ArcEntry in time.
+	 * @param arc an arc-entry that is expected to be a HTML page.
+	 * @return the page with links to archived versions instead of live web version.
+	 * @throws Exception if link-resolving failed.
+	 */
+	public static ParseResult replaceLinks(ArcEntry arc) throws Exception{
+		final long startMS = System.currentTimeMillis();
+		return replaceLinks(
+				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getCrawlDate(),
+				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFewFields(urls, timeStamp),
+				startMS);
+	}
+
+	/**
+	 * Replaces links and other URLs with the archived versions that are closest to the links in the html in time.
+	 * @param html the web page to use as basis for replacing links.
+	 * @param url the URL for the html (needed for resolving relative links).
+	 * @param crawlDate the ideal timestamp for the archived versions to link to.
+	 * @param nearestResolver handles url -> archived-resource lookups based on smallest temporal distance to crawlDate.
+	 * @throws Exception if link resolving failed.
+	 */
+	public static ParseResult replaceLinks(
+			String html, String url, String crawlDate, NearestResolver nearestResolver) throws Exception {
+		return replaceLinks(html, url, crawlDate, nearestResolver, System.currentTimeMillis());
+	}
+	// startMS used to measure total time, including resolving of the HTML
+	private static ParseResult replaceLinks(
+			String html, String url, String crawlDate,
+			NearestResolver nearestResolver, long startMS) throws Exception {
+		final long preReplaceMS = System.currentTimeMillis()-startMS;
+		long replaceMS = -System.currentTimeMillis();
+
+		final String waybackDate = DateUtils.convertUtcDate2WaybackDate(crawlDate);
+		Document doc = Jsoup.parse(html, url);
+
+		// Collect URLs and resolve archived versions for them 
+		Set<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
+		log.debug("#unique urlset to resolve for arc-url '" + url + "' :" + urlSet.size());
+
+		long resolveMS = -System.currentTimeMillis();
+		List<IndexDocShort> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
+		resolveMS += System.currentTimeMillis();
+
+		// Rewriting to url_norm, so it can be matched when replacing.
+		final CountingMap<String, IndexDocShort> urlReplaceMap = new CountingMap<>();
+		for (IndexDocShort indexDoc: docs){
+			urlReplaceMap.put(indexDoc.getUrl_norm(), indexDoc);
 		}
-		
-		String html = new String(arc.getBinary(), encoding);
-		String url=arc.getUrl();
+
+        // Replace URLs in the document with URLs for archived versions.
+		UnaryOperator<String> rewriterRaw = createTransformer(
+				urlReplaceMap, "downloadRaw", "");
+        processElement(doc, "img",    "abs:src", rewriterRaw);
+        processElement(doc, "embed",  "abs:src", rewriterRaw);
+        processElement(doc, "source", "abs:src", rewriterRaw);
+		processElement(doc, "script", "abs:src", rewriterRaw);
+		processElement(doc, "body",   "abs:background", rewriterRaw);
+		processElement(doc, "table",  "abs:background", rewriterRaw);
+		processElement(doc, "td",     "abs:background", rewriterRaw);
+
+		// link elements are mostly used to reference stylesheets, which must be transformed before use
+		UnaryOperator<String> rewriterView = createTransformer(
+				urlReplaceMap, "view", "");
+		processElement(doc, "link", "abs:href", rewriterView);
+
+		// Don't show SolrWayback bar in frames
+		UnaryOperator<String> rewriterViewNoBar = createTransformer(
+				urlReplaceMap, "view", "&showToolbar=false");
+		processElement(doc, "frame",  "abs:src", rewriterViewNoBar);
+        processElement(doc, "iframe", "abs:src", rewriterViewNoBar);
+
+		// Links to external resources are not resolved until clicked
+		UnaryOperator<String> rewriterRawNoResolve = (sourceURL) ->
+				PropertiesLoader.WAYBACK_BASEURL + "services/web/" + waybackDate + "/" + sourceURL;
+        processElement(doc, "a",    "abs:href", rewriterRawNoResolve);
+        processElement(doc, "area", "abs:href", rewriterRawNoResolve);
+        processElement(doc, "form", "abs:action", rewriterRawNoResolve);
+
+        // Multi value elements
+        processMultiAttribute(doc, "img", "srcset", rewriterRaw);
+        processMultiAttribute(doc, "img", "data-srcset", rewriterRaw);
+		processMultiAttribute(doc, "source", "srcset", rewriterRaw);
+
+		// Full content processing
+		// TODO: Why the raw rewrite? Shouldn't this be view?
+		UnaryOperator<String> rewriterRawAmpersand = (sourceURL) -> {
+			sourceURL = rewriterRaw.apply(sourceURL);
+			return sourceURL == null ? null : sourceURL.replace("&", AMPERSAND_REPLACE);
+		};
+		// TODO: Move this to ScriptRewriter
+		processElementRegexp(doc, "style", null, rewriterRawAmpersand, CSS_IMPORT_PATTERN2);
+
+		processElementRegexp(doc, "*", "style", rewriterRaw, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
+
+		// Script content is handled by ScriptRewriter
+		rewriteInlineScripts(doc, crawlDate, urlReplaceMap);
+
+		replaceMS += System.currentTimeMillis();
+		log.info(String.format(
+				"replaceLinks('%s', %s): Links unique=%d, replaced=%d, not_found=%d. " +
+				"Time total=%dms (resolveHTML=%dms, analysis+adjustment=%dms, resolveResources=%dms)",
+	            url, crawlDate, urlSet.size(), urlReplaceMap.getFoundCount(), urlReplaceMap.getFailCount(),
+				preReplaceMS+replaceMS, preReplaceMS, replaceMS-resolveMS, resolveMS));
 
 
-		Document doc = Jsoup.parse(html,url); //TODO baseURI?
-
-				//List<String> urlList = new ArrayList<String>();
-		HashSet<String> urlSet = getUrlResourcesForHtmlPage(doc, url);
-		log.info("#unique urlset to resolve:"+urlSet.size());
-
-		ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
-
-        //Rewriting to url_norm, so it can be matched when replacing.
-		HashMap<String,IndexDoc> urlReplaceMap = new HashMap<String,IndexDoc>();
-		for (IndexDoc indexDoc: docs){
-			urlReplaceMap.put(indexDoc.getUrl_norm(),indexDoc);     		     		 
-		}
-
-		replaceUrlForElement(urlReplaceMap,doc, "img", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
-		replaceUrlForElement(urlReplaceMap,doc, "embed", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
-	    replaceUrlForElement(urlReplaceMap,doc, "source", "src", "downloadRaw",  numberOfLinksReplaced , numberOfLinksNotFound);
-		replaceUrlForElement(urlReplaceMap,doc, "body", "background", "downloadRaw" ,  numberOfLinksReplaced ,  numberOfLinksNotFound);             	     	 
-		replaceUrlForElement(urlReplaceMap,doc, "link", "href", "view",  numberOfLinksReplaced ,  numberOfLinksNotFound);
-		replaceUrlForElement(urlReplaceMap,doc, "script", "src", "downloadRaw",  numberOfLinksReplaced,  numberOfLinksNotFound);
-		replaceUrlForElement(urlReplaceMap,doc, "td", "background", "downloadRaw",  numberOfLinksReplaced ,  numberOfLinksNotFound);    	 
-	    replaceUrlForFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
-	    replaceUrlForIFrame(urlReplaceMap,doc, "view",  numberOfLinksReplaced ,  numberOfLinksNotFound); //No toolbar
-	    replaceUrlsForImgSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);
-	    replaceUrlsForSourceSrcset(urlReplaceMap, doc, url, numberOfLinksReplaced, numberOfLinksNotFound);	    
-        replaceStyleBackground(urlReplaceMap,doc, "a", "style", "downloadRaw",url,  numberOfLinksReplaced,  numberOfLinksNotFound);
-	    replaceUrlsForStyleImport(urlReplaceMap,doc,"downloadRaw",url ,  numberOfLinksReplaced,  numberOfLinksNotFound);
-		
-		//This are not resolved until clicked
-		rewriteUrlForElement(doc, "a" ,"href",arc.getWaybackDate());
-		rewriteUrlForElement(doc, "area" ,"href",arc.getWaybackDate());		
-		rewriteUrlForElement(doc, "form" ,"action",arc.getWaybackDate());
-
-		log.info("Number of resolves:"+urlSet.size() +" total time:"+(System.currentTimeMillis()-start));    	 
-        log.info("numberOfReplaced:"+numberOfLinksReplaced + " numbernotfound:"+numberOfLinksNotFound);
-		
 		String html_output= doc.toString();
-		html_output=html_output.replaceAll(AMPERSAND_REPLACE, "&amp;");		
-		
-		HtmlParseResult res = new HtmlParseResult();
-		res.setHtmlReplaced(html_output);
-		res.setNumberOfLinksReplaced(numberOfLinksReplaced.intValue());
-		res.setNumberOfLinksNotFound(numberOfLinksNotFound.intValue());		
+		html_output = RewriterBase.unescape(html_output);
+
+		ParseResult res = new ParseResult();
+		res.setReplaced(html_output);
+		res.setNumberOfLinksReplaced(urlReplaceMap.getFoundCount());
+		res.setNumberOfLinksNotFound(urlReplaceMap.getFailCount());
 		return res;
 	}
 
-	
+	private static void rewriteInlineScripts(
+			Document doc, String crawlDate, Map<String, IndexDocShort> urlReplaceMap) {
+		processElement(doc, "script", null, (content) -> {
+			try {
+				ParseResult scriptResult = ScriptRewriter.getInstance().replaceLinks(
+						content, doc.baseUri(), crawlDate, urlReplaceMap, RewriterBase.PACKAGING.inline, true);
+				return scriptResult.getReplaced();
+			} catch (Exception e) {
+				log.warn("Exception while parsing inline script for " + doc.baseUri() + " " + crawlDate, e);
+				return content;
+			}
+		});
+	}
+
+	/**
+	 * Generic transformer creator that normalises the incoming URL and return a link to an archived version,
+	 * if such a version exists. Else a {@code notfound} link is returned.
+	 * @param urlReplaceMap         a map of archived versions for normalised URLs on the page.
+	 * @param type                  view or downloadRAW.
+	 * @param extraParams           optional extra parameters for the URL to return.
+	 * @return an URL to an archived version of the resource that the URL designates or a {@code notfound} URL.
+	 */
+	private static UnaryOperator<String> createTransformer(
+            Map<String, IndexDocShort> urlReplaceMap, String type, String extraParams) {
+        return (String sourceURL) -> {
+                sourceURL =  sourceURL.replace("/../", "/");
+    
+                IndexDocShort indexDoc = urlReplaceMap.get(Normalisation.canonicaliseURL(sourceURL));
+                if (indexDoc != null){
+                    return PropertiesLoader.WAYBACK_BASEURL + "services/" + type +
+                           "?source_file_path=" + indexDoc.getSource_file_path() +
+                           "&offset=" + indexDoc.getOffset() +
+                           (extraParams == null ? "" : extraParams);
+                }
+                log.info("No harvest found for:"+sourceURL);
+                return NOT_FOUND_LINK;
+            };
+    }
+
+
+    /**
+     * Collect URLs for resources on the page, intended for later replacement with links to archived versions.
+     * @param doc a JSOUP document.
+     * @param baseURL baseURL for the web page, used for resolving relative URLs.
+     * @return a Set of URLs found on the page.
+     */
+	public static HashSet<String> getUrlResourcesForHtmlPage(Document doc, String baseURL) {
+		URLAbsoluter absoluter = new URLAbsoluter(baseURL, true);
+        final HashSet<String> urlSet = new HashSet<>();
+        UnaryOperator<String> collector = (String sourceURL) -> {
+            urlSet.add(absoluter.apply(sourceURL));
+            return null; // We don't want any changes when collecting
+        };
+
+        processElement(doc, "img",    "abs:src", collector);
+        processElement(doc, "embed",  "abs:src", collector);
+        processElement(doc, "source", "abs:src", collector);
+		processElement(doc, "script", "abs:src", collector);
+
+		processElement(doc, "body",   "abs:background", collector);
+		processElement(doc, "td",     "abs:background", collector);
+		processElement(doc, "table",  "abs:background", collector);
+		processElement(doc, "area",   "abs:href", collector); // Why is this collected? It is not replaced later on
+
+		processElement(doc, "link",   "abs:href", collector);
+
+		processElement(doc, "frame",  "abs:src", collector);
+        processElement(doc, "iframe", "abs:src", collector);
+        
+		processMultiAttribute(doc, "img", "srcset", collector);
+		processMultiAttribute(doc, "img", "data-srcset", collector);
+		processMultiAttribute(doc, "source", "srcset", collector);
+
+		processElementRegexp(doc, "style", null, collector, CSS_IMPORT_PATTERN2);
+		processElementRegexp(doc, "*", "style", collector, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
+
+		// Get URLs from the ScriptRewriter
+		processElement(doc, "script", null, (content) -> {
+			urlSet.addAll(ScriptRewriter.getInstance().getResourceURLs(content, baseURL));
+			return null;
+		});
+
+        return urlSet;
+	}
+
+
+
 	public static String generatePwid(ArcEntry arc) throws Exception{
 
       long start = System.currentTimeMillis();
@@ -235,17 +333,17 @@ public class HtmlParserUrlRewriter {
       String url=arc.getUrl();
 
        String collectionName = PropertiesLoader.PID_COLLECTION_NAME;
-      Document doc = Jsoup.parse(html,url); //TODO baseURI?
+      Document doc = Jsoup.parse(html,url);
 
      
        HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
            
       log.info("#unique urlset to resolve:"+urlSet.size());
 
-      ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrls(urlSet,arc.getCrawlDate());
+      ArrayList<IndexDocShort> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFewFields(urlSet,arc.getCrawlDate());
 
       StringBuffer buf = new StringBuffer();
-      for (IndexDoc indexDoc: docs){
+      for (IndexDocShort indexDoc: docs){
           buf.append("<part>\n");        
           buf.append("urn:pwid:"+collectionName+":"+indexDoc.getCrawlDate()+":part:"+indexDoc.getUrl() +"\n");
           buf.append("</part>\n");
@@ -257,409 +355,116 @@ public class HtmlParserUrlRewriter {
   
 	public static HashSet<String> getResourceLinksForHtmlFromArc(ArcEntry arc) throws Exception{
 
-      long start = System.currentTimeMillis();
-      String charset = arc.getContentEncoding();
-      String html = new String(arc.getBinary(), charset == null ? "utf-8" : charset);
+      String html = arc.getBinaryContentAsStringUnCompressed();
+
       String url=arc.getUrl();
 
 
-      Document doc = Jsoup.parse(html,url); //TODO baseURI?
+      Document doc = Jsoup.parse(html,url);
 
       
       HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
                  
      return urlSet;
     }
-	
-	
 
-	public static void replaceUrlForElement( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
 
-		for (Element e : doc.select(element)) {    		 
-			String url = e.attr("abs:"+attribute);
-
-			if (url == null  || url.trim().length()==0){
-				continue;
-			}
-
-			IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(url));   
-			if (indexDoc!=null){    		    			 
-				String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset();    			 
-				e.attr(attribute,newUrl);    			     		 
-			    numberOfLinksReplaced.getAndIncrement();
-			}
-			else{
-			     e.attr(attribute,NOT_FOUND_LINK);
-				log.info("No harvest found for:"+url);
-				numberOfLinksNotFound.getAndIncrement();;
-			 }
-
-		}
-	}
-	
-	/*
-	 * Will not generate toolbar
+	/**
+	 * Resolves instances of documents based on time distance.
 	 */
-	   public static void replaceUrlForFrame( HashMap<String,IndexDoc>  map,Document doc, String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
-          String element="frame";
-          String attribute="src";
-	     
-	        for (Element e : doc.select(element)) {          
-	            String url = e.attr("abs:"+attribute);
+	public interface NearestResolver {
+		/**
+		 * Locates one instance of each url, as close to timeStamp as possible.
+		 * @param urls the URLs to resolve.
+		 * @param isoTime a timestamp formatted as {@code YYYY-MM-ddTHH:MM:SSZ}.
+		 * @return  IndexDocs for the located URLs containing at least
+		 *          {@code url_norm, url, source_file, source_file_offset} for each document.
+		 */
+		List<IndexDocShort> findNearestHarvestTime(Collection<String> urls, String isoTime) throws Exception;
+	}
 
-	            if (url == null  || url.trim().length()==0){
-	                continue;
-	            }
-	            
-	            IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(url));   
-	            if (indexDoc!=null){                             
-	                String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset()+"&showToolbar=false";           
-	                e.attr(attribute,newUrl);                            
-	                numberOfLinksReplaced.getAndIncrement();
-	            }
-	            else{
-	                 e.attr(attribute,NOT_FOUND_LINK);
-	                log.info("No harvest found for:"+url);
-	                numberOfLinksNotFound.getAndIncrement();;
-	             }
 
-	        }
-	    }
-	     /*
-	    * Will not generate toolbar
-	     */
-	       public static void replaceUrlForIFrame( HashMap<String,IndexDoc>  map,Document doc, String type ,  AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
-	          String element="iframe";
-	          String attribute="src";
-	         
-	            for (Element e : doc.select(element)) {          
-	                String url = e.attr("abs:"+attribute);
+	/**
+	 * Iterates all matching element+attribute, then all outerRegexp {@code .group(1)}-matching content is applied to
+	 * innerRegexp and the group(1)-matches from that is sent throught the transformer.
+	 * Note1: The content of the matching innerRegexp group 1 is expected to be an URL and will be made absolute before
+	 *        being transformed.
+	 * Note2: Content returned from transformer will be entity encoded by JSOUP, if attribute is null.
+	 *        If an ampersand {@code &} is to remain non-encoded, replace it with {@link #AMPERSAND_REPLACE} in the
+	 *        content before returning it.
+	 * @param doc         a JSOUP document, representing part on a HTML page.
+	 * @param element     an HTML element.
+	 * @param attribute   an attribute for the HTML element.
+*                    If the attribute is null, the content of the element is used.
+	 * @param regexps     the content of the matching nodes will be matched by the first regexp and {@code .group(1)}
+	 *                    will be fed to the next regexp and so forth. When there are no more regexps, the content
+	 *                    will be processed by transformer.
+	 * @param transformer takes the regexp matching content of the attribute and provides the new content.
+	 *                    If null is returned, the content will not be changed.
+	 */
+	public static void processElementRegexp(
+			Document doc, String element, String attribute, UnaryOperator<String> transformer, Pattern... regexps) {
+		final URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri(), true);
+		UnaryOperator<String> processor = url ->
+				// TODO: Should canonicalization not be the responsibility of the collector?
+				transformer.apply(absoluter.apply(url));
+		for (int i = regexps.length-1 ; i >= 0 ; i--) {
+			processor = new RegexpReplacer(regexps[i], processor);
+		}
+		processElement(doc, element, attribute, processor);
+	}
 
-	                if (url == null  || url.trim().length()==0){
-	                    continue;
-	                }
-	                
-	                IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(url));   
-	                if (indexDoc!=null){                             
-	                    String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"&offset="+indexDoc.getOffset()+"&showToolbar=false";           
-	                    e.attr(attribute,newUrl);                            
-	                    numberOfLinksReplaced.getAndIncrement();
-	                }
-	                else{
-	                     e.attr(attribute,NOT_FOUND_LINK);
-	                    log.info("No harvest found for:"+url);
-	                    numberOfLinksNotFound.getAndIncrement();;
-	                 }
-
-	            }
-	        }
-	    
-
-	   
-
-	public static void replaceStyleBackground( HashMap<String,IndexDoc>  map,Document doc,String element, String attribute , String type, String baseUrl,   AtomicInteger numberOfLinksReplaced,  AtomicInteger numberOfLinksNotFound) throws Exception{
-
+    /**
+     * Iterates all matching element+attribute and applies the transformer on the content.
+	 * Expects URLs extracted from the attribute to be delivered as absolute by JSOUP.
+	 * Note: If the attribute is null, the content of the element will be used. When assigning new content to the
+	 *       element, it will be entity escaped.
+     * @param doc         a JSOUP document, representing part on a HTML page.
+     * @param element     an HTML element.
+     * @param attribute   an attribute for the HTML element.
+	 *                    If the attribute is null, the content of the element is used.
+	 *                    If the attribute is prefixed with {@code abs:}, JSOUP will attempt to make is an absolute URL.
+     * @param transformer takes the content of the attribute and provides the new content.
+     *                    If null is returned, the content will not be changed.
+     */
+	public static void processElement(
+	        Document doc, String element, String attribute, UnaryOperator<String> transformer) {
 		for (Element e : doc.select(element)) {
-
-			String style = e.attr(attribute);
-
-			if (style == null  || style.trim().length()==0){
+			String content = attribute == null || attribute.isEmpty() ? e.data() : e.attr(attribute);
+			if (content == null  || content.trim().isEmpty()){
 				continue;
-			}    		  
-
-			String urlUnresolved = getStyleMatch(style);   		   		
-
-			if ( urlUnresolved != null){
-				URL base = new URL(baseUrl);
-				String resolvedUrl = new URL( base ,urlUnresolved).toString();			
-				
-				IndexDoc indexDoc = map.get(map.get(Normalisation.canonicaliseURL(resolvedUrl)));   
-				if (indexDoc!=null){    		    			 
-					String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();    			     		
-					String styleFixed=style.replaceAll(urlUnresolved,newUrl);    			     
-					e.attr(attribute,styleFixed); 
-				     numberOfLinksReplaced.getAndIncrement();
+			}
+            String newContent = transformer.apply(content);
+			if (newContent != null && !newContent.equals(content)) {
+				if (attribute == null || attribute.isEmpty()) {
+					e.html(newContent.replace("\n", RewriterBase.NEWLINE_REPLACEMENT));
+				} else {
+					e.attr(attribute.replaceFirst("abs:", ""), newContent);
 				}
-				else{
-				  String styleFixed=style.replaceAll(urlUnresolved,NOT_FOUND_LINK);                    
-                  e.attr(attribute,styleFixed); 				  			     
-                  log.info("No harvest found for:"+resolvedUrl);
-                  numberOfLinksNotFound.getAndIncrement();
-				}
-
-
 			}
-
-		}   }
-
-	/*
-	 * For stupid HTML standard 
-	 * <a href="test" style="background:url(img/homeico.png) no-repeat ; width:90px; margin:0px 0px 0px 16px;">
-	 * 
-	 */
-	public static void collectStyleBackgroundRewrite(HashSet<String> set,Document doc,String element, String attribute ,  String baseUrl) throws Exception{
-
-		for (Element e : doc.select(element)) {
-
-			String style = e.attr(attribute);
-
-			if (style == null  || style.trim().length()==0){
-				continue;
-			}    		     		 
-			String unResolvedUrl = getStyleMatch(style);   		   		
-			if (unResolvedUrl != null){
-				URL base = new URL(baseUrl);
-				URL resolvedUrl = new URL( base , unResolvedUrl);			
-				set.add(Normalisation.canonicaliseURL(resolvedUrl.toString()));
-			}
-
 		}
 	}
 
-	/*
-	 * background:url(img/homeico.png) no-repeat ; width:90px ... ->  img/homeico.png
-	 */
-	private static String getStyleMatch(String style){
-		Matcher m = backgroundUrlPattern.matcher(style);
-		if (m.matches()){
-			String url= m.group(1);
-			return url;
-		}
-		return null;    	
+    /**
+     * Iterates all matching element+attribute, splits the content on {@code ,} and subsequently {@code } (space),
+	 * applying the transformer on the extracted content.
+	 * If the urls in the content are not absolute then {@code doc.baseUri()} is used for making it absolute.
+     * @param doc         a JSOUP document, representing part on a HTML page.
+     * @param element     an HTML element.
+     * @param attribute   an attribute for the HTML element.
+     * @param transformer takes the sub-content of the attribute and provides the new content.
+     *                    If null is returned, the content will not be changed.
+     */
+
+	public static void processMultiAttribute(
+	        Document doc, String element, String attribute, UnaryOperator<String> transformer) {
+		URLAbsoluter absoluter = new URLAbsoluter(doc.baseUri(), false);
+		processElementRegexp(doc, element, attribute,
+							 url ->transformer.apply(absoluter.apply(url)),
+							 COMMA_SEPARATED_PATTERN, SPACE_SEPARATED_PATTERN);
 	}
+	private static final Pattern COMMA_SEPARATED_PATTERN = Pattern.compile("([^,]+),?");
+	private static final Pattern SPACE_SEPARATED_PATTERN = Pattern.compile("([^ ]+) ?.*");
 
-	public static void collectRewriteUrlsForElement(HashSet<String> set,Document doc,String element, String attribute ) throws Exception{
-
-		for (Element e : doc.select(element)) {
-			String url = e.attr("abs:"+attribute);
-                 if ("embed".equals(element)) {System.out.println("embed url found:"+url);}
-			if (url == null  || url.trim().length()==0){
-				continue;
-			}
-//			System.out.println("adding url:"+(Normalisation.canonicaliseURL(url)));
-			set.add(Normalisation.canonicaliseURL(url));   		    		 		
-		}
-	}
-
-	
-       // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
-	   // comma seperated, size is optional.
-	   public static void collectRewriteUrlsForImgSrcset(HashSet<String> set,Document doc) throws Exception{
-
-	        for (Element e : doc.select("img")) {
-	            String urls = e.attr("abs:srcset");
-
-	            if (urls == null  || urls.trim().length()==0){
-	                continue;
-	            }
-	            // split.
-	            String[] urlList = urls.split(",");
-	            for (String current : urlList){
-	              current=current.trim();	              
-	             String url =current.split(" ")[0].trim();
-	             String url_norm= Normalisation.canonicaliseURL(url);
-	             
-	             //log.info("Collect srcset url:"+url_norm);	             
-	             set.add(url_norm); 	             
-	            }	            	            
-	                                        
-	        }
-	    }
-	
-	    // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
-       // comma seperated, size is optional.
-       public static void collectRewriteUrlsForSourceSrcset(HashSet<String> set,Document doc) throws Exception{
-
-            for (Element e : doc.select("source")) {
-                String urls = e.attr("abs:srcset");
-
-                if (urls == null  || urls.trim().length()==0){
-                    continue;
-                }
-                // split.
-                String[] urlList = urls.split(",");
-                for (String current : urlList){
-                  current=current.trim();                 
-                 String url =current.split(" ")[0].trim();
-                 String url_norm= Normalisation.canonicaliseURL(url);
-                 
-                 //log.info("Collect srcset url:"+url_norm);                 
-                 set.add(url_norm);                  
-                }                               
-                                            
-            }
-        }
-	   
-	//<style type="text/css" media="screen">@import url(http://en.statsbiblioteket.dk/portal_css/SB%20Theme/resourceplonetheme.sbtheme.stylesheetsmain-cachekey-7e976fa2b125f18f45a257c2d1882e00.css);</style> 
-	public static void collectRewriteUrlsForStyleImport(HashSet<String> set, Document doc, String baseUrl) throws Exception{
-
-      for (Element e : doc.select("style")) {         
-        String styleTagContent = e.data();          
-        Matcher m = CSS_IMPORT_PATTERN.matcher(styleTagContent);
-        if (m.matches()){
-            String cssUrl= m.group(1);         
-              URL base = new URL(baseUrl);
-              URL resolvedUrl = new URL( base , cssUrl);           
-                            
-              set.add(Normalisation.canonicaliseURL(resolvedUrl.toString()));
-        }                   
-      }
-  }
-
-
-    // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
-    // comma seperated, size is optional.
-    public static void replaceUrlsForImgSrcset(HashMap<String,IndexDoc>  map,Document doc, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
-         for (Element e : doc.select("img")) {
-             String urls = e.attr("abs:srcset");
-             String urlsReplaced = urls; //They will be changed one at a time
-
-             if (urls == null  || urls.trim().length()==0){
-                 continue;
-             }
-             // split.
-             String[] urlList = urls.split(",");
-             for (String current : urlList){
-              current=current.trim();                 
-              String urlUnresolved =current.split(" ")[0].trim();
-                            
-              String url_norm = Normalisation.canonicaliseURL(urlUnresolved);
-              //log.info("Replace srcset url part:'"+url_norm+"'");
-              IndexDoc indexDoc = map.get(url_norm);   
-              if (indexDoc!=null){                             
-                  String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();                           
-                  urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                                                         
-                  log.info("replaced srcset url:" + urlUnresolved +" by "+newUrl);
-                  numberOfLinksReplaced.getAndIncrement();
-              }
-              else{
-                String newUrl=NOT_FOUND_LINK;                           
-                urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                
-                log.info("No harvest found srcset url:"+urlUnresolved);
-                numberOfLinksNotFound.getAndIncrement();
-               }
-
-                
-             } 
-             e.attr("srcset",urlsReplaced);  
-                                         
-         }
-     }
-	
-    // srcset="http://www.test.dk/img1 477w, http://www.test.dk/img2 150w" 
-    // comma seperated, size is optional.
-    public static void replaceUrlsForSourceSrcset(HashMap<String,IndexDoc>  map,Document doc, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
-         for (Element e : doc.select("source")) {
-             String urls = e.attr("abs:srcset");
-             String urlsReplaced = urls; //They will be changed one at a time
-
-             if (urls == null  || urls.trim().length()==0){
-                 continue;
-             }
-             // split.
-             String[] urlList = urls.split(",");
-             for (String current : urlList){
-              current=current.trim();                 
-              String urlUnresolved =current.split(" ")[0].trim();
-                            
-              String url_norm = Normalisation.canonicaliseURL(urlUnresolved);
-              //log.info("Replace srcset url part:'"+url_norm+"'");
-              IndexDoc indexDoc = map.get(url_norm);   
-              if (indexDoc!=null){                             
-                  String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/downloadRaw?source_file_path="+indexDoc.getSource_file_path() +"&offset="+indexDoc.getOffset();                           
-                  urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                                                         
-                  //log.info("replaced srcset url:" + urlUnresolved +" by "+newUrl);
-                  numberOfLinksReplaced.getAndIncrement();
-              }
-              else{
-                String newUrl=NOT_FOUND_LINK;                           
-                urlsReplaced = urlsReplaced.replace(urlUnresolved, newUrl);                
-                log.info("No harvest found srcset url:"+urlUnresolved);
-                numberOfLinksNotFound.getAndIncrement();
-               }
-
-                
-             } 
-             e.attr("srcset",urlsReplaced);  
-                                         
-         }
-     }
-    
-	
-	public static void replaceUrlsForStyleImport( HashMap<String,IndexDoc>  map, Document doc, String type, String baseUrl,   AtomicInteger numberOfLinksReplaced,   AtomicInteger numberOfLinksNotFound) throws Exception{
-	
-      for (Element e : doc.select("style")) {         
-        String styleTagContent = e.data();          
-        Matcher m = CSS_IMPORT_PATTERN.matcher(styleTagContent);
-        if (m.matches()){
-          String url = m.group(1);
-          URL base = new URL(baseUrl);
-          URL resolvedUrl = new URL( base , url);            
-          
-
-          IndexDoc indexDoc = map.get(Normalisation.canonicaliseURL(resolvedUrl.toString()));   
-          if (indexDoc!=null){                             
-              String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+type+"?source_file_path="+indexDoc.getSource_file_path()+"_STYLE_AMPERSAND_REPLACE_offset="+indexDoc.getOffset();                 
-              log.info("replaced @import:"+e );
-              log.info("replaced with:"+newUrl );
-              e.html("@import url("+newUrl+");"); //e.text will be encoded                            
-              log.info("new tag (html):"+e);
-              numberOfLinksReplaced.incrementAndGet();
-          }
-          else{
-            e.html("@import url("+NOT_FOUND_LINK+");"); //e.text will be encoded
-              log.info("No harvest found for:"+resolvedUrl );
-              numberOfLinksNotFound.incrementAndGet();
-          }
-          
-        }                   
-      }
-  }
-
-	
-	/*
-	 * Only rewrite to new service, no need to resolve until clicked
-	 * 
-	 */
-	public static void rewriteUrlForElement(Document doc, String element, String attribute,  String waybackDate) throws Exception{      
-		for (Element e : doc.select(element)) {
-			String url = e.attr("abs:"+attribute);
-			if (url == null  || url.trim().length()==0){
-				continue;
-			}    		                                      
-       			//String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/"+"viewhref?url="+urlEncoded+"&crawlDate="+crawlDate;    			            
-           //Format is: ?waybackdata=20080331193533/http://ekstrabladet.dk/112/article990050.ece 
-            String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+url;
-            e.attr("href",newUrl);    			     		 
-		}   		  		
-	}
-
-	
-
-	public static HashSet<String> getUrlResourcesForHtmlPage( Document doc, String url) throws Exception{
-	  HashSet<String> urlSet = new HashSet<String>();
-      collectRewriteUrlsForElement(urlSet,doc, "area", "href");
-      collectRewriteUrlsForElement(urlSet, doc, "img", "src");
-      collectRewriteUrlsForElement(urlSet, doc, "embed", "src");
-      collectRewriteUrlsForElement(urlSet, doc, "source", "src");
-      collectRewriteUrlsForImgSrcset(urlSet, doc);
-      collectRewriteUrlsForSourceSrcset(urlSet, doc);
-      collectRewriteUrlsForElement(urlSet,doc, "body", "background");
-      collectRewriteUrlsForElement(urlSet, doc, "link", "href");
-      collectRewriteUrlsForElement(urlSet , doc, "script", "src");
-      collectRewriteUrlsForElement(urlSet, doc, "td", "background");
-      collectRewriteUrlsForElement(urlSet,doc, "frame", "src");
-      collectRewriteUrlsForElement(urlSet,doc, "iframe", "src");
-      collectStyleBackgroundRewrite(urlSet , doc, "a", "style",url);
-      collectRewriteUrlsForStyleImport(urlSet, doc,url);            
-      return urlSet;	  
-	}
-	
-	public static HashMap<String,String> test(String html,String url) throws Exception{
-		HashMap<String,String> imagesSet = new HashMap<String,String>();  // To remove duplicates
-		Document doc = Jsoup.parse(html,url); //TODO baseURI?
-		//System.out.println(doc);
-		return imagesSet;
-	}
 
 }

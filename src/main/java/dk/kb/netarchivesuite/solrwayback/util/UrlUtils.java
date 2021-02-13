@@ -21,9 +21,7 @@ public class UrlUtils {
       return false;
     }
     String domain = tokens[2];    
-    if (domain.indexOf(".")<0){
-      return false;
-    }
+    
     return true;        
   }
  

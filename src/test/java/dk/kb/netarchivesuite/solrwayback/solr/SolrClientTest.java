@@ -4,26 +4,36 @@ import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
+import java.util.TreeSet;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
+import org.apache.solr.client.solrj.response.Group;
+import org.apache.solr.client.solrj.response.GroupCommand;
 import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.service.dto.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
-import dk.kb.netarchivesuite.solrwayback.solr.FacetCount;
+
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.WaybackStatistics;
 
@@ -35,7 +45,9 @@ public class SolrClientTest {
   // Just an easy class to test methods in  NetarchiveSolrClient class.
   
   public static void main (String[] args) throws Exception{
-    PropertiesLoader.initProperties();
+    
+
+      NetarchiveSolrClient.initialize("http://localhost:8983/solr/netarchivebuilder/");
 
     /*
 	        String dateSolr ="2015-09-17T17:02:03Z";
@@ -57,7 +69,7 @@ public class SolrClientTest {
     //testSolrDate();
     //   testHarvestPreviewsForUrl();
     //domainStatistics();
-    testGroup();
+    //testGroup();
   }
 
   public static void testWaybackStats() throws Exception{
@@ -87,7 +99,7 @@ public class SolrClientTest {
     NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();
 
 
-    ArrayList<IndexDoc> indexDocs = solr.getHarvestPreviewsForUrl("http://denstoredanske.dk/");                 
+    ArrayList<IndexDoc> indexDocs = solr.getHarvestPreviewsForUrl(2019,"http://denstoredanske.dk/");                 
 
     System.out.println(indexDocs.size());
   }
@@ -139,10 +151,8 @@ public class SolrClientTest {
 
     }
     fw.close();
-
   }
-
-
+  
   public static void testImagesLocationSearch() throws Exception{
 
     NetarchiveSolrClient solr = NetarchiveSolrClient.getInstance();//pt=56.431,9.431&d=500
@@ -248,17 +258,19 @@ public class SolrClientTest {
     System.out.println("querytime:"+(System.currentTimeMillis()-start));     
 
 
-
-
   }
 
+  
+
+  
+  
   public static void domainStatistics() throws Exception{
     int maxRows = 20000;// it is faster than grouping to extract all
-    String domain ="eb.dk";
+    String domain ="ekot.dk";
     HttpSolrClient solrServer;
     NetarchiveSolrClient instance = null;
 
-    solrServer =  new HttpSolrClient.Builder("http://belinda:8983/solr/netarchivebuilder").build();
+    solrServer =  new HttpSolrClient.Builder("http://localhost:8983/solr/netarchivebuilder").build();
 
     //solrServer.setRequestWriter(new BinaryRequestWriter());
 
@@ -267,7 +279,7 @@ public class SolrClientTest {
     solrQuery.setQuery(searchString); 
     solrQuery.set("facet", "false"); 
     solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
-    solrQuery.addFilterQuery("crawl_year:2011");            
+    solrQuery.addFilterQuery("crawl_year:2020");            
     solrQuery.setRows(0);
     solrQuery.add("fl","id");
     solrQuery.add("stats","true");

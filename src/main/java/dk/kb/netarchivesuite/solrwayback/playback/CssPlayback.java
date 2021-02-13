@@ -1,11 +1,10 @@
 package dk.kb.netarchivesuite.solrwayback.playback;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParseResult;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
-import dk.kb.netarchivesuite.solrwayback.parsers.WaybackToolbarInjecter;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 
@@ -20,9 +19,15 @@ public class CssPlayback  extends PlaybackHandler{
   @Override
   public ArcEntry playback() throws Exception{    
     //Never show the toolbar.
-    long start = System.currentTimeMillis();    
-    String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);            
-    arc.setBinary(textReplaced.getBytes(arc.getContentEncoding()));     
+      arc.setBinary(IOUtils.toByteArray(arc.getBinaryContentAsStringUnCompressed())); //TODO charset;          
+      
+    String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);                
+    if (!"gzip".equalsIgnoreCase(arc.getContentEncoding())){ 
+      arc.setBinary(textReplaced.getBytes(arc.getContentCharset()));
+      }
+      else{
+       arc.setBinary(textReplaced.getBytes("UTF-8"));  
+      }    
     return arc;
   }
   

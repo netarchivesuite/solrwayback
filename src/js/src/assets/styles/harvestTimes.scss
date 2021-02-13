@@ -1,0 +1,140 @@
+.contentContainerHarvestTimes {
+  font-family: 'lato', sans-serif;
+}
+.containerHarvestTimes {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top:2rem;
+  padding-left: 10px;
+  padding-right: 10px;
+  clear:both;
+  
+}
+
+.contentContainerHarvestTimes h2 {
+  font-size: 20px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.containerHarvestTimes .responsive-table {
+  li {
+    border-radius: 3px;
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .table-header {
+    background-color: #95A5A6;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .table-row {
+    background-color: #ffffff;
+    box-shadow: 0px 0px 9px 0px rgba(0,0,0,0.1);
+  }
+  
+  .col-0 {
+    flex-basis: 3%;
+  }
+  
+  .col-1 {
+    width:47%;
+    font-size: 14px;
+  }
+
+  .col-2 {
+    flex-basis: 10%;
+    padding: 0 1rem 0 0;
+  }
+  .col-3 {
+    flex-basis: 20%;
+  }
+  .col-4 {
+    flex-basis: 20%;
+  }
+}
+
+
+.containerHarvestTimes img {
+max-height: 100px;
+max-width: 100px;
+}
+
+.missingResourcesContainer, .maxTimeDiffContainer {
+  float:right;
+  margin-right: 1rem;
+  width:50%;
+}
+
+.missingResourcesHeader h2, .maxTimeDiffHeader h2 {
+  font-weight:normal;
+}
+
+h2.harvestedResourcesHeader {
+  font-weight:normal !important;
+  text-align:left;
+}
+
+
+.missingResourcesContainer li{
+  padding: 0 0 0 1rem;
+  margin:.5rem 0 .2rem 1.5rem;
+  font-size:80%;
+}
+
+.previewImg {
+  float: left;
+margin: 0 0 2em 1rem;
+width: 40%;
+}
+
+.previewImg img.preview {
+  margin-bottom: 2em;
+max-width: 100%;
+min-height: 300px;
+}
+
+h2.previewHeader {
+  font-weight:normal;
+}
+
+
+
+.copyToClipboard {
+  display: block;
+  position: relative;
+  top: 2px;
+  height: 20px;  /*height of icon */
+  width: 20px;  /*width of icon */
+  cursor: pointer;
+
+}
+
+.clipBoardIcon {
+  background: url(../assets/icons/Font_Awesome_5_regular_clipboard.svg) no-repeat 0px 0px;
+}
+
+.checkmarkIcon {
+  background: url(../assets/icons/Icons8_flat_checkmark.svg) no-repeat 0px 0px;
+}
+
+
+
+.timeDifferenceArrow {
+  margin: 0 20px 0 3px;
+}
+
+.timeDifference .forward, .timeDifference .backward{
+  width: 4rem;
+  display: inline-block;
+  margin-right: 1rem;
+}
+
+.pageHarvestDate {
+  color: var(--main-highlight-color);
+  margin: .5rem 0 0 1rem;
+padding: 5px;
+}

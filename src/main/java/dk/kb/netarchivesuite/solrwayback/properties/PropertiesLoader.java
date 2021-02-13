@@ -19,14 +19,14 @@ public class PropertiesLoader {
     
     private static final String DEFAULT_PROPERTY_FILE = "solrwayback.properties";
     private static final String SOLR_SERVER_PROPERTY="solr.server";
-    private static final String PROXY_PORT_PROPERTY="proxy.port";
-    private static final String PROXY_ALLOW_HOSTS_PROPERTY="proxy.allow.hosts";
     private static final String WARC_FILE_RESOLVER_CLASS_PROPERTY="warc.file.resolver.class";
     private static final String WAYBACK_BASEURL_PROPERTY="wayback.baseurl";
     private static final String CHROME_COMMAND_PROPERTY="chrome.command";
     private static final String SCREENSHOT_TEMP_IMAGEDIR_PROPERTY="screenshot.temp.imagedir";
     private static final String PID_COLLECTION_NAME_PROPERTY="pid.collection.name";
     private static final String SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY="screenshot.preview.timeout";               
+
+    private static final String WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY="warcindexer.urlnormaliser.legacy";
     private static Properties serviceProperties = null;
 
     public static String SOLR_SERVER = null;
@@ -35,12 +35,10 @@ public class PropertiesLoader {
     public static int WAYBACK_SERVER_PORT = 0; //Taken from WAYBACK_BASEURL
     public static String CHROME_COMMAND= null;
     public static String SCREENSHOT_TEMP_IMAGEDIR = null;
-    public static String PROXY_PORT= null;
-    public static String PROXY_ALLOW_HOSTS= null;
     public static String WARC_FILE_RESOLVER_CLASS = null;
     public static String PID_COLLECTION_NAME = null;
     public static int SCREENSHOT_PREVIEW_TIMEOUT = 10;//default
-    
+    public static boolean WARC_INDEXER_URL_NORMALIZER_LEGACY=false; //default
 
     public static void initProperties() {
       initProperties(DEFAULT_PROPERTY_FILE);      
@@ -68,11 +66,10 @@ public class PropertiesLoader {
             WAYBACK_BASEURL = serviceProperties.getProperty(WAYBACK_BASEURL_PROPERTY);
             CHROME_COMMAND = serviceProperties.getProperty(CHROME_COMMAND_PROPERTY);
             SCREENSHOT_TEMP_IMAGEDIR = serviceProperties.getProperty(SCREENSHOT_TEMP_IMAGEDIR_PROPERTY);
-            PROXY_PORT = serviceProperties.getProperty(PROXY_PORT_PROPERTY);
-            PROXY_ALLOW_HOSTS = serviceProperties.getProperty(PROXY_ALLOW_HOSTS_PROPERTY);
             WARC_FILE_RESOLVER_CLASS = serviceProperties.getProperty(WARC_FILE_RESOLVER_CLASS_PROPERTY);
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
+            String legacyUrlNormalizer  = serviceProperties.getProperty(WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY);
             
             URL waybacksURL = new URL (WAYBACK_BASEURL);
             WAYBACK_SERVER_PORT =  waybacksURL.getPort();
@@ -81,15 +78,17 @@ public class PropertiesLoader {
             if (timeout != null){
               SCREENSHOT_PREVIEW_TIMEOUT = Integer.parseInt(timeout);
             }
-                        
+            if (legacyUrlNormalizer != null){
+              WARC_INDEXER_URL_NORMALIZER_LEGACY= Boolean.valueOf(legacyUrlNormalizer);
+            }
+                                    
             log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
             log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);           
-            log.info("Property:"+ PROXY_PORT_PROPERTY +" = " + PROXY_PORT);
-            log.info("Property:"+ PROXY_ALLOW_HOSTS_PROPERTY +" = " + PROXY_ALLOW_HOSTS);
             log.info("Property:"+ CHROME_COMMAND_PROPERTY +" = " + CHROME_COMMAND);
             log.info("Property:"+ SCREENSHOT_TEMP_IMAGEDIR_PROPERTY +" = " + SCREENSHOT_TEMP_IMAGEDIR);
             log.info("Property:"+ SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY +" = " +  SCREENSHOT_PREVIEW_TIMEOUT);
             log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);            
+            log.info("Property:"+ WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY +" = " +  WARC_INDEXER_URL_NORMALIZER_LEGACY);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
             
         }

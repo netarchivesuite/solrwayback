@@ -1,11 +1,15 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 
@@ -15,10 +19,14 @@ public class Twitter2Html {
   private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
   public static String twitter2Html(String jsonString, String crawlDate) throws Exception{
     StringBuilder b = new StringBuilder();       
-    TwitterParser parser = new TwitterParser(jsonString);
+    TwitterParser2 parser = new TwitterParser2(jsonString);
     String image_icons = PropertiesLoader.WAYBACK_BASEURL+"images/twitter_sprite.png";
+            
     
-    
+    String textReplaced = newline2Br(parser.getText());
+    //TODO frontend fix so all other params not needed
+    String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false";
+    textReplaced = replaceHashTags(PropertiesLoaderWeb.WAYBACK_SERVER,otherSearchParams,textReplaced, parser.getHashTags());    
     
     String title;
     String type;
@@ -39,7 +47,7 @@ public class Twitter2Html {
    String queryStr = Facade.queryStringForImages(images_norm);
    ArrayList<ArcEntryDescriptor> images = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, crawlDate);
 
-   String user_image = parser.getUserImage();
+   String user_image = parser.getProfileImage();
    String user_image_norm =(Normalisation.canonicaliseURL(user_image));
    
    ArrayList<String> user_image_list = new ArrayList<String>();
@@ -119,12 +127,10 @@ public class Twitter2Html {
             "<h2>"+parser.getAuthor()+ type+"</h2>"+
           "</div>"+
           "<div class='item date'>"+
-            "<div>"+parser.getCreateDate()+"</div>"+
+            "<div>"+parser.getCreatedDate()+"</div>"+
           "</div>"+
           "<div class='item text'>"+
-           newline2Br(parser.getText())+            
-            "<span class='item hashtags'>"+
-             keyHashTagsHtml(parser.getHashTagsList())+         
+           textReplaced+                     
             "<span class='image'>"+
               imagesHtml(imageUrls)+
             "</span>"+
@@ -143,14 +149,29 @@ public class Twitter2Html {
      return html;
     }
   
-  public static String keyHashTagsHtml(ArrayList<String> tags){
-    StringBuilder b = new StringBuilder();
-    for (String tag : tags){
-      b.append("<span><a href=''>#"+tag+"</a></span>\n");
-    }
-       
-    return b.toString();        
+  
+   /*HashTags are in clear text without # in front.
+   * Replace this with a link that searches for the tag.
+   * 
+   */
+  public static String replaceHashTags(String solrwaybackUrl, String otherSearchParams, String text, HashSet<String> tags) {
+	  log.info("tags replace called for text: '"+text +"' with tags:"+tags);	  	 
+	  for (String tag : tags) {
+		  log.info("replacing tag:"+tag);
+		  String link = solrwaybackUrl+"?query=keywords%3A"+tag+otherSearchParams;	
+	    String replaceText = " <span><a href='"+link+"'>#"+tag+"</a></span> ";             
+	    if (text.endsWith(tag)) {
+	    	log.info("tag found in end");
+          text=text.replaceAll(" #"+tag, replaceText); //Replace if last in text. (no trailing white-space).
+        }
+        else {
+         log.info("tag found with trailing whitespace");
+	      text=text.replaceAll(" #"+tag+ " ", replaceText); //This will not find the tag if it is last. Need space not to replace within tags. Etc. #covid #covid19 
+        }	  
+	  }
+	  return text;	  	  
   }
+    
   
   private static String newline2Br(String text){
     if (text==null){

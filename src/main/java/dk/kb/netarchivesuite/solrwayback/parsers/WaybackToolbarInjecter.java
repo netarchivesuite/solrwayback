@@ -11,12 +11,8 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.tools.javac.util.Log;
-
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
-import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.WaybackStatistics;
 
@@ -55,8 +51,8 @@ public class WaybackToolbarInjecter {
     stats.setLastHarvestDate("2015-09-17T17:02:03Z");
     stats.setNumberOfHarvest(101);
 
-    HtmlParseResult htmlParsed = new HtmlParseResult();
-    htmlParsed.setHtmlReplaced(html);
+    ParseResult htmlParsed = new ParseResult();
+    htmlParsed.setReplaced(html);
     htmlParsed.setNumberOfLinksNotFound(1);
     htmlParsed.setNumberOfLinksReplaced(17);
         
@@ -66,7 +62,7 @@ public class WaybackToolbarInjecter {
   
   
   
-public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htmlParsedResult, boolean xhtml) throws Exception{       
+public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlParsedResult, boolean xhtml) throws Exception{
     
     try{                   
     WaybackStatistics stats = NetarchiveSolrClient.getInstance().getWayBackStatistics(indexDoc.getStatusCode(),indexDoc.getUrl(),indexDoc.getUrl_norm(), indexDoc.getCrawlDate());            
@@ -76,18 +72,18 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htm
     return injectedHtml;
    }catch (Exception e){
      log.error("error injecting waybacktoolbar", e);
-    return htmlParsedResult.getHtmlReplaced();// no injection (should not happen). 
+    return htmlParsedResult.getReplaced();// no injection (should not happen).
    }    
   }
   
   
-  public static String injectWaybacktoolBar(String source_file_path, long offset, HtmlParseResult htmlParsedResult, boolean xhtml) throws Exception{                           
+  public static String injectWaybacktoolBar(String source_file_path, long offset, ParseResult htmlParsedResult, boolean xhtml) throws Exception{
     IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);    
     return injectWaybacktoolBar(indexDoc, htmlParsedResult, xhtml);    
   }
   
-  public static String injectInHmtl(HtmlParseResult htmlParsed, WaybackStatistics stats,String source_file_path, long offset, boolean xhtml) throws Exception{
-    String orgHtml=htmlParsed.getHtmlReplaced();
+  public static String injectInHmtl(ParseResult htmlParsed, WaybackStatistics stats, String source_file_path, long offset, boolean xhtml) throws Exception{
+    String orgHtml=htmlParsed.getReplaced();
     Document doc = Jsoup.parse(orgHtml);
     if (xhtml){
       doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml); //Without this json will not terminate tags correct as xhtml 
@@ -105,7 +101,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htm
     return doc.toString();    
   }
   
-  private static String generateToolbarHtml(HtmlParseResult htmlParsed,WaybackStatistics stats, String source_file_path, long offset) throws Exception{
+  private static String generateToolbarHtml(ParseResult htmlParsed, WaybackStatistics stats, String source_file_path, long offset) throws Exception{
     
   
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -143,18 +139,18 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htm
     "            </div>" +
     "            <div class=\"infoLine\">" +
     "               <span class=\"label\">Page resources:</span>" +
-    "               <span class=\"inlineLabel\">#Found:</span>" +
+    "               <span class=\"inlineLabel removeLeftMargin\">#Found:</span>" +
     "               <span class=\"dynamicData\">"+htmlParsed.getNumberOfLinksReplaced()+"</span>" +
     "               <span class=\"inlineLabel\">#Not found:</span>" +
     "               <span class=\"dynamicData\">"+htmlParsed.getNumberOfLinksNotFound()+"</span>" +
     "            </div>" +
-    "            <div class=\"infoLine\">" +
-    "               <span title=\"View in- and out-going links\"class=\"dynamicData icon\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +
-    "               <span title=\"View dates for harvest\" class=\"dynamicData icon\">"+generateCalendarImageLink("calendar_icon.png",stats.getUrl_norm()) +"</span>" +
-    "               <span title=\"View XML\" class=\"dynamicData icon\">"+generatePwid("xml.png",source_file_path,offset) +"</span>" +
-    "               <span title=\"View website previews\" class=\"dynamicData icon\">"+generatePagePreviews("preview.png",stats.getUrl_norm()) +"</span>" +
-    "               <span title=\"View harvest time for page resources\" class=\"dynamicData icon\">"+generatePageResources("watch.png",source_file_path,offset) +"</span>" +
-            "       <span title=\"View domain developement over time\" class=\"dynamicData icon\">" + generateDomainGrowthImageLink("growth_icon.png",stats.getDomain()) +"</span>" +
+    "            <div class=\"infoLine iconContainer\">" +
+//    "               <span title=\"View in- and out-going links\"class=\"dynamicData icon\">"+generateDomainGraphImageLink("graph_icon.png",stats.getDomain()) +"</span>" +
+    "               <span title=\"View dates for harvest\" class=\"dynamicData icon\">"+generateCalendarImageLink("today-24px.svg",stats.getUrl_norm()) +"</span>" +
+    "               <span title=\"View XML\" class=\"dynamicData icon\">"+generatePwid("text_snippet-24px.svg",source_file_path,offset) +"</span>" +
+    "               <span title=\"Not implemented yet!\" class=\"dynamicData icon\">"+generatePagePreviews("preview-24px.svg",stats.getUrl_norm()) +"</span>" +
+    "               <span title=\"View harvest time for page resources\" class=\"dynamicData icon\">"+generatePageResources("schedule-24dp.svg",source_file_path,offset) +"</span>" +
+//            "       <span title=\"View domain developement over time\" class=\"dynamicData icon\">" + generateDomainGrowthImageLink("growth_icon.png",stats.getDomain()) +"</span>" +
     "            </div>" +    
     "           <div class=\"paging\">" +
     "               <div class=\"pagingBlock\">" +
@@ -180,27 +176,29 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htm
     "       font-size: 14px; opacity: 1; padding: 0; width: auto}" +
     "       #tegModal p, #tegModal div{display: block}" +
     "       #tegModal span, #tegModal a{display: inline}" +
-    "       #tegModal{z-index: 999999 !important; color: black; font-size: 14px;" + "font-family: arial, Helvetica,sans-serif;background: #ffffff; border: 1px solid black;border-radius: 4px; " +
-    "       box-shadow: 0 0 5px 5px #ccc; display: block; left: calc(50% - 450px); opacity: 1; padding: 1.5em 1.5em .5em;" +
+    "       #tegModal{z-index: 999999 !important; color: black; font-size: 14px;" + "font-family: arial, Helvetica,sans-serif;background: #ffffff; border: 1px solid white;" +
+    "       box-shadow:0px 6px 14px 2px rgba(25,25,25,0.3); display: block; left: calc(50% - 450px); opacity: 1; padding: 1.5em 1.5em .5em;" +
             "position:fixed; text-align:left !important; top: 25%; width: 900px; z-index: 500; box-sizing: content-box;" +
     "       transition: left 0.4s, opacity 0.3s, padding 0.3s, top 0.4s, width 0.3s;}" +
             "#tegModal p, #tegModal div{color: black !important; font-family: Arial, Helvetica, sans-serif; font-size: 12px !important}" +
-    "       #tegModal.closed {box-shadow: 0 0 0 0; left: 3px;opacity: 0.8; padding:0.5em; top: 3px; width: auto; text-orientation: upright; writing-mode: vertical-rl;}" +
+    "       #tegModal.closed {font-weight: bold;box-shadow: 0px 0px 4px rgba(30,30,30,0.5); left: 3px;opacity: 0.9; padding:0.5em; top: 3px; width: auto; text-orientation: upright; writing-mode: vertical-rl;}" +
     "       #toggleToolbar, #closeToolbar{float: right; margin: -.8em -.5em 2em 2em;}" +
     "       #tegModal.closed #toggleToolbar{float: none; margin: 0;}" +
+    "       #tegModal .iconContainer{text-align:center;margin: 5px 15%;display: flex;flex-direction: row;}" +
     "       #toggleToolbar{margin-left: 1em;}" +
     "       #tegModal.closed #tegContent,#tegModal.closed #closeToolbar{display: none}" +
     "       #tegModal .infoLine{margin-bottom: .5em;}" +
-    "       #tegModal a img {display: inline-block; margin: 2em 3em 2em 0; max-height: 60px; }" +        
+    "       #tegModal a img {display: block;position: relative;margin: auto;max-height: 60px;height:40px;}" +        
     "       #tegModal a {color: #003399; font-size: 14px; text-decoration: none}" +
     "       #tegModal a:hover {color: #003399; text-decoration: underline}"+
     "       #tegModal.closed a:hover {text-decoration: none}"+
-    "       #tegModal .label{background:transparent;color:black;display: inline-block;font-size:12px;font-weight: bold; min-width: 110px;text-align: left;}" +
+    "       #tegModal .label{text-transform:uppercase;background:transparent;color:black;display: inline-block;font-size:12px;font-weight: bold; min-width: 140px;text-align: left;}" +
     "       #tegModal .inlineLabel{display: inline-block;font-weight: bold; margin: 0 .2em 0 .8em;}" +
+    "       #tegModal .removeLeftMargin{margin-left: 0px;}" + 
     "       #tegModal .paging .inlineLabel{margin: 0 .5em 0 .1em;}" +
-    "       #tegModal .paging{border-top: 1px solid #ccc; margin-top: 1em; padding-top: 0.8em;}" +
+    "       #tegModal .paging{border-top: 1px solid #ccc; margin-top: 1em; padding-top: 0.8em;text-align: center;}" +
     "       #tegModal .pagingBlock{display: inline-block; margin-right: .8em}" +
-    "       #tegModal .dynamicData.icon{display: inline-block}" +
+    "       #tegModal .dynamicData.icon{flex: 1; width: 80px;	margin-left: 35px;margin-right: 35px;margin-top: 15px;margin-bottom: 0px;line-break: auto;}" +
     "       </style>" +
     "       <script type=\"text/javascript\">" +
     "           function toggleModal(){" +
@@ -245,26 +243,31 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htm
   
   private static String generatePwid(String image, String source_file_path, long offset) throws Exception{
 
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"services/generatepwid?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pwid?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">PWID xml</span></a>";
   }
   
   
   private static String generateCalendarImageLink(String image,String url) throws Exception{
 
     String urlEncoded=URLEncoder.encode(url, "UTF-8");
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"calendar.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"calendar?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">Harvest calendar</span></a>";
   }
   
   private static String generatePagePreviews(String image,String url) throws Exception{
 
     String urlEncoded=URLEncoder.encode(url, "UTF-8");
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pagepreviews.jsp?url="+ urlEncoded+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+    
+     
+    //Not implemnted yet.
+    //return "<img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">Website previews</span>";
+    return "<a><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">Page previews</span></a>";
   }
   
   private static String generatePageResources(String image, String source_file_path, long offset) throws Exception{
-    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pageresources.jsp?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
+    return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"pageharvestdata?source_file_path="+ source_file_path+ "&offset="+offset +"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /><span class=\"iconTitle\">View page resources</span></a>";
   }
   
+  /*
   private static String generateDomainGraphImageLink(String image,String domain){
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"waybacklinkgraph.jsp?domain="+domain+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
@@ -272,6 +275,6 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, HtmlParseResult htm
   private static String generateDomainGrowthImageLink(String image,String domain){
     return "<a href=\""+PropertiesLoader.WAYBACK_BASEURL+"domaingrowth.html?domain="+domain+"\" target=\"_blank\"><img src=\""+PropertiesLoader.WAYBACK_BASEURL+"images/"+image+"\" /> </a>";
   }
-  
+  */
   
 }

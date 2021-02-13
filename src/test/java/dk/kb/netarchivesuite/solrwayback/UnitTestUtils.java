@@ -1,7 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback;
 
-import org.apache.tools.ant.filters.StringInputStream;
-
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -42,10 +40,12 @@ public class UnitTestUtils {
         return bos.toString("utf-8");
     }
 
-    public static void saveUTF8(String content, File location) throws IOException {
-        InputStream in = new StringInputStream(content);
+    public static void saveUTF8(String content, File location) throws IOException {        
         FileOutputStream out = new FileOutputStream(location);
-        pipe(in, out);
+        Writer writer = new OutputStreamWriter(out);
+        writer.write(content);        
+        writer.flush();
+        writer.close();
         out.close();
     }
 

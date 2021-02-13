@@ -7,19 +7,19 @@ import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 
 public class TestGenerateCSV {
 
-    private static final String NARC10 = "http://narcana-data10.statsbiblioteket.dk:9000/solr/netarchivebuilder";
+    private static final String SOLR = "http://localhost:8983/solr/netarchivebuilder";
 
     public static void main(String[] args) throws Exception{
     
     PropertiesLoader.initProperties();
     
-    String query = "domain:denstoredanske.dk";
+    String query = "thomas egense";
     String filter = null;
 
-     SolrStreamingExportClient solr =  SolrStreamingExportClient.createExporter(NARC10, true, query, filter);
+    String fields = "id, domain,  hash , links_images  ";
+     SolrStreamingExportClient solr =  SolrStreamingExportClient.createCvsExporter(SOLR, query,fields, filter);
 
-     StreamingSolrExportBufferedInputStream streamExport = new StreamingSolrExportBufferedInputStream(
-             solr, 50000,1000000);
+     StreamingSolrExportBufferedInputStream streamExport = new StreamingSolrExportBufferedInputStream(solr,100);
     
      PrintWriter writer = new PrintWriter("export.txt", "UTF-8");
             
@@ -30,7 +30,7 @@ public class TestGenerateCSV {
       read=streamExport.read();
     }
     writer.close();
-   
+    streamExport.close();
     
   }
 

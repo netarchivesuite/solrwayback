@@ -1,304 +1,436 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>dk.kb.netarchivesuite.solrwayback</groupId>
-	<artifactId>solrwayback</artifactId>
-	<version>3.2.0</version>
-	<packaging>war</packaging>
-	<name>solrwayback</name>
-	<url>http://maven.apache.org</url>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>dk.kb.netarchivesuite.solrwayback</groupId>
+    <artifactId>solrwayback</artifactId>
+    <version>4.0.8-SNAPSHOT</version>
+    <packaging>war</packaging>
+    <name>solrwayback</name>
+    <url>http://maven.apache.org</url>
 
-	<properties>
-		<build.time>${maven.build.timestamp}</build.time>
-		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+    <properties>
+        <build.time>${maven.build.timestamp}</build.time>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-	<repositories>
-		<repository>
-			<id>sbprojects-nexus</id>
-			<url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>sbprojects-nexus</id>
-			<url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
+    <repositories>
+        <repository>
+            <id>sbprojects-nexus</id>
+            <url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>sbprojects-nexus</id>
+            <url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
 
-	<dependencies>
-
-
-		<!-- jUnit -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- REST -->
-
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-core</artifactId>
-			<version>1.19</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-servlet</artifactId>
-			<version>1.19</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-json</artifactId>
-			<version>1.19</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-client</artifactId>
-			<version>1.19</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.sun.jersey.contribs</groupId>
-			<artifactId>jersey-multipart</artifactId>
-			<version>1.19</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.3.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-			<version>1.9.2</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>20.0</version>
-		</dependency>
+    <dependencies>
 
 
-		<!-- SOLR -->
-		<dependency>
-			<groupId>org.apache.solr</groupId>
-			<artifactId>solr-solrj</artifactId>
-			<version>7.1.0</version>
-		</dependency>
+        <!-- jUnit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.2.4</version>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.solr</groupId>
-			<artifactId>solr-test-framework</artifactId>
-			<version>7.1.0</version>
-		  <scope>test</scope>
-		</dependency>
-
-
-		<!-- used when uploading -->
-		<dependency>
-			<groupId>commons-fileupload</groupId>
-			<artifactId>commons-fileupload</artifactId>
-			<version>1.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>net.sourceforge.htmlunit</groupId>
-			<artifactId>htmlunit</artifactId>
-			<version>2.11</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.6.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
-			<scope>runtime</scope>
-		</dependency>
-
-		<!-- Web -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>20180130</version>
-		</dependency>
+        <!-- REST -->
 
 
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>4.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+      <version>3.3.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-transports-http</artifactId>
+      <version>3.3.6</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.jaxrs</groupId>
+      <artifactId>jackson-jaxrs-json-provider</artifactId>
+      <version>2.11.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-rs-client</artifactId>
+      <version>3.3.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-rs-service-description</artifactId>
+      <version>3.3.6</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-rt-rs-extension-providers</artifactId>
+        <version>3.3.6</version>
+    </dependency>
+        
+        
+        
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.3.1</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.netpreserve.openwayback</groupId>
-			<artifactId>openwayback-core</artifactId>
-			<version>2.3.2</version>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		
-		
-	<dependency>
-    <groupId>com.kennycason</groupId>
-    <artifactId>kumo-core</artifactId>
-     <version>1.13</version>
-</dependency>
-		
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.12.1</version>
+        </dependency>
 
-<!-- This is needed by openwayback !--> 
-<dependency>
-    <groupId>commons-httpclient</groupId>
-    <artifactId>commons-httpclient</artifactId>
-    <version>3.1</version>
-</dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <!--Project only uses com.google.common.collect.Iterables  to split in blocks. Can be implemented simple and dependency removed-->
+        <dependency>
+           <groupId>com.google.guava</groupId>
+           <artifactId>guava</artifactId>
+           <version>30.0-jre</version>
+         </dependency>
 
+        <!-- SOLR -->
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+            <version>7.1.0</version>
+        </dependency>
 
-	</dependencies>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-test-framework</artifactId>
+            <version>7.1.0</version>
+            <scope>test</scope>
+        </dependency>
 
-	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources   
-   </directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
-
-		<plugins>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.20</version>
+            <!-- Used to get a reliable decompression of multi-part gzip stream in test -->
+            <scope>test</scope>
+        </dependency>
 
 
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
+        <!-- Content encoding -->
+        <dependency>
+            <groupId>org.brotli</groupId>
+            <artifactId>dec</artifactId>
+            <version>0.1.2</version>
+        </dependency>
 
 
-			<plugin>
-				<!-- Filter resources -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>
-								true
-							</addDefaultImplementationEntries>
-						</manifest>
-					</archive>
-					<webResources>
-						<webResource>
-							<directory>${basedir}/src/main/resources/</directory>
-							<includes>
-								<include>build.properties</include>
-							</includes>
-							<targetPath>WEB-INF/classes</targetPath>
-							<filtering>true</filtering>
-						</webResource>
-						<webResource>
-							<directory>${basedir}/src/main/webapp/</directory>
-							<includes>
-								<include>api.jsp</include>
-							</includes>
-							<targetPath></targetPath>
-							<filtering>true</filtering>
-						</webResource>
-					</webResources>
-				</configuration>
-			</plugin>
+        <!-- Support for SVG and other image types. -->
+        <!-- Can render some SVG (and scale them), but causes a lot more trouble that it is worth for now.
+          <dependency>
+               <groupId>com.twelvemonkeys.imageio</groupId>
+               <artifactId>imageio-batik</artifactId>
+               <version>3.2.1</version>
+           </dependency>
+           <dependency>
+               <groupId>batik</groupId>
+               <artifactId>batik-transcoder</artifactId>
+               <version>1.6-1</version>
+              <exclusions>
+                   <exclusion>
+                       <artifactId>fop</artifactId>
+                       <groupId>fop</groupId>
+                   </exclusion>
+               </exclusions>
+           </dependency>
+        -->
+        <!-- used when uploading -->
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.3.3</version>
+        </dependency>
 
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<version>9.4.11.v20180605</version>
-				<configuration>
-					<httpConnector>
-						<port>8080</port>
-					</httpConnector>
-					<scanIntervalSeconds>5</scanIntervalSeconds>
-					<systemProperties>
-						<systemProperty>
-							<name>catalina.base</name>
-							<value>${project.build.directory}</value>
-						</systemProperty>
-					</systemProperties>
-					<webApp>
-						<contextPath>/${project.artifactId}</contextPath>
-						<resourceBases>
-							<resourceBase>src/main/webapp</resourceBase>
-						</resourceBases>
-					</webApp>
-					<systemProperties>
-						<systemProperty>
-							<name>catalina.base</name>
-							<value>${project.build.directory}</value>
-						</systemProperty>
-						<systemProperty>
-							<name>catalina.home</name>
-							<value>${project.build.directory}</value>
-						</systemProperty>
-					</systemProperties>		
-				</configuration>
-			</plugin>
+<!--  delete?
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <version>2.11</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+ -->
+      
+           <!-- Logging dependencies -->
+        <!-- Logging dependencies -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.29</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <version>1.7.29</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>1.7.29</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>1.7.29</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.3</version>
+    </dependency>
+       
+      
 
-		</plugins>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20180130</version>
+        </dependency>
 
-	</build>
+
+        <dependency>
+            <groupId>org.netpreserve.openwayback</groupId>
+            <artifactId>openwayback-core</artifactId>
+            <version>2.3.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.kennycason</groupId>
+            <artifactId>kumo-core</artifactId>
+            <version>1.27</version>
+              <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        
+        
+        </dependency>
+
+
+        <!-- This is needed by openwayback !-->
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources
+                </directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <plugins>
+
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+
+            <plugin>
+                <!-- Filter resources -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>
+                                true
+                            </addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                    <webResources>
+                        <webResource>
+                            <directory>${basedir}/src/js/dist</directory>
+                        </webResource>
+                        <webResource>
+                            <directory>${basedir}/src/main/resources/</directory>
+                            <includes>
+                                <include>build.properties</include>
+                            </includes>
+                            <targetPath>WEB-INF/classes</targetPath>
+                            <filtering>true</filtering>
+                        </webResource>
+                        <webResource>
+                            <directory>${basedir}/src/main/webapp/</directory>
+                            <includes>
+                                <include>api.jsp</include>
+                            </includes>
+                            <filtering>true</filtering>
+                        </webResource>
+                </webResources>
+                </configuration>
+            </plugin>
+
+
+            <!-- Frontend plugin to do all the node.js based processing-->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.10.0</version>
+
+                <configuration>
+                    <workingDirectory>${basedir}/src/js</workingDirectory>
+                </configuration>
+
+                <executions>
+
+                    <execution>
+                        <id>Install node and npm</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <configuration>
+                            <nodeVersion>v12.16.1</nodeVersion>
+                            <npmVersion>6.14.5</npmVersion>
+                            <installDirectory>target</installDirectory>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>Install JS dependencies (npm install)</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install</arguments>
+                            <installDirectory>target</installDirectory>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>Build frontend distribution for PRODUCTION (npm run build)</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run build</arguments>
+                            <installDirectory>target</installDirectory>
+                        </configuration>
+                    </execution>
+
+
+                </executions>
+            </plugin>
+
+      <!--     <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/jetty-res</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/test/jetty</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.4.30.v20200611</version>  Java 8 
+        <configuration>
+          <useTestScope>true</useTestScope>
+          <webApp>
+            <contextPath>/solrwayback/</contextPath>
+            <descriptor>${project.basedir}/src/main/webapp/WEB-INF/web.xml</descriptor>
+          </webApp>
+        </configuration>
+      </plugin> -->
+           
+        </plugins>
+
+    </build>
 </project>
