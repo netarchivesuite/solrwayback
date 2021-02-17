@@ -1,8 +1,7 @@
-4.0.7
+4.0.8
 -----
 Brotli encoding fix for javascript.
 Introduced JavascriptPlayback class. Does nothing but handle brotli, but can later be improved to do url-replacement in javascript files.
-
 
 4.0.7
 -----
