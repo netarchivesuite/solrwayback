@@ -219,14 +219,18 @@ The toolbar icon opens a menu with the available tools.
 ### 5) CREATING YOUR OWN WARCS - HARVESTING WITH WGET  
 How to do your own web harvest websites (macOS/Linux only):  
 
-* Using the wget command is an easy way to harvest web sites and create WARC files. The WARC files can then be indexed into SolrWayback.  
-* Create a new folder, since there will be several files written in this folder. Navigate to that folder in a prompt.  
+* Using the wget command is an easy way to harvest web sites and create WARC files. The WARC files can then be indexed into SolrWayback.
+* Create a new folder, since there will be several files written in this folder. Navigate to that folder in a prompt.
 * Create a text file call `url_list.txt` with one URL per line in that folder.  
-* Type the following in a prompt:  
-`wget  --span-hosts  --level=0 --recursive --warc-cdx   --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt`    
+* Type the following in a prompt:\
+  `wget --span-hosts --warc-cdx --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt`
   
-The script will harvest all pages in the `url_list.txt` file with all resources required for that page (images, CSS, etc.) and be written to a WARC file(s) called `warcfilename.warc`  
-Change `--level=0` to `--level=1` for following links. This will substantially increase the size of the WARC file(s).  
-The optional  --span-hosts parameter will also harvest resources outside the domain of the page and can be removed 
+The script will harvest all pages in the `url_list.txt` file with all resources required for that page (images, CSS, etc.) and be written to a WARC file(s) called `warcfilename.warc`.
+The optional `--span-hosts` parameter will also harvest resources outside the domain of the page and can be removed 
+
+* To perform a multi-level harvest:\
+  `wget --span-hosts --level=1 --recursive --warc-cdx --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt`\
+  where `level=1` means "starting URLs and the first level of URLs linked from the starting URLs".
+  This will substantially increase the size of the WARC file(s).
 
 
