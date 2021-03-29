@@ -172,16 +172,16 @@ SolrWayback requires both Solr and Tomcat to be running.
 * To see Tomcat is running open: http://localhost:8080/solrwayback/  
   
 #### Solr:  
-* Start solr: `solrwayback_package/solr-7.7.3/bin/solr start`  
-* Stop solr: `solrwayback_package/solr-7.7.3/bin/solr stop -all`  
-* (For windows navigate to `solrwayback_package/solr-7.7.3/bin/` and type `solr.cmd start` or `solr.cmd stop -all`)    
+* Start solr: `solr-7.7.3/bin/solr start`  
+* Stop solr: `solr-7.7.3/bin/solr stop -all`  
+* (For windows navigate to `solr-7.7.3/bin/` and type `solr.cmd start` or `solr.cmd stop -all`)    
 * To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
 ### 3) INDEXING
 SolrWayback uses a Solr index of WARC files to support freetext search and more complex queries.  
 If you do not have existing WARC files, see steps below on harvesting with wget.        
 
-1. Copy ARC/WARC files into folder: `/solrwayback_package/indexing/warcs1`  
+1. Copy ARC/WARC files into folder: `indexing/warcs1`  
 2. Start indexing:  call `indexing/batch_warcs1_folder.sh` (or batch_warcs1_folder.bat for windows)
 
 Indexing can take up to 20 minutes for 1GB warc-files. After indexing, the warc-files must stay in the same folder since SolrWayback is using them during playback etc.  
