@@ -195,7 +195,7 @@ Alternatively, you can use the command in the batch_warcs2_folder.sh(bat) to see
 If you want to index a new collection into solr and remove the old index.  
 
 1. Stop solr  
-2. Delete the folder `solr-7.7.3/server/solr/netarchivebuilder/netarchivebuilder_data/index` (or rename to `index1` etc, if you want to switch back later)  
+2. Delete the folder `solr-7.7.3/server/solr/configsets/netarchivebuilder/netarchivebuilder_data/index` (or rename to `index1` etc, if you want to switch back later)  
 3. Start solr  
 4. Start the indexing script
 
