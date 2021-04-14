@@ -172,16 +172,16 @@ SolrWayback requires both Solr and Tomcat to be running.
 * To see Tomcat is running open: http://localhost:8080/solrwayback/  
   
 #### Solr:  
-* Start solr: `solrwayback_package/solr-7.7.3/bin/solr start`  
-* Stop solr: `solrwayback_package/solr-7.7.3/bin/solr stop -all`  
-* (For windows navigate to `solrwayback_package/solr-7.7.3/bin/` and type `solr.cmd start` or `solr.cmd stop -all`)    
+* Start solr: `solr-7.7.3/bin/solr start`  
+* Stop solr: `solr-7.7.3/bin/solr stop -all`  
+* (For windows navigate to `solr-7.7.3/bin/` and type `solr.cmd start` or `solr.cmd stop -all`)    
 * To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
 ### 3) INDEXING
 SolrWayback uses a Solr index of WARC files to support freetext search and more complex queries.  
 If you do not have existing WARC files, see steps below on harvesting with wget.        
 
-1. Copy ARC/WARC files into folder: `/solrwayback_package/indexing/warcs1`  
+1. Copy ARC/WARC files into folder: `indexing/warcs1`  
 2. Start indexing:  call `indexing/batch_warcs1_folder.sh` (or batch_warcs1_folder.bat for windows)
 
 Indexing can take up to 20 minutes for 1GB warc-files. After indexing, the warc-files must stay in the same folder since SolrWayback is using them during playback etc.  
@@ -195,7 +195,7 @@ Alternatively, you can use the command in the batch_warcs2_folder.sh(bat) to see
 If you want to index a new collection into solr and remove the old index.  
 
 1. Stop solr  
-2. Delete the folder `solr-7.7.3/server/solr/netarchivebuilder/netarchivebuilder_data/index` (or rename to `index1` etc, if you want to switch back later)  
+2. Delete the folder `solr-7.7.3/server/solr/configsets/netarchivebuilder/netarchivebuilder_data/index` (or rename to `index1` etc, if you want to switch back later)  
 3. Start solr  
 4. Start the indexing script
 
@@ -219,14 +219,18 @@ The toolbar icon opens a menu with the available tools.
 ### 5) CREATING YOUR OWN WARCS - HARVESTING WITH WGET  
 How to do your own web harvest websites (macOS/Linux only):  
 
-* Using the wget command is an easy way to harvest web sites and create WARC files. The WARC files can then be indexed into SolrWayback.  
-* Create a new folder, since there will be several files written in this folder. Navigate to that folder in a prompt.  
+* Using the wget command is an easy way to harvest web sites and create WARC files. The WARC files can then be indexed into SolrWayback.
+* Create a new folder, since there will be several files written in this folder. Navigate to that folder in a prompt.
 * Create a text file call `url_list.txt` with one URL per line in that folder.  
-* Type the following in a prompt:  
-`wget  --span-hosts  --level=0 --recursive --warc-cdx   --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt`    
+* Type the following in a prompt:\
+  `wget --span-hosts --warc-cdx --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt`
   
-The script will harvest all pages in the `url_list.txt` file with all resources required for that page (images, CSS, etc.) and be written to a WARC file(s) called `warcfilename.warc`  
-Change `--level=0` to `--level=1` for following links. This will substantially increase the size of the WARC file(s).  
-The optional  --span-hosts parameter will also harvest resources outside the domain of the page and can be removed 
+The script will harvest all pages in the `url_list.txt` file with all resources required for that page (images, CSS, etc.) and be written to a WARC file(s) called `warcfilename.warc`.
+The optional `--span-hosts` parameter will also harvest resources outside the domain of the page and can be removed 
+
+* To perform a multi-level harvest:\
+  `wget --span-hosts --level=1 --recursive --warc-cdx --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt`\
+  where `level=1` means "starting URLs and the first level of URLs linked from the starting URLs".
+  This will substantially increase the size of the WARC file(s).
 
 
