@@ -6,9 +6,12 @@
 <h1>srcset testing</h1>
 
 <p>An image with absolute srcset: <img src="http://example.com/foo_o2.jpg" srcset="http://example.com/fooF_o3.jpg 1x, http://example.com/fooF2_o4.jpg 2x"/></p>
+<p>An image with mixed casing and spacing: <img src="http://example.com/foo_o2.jpg" srcSet="http://example.com/fooF_o3.jpg 720w , http://example.com/fooF2_o4.jpg 730W"/></p>
+<p>An image with absolute srcset and post-space: <img src="http://example.com/foo_o2.jpg" srcset="http://example.com/fooF_o3.jpg 1x, http://example.com/fooF2_o4.jpg 2x "/></p>
 <p>An image with absolute srcset and substring trickery: <img src="http://example.com/foo_o2.jpg" srcset="http://example.com/foo_o2.jpg 1x, http://example.com/foo_o2.jpg.bar_o5.jpg 2x"/></p>
 <p>An image with relative srcset: <img src="fooB_o10.jpg" srcset="fooB_o10.jpg 1x, fooB2_o11.jpg 2x"/></p>
 <p>An image with relative srcset and substring trickery: <img src="fooS_o21.jpg" srcset="fooS_o21.jpg 1x, barfooS_21.jpg_o22.jpg 2x"/></p>
 <p>An image with root srcset: <img src="/fooC_o30.jpg" srcset="/fooC_o30.jpg 1x, /fooC2_o31.jpg 2x"/></p>
+<p>Reproduction of specific problem: <img src="/fooC_o30.jpg" srcset="https://asset.dr.dk/imagescaler/?protocol=https&amp;server=www.dr.dk&amp;file=%2Fimages%2Fother%2F2021%2F01%2F02%2Fscanpix-20210102-170307-l.jpg&amp;scaleAfter=crop&amp;quality=30&amp;w=1008&amp;h=567_o40 1008w"/></p>
 
 </html>

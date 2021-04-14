@@ -46,7 +46,7 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testMultiSourceRewriting() throws Exception {
-        assertRewrite("multisource", 16);
+        assertRewrite("multisource", 22);
     }
 
     @Test
