@@ -13,8 +13,11 @@ These values is their default values.
 # Limit export size
 # 10M for CSV , 1M for warc, 10K for warc-expanded
 # For warc.expanded the total number of documents can be many times the max-results size.        
+
 export.csv.maxresults=10000000
+
 export.warc.maxresults=1000000 
+
 export.warc.expanded.maxresults=10000     
         
 
