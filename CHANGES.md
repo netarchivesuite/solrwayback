@@ -1,3 +1,8 @@
+4.1.0
+-----
+Indexing scripts updated for SolrWayback Bundle
+SolrWayback bundle release 4.1.0 uploaded to Github releases
+
 4.0.8
 -----
 Brotli encoding fix for javascript.
