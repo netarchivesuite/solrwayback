@@ -133,7 +133,7 @@ Absolute URL live-leaks (starting with http://domain...) will not be caught and 
 Thomas Egense (thomas.egense@gmail.com) 
 Feel free to send emails with comments or questions.
 
-# SolrWayback software bundle 4.0 install guide
+# SolrWayback software bundle 4 install guide
 
 With this download you will be able to index, search and playback web pages from your WARC files.
 The bundle contains Solr, the warc-indexer tool and SolrWayback installed on a Tomcat webserver.
