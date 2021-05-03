@@ -140,17 +140,12 @@ The bundle contains Solr, the warc-indexer tool and SolrWayback installed on a T
 Just unzip the bundle and copy two files to your home directory and explore your WARC files. 
 
 ## Download
-Download : https://github.com/netarchivesuite/solrwayback/releases/download/4.0.6/solrwayback_package.zip
+Download : https://github.com/netarchivesuite/solrwayback/releases/download/4.1.0/solrwayback_package.zip
 
 Unzip and follow the instructions below.
  
 
 ## Install instructions
-
-### 1) Upgrade from 3.x
-
-To update from 3.x add the new additional properties in `solrwaybackweb.properties` and `solrwayback.properties`. Download the release and to see the new properties. Some properties has been removed or renamed.
-Replace both war-file in tomcat with this those in this release(solrwayback.war+ROOT.WAR) and restart tomcat.
 
 ### 1) INITIAL SETUP  
 Properties:  
