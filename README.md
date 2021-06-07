@@ -149,7 +149,7 @@ Unzip and follow the instructions below.
 
 ### 1) INITIAL SETUP  
 Properties:  
-Copy the two files `src/test/resources/properties/solrwayback.properties` and `/src/test/resources/properties/solrwaybackweb.properties` to your HOME folder (or the home-folder for Tomcat user)
+Copy the two files `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to your HOME folder (or the home-folder for Tomcat user)
 
 Optional: For screenshot previews to work you may have to edit `solrwayback.properties` and change the value of the last two properties : `chrome.command`  and `screenshot.temp.imagedir`. 
 Chrome(Chromium) must has to be installed for screenshot preview images.  
@@ -176,8 +176,17 @@ SolrWayback requires both Solr and Tomcat to be running.
 SolrWayback uses a Solr index of WARC files to support freetext search and more complex queries.  
 If you do not have existing WARC files, see steps below on harvesting with wget.        
 
+1. Copy ARC/WARC files into a folder such as: `indexing/warcs1`  
+2. Start indexing:  call `indexing/warc-indexer.sh indexing/warcs1`
+
+The script `warc-indexer.sh` keeps track of already indexed files, so the collection can be extended by copying more WARCs into the folder and running the script again. Call `indexing/warc-indexer.sh -h` for usage and how to adjust the number of processes to use for indexing.
+
+
+The script `warc-indexer.sh` is not available for Windows. For that platform only a more primitive script is provided:
+
 1. Copy ARC/WARC files into folder: `indexing/warcs1`  
 2. Start indexing:  call `indexing/batch_warcs1_folder.sh` (or batch_warcs1_folder.bat for windows)
+
 
 Indexing can take up to 20 minutes for 1GB warc-files. After indexing, the warc-files must stay in the same folder since SolrWayback is using them during playback etc.  
 
