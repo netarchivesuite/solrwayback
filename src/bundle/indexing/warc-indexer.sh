@@ -166,9 +166,16 @@ index_all() {
     rm "$FILE_WARCS"
 }
 
+commit() {
+    echo "All WARCs processed, triggering solr commit"
+    wget  -qO- "${SOLR_URL}/update?commit=true&openSearcher=true"  > /dev/null
+}
+
+
 ###############################################################################
 # CODE
 ###############################################################################
 
 check_parameters "$@"
 index_all
+commit
