@@ -7,6 +7,7 @@
 # Keeps track of already processed WARCs.
 #
 # 2021-06-07: Initial script
+# 2021-06-08: Status & tmp folder moved away from the WARC location
 #
 
 ###############################################################################
@@ -34,6 +35,9 @@ THREADS_DEFAULT="2"
 
 : ${SOLR_URL:="$SOLR_URL_DEFAULT"}
 : ${THREADS:="$THREADS_DEFAULT"}
+: ${STATUS_ROOT:="${WI_HOME}/status"}
+: ${TMP_ROOT:="${STATUS_ROOT}/tmp"}
+: ${CHECK_SOLR:="true"}
 popd > /dev/null
 
 function usage() {
@@ -69,6 +73,10 @@ EOF
 }
 
 check_parameters() {
+    if [[ "-h" == "$WARCS" ]]; then
+        usage
+    fi
+
     if [[ -z "$WARCS" ]]; then
         >&2 echo "Error: No WARCs specified"
         usage 2
@@ -81,8 +89,15 @@ check_parameters() {
         >&2 echo "Error: INDEXER_CONFIG '$INDEXER_CONFIG' is unavailable"
         usage 4
     fi
-    if [[ "-h" == "$WARCS" ]]; then
-        usage
+    mkdir -p "$STATUS_ROOT"
+    if [[ ! -d "$STATUS_ROOT" ]]; then
+        >&2 echo "Error: The folder '$STATUS_ROOT' defined by STATUS_ROOT could not be created. This folder holds the status for all processed WARCs and the script does not work without it"
+        usage 5
+    fi
+    mkdir -p "$TMP_ROOT"
+    if [[ ! -d "$TMP_ROOT" ]]; then
+        >&2 echo "Error: The folder '$TMP_ROOT' defined by TMP_ROOT could not be created. This folder holds temporary files for running jobs and the script does not work without it"
+        usage 6
     fi
 }
 
@@ -92,23 +107,24 @@ check_parameters() {
 
 index_warc() {
     local WARC="$1"
-    local WARC_LOG="${WARC}.log"
-    local WARC_FAILED="${WARC}.failed.log"
-    local WARC_TMP="${WARC}.tmp"
+    local WARC_BASE="$(sed 's%.*/%%' <<< "$WARC")"
+    local WARC_LOG="${STATUS_ROOT}/${WARC_BASE}.log"
+    local WARC_FAILED="${STATUS_ROOT}/${WARC_BASE}.failed.log"
+    local WARC_TMP="${TMP_ROOT}/${WARC_BASE}.tmp"
     if [[ ! -s "$WARC" ]]; then
         >&2 echo "Error: WARC does not exist: $WARC"
         return
     fi
     if [[ -d "$WARC_TMP" ]]; then
-        echo "   - Skipping WARC due to old TMP folder (probably caused by a crash). Remove the folder to retry processing: $WARC_TMP"
+        echo "   - Skipping WARC '$WARC' due to old TMP folder (probably caused by a crash). Remove the TMP folder to retry processing: $WARC_TMP"
         return
     fi
     if [[ -s "$WARC_FAILED" ]]; then
-        echo "   - Skipping WARC due to previously failed indexing. Remove the file to retry processing: $WARC_FAILED"
+        echo "   - Skipping WARC '$WARC' due to previously failed indexing. Remove the log file to retry processing: $WARC_FAILED"
         return
     fi
     if [[ -s "$WARC_LOG" ]]; then
-        echo "   - Skipping WARC due to previously completed indexing. Remove the file to retry processing: $WARC_LOG"
+        echo "   - Skipping WARC '$WARC' due to previously completed indexing. Remove the log file to retry processing: $WARC_LOG"
         return
     fi
 
@@ -137,6 +153,12 @@ export -f index_warc
 
 index_warcs() {
     local WARCS="$1"
+    if [[ ! -z "$(sed 's%.*/%%' "$WARCS" | sort | uniq -c | grep -v "\s*1 ")" ]]; then
+        >&2 echo "Error: Duplicate WARC file names found. The script only works with unique WARC file names"
+        sed 's%.*/%%' "$WARCS" | sort | uniq -c | grep -v "\s*1 "
+        exit 21
+    fi
+    
     WARC_COUNT=$(wc -l < "$WARCS")
     echo " - Processing $WARC_COUNT WARCs using $THREADS threads"
     # We need to export these as we call index_warc in new processes
@@ -145,6 +167,8 @@ index_warcs() {
     export INDEXER_CONFIG
     export INDEXER_CUSTOM
     export SOLR_URL
+    export STATUS_ROOT
+    export TMP_ROOT
     cat "$WARCS" | xargs -P "$THREADS" -n 1 -I "{}" bash -c 'index_warc "{}"'
 }
 
@@ -166,9 +190,29 @@ index_all() {
     rm "$FILE_WARCS"
 }
 
+# TODO: Make a proper check for collection existence
+# http://localhost:8983/solr/admin/cores
+check_solr() {
+    if [[ "$CHECK_SOLR" == "false" ]]; then
+        return;
+    fi
+    echo " - Checking if Solr is running"
+    wget  -nv -O- "${SOLR_URL}/admin/ping" > /dev/null
+    if [[ $? -ne 0 ]]; then
+        >&2 echo ""
+        >&2 echo "Warning: Solr commit did not respond to ping request"
+        >&2 echo "Inspect that Solr is running at ${SOLR_URL}"
+        >&2 echo "Disable this check with CHECK_SOLR=false"
+        exit 41
+    fi
+}
+
 commit() {
-    echo "All WARCs processed, triggering solr commit"
-    wget  -qO- "${SOLR_URL}/update?commit=true&openSearcher=true"  > /dev/null
+    echo " -Triggering solr commit"
+    wget  -nv -O- "${SOLR_URL}/update?commit=true&openSearcher=true"  > /dev/null
+    if [[ $? -ne 0 ]]; then
+        >&2 echo "Warning: Solr commit did not respond with success. Inspect that Solr is running at ${SOLR_URL}"
+    fi
 }
 
 
@@ -177,5 +221,6 @@ commit() {
 ###############################################################################
 
 check_parameters "$@"
+check_solr
 index_all
 commit
