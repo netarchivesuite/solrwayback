@@ -257,6 +257,9 @@ check_solr() {
 }
 
 commit() {
+    if [[ "$SOLR_COMMIT" == "false" ]]; then
+        return;
+    fi
     echo " -Triggering solr commit"
     wget  -nv -O- "${SOLR_URL}/update?commit=true&openSearcher=true"  > /dev/null
     if [[ $? -ne 0 ]]; then
