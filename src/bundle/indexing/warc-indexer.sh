@@ -37,10 +37,20 @@ THREADS_DEFAULT="2"
 : ${THREADS:="$THREADS_DEFAULT"}
 : ${STATUS_ROOT:="${WI_HOME}/status"}
 : ${TMP_ROOT:="${STATUS_ROOT}/tmp"}
-: ${CHECK_SOLR:="true"}
+: ${SOLR_CHECK:="true"}
+: ${SOLR_COMMIT:="true"}
 popd > /dev/null
 
 function usage() {
+    if [[ ! -z "$1" ]]; then
+        cat <<EOF
+
+For full usage information call
+
+  ./warc-indexer -h
+EOF
+        exit $1
+    fi
     cat <<EOF
 
 warc-indexer.sh
@@ -48,26 +58,65 @@ warc-indexer.sh
 Parallel processing of WARC files using webarchive-discovery from UKWA:
 https://github.com/ukwa/webarchive-discovery
 
-The scripts keeps track of already processed WARCs and stores the output logs
-from processing alongside the WARCs.
+The scripts keeps track of already processed WARCs by keeping the output
+logs from processing of each WARC. These are stored in the folder
+$STATUS_ROOT
 
 
 Usage: ./warc-indexer.sh [warc|warc-folder]*
 
-THREADS:  The amount of concurrent indexing jobs (default: $THREADS_DEFAULT)
-SOLR_URL: Solr end point (default: $SOLR_URL_DEFAULT)
 
-Sample calls:
+Index 2 WARC files:
 
-./warc-indexer.sh mywarcfile1.warc.gz mywarcfile2.warc.gz
+  ./warc-indexer.sh mywarcfile1.warc.gz mywarcfile2.warc.gz
 
-THREADS=20 ./warc-indexer.sh folder_with_warc_files
+Index all WARC files in "folder_with_warc_files" (recursive descend) using
+20 threads (this will take 20GB of memory):
 
-THREADS=20 SOLR_URL="http://localhost:8983/solr/netarchivebuilder" ./warc-indexer.sh folder_with_warc_files
+  THREADS=20 ./warc-indexer.sh folder_with_warc_files
+
+Index all WARC files in "folder_with_warc_files" (recursive descend) using
+20 threads and with an alternative Solr as receiver:
+
+  THREADS=20 SOLR_URL="http://ourcloud.internal:8123/solr/netarchive" ./warc-indexer.sh folder_with_warc_files
 
 Note:
-Each threads starts its own Java process with -Xmx${INDEXER_MEM}.
+Each thread starts its own Java process with -Xmx${INDEXER_MEM}.
 Make sure that there is enough memory on the machine.
+
+Tweaks:
+  SOLR_URL:       The receiving Solr end point, including collection
+                  Value: $SOLR_URL
+
+  SOLR_CHECK:     Check whether Solr is available before processing
+                  Value: $SOLR_CHECK
+
+  SOLR_COMMIT:    Whether a Solr commit should be issued after indexing to
+                  flush the buffers and make the changes immediately visible
+                  Value: $SOLR_COMMIT
+
+  THREADS:        The number of concurrent processes to use for indexing
+                  Value: $THREADS
+
+  STATUS_ROOT:    Where to store log files from processing. The log files are
+                  also used to track which WARCs has been processed
+                  Value: $STATUS_ROOT
+
+  TMP_ROOT:       Where to store temporary files during processing
+                  Value: $TMP_ROOT
+
+  INDEXER_JAR:    The location of the warc-indexer Java tool
+                  Value: $INDEXER_JAR
+
+  INDEXER_MEM:    Memory allocation for each builder job
+                  Value: $INDEXER_MEM
+
+  INDEXER_CONFIG: Configuration for the warc-indexer Java tool
+                  Value: $INDEXER_CONFIG
+
+  INDEXER_CUSTOM: Custom command line options for the warc-indexer tool
+                  Value: "$INDEXER_CUSTOM"
+                  Sample: "--collection yearly2020"
 EOF
     exit $1
 }
@@ -193,7 +242,7 @@ index_all() {
 # TODO: Make a proper check for collection existence
 # http://localhost:8983/solr/admin/cores
 check_solr() {
-    if [[ "$CHECK_SOLR" == "false" ]]; then
+    if [[ "$SOLR_CHECK" == "false" ]]; then
         return;
     fi
     echo " - Checking if Solr is running"
@@ -202,7 +251,7 @@ check_solr() {
         >&2 echo ""
         >&2 echo "Warning: Solr commit did not respond to ping request"
         >&2 echo "Inspect that Solr is running at ${SOLR_URL}"
-        >&2 echo "Disable this check with CHECK_SOLR=false"
+        >&2 echo "Disable this check with SOLR_CHECK=false"
         exit 41
     fi
 }
