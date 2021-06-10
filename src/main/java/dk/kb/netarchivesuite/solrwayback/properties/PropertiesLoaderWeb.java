@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.properties;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.YearMonth;
 import java.util.Arrays;
 import java.util.List;
@@ -84,18 +85,21 @@ public class PropertiesLoaderWeb {
     public static void initProperties(String propertyFile) {
         try {
 
-            log.info("Initializing solrwaybackweb-properties");
+            log.info("Initializing solrwaybackweb-properties using property file '" + propertyFile + "'");
             String user_home=System.getProperty("user.home");
 
-            File f = new File(user_home,propertyFile);
+            File f = new File(propertyFile);
+            if (!f.exists()) { // Fallback to looking in the user home folder
+                f = new File(user_home, propertyFile);
+            }
             if (!f.exists()) {
                 log.info("Could not find contextroot specific propertyfile:"+propertyFile +". Using default:"+DEFAULT_PROPERTY_WEB_FILE);
-                propertyFile=DEFAULT_PROPERTY_WEB_FILE;                                 
-            }                        
+                f = new File(user_home, DEFAULT_PROPERTY_WEB_FILE);
+            }
             log.info("Load web-properties: Using user.home folder:" + user_home +" and propertyFile:"+propertyFile);
 
 
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(new File(user_home,propertyFile)), "ISO-8859-1");
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(f), StandardCharsets.ISO_8859_1);
 
             serviceProperties = new Properties();
             serviceProperties.load(isr);

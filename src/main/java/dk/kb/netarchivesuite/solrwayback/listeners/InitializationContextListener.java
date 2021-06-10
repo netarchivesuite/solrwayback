@@ -12,6 +12,8 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
@@ -33,10 +35,35 @@ public class InitializationContextListener implements ServletContextListener {
             String webbAppContext = event.getServletContext().getContextPath();                    
             props.load(InitializationContextListener.class.getResourceAsStream("/build.properties"));
             version = props.getProperty("APPLICATION.VERSION");
-            PropertiesLoader.initProperties(webbAppContext+".properties"); //backend. If contextroot is not solrwayback, it will first look for that context specific propertyfile                                  
-            PropertiesLoaderWeb.initProperties(webbAppContext+"web.properties"); //frontend
             PropertiesLoaderWeb.SOLRWAYBACK_VERSION = version;
+
+            // Resolve property locations
+            // Properties are either explicitly set using the web app Environment or taken from user home
+            String backendConfig = webbAppContext + ".properties"; // If contextroot is not solrwayback, it will first look for that context specific propertyfile
+            String frontendConfig = webbAppContext + "web.properties";
+            try {
+                InitialContext ctx = new InitialContext();
+
+                try {
+                    backendConfig = (String) ctx.lookup("java:/comp/env/solrwayback-config");
+                } catch (NamingException e) {
+                    log.warn("Exception attempting to resolve configuration locations using web app environment " +
+                             "'solrwayback-config'. Using default config location '" + backendConfig + "'", e);
+                }
+
+                try {
+                    frontendConfig = (String) ctx.lookup("java:/comp/env/solrwaybackweb-config");
+                } catch (Exception e) {
+                    log.warn("Exception attempting to resolve configuration locations using web app environment " +
+                             "'solrwaybackweb-config'. Using default config location '" + frontendConfig + "'", e);
+                }
+            } catch (NamingException e) {
+                log.error("Unable to create new InitialContext used for property location resolving", e);
+            }
             
+            PropertiesLoader.initProperties(backendConfig); //backend.
+            PropertiesLoaderWeb.initProperties(frontendConfig); //frontend
+
             // initialise the solrclient
             NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
             
