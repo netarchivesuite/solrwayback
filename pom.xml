@@ -7,7 +7,7 @@
     <version>4.1.1-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>solrwayback</name>
-    <url>http://maven.apache.org</url>
+    <url>https://maven.apache.org</url>
 
     <properties>
         <build.time>${maven.build.timestamp}</build.time>
