@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -47,16 +48,19 @@ public class PropertiesLoader {
     public static void initProperties(String propertyFile) {
         try {
 
-            log.info("Initializing solrwayback-properties");
+            log.info("Initializing solrwayback-properties using property file '" + propertyFile + "'");
             String user_home=System.getProperty("user.home");
-                        
-            File f = new File(user_home,propertyFile);
-             if (!f.exists()) {
+
+            File f = new File(propertyFile);
+            if (!f.exists()) { // Fallback to looking in the user home folder
+                f = new File(user_home, propertyFile);
+            }
+            if (!f.exists()) {
                log.info("Could not find contextroot specific propertyfile:"+propertyFile +". Using default:"+DEFAULT_PROPERTY_FILE);
-               propertyFile=DEFAULT_PROPERTY_FILE;                                 
-             }                        
+                f = new File(user_home, DEFAULT_PROPERTY_FILE);
+             }
             log.info("Load backend-properties: Using user.home folder:" + user_home +" and propertyFile:"+propertyFile);
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(new File(user_home,propertyFile)), "ISO-8859-1");
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(f), StandardCharsets.ISO_8859_1);
 
             serviceProperties = new Properties();
             serviceProperties.load(isr);

@@ -1,4 +1,16 @@
 <Context override="true" docBase="solrwayback.war">
     <Valve className="org.apache.catalina.valves.rewrite.RewriteValve"/>
 
+<!-- Set the property locations explicitly if they are not at the default location (user home) -->
+<!--
+    <Environment name="solrwayback-config"
+        value="/home/foobar/services/solrwayback.specialcollection.properties"
+        type="java.lang.String"
+        override="false"/>
+    <Environment name="solrwaybackweb-config"
+        value="/home/foobar/services/solrwaybackweb.specialcollection.properties"
+        type="java.lang.String"
+        override="false"/>
+    -->
+
 </Context>
