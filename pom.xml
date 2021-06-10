@@ -15,34 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>sbprojects-nexus</id>
-            <url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>sbprojects-nexus</id>
-            <url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-
     <dependencies>
-
-
         <!-- jUnit -->
         <dependency>
             <groupId>junit</groupId>
@@ -57,9 +30,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- REST -->
-
-
+    <!-- REST -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
