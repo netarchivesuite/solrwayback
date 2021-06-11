@@ -200,7 +200,7 @@ There is a batch_warcs2_folder.sh similar script to show how to easily add new W
 
 For more information about the warc-indexer see: https://github.com/ukwa/webarchive-discovery/wiki/Quick-Start
 
-##Scaling and using SolrWayback in production environment.
+## Scaling and using SolrWayback in production environment.
 The stand alone Solr-server and indexing workflow using warc-indexer.sh can scale up to 20000 WARC files of size 1GB. Using 20 threads
 indexing a collection of this size  can take up to 3 weeks.  This will result in
 an index about 1TB having 500M documents and this will require to changing the Solr memory allocation to at least 12GB.
