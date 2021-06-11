@@ -47,18 +47,22 @@ public class InitializationContextListener implements ServletContextListener {
                 try {
                     backendConfig = (String) ctx.lookup("java:/comp/env/solrwayback-config");
                 } catch (NamingException e) {
-                    log.warn("Exception attempting to resolve configuration locations using web app environment " +
-                             "'solrwayback-config'. Using default config location '" + backendConfig + "'", e);
+                    log.info("Exception attempting to resolve configuration locations using web app environment " +
+                             "'solrwayback-config'. This is most likely because the WAR was deployed without a " +
+                             "context. This is not a problem: Using default config location '" + backendConfig + "'" +
+                             ". Exception message was '" + e.getMessage() + "'");
                 }
 
                 try {
                     frontendConfig = (String) ctx.lookup("java:/comp/env/solrwaybackweb-config");
-                } catch (Exception e) {
-                    log.warn("Exception attempting to resolve configuration locations using web app environment " +
-                             "'solrwaybackweb-config'. Using default config location '" + frontendConfig + "'", e);
+                } catch (NamingException e) {
+                    log.info("Exception attempting to resolve configuration locations using web app environment " +
+                             "'solrwaybackweb-config'. This is most likely because the WAR was deployed without a " +
+                             "context. This is not a problem: Using default config location '" + frontendConfig + "'" +
+                             ". Exception message was '" + e.getMessage() + "'");
                 }
             } catch (NamingException e) {
-                log.error("Unable to create new InitialContext used for property location resolving", e);
+                log.warn("Unable to create new InitialContext used for property location resolving", e);
             }
             
             PropertiesLoader.initProperties(backendConfig); //backend.
