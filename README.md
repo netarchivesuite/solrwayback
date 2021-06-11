@@ -176,16 +176,22 @@ SolrWayback requires both Solr and Tomcat to be running.
 SolrWayback uses a Solr index of WARC files to support freetext search and more complex queries.  
 If you do not have existing WARC files, see steps below on harvesting with wget.        
 
+The script `warc-indexer.sh` in the `indexing`-folder allows for multi processing and keeps track of already
+indexed files, so the collection can be extended by adding more WARCs and running the script again.
 
-The script `warc-indexer.sh` keeps track of already indexed files, so the collection can be extended by copying more WARCs into the folder and running the script again.
- Call `indexing/warc-indexer.sh -h` for usage and how to adjust the number of processes to use for indexing.
+
+Call `indexing/warc-indexer.sh -h` for usage and how to adjust the number of processes to use for indexing.
 Example usage:
+```
 THREADS=20 ./warc-indexer.sh warcs1
+```
 
-This will start indexing files from the warcs1 folder using 20 threads. Assigning a higher number of threads than CPU cores available will result in slower indexing. 
-Each indexing job require 1GB ram, so this can also be a limiting factor.
-The STATUS_ROOT variable can be used if you want the log-files saved in another folder than the one with the WARC-files. If a log file exists for a WARC-file, it will not
-be indexed again. Delete the log file if you want to index a WARC-file again.
+This will start indexing files from the warcs1 folder using 20 threads. Assigning a higher number of threads than CPU
+cores available will result in slower indexing.  Each indexing job require 1GB ram, so this can also be a limiting factor.
+
+The script keeps track of processed files by checking if a log from a previous analysis is available. The logs are stored
+in the `status`-folder (this can be changed using the `STATUS_ROOT` variable). To re-index a WARC file, delete the
+corresponding log file.
 
 The script `warc-indexer.sh` is not available for Windows. For that platform only a more primitive script is provided that also works for Linux/MacOs.
 1. Copy ARC/WARC files into folder: `indexing/warcs1`  
