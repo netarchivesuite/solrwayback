@@ -176,14 +176,18 @@ SolrWayback requires both Solr and Tomcat to be running.
 SolrWayback uses a Solr index of WARC files to support freetext search and more complex queries.  
 If you do not have existing WARC files, see steps below on harvesting with wget.        
 
-1. Copy ARC/WARC files into a folder such as: `indexing/warcs1`  
-2. Start indexing:  call `indexing/warc-indexer.sh indexing/warcs1`
 
-The script `warc-indexer.sh` keeps track of already indexed files, so the collection can be extended by copying more WARCs into the folder and running the script again. Call `indexing/warc-indexer.sh -h` for usage and how to adjust the number of processes to use for indexing.
+The script `warc-indexer.sh` keeps track of already indexed files, so the collection can be extended by copying more WARCs into the folder and running the script again.
+ Call `indexing/warc-indexer.sh -h` for usage and how to adjust the number of processes to use for indexing.
+Example usage:
+THREADS=20 ./warc-indexer.sh warcs1
 
+This will start indexing files from the warcs1 folder using 20 threads. Assigning a higher number of threads than CPU cores available will result in slower indexing. 
+Each indexing job require 1GB ram, so this can also be a limiting factor.
+The STATUS_ROOT variable can be used if you want the log-files saved in another folder than the one with the WARC-files. If a log file exists for a WARC-file, it will not
+be indexed again. Delete the log file if you want to index a WARC-file again.
 
-The script `warc-indexer.sh` is not available for Windows. For that platform only a more primitive script is provided:
-
+The script `warc-indexer.sh` is not available for Windows. For that platform only a more primitive script is provided that also works for Linux/MacOs.
 1. Copy ARC/WARC files into folder: `indexing/warcs1`  
 2. Start indexing:  call `indexing/batch_warcs1_folder.sh` (or batch_warcs1_folder.bat for windows)
 
@@ -193,8 +197,18 @@ Indexing can take up to 20 minutes for 1GB warc-files. After indexing, the warc-
 Having whitespace characters in WARC file names can result in pagepreviews and playback not working on some systems.
 There can be up to 5 minutes delay before the indexed files are visible from search. Visit this url after index job have finished to commit them instantly: http://localhost:8983/solr/netarchivebuilder/update?commit=true  
 There is a batch_warcs2_folder.sh similar script to show how to easily add new WARC files to the collection without indexing the old ones again.
-Alternatively, you can use the command in the batch_warcs2_folder.sh(bat) to see how to just index a single WARC file with the warc-indexer Java command. 
 
+For more information about the warc-indexer see: https://github.com/ukwa/webarchive-discovery/wiki/Quick-Start
+
+##Scaling and using SolrWayback in production environment.
+The stand alone Solr-server and indexing workflow using warc-indexer.sh can scale up to 20000 WARC files of size 1GB. Using 20 threads
+indexing a collection of this size  can take up to 3 weeks.  This will result in
+an index about 1TB having 500M documents and this will require to changing the Solr memory allocation to at least 12GB.
+Storing the index on a SSD drive is required to reach acceptable performance for searches.
+For collections larger than this limit Solr Cloud is required instead of the stand alone Solr that comes with the SolrWayback Bundle.
+A more advanced distributed indexing flow can handled by the archon/arctika index workflow. See: https://github.com/netarchivesuite/netsearch 
+
+ 
 #### Deleting an Index
 If you want to index a new collection into solr and remove the old index.  
 
@@ -204,7 +218,7 @@ If you want to index a new collection into solr and remove the old index.
 4. Start the indexing script
 
 ### Faster indexing
-A powerful laptop can handle up to 6 simultaneous indexing processes with Solr running on the same laptop. 
+A powerful laptop can handle up to 8 simultaneous indexing processes with Solr running on the same laptop. 
 Using an SSD for the Solr-index will speed up indexing and also improve search/playback performance.
 
 #### Solrwayback control GUI (Windows only)
