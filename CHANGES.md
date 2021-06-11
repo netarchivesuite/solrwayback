@@ -1,4 +1,17 @@
 4.1.1
+-----
+Added a better parallel indexing script for Linux/macOS with more options. (warc-indexer.sh)
+With warc-indexer.sh you can define number of threads. It keeps track of already index WARC-file so you can start it again after adding new WARC-files to the folder.
+Example: THREADS=20 ./warc-indexer.sh warcs1
+
+The file location of the two property-files solrwayback.properties and solrwaybackweb.properties can be configured so they do not have
+to be in the HOME directory. 
+To change to location copy this file: https://github.com/netarchivesuite/solrwayback/blob/master/src/main/webapp/META-INF/context.xml
+to the folder '/apache-tomcat-8.5.60/conf/Catalina/localhost' and rename it to solrwayback.war
+Remnove the uncomment of the environment variables and edit the location of the files. During start up of the tomcat server, the
+values will be logged in solrwayback.log.
+  
+Updated the README.md with more information about scaling and using SolrWayback in production.  
 
 4.1.0
 -----
