@@ -26,7 +26,8 @@ public class PropertiesLoader {
     private static final String SCREENSHOT_TEMP_IMAGEDIR_PROPERTY="screenshot.temp.imagedir";
     private static final String PID_COLLECTION_NAME_PROPERTY="pid.collection.name";
     private static final String SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY="screenshot.preview.timeout";               
-
+    private static final String WORDCLOUD_STOPWORDS_PROPERTY="wordcloud.stopwords";
+    
     private static final String WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY="warcindexer.urlnormaliser.legacy";
     private static Properties serviceProperties = null;
 
@@ -38,6 +39,8 @@ public class PropertiesLoader {
     public static String SCREENSHOT_TEMP_IMAGEDIR = null;
     public static String WARC_FILE_RESOLVER_CLASS = null;
     public static String PID_COLLECTION_NAME = null;
+    public static String WORDCLOUD_STOPWORDS;
+    
     public static int SCREENSHOT_PREVIEW_TIMEOUT = 10;//default
     public static boolean WARC_INDEXER_URL_NORMALIZER_LEGACY=false; //default
 
@@ -60,7 +63,7 @@ public class PropertiesLoader {
                 f = new File(user_home, DEFAULT_PROPERTY_FILE);
              }
             log.info("Load backend-properties: Using user.home folder:" + user_home +" and propertyFile:"+propertyFile);
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(f), StandardCharsets.ISO_8859_1);
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
 
             serviceProperties = new Properties();
             serviceProperties.load(isr);
