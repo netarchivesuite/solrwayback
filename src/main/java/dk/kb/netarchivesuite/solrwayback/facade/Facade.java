@@ -283,7 +283,8 @@ public class Facade {
   }
     public static BufferedImage wordCloudForDomain(String domain) throws Exception {
         log.info("getting wordcloud for url:" + domain);
-        String text = NetarchiveSolrClient.getInstance().getTextForDomain(domain); // Only contains the required fields for this method
+        String query = "domain:\"" + domain + "\"";
+        String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query); // Only contains the required fields for this method
         BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(text);
         return bufferedImage;
     }

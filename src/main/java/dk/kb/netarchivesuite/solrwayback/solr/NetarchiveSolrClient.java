@@ -367,14 +367,14 @@ public class NetarchiveSolrClient {
         return rsp.getResults().getNumFound();        
     }
     
-    public String getTextForDomain(String domain) throws Exception {
+    public String getConcatedTextFromHtmlForQuery(String query) throws Exception {
 
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery = new SolrQuery("(domain:\"" + domain + "\"");
+        solrQuery = new SolrQuery(query);
 
         solrQuery.add("fl", "id, content_text_length, content");
         solrQuery.setFilterQueries("content_type_norm:html", "content_text_length:[1000 TO *]"); // only html pages and pages with many words.
-        solrQuery.setRows(10000);
+        solrQuery.setRows(1000);
 
         long solrNS = -System.nanoTime();
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
@@ -388,7 +388,7 @@ public class NetarchiveSolrClient {
             b.append(doc.getFieldValue(" "));// Space between next document.
             totaltLength += ((int) doc.getFieldValue("content_text_length"));
         }
-        log.info(String.format("Total extracted content length for wordcloud:%d, total hits:%d only using first 10000 hits" + " in %d ms (qtime=%d ms)",
+        log.info(String.format("Total extracted content length for wordcloud:%d, total hits:%d only using first 1000 hits" + " in %d ms (qtime=%d ms)",
                 totaltLength, rsp.getResults().getNumFound(), solrNS / M, rsp.getQTime()));
         return b.toString();
     }

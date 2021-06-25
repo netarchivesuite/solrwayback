@@ -1,3 +1,10 @@
+4.1.2
+-----
+Wordcloud stop words works can be configured in solrwaybackweb.properties.
+Added new property in solrwaybackweb.properties with default stopwords (english). (will use empty stopword list if not defined)
+Word cloud domains reduced from 10.000 to 1.000 as difference was minimal, but greatly improves performance
+
+
 4.1.1
 -----
 Added a better parallel indexing script for Linux/macOS with more options. (warc-indexer.sh)
