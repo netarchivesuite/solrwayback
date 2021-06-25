@@ -367,13 +367,16 @@ public class NetarchiveSolrClient {
         return rsp.getResults().getNumFound();        
     }
     
-    public String getConcatedTextFromHtmlForQuery(String query) throws Exception {
+    public String getConcatedTextFromHtmlForQuery(String query,String filterQuery) throws Exception {
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery = new SolrQuery(query);
 
         solrQuery.add("fl", "id, content_text_length, content");
-        solrQuery.setFilterQueries("content_type_norm:html", "content_text_length:[1000 TO *]"); // only html pages and pages with many words.
+        solrQuery.addFilterQuery("content_type_norm:html", "content_text_length:[1000 TO *]"); // only html pages and pages with many words.
+        if (filterQuery != null && filterQuery.length() >0) {
+          solrQuery.addFilterQuery(filterQuery);  
+        }        
         solrQuery.setRows(1000);
 
         long solrNS = -System.nanoTime();

@@ -284,10 +284,20 @@ public class Facade {
     public static BufferedImage wordCloudForDomain(String domain) throws Exception {
         log.info("getting wordcloud for url:" + domain);
         String query = "domain:\"" + domain + "\"";
-        String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query); // Only contains the required fields for this method
+        String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,null); // Only contains the required fields for this method
         BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(text);
+        
         return bufferedImage;
     }
+    
+    public static  List<WordCloudWordAndCount> wordCloudWordFrequency(String query, String filterQuery) throws Exception {
+      log.info("getting wordcloud frequency for query:" + query +" filterquery:"+filterQuery);
+      String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,filterQuery); // Only contains the required fields for this method
+      
+      List<WordCloudWordAndCount> wordCloudWordWithCount = WordCloudImageGenerator.wordCloudWordWithCount(text);      
+      return  wordCloudWordWithCount;
+  }
+    
 
     public static ArrayList<ImageUrl> getImagesForHtmlPageNew(String source_file_path, long offset) throws Exception {
         ArrayList<ArcEntryDescriptor> arcs = getImagesForHtmlPageNewThreaded(source_file_path, offset);

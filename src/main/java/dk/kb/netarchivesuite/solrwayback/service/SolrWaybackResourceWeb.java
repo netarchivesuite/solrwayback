@@ -46,6 +46,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreviewYearsInfo;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
+import dk.kb.netarchivesuite.solrwayback.service.dto.WordCloudWordAndCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
@@ -283,7 +284,17 @@ public class SolrWaybackResourceWeb {
       }
     }
 
-    
+    @GET
+    @Path("/wordcloud/wordfrequency")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<WordCloudWordAndCount> wordcloudFrequency( @QueryParam("q") String query , @QueryParam("fq") String filterQuery) throws SolrWaybackServiceException {
+      try {                                        
+        return Facade.wordCloudWordFrequency(query, filterQuery);                                        
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
+
     
     @GET
     @Path("/util/normalizeurl")
