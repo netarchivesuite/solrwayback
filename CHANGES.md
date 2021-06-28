@@ -1,7 +1,7 @@
 4.1.2
 -----
 Wordcloud stop words works can be configured in solrwaybackweb.properties.
-Added new property in solrwaybackweb.properties with default stopwords (english). (will use empty stopword list if not defined)
+Added new property(wordcloud.stopwords) in solrwaybackweb.properties with default stopwords (english). Will use empty stopword list if not defined
 Word cloud domains reduced from 10.000 to 1.000 as difference was minimal, but greatly improves performance
 API method to extract word+count for a query+filterquery(optional) :  /services/frontend/wordcloud/wordfrequency?q=xxx&fg=yyy
 API method to extract wordcloud image for query+filterquery(optional): /services/frontend/wordcloud/query?q=xxx&fg=yyy
