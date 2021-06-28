@@ -377,7 +377,7 @@ public class NetarchiveSolrClient {
         if (filterQuery != null && filterQuery.length() >0) {
           solrQuery.addFilterQuery(filterQuery);  
         }        
-        solrQuery.setRows(1000);
+        solrQuery.setRows(5000);
 
         long solrNS = -System.nanoTime();
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
