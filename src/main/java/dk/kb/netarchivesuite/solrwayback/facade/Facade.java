@@ -281,6 +281,9 @@ public class Facade {
 
       return facetCounts;
   }
+    /*
+     * Can be deleted when frontend has switched
+     */
     public static BufferedImage wordCloudForDomain(String domain) throws Exception {
         log.info("getting wordcloud for url:" + domain);
         String query = "domain:\"" + domain + "\"";
@@ -290,6 +293,13 @@ public class Facade {
         return bufferedImage;
     }
     
+    public static BufferedImage wordCloudForQuery(String query, String filterQuery) throws Exception {
+      log.info("getting wordcloud for query:" + query +" filter query:"+filterQuery);      
+      String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,filterQuery); // Only contains the required fields for this method
+      BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(text);      
+      return bufferedImage;
+   }
+        
     public static  List<WordCloudWordAndCount> wordCloudWordFrequency(String query, String filterQuery) throws Exception {
       log.info("getting wordcloud frequency for query:" + query +" filterquery:"+filterQuery);
       String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,filterQuery); // Only contains the required fields for this method

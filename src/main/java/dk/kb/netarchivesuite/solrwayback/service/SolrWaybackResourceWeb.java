@@ -271,6 +271,10 @@ public class SolrWaybackResourceWeb {
       }
     }
     
+    /* 
+     * This method can be deleted when frontend has switched to calling new
+     */
+    
     @GET
     @Path("/wordcloud/domain")
     @Produces("image/png")
@@ -284,6 +288,19 @@ public class SolrWaybackResourceWeb {
       }
     }
 
+    @GET
+    @Path("/wordcloud/query")
+    @Produces("image/png")
+    public Response  wordCloudForDomain(@QueryParam("q") String query , @QueryParam("fq") String filterQuery) throws SolrWaybackServiceException {
+      try {                        
+          BufferedImage image = Facade.wordCloudForQuery(query, filterQuery);
+          return convertToPng(image);
+          
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
+    
     @GET
     @Path("/wordcloud/wordfrequency")
     @Produces(MediaType.APPLICATION_JSON)
