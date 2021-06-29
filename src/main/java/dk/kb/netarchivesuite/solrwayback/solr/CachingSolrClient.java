@@ -12,12 +12,13 @@
  *  limitations under the License.
  *
  */
-package dk.kb.labsapi;
+package dk.kb.netarchivesuite.solrwayback.solr;
 
-import dk.kb.webservice.exception.InternalServiceException;
-import org.apache.solr.client.solrj.*;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrRequest;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.StreamingResponseCallback;
 import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
-import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -29,9 +30,7 @@ import org.apache.solr.common.util.NamedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -42,7 +41,7 @@ import java.util.function.Supplier;
  * Caching wrapper for SolrClient. Only caches queries. puts, pings etc. are passed directly.
  */
 public class CachingSolrClient extends SolrClient {
-    private static final Logger log = LoggerFactory.getLogger(SolrBase.class);
+    private static final Logger log = LoggerFactory.getLogger(CachingSolrClient.class);
 
     private final SolrClient inner;
     private final int maxConnections;
@@ -66,7 +65,7 @@ public class CachingSolrClient extends SolrClient {
                              int maxCachedEntries, int maxCacheTimeSeconds, int maxConcurrentConnections) {
         this.inner = inner;
         queryCache = new TimeCache<>(maxCachedEntries == -1 ? Integer.MAX_VALUE : maxCachedEntries,
-                                    maxCacheTimeSeconds == -1 ? Integer.MAX_VALUE/4 : maxCacheTimeSeconds*1000);
+                                    maxCacheTimeSeconds == -1 ? Integer.MAX_VALUE / 4 : maxCacheTimeSeconds * 1000);
         namedCache = queryCache.createLinked();
         this.maxConnections = maxConcurrentConnections;
         connection = new Semaphore(maxConcurrentConnections == -1 ? Integer.MAX_VALUE : maxConcurrentConnections,
@@ -125,51 +124,14 @@ public class CachingSolrClient extends SolrClient {
     }
 
     /**
-     * Return the result of the call immediately if it is cached, else evaluate the request using the wrapped
-     * SolrClient, store the result in the cache and return it.
-     * Performs a Solr call for the given request, using the wrapped SolrClient.
-     * @param request the request to Solr.
-     * @return the response from Solr.
-     * @throws RuntimeException if the Solr call could not be completed.
-     */
-    public QueryResponse callSolr(JsonQueryRequest request) {
-        return cachedSolrCall(getKey(request), () -> {
-            try {
-                return request.process(inner);
-            } catch (SolrServerException | IOException e) {
-                throw new RuntimeException("Exception while executing Solr request " + request, e);
-            }
-        });
-    }
-
-    /**
-     * Calculate a key for the given query.
-     * @param query a Solr query.
-     * @return a key for the query, intended for the caching map.
-     */
-    static String getKey(JsonQueryRequest query) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            query.getContentWriter(null).write(out);
-        } catch (IOException e) {
-            throw new InternalServiceException("Unable to create key for query", e);
-        }
-        return out.toString(StandardCharsets.UTF_8) + query.getParams() + query.getQueryParams();
-    }
-
-    /**
      * Calculate a key for the given request.
      * @param query a Solr query.
      * @return a key for the query, intended for the caching map.
      */
     static String getKey(SolrRequest<?> query) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            query.getContentWriter(null).write(out);
-        } catch (IOException e) {
-            throw new InternalServiceException("Unable to create key for query", e);
-        }
-        return out.toString(StandardCharsets.UTF_8) + query.getParams() + query.getQueryParams();
+        // Poor man's version for Solrclient 7.x. Version 8.7+ has query.getContentWriter(null)
+        return "collection=" + query.getCollection() + "_path=" + query.getPath() + "_method=" + query.getMethod() +
+                "qp=" + query.getQueryParams() + "_params=" + query.getParams();
     }
 
     @Override
@@ -539,22 +501,12 @@ public class CachingSolrClient extends SolrClient {
     }
 
     @Override
-    public SolrPingResponse ping(String collection) throws SolrServerException, IOException {
-        return inner.ping(collection);
-    }
-
-    @Override
     public SolrPingResponse ping() throws SolrServerException, IOException {
         return inner.ping();
     }
 
     @Override
     public QueryResponse queryAndStreamResponse(String collection, SolrParams params, StreamingResponseCallback callback) throws SolrServerException, IOException {
-        return inner.queryAndStreamResponse(collection, params, callback);
-    }
-
-    @Override
-    public QueryResponse queryAndStreamResponse(String collection, SolrParams params, FastStreamingDocsCallback callback) throws SolrServerException, IOException {
         return inner.queryAndStreamResponse(collection, params, callback);
     }
 
