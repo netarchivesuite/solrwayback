@@ -64,7 +64,9 @@ public class NetarchiveSolrClient {
      * 
      */
     public static void initialize(String solrServerUrl) {
-        solrServer = new HttpSolrClient.Builder(solrServerUrl).build();
+        SolrClient innerSolrClient = new HttpSolrClient.Builder(solrServerUrl).build();
+        // Just a starting point for cache setup: 200 entries, 10 minutes, no limit on concurrent connections
+        solrServer = new CachingSolrClient(innerSolrClient, 200, 10*60, -1);
         // solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http
         // error code 413/414, due to monster URI. (and it is faster)
 
