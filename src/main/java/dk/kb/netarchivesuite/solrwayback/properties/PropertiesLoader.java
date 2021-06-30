@@ -26,11 +26,14 @@ public class PropertiesLoader {
     private static final String SCREENSHOT_TEMP_IMAGEDIR_PROPERTY="screenshot.temp.imagedir";
     private static final String PID_COLLECTION_NAME_PROPERTY="pid.collection.name";
     private static final String SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY="screenshot.preview.timeout";               
-    private static final String WORDCLOUD_STOPWORDS_PROPERTY="wordcloud.stopwords";
-    
+   
+    private static final String SOLR_SERVER_CACHING_PROPERTY="solr.server.caching";
+    private static final String SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY="solr.server.caching.max.entries";
+    private static final String SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY="solr.server.caching.age.seconds";
+                
     private static final String WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY="warcindexer.urlnormaliser.legacy";
     private static Properties serviceProperties = null;
-
+    
     public static String SOLR_SERVER = null;
     public static String WAYBACK_BASEURL = null;
     public static String WAYBACK_HOST = null; //Taken from WAYBACK_BASEURL
@@ -40,6 +43,12 @@ public class PropertiesLoader {
     public static String WARC_FILE_RESOLVER_CLASS = null;
     public static String PID_COLLECTION_NAME = null;
     public static String WORDCLOUD_STOPWORDS;
+    
+    
+    public static boolean SOLR_SERVER_CACHING=false;
+    public static int SOLR_SERVER_CACHING_MAX_ENTRIES=1000; //default value
+    public static int SOLR_SERVER_CACHING_AGE_SECONDS=84600; //default value 1 day
+
     
     public static int SCREENSHOT_PREVIEW_TIMEOUT = 10;//default
     public static boolean WARC_INDEXER_URL_NORMALIZER_LEGACY=false; //default
@@ -88,7 +97,16 @@ public class PropertiesLoader {
             if (legacyUrlNormalizer != null){
               WARC_INDEXER_URL_NORMALIZER_LEGACY= Boolean.valueOf(legacyUrlNormalizer);
             }
-                                    
+                           
+            String cachingStr= serviceProperties.getProperty(SOLR_SERVER_CACHING_PROPERTY);
+            
+            if (cachingStr != null && cachingStr.equalsIgnoreCase("true")) {
+                SOLR_SERVER_CACHING=true;
+                SOLR_SERVER_CACHING_AGE_SECONDS=Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY).trim());
+                SOLR_SERVER_CACHING_MAX_ENTRIES=Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY).trim());                
+            }
+                        
+            
             log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
             log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);           
             log.info("Property:"+ CHROME_COMMAND_PROPERTY +" = " + CHROME_COMMAND);
@@ -97,7 +115,10 @@ public class PropertiesLoader {
             log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);            
             log.info("Property:"+ WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY +" = " +  WARC_INDEXER_URL_NORMALIZER_LEGACY);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
-            
+                        
+            log.info("Property:"+ SOLR_SERVER_CACHING_PROPERTY +" = " +  SOLR_SERVER_CACHING);
+            log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);
+            log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);                        
         }
         catch (Exception e) {
             e.printStackTrace();

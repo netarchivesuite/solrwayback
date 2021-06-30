@@ -65,8 +65,19 @@ public class NetarchiveSolrClient {
      */
     public static void initialize(String solrServerUrl) {
         SolrClient innerSolrClient = new HttpSolrClient.Builder(solrServerUrl).build();
-        // Just a starting point for cache setup: 200 entries, 10 minutes, no limit on concurrent connections
-        solrServer = new CachingSolrClient(innerSolrClient, 200, 10*60, -1);
+
+        
+        if (PropertiesLoader.SOLR_SERVER_CACHING==true) {
+            int maxCachingEntries = PropertiesLoader.SOLR_SERVER_CACHING_MAX_ENTRIES;
+            int maxCachingSeconds = PropertiesLoader.SOLR_SERVER_CACHING_AGE_SECONDS;
+            solrServer = new CachingSolrClient(innerSolrClient, maxCachingEntries,  maxCachingSeconds, -1); //-1 means no maximum number of connections 
+            log.info("SolrClient initialized with caching properties: maxCachedEntrie="+maxCachingEntries +" cacheAgeSeconds="+maxCachingSeconds);
+        }
+        else {
+            solrServer = new HttpSolrClient.Builder(solrServerUrl).build();
+            log.info("SolClient initialized without caching");
+        }                    
+
         // solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http
         // error code 413/414, due to monster URI. (and it is faster)
 
@@ -141,8 +152,6 @@ public class NetarchiveSolrClient {
         solrQuery.add("facet.limit", "" + (facetLimit + 1)); // +1 because itself will be removed and is almost certain of resultset is self-linking
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
         solrQuery.add("fl","id");                                                                                                                                                                  // request
-                                                                                                                                                                  // fields
-                                                                                                                                                                  // used
 
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         List<FacetCount> facetList = new ArrayList<FacetCount>();

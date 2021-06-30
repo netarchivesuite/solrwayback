@@ -6,6 +6,13 @@ Word cloud html pages extraction reduced from 10.000 to 5.000 as difference was 
 API method to extract word+count for a query+filterquery(optional) :  /services/frontend/wordcloud/wordfrequency?q=xxx&fg=yyy
 API method to extract wordcloud image for query+filterquery(optional): /services/frontend/wordcloud/query?q=xxx&fg=yyy
 
+Solr query caching for performance boost. 
+Added new optional properties in solrwayback.properties
+#Solr caching. Will be default false if not defined
+solr.server.caching=true
+solr.server.caching.max.entries=1000
+solr.server.caching.age.seconds=86400
+
 
 4.1.1
 -----
