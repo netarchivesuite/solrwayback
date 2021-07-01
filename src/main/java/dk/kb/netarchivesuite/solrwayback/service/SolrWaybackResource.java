@@ -498,10 +498,16 @@ public class SolrWaybackResource {
       //log.info("solrDate="+solrDate +" , url="+url);
       IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
  
+             
+      if (doc == null){
+        log.info("Url has never been harvested:"+url);
+        throw new NotFoundServiceException("Url has never been harvested:"+url);
+      }        
+   
       
       //THIS BLOCK WILL FORWARD URLS TO MATCH CRAWLTIME FOR HTML PLAYBACK
-       // html forward to a new request so date in url will show the true crawldate of the document. Avoid having 2020 in url with the page is from 2021 etc.     
-       String htmlPageCrawlDate= DateUtils.convertUtcDate2WaybackDate(doc.getCrawlDate());
+       // html forward to a new request so date in url will show the true crawldate of the document. Avoid having 2020 in url with the page is from 2021 etc.      
+      String htmlPageCrawlDate= DateUtils.convertUtcDate2WaybackDate(doc.getCrawlDate());
         if ("html".equalsIgnoreCase(doc.getContentTypeNorm()) &&  !htmlPageCrawlDate.equals(waybackDate)) {                         
           String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+htmlPageCrawlDate+"/"+url;
           log.info("Forwarding html view to a url where crawldate matches html crawltime. url crawltime:"+htmlPageCrawlDate +" true crawl:"+htmlPageCrawlDate);
@@ -512,10 +518,7 @@ public class SolrWaybackResource {
         }
       //END BLOCK
       
-      if (doc == null){
-        log.info("Url has never been harvested:"+url);
-        throw new NotFoundServiceException("Url has never been harvested:"+url);
-      }        
+     
       log.info("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
           
       Response viewImpl = viewImpl(doc.getSource_file_path() , doc.getOffset(),true);                                   
