@@ -497,6 +497,21 @@ public class SolrWaybackResource {
             
       //log.info("solrDate="+solrDate +" , url="+url);
       IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
+ 
+      
+      //THIS BLOCK WILL FORWARD URLS TO MATCH CRAWLTIME FOR HTML PLAYBACK
+       // html forward to a new request so date in url will show the true crawldate of the document. Avoid having 2020 in url with the page is from 2021 etc.     
+       String htmlPageCrawlDate= DateUtils.convertUtcDate2WaybackDate(doc.getCrawlDate());
+        if ("html".equalsIgnoreCase(doc.getContentTypeNorm()) &&  !htmlPageCrawlDate.equals(waybackDate)) {                         
+          String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+htmlPageCrawlDate+"/"+url;
+          log.info("Forwarding html view to a url where crawldate matches html crawltime. url crawltime:"+htmlPageCrawlDate +" true crawl:"+htmlPageCrawlDate);
+          newUrl = newUrl.replace("|", "%7C");//For some unknown reason Java does not accept |, must encode.
+          URI uri =new URI(newUrl);
+          log.info("new url:"+newUrl);
+          return Response.seeOther( uri ).build(); //Jersey way to forward response.
+        }
+      //END BLOCK
+      
       if (doc == null){
         log.info("Url has never been harvested:"+url);
         throw new NotFoundServiceException("Url has never been harvested:"+url);
