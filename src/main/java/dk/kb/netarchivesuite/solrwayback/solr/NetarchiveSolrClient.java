@@ -44,7 +44,7 @@ public class NetarchiveSolrClient {
     private static final long M = 1000000; // ns -> ms
 
     protected static SolrClient solrServer;
-    protected static SolrClient noCachesolrServer;
+    protected static SolrClient noCacheSolrServer;
     protected static NetarchiveSolrClient instance = null;
     protected static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+");
     private static String NO_REVISIT_FILTER ="record_type:response OR record_type:arc";
@@ -79,7 +79,7 @@ public class NetarchiveSolrClient {
         }                    
 
         // some of the solr query will never using cache. word cloud(cache memory) + playback resolving etc. (cache poisoning)
-        noCachesolrServer = new HttpSolrClient.Builder(solrServerUrl).build();
+        noCacheSolrServer = new HttpSolrClient.Builder(solrServerUrl).build();
         
         // solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http
         // error code 413/414, due to monster URI. (and it is faster)
@@ -156,7 +156,7 @@ public class NetarchiveSolrClient {
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
         solrQuery.add("fl","id");                                                                                                                                                                  // request
 
-        QueryResponse rsp = noCachesolrServer.query(solrQuery, METHOD.POST); //do not cache
+        QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not cache
         List<FacetCount> facetList = new ArrayList<FacetCount>();
         FacetField facet = rsp.getFacetField("links_domains");
 
@@ -394,7 +394,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(5000);
 
         long solrNS = -System.nanoTime();
-        QueryResponse rsp = noCachesolrServer.query(solrQuery, METHOD.POST); //do not cache
+        QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not cache
         solrNS += System.nanoTime();
         SolrDocumentList docs = rsp.getResults();
 
@@ -475,7 +475,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(1);
 
        // QueryResponse rsp = loggedSolrQuery("getArchEntry", solrQuery); //Timing disabled due to spam. Also only took 1-5 millis
-         QueryResponse rsp = noCachesolrServer.query(solrQuery, METHOD.POST);
+         QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = rsp.getResults();
 
         if (docs.getNumFound() == 0) {
@@ -656,7 +656,7 @@ public class NetarchiveSolrClient {
         solrQuery.setFilterQueries(NO_REVISIT_FILTER); // No binary for revists.
 
         long solrNS = -System.nanoTime();
-        QueryResponse rsp = noCachesolrServer.query(solrQuery, METHOD.POST); //do not use cache
+        QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not use cache
         solrNS += System.nanoTime();
 
         SolrDocumentList docs = groupsToDoc(rsp);
