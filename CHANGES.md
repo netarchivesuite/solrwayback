@@ -13,6 +13,7 @@ solr.server.caching=true
 solr.server.caching.max.entries=1000
 solr.server.caching.age.seconds=86400
 
+When clicking a link and opening playback in a new tab. The browser URL will match the crawl-time of the html page.
 
 4.1.1
 -----
