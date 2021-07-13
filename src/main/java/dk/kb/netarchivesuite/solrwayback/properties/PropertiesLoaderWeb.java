@@ -28,7 +28,7 @@ public class PropertiesLoaderWeb {
     public static final String MAPS_RADIUS_PROPERTY = "maps.radius";
     public static final String ALLOW_EXPORT_WARC_PROPERTY = "allow.export.warc";
     public static final String ALLOW_EXPORT_CSV_PROPERTY = "allow.export.csv";
-    private static final String WORDCLOUD_STOPWORDS_PROPERTY="wordcloud.stopwords";
+    public static final String WORDCLOUD_STOPWORDS_PROPERTY="wordcloud.stopwords";
     
     public static final String EXPORT_WARC_MAXRESULTS_PROPERTY = "export.warc.maxresults";
     public static final String EXPORT_CSV_MAXRESULTS_PROPERTY = "export.csv.maxresults";
