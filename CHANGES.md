@@ -10,7 +10,7 @@ Solr query caching for performance boost.
 Added new optional properties in solrwayback.properties
 #Solr caching. Will be default false if not defined
 solr.server.caching=true
-solr.server.caching.max.entries=1000
+solr.server.caching.max.entries=10000
 solr.server.caching.age.seconds=86400
 
 When clicking a link and opening playback in a new tab. The browser URL will match the crawl-time of the html page.
