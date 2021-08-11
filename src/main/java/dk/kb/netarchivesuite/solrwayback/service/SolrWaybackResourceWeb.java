@@ -77,9 +77,10 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("serviceworker")
     @Produces({ MediaType.TEXT_PLAIN})
-    public String getServiceWorker() throws SolrWaybackServiceException {
-     
+    public String getServiceWorker(@Context HttpServletRequest httpRequest) throws SolrWaybackServiceException {
+      String refererUrl = httpRequest.getHeader("referer");
 
+      log.info("serviceworker called with referer:"+refererUrl);
       String sw_javascript=
       " self.addEventListener('fetch', function(event) { "+   
       "  url = event.request.url; "+
