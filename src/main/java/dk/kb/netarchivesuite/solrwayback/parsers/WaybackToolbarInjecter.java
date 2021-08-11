@@ -113,6 +113,18 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     log.info(stats.toString());
     String inject = 
     "<!-- BEGIN WAYBACK TOOLBAR INSERT -->" +
+     " <script type=\"text/javascript\">" +
+        
+    " if ('serviceWorker' in navigator) { "+// Register the service worker    
+    " navigator.serviceWorker.register('https://solrwb-test.kb.dk:4000/solrwayback/sw.js').then(function(registration) { "+
+    " console.log('ServiceWorker registration successful with scope: ', registration.scope); "+    
+    "}).catch(function(err) { "+  // registration failed      
+    " console.log('ServiceWorker registration failed: ', err); "+     
+    "}); "+
+    "} "+    
+    "</script>"+    
+    " "+
+        
     "   <div class=\"closed\" id=\"tegModal\" style=\"\">" +
     "       <div><a onclick=\"toggleModal();return false\" id=\"toggleToolbar\" href=\"#\">Toolbar</a></div>" +
     "       <div><a onclick=\"closeModal();return false\" id=\"closeToolbar\" href=\"#\">Close</a></div>" +
