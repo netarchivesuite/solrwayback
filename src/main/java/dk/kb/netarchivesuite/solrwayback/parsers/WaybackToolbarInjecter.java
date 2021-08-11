@@ -116,7 +116,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
      " <script type=\"text/javascript\">" +
         
     " if ('serviceWorker' in navigator) { "+// Register the service worker    
-    " navigator.serviceWorker.register('https://solrwb-test.kb.dk:4000/solrwayback/sw.js').then(function(registration) { "+
+    " navigator.serviceWorker.register('https://solrwb-test.kb.dk:4000/solrwayback/services/frontend/serviceworker').then(function(registration) { "+
     " console.log('ServiceWorker registration successful with scope: ', registration.scope); "+    
     "}).catch(function(err) { "+  // registration failed      
     " console.log('ServiceWorker registration failed: ', err); "+     
