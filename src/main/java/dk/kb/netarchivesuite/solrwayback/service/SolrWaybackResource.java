@@ -374,6 +374,8 @@ public class SolrWaybackResource {
 
   }
 
+  
+
 
   /*
 //   *  This will be called from solrwayback page views, when resources can not be resolved (not harvested)  
@@ -385,8 +387,7 @@ public class SolrWaybackResource {
     throw new NotFoundServiceException("");                  
   }
 
-
-
+  
   @GET
   @Path("/getContentType")
   public String getContentType(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
@@ -614,7 +615,7 @@ public class SolrWaybackResource {
       String offsetStr = queryMap.get("offset");
      
       if (source_file_path == null || offsetStr ==  null){
-        log.warn("Need to fix leak, no source_file/offset for refererUrl:"+refererUrl + "url:"+leakUrlStr);        
+        log.warn("Need to fix leak, no source_file/offset for refererUrl:"+refererUrl + " url:"+leakUrlStr);        
         return Response.status(Response.Status.NOT_FOUND).build();
       }
       int leakUrlIndex=leakUrlStr.indexOf("/services/");

@@ -125,7 +125,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     "} "+    
     "</script>"+    
     " "+
-        
+    "   <meta name=\"referrer\" content=\"unsafe-url\">" +       //This will put full URL in referer and not only domain. Timestamp is needed in URL.          
     "   <div class=\"closed\" id=\"tegModal\" style=\"\">" +
     "       <div><a onclick=\"toggleModal();return false\" id=\"toggleToolbar\" href=\"#\">Toolbar</a></div>" +
     "       <div><a onclick=\"closeModal();return false\" id=\"closeToolbar\" href=\"#\">Close</a></div>" +
