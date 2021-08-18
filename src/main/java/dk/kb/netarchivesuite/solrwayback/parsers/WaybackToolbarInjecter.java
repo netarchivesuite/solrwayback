@@ -98,6 +98,8 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
       body.prepend(injectHtml); //Inject just before </body> 
       log.info("wayback tool injected. xhtml:"+xhtml);
       
+      Elements head = doc.select("head"); //Also inject as soon as possible to get referer. Also injected in wayback toolbar
+      head.prepend(" <meta name=\"referrer\" content=\"unsafe-url\">");
     return doc.toString();    
   }
   
