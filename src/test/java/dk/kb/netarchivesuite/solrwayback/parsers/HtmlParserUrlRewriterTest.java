@@ -75,6 +75,11 @@ public class HtmlParserUrlRewriterTest {
     }
 
     @Test
+    public void testCDATA() throws Exception {
+        assertRewrite("cdata");
+    }
+
+    @Test
     public void testScriptRewriting() throws Exception {
         // TODO: Make a better counter for replaced
         assertRewrite("script", 0);

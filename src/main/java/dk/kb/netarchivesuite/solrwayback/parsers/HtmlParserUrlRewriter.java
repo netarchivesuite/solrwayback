@@ -437,7 +437,7 @@ public class HtmlParserUrlRewriter {
             String newContent = transformer.apply(content);
 			if (newContent != null && !newContent.equals(content)) {
 				if (attribute == null || attribute.isEmpty()) {
-					e.html(newContent.replace("\n", RewriterBase.NEWLINE_REPLACEMENT));
+					e.html(newContent.replace("\n", RewriterBase.NEWLINE_PLACEHOLDER));
 				} else {
 					e.attr(attribute.replaceFirst("abs:", ""), newContent);
 				}
