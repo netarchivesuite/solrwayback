@@ -111,15 +111,15 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
         
     SimpleDateFormat longFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     
-        
+    
+    String serviceWorkerUrl = PropertiesLoader.WAYBACK_BASEURL +"sw.js"; //Baseurl must end with /        
     log.info(stats.toString());
     String inject = 
     "<!-- BEGIN WAYBACK TOOLBAR INSERT -->" +
      " <script type=\"text/javascript\">" +
-        
+        //https://solrwb-test.kb.dk:4000/solrwayback/sw.js
     " if ('serviceWorker' in navigator) { "+// Register the service worker    
-    //" navigator.serviceWorker.register('https://solrwb-test.kb.dk:4000/solrwayback/services/frontend/serviceworker').then(function(registration) { "+
-    " navigator.serviceWorker.register('https://solrwb-test.kb.dk:4000/solrwayback/sw.js').then(function(registration) { "+
+    " navigator.serviceWorker.register('"+serviceWorkerUrl+"').then(function(registration) { "+
     " console.log('ServiceWorker registration successful with scope: ', registration.scope); "+    
     "}).catch(function(err) { "+  // registration failed      
     " console.log('ServiceWorker registration failed: ', err); "+     
