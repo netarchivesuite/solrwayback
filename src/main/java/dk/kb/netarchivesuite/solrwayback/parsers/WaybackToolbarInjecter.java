@@ -98,6 +98,8 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
       body.prepend(injectHtml); //Inject just before </body> 
       log.info("wayback tool injected. xhtml:"+xhtml);
       
+      Elements head = doc.select("head"); //Also inject as soon as possible to get referer. Also injected in wayback toolbar
+      head.prepend(" <meta name=\"referrer\" content=\"unsafe-url\">");
     return doc.toString();    
   }
   
@@ -113,6 +115,19 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     log.info(stats.toString());
     String inject = 
     "<!-- BEGIN WAYBACK TOOLBAR INSERT -->" +
+     " <script type=\"text/javascript\">" +
+        
+    " if ('serviceWorker' in navigator) { "+// Register the service worker    
+    //" navigator.serviceWorker.register('https://solrwb-test.kb.dk:4000/solrwayback/services/frontend/serviceworker').then(function(registration) { "+
+    " navigator.serviceWorker.register('https://solrwb-test.kb.dk:4000/solrwayback/sw.js').then(function(registration) { "+
+    " console.log('ServiceWorker registration successful with scope: ', registration.scope); "+    
+    "}).catch(function(err) { "+  // registration failed      
+    " console.log('ServiceWorker registration failed: ', err); "+     
+    "}); "+
+    "} "+    
+    "</script>"+    
+    " "+
+    "   <meta name=\"referrer\" content=\"unsafe-url\">" +       //This will put full URL in referer and not only domain. Timestamp is needed in URL.          
     "   <div class=\"closed\" id=\"tegModal\" style=\"\">" +
     "       <div><a onclick=\"toggleModal();return false\" id=\"toggleToolbar\" href=\"#\">Toolbar</a></div>" +
     "       <div><a onclick=\"closeModal();return false\" id=\"closeToolbar\" href=\"#\">Close</a></div>" +

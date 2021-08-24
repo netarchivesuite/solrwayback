@@ -73,7 +73,39 @@ public class SolrWaybackResourceWeb {
     }
    
     
+    
+    @GET
+    @Path("serviceworker")
+    @Produces({ MediaType.TEXT_PLAIN})
+    public String getServiceWorker(@Context HttpServletRequest httpRequest) throws SolrWaybackServiceException {
+      String refererUrl = httpRequest.getHeader("referer");
 
+      log.info("serviceworker called with referer:"+refererUrl);
+      String sw_javascript=
+      " self.addEventListener('fetch', function(event) { "+   
+      "  url = event.request.url; "+
+      "  console.log('Serviceworker got url:'+url); "+      
+      "  if (url.startsWith('http') && !url.startsWith('https://solrwb-test.kb.dk:4000/')){ " +    
+      "      console.log('Found leak url:'+url); "+        
+      "     newUrl = 'https://solrwb-test.kb.dk:4000/solrwayback/web/20210121153119/'+url; "+                 
+      "     console.log('forwarding live leak url to:'+newUrl); "+ 
+      "     event.respondWith( "+
+      "       fetch(newUrl)); "+                            
+      "   } "+
+      "  else{ "+
+      "      console.log('not forwarding url'); "+
+      "  } "+
+      " }); ";
+     
+      //TODO header with javascript
+     return sw_javascript;
+    }
+
+    
+    
+  
+    
+    
     @GET
     @Path("smurf/text")
     @Produces({ MediaType.APPLICATION_JSON})
