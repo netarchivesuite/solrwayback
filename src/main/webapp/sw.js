@@ -12,7 +12,8 @@ solrwayback_server=self.location.origin;
 
 //Use this fast 404 if referer can not be found in live leak. (rare)
 NOT_FOUND = solrwayback_url+'/solrwayback/services/notfound';
- 
+
+//console.log('SolrWayback serviceworker got url:'+destination_url);
 destinationUrl = new URL(destination_url);
  
 if (destinationUrl.host.indexOf('tile.openstreetmap.org') > 1 ){ //allow open streep map due to GUI location search
