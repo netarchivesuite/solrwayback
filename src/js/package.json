@@ -8,7 +8,7 @@
     "lint": "node_modules/.bin/vue-cli-service lint"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "chart.js": "^2.9.4",
     "core-js": "^3.6.5",
     "d3": "3.5.17",
@@ -40,7 +40,7 @@
     "prettier": "^1.19.1",
     "sass-loader": "^8.0.2",
     "v-tooltip": "^1.1.6",
-    "video.js": "^7.8.4",
+    "video.js": "^7.15.2",
     "vue-template-compiler": "^2.6.11"
   }
 }
