@@ -1,3 +1,13 @@
+4.2.0
+-----
+All Playback live leaks are now blocked or redirected back to SolrWayback with a javascript Serviceworker added to playback. No more leaking to the live web!  This will also improve playback when the live leak can be resolved in SolrWayback. (Thanks to Ilya Kreymer for pointing me in this direction). 
+The Serviceworker implementation require the SolrWayback server to run under HTTPS. This can be archived by setting an Apache or Nginx in front of the Tomcat.
+The Serviceworker feature is supported by most recent browser versions. See: https://caniuse.com/serviceworkers 
+Playback will still work in legacy browsers using url rewrite, but can leak to the live web in if not blocked by proxy server or sandboxed. 
+Encoding fix in javascript rewrite: Modify < > handling to preserve the original representation (including faulty ones). This closes SOLRWBFB-58
+Upgraded frontend depencencies (security updates).
+
+
 4.1.2
 -----
 Wordcloud stop words works can be configured in solrwaybackweb.properties.
