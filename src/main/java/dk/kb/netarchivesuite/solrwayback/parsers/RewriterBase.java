@@ -51,7 +51,7 @@ public abstract class RewriterBase {
 		identity,
         /**
          * The content is inlined on a HTML page (e.g. {@code <script>foo();</script>}.
-		 * Slashes {@code /} and less than {@code <} will be escaped.
+		 * Slashes {@code /}, ampersand {@code &}, less than {@code <} etc. will be explicitly preserved.
 		 */
 		inline,
 		/**
@@ -250,8 +250,8 @@ public abstract class RewriterBase {
 	 * @param crawlDate the ideal timestamp for the archived versions to link to.
 	 * @param urlMap map from resource URLs to archived versions, normally retrieved with {@link #getResourceURLs}.
 	 * @param packaging how the content was stated originally. This controls escaping.
-	 * @param markSpecialChars if true, ampersand and newlines are marked as {@link #AMPERSAND_REPLACEMENT}
-	 *                         and {@link #NEWLINE_REPLACEMENT}.
+	 * @param markSpecialChars if true, ampersand and newlines are marked as {@link #AMPERSAND_PLACEHOLDER}
+	 *                         and {@link #NEWLINE_PLACEHOLDER}.
 	 * @return the content with links to archived versions instead of live web version.
 	 * @throws Exception generic Exception.
 	 */
@@ -276,8 +276,8 @@ public abstract class RewriterBase {
 	 * Escape the given content with regard to the packaging.
 	 * @param parseResult holds the content.
 	 * @param packaging   how the content is to be represented.
-	 * @param markSpecialChars if true, ampersand and newlines are marked as {@link #AMPERSAND_REPLACEMENT}
-	 *                         and {@link #NEWLINE_REPLACEMENT}.
+	 * @param markSpecialChars if true, ampersand and newlines are marked as {@link #AMPERSAND_PLACEHOLDER}
+	 *                         and {@link #NEWLINE_PLACEHOLDER}.
 	 */
 	public static void escapeContent(ParseResult parseResult, PACKAGING packaging, boolean markSpecialChars) {
 		if (parseResult.getReplaced() == null) {
@@ -285,18 +285,19 @@ public abstract class RewriterBase {
 		}
 		switch (packaging) {
 			case inline: {
-				parseResult.replace(ESCAPE2_PATTERN, ESCAPE2_REPLACEMENT);
-				parseResult.replace(ESCAPE_SLASH_PATTERN, ESCAPE_SLASH_REPLACEMENT);
+				parseResult.replace(ESCAPE2_PATTERN, ESCAPE2_PLACEHOLDER);
+				parseResult.replace(ESCAPE_SLASH_PATTERN, ESCAPE_SLASH_PLACEHOLDER);
 //				parseResult.replace(SLASH_PATTERN, SLASH_REPLACEMENT);
-				parseResult.replace(LT_PATTERN, LT_REPLACEMENT);
-				parseResult.replace(GT_PATTERN, GT_REPLACEMENT);
-				parseResult.replace(AMPERSAND_PATTERN, AMPERSAND_REPLACEMENT);
+// '<' and '>' unicode-escaping proved to introduce more errors than it fixed, so now we just preserve as-is
+				parseResult.replace(LT_PATTERN, LT_PLACEHOLDER);
+				parseResult.replace(GT_PATTERN, GT_PLACEHOLDER);
+				parseResult.replace(AMPERSAND_PATTERN, AMPERSAND_PLACEHOLDER);
 //				parseResult.setReplaced(COMMENT_PATTERN.matcher(parseResult.getReplaced()).replaceAll(COMMENT_REPLACEMENT_ENCODE)); // Must be before SLASH_PATTERN
 				break;
 			}
 			case attribute: {
 //				parseResult.setReplaced(SLASH_PATTERN.matcher(parseResult.getReplaced()).replaceAll(SLASH_REPLACEMENT));
-				parseResult.replace(ESCAPE_SLASH_PATTERN, ESCAPE_SLASH_REPLACEMENT);
+				parseResult.replace(ESCAPE_SLASH_PATTERN, ESCAPE_SLASH_PLACEHOLDER);
 				parseResult.setReplaced(LT_PATTERN.matcher(parseResult.getReplaced()).replaceAll(LT_REPLACEMENT));
 				parseResult.setReplaced(parseResult.getReplaced().replace("\"", "&quot;"));
 				break;
@@ -309,27 +310,29 @@ public abstract class RewriterBase {
 		}
 	}
 	static final Pattern AMPERSAND_PATTERN = Pattern.compile("[&]");
-	static final String AMPERSAND_REPLACEMENT ="_STYLE_AMPERSAND_REPLACE_";
+	static final String AMPERSAND_PLACEHOLDER ="_STYLE_AMPERSAND_REPLACE_";
 
 	static final Pattern ESCAPE2_PATTERN = Pattern.compile("[\\\\][\\\\]");
-	static final String ESCAPE2_REPLACEMENT ="_ESCAPE2_REPLACE_";
+	static final String ESCAPE2_PLACEHOLDER ="_ESCAPE2_REPLACE_";
 
 	static final Pattern ESCAPE_SLASH_PATTERN = Pattern.compile("[\\\\][/]");
-	static final String ESCAPE_SLASH_REPLACEMENT ="_ESCAPE_SLASH_REPLACE_";
+	static final String ESCAPE_SLASH_PLACEHOLDER ="_ESCAPE_SLASH_REPLACE_";
 
 	static final Pattern COMMENT_PATTERN = Pattern.compile("(//)(.*)");
-	static final String COMMENT_REPLACEMENT ="_COMMENT_REPLACE_";
+	static final String COMMENT_PLACEHOLDER ="_COMMENT_REPLACE_";
 	static final String COMMENT_REPLACEMENT_ENCODE ="_COMMENT_REPLACE_$2";
 
-	static final String NEWLINE_REPLACEMENT = "_REWRITER_NEWLINE_REPLACE_";
+	static final String NEWLINE_PLACEHOLDER = "_REWRITER_NEWLINE_REPLACE_";
 
 	static final Pattern SLASH_PATTERN = Pattern.compile("(\\\\)?(/[^/])");
 	static final String SLASH_REPLACEMENT = "\\\\$1$2";
 
 	static Pattern LT_PATTERN = Pattern.compile("<");
+	static final String LT_PLACEHOLDER = "_LESS_THAN_";
 	static final String LT_REPLACEMENT = "\\\\u003C"; // Why do we need double escape? (Unit tests shows we do)
 
 	static Pattern GT_PATTERN = Pattern.compile(">");
+	static final String GT_PLACEHOLDER = "_GREATER_THAN_";
 	static final String GT_REPLACEMENT = "\\\\u003E"; // Why do we need double escape? (Unit tests shows we do)
 
 	/**
@@ -339,11 +342,13 @@ public abstract class RewriterBase {
 	 * @return the String ready for external delivery.
 	 */
 	public static String unescape(String in) {
-		return in.replace(AMPERSAND_REPLACEMENT, "&").
-				replace(NEWLINE_REPLACEMENT, "\n").
-				replace(ESCAPE2_REPLACEMENT, "\\\\").
-				replace(ESCAPE_SLASH_REPLACEMENT, "\\/").
-				replace(COMMENT_REPLACEMENT, "//");
+		return in.replace(AMPERSAND_PLACEHOLDER, "&").
+				replace(NEWLINE_PLACEHOLDER, "\n").
+				replace(ESCAPE2_PLACEHOLDER, "\\\\").
+				replace(ESCAPE_SLASH_PLACEHOLDER, "\\/").
+				replace(COMMENT_PLACEHOLDER, "//").
+				replace(LT_PLACEHOLDER, "<").
+				replace(GT_PLACEHOLDER, ">");
 	}
 
 	/**
