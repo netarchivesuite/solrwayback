@@ -8,8 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -136,13 +138,30 @@ public class HtmlParserUrlRewriterTest {
                 RewriteTestHelper.createOXResolver(expectedNotFound >= 0));
 
         assertEquals("The result should be as expected for test '" + testPrefix + "'",
-                     expected, rewritten.getReplaced().replaceAll(" +\n", "\n"));
+                     normalise(expected), normalise(rewritten.getReplaced()));
         assertEquals("The number of replaced links should be as expected",
                      expectedReplaced, rewritten.getNumberOfLinksReplaced());
         if (expectedNotFound >= 0) {
             assertEquals("The number of not found links should be as expected",
                          expectedNotFound, rewritten.getNumberOfLinksNotFound());
         }
+    }
+
+    /**
+     * @param text multiline text.
+     * @return the text where leading and trailing spaces has been removed from all lines and empty lines
+     * has been removed.
+     */
+    private String normalise(String text) {
+        return Arrays.stream(
+                text.replace("> <!--", ">\n<!--") // JSoup won't put comments on their own lines
+                        .replace("</style> <a", "</style>\n<a") // JSoup strangeness with lines starting with <a...>
+                        .replace("</a> <a", "</a>\n<a")
+                        .replace("--> <a", "-->\n<a")
+                        .split("\n"))
+                .map(String::trim)
+                .filter(line -> !line.isEmpty())
+                .collect(Collectors.joining("\n"));
     }
 
     private void assertCount(String testPrefix, int expectedReplaced) throws Exception {
