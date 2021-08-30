@@ -1,10 +1,13 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class UrlUtils {
 
   
   public static void main(String[] args){
-   
+    
     //System.out.println(isUrlWithDomain("http://Portal_gfx/KL/farvepakker/topmenu/topmenu_markering_groen_mBo.gif"));
     System.out.println(getDomainFromWebApiParameters("http://teg-desktop.sb.statsbiblioteket.dk:8080/solrwayback/services/web/20071221033234/http://kl.dk/ncms.aspx?id=11fb172c-dbf2-4c58-bdf7-30f9cdfd4d95&menuid=361285"));
   }
@@ -20,7 +23,8 @@ public class UrlUtils {
     if (tokens.length < 3){ 
       return false;
     }
-    String domain = tokens[2];    
+   
+    //String domain = tokens[2];    
     
     return true;        
   }
@@ -62,6 +66,28 @@ public class UrlUtils {
    
  }
   
+ 
+ //Extract crawltime and url (after crawltime) from and url
+ //Example: https://solrwb-test.kb.dk:4000/solrwayback/services/web/20110225142047/http://www.bt.dk/debat
+ //Return [20110225142047],[http://www.bt.dk/debat]
+ //It pattern is not found return null; 
+  public static String[] getCrawltimeAndUrlFromWebProxyLeak(String fullUrl){          
+    Pattern p = Pattern.compile("^.+?/(\\d{14})/(.+)$");    
+        Matcher matcher1 = p.matcher(fullUrl);
+        if (matcher1.matches()) {
+          String[]  result= new String[2];
+          result[0]=matcher1.group(1);
+          result[1]=matcher1.group(2);          
+          return result;
+          
+          
+        }else {
+          return null;
+        }
+   
+ }
+ 
+ 
   /*
    * last path element wit query params as well.
    */
