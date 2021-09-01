@@ -719,13 +719,14 @@ public class Facade {
         throw new NotFoundServiceException("Could not find resource for leak:" + url);
     }
 
-    public static ArcEntry viewHtml(String source_file_path, long offset, IndexDoc doc, Boolean showToolbar) throws Exception {
+    
+    public static ArcEntry viewResource(String source_file_path, long offset, IndexDoc doc, Boolean showToolbar) throws Exception {
         if (showToolbar == null) {
             showToolbar = false;
         }
         ArcEntry arc = ArcParserFileResolver.getArcEntry(source_file_path, offset);
 
-        log.info("View html Warc content-type:" + arc.getContentType());
+        //log.debug("View html Warc content-type:" + arc.getContentType());
 
         String encoding = arc.getContentCharset();
 
@@ -744,11 +745,10 @@ public class Facade {
         } else if (doc.getType().equals("Jodel Post") || doc.getType().equals("Jodel Thread")) {
             JodelPlayback jodelPlayback = new JodelPlayback(arc, doc, showToolbar);
             return jodelPlayback.playback();
-        } else if ("Web Page".equals(doc.getType())
-                || ((300 <= doc.getStatusCode() && arc.getContentType() != null && arc.getContentType().equals("text/html")))) { // We still want the toolbar to
-                                                                                                                                 // show for http moved (302
-                                                                                                                                 // etc.)
-            HtmlPlayback htmlPlayback = new HtmlPlayback(arc, doc, showToolbar);
+        } else if ("Web Page".equals(doc.getType())|| ((300 <= doc.getStatusCode() && arc.getContentType() != null && arc.getContentType().equals("text/html")))) { 
+
+         // We still want the toolbar to show for http moved (302 etc.)         
+          HtmlPlayback htmlPlayback = new HtmlPlayback(arc, doc, showToolbar);
             return htmlPlayback.playback();
         } else if ("text/css".equals(arc.getContentType()) ) {
             CssPlayback cssPlayback = new CssPlayback(arc, doc, showToolbar); // toolbar is never shown anyway.
