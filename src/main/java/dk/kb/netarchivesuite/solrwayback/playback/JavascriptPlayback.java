@@ -20,7 +20,7 @@ public class JavascriptPlayback  extends PlaybackHandler{
   public ArcEntry playback() throws Exception{    
     //Never show the toolbar.
       arc.setBinary(IOUtils.toByteArray(arc.getBinaryContentAsStringUnCompressed())); //TODO charset;
-      log.info("javascript playback");
+      //log.debug("javascript playback");
       
       
     String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);                
