@@ -710,15 +710,15 @@ public class NetarchiveSolrClient {
         if (url == null || timeStamp == null) {
             throw new IllegalArgumentException("harvestUrl or timeStamp is null"); // Can happen for url-rewrites that are not corrected
         }
-
+        //log.info("sort time:"+timeStamp + " url:"+url);
         // normalize will remove last slash if not slashpage
         boolean slashLast = url.endsWith("/");
 
         String urlNormFixed = normalizeUrl(url);
         urlNormFixed = urlNormFixed.replace("\\", "\\\\"); // Solr encoded
-        String query = "url_norm:\"" + urlNormFixed + "\"";
+        String query = "url_norm:\"" + urlNormFixed + "\" AND status_code:200";
 
-        log.info("query:" + query);
+       //log.debug("query:" + query);
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 
@@ -1275,8 +1275,10 @@ public class NetarchiveSolrClient {
         solrNS += System.nanoTime();
         String query = solrQuery.getQuery();
         query = query == null ? null : query.length() > 200 ? query.substring(0, 200) + "..." : query;
+/*
         log.debug(String.format("%s Solr response in %d ms (qtime=%d ms) with %d hits for query %s", caller, solrNS / M, rsp.getQTime(),
                 rsp.getResults().getNumFound(), query));
+  */
         return rsp;
     }
     
