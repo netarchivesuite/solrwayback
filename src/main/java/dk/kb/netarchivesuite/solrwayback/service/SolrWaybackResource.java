@@ -224,7 +224,7 @@ public class SolrWaybackResource {
             IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
 
             //is this the case for all images and binaries etc?
-            log.info("No content charset in warc-header, using full contentType from tika:"+doc.getContentType() + " for  "+source_file_path +" offset:"+offset +" content-type:"+doc.getContentType());            
+            //log.debug("No content charset in warc-header, using full contentType from tika:"+doc.getContentType() + " for  "+source_file_path +" offset:"+offset +" content-type:"+doc.getContentType());            
             contentType=doc.getContentType(); 
         }               
         response= Response.ok((Object) in).type(contentType);          
@@ -383,7 +383,7 @@ public class SolrWaybackResource {
   @GET
   @Path("/notfound")    
   public Response notfound() throws SolrWaybackServiceException {                      
-    log.info("not found called");
+//    log.debug("not found called");
     throw new NotFoundServiceException("");                  
   }
 
@@ -401,9 +401,7 @@ public class SolrWaybackResource {
 
 
   /*
-   * Almost the same as the '/web/' method.
-   * But this method is only called from proxy direct. Do not include toolbar.
-   * Also knowing it is from proxy can be used to improve playback even more. (TODO)  
+   * TODO remove this method and replace with the webProxyLeak method?    
    * 
    */
   @GET
@@ -444,6 +442,72 @@ public class SolrWaybackResource {
 
   }
 
+  
+  /* Called from sw.js (serviceworker).
+   * It is called when a resource leaks to the domain without the /solrwayback/ contextroot.
+   * 
+   * The referer url can be playback API (often HTML page) or warcfile+offs (javascript or CSS)
+   *    
+   */
+  @GET
+  @Path("/webProxyLeak/{path:.+}")
+  public Response webProxyLeak(@Context UriInfo uriInfo,  @Context HttpServletRequest httpRequest, @PathParam("path") String path) throws SolrWaybackServiceException {
+    try {        
+      //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
+     // log.info("/webProxyLeak called with data:"+path);
+      String fullUrl = uriInfo.getRequestUri().toString();      
+     
+      int dataStart=fullUrl.indexOf("/webProxyLeak/");      
+      String urlData = fullUrl.substring(dataStart+14);
+      
+      //log.info("WebProxyLeak urldata:"+urlData);// example https://solrwaybackserver:4000/sites/all/images/horse.png;      
+      String copiedReferer = httpRequest.getHeader("serviceworker_referer"); //The serviceworker will set this header with the original referer      
+      //log.info("WebProxyLeak referer:"+copiedReferer);
+      
+      
+      String solrwaybackServer=PropertiesLoader.WAYBACK_BASEURL.replace("/solrwayback/", "");
+      if (!urlData.startsWith( solrwaybackServer)){
+        log.error("WebProxyLeak does not originate from solrwayback server:"+urlData);
+        return notfound();        
+      }
+            
+      //This is the relative url that needs to be resolved from the referer
+      String leakUrlPart=urlData.substring(solrwaybackServer.length()); 
+      //log.info("webProxyLeak leakUrlPart:"+leakUrlPart);
+      
+      Map<String, String> queryMap = getQueryMap(copiedReferer);
+      String source_file_path = queryMap.get("source_file_path");      
+      String offsetStr = queryMap.get("offset");
+      
+      if (source_file_path != null || offsetStr !=  null){
+        //log.info("webProxyLeak got offset+warc");
+        return viewFromLeakedResource(source_file_path, Long.parseLong(offsetStr), leakUrlPart);
+      }
+
+      String[] timeAndUrl = UrlUtils.getCrawltimeAndUrlFromWebProxyLeak(copiedReferer);
+      if (timeAndUrl == null) { //Should not happen
+        log.error("Can not find warc/offset or crawltime/url from ServiceWorker referer:"+copiedReferer);
+        return notfound();
+      }
+      String crawlTime =  timeAndUrl[0];
+      String orgUrl =  timeAndUrl[1];
+      
+      URL base = new URL( orgUrl);
+      String resolvedUrl = new URL(base ,leakUrlPart).toString();
+      log.info("webProxyLeak should be located at:"+resolvedUrl);          
+      
+      String solrDate = DateUtils.convertWaybackDate2SolrDate(crawlTime);
+      
+      return viewhref(resolvedUrl, solrDate, false);     
+                     
+    } catch (Exception e) {
+      throw handleServiceExceptions(e);
+    }
+
+  }
+
+  
+  
   /*
    * '/web/' is the same as wayback machine uses. 
    * 
@@ -454,14 +518,14 @@ public class SolrWaybackResource {
   public Response waybackAPIResolver(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("path") String path) throws SolrWaybackServiceException {
     try {        
       //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
-      log.info("/web/ called with data:"+path);
+      log.debug("/web/ called with data:"+path);
       String fullUrl = uriInfo.getRequestUri().toString();
-      log.info("full url:"+fullUrl);
+//   log.info("full url:"+fullUrl);
      
       int dataStart=fullUrl.indexOf("/web/");
       
       String waybackDataObject = fullUrl.substring(dataStart+5);
-      log.info("Waybackdata object:"+waybackDataObject);
+      //log.info("Waybackdata object:"+waybackDataObject);
 
       int indexFirstSlash = waybackDataObject.indexOf("/");  
              
@@ -513,14 +577,16 @@ public class SolrWaybackResource {
           String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+htmlPageCrawlDate+"/"+url;
           log.info("Forwarding html view to a url where crawldate matches html crawltime. url crawltime:"+htmlPageCrawlDate +" true crawl:"+htmlPageCrawlDate);
           newUrl = newUrl.replace("|", "%7C");//For some unknown reason Java does not accept |, must encode.
+          newUrl = newUrl.replace("%2f", "/"); // or url will not match Rest pattern for method. (not clear why)
+          newUrl = newUrl.replace("%2F", "/"); // or url will not match Rest pattern for method. (not clear why)
+          
           URI uri =new URI(newUrl);
           log.info("new url:"+newUrl);
           return Response.seeOther( uri ).build(); //Jersey way to forward response.
         }
       //END BLOCK
-      
-     
-      log.info("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
+           
+      //log.debug("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
           
       Response viewImpl = viewImpl(doc.getSource_file_path() , doc.getOffset(),true);                                   
       
@@ -621,8 +687,8 @@ public class SolrWaybackResource {
       int leakUrlIndex=leakUrlStr.indexOf("/services/");
       String leakUrlPart=leakUrlStr.substring(leakUrlIndex+10);
       long offset=Long.parseLong(offsetStr);      
-      log.info("leakurlStr:"+leakUrlStr);
-      log.info("leakurlParth:"+leakUrlPart);      
+      //log.info("leakurlStr:"+leakUrlStr);
+      //log.info("leakurlPart:"+leakUrlPart);      
       log.info("forwaring to view From leakedResource:"+source_file_path +" offset:"+offset +" leakPart:"+leakUrlPart);
       return viewFromLeakedResource(source_file_path, offset, leakUrlPart);
       
@@ -651,6 +717,9 @@ public class SolrWaybackResource {
      //Format is: /web/20080331193533/http://ekstrabladet.dk/112/article990050.ece 
       String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+url;
       newUrl = newUrl.replace("|", "%7C");//For some unknown reason Java does not accept |, must encode.
+      newUrl = newUrl.replace("%2f", "/"); // or url will not rest Rest pattern for method. (not clear why)
+      newUrl = newUrl.replace("%2F", "/"); // or url will not rest Rest pattern for method. (not clear why)
+      
       //Below is for Open wayback at KB
     // String newUrl="http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url="+url+"&time="+waybackDate;
       //http://kb-test-way-001.kb.dk:8082/jsp/QueryUI/Redirect.jsp?url=http%3A%2F%2Fwww.stiften.dk%2F&time=20120328044226
@@ -690,8 +759,7 @@ public class SolrWaybackResource {
   
   
   @GET
-  @Path("/view")
-  
+  @Path("/view") 
   public Response view(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws SolrWaybackServiceException {
     try {
 
@@ -741,15 +809,15 @@ public class SolrWaybackResource {
       return redirect;
     }
     
-    ArcEntry arcEntry= Facade.viewHtml(source_file_path, offset, doc, showToolbar);
+    ArcEntry arcEntry= Facade.viewResource(source_file_path, offset, doc, showToolbar);
     
     
     String contentType = arcEntry.getContentType();
     
     
-    log.info("warc content charset:"+arcEntry.getContentCharset() +" warc content type:"+arcEntry.getContentType());
+   // log.debug("warc content charset:"+arcEntry.getContentCharset() +" warc content type:"+arcEntry.getContentType());
    if (contentType ==  null){    
-    log.warn("no contenttype, using content_type from tika:"+doc.getContentType());
+    //log.debug("no contenttype, using content_type from tika:"+doc.getContentType());
     contentType=doc.getContentType(); 
    }   
    if (arcEntry.getContentCharset() != null){
@@ -759,7 +827,7 @@ public class SolrWaybackResource {
      contentType=doc.getContent_type_full();     
    }     
     //ResponseBuilder response = Response.ok((Object) in).type(contentType+"; charset="+arcEntry.getContentEncoding());                 
-   log.info("setting contentype:"+contentType);
+   //log.debug("setting contentype:"+contentType);
 //          
    
    InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
@@ -794,7 +862,7 @@ public class SolrWaybackResource {
         throw new NotFoundServiceException("Url has never been harvested:"+url);
       }
 
-      log.info("Closest harvest to: " +crawlDate +" is "+indexDoc.getCrawlDate());
+      //log.debug("Closest harvest to: " +crawlDate +" is "+indexDoc.getCrawlDate());
       return view(indexDoc.getSource_file_path(),indexDoc.getOffset(),showToolbar);
 
     } catch (Exception e) {
@@ -850,8 +918,7 @@ public class SolrWaybackResource {
       } 
     
       int index = url.indexOf("?");
-       if(index == -1){
-         log.warn("no paramters for url:"+url);         
+       if(index == -1){                 
          return new HashMap<String, String>();
        }
        
