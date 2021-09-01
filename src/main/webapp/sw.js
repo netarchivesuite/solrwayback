@@ -29,7 +29,7 @@ else if(!destination_url.startsWith(solrwayback_server) && referer_solrwayback_u
      //console.log('SolrWayback serviceworker blocking request. Referer does not contain solrwayback url part:'+referer_url +" for destination url:"+destination_url);	 	 	 
 	 //event.respondWith(fetch(NOT_FOUND));
      //or redirect to latests.
-	 crawltime_hardcoded =crawltime_hardcoded =getYearCrawlDate();
+	 crawltime_hardcoded =getYearCrawlDate();
 	 newUrl = solrwayback_url+'/services/web/'+crawltime_hardcoded+'/'+destination_url;                 	 
      console.log('SolrWayback serviceworker forwarding live leak url to (crawltime is latest):'+newUrl);	 
      event.respondWith(fetch(newUrl));          
