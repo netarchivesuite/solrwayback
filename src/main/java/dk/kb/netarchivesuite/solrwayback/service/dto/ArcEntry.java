@@ -412,7 +412,8 @@ public void setFormat(FORMAT format) {
           break;
       }
       if (pos == 0 || pos > 8) {
-          log.debug("maybeDechunk found " + pos + " hex digits: Not a chunked stream, returning content as-is");
+
+        //log.debug("maybeDechunk found " + pos + " hex digits: Not a chunked stream, returning content as-is");
           buf.reset();
           return buf;
       }
@@ -471,8 +472,10 @@ public void setFormat(FORMAT format) {
                    ") but expected CRLF. This is likely chunking delivered by a non-standard compliant server." +
                    " The de-chunker is not lenient and will return the stream as-is");
       } else {
-          log.info("maybeDechunk found hex digits but could not locate CRLF. Instead it found 0x" +
+        /*  
+        log.debug("maybeDechunk found hex digits but could not locate CRLF. Instead it found 0x" +
                    Integer.toHexString(c) + ": Not a chunked stream, returning content as-is for");
+                   */
       }
       buf.reset();
       return buf;
