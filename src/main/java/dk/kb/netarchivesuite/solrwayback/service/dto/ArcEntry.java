@@ -365,8 +365,7 @@ public void setFormat(FORMAT format) {
   
   private InputStream maybeUnzip(InputStream before) throws Exception{
       if ("gzip".equalsIgnoreCase(contentEncoding) || "x-gzip".equalsIgnoreCase(contentEncoding)) {
-          this.setContentEncoding("identity");
-          log.info("uunzip");
+          this.setContentEncoding("identity");          
           return new GZIPInputStream(before);
           
       }
