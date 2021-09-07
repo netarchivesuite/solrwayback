@@ -5,7 +5,7 @@ a) The SolrWaybackRoot-servlet application is no longer required if te Servicewo
 b) In rare cases referer is missing so crawltime for the origin resource is unknown. As a default it uses current year as crawltime. This situation is often not relevant for playback since the requests goes to trackers or ads.
 
 Cleaned up in logging to the solrwayback.log file. It should not be as spammy now.
-   
+Upgraded frontend depencencies (security updates).   
 
 4.2.0
 -----
