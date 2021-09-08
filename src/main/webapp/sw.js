@@ -1,5 +1,5 @@
 /*
- * The serviceworker will intercept all traffic and redirect live leaks back into SolrWayback.
+ * The serviceworker will intercept all traffic and redirect live leaks back into SolrWayback. 
  * 
  * There are two types of leaks:
  * 1) Live leak to another domain than the solrwayback server. Live leaks to openstreepmap is allowed because it is used in location search from the GUI.
