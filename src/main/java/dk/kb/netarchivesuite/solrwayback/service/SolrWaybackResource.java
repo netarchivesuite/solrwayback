@@ -882,11 +882,7 @@ public class SolrWaybackResource {
   @Path("/resolveLeak")
   public Response proxy(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) throws Exception {
     try {
-      
-
-      // refererUrl="http://teg-desktop.sb.statsbiblioteket.dk:8080/solrwayback/services/view?source_file_path=/media/teg/1200GB_SSD/netarkiv/warcs/solrwayback_2018-08-27-13-29-21.warc&offset=1226957110";
-      // leakUrl= "http://localhost:8080/images/leaked.png?test=123";      
-            
+                  
       String leakUrl = httpRequest.getParameter("url");
       log.info("Resolve leak called for url:"+leakUrl);
       
