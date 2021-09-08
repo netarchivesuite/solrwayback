@@ -63,11 +63,11 @@ self.addEventListener('fetch', function(event) {
 	}
 	else{ //Sometimes referer is just the domain and not the full url. Hardcode crawltime
 		 web_start = referer_url.indexOf('/services/web/'); 	
-		 if(web_start== -1 ){	 			
-	         crawltime_hardcoded =getYearCrawlDate();
-	         newUrl = solrwayback_url+'/services/web/'+crawltime_hardcoded+'/'+destination_url;                 	 
-		     console.log('SolrWayback Serviceworker forwarding live leak url to (crawltime is latest):'+newUrl);	 
-		     event.respondWith(fetch(newUrl));
+         if(web_start== -1 ){	 			
+             crawltime_hardcoded =getYearCrawlDate();
+             newUrl = solrwayback_url+'/services/web/'+crawltime_hardcoded+'/'+destination_url;                 	 
+             console.log('SolrWayback Serviceworker forwarding live leak url to (crawltime is latest):'+newUrl);	 
+             event.respondWith(fetch(newUrl));
 		 }
 		 else{ //Most common case: Forward the live leak back into solrwayback. This live leak has been patched perfectly.
 	       crawltime= referer_url.substring(web_start+14, web_start+28);
