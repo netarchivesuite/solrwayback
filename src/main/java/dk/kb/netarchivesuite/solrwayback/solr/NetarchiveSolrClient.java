@@ -967,7 +967,7 @@ public class NetarchiveSolrClient {
     }
 
   public String searchJsonResponseOnlyFacetsLoadMore( String query, List<String> fq, String facetField, boolean revisits) throws Exception {
-      log.info("Solr query(load more from facet): "+query +" fg:"+fq+ "revisits:"+revisits +" facetField:"+facetField);
+      log.info("Solr query(load more from facet): "+query +" fg:"+fq+ " revisits:"+revisits +" facetField:"+facetField);
 
       if (!PropertiesLoaderWeb.FACETS.contains(facetField)){
           throw new IllegalArgumentException("Facet not allowed on field:"+facetField);
