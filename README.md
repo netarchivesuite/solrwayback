@@ -104,6 +104,10 @@ The API for linking to and browsing archived webpages is the same as for Interne
  
 
 ## Improving playback with the SolrWayback Root servlet
+For moderne browsers that supports Serviceworkers, the root servlet will be obsolete. But for better playback in legacy browsers, the
+root servlet can improve the playbackback. See https://caniuse.com/serviceworkers if the browser supports serviceworkers.
+
+
 Installing the root-servlet will improve playback of sites that are leaking URLs. The root-servlet will
 catch relative leaks (same domain) even without using proxy mode. The leaks will then be redirected back into SolrWayback to the correct URL and crawltime.
 The root-servlet is included in the bundle install. In Tomcat it must be named ROOT.war.
