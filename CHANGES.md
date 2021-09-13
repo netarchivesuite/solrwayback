@@ -1,7 +1,7 @@
 4.2.1
 -----
 Further improvements in serviceworker:
-a) The SolrWaybackRoot-servlet application is no longer required if te Serviceworker is loaded. For legacy browsers where servicerworker does not work, the root servlet will required for improved playback.
+a) The SolrWaybackRoot-servlet application is no longer required if the Serviceworker is loaded. For legacy browsers where servicerworker does not work, the root servlet will required for improved playback.
 b) In rare cases referer is missing so crawltime for the origin resource is unknown. As a default it uses current year as crawltime. This situation is often not relevant for playback since the requests often are to trackers and adds.
 
 Cleaned up in logging to the solrwayback.log file. It should not be as spammy now.
