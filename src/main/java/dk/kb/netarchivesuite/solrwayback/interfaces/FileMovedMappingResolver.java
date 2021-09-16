@@ -53,12 +53,13 @@ public class FileMovedMappingResolver implements ArcFileLocationResolverInterfac
     public void initialize() {            
         log.info("Initialising FileMovedMappingResolver from file:"+mappingFile);
                 
+
         //read file and parse each line 
         try (Stream<String> stream = Files.lines(Paths.get(mappingFile))) {
-          stream.forEach((k) -> {
-          File file = new File(k);          
-          FILE_MAP.put(file.getName(), file.getParent());                              
-        });
+           stream.forEach((k) -> {
+           File file = new File(k);          
+           FILE_MAP.put(file.getName(), file.getParent());                              
+          });
             
         } catch (IOException e) {
            log.error("Error parsing file:"+mappingFile, e);
@@ -74,8 +75,11 @@ public class FileMovedMappingResolver implements ArcFileLocationResolverInterfac
         String fileName = new File(source_file_path).getName();
         String value=FILE_MAP.get(fileName);
         if(value == null) {
+       // log.info("File location not moved:"+source_file_path);
           return source_file_path; //Use original location
         }
+        
+       // log.info("File location moved:"+source_file_path +" ->" + value+"/"+fileName);
         return value+"/"+fileName;
       }
 
