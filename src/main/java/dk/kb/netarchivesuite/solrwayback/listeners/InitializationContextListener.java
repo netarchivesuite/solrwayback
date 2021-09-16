@@ -29,9 +29,6 @@ public class InitializationContextListener implements ServletContextListener {
         Properties props = new Properties();
         try {
           
-          
-          
-          
             String webbAppContext = event.getServletContext().getContextPath();                    
             props.load(InitializationContextListener.class.getResourceAsStream("/build.properties"));
             version = props.getProperty("APPLICATION.VERSION");
@@ -71,20 +68,21 @@ public class InitializationContextListener implements ServletContextListener {
             // initialise the solrclient
             NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
             
-            //Load the warcfilelocation resolver.                        
+            //Load the warcfilelocation resolver, set optional parameter and initialize                       
             String arcFileResolverClass = PropertiesLoader.WARC_FILE_RESOLVER_CLASS;
             if (arcFileResolverClass != null){            
-            Class c = Class.forName(arcFileResolverClass);                               
-            Constructor constructor = c.getConstructor(); //Default constructor, no arguments
-            ArcFileLocationResolverInterface resolverImpl= (ArcFileLocationResolverInterface) constructor.newInstance();          
-            ArcParserFileResolver.setArcFileLocationResolver(resolverImpl); //Set this on the Facade
-            log.info("Using warc-file-resolver implementation class:"+arcFileResolverClass);
+              Class c = Class.forName(arcFileResolverClass);                               
+              Constructor constructor = c.getConstructor(); //Default constructor, no arguments
+              ArcFileLocationResolverInterface resolverImpl= (ArcFileLocationResolverInterface) constructor.newInstance();          
+              resolverImpl.setParameters(PropertiesLoader.WARC_FILE_RESOLVER_PARAMETERS); //Interfaces can have custom parameter
+              resolverImpl.initialize();        
+              ArcParserFileResolver.setArcFileLocationResolver(resolverImpl); //Set this on the Facade
+              log.info("Using warc-file-resolver implementation class:"+arcFileResolverClass);
             }
             else{
               log.info("Using default warc-file-resolver implementation");
             }
-            
-            
+                        
             //TODO Delete code later. this is just a backup implementation 
             /* This works with socks 5 
             new Thread(new Runnable() {
@@ -93,7 +91,6 @@ public class InitializationContextListener implements ServletContextListener {
               }
              }).start();
             */
-                      
                        
             log.info("solrwayback version " + version + " started successfully");
 

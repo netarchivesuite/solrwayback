@@ -10,5 +10,14 @@ public class IdentityArcFileResolver implements ArcFileLocationResolverInterface
   public String resolveArcFileLocation(String source_file_path) {        
     return source_file_path;
   }
-
+  @Override
+  public void setParameters(String parameters) {
+    //Does not use parameters
+  }
+  
+  @Override
+  public void initialize() {
+    // do noting
+  }
+  
 }

@@ -21,6 +21,7 @@ public class PropertiesLoader {
     private static final String DEFAULT_PROPERTY_FILE = "solrwayback.properties";
     private static final String SOLR_SERVER_PROPERTY="solr.server";
     private static final String WARC_FILE_RESOLVER_CLASS_PROPERTY="warc.file.resolver.class";
+    private static final String WARC_FILE_RESOLVER_PARAMETERS_PROPERTY="warc.file.resolver.parameters";
     private static final String WAYBACK_BASEURL_PROPERTY="wayback.baseurl";
     private static final String CHROME_COMMAND_PROPERTY="chrome.command";
     private static final String SCREENSHOT_TEMP_IMAGEDIR_PROPERTY="screenshot.temp.imagedir";
@@ -41,6 +42,7 @@ public class PropertiesLoader {
     public static String CHROME_COMMAND= null;
     public static String SCREENSHOT_TEMP_IMAGEDIR = null;
     public static String WARC_FILE_RESOLVER_CLASS = null;
+    public static String WARC_FILE_RESOLVER_PARAMETERS= null;
     public static String PID_COLLECTION_NAME = null;
     public static String WORDCLOUD_STOPWORDS;
     
@@ -84,6 +86,7 @@ public class PropertiesLoader {
             SCREENSHOT_TEMP_IMAGEDIR = serviceProperties.getProperty(SCREENSHOT_TEMP_IMAGEDIR_PROPERTY);
             WARC_FILE_RESOLVER_CLASS = serviceProperties.getProperty(WARC_FILE_RESOLVER_CLASS_PROPERTY);
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
+            WARC_FILE_RESOLVER_PARAMETERS= serviceProperties.getProperty(WARC_FILE_RESOLVER_PARAMETERS_PROPERTY);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
             String legacyUrlNormalizer  = serviceProperties.getProperty(WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY);
             
@@ -113,9 +116,11 @@ public class PropertiesLoader {
             log.info("Property:"+ SCREENSHOT_TEMP_IMAGEDIR_PROPERTY +" = " + SCREENSHOT_TEMP_IMAGEDIR);
             log.info("Property:"+ SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY +" = " +  SCREENSHOT_PREVIEW_TIMEOUT);
             log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);            
+            log.info("Property:"+ WARC_FILE_RESOLVER_PARAMETERS_PROPERTY +" = " + WARC_FILE_RESOLVER_PARAMETERS);
             log.info("Property:"+ WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY +" = " +  WARC_INDEXER_URL_NORMALIZER_LEGACY);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
-                        
+           
+            
             log.info("Property:"+ SOLR_SERVER_CACHING_PROPERTY +" = " +  SOLR_SERVER_CACHING);
             log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);                        
