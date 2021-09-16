@@ -1,3 +1,7 @@
+4.2.2
+-----
+
+
 4.2.1
 -----
 Further improvements in serviceworker:
