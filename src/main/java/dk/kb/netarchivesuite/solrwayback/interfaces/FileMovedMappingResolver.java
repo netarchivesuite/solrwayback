@@ -65,7 +65,9 @@ public class FileMovedMappingResolver implements ArcFileLocationResolverInterfac
            log.error("Error parsing file:"+mappingFile, e);
            log.error("Failed initializing FileMovedMappingResolver");
         }         
-      }
+
+       log.info("Initialized success. Number of moved files in map:"+FILE_MAP.size());
+    }
   
       //Return the filelocation if filename is found in the mapping file. 
       //If the filename is not found in the mapping, return the input back.
