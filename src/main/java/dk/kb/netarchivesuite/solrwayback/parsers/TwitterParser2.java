@@ -20,6 +20,7 @@ public class TwitterParser2 {
 
 	private String author;
 	private String screenName;
+	private String originalAuthor;
 	private String text;
 	private boolean retweet = false;
 	private Date createdDate;
@@ -51,29 +52,32 @@ public class TwitterParser2 {
 		this.numberOfRetweets = Integer.parseInt(JsonUtils.getValue(twitterJson, "retweet_count"));
 		this.numberOfFriends = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.friends_count"));
 		this.verified = Boolean.parseBoolean(JsonUtils.getValue(twitterJson, "user.verified"));
-		
-
-		HashSet<String> hashTagsvalues = new HashSet<String>();
-		JsonUtils.addAllValues(twitterJson, hashTagsvalues, "extended_tweet.entities.hashtags[].text");
-		JsonUtils.addAllValues(twitterJson, hashTagsvalues, "entities.hashtags[].text");
-		hashTags = hashTagsvalues;
-		
-		HashSet<String> media_urls = new HashSet<String>();
-		//TODO also HTTPs version?
-		JsonUtils.addAllValues(twitterJson,  media_urls , "retweeted_status.extended_tweet.entities.media[].media_url");
-		JsonUtils.addAllValues(twitterJson,  media_urls , "extended_tweet.entities.media[].media_url");
-		JsonUtils.addAllValues(twitterJson,  media_urls , "entities.media[].media_url");
-		imageUrlsList=media_urls;
-						
-		this.text=JsonUtils.getValueIfExistsByPriority(twitterJson, "extended_tweet.full_text", "text");
-		
-		
-		// getValueIfExistsByPriority(twitterJson,"entities.user_mentions[].screen_name",
-		// "extended_tweet.entities.user_mentions[].screen_name");
 
 		if (twitterJson.has("retweeted_status")) {
 			this.retweet = true;
 		}
+
+		hashTags= new HashSet<>();
+		if (isRetweet()) {
+			this.text = JsonUtils.getValueIfExistsByPriority(twitterJson,
+					"retweeted_status.extended_tweet.full_text", "retweeted_status.text");
+			this.originalAuthor = JsonUtils.getValue(twitterJson, "retweeted_status.user.screen_name");
+			JsonUtils.addAllValues(twitterJson, hashTags, "retweeted_status.extended_tweet.entities.hashtags[].text");
+		} else {
+			this.text = JsonUtils.getValueIfExistsByPriority(twitterJson, "extended_tweet.full_text", "text");
+			JsonUtils.addAllValues(twitterJson, hashTags, "extended_tweet.entities.hashtags[].text");
+			JsonUtils.addAllValues(twitterJson, hashTags, "entities.hashtags[].text");
+		}
+
+		HashSet<String> media_urls = new HashSet<>();
+		//TODO also HTTPs version?
+		JsonUtils.addAllValues(twitterJson, media_urls, "retweeted_status.extended_tweet.entities.media[].media_url");
+		JsonUtils.addAllValues(twitterJson, media_urls, "extended_tweet.entities.media[].media_url");
+		JsonUtils.addAllValues(twitterJson, media_urls, "entities.media[].media_url");
+		imageUrlsList=media_urls;
+
+		// getValueIfExistsByPriority(twitterJson,"entities.user_mentions[].screen_name",
+		// "extended_tweet.entities.user_mentions[].screen_name");
 
 		String createdAtStr = JsonUtils.getValue(twitterJson, "created_at");
 		this.createdDate = parseTwitterDate(createdAtStr);
@@ -89,6 +93,10 @@ public class TwitterParser2 {
 		return screenName;
 	}
 
+
+	public String getOriginalAuthor() {
+		return originalAuthor;
+	}
 
 	public String getText() {
 		return text;
@@ -176,5 +184,4 @@ public class TwitterParser2 {
 		}
 
 	}
-
 }

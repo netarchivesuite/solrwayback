@@ -82,7 +82,7 @@ public class JsonUtils {
 	 * Will call the getValue method with each of the paths elements one by one.
 	 * Return first value it finds this way
 	 */
-	public static  String getValueIfExistsByPriority(JSONObject json, String... paths) {
+	public static String getValueIfExistsByPriority(JSONObject json, String... paths) {
 		for (String path : paths) {
 			String value = getValue(json, path);
 			if (value != null) {
@@ -92,7 +92,7 @@ public class JsonUtils {
 		return null; // none of the paths found a value
 	}
 
-	public static  JSONObject getSubObjectIfExists(JSONObject json, String subJsonObject) {
+	public static JSONObject getSubObjectIfExists(JSONObject json, String subJsonObject) {
 		try {
 			return json.getJSONObject(subJsonObject);
 		} catch (Exception e) {
