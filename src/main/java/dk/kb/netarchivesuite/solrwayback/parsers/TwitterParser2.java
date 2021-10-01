@@ -51,6 +51,7 @@ public class TwitterParser2 {
 		String parsePrefix = retweet ? "retweeted_status." : "";
 		this.originalAuthor = JsonUtils.getValue(twitterJson, parsePrefix + "user.screen_name");
 
+		// Usually, longer tweets contain the 'extended_tweet' keyword while short tweets do without it
 		this.text = JsonUtils.getValueIfExistsByPriority(twitterJson, parsePrefix + "extended_tweet.full_text", parsePrefix + "text");
 		this.numberOfLikes = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "favorite_count"));
 		this.numberOfRetweets = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "retweet_count"));
@@ -58,12 +59,13 @@ public class TwitterParser2 {
 		this.numberOfReplies = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "reply_count")); // TODO when to use this?
 
 		//TODO also HTTPs version?
+		// TODO RBKR - pretty sure retweets will always have 'extended_tweet', so probably doesn't make sense to add prefix to short standard tweets
+		JsonUtils.addAllValues(twitterJson, hashTags, parsePrefix + "entities.hashtags[].text");
 		JsonUtils.addAllValues(twitterJson, hashTags, parsePrefix + "extended_tweet.entities.hashtags[].text");
-		// JsonUtils.addAllValues(twitterJson, hashTags, "entities.hashtags[].text"); Necessary ?
-		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "extended_tweet.extended_entities.media[].media_url");
-		// TODO RBKR Not sure if simple 'entities' is needed but pretty sure I encountered a tweet's json without 'extended_entities'
+		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "entities.media[].media_url");
 		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "extended_tweet.entities.media[].media_url");
-		//JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "entities.media[].media_url");
+		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "extended_tweet.extended_entities.media[].media_url");
+		JsonUtils.addAllValues(twitterJson, mentions, parsePrefix + "entities.user_mentions[].screen_name");
 		JsonUtils.addAllValues(twitterJson, mentions, parsePrefix + "extended_tweet.entities.user_mentions[].screen_name");
 
 		// TODO add support for quotes?
