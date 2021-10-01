@@ -2,7 +2,6 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
@@ -16,14 +15,14 @@ public class TwitterParser2 {
 
 	private static final Logger log = LoggerFactory.getLogger(TwitterParser2.class);
 
-	private JSONObject twitterJson;
+	private final JSONObject twitterJson;
 
 	private String author;
 	private String screenName;
-	private String originalAuthor;
-	private String text;
+	private final String originalAuthor;
+	private final String text;
 	private boolean retweet = false;
-	private Date createdDate;
+	private final Date createdDate;
 	private String profileImage;
 	private String userDescription;
 	private boolean verified;
@@ -33,52 +32,57 @@ public class TwitterParser2 {
 	private HashSet<String> hashTags = new HashSet<>();
 	private HashSet<String> mentions = new HashSet<>();
 
-	private int numberOfLikes = 0;// favorites
-	private int numberOfRetweets = 0;
-	private int numberOfReplies = 0; // mentions ?
-	private int numberOfFollows = 0;
-	private int numberOfFriends = 0;
+	private final int numberOfLikes; // "favorites"
+	private final int numberOfRetweets;
+	private final int numberOfReplies;
+	private int numberOfFollowers;
+	private int numberOfFriends;
+	private final int numberOfQuotes;
 
 	public TwitterParser2(String twitterJsonString) {
 		this.twitterJson = new JSONObject(twitterJsonString);
-
-		this.author = JsonUtils.getValue(twitterJson, "user.name"); // always exists
-		this.screenName = JsonUtils.getValue(twitterJson, "user.screen_name");
-		this.profileImage = JsonUtils.getValue(twitterJson, "user.profile_image_url"); // always exists
-		this.userDescription = JsonUtils.getValue(twitterJson, "user.description"); // always exists
-
-		this.numberOfFollows = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.followers_count"));
-		this.numberOfLikes = Integer.parseInt(JsonUtils.getValue(twitterJson, "favorite_count"));
-		this.numberOfRetweets = Integer.parseInt(JsonUtils.getValue(twitterJson, "retweet_count"));
-		this.numberOfFriends = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.friends_count"));
-		this.verified = Boolean.parseBoolean(JsonUtils.getValue(twitterJson, "user.verified"));
 
 		if (twitterJson.has("retweeted_status")) {
 			this.retweet = true;
 		}
 
-		if (isRetweet()) {
-			this.text = JsonUtils.getValueIfExistsByPriority(twitterJson,
-					"retweeted_status.extended_tweet.full_text", "retweeted_status.text");
-			this.originalAuthor = JsonUtils.getValue(twitterJson, "retweeted_status.user.screen_name");
+		parseUserInfo();
 
-			JsonUtils.addAllValues(twitterJson, hashTags, "retweeted_status.extended_tweet.entities.hashtags[].text");
-			JsonUtils.addAllValues(twitterJson, imageUrlsList, "retweeted_status.extended_tweet.entities.media[].media_url");
-			JsonUtils.addAllValues(twitterJson, imageUrlsList, "retweeted_status.extended_entities.media[].media_url"); // Need "non"-extended entities too?
-			JsonUtils.addAllValues(twitterJson, mentions, "retweeted_status.extended_tweet.entities.user_mentions[].screen_name");
-		} else {
-			this.text = JsonUtils.getValueIfExistsByPriority(twitterJson, "extended_tweet.full_text", "text");
+		String parsePrefix = retweet ? "retweeted_status." : "";
+		//this.text = JsonUtils.getValueIfExistsByPriority(twitterJson, "retweeted_status.extended_tweet.full_text", "retweeted_status.text");
+		this.originalAuthor = JsonUtils.getValue(twitterJson, parsePrefix + "user.screen_name");
 
-			//TODO also HTTPs version?
-			JsonUtils.addAllValues(twitterJson, hashTags, "extended_tweet.entities.hashtags[].text");
-			JsonUtils.addAllValues(twitterJson, hashTags, "entities.hashtags[].text");
-			JsonUtils.addAllValues(twitterJson, imageUrlsList, "extended_tweet.entities.media[].media_url");
-			JsonUtils.addAllValues(twitterJson, imageUrlsList, "entities.media[].media_url");
-			JsonUtils.addAllValues(twitterJson, mentions, "extended_tweet.entities.user_mentions[].screen_name");
-		}
+		this.text = JsonUtils.getValue(twitterJson, parsePrefix + "extended_tweet.full_text"); // Pretty sure 'full_text' will always be there
+		this.numberOfLikes = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "favorite_count"));
+		this.numberOfRetweets = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "retweet_count"));
+		this.numberOfQuotes = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "quote_count"));
+		this.numberOfReplies = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "reply_count")); // TODO when to use this?
+
+		//TODO also HTTPs version?
+		JsonUtils.addAllValues(twitterJson, hashTags, parsePrefix + "extended_tweet.entities.hashtags[].text");
+		// JsonUtils.addAllValues(twitterJson, hashTags, "entities.hashtags[].text"); Necessary ?
+		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "extended_tweet.extended_entities.media[].media_url");
+		// TODO RBKR Not sure if simple 'entities' is needed but pretty sure I encountered a tweets json without 'extended_entities'
+		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "extended_tweet.entities.media[].media_url");
+		//JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "entities.media[].media_url");
+		JsonUtils.addAllValues(twitterJson, mentions, parsePrefix + "extended_tweet.entities.user_mentions[].screen_name");
+
+		// TODO add support for quotes?
+		// Seems if tweet is retweet the quote will appear both in the upper 'quoted_status' and 'retweeted_status' while
+		// standard tweet only has 'quoted_status.
 
 		String createdAtStr = JsonUtils.getValue(twitterJson, "created_at");
 		this.createdDate = parseTwitterDate(createdAtStr);
+	}
+
+	private void parseUserInfo() {
+		this.author = JsonUtils.getValue(twitterJson, "user.name"); // always exists
+		this.screenName = JsonUtils.getValue(twitterJson, "user.screen_name");
+		this.profileImage = JsonUtils.getValue(twitterJson, "user.profile_image_url"); // always exists
+		this.userDescription = JsonUtils.getValue(twitterJson, "user.description"); // always exists
+		this.numberOfFollowers = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.followers_count"));
+		this.numberOfFriends = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.friends_count"));
+		this.verified = Boolean.parseBoolean(JsonUtils.getValue(twitterJson, "user.verified"));
 	}
 
 
@@ -95,6 +99,7 @@ public class TwitterParser2 {
 	public String getOriginalAuthor() {
 		return originalAuthor;
 	}
+
 
 	public String getText() {
 		return text;
@@ -161,13 +166,17 @@ public class TwitterParser2 {
 	}
 
 
-	public int getNumberOfFollows() {
-		return numberOfFollows;
+	public int getNumberOfFollowers() {
+		return numberOfFollowers;
 	}
 
 
 	public int getNumberOfFriends() {
 		return numberOfFriends;
+	}
+
+	public int getNumberOfQuotes() {
+		return numberOfQuotes;
 	}
 
 

@@ -96,11 +96,12 @@ public class Twitter2Html {
                 " background: transparent url("+image_icons+") no-repeat -145px -130px;"+
                 "}"+
                 ".avatar{"+
-                "float: left;"+
-                "margin-right: 1em;"+
+                "  float: left;"+
+                "  margin-right: 1em;"+
+                "  display: inline-flex;"+ // Fix for span being larger than img
                 "}"+
                 ".avatar img{"+
-                "   border-radius: 50%;"+
+                "  border-radius: 50%;"+
                 "}"+
                 ".item.date{"+
                 "clear: both;"+
@@ -129,15 +130,17 @@ public class Twitter2Html {
                       "</div>"+
                       "<div class='item text'>"+
                        textReplaced+
-                        "<span class='image'>"+
+                        "<span class='image'>"+ // TODO RBKR should only make span if tweet contains images
                           imagesHtml(imageUrls)+
                         "</span>"+
                       "</div>"+
                       "<div class='item reactions'>"+
                         "<span class='icon retweets'></span>"+
                         "<span class='number'>"+parser.getNumberOfRetweets()+"</span>"+
+                        "<span class='icon quotes'></span>"+ // TODO add 'quotes' css class?
+                        "<span class='number'>"+parser.getNumberOfQuotes()+"</span>"+
                         "<span class='icon likes'></span>"+
-                        "<span class='number'>"+parser.getNumberOfLikes()+"</span>"+ //#retweets are not the JSON (only for premium subscribers)
+                        "<span class='number'>"+parser.getNumberOfLikes()+"</span>"+
                       "</div>"+
                     "</div>"+
                   "</div>"+
@@ -148,7 +151,7 @@ public class Twitter2Html {
     }
 
     // TODO RBKR replace hashtags and mentions using direct indices instead of string replacement
-    public static String formatMentions(String text, HashSet<String> mentions, String solrwaybackUrl, String extraSearchParams) {
+    public static String formatMentions(String text, Set<String> mentions, String solrwaybackUrl, String extraSearchParams) {
         for (String mention : mentions) {
             String searchUrl = solrwaybackUrl + "?query=%40" + mention + extraSearchParams;
             String mentionWithLink = "<span><a href='" + searchUrl + "'>@" + mention + "</a></span>";
@@ -159,9 +162,8 @@ public class Twitter2Html {
 
     /*HashTags are in clear text without # in front.
      * Replace this with a link that searches for the tag.
-     *
      */
-    public static String formatHashtags(String text, HashSet<String> tags, String solrwaybackUrl, String extraSearchParams) {
+    public static String formatHashtags(String text, Set<String> tags, String solrwaybackUrl, String extraSearchParams) {
         log.info("tags replace called for text: '{}' with tags: {}", text, tags);
         for (String tag : tags) {
             log.info("replacing tag: {}", tag);
