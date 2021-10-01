@@ -49,10 +49,9 @@ public class TwitterParser2 {
 		parseUserInfo();
 
 		String parsePrefix = retweet ? "retweeted_status." : "";
-		//this.text = JsonUtils.getValueIfExistsByPriority(twitterJson, "retweeted_status.extended_tweet.full_text", "retweeted_status.text");
 		this.originalAuthor = JsonUtils.getValue(twitterJson, parsePrefix + "user.screen_name");
 
-		this.text = JsonUtils.getValue(twitterJson, parsePrefix + "extended_tweet.full_text"); // Pretty sure 'full_text' will always be there
+		this.text = JsonUtils.getValueIfExistsByPriority(twitterJson, parsePrefix + "extended_tweet.full_text", parsePrefix + "text");
 		this.numberOfLikes = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "favorite_count"));
 		this.numberOfRetweets = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "retweet_count"));
 		this.numberOfQuotes = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "quote_count"));
@@ -62,7 +61,7 @@ public class TwitterParser2 {
 		JsonUtils.addAllValues(twitterJson, hashTags, parsePrefix + "extended_tweet.entities.hashtags[].text");
 		// JsonUtils.addAllValues(twitterJson, hashTags, "entities.hashtags[].text"); Necessary ?
 		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "extended_tweet.extended_entities.media[].media_url");
-		// TODO RBKR Not sure if simple 'entities' is needed but pretty sure I encountered a tweets json without 'extended_entities'
+		// TODO RBKR Not sure if simple 'entities' is needed but pretty sure I encountered a tweet's json without 'extended_entities'
 		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "extended_tweet.entities.media[].media_url");
 		//JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "entities.media[].media_url");
 		JsonUtils.addAllValues(twitterJson, mentions, parsePrefix + "extended_tweet.entities.user_mentions[].screen_name");
