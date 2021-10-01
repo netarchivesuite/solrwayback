@@ -62,8 +62,8 @@ public class Facade {
         return proxySolrOnlyFacets(query, filterQueries, revisits);
     }
 
-    public static String solrSearchFacetsOnlyLoadMore(String query, List<String> filterQueries, String facetField, boolean revisits) throws Exception {      
-      return proxySolrOnlyFacetsLoadMore(query, filterQueries, facetField, revisits);
+    public static String solrSearchFacetsOnlyLoadMore(String query, List<String> filterQueries, String facetField, boolean revisits) throws Exception {
+        return proxySolrOnlyFacetsLoadMore(query, filterQueries, facetField, revisits);
     }
 
     /*
@@ -101,14 +101,14 @@ public class Facade {
         long start=System.currentTimeMillis();
         // only search these two types
         //Since the HTML boost split up in two searches to also get image hits. The image hits is a very fast search.
-        
+
         //Images search are fast and also very accurate. But also search html pages for text and extract images. 400/100 seems a good split.
         SearchResult result1 = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:image", 400); // only images.                 
         SearchResult result2 = NetarchiveSolrClient.getInstance().search(searchText, "content_type_norm:html", 100);  // Find images on page where text is found
         // multithreaded call solr to find arc file and offset        
         List<IndexDoc> bothResults = result1.getResults();
-        bothResults.addAll(result2.getResults());        
-        ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(bothResults);        
+        bothResults.addAll(result2.getResults());
+        ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(bothResults);
         log.info("Image search for query"+searchText +" took "+(System.currentTimeMillis()-start) +"millis)");
         return extractImages;
     }
@@ -117,7 +117,7 @@ public class Facade {
         ArrayList<DomainYearStatistics> stats = new ArrayList<DomainYearStatistics>();
         int year = Calendar.getInstance().get(Calendar.YEAR);
         int startYear=PropertiesLoaderWeb.ARCHIVE_START_YEAR;
-        
+
         for (int i = startYear; i <= year; i++) {
             DomainYearStatistics yearStat = NetarchiveSolrClient.getInstance().domainStatistics(domain, i);
             stats.add(yearStat);
@@ -126,7 +126,7 @@ public class Facade {
     }
 
     public static ArrayList<ImageUrl> imagesLocationSearch(String searchText, String filter, String results, double latitude, double longitude, double radius,
-            String sort) throws Exception {
+                                                           String sort) throws Exception {
         int resultInt = 500;
         if (results != null) {
             resultInt = Integer.parseInt(results);
@@ -272,15 +272,14 @@ public class Facade {
         return previews;
     }
 
-    
-    
+
     public static ArrayList<FacetCount> getPagePreviewsYearInfo(String url) throws Exception {
-      log.info("getting pagePreviewsinfo for url:" + url);
+        log.info("getting pagePreviewsinfo for url:" + url);
 
-       ArrayList<FacetCount> facetCounts = NetarchiveSolrClient.getInstance().getPagePreviewsYearInfo(url);
+        ArrayList<FacetCount> facetCounts = NetarchiveSolrClient.getInstance().getPagePreviewsYearInfo(url);
 
-      return facetCounts;
-  }
+        return facetCounts;
+    }
     /*
      * Can be deleted when frontend has switched
      */
@@ -289,25 +288,25 @@ public class Facade {
         String query = "domain:\"" + domain + "\"";
         String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,null); // Only contains the required fields for this method
         BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(text);
-        
+
         return bufferedImage;
     }
-    
+
     public static BufferedImage wordCloudForQuery(String query, String filterQuery) throws Exception {
-      log.info("getting wordcloud for query:" + query +" filter query:"+filterQuery);      
-      String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,filterQuery); // Only contains the required fields for this method
-      BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(text);      
-      return bufferedImage;
-   }
-        
+        log.info("getting wordcloud for query:" + query +" filter query:"+filterQuery);
+        String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,filterQuery); // Only contains the required fields for this method
+        BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(text);
+        return bufferedImage;
+    }
+
     public static  List<WordCloudWordAndCount> wordCloudWordFrequency(String query, String filterQuery) throws Exception {
-      log.info("getting wordcloud frequency for query:" + query +" filterquery:"+filterQuery);
-      String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,filterQuery); // Only contains the required fields for this method
-      
-      List<WordCloudWordAndCount> wordCloudWordWithCount = WordCloudImageGenerator.wordCloudWordWithCount(text);      
-      return  wordCloudWordWithCount;
-  }
-    
+        log.info("getting wordcloud frequency for query:" + query +" filterquery:"+filterQuery);
+        String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,filterQuery); // Only contains the required fields for this method
+
+        List<WordCloudWordAndCount> wordCloudWordWithCount = WordCloudImageGenerator.wordCloudWordWithCount(text);
+        return  wordCloudWordWithCount;
+    }
+
 
     public static ArrayList<ImageUrl> getImagesForHtmlPageNew(String source_file_path, long offset) throws Exception {
         ArrayList<ArcEntryDescriptor> arcs = getImagesForHtmlPageNewThreaded(source_file_path, offset);
@@ -346,7 +345,6 @@ public class Facade {
      * page.
      */
     public static ArrayList<ArcEntryDescriptor> getImagesForHtmlPageNewThreaded(String source_file_path, long offset) throws Exception {
-
         IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
         ArrayList<String> imageLinks = doc.getImageUrls();
         if (imageLinks.size() == 0) {
@@ -357,47 +355,47 @@ public class Facade {
         return imagesFromHtmlPage;
     }
 
-    
-    /*
-    *
-    * Notice only maximum of 50 images will be searched. 
-    * This method is only called for image-search and we dont want too many hits from same site.
-    * 
-    */
-  public static String queryStringForImages(List<String> imageLinks) {
-     if (imageLinks.size() > 50) {
-          imageLinks = imageLinks.subList(0, 50);
-     }
-      
-      StringBuilder query = new StringBuilder();
-     query.append("(");
-     for (String imageUrl : imageLinks ){         
-       //fix https!        
-       try {
-        String fixedUrl = Normalisation.canonicaliseURL(imageUrl);
 
-         query.append(" url_norm:\""+fixedUrl+"\" OR");           
-         
-         }
-         catch(Exception e) {
-            //This can happen since url's from HTML are extacted without any sanity-check by the warc-indexer. Just ignore
-           log.info("Could not normalise image url:"+imageUrl);                            
+    /*
+     *
+     * Notice only maximum of 50 images will be searched.
+     * This method is only called for image-search and we dont want too many hits from same site.
+     *
+     */
+    public static String queryStringForImages(List<String> imageLinks) {
+        if (imageLinks.size() > 50) {
+            imageLinks = imageLinks.subList(0, 50);
         }
-     }
-     query.append(" url_norm:none)"); //just close last OR
-     String queryStr= query.toString();
-     return queryStr;
-   }
-   
-    
-    
+
+        StringBuilder query = new StringBuilder();
+        query.append("(");
+        for (String imageUrl : imageLinks) {
+            //fix https!
+            try {
+                String fixedUrl = Normalisation.canonicaliseURL(imageUrl);
+
+                query.append(" url_norm:\""+fixedUrl+"\" OR");
+
+            }
+            catch (Exception e) {
+                //This can happen since url's from HTML are extracted without any sanity-check by the warc-indexer. Just ignore
+                log.info("Could not normalise image url:" + imageUrl);
+            }
+        }
+        query.append(" url_norm:none)"); //just close last OR
+        String queryStr = query.toString();
+        return queryStr;
+    }
+
+
+
     /*
      * Find images on a HTML page. THIS IS NOT WORKING REALLY. To many searches
      * before enough images with exif loc is found. TODO: Use graph search 1) Find
      * the doc in solr from source_file_path and offset. (fast) 2) Get image links
      * field 3) For each images see if we have the image in index and it has exif
      * location data
-     * 
+     *
      */
     /*
     public static ArrayList<ArcEntryDescriptor> getImagesWithExifLocationForHtmlPageNewThreaded(String source_file_path, long offset) throws Exception {
@@ -447,19 +445,19 @@ public class Facade {
 
         long max=0;
         //Check size
-        long results = NetarchiveSolrClient.getInstance().countResults(query, filterqueries);        
+        long results = NetarchiveSolrClient.getInstance().countResults(query, filterqueries);
         if (!expandResources) {
             max= PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS;
-         if (results > PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS) {
-             throw new InvalidArgumentServiceException("Number of results for warc export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS);            
-         }
+            if (results > PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS) {
+                throw new InvalidArgumentServiceException("Number of results for warc export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS);
+            }
         }
         else {
             max= PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS;;
             if (results > PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS) {
-                throw new InvalidArgumentServiceException("Number of results for warc expanded  export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);            
-            }            
-        }        
+                throw new InvalidArgumentServiceException("Number of results for warc expanded  export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
+            }
+        }
         SolrGenericStreaming solr = new SolrGenericStreaming(PropertiesLoader.SOLR_SERVER, 100, Arrays.asList("source_file_path", "source_file_offset"),
                 expandResources, avoidDuplicates, query, filterqueries);
 
@@ -477,22 +475,22 @@ public class Facade {
         //Check size
         long results = NetarchiveSolrClient.getInstance().countResults(q,new String[] {fq});
         if (results > PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS) {
-            throw new InvalidArgumentServiceException("Number of results for csv export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);            
+            throw new InvalidArgumentServiceException("Number of results for csv export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
         }
-        
+
         SolrStreamingExportClient solr = SolrStreamingExportClient.createCvsExporter(PropertiesLoader.SOLR_SERVER, q, fields, fq);
         return new StreamingSolrExportBufferedInputStream(solr, PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
     }
 
     public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing, String dateStart, String dateEnd) throws Exception {
-        
-        
-         Date start = new Date(Long.valueOf(dateStart));  
-         Date end = new Date(Long.valueOf(dateEnd));
 
-         log.info("Creating graph for domain:" + domain + " ingoing:" + ingoing + " and facetLimit:" + facetLimit +" start:"+start +" end:"+end);
-         
-         List<FacetCount> facets = NetarchiveSolrClient.getInstance().getDomainFacets(domain, facetLimit, ingoing, start, end);
+
+        Date start = new Date(Long.valueOf(dateStart));
+        Date end = new Date(Long.valueOf(dateEnd));
+
+        log.info("Creating graph for domain:" + domain + " ingoing:" + ingoing + " and facetLimit:" + facetLimit +" start:"+start +" end:"+end);
+
+        List<FacetCount> facets = NetarchiveSolrClient.getInstance().getDomainFacets(domain, facetLimit, ingoing, start, end);
 
 
         HashMap<String, List<FacetCount>> domainFacetMap = new HashMap<String, List<FacetCount>>();
@@ -531,7 +529,7 @@ public class Facade {
             domainNumberMap.put(d, number++);
         }
 
-        
+
         D3Graph g = new D3Graph();
         List<Node> nodes = new ArrayList<Node>();
         g.setNodes(nodes);
@@ -583,11 +581,11 @@ public class Facade {
      * This method does something similar to the new feature from archive.org. See:
      * http://blog.archive.org/2017/10/05/wayback-machine-playback-now-with-
      * timestamps/
-     * 
+     *
      * Returns information about the harvested HTML page. List all resources on the
      * page and when they were harvested. Calcuate time difference between html page
      * and each resource. Preview link to html page.
-     * 
+     *
      */
 
     public static TimestampsForPage timestampsForPage(String source_file_path, long offset) throws Exception {
@@ -615,10 +613,10 @@ public class Facade {
 
         ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFullFields(resources, arc.getCrawlDate());
 
-       
+
         long maximumTimeDifferenceBackward=0; //Will be negative
         long maximumTimeDifferenceForward=0;//Will be posive
-        
+
         for (IndexDoc doc : docs) { // These are the resources found
             String docUrl = doc.getUrl_norm();
             PageResource pageResource = new PageResource();
@@ -633,15 +631,14 @@ public class Facade {
 
             long timeDif = resourceDate.getTime() - pageCrawlDate.getTime();
 
-             if (timeDif <= maximumTimeDifferenceBackward){
-                 maximumTimeDifferenceBackward=timeDif;
-             }
-             if (timeDif >= maximumTimeDifferenceForward){
-                 maximumTimeDifferenceForward=timeDif;
-             }
-             
-             
-            
+            if (timeDif <= maximumTimeDifferenceBackward){
+                maximumTimeDifferenceBackward=timeDif;
+            }
+            if (timeDif >= maximumTimeDifferenceForward){
+                maximumTimeDifferenceForward=timeDif;
+            }
+
+
             pageResource.setTimeDifference(millisToDuration(timeDif));
 
             pageResources.add(pageResource);
@@ -650,7 +647,7 @@ public class Facade {
 
         ts.setMaximumTimeDifferenceBackward(millisToDuration(-maximumTimeDifferenceBackward));  //Remove the minus
         ts.setMaximumTimeDifferenceForward(millisToDuration(maximumTimeDifferenceForward));
-                
+
         ts.setNotHarvested(new ArrayList<String>(resources));
 
         return ts;
@@ -697,7 +694,7 @@ public class Facade {
     /*
      * This is called then a relative url fails. Try to match the relative url for
      * that domain. (qualified guessing...)
-     * 
+     *
      */
     public static IndexDoc matchRelativeUrlForDomain(String refererUrl, String url, String solrDate) throws Exception {
 
@@ -719,7 +716,7 @@ public class Facade {
         throw new NotFoundServiceException("Could not find resource for leak:" + url);
     }
 
-    
+
     public static ArcEntry viewResource(String source_file_path, long offset, IndexDoc doc, Boolean showToolbar) throws Exception {
         if (showToolbar == null) {
             showToolbar = false;
@@ -745,10 +742,10 @@ public class Facade {
         } else if (doc.getType().equals("Jodel Post") || doc.getType().equals("Jodel Thread")) {
             JodelPlayback jodelPlayback = new JodelPlayback(arc, doc, showToolbar);
             return jodelPlayback.playback();
-        } else if ("Web Page".equals(doc.getType())|| ((300 <= doc.getStatusCode() && arc.getContentType() != null && arc.getContentType().equals("text/html")))) { 
+        } else if ("Web Page".equals(doc.getType())|| ((300 <= doc.getStatusCode() && arc.getContentType() != null && arc.getContentType().equals("text/html")))) {
 
-         // We still want the toolbar to show for http moved (302 etc.)         
-          HtmlPlayback htmlPlayback = new HtmlPlayback(arc, doc, showToolbar);
+            // We still want the toolbar to show for http moved (302 etc.)
+            HtmlPlayback htmlPlayback = new HtmlPlayback(arc, doc, showToolbar);
             return htmlPlayback.playback();
         } else if ("text/css".equals(arc.getContentType()) ) {
             CssPlayback cssPlayback = new CssPlayback(arc, doc, showToolbar); // toolbar is never shown anyway.
@@ -758,7 +755,7 @@ public class Facade {
             JavascriptPlayback javascriptPlayback = new JavascriptPlayback(arc, doc, showToolbar); // toolbar is never shown anyway.
             return javascriptPlayback.playback();
         }
-        
+
         else { // Serve as it is. (Javascript, images, pdfs etc.)
 
             return arc; // dont parse
@@ -780,14 +777,14 @@ public class Facade {
         props.put(PropertiesLoaderWeb.LEAFLET_ATTRIBUTION_PROPERTY, PropertiesLoaderWeb.LEAFLET_ATTRIBUTION);
         props.put(PropertiesLoaderWeb.ARCHIVE_START_YEAR_PROPERTY, ""+PropertiesLoaderWeb.ARCHIVE_START_YEAR);
         props.put(PropertiesLoaderWeb.WORDCLOUD_STOPWORDS_PROPERTY, ""+PropertiesLoaderWeb.WORDCLOUD_STOPWORDS);
-        props.put(PropertiesLoaderWeb.FACETS_PROPERTY, ""+PropertiesLoaderWeb.FACETS);        
+        props.put(PropertiesLoaderWeb.FACETS_PROPERTY, ""+PropertiesLoaderWeb.FACETS);
         props.put("solrwayback.version",PropertiesLoaderWeb.SOLRWAYBACK_VERSION);
-        
+
         if (PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE != null && !"".equals(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE.trim())) {
-            props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_PROPERTY,PropertiesLoader.WAYBACK_BASEURL + "services/frontend/images/logo");    
+            props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_PROPERTY,PropertiesLoader.WAYBACK_BASEURL + "services/frontend/images/logo");
             props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY,PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_LINK);
         }
-        
+
         return props;
     }
 
@@ -799,36 +796,36 @@ public class Facade {
         return NetarchiveSolrClient.getInstance().searchJsonResponseOnlyFacets(query, fq, revisits);
     }
 
-    public static String proxySolrOnlyFacetsLoadMore( String query, List<String> fq, String facetField, boolean revisits) throws Exception {          
-        return NetarchiveSolrClient.getInstance().searchJsonResponseOnlyFacetsLoadMore(query, fq, facetField, revisits);             
-   }
+    public static String proxySolrOnlyFacetsLoadMore( String query, List<String> fq, String facetField, boolean revisits) throws Exception {
+        return NetarchiveSolrClient.getInstance().searchJsonResponseOnlyFacetsLoadMore(query, fq, facetField, revisits);
+    }
 
     /*
      * Temp solution, make generic query properties
-     * 
+     *
      */
 
     /*
      * public static String proxyBackendResources(String source_file_path, String
      * offset, String serviceName) throws Exception{
-     * 
+     *
      * String backendServer= PropertiesLoaderWeb.WAYBACK_SERVER;
-     * 
-     * 
+     *
+     *
      * ClientConfig config = new DefaultClientConfig(); Client client =
      * Client.create(config); WebResource service =
      * client.resource(UriBuilder.fromUri(backendServer).build()); WebResource
      * queryWs= service.path("services") .path(serviceName)
      * .queryParam("source_file_path", source_file_path) .queryParam("offset",
      * offset);
-     * 
-     * 
+     *
+     *
      * ClientResponse response =
      * queryWs.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class); String
      * responseStr= response.getEntity(String.class);
-     * 
+     *
      * return responseStr;
-     * 
+     *
      * }
      */
 

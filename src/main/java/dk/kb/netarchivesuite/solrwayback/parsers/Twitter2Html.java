@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Set;
 
 public class Twitter2Html {
     private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
@@ -21,36 +22,38 @@ public class Twitter2Html {
 
         String textReplaced = newline2Br(parser.getText());
         //TODO frontend fix so all other params not needed
-        String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false";
-        textReplaced = replaceHashTags(PropertiesLoaderWeb.WAYBACK_SERVER, otherSearchParams, textReplaced, parser.getHashTags());
+        String otherSearchParams = " AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false";
+        // TODO RBKR fix these methods somehow.. ugly compromise for now.
+        textReplaced = formatMentions(textReplaced, parser.getMentions(), PropertiesLoaderWeb.WAYBACK_SERVER, otherSearchParams);
+        textReplaced = formatHashtags(textReplaced, parser.getHashTags(), PropertiesLoaderWeb.WAYBACK_SERVER, otherSearchParams);
 
         String title;
         String type;
         if (parser.isRetweet()){
-            type=", retweeted @" + parser.getOriginalAuthor() + ":";
-            title ="Retweet by: "+ parser.getAuthor();
+            type = ", retweeted @" + parser.getOriginalAuthor() + ":";
+            title = "Retweet by: " + parser.getAuthor();
         }
         else {
-            type=", tweeted:";
-            title ="Tweet by: "+ parser.getAuthor();
+            type = ", tweeted:";
+            title = "Tweet by: " + parser.getAuthor();
         }
-        ArrayList<String> images_norm = new ArrayList<String>();
 
+        ArrayList<String> normalizedImageURLs = new ArrayList<>();
         for (String img : parser.getImageUrlsList()){
-            images_norm.add(Normalisation.canonicaliseURL(img));
+            normalizedImageURLs.add(Normalisation.canonicaliseURL(img));
         }
 
-        String queryStr = Facade.queryStringForImages(images_norm);
+        String queryStr = Facade.queryStringForImages(normalizedImageURLs); // TODO RBKR: URLs are also normalized in here, so unnecessary second time?
         ArrayList<ArcEntryDescriptor> images = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, crawlDate);
 
         String user_image = parser.getProfileImage();
-        String user_image_norm =(Normalisation.canonicaliseURL(user_image));
+        String user_image_norm = Normalisation.canonicaliseURL(user_image);
 
-        ArrayList<String> user_image_list = new ArrayList<String>();
+        ArrayList<String> user_image_list = new ArrayList<>();
         user_image_list.add(user_image_norm);
 
-        String queryStrUser = Facade.queryStringForImages( user_image_list);
-        ArrayList<ArcEntryDescriptor> images_user = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStrUser,crawlDate);//Only 1
+        String queryStrUser = Facade.queryStringForImages(user_image_list);
+        ArrayList<ArcEntryDescriptor> images_user = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStrUser, crawlDate);//Only 1
 
 
         ArrayList<ImageUrl> imageUrls = Facade.arcEntrys2Images(images);
@@ -115,9 +118,9 @@ public class Twitter2Html {
                 "<body>"+
                   "<div id='wrapper'>"+
                     "<div class='tweet'>"+
-                    "<span class='avatar'>"+
-                    imagesHtml(imageUrl_user)+
-                    "</span>"+
+                      "<span class='avatar'>"+
+                      imagesHtml(imageUrl_user)+
+                      "</span>"+
                       "<div class='item author'>"+
                         "<h2>"+parser.getAuthor()+ type+"</h2>"+
                       "</div>"+
@@ -144,17 +147,26 @@ public class Twitter2Html {
         return html;
     }
 
+    // TODO RBKR replace hashtags and mentions using direct indices instead of string replacement
+    public static String formatMentions(String text, HashSet<String> mentions, String solrwaybackUrl, String extraSearchParams) {
+        for (String mention : mentions) {
+            String searchUrl = solrwaybackUrl + "?query=%40" + mention + extraSearchParams;
+            String mentionWithLink = "<span><a href='" + searchUrl + "'>@" + mention + "</a></span>";
+            text = text.replaceAll("@" + mention, mentionWithLink);
+        }
+        return text;
+    }
 
     /*HashTags are in clear text without # in front.
      * Replace this with a link that searches for the tag.
      *
      */
-    public static String replaceHashTags(String solrwaybackUrl, String otherSearchParams, String text, HashSet<String> tags) {
-        log.info("tags replace called for text: '"+text +"' with tags:"+tags);
+    public static String formatHashtags(String text, HashSet<String> tags, String solrwaybackUrl, String extraSearchParams) {
+        log.info("tags replace called for text: '{}' with tags: {}", text, tags);
         for (String tag : tags) {
-            log.info("replacing tag:"+tag);
-            String link = solrwaybackUrl+"?query=keywords%3A"+tag+otherSearchParams;
-            String tagWithLink = "<span><a href='"+link+"'>#"+tag+"</a></span>";
+            log.info("replacing tag: {}", tag);
+            String link = solrwaybackUrl + "?query=keywords%3A" + tag + extraSearchParams;
+            String tagWithLink = "<span><a href='" + link + "'>#" + tag + "</a></span>";
             text = text.replaceAll("#" + tag, tagWithLink);
         }
         return text;
