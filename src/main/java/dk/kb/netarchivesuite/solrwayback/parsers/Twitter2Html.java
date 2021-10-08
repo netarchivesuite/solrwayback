@@ -10,7 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public class Twitter2Html {
@@ -49,12 +50,12 @@ public class Twitter2Html {
         String user_image = parser.getProfileImage();
         String user_image_norm = Normalisation.canonicaliseURL(user_image);
 
-        ArrayList<String> user_image_list = new ArrayList<>();
-        user_image_list.add(user_image_norm);
+        List<String> user_image_list = Collections.singletonList(user_image_norm);
 
         String queryStrUser = Facade.queryStringForImages(user_image_list);
         ArrayList<ArcEntryDescriptor> images_user = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStrUser, crawlDate);//Only 1
 
+        String quoteHtml = getQuoteHtml(parser, crawlDate);
 
         ArrayList<ImageUrl> imageUrls = Facade.arcEntrys2Images(images);
         ArrayList<ImageUrl> imageUrl_user = Facade.arcEntrys2Images(images_user);
@@ -72,10 +73,20 @@ public class Twitter2Html {
                 ".item {"+
                 "  padding: .5em 0;"+
                 "}"+
+                ".item.author {"+
+                "  padding-bottom: 0;"+
+                "}"+
                 ".item .image {display: block;margin-top: 1em;max-width: 600px;"+
                 "}"+
                 ".item .image img {"+
                 "  max-width: 100%;"+
+                "}"+
+                ".quote {"+
+                "  border-radius: 16px;" +
+                "  border: 1px solid rgb(207, 217, 222);" +
+                "  min-height: 64px;"+
+                "  padding: 1em;"+
+                "  margin-top: 1em;"+
                 "}"+
                 ".item.reactions span {"+
                 "  vertical-align: middle;"+
@@ -87,24 +98,25 @@ public class Twitter2Html {
                 "  margin-right: 1.5em;"+
                 "}"+
                 ".item.reactions span.replies {"+
-                " background: transparent url("+image_icons+") no-repeat -145px -50px;"+
+                "  background: transparent url("+image_icons+") no-repeat -145px -50px;"+ // TODO RBKR replies? What is this for??
                 "}"+
                 ".item.reactions span.retweets {"+
-                " background: transparent url("+image_icons+") no-repeat -180px -50px;"+
+                "  background: transparent url("+image_icons+") no-repeat -180px -50px;"+
                 "}"+
                 ".item.reactions span.likes {"+
-                " background: transparent url("+image_icons+") no-repeat -145px -130px;"+
+                "  background: transparent url("+image_icons+") no-repeat -145px -130px;"+
                 "}"+
                 ".avatar{"+
                 "  float: left;"+
-                "  margin-right: 1em;"+
+                "  margin-right: .5em;"+
                 "  display: inline-flex;"+ // Fix for span being larger than img
                 "}"+
                 ".avatar img{"+
                 "  border-radius: 50%;"+
                 "}"+
                 ".item.date{"+
-                "clear: both;"+
+                "  clear: both;"+
+                "  color: rgb(83, 100, 113);"+
                 "}";
 
         String html =
@@ -120,7 +132,7 @@ public class Twitter2Html {
                   "<div id='wrapper'>"+
                     "<div class='tweet'>"+
                       "<span class='avatar'>"+
-                      imagesHtml(imageUrl_user)+
+                        imagesHtml(imageUrl_user)+
                       "</span>"+
                       "<div class='item author'>"+
                         "<h2>"+parser.getAuthor()+ type+"</h2>"+
@@ -129,11 +141,12 @@ public class Twitter2Html {
                         "<div>"+parser.getCreatedDate()+"</div>"+
                       "</div>"+
                       "<div class='item text'>"+
-                       textReplaced+
+                        textReplaced+
                         "<span class='image'>"+ // TODO RBKR should only make span if tweet contains images
                           imagesHtml(imageUrls)+
                         "</span>"+
-                      "</div>"+
+                        quoteHtml+
+                        "</div>"+
                       "<div class='item reactions'>"+
                         "<span class='icon retweets'></span>"+
                         "<span class='number'>"+parser.getNumberOfRetweets()+"</span>"+
@@ -175,6 +188,37 @@ public class Twitter2Html {
     }
 
 
+    private static String getQuoteHtml(TwitterParser2 parser, String crawlDate) {
+        String quoteHtml = "";
+        if (parser.hasQuote()) {
+            try {
+                List<String> quoteImages = new ArrayList<>(parser.getQuoteImageUrlStrings());
+                String quoteImagesSolrQuery = Facade.queryStringForImages(quoteImages);
+                ArrayList<ArcEntryDescriptor> quoteImageEntries = NetarchiveSolrClient.getInstance()
+                        .findImagesForTimestamp(quoteImagesSolrQuery, crawlDate);
+                ArrayList<ImageUrl> quoteImageUrls = Facade.arcEntrys2Images(quoteImageEntries);
+
+                quoteHtml =
+                        "<div class='quote'>" +
+                            "<div class='item author'>" +
+                                "<h2>" + parser.getQuoteUserName() + "</h2>" +
+                            "</div>" +
+                            "<div class='item date'>" +
+                                "<div>" + parser.getQuoteCreatedDate() + "</div>" +
+                            "</div>" +
+                            "<div class='item text'>" +
+                            parser.getQuoteText() +
+                            "</div>" +
+                            (parser.hasQuote() ? "<span class='image'>" + imagesHtml(quoteImageUrls) + "</span>" : "") +
+                        "</div>";
+            } catch (Exception e) {
+                log.warn("Failed getting images for quote in tweet by '{}'", parser.getAuthor());
+            }
+        }
+        return quoteHtml;
+    }
+
+
     private static String newline2Br(String text){
         if (text==null){
             return "";
@@ -186,7 +230,9 @@ public class Twitter2Html {
     public static String imagesHtml(ArrayList<ImageUrl> images){
         StringBuilder b = new StringBuilder();
         for (ImageUrl image : images){
-            b.append("<img src='"+ image.getDownloadUrl()+"' />\n");
+            b.append("<img src='")
+                    .append(image.getDownloadUrl())
+                    .append("'/>\n");
         }
         return b.toString();
     }

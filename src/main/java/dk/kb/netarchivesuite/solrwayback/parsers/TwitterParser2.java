@@ -4,7 +4,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,17 +24,13 @@ public class TwitterParser2 {
 	private String screenName;
 	private final String originalAuthor;
 	private final String text;
-	private boolean retweet = false;
+	private boolean retweet;
+	private boolean hasQuote;
 	private final Date createdDate;
 	private String profileImage;
 	private String userDescription;
 	private boolean verified;
-    private String userBackGroundImage;  //TODO both http and https version
-	
-	private HashSet<String> imageUrlsList = new HashSet<>();
-	private HashSet<String> hashTags = new HashSet<>();
-	private HashSet<String> mentions = new HashSet<>();
-
+	private String userBackGroundImage;  //TODO both http and https version
 	private final int numberOfLikes; // "favorites"
 	private final int numberOfRetweets;
 	private final int numberOfReplies;
@@ -39,16 +38,32 @@ public class TwitterParser2 {
 	private int numberOfFriends;
 	private final int numberOfQuotes;
 
+	private Set<String> imageUrlsList = new HashSet<>();
+	private Set<String> hashTags = new HashSet<>();
+	private Set<String> mentions = new HashSet<>();
+
+	private String quoteText;
+	private String quoteUserName;
+	private String quoteUserScreenName;
+	private Date quoteCreatedDate;
+	private String quoteUserProfileImage;
+	private String quoteUserDescription;
+	private int quoteUserFollowCount;
+	private int quoteUserFriendCount;
+	private boolean quoteUserVerified;
+	private Set<String> quoteImageUrlStrings = new HashSet<>();
+
 	public TwitterParser2(String twitterJsonString) {
 		this.twitterJson = new JSONObject(twitterJsonString);
-
-		if (twitterJson.has("retweeted_status")) {
-			this.retweet = true;
-		}
-
-		parseUserInfo();
+		this.retweet = twitterJson.has("retweeted_status");
+		this.hasQuote = twitterJson.getBoolean("is_quote_status");
 
 		String parsePrefix = retweet ? "retweeted_status." : "";
+		if (hasQuote()) {
+			parseQuote();
+		}
+		parseUserInfo();
+
 		this.originalAuthor = JsonUtils.getValue(twitterJson, parsePrefix + "user.screen_name");
 
 		// Usually, longer tweets contain the 'extended_tweet' keyword while short tweets do without it
@@ -68,7 +83,6 @@ public class TwitterParser2 {
 		JsonUtils.addAllValues(twitterJson, mentions, parsePrefix + "entities.user_mentions[].screen_name");
 		JsonUtils.addAllValues(twitterJson, mentions, parsePrefix + "extended_tweet.entities.user_mentions[].screen_name");
 
-		// TODO add support for quotes?
 		// Seems if tweet is retweet the quote will appear both in the upper 'quoted_status' and 'retweeted_status' while
 		// standard tweet only has 'quoted_status.
 
@@ -84,6 +98,27 @@ public class TwitterParser2 {
 		this.numberOfFollowers = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.followers_count"));
 		this.numberOfFriends = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.friends_count"));
 		this.verified = Boolean.parseBoolean(JsonUtils.getValue(twitterJson, "user.verified"));
+	}
+
+	private void parseQuote() {
+		JSONObject quoteJson = twitterJson.getJSONObject("quoted_status");
+		parseQuoteUserInfo(quoteJson);
+		String createdAtStr = quoteJson.getString("created_at");
+		this.quoteCreatedDate = parseTwitterDate(createdAtStr);
+		this.quoteText = JsonUtils.getValue(quoteJson, "text");
+		JsonUtils.addAllValues(quoteJson, quoteImageUrlStrings, "extended_entities.media[].media_url");
+		JsonUtils.addAllValues(quoteJson, quoteImageUrlStrings, "extended_tweet.entities.media[].media_url");
+	}
+
+	private void parseQuoteUserInfo(JSONObject quoteJson) {
+		JSONObject userJson = quoteJson.getJSONObject("user");
+		this.quoteUserName = userJson.getString("name");
+		this.quoteUserScreenName = userJson.getString("screen_name");
+		this.quoteUserProfileImage = userJson.getString("profile_image_url");
+		this.quoteUserDescription = userJson.getString("description");
+		this.quoteUserFollowCount = userJson.getInt("followers_count");
+		this.quoteUserFriendCount = userJson.getInt("friends_count");
+		this.quoteUserVerified = userJson.getBoolean("verified");
 	}
 
 
@@ -122,7 +157,7 @@ public class TwitterParser2 {
 	}
 
 
-	public HashSet<String> getMentions() {
+	public Set<String> getMentions() {
 		return mentions;
 	}
 
@@ -142,12 +177,12 @@ public class TwitterParser2 {
 	}
 
 
-	public HashSet<String> getImageUrlsList() {
+	public Set<String> getImageUrlsList() {
 		return imageUrlsList;
 	}
 
 
-	public HashSet<String> getHashTags() {
+	public Set<String> getHashTags() {
 		return hashTags;
 	}
 
@@ -191,5 +226,49 @@ public class TwitterParser2 {
 			return null;
 		}
 
+	}
+
+	public boolean hasQuote() {
+		return hasQuote;
+	}
+
+	public String getQuoteText() {
+		return quoteText;
+	}
+
+	public String getQuoteUserName() {
+		return quoteUserName;
+	}
+
+	public String getQuoteUserScreenName() {
+		return quoteUserScreenName;
+	}
+
+	public Date getQuoteCreatedDate() {
+		return quoteCreatedDate;
+	}
+
+	public String getQuoteUserProfileImage() {
+		return quoteUserProfileImage;
+	}
+
+	public String getQuoteUserDescription() {
+		return quoteUserDescription;
+	}
+
+	public int getQuoteUserFollowCount() {
+		return quoteUserFollowCount;
+	}
+
+	public int getQuoteUserFriendCount() {
+		return quoteUserFriendCount;
+	}
+
+	public boolean isQuoteUserVerified() {
+		return quoteUserVerified;
+	}
+
+	public Set<String> getQuoteImageUrlStrings() {
+		return quoteImageUrlStrings;
 	}
 }
