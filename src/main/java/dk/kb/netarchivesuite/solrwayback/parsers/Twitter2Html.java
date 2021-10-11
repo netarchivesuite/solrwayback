@@ -19,7 +19,7 @@ public class Twitter2Html {
     public static String twitter2Html(String jsonString, String crawlDate) throws Exception{
         StringBuilder b = new StringBuilder();
         TwitterParser2 parser = new TwitterParser2(jsonString);
-        String image_icons = PropertiesLoader.WAYBACK_BASEURL+"images/twitter_sprite.png";
+        String iconsImage = PropertiesLoader.WAYBACK_BASEURL+"images/twitter_sprite.png";
 
         String textReplaced = newline2Br(parser.getText());
         //TODO frontend fix so all other params not needed
@@ -27,17 +27,6 @@ public class Twitter2Html {
         // TODO RBKR fix these methods somehow.. ugly compromise for now.
         textReplaced = formatMentions(textReplaced, parser.getMentions(), PropertiesLoaderWeb.WAYBACK_SERVER, otherSearchParams);
         textReplaced = formatHashtags(textReplaced, parser.getHashTags(), PropertiesLoaderWeb.WAYBACK_SERVER, otherSearchParams);
-
-        String title;
-        String type;
-        if (parser.isRetweet()){
-            type = ", retweeted @" + parser.getOriginalAuthor() + ":";
-            title = "Retweet by: " + parser.getAuthor();
-        }
-        else {
-            type = ", tweeted:";
-            title = "Tweet by: " + parser.getAuthor();
-        }
 
         ArrayList<String> normalizedImageURLs = new ArrayList<>();
         for (String img : parser.getImageUrlsList()){
@@ -47,15 +36,14 @@ public class Twitter2Html {
         String queryStr = Facade.queryStringForImages(normalizedImageURLs); // TODO RBKR: URLs are also normalized in here, so unnecessary second time?
         ArrayList<ArcEntryDescriptor> images = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, crawlDate);
 
-        String user_image = parser.getProfileImage();
+        String user_image = parser.isRetweet() ? parser.getOriginalProfileImage() : parser.getProfileImage();
         String user_image_norm = Normalisation.canonicaliseURL(user_image);
 
         List<String> user_image_list = Collections.singletonList(user_image_norm);
 
         String queryStrUser = Facade.queryStringForImages(user_image_list);
+        log.info("Query: '{}'", queryStrUser);
         ArrayList<ArcEntryDescriptor> images_user = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStrUser, crawlDate);//Only 1
-
-        String quoteHtml = getQuoteHtml(parser, crawlDate);
 
         ArrayList<ImageUrl> imageUrls = Facade.arcEntrys2Images(images);
         ArrayList<ImageUrl> imageUrl_user = Facade.arcEntrys2Images(images_user);
@@ -67,14 +55,39 @@ public class Twitter2Html {
                 "h2 {"+
                 "  margin: 5px 0 0; font-size: 18px;"+
                 "}"+
+                "h3 {"+
+                "  font-size: 14px;"+
+                "  margin: 0;"+
+                "}"+
+                "h4 {"+
+                "  color: rgb(83, 100, 113);"+
+                "  margin: 0;"+
+                "  font-weight: 400;"+
+                "}"+
                 ".tweet {"+
                 "  border: 1px solid #cccccc; line-height: 1.6em;overflow: hidden; padding: 1em;"+
                 "}"+
                 ".item {"+
                 "  padding: .5em 0;"+
                 "}"+
+                ".item.retweet-author {"+
+                "  color: rgb(83, 100, 113);"+
+                "  line-height: 1.3em;"+
+                "  overflow: hidden;"+
+                "}"+
+                ".item.retweet-author a {"+
+                "  text-decoration: none;"+
+                "  color: inherit;"+
+                "  float: left;"+
+                "}"+
+                ".item.retweet-author .date {"+
+                "  font-size: 14px;"+
+                "  padding-left: 0.3em;"+
+                "  float: left;"+
+                "}"+
                 ".item.author {"+
-                "  padding-bottom: 0;"+
+                "  padding: 0;"+
+                "  overflow: hidden;"+
                 "}"+
                 ".item .image {display: block;margin-top: 1em;max-width: 600px;"+
                 "}"+
@@ -98,13 +111,20 @@ public class Twitter2Html {
                 "  margin-right: 1.5em;"+
                 "}"+
                 ".item.reactions span.replies {"+
-                "  background: transparent url("+image_icons+") no-repeat -145px -50px;"+ // TODO RBKR replies? What is this for??
+                "  background: transparent url("+iconsImage+") no-repeat -145px -50px;"+ // Missing correct icon?
                 "}"+
                 ".item.reactions span.retweets {"+
-                "  background: transparent url("+image_icons+") no-repeat -180px -50px;"+
+                "  background: transparent url("+iconsImage+") no-repeat -180px -50px;"+
                 "}"+
                 ".item.reactions span.likes {"+
-                "  background: transparent url("+image_icons+") no-repeat -145px -130px;"+
+                "  background: transparent url("+iconsImage+") no-repeat -145px -130px;"+
+                "}"+
+                ".item.reactions span.quotes {"+
+                "  background: transparent url("+iconsImage+") no-repeat -105px -50px;"+ // Missing correct icon
+                "}"+
+                ".author-handles {"+
+                "  line-height: 1.3em;"+
+                "  float: left;"+
                 "}"+
                 ".avatar{"+
                 "  float: left;"+
@@ -125,17 +145,21 @@ public class Twitter2Html {
                 "<head>"+
                   "<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'>"+
                   "<meta name='viewport' content='width=device-width, initial-scale=1'>"+
-                  "<title>"+title+"</title>"+
+                  "<title>"+getTitle(parser)+"</title>"+
                   "<style>"+css+"</style>"+
                 "</head>"+
                 "<body>"+
                   "<div id='wrapper'>"+
                     "<div class='tweet'>"+
-                      "<span class='avatar'>"+
-                        imagesHtml(imageUrl_user)+
-                      "</span>"+
+                      (parser.isRetweet() ? getRetweetTitle(parser) : "")+
                       "<div class='item author'>"+
-                        "<h2>"+parser.getAuthor()+ type+"</h2>"+
+                        "<span class='avatar'>"+
+                          imagesHtml(imageUrl_user)+
+                        "</span>"+
+                        "<div class='author-handles'>"+
+                          "<h2>"+ (parser.isRetweet() ? parser.getOriginalAuthor() : parser.getAuthor()) +"</h2>"+
+                          "<h4>@"+ (parser.isRetweet() ? parser.getOriginalScreenName() : parser.getScreenName()) +"</h4>"+
+                        "</div>"+
                       "</div>"+
                       "<div class='item date'>"+
                         "<div>"+parser.getCreatedDate()+"</div>"+
@@ -145,22 +169,29 @@ public class Twitter2Html {
                         "<span class='image'>"+ // TODO RBKR should only make span if tweet contains images
                           imagesHtml(imageUrls)+
                         "</span>"+
-                        quoteHtml+
+                        (parser.hasQuote() ? getQuoteHtml(parser, crawlDate) : "")+
                         "</div>"+
                       "<div class='item reactions'>"+
+                        "<span class='icon replies'></span>"+
+                        "<span class='number'>"+parser.getNumberOfReplies()+"</span>"+
                         "<span class='icon retweets'></span>"+
                         "<span class='number'>"+parser.getNumberOfRetweets()+"</span>"+
-                        "<span class='icon quotes'></span>"+ // TODO add 'quotes' css class?
-                        "<span class='number'>"+parser.getNumberOfQuotes()+"</span>"+
                         "<span class='icon likes'></span>"+
                         "<span class='number'>"+parser.getNumberOfLikes()+"</span>"+
-                      "</div>"+
+                        "<span class='icon quotes'></span>"+
+                        "<span class='number'>"+parser.getNumberOfQuotes()+"</span>"+
+                        "</div>"+
                     "</div>"+
                   "</div>"+
                 "</body>"+
                 "</html>";
 
         return html;
+    }
+
+    private static String getTitle(TwitterParser2 parser) {
+        String titlePrefix = parser.isRetweet() ? "Retweet by: " : "Tweet by: ";
+        return titlePrefix + parser.getAuthor();
     }
 
     // TODO RBKR replace hashtags and mentions using direct indices instead of string replacement
@@ -190,30 +221,29 @@ public class Twitter2Html {
 
     private static String getQuoteHtml(TwitterParser2 parser, String crawlDate) {
         String quoteHtml = "";
-        if (parser.hasQuote()) {
-            try {
-                List<String> quoteImages = new ArrayList<>(parser.getQuoteImageUrlStrings());
-                String quoteImagesSolrQuery = Facade.queryStringForImages(quoteImages);
-                ArrayList<ArcEntryDescriptor> quoteImageEntries = NetarchiveSolrClient.getInstance()
-                        .findImagesForTimestamp(quoteImagesSolrQuery, crawlDate);
-                ArrayList<ImageUrl> quoteImageUrls = Facade.arcEntrys2Images(quoteImageEntries);
 
-                quoteHtml =
-                        "<div class='quote'>" +
-                            "<div class='item author'>" +
-                                "<h2>" + parser.getQuoteUserName() + "</h2>" +
-                            "</div>" +
-                            "<div class='item date'>" +
-                                "<div>" + parser.getQuoteCreatedDate() + "</div>" +
-                            "</div>" +
-                            "<div class='item text'>" +
-                            parser.getQuoteText() +
-                            "</div>" +
-                            (parser.hasQuote() ? "<span class='image'>" + imagesHtml(quoteImageUrls) + "</span>" : "") +
-                        "</div>";
-            } catch (Exception e) {
-                log.warn("Failed getting images for quote in tweet by '{}'", parser.getAuthor());
-            }
+        try {
+            List<String> quoteImages = new ArrayList<>(parser.getQuoteImageUrlStrings());
+            String quoteImagesSolrQuery = Facade.queryStringForImages(quoteImages);
+            ArrayList<ArcEntryDescriptor> quoteImageEntries = NetarchiveSolrClient.getInstance()
+                    .findImagesForTimestamp(quoteImagesSolrQuery, crawlDate);
+            ArrayList<ImageUrl> quoteImageUrls = Facade.arcEntrys2Images(quoteImageEntries);
+
+            quoteHtml =
+                    "<div class='quote'>" +
+                        "<div class='item author'>" +
+                            "<h2>" + parser.getQuoteUserName() + "</h2>" +
+                        "</div>" +
+                        "<div class='item date'>" +
+                            "<div>" + parser.getQuoteCreatedDate() + "</div>" +
+                        "</div>" +
+                        "<div class='item text'>" +
+                        parser.getQuoteText() +
+                        "</div>" +
+                        (parser.hasQuote() ? "<span class='image'>" + imagesHtml(quoteImageUrls) + "</span>" : "") +
+                    "</div>";
+        } catch (Exception e) {
+            log.warn("Failed getting images for quote in tweet by '{}'", parser.getAuthor());
         }
         return quoteHtml;
     }
@@ -226,6 +256,19 @@ public class Twitter2Html {
         return text.replace("\n","<br>");
 
     }
+
+
+    private static String getRetweetTitle(TwitterParser2 parser) {
+        String html =
+                "<div class='item retweet-author'>" +
+                    "<a href='www.example.com'>" + // TODO insert search link for user
+                        "<h3>" + parser.getAuthor() + ", retweeted</h3>" +
+                    "</a>" +
+                    "<div class='date'>&middot " + parser.getRetweetCreatedDate() + "</div>" +
+                "</div>";
+        return html;
+    }
+
 
     public static String imagesHtml(ArrayList<ImageUrl> images){
         StringBuilder b = new StringBuilder();

@@ -4,7 +4,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -22,12 +21,15 @@ public class TwitterParser2 {
 
 	private String author;
 	private String screenName;
-	private final String originalAuthor;
+	private String originalScreenName;
+	private String originalAuthor;
 	private final String text;
 	private boolean retweet;
 	private boolean hasQuote;
 	private final Date createdDate;
+	private Date retweetCreatedDate;
 	private String profileImage;
+	private String originalProfileImage;
 	private String userDescription;
 	private boolean verified;
 	private String userBackGroundImage;  //TODO both http and https version
@@ -59,12 +61,17 @@ public class TwitterParser2 {
 		this.hasQuote = twitterJson.getBoolean("is_quote_status");
 
 		String parsePrefix = retweet ? "retweeted_status." : "";
+		if (isRetweet()) { // TODO do something smarter than this please.
+			String retweetCreatedAtStr = JsonUtils.getValue(twitterJson, "created_at");
+			this.retweetCreatedDate = parseTwitterDate(retweetCreatedAtStr);
+			this.originalAuthor = JsonUtils.getValue(twitterJson, parsePrefix + "user.name");
+			this.originalScreenName = JsonUtils.getValue(twitterJson, parsePrefix + "user.screen_name");
+			this.originalProfileImage = JsonUtils.getValue(twitterJson, parsePrefix + "user.profile_image_url");
+		}
 		if (hasQuote()) {
 			parseQuote();
 		}
 		parseUserInfo();
-
-		this.originalAuthor = JsonUtils.getValue(twitterJson, parsePrefix + "user.screen_name");
 
 		// Usually, longer tweets contain the 'extended_tweet' keyword while short tweets do without it
 		this.text = JsonUtils.getValueIfExistsByPriority(twitterJson, parsePrefix + "extended_tweet.full_text", parsePrefix + "text");
@@ -86,7 +93,7 @@ public class TwitterParser2 {
 		// Seems if tweet is retweet the quote will appear both in the upper 'quoted_status' and 'retweeted_status' while
 		// standard tweet only has 'quoted_status.
 
-		String createdAtStr = JsonUtils.getValue(twitterJson, "created_at");
+		String createdAtStr = JsonUtils.getValue(twitterJson, parsePrefix + "created_at");
 		this.createdDate = parseTwitterDate(createdAtStr);
 	}
 
@@ -270,5 +277,17 @@ public class TwitterParser2 {
 
 	public Set<String> getQuoteImageUrlStrings() {
 		return quoteImageUrlStrings;
+	}
+
+	public Date getRetweetCreatedDate() {
+		return retweetCreatedDate;
+	}
+
+	public String getOriginalScreenName() {
+		return originalScreenName;
+	}
+
+	public String getOriginalProfileImage() {
+		return originalProfileImage;
 	}
 }
