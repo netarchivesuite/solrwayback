@@ -18,27 +18,31 @@ public class TwitterParser2 {
 	private static final Logger log = LoggerFactory.getLogger(TwitterParser2.class);
 
 	private final JSONObject twitterJson;
+	private final String RETWEET_PREFIX = "retweeted_status.";
 
-	private String author;
-	private String screenName;
-	private String originalScreenName;
-	private String originalAuthor;
+	private String userName;
+	private String userScreenName;
+	private String retweetUserScreenName;
+	private String retweetUserName;
 	private final String text;
 	private boolean retweet;
 	private boolean hasQuote;
 	private final Date createdDate;
 	private Date retweetCreatedDate;
-	private String profileImage;
-	private String originalProfileImage;
+	private String userProfileImage;
+	private String retweetUserProfileImage;
 	private String userDescription;
-	private boolean verified;
+	private String retweetUserDescription;
+	private boolean userVerified;
 	private String userBackGroundImage;  //TODO both http and https version
-	private final int numberOfLikes; // "favorites"
-	private final int numberOfRetweets;
-	private final int numberOfReplies;
-	private int numberOfFollowers;
-	private int numberOfFriends;
-	private final int numberOfQuotes;
+	private final int likeCount; // "favorites"
+	private final int retweetCount;
+	private final int replyCount;
+	private int userFollowersCount;
+	private int userFriendsCount;
+	private int retweetUserFollowersCount;
+	private int retweetUserFriendsCount;
+	private final int quoteCount;
 
 	private Set<String> imageUrlsList = new HashSet<>();
 	private Set<String> hashTags = new HashSet<>();
@@ -50,8 +54,8 @@ public class TwitterParser2 {
 	private Date quoteCreatedDate;
 	private String quoteUserProfileImage;
 	private String quoteUserDescription;
-	private int quoteUserFollowCount;
-	private int quoteUserFriendCount;
+	private int quoteUserFollowersCount;
+	private int quoteUserFriendsCount;
 	private boolean quoteUserVerified;
 	private Set<String> quoteImageUrlStrings = new HashSet<>();
 
@@ -60,25 +64,28 @@ public class TwitterParser2 {
 		this.retweet = twitterJson.has("retweeted_status");
 		this.hasQuote = twitterJson.getBoolean("is_quote_status");
 
-		String parsePrefix = retweet ? "retweeted_status." : "";
+		String parsePrefix = retweet ? RETWEET_PREFIX : "";
 		if (isRetweet()) { // TODO do something smarter than this please.
 			String retweetCreatedAtStr = JsonUtils.getValue(twitterJson, "created_at");
 			this.retweetCreatedDate = parseTwitterDate(retweetCreatedAtStr);
-			this.originalAuthor = JsonUtils.getValue(twitterJson, parsePrefix + "user.name");
-			this.originalScreenName = JsonUtils.getValue(twitterJson, parsePrefix + "user.screen_name");
-			this.originalProfileImage = JsonUtils.getValue(twitterJson, parsePrefix + "user.profile_image_url");
+			this.retweetUserName = JsonUtils.getValue(twitterJson, parsePrefix + "user.name");
+			this.retweetUserScreenName = JsonUtils.getValue(twitterJson, parsePrefix + "user.screen_name");
+			this.retweetUserProfileImage = JsonUtils.getValue(twitterJson, parsePrefix + "user.profile_image_url");
+			this.retweetUserDescription = JsonUtils.getValue(twitterJson, parsePrefix + "user.description", "No description.");
+			this.retweetUserFollowersCount = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "user.followers_count"));
+			this.retweetUserFriendsCount = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "user.friends_count"));
 		}
 		if (hasQuote()) {
 			parseQuote();
 		}
 		parseUserInfo();
 
-		// Usually, longer tweets contain the 'extended_tweet' keyword while short tweets do without it
+		// Longer tweets contain the 'extended_tweet' keyword while short tweets do without it
 		this.text = JsonUtils.getValueIfExistsByPriority(twitterJson, parsePrefix + "extended_tweet.full_text", parsePrefix + "text");
-		this.numberOfLikes = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "favorite_count"));
-		this.numberOfRetweets = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "retweet_count"));
-		this.numberOfQuotes = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "quote_count"));
-		this.numberOfReplies = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "reply_count")); // TODO when to use this?
+		this.likeCount = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "favorite_count"));
+		this.retweetCount = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "retweet_count"));
+		this.quoteCount = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "quote_count"));
+		this.replyCount = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "reply_count")); // TODO when to use this?
 
 		//TODO also HTTPs version?
 		// TODO RBKR - pretty sure retweets will always have 'extended_tweet', so probably doesn't make sense to add prefix to short standard tweets
@@ -98,13 +105,15 @@ public class TwitterParser2 {
 	}
 
 	private void parseUserInfo() {
-		this.author = JsonUtils.getValue(twitterJson, "user.name"); // always exists
-		this.screenName = JsonUtils.getValue(twitterJson, "user.screen_name");
-		this.profileImage = JsonUtils.getValue(twitterJson, "user.profile_image_url"); // always exists
-		this.userDescription = JsonUtils.getValue(twitterJson, "user.description"); // always exists
-		this.numberOfFollowers = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.followers_count"));
-		this.numberOfFriends = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.friends_count"));
-		this.verified = Boolean.parseBoolean(JsonUtils.getValue(twitterJson, "user.verified"));
+		// All these values always exist
+		this.userName = JsonUtils.getValue(twitterJson, "user.name");
+		this.userScreenName = JsonUtils.getValue(twitterJson, "user.screen_name");
+		this.userProfileImage = JsonUtils.getValue(twitterJson, "user.profile_image_url");
+		this.userDescription = JsonUtils.getValue(twitterJson, "user.description",
+				"No description."); // Might be null, so want a default
+		this.userFollowersCount = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.followers_count"));
+		this.userFriendsCount = Integer.parseInt(JsonUtils.getValue(twitterJson, "user.friends_count"));
+		this.userVerified = Boolean.parseBoolean(JsonUtils.getValue(twitterJson, "user.verified"));
 	}
 
 	private void parseQuote() {
@@ -112,7 +121,7 @@ public class TwitterParser2 {
 		parseQuoteUserInfo(quoteJson);
 		String createdAtStr = quoteJson.getString("created_at");
 		this.quoteCreatedDate = parseTwitterDate(createdAtStr);
-		this.quoteText = JsonUtils.getValue(quoteJson, "text");
+		this.quoteText = JsonUtils.getValueIfExistsByPriority(quoteJson, "extended_tweet.full_text", "text");
 		JsonUtils.addAllValues(quoteJson, quoteImageUrlStrings, "extended_entities.media[].media_url");
 		JsonUtils.addAllValues(quoteJson, quoteImageUrlStrings, "extended_tweet.entities.media[].media_url");
 	}
@@ -122,25 +131,26 @@ public class TwitterParser2 {
 		this.quoteUserName = userJson.getString("name");
 		this.quoteUserScreenName = userJson.getString("screen_name");
 		this.quoteUserProfileImage = userJson.getString("profile_image_url");
-		this.quoteUserDescription = userJson.getString("description");
-		this.quoteUserFollowCount = userJson.getInt("followers_count");
-		this.quoteUserFriendCount = userJson.getInt("friends_count");
+		this.quoteUserDescription =
+				userJson.get("description") == null ? "No description." : userJson.getString("description");
+		this.quoteUserFollowersCount = userJson.getInt("followers_count");
+		this.quoteUserFriendsCount = userJson.getInt("friends_count");
 		this.quoteUserVerified = userJson.getBoolean("verified");
 	}
 
 
-	public String getAuthor() {
-		return author;
+	public String getUserName() {
+		return userName;
 	}
 
 
-	public String getScreenName() {
-		return screenName;
+	public String getUserScreenName() {
+		return userScreenName;
 	}
 
 
-	public String getOriginalAuthor() {
-		return originalAuthor;
+	public String getRetweetUserName() {
+		return retweetUserName;
 	}
 
 
@@ -159,8 +169,8 @@ public class TwitterParser2 {
 	}
 
 
-	public String getProfileImage() {
-		return profileImage;
+	public String getUserProfileImage() {
+		return userProfileImage;
 	}
 
 
@@ -174,8 +184,8 @@ public class TwitterParser2 {
 	}
 
 
-	public boolean isVerified() {
-		return verified;
+	public boolean isUserVerified() {
+		return userVerified;
 	}
 
 
@@ -194,32 +204,32 @@ public class TwitterParser2 {
 	}
 
 
-	public int getNumberOfLikes() {
-		return numberOfLikes;
+	public int getLikeCount() {
+		return likeCount;
 	}
 
 
-	public int getNumberOfRetweets() {
-		return numberOfRetweets;
+	public int getRetweetCount() {
+		return retweetCount;
 	}
 
 
-	public int getNumberOfReplies() {
-		return numberOfReplies;
+	public int getReplyCount() {
+		return replyCount;
 	}
 
 
-	public int getNumberOfFollowers() {
-		return numberOfFollowers;
+	public int getUserFollowersCount() {
+		return userFollowersCount;
 	}
 
 
-	public int getNumberOfFriends() {
-		return numberOfFriends;
+	public int getUserFriendsCount() {
+		return userFriendsCount;
 	}
 
-	public int getNumberOfQuotes() {
-		return numberOfQuotes;
+	public int getQuoteCount() {
+		return quoteCount;
 	}
 
 
@@ -263,12 +273,12 @@ public class TwitterParser2 {
 		return quoteUserDescription;
 	}
 
-	public int getQuoteUserFollowCount() {
-		return quoteUserFollowCount;
+	public int getQuoteUserFollowersCount() {
+		return quoteUserFollowersCount;
 	}
 
-	public int getQuoteUserFriendCount() {
-		return quoteUserFriendCount;
+	public int getQuoteUserFriendsCount() {
+		return quoteUserFriendsCount;
 	}
 
 	public boolean isQuoteUserVerified() {
@@ -283,11 +293,23 @@ public class TwitterParser2 {
 		return retweetCreatedDate;
 	}
 
-	public String getOriginalScreenName() {
-		return originalScreenName;
+	public String getRetweetUserScreenName() {
+		return retweetUserScreenName;
 	}
 
-	public String getOriginalProfileImage() {
-		return originalProfileImage;
+	public String getRetweetUserProfileImage() {
+		return retweetUserProfileImage;
+	}
+
+	public String getRetweetUserDescription() {
+		return retweetUserDescription;
+	}
+
+	public int getRetweetUserFollowersCount() {
+		return retweetUserFollowersCount;
+	}
+
+	public int getRetweetUserFriendsCount() {
+		return retweetUserFriendsCount;
 	}
 }

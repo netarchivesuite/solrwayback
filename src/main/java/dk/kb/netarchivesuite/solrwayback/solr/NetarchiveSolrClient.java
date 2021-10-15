@@ -312,14 +312,13 @@ public class NetarchiveSolrClient {
         solrQuery.add("fl", indexDocFieldList);
 
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
-        log.info("Query response: '{}'", rsp.getGroupResponse().getValues()); // TODO RBKR remove
 
-        if (rsp.getGroupResponse() == null) {
-            // log.info("no images found for search:"+searchString);
+        if (rsp.getGroupResponse() == null) { // Pretty sure this would never happen - an exception would be thrown
+            // log.warn("No response received for search: " + searchString);
             return images;
         }
 
-        List<Group> values = rsp.getGroupResponse().getValues().get(0).getValues();
+        List<Group> values = rsp.getGroupResponse().getValues().get(0).getValues(); // Empty if no images found
         for (Group current : values) {
             SolrDocumentList docs = current.getResult();
             ArrayList<IndexDoc> groupDocs = solrDocList2IndexDoc(docs);
