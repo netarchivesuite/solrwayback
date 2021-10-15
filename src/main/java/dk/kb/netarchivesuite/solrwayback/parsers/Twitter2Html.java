@@ -92,11 +92,9 @@ public class Twitter2Html {
                       "</div>"+
                       "<div class='item text'>"+
                         textReplaced+
-                        "<span class='image'>"+ // TODO RBKR should only make span if tweet contains images
-                          imageUrlToHtml(tweetImageUrls)+
-                        "</span>"+
-                        (parser.hasQuote() ? getQuoteHtml(parser, crawlDate) : "")+
                       "</div>"+
+                      (tweetImageUrls.isEmpty() ? "" : "<span class='image'>"+ imageUrlToHtml(tweetImageUrls)) +"</span>"+ // TODO RBKR prettify
+                      (parser.hasQuote() ? getQuoteHtml(parser, crawlDate) : "")+
                       "<div class='item reactions'>"+
                         "<span class='icon replies'></span>"+
                         "<span class='number'>"+parser.getReplyCount()+"</span>"+

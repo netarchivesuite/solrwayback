@@ -41,9 +41,8 @@ h4 {
 }
 
 .retweet-author {
-    line-height: 1.3em;
     overflow: hidden;
-    margin: .5em 0
+    margin: .5em 0 .25em
 }
 
 .retweet-author a {
@@ -67,14 +66,18 @@ h4 {
     overflow: hidden;
 }
 
-.item .image {
+.image {
     display: block;
-    margin-top: 1em;
+    margin-top: 0.5em;
     max-width: 600px;
 }
 
-.item .image img {
+.image img {
     max-width: 100%;
+}
+
+.item.date {
+    padding-bottom: 0;
 }
 
 .quote {
@@ -82,7 +85,7 @@ h4 {
     border: 1px solid rgb(207, 217, 222);
     min-height: 64px;
     padding: 1em;
-    margin-top: 1em;
+    margin-top: 0.5em;
 }
 
 .item.reactions span {
@@ -144,6 +147,7 @@ h4 {
 
 .user-desc {
     display: block;
+    line-height: 1.3em;
 }
 
 .following {
