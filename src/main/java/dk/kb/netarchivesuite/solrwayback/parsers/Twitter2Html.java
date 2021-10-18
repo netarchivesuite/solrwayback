@@ -73,19 +73,23 @@ public class Twitter2Html {
                     "<div class='tweet'>"+
                       (parser.isRetweet() ? getRetweetHeader(parser, crawlDate) : "")+
                       "<div class='item author'>"+
-                        "<span class='avatar'>"+
-                          imageUrlToHtml(tweeterProfileImageUrl)+
-                        "</span>"+
-                        "<div class='user-handles'>"+
-                          "<h2>"+ (parser.isRetweet() ? parser.getRetweetUserName() : parser.getUserName()) +"</h2>"+
-                          "<h4>@"+ (parser.isRetweet() ? parser.getRetweetUserScreenName() : parser.getUserScreenName()) +"</h4>"+
+                        "<div class='user-wrapper'>"+
+                          "<a href='#'>"+ // TODO insert search link
+                            "<span class='avatar'>"+
+                              imageUrlToHtml(tweeterProfileImageUrl)+
+                            "</span>"+
+                            "<div class='user-handles'>"+
+                              "<h2>"+ (parser.isRetweet() ? parser.getRetweetUserName() : parser.getUserName()) +"</h2>"+
+                              "<h4>@"+ (parser.isRetweet() ? parser.getRetweetUserScreenName() : parser.getUserScreenName()) +"</h4>"+
+                            "</div>"+
+                          "</a>"+
+                          makeUserCard(tweeterProfileImageUrl,
+                                  parser.isRetweet() ? parser.getRetweetUserName() : parser.getUserName(),
+                                  parser.isRetweet() ? parser.getRetweetUserScreenName() : parser.getUserScreenName(),
+                                  parser.isRetweet() ? parser.getRetweetUserDescription() : parser.getUserDescription(),
+                                  parser.isRetweet() ? parser.getRetweetUserFriendsCount() : parser.getUserFriendsCount(),
+                                  parser.isRetweet() ? parser.getRetweetUserFollowersCount() : parser.getUserFollowersCount())+
                         "</div>"+
-                        makeUserCard(tweeterProfileImageUrl,
-                                parser.isRetweet() ? parser.getRetweetUserName() : parser.getUserName(),
-                                parser.isRetweet() ? parser.getRetweetUserScreenName() : parser.getUserScreenName(),
-                                parser.isRetweet() ? parser.getRetweetUserDescription() : parser.getUserDescription(),
-                                parser.isRetweet() ? parser.getRetweetUserFriendsCount() : parser.getUserFriendsCount(),
-                                parser.isRetweet() ? parser.getRetweetUserFollowersCount() : parser.getUserFollowersCount())+
                       "</div>"+
                       "<div class='item date'>"+
                         "<div>"+parser.getCreatedDate()+"</div>"+
@@ -186,14 +190,18 @@ public class Twitter2Html {
             quoteHtml =
                     "<div class='quote'>" +
                         "<div class='item author'>" +
-                            "<span class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</span>" +
-                            "<div class='user-handles'>" +
-                                "<h2>" + parser.getQuoteUserName() + "</h2>" +
-                                "<h4>@" + parser.getQuoteUserScreenName() + "</h4>" +
+                            "<div class='user-wrapper'>" +
+                                "<a href='#'>" +
+                                    "<span class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</span>" +
+                                    "<div class='user-handles'>" +
+                                        "<h2>" + parser.getQuoteUserName() + "</h2>" +
+                                        "<h4>@" + parser.getQuoteUserScreenName() + "</h4>" +
+                                    "</div>" +
+                                "</a>" +
+                                makeUserCard(quoteProfileImageUrl, parser.getQuoteUserName(),
+                                        parser.getQuoteUserScreenName(), parser.getQuoteUserDescription(),
+                                        parser.getQuoteUserFriendsCount(), parser.getQuoteUserFollowersCount()) +
                             "</div>" +
-                            makeUserCard(quoteProfileImageUrl, parser.getQuoteUserName(),
-                                    parser.getQuoteUserScreenName(), parser.getQuoteUserDescription(),
-                                    parser.getQuoteUserFriendsCount(), parser.getQuoteUserFollowersCount()) +
                         "</div>" +
                         "<div class='item date'>" +
                             "<div>" + parser.getQuoteCreatedDate() + "</div>" +
@@ -229,13 +237,15 @@ public class Twitter2Html {
         }
         String html =
                 "<div class='retweet-author'>" +
-                    "<a href='#'>" + // TODO insert search link for user
-                        "<h3>" + parser.getUserName() + " Retweeted</h3>" +
-                    "</a>" +
+                    "<div class='user-wrapper'>" +
+                        "<a href='#'>" + // TODO insert search link for user
+                            "<h3>" + parser.getUserName() + " Retweeted</h3>" +
+                        "</a>" +
+                        makeUserCard(profileImageUrl, parser.getUserName(),
+                                        parser.getUserScreenName(), parser.getUserDescription(),
+                                        parser.getUserFriendsCount(), parser.getUserFollowersCount()) +
+                    "</div>" +
                     "<div class='date'>&middot " + parser.getCreatedDate() + "</div>" +
-                    makeUserCard(profileImageUrl, parser.getUserName(),
-                            parser.getUserScreenName(), parser.getUserDescription(),
-                            parser.getUserFriendsCount(), parser.getUserFollowersCount()) +
                 "</div>";
         return html;
     }

@@ -13,7 +13,7 @@ body {
 }
 
 h2 {
-    margin: 5px 0 0;
+    margin: 4px 0 0;
     font-size: 18px;
 }
 
@@ -25,8 +25,13 @@ h3 {
 
 h4 {
     color: rgb(83, 100, 113);
-    margin: 0;
+    margin: 0 0 4px;
     font-weight: 400;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
 }
 
 .tweet {
@@ -46,8 +51,6 @@ h4 {
 }
 
 .retweet-author a {
-    text-decoration: none;
-    color: inherit;
     float: left;
 }
 
@@ -124,6 +127,10 @@ h4 {
     color: rgb(83, 100, 113);
 }
 
+.user-wrapper {
+    float: left;
+}
+
 .user-card {
     display: none;
     background-color: #fff;
@@ -133,16 +140,20 @@ h4 {
     max-width: 20em;
     margin-top: 3.5em;
     padding: 0.8em;
-    box-shadow: rgb(101 119 134 / 20%) 0px 0px 15px, rgb(101 119 134 / 15%) 0px 0px 3px 1px;
+    box-shadow: rgb(101 119 134 / 20%) 0 0 15px, rgb(101 119 134 / 15%) 0 0 3px 1px;
     border-radius: 16px;
 }
 
-.author:hover .user-card {
+.user-wrapper:hover .user-card {
     display:block;
 }
 
-.retweet-author:hover .user-card {
-    display:block;
+.user-wrapper a:hover h3 {
+    text-decoration: underline;
+}
+
+.user-wrapper a:hover h2 {
+    text-decoration: underline;
 }
 
 .user-desc {
