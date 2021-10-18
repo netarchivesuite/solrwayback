@@ -236,8 +236,7 @@ public class TwitterParser2 {
 	private Date parseTwitterDate(String dateStr) {
 		try {
 			DateFormat df = new SimpleDateFormat("EEE MMM dd kk:mm:ss Z yyyy", Locale.ENGLISH);
-			Date date = df.parse(dateStr);
-			return date;
+			return df.parse(dateStr);
 		} catch (Exception e) {
 			log.error("failed to parse twitter date:" + dateStr);
 			return null;

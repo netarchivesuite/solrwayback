@@ -18,10 +18,9 @@ import java.util.Set;
 
 public class Twitter2Html {
     private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
+
     public static String twitter2Html(String jsonString, String crawlDate) throws Exception{
-        StringBuilder b = new StringBuilder();
         TwitterParser2 parser = new TwitterParser2(jsonString);
-        String iconsImage = PropertiesLoader.WAYBACK_BASEURL + "images/twitter_sprite.png";
 
         // Get user profile image
         String tweeterProfileImage = parser.isRetweet() ? parser.getRetweetUserProfileImage() : parser.getUserProfileImage();
@@ -29,14 +28,12 @@ public class Twitter2Html {
         ArrayList<ImageUrl> tweeterProfileImageUrl = getImageUrlsFromSolr(tweeterProfileImageList, crawlDate);
 
         // Get and format tweet text
-        String textReplaced = newline2Br(parser.getText());
+        String mainTextHtml = newline2Br(parser.getText());
         //TODO frontend fix so all other params not needed
         String otherSearchParams = " AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false";
         // TODO RBKR fix these methods somehow.. ugly compromise for now.
-        textReplaced = formatMentions(textReplaced, parser.getMentions(), PropertiesLoaderWeb.WAYBACK_SERVER,
-                otherSearchParams);
-        textReplaced = formatHashtags(textReplaced, parser.getHashTags(), PropertiesLoaderWeb.WAYBACK_SERVER,
-                otherSearchParams);
+        mainTextHtml = formatMentions(mainTextHtml, parser.getMentions(), otherSearchParams);
+        mainTextHtml = formatHashtags(mainTextHtml, parser.getHashTags(), otherSearchParams);
 
         // Get tweet images
         List<String> tweetImages = new ArrayList<>(parser.getImageUrlsList());
@@ -45,19 +42,8 @@ public class Twitter2Html {
         String cssFromFile = IOUtils.toString(
                 TwitterParser2.class.getClassLoader().getResourceAsStream("twitter_playback_style.css"),
                 StandardCharsets.UTF_8);
-        String css = cssFromFile +
-                ".item.reactions span.replies {" +
-                    "background: transparent url(" + iconsImage + ") no-repeat -145px -50px;" + // Missing correct icon?
-                "}" +
-                ".item.reactions span.retweets {" +
-                    "background: transparent url(" + iconsImage + ") no-repeat -180px -50px;" +
-                "}" +
-                ".item.reactions span.likes {" +
-                    "background: transparent url(" + iconsImage + ") no-repeat -145px -130px;" +
-                "}" +
-                ".item.reactions span.quotes {" +
-                    "background: transparent url(" + iconsImage + ") no-repeat -105px -50px;" + // Missing correct icon
-                "}";
+        String reactionsCss = getReactionsCss();
+        String css = cssFromFile + reactionsCss;
 
         String html =
                 "<!DOCTYPE html>"+
@@ -74,7 +60,8 @@ public class Twitter2Html {
                       (parser.isRetweet() ? getRetweetHeader(parser, crawlDate) : "")+
                       "<div class='item author'>"+
                         "<div class='user-wrapper'>"+
-                          "<a href='#'>"+ // TODO insert search link
+                          "<a href='"+ (parser.isRetweet() ? makeSolrSearchLink(parser.getRetweetUserScreenName())
+                                        : makeSolrSearchLink(parser.getUserScreenName())) +"'>"+
                             "<span class='avatar'>"+
                               imageUrlToHtml(tweeterProfileImageUrl)+
                             "</span>"+
@@ -95,7 +82,7 @@ public class Twitter2Html {
                         "<div>"+parser.getCreatedDate()+"</div>"+
                       "</div>"+
                       "<div class='item text'>"+
-                        textReplaced+
+                        mainTextHtml+
                       "</div>"+
                       (tweetImageUrls.isEmpty() ? "" : "<span class='image'>"+ imageUrlToHtml(tweetImageUrls)) +"</span>"+ // TODO RBKR prettify
                       (parser.hasQuote() ? getQuoteHtml(parser, crawlDate) : "")+
@@ -122,6 +109,18 @@ public class Twitter2Html {
         ArrayList<ArcEntryDescriptor> imageEntries = NetarchiveSolrClient.getInstance()
                 .findImagesForTimestamp(imagesSolrQuery, crawlDate);
         return Facade.arcEntrys2Images(imageEntries);
+    }
+
+    private static String getReactionsCss() {
+        String reactionIconsImageUrl = PropertiesLoader.WAYBACK_BASEURL + "images/twitter_sprite.png";
+        return ".item.reactions span.replies {" +
+                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -50px;}" + // Missing correct icon?
+                ".item.reactions span.retweets {" +
+                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -180px -50px;}" +
+                ".item.reactions span.likes {" +
+                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -130px;}" +
+                ".item.reactions span.quotes {" +
+                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -105px -50px;}"; // Missing correct icon
     }
 
     private static String makeUserCard(ArrayList<ImageUrl> profileImageUrl, String userName, String userHandle,
@@ -154,9 +153,9 @@ public class Twitter2Html {
     }
 
     // TODO RBKR replace hashtags and mentions using direct indices instead of string replacement
-    public static String formatMentions(String text, Set<String> mentions, String solrwaybackUrl, String extraSearchParams) {
+    public static String formatMentions(String text, Set<String> mentions, String extraSearchParams) {
         for (String mention : mentions) {
-            String searchUrl = solrwaybackUrl + "?query=%40" + mention + extraSearchParams;
+            String searchUrl = PropertiesLoader.WAYBACK_BASEURL + "?query=%40" + mention + extraSearchParams;
             String mentionWithLink = "<span><a href='" + searchUrl + "'>@" + mention + "</a></span>";
             text = text.replaceAll("@" + mention, mentionWithLink);
         }
@@ -166,11 +165,11 @@ public class Twitter2Html {
     /*HashTags are in clear text without # in front.
      * Replace this with a link that searches for the tag.
      */
-    public static String formatHashtags(String text, Set<String> tags, String solrwaybackUrl, String extraSearchParams) {
+    public static String formatHashtags(String text, Set<String> tags, String extraSearchParams) {
         log.info("tags replace called for text: '{}' with tags: {}", text, tags);
         for (String tag : tags) {
             log.info("replacing tag: {}", tag);
-            String searchUrl = solrwaybackUrl + "?query=keywords%3A" + tag + extraSearchParams;
+            String searchUrl = PropertiesLoader.WAYBACK_BASEURL + "?query=keywords%3A" + tag + extraSearchParams;
             String tagWithLink = "<span><a href='" + searchUrl + "'>#" + tag + "</a></span>";
             text = text.replaceAll("#" + tag, tagWithLink);
         }
@@ -191,7 +190,7 @@ public class Twitter2Html {
                     "<div class='quote'>" +
                         "<div class='item author'>" +
                             "<div class='user-wrapper'>" +
-                                "<a href='#'>" +
+                                "<a href='" + makeSolrSearchLink(parser.getQuoteUserScreenName()) + "'>" +
                                     "<span class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</span>" +
                                     "<div class='user-handles'>" +
                                         "<h2>" + parser.getQuoteUserName() + "</h2>" +
@@ -238,7 +237,7 @@ public class Twitter2Html {
         String html =
                 "<div class='retweet-author'>" +
                     "<div class='user-wrapper'>" +
-                        "<a href='#'>" + // TODO insert search link for user
+                        "<a href='" + makeSolrSearchLink(parser.getUserScreenName()) + "'>" +
                             "<h3>" + parser.getUserName() + " Retweeted</h3>" +
                         "</a>" +
                         makeUserCard(profileImageUrl, parser.getUserName(),
@@ -259,5 +258,10 @@ public class Twitter2Html {
                     .append("'/>\n");
         }
         return b.toString();
+    }
+
+    private static String makeSolrSearchLink(String searchString) {
+        String searchParams = " AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false";
+        return PropertiesLoader.WAYBACK_BASEURL + "?query=" + searchString + searchParams;
     }
 }
