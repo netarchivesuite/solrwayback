@@ -34,6 +34,14 @@ public class ArcEntry {
       }
 
     
+    public enum TYPE {
+      REVISIT,
+      RESPONSE,
+      ARC,
+      RESOURCE,
+    }
+    
+    
     
   private FORMAT format;
     
@@ -52,6 +60,7 @@ public class ArcEntry {
   private long warcEntryContentLength; //From warc header#1. This does not exist for arc files
   private long binaryArraySize;
   private String contentType; //As returned by the webserver when harvested
+  private TYPE type;  
   private String contentTypeExt; //As returned by the webserver when harvested
   private String fileName; //only filename
   private String crawlDate; // format 2009-12-09T05:32:50Z
@@ -209,9 +218,13 @@ public void setBinaryArraySize(long binaryArraySize) {
     this.hasBeenDecompressed = hasBeenDecompressed;
   }
     
-public boolean isChunked() {
-    return chunked;
-}
+  
+public TYPE getType() {
+    return type;
+  }
+  public void setType(TYPE type) {
+    this.type = type;
+  }
 public void setChunked(boolean chunked) {
     this.chunked = chunked;
 }

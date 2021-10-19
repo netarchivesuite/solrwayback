@@ -1,4 +1,4 @@
-package dk.kb.netarchivesuite.solrwayback;
+package dk.kb.netarchivesuite.solrwayback.parsers.warc;
 
 import static org.junit.Assert.*;
 
@@ -11,6 +11,7 @@ import java.net.URL;
 
 import org.junit.Test;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
 import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
