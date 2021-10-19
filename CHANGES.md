@@ -1,6 +1,7 @@
 4.2.2
 -----
-
+Support for Warc record type 'resource'. Also required fix in the warc-indexer.
+Improved playback for Twitter API harvest (https://github.com/netarchivesuite/so-me)
 
 4.2.1
 -----
