@@ -29,11 +29,6 @@ h4 {
     font-weight: 400;
 }
 
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
 .tweet {
     border: 1px solid #cccccc;
     line-height: 1.6em;
@@ -146,6 +141,11 @@ a {
 
 .user-wrapper:hover .user-card {
     display:block;
+}
+
+.user-wrapper a {
+    text-decoration: none;
+    color: inherit;
 }
 
 .user-wrapper a:hover h3 {
