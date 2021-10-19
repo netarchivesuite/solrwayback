@@ -180,8 +180,8 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     }
 
     int byteCount=0; //Bytes of second header
-
-    if( !(warcEntry.getType() == ArcEntry.TYPE.RESOURCE)){ 
+   
+    if( !(warcEntry.getType() == ArcEntry.TYPE.RESOURCE)){       
       LineAndByteCount lc =readLineCount(bis);
       line=lc.getLine();
       warcEntry.setStatus_code(getStatusCode(line));
@@ -189,13 +189,11 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
       byteCount +=lc.getByteCount();                    
 
       while (!"".equals(line)) { // End of warc second header block is an empty line
-
         lc =readLineCount(bis);         
-
-        line=lc.getLine();
-        System.out.println(line);
+        line=lc.getLine();        
         headerLinesBuffer.append(line+newLineChar);
-        byteCount +=lc.getByteCount();                                                
+        byteCount +=lc.getByteCount(); 
+        populateWarcSecondHeader(warcEntry, line);                                              
       }        
       warcEntry.setHeader(headerLinesBuffer.toString());
     }
@@ -204,16 +202,11 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
       warcEntry.setStatus_code(200); //fake it . Warc-indexer does the same
     }
 
-
     long totalSize= warcEntry.getWarcEntryContentLength();
-
     long binarySize = totalSize-byteCount;
 
     warcEntry.setBinaryArraySize(binarySize);
   }
-
-
-
 
   public static ArcEntry getWarcEntryZipped(String warcFilePath, long warcEntryPosition, boolean loadBinary) throws Exception {
 
