@@ -26,7 +26,7 @@ SolrWayback comes with additional features:
 
 ## Live demo
 The National Széchényi Library of Hungary has kindly set up the following demo site for SolrWayback <br>
-http://webadmin.oszk.hu/solrwayback/
+https://webadmin.oszk.hu/solrwayback/
 
 
 ## See also
