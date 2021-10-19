@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,7 +15,6 @@ public class JsonUtils {
 	 * First it will get the user (JSONObject) Since name is last value in path,
 	 * take the "name" value on the user object. If one of the subelements is an
 	 * JSONArray the syntax uses [] example: entities.user_mentions[].screen_name
-	 * 
 	 */
 	public static String getValue(JSONObject json, String path) {
 		// Split in tokens on .
@@ -34,14 +34,19 @@ public class JsonUtils {
 		return value;
 	}
 
-	public static HashSet<String> addAllValues(ArrayList<JSONObject> jsonList, HashSet<String> values, String path) {
+	public static String getValue(JSONObject json, String path, String defaultValue) {
+		String value = getValue(json, path);
+		return value == null || value.equals("null") ? defaultValue : value;
+	}
+
+	public static Set<String> addAllValues(ArrayList<JSONObject> jsonList, Set<String> values, String path) {
 		for (JSONObject obj : jsonList) {
 			addAllValues(obj, values, path);
 		}
 		return values;
 	}
 
-	public static HashSet<String> addAllValues(JSONObject json, HashSet<String> values, String path) {
+	public static Set<String> addAllValues(JSONObject json, Set<String> values, String path) {
 
 		// Split in tokens on .
 		String[] tokens = path.split("\\."); // Have to escape the dot
@@ -53,20 +58,20 @@ public class JsonUtils {
 				//System.out.println("arrayfound:" + token);
 				//System.out.println("arrayfound, elementaname:" + elementName(token));
 				if (parentJson.has(elementName(token))) {
-				JSONArray jsonArray = parentJson.getJSONArray(elementName(token));				
-				ArrayList<JSONObject> jsonObjectList = array2List(jsonArray);
-				// Create a sub-array from the full array.
-				String[] remainingTokens = Arrays.asList(tokens).subList(i + 1, tokens.length).toArray(new String[0]);
-				String remainingPath = String.join(". ", remainingTokens);
-				//System.out.println("full path:" + path);
-				//System.out.println("remaining path:" + remainingPath);
-				addAllValues(jsonObjectList, values, remainingPath); // Call recursive
-				return values;
+					JSONArray jsonArray = parentJson.getJSONArray(elementName(token));
+					ArrayList<JSONObject> jsonObjectList = array2List(jsonArray);
+					// Create a sub-array from the full array.
+					String[] remainingTokens = Arrays.copyOfRange(tokens, i + 1, tokens.length);
+					String remainingPath = String.join(". ", remainingTokens);
+					//System.out.println("full path:" + path);
+					//System.out.println("remaining path:" + remainingPath);
+					addAllValues(jsonObjectList, values, remainingPath); // Call recursive
+					return values;
 				}
 			}
 
-			parentJson = getSubObjectIfExists(parentJson, token);			
-			if (parentJson == null) {			
+			parentJson = getSubObjectIfExists(parentJson, token);
+			if (parentJson == null) {
 				return values;
 			}
 		}
@@ -82,7 +87,7 @@ public class JsonUtils {
 	 * Will call the getValue method with each of the paths elements one by one.
 	 * Return first value it finds this way
 	 */
-	public static  String getValueIfExistsByPriority(JSONObject json, String... paths) {
+	public static String getValueIfExistsByPriority(JSONObject json, String... paths) {
 		for (String path : paths) {
 			String value = getValue(json, path);
 			if (value != null) {
@@ -92,7 +97,7 @@ public class JsonUtils {
 		return null; // none of the paths found a value
 	}
 
-	public static  JSONObject getSubObjectIfExists(JSONObject json, String subJsonObject) {
+	public static JSONObject getSubObjectIfExists(JSONObject json, String subJsonObject) {
 		try {
 			return json.getJSONObject(subJsonObject);
 		} catch (Exception e) {
@@ -122,6 +127,4 @@ public class JsonUtils {
 	private static String elementName(String element) {
 		return element.endsWith("[]") ? element.substring(0, element.length() - 2) : element;
 	}
-
-	
 }
