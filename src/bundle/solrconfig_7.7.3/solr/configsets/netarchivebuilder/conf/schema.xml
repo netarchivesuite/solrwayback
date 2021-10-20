@@ -370,8 +370,9 @@ This schema is for Solr 7+ and will not work under Solr 6.
         <field name="tw_user_screen_name"  type="string" />
         <copyField source="tw_user_screen_name" dest="author" />
         <field name="tw_user_profile_image" type="string" />
-        <copyField source="tw_user_profile_image" dest="links_images" />
+        <copyField source="tw_user_profile_image" dest="links_images" />               
         <field name="tw_user_url"          type="string" />
+        <field name="tw_json"              type="string" />
         <field name="tw_user_id"           type="long" />
         <field name="tw_user_followers_count" type="long" />
         <field name="tw_user_friends_count"   type="long" />
