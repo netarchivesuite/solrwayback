@@ -1,0 +1,7 @@
+# URL & path elements that should not be indexed (to save space)
+
+# www is removed by the webarchive-discovery normaliser if it is leading. If it is part of the path we want to keep it, so it is not a stopword
+
+# All URLs starts with http or https, so definitely remove those
+http
+https
