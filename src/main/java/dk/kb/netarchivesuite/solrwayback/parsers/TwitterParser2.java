@@ -66,7 +66,7 @@ public class TwitterParser2 {
 
 		String parsePrefix = retweet ? RETWEET_PREFIX : "";
 		if (isRetweet()) { // TODO do something smarter than this please.
-			String retweetCreatedAtStr = JsonUtils.getValue(twitterJson, "created_at");
+			String retweetCreatedAtStr = JsonUtils.getValue(twitterJson, parsePrefix + "created_at");
 			this.retweetCreatedDate = parseTwitterDate(retweetCreatedAtStr);
 			this.retweetUserName = JsonUtils.getValue(twitterJson, parsePrefix + "user.name");
 			this.retweetUserScreenName = JsonUtils.getValue(twitterJson, parsePrefix + "user.screen_name");
@@ -100,7 +100,7 @@ public class TwitterParser2 {
 		// Seems if tweet is retweet the quote will appear both in the upper 'quoted_status' and 'retweeted_status' while
 		// standard tweet only has 'quoted_status.
 
-		String createdAtStr = JsonUtils.getValue(twitterJson, parsePrefix + "created_at");
+		String createdAtStr = JsonUtils.getValue(twitterJson, "created_at");
 		this.createdDate = parseTwitterDate(createdAtStr);
 	}
 

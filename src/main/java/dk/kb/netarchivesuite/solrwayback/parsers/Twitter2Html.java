@@ -79,7 +79,7 @@ public class Twitter2Html {
                         "</div>"+
                       "</div>"+
                       "<div class='item date'>"+
-                        "<div>"+parser.getCreatedDate()+"</div>"+
+                        "<div>"+(parser.isRetweet() ? parser.getRetweetCreatedDate() : parser.getCreatedDate())+"</div>"+
                       "</div>"+
                       "<div class='item text'>"+
                         mainTextHtml+
