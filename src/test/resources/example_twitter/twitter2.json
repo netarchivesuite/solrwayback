@@ -6,9 +6,9 @@
    "text":"Test text with link https://t.co/ABC123",
    "is_quote_status":false,
    "in_reply_to_status_id":null,
-   "reply_count":0,
+   "reply_count":2,
    "id":1238239313369935874,
-   "favorite_count":0,
+   "favorite_count":1,
    "entities":{
       "user_mentions":[
 
@@ -49,7 +49,7 @@
       140
    
 ],
-   "retweet_count":0,
+   "retweet_count":3,
    "in_reply_to_user_id":null,
    "favorited":false,
    "user":{

@@ -30,7 +30,7 @@ public class Twitter2Html {
         // Get and format tweet text
         String mainTextHtml = newline2Br(parser.getText());
         //TODO frontend fix so all other params not needed
-        String otherSearchParams = " AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false";
+        String otherSearchParams = " AND type%3A\"Twitter Tweet\"";
         // TODO RBKR fix these methods somehow.. ugly compromise for now.
         mainTextHtml = formatMentions(mainTextHtml, parser.getMentions(), otherSearchParams);
         mainTextHtml = formatHashtags(mainTextHtml, parser.getHashTags(), otherSearchParams);
@@ -261,7 +261,7 @@ public class Twitter2Html {
     }
 
     private static String makeSolrSearchLink(String searchString) {
-        String searchParams = " AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false";
+        String searchParams = " AND type%3A\"Twitter Tweet\"";
         return PropertiesLoader.WAYBACK_BASEURL + "?query=" + searchString + searchParams;
     }
 }

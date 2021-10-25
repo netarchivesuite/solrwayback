@@ -1,6 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.nio.file.Files;
@@ -14,46 +15,9 @@ import dk.kb.netarchivesuite.solrwayback.util.RegexpReplacer;
 
 public class TwitterParserTest {
 	
-    @Test
-    public void testDoNothing() throws Exception {
-        //fuck up junit5
-        
-    }
-    
-	/*
-
-	  @Test
-	     public void testSolrQTime() throws Exception {    	     
-	     		 		 
-	     String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/solr.json")));
-	     /*
-	
-	     String subStr = content.substring(qTimeStart);
-	     int qTimeEnd = 
-	
-	     
-
-	  }
-*/
-
-
-	/*
-	
-	  @Test
-	     public void test2() throws Exception {    	     		  
-	     String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/delete1.json")));
-	      TwitterParser2 p = new TwitterParser2(content);   	     
-	     
-
-	    System.out.println(replaceHashTags(p.getText(),p.getHashTags()));
-	      
-
-
-	  }
-*/
-	  
+   
 	    
-	/*
+	
 	  @Test
 	     public void testNotRetweet() throws Exception {    
 	     
@@ -63,18 +27,23 @@ public class TwitterParserTest {
 	    TwitterParser2 tweet = new TwitterParser2(content);
 
 	    assertEquals("Test full text with tag and link: #math https://t.co/ABCDE",tweet.getText());	    
-	    assertEquals("Thomas Egense",tweet.getAuthor());
-	    assertEquals(0,tweet.getNumberOfLikes());
-	    assertEquals(0,tweet.getNumberOfReplies());
-	    assertEquals(0,tweet.getNumberOfRetweets());
+	    
+	    assertEquals("Thomas Egense",tweet.getUserName());
+	    assertEquals("ThomasEgense",tweet.getUserScreenName());
+	    assertEquals(1,tweet.getLikeCount());
+	    assertEquals(2,tweet.getReplyCount());
+	    assertEquals(3,tweet.getRetweetCount());
 	    assertEquals(false,tweet.isRetweet());
 	    
 	    assertEquals("Fri Mar 13 00:03:52 CET 2020",tweet.getCreatedDate().toString());    
-	    System.out.println(tweet.getHashTags()); //TODO
+
+	    assertEquals(1,tweet.getHashTags().size());
+	    assertTrue(tweet.getHashTags().contains("math"));
+	    
 	    assertEquals(1,tweet.getImageUrlsList().size());
 	    assertEquals("http://pbs.twimg.com/media/ABCDE.jpg",tweet.getImageUrlsList().iterator().next());	    	   	    
 	  }
-	*/
+	
     
     
     
@@ -82,7 +51,7 @@ public class TwitterParserTest {
     
 	
      
-	/*  
+	  @Test
 	  public void testIsRetweet() throws Exception {    
     
     String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/twitter1.json")));
@@ -90,19 +59,24 @@ public class TwitterParserTest {
     
     TwitterParser2 tweet = new TwitterParser2(content);
 
-    assertEquals("RT @Test: Test text with some encoding:å ø …  ",tweet.getText());
-    assertEquals("Thomas2",tweet.getAuthor());
-    assertEquals(0,tweet.getNumberOfLikes());
-    assertEquals(0,tweet.getNumberOfReplies());
-    assertEquals(0,tweet.getNumberOfRetweets());
+  //TODO (encoding test) assertEquals("RT @Test: Test text with some encoding:å ø …  ",tweet.getText());
+    assertEquals("Thomas2",tweet.getUserName());
+    assertEquals(220,tweet.getLikeCount());
+    assertEquals(11,tweet.getReplyCount());
+    assertEquals(19,tweet.getRetweetCount());
     assertEquals(true,tweet.isRetweet());
     assertEquals("Fri Mar 13 07:01:00 CET 2020",tweet.getCreatedDate().toString());    
+    
+    assertEquals(1,tweet.getHashTags().size());
+    assertTrue(tweet.getHashTags().contains("math"));
     System.out.println(tweet.getHashTags());
     //System.out.println(tweet.getImageUrlsList());        
   }
 	  
-*/
+
 	  
+	  
+	  //TODO when proper hashtag replacement by offset has been implemented
 	  /*
 	  public static String replaceHashTags(String text, HashSet<String> tags) {
     	  String searchUrl = "http://localhost/";
