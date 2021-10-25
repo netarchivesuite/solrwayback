@@ -24,6 +24,7 @@ public class TwitterParser2 {
 	private String userScreenName;
 	private String retweetUserScreenName;
 	private String retweetUserName;
+	private String userId;
 	private final String text;
 	private boolean retweet;
 	private boolean hasQuote;
@@ -106,7 +107,8 @@ public class TwitterParser2 {
 
 	private void parseUserInfo() {
 		// All these values always exist
-		this.userName = JsonUtils.getValue(twitterJson, "user.name");
+		this.userName = JsonUtils.getValue(twitterJson, "user.name");		
+		this.userId = JsonUtils.getValue(twitterJson, "user.id");
 		this.userScreenName = JsonUtils.getValue(twitterJson, "user.screen_name");
 		this.userProfileImage = JsonUtils.getValue(twitterJson, "user.profile_image_url");
 		this.userDescription = JsonUtils.getValue(twitterJson, "user.description",
@@ -153,6 +155,14 @@ public class TwitterParser2 {
 		return retweetUserName;
 	}
 
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 
 	public String getText() {
 		return text;

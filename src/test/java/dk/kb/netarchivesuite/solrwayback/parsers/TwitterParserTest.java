@@ -27,6 +27,8 @@ public class TwitterParserTest {
 
 		assertEquals("Thomas Egense",tweet.getUserName());
 		assertEquals("ThomasEgense",tweet.getUserScreenName());
+		assertEquals("2600310521",tweet.getUserId());
+		
 		assertEquals(1,tweet.getLikeCount());
 		assertEquals(2,tweet.getReplyCount());
 		assertEquals(3,tweet.getRetweetCount());
@@ -49,6 +51,7 @@ public class TwitterParserTest {
 
 		//TODO (encoding test) assertEquals("RT @Test: Test text with some encoding:å ø …  ",tweet.getText());
 		assertEquals("Thomas2",tweet.getUserName());
+		assertEquals("2337958629",tweet.getUserId());
 		assertEquals(220,tweet.getLikeCount());
 		assertEquals(11,tweet.getReplyCount());
 		assertEquals(19,tweet.getRetweetCount());
