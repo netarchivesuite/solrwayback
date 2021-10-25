@@ -61,7 +61,7 @@ public class Twitter2Html {
                       "<div class='item author'>"+
                         "<div class='user-wrapper'>"+
                           "<a href='"+ (parser.isRetweet() ? makeSolrSearchLink(parser.getRetweetUserScreenName())
-                                        : "tw_user_id:"+makeSolrSearchLink(parser.getUserId())) +"'>"+
+                        		   : makeSolrSearchLink(parser.getUserScreenName())) +"'>"+
                             "<span class='avatar'>"+
                               imageUrlToHtml(tweeterProfileImageUrl)+
                             "</span>"+
@@ -262,6 +262,6 @@ public class Twitter2Html {
 
     private static String makeSolrSearchLink(String searchString) {
         String searchParams = " AND type%3A\"Twitter Tweet\"";
-        return PropertiesLoader.WAYBACK_BASEURL + "?query=" + searchString + searchParams;
+        return PropertiesLoader.WAYBACK_BASEURL + "search?query=" + searchString + searchParams;
     }
 }
