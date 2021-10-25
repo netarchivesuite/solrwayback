@@ -61,7 +61,7 @@ public class Twitter2Html {
                       "<div class='item author'>"+
                         "<div class='user-wrapper'>"+
                           "<a href='"+ (parser.isRetweet() ? makeSolrSearchLink(parser.getRetweetUserScreenName())
-                        		   : makeSolrSearchLink(parser.getUserScreenName())) +"'>"+
+                        		   : makeSolrSearchLink("tw_user_id:"+parser.getUserScreenName())) +"'>"+
                             "<span class='avatar'>"+
                               imageUrlToHtml(tweeterProfileImageUrl)+
                             "</span>"+
