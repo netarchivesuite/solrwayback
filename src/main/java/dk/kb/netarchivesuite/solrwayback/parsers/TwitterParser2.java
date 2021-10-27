@@ -4,9 +4,16 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +53,8 @@ public class TwitterParser2 {
 	private final int quoteCount;
 
 	private Set<String> imageUrlsList = new HashSet<>();
-	private Set<String> hashTags = new HashSet<>();
-	private Set<String> mentions = new HashSet<>();
+	private Map<Pair<Integer, Integer>, String> hashtags;
+	private Map<Pair<Integer, Integer>, String> mentions;
 
 	private String quoteText;
 	private String quoteUserName;
@@ -89,14 +96,47 @@ public class TwitterParser2 {
 		this.replyCount = Integer.parseInt(JsonUtils.getValue(twitterJson, parsePrefix + "reply_count")); // TODO when to use this?
 
 		//TODO also HTTPs version?
-		// TODO RBKR - pretty sure retweets will always have 'extended_tweet', so probably doesn't make sense to add prefix to short standard tweets
-		JsonUtils.addAllValues(twitterJson, hashTags, parsePrefix + "entities.hashtags[].text");
-		JsonUtils.addAllValues(twitterJson, hashTags, parsePrefix + "extended_tweet.entities.hashtags[].text");
+		Set<String> rawHashtagIndices = new LinkedHashSet<>();
+		JsonUtils.addAllValues(twitterJson, rawHashtagIndices, parsePrefix + "entities.hashtags[].indices");
+		JsonUtils.addAllValues(twitterJson, rawHashtagIndices, parsePrefix + "extended_tweet.entities.hashtags[].indices");
+		List<Pair<Integer, Integer>> hashtagIndices = rawHashtagIndices.stream()
+				.map(rawIndicesString -> rawIndicesString.substring(1, rawIndicesString.length() - 1)) // Cut off surrounding brackets
+				.map(indicesString -> indicesString.split(","))
+				.map(indexPairString -> Pair.of(Integer.parseInt(indexPairString[0]), Integer.parseInt(indexPairString[1])))
+				.map(indexPair -> Pair.of(text.offsetByCodePoints(0, indexPair.getLeft()), text.offsetByCodePoints(0, indexPair.getRight())))
+				.collect(Collectors.toList());
+
+		Set<String> hashtagsText = new LinkedHashSet<>();
+		JsonUtils.addAllValues(twitterJson, hashtagsText, parsePrefix + "entities.hashtags[].text");
+		JsonUtils.addAllValues(twitterJson, hashtagsText, parsePrefix + "extended_tweet.entities.hashtags[].text");
+		List<String> hashtagsTextList = hashtagsText.stream()
+				.map(hashtag -> "#" + hashtag).collect(Collectors.toList());
+		hashtags = IntStream.range(0, hashtagsTextList.size()).boxed()
+				.collect(Collectors.toMap(hashtagIndices::get, hashtagsTextList::get,
+						(h1, h2) -> { throw new IllegalStateException(); }, LinkedHashMap::new));
+
+		Set<String> rawMentionIndices = new LinkedHashSet<>();
+		JsonUtils.addAllValues(twitterJson, rawMentionIndices, parsePrefix + "entities.user_mentions[].indices");
+		JsonUtils.addAllValues(twitterJson, rawMentionIndices, parsePrefix + "extended_tweet.entities.user_mentions[].indices");
+		List<Pair<Integer, Integer>> mentionIndices = rawMentionIndices.stream()
+				.map(rawIndicesString -> rawIndicesString.substring(1, rawIndicesString.length() - 1)) // Cut off surrounding brackets
+				.map(indicesString -> indicesString.split(","))
+				.map(indexPairString -> Pair.of(Integer.parseInt(indexPairString[0]), Integer.parseInt(indexPairString[1])))
+				.map(indexPair -> Pair.of(text.offsetByCodePoints(0, indexPair.getLeft()), text.offsetByCodePoints(0, indexPair.getRight())))
+				.collect(Collectors.toList());
+
+		Set<String> mentionScreenNames = new LinkedHashSet<>();
+		JsonUtils.addAllValues(twitterJson, mentionScreenNames, parsePrefix + "entities.user_mentions[].screen_name");
+		JsonUtils.addAllValues(twitterJson, mentionScreenNames, parsePrefix + "extended_tweet.entities.user_mentions[].screen_name");
+		List<String> mentionScreenNamesList = mentionScreenNames.stream()
+				.map(mention -> "@" + mention).collect(Collectors.toList());
+		mentions = IntStream.range(0, mentionScreenNamesList.size()).boxed()
+				.collect(Collectors.toMap(mentionIndices::get, mentionScreenNamesList::get,
+						(h1, h2) -> { throw new IllegalStateException(); }, LinkedHashMap::new));
+
 		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "entities.media[].media_url");
 		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "extended_tweet.entities.media[].media_url");
 		JsonUtils.addAllValues(twitterJson, imageUrlsList, parsePrefix + "extended_tweet.extended_entities.media[].media_url");
-		JsonUtils.addAllValues(twitterJson, mentions, parsePrefix + "entities.user_mentions[].screen_name");
-		JsonUtils.addAllValues(twitterJson, mentions, parsePrefix + "extended_tweet.entities.user_mentions[].screen_name");
 
 		// Seems if tweet is retweet the quote will appear both in the upper 'quoted_status' and 'retweeted_status' while
 		// standard tweet only has 'quoted_status.
@@ -184,7 +224,7 @@ public class TwitterParser2 {
 	}
 
 
-	public Set<String> getMentions() {
+	public Map<Pair<Integer, Integer>, String> getMentions() {
 		return mentions;
 	}
 
@@ -209,8 +249,8 @@ public class TwitterParser2 {
 	}
 
 
-	public Set<String> getHashTags() {
-		return hashTags;
+	public Map<Pair<Integer, Integer>, String> getHashtags() {
+		return hashtags;
 	}
 
 

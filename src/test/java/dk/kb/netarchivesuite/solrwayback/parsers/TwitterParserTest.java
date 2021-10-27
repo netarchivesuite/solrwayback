@@ -1,6 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Files;
@@ -12,13 +13,10 @@ import org.junit.Test;
 
 public class TwitterParserTest {
 
-
-
-
 	@Test
 	public void testNotRetweet() throws Exception {    
 
-		String content = new String(Files.readAllBytes(Paths.get("/home/teg/workspace/solrwayback/src/test/resources/example_twitter/twitter2.json")));
+		String content = new String(Files.readAllBytes(Paths.get("src/test/resources/example_twitter/twitter2.json")));
 
 
 		TwitterParser2 tweet = new TwitterParser2(content);
@@ -32,12 +30,12 @@ public class TwitterParserTest {
 		assertEquals(1,tweet.getLikeCount());
 		assertEquals(2,tweet.getReplyCount());
 		assertEquals(3,tweet.getRetweetCount());
-		assertEquals(false,tweet.isRetweet());
+		assertFalse(tweet.isRetweet());
 
 		assertEquals("Fri Mar 13 00:03:52 CET 2020",tweet.getCreatedDate().toString());    
 
-		assertEquals(1,tweet.getHashTags().size());
-		assertTrue(tweet.getHashTags().contains("math"));
+		assertEquals(1,tweet.getHashtags().size());
+		assertTrue(tweet.getHashtags().containsValue("math"));
 
 		assertEquals(1,tweet.getImageUrlsList().size());
 		assertEquals("http://pbs.twimg.com/media/ABCDE.jpg",tweet.getImageUrlsList().iterator().next());	    	   	    
@@ -55,12 +53,12 @@ public class TwitterParserTest {
 		assertEquals(220,tweet.getLikeCount());
 		assertEquals(11,tweet.getReplyCount());
 		assertEquals(19,tweet.getRetweetCount());
-		assertEquals(true,tweet.isRetweet());
+		assertTrue(tweet.isRetweet());
 		assertEquals("Fri Mar 13 07:01:00 CET 2020",tweet.getCreatedDate().toString());    
 
-		assertEquals(1,tweet.getHashTags().size());
-		assertTrue(tweet.getHashTags().contains("math"));
-		System.out.println(tweet.getHashTags());
+		assertEquals(1,tweet.getHashtags().size());
+		assertTrue(tweet.getHashtags().containsValue("math"));
+		System.out.println(tweet.getHashtags());
 		//System.out.println(tweet.getImageUrlsList());        
 	}
 

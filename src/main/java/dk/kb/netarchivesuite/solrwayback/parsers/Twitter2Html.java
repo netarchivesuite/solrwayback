@@ -2,25 +2,30 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Twitter2Html {
     private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
+    private static TwitterParser2 parser;
 
     public static String twitter2Html(String jsonString, String crawlDate) throws Exception{
-        TwitterParser2 parser = new TwitterParser2(jsonString);
+        parser = new TwitterParser2(jsonString);
 
         // Get user profile image
         String tweeterProfileImage = parser.isRetweet() ? parser.getRetweetUserProfileImage() : parser.getUserProfileImage();
@@ -28,12 +33,7 @@ public class Twitter2Html {
         ArrayList<ImageUrl> tweeterProfileImageUrl = getImageUrlsFromSolr(tweeterProfileImageList, crawlDate);
 
         // Get and format tweet text
-        String mainTextHtml = newline2Br(parser.getText());
-        //TODO frontend fix so all other params not needed
-        String otherSearchParams = " AND type%3A\"Twitter Tweet\"";
-        // TODO RBKR fix these methods somehow.. ugly compromise for now.
-        mainTextHtml = formatMentions(mainTextHtml, parser.getMentions(), otherSearchParams);
-        mainTextHtml = formatHashtags(mainTextHtml, parser.getHashTags(), otherSearchParams);
+        String mainTextHtml = formatTweetMainText(parser.getText());
 
         // Get tweet images
         List<String> tweetImages = new ArrayList<>(parser.getImageUrlsList());
@@ -104,6 +104,39 @@ public class Twitter2Html {
         return html;
     }
 
+    private static String formatTweetMainText(String mainText) {
+        mainText = formatEntities(mainText);
+        mainText = newline2Br(mainText);
+        return mainText;
+    }
+
+    private static String formatEntities(String text) {
+        StringBuilder sb = new StringBuilder(text);
+
+        // Merge hashtags and mentions - TODO RBKR handle urls aswell?
+        Map<Pair<Integer, Integer>, String> allEntities = new LinkedHashMap<>();
+        allEntities.putAll(parser.getHashtags());
+        allEntities.putAll(parser.getMentions());
+
+        // Reverse to insert entities in text from end to start
+        List<Pair<Integer, Integer>> reverseKeys = new ArrayList<>(allEntities.keySet());
+        Collections.reverse(reverseKeys);
+        try {
+            for (Pair<Integer, Integer> indexPair : reverseKeys) {
+                String tag = allEntities.get(indexPair);
+                int startIndex = indexPair.getLeft();
+                int endIndex = indexPair.getRight();
+                String searchPrefix = tag.charAt(0) == '#' ? "keywords%3A" : ""; // TODO ugly hack for now
+                String searchUrl = makeSolrSearchLink(searchPrefix + tag.substring(1));
+                String tagWithLink = "<span><a href='" + searchUrl + "'>" + tag + "</a></span>";
+                sb.replace(startIndex, endIndex, tagWithLink);
+            }
+        } catch (Exception e) { // Shouldn't happen
+            log.warn("Failed replacing raw tags with solr search links");
+        }
+        return sb.toString();
+    }
+
     private static ArrayList<ImageUrl> getImageUrlsFromSolr(List<String> imagesList, String crawlDate) throws Exception {
         String imagesSolrQuery = Facade.queryStringForImages(imagesList);
         ArrayList<ArcEntryDescriptor> imageEntries = NetarchiveSolrClient.getInstance()
@@ -152,30 +185,6 @@ public class Twitter2Html {
         return titlePrefix + parser.getUserName();
     }
 
-    // TODO RBKR replace hashtags and mentions using direct indices instead of string replacement
-    public static String formatMentions(String text, Set<String> mentions, String extraSearchParams) {
-        for (String mention : mentions) {
-            String searchUrl = PropertiesLoader.WAYBACK_BASEURL + "?query=%40" + mention + extraSearchParams;
-            String mentionWithLink = "<span><a href='" + searchUrl + "'>@" + mention + "</a></span>";
-            text = text.replaceAll("@" + mention, mentionWithLink);
-        }
-        return text;
-    }
-
-    /*HashTags are in clear text without # in front.
-     * Replace this with a link that searches for the tag.
-     */
-    public static String formatHashtags(String text, Set<String> tags, String extraSearchParams) {
-        log.info("tags replace called for text: '{}' with tags: {}", text, tags);
-        for (String tag : tags) {
-            log.info("replacing tag: {}", tag);
-            String searchUrl = PropertiesLoader.WAYBACK_BASEURL + "?query=keywords%3A" + tag + extraSearchParams;
-            String tagWithLink = "<span><a href='" + searchUrl + "'>#" + tag + "</a></span>";
-            text = text.replaceAll("#" + tag, tagWithLink);
-        }
-        return text;
-    }
-
 
     private static String getQuoteHtml(TwitterParser2 parser, String crawlDate) {
         String quoteHtml = "";
@@ -217,12 +226,11 @@ public class Twitter2Html {
     }
 
 
-    private static String newline2Br(String text){
-        if (text==null){
+    private static String newline2Br(String text) {
+        if (text == null){
             return "";
         }
         return text.replace("\n","<br>");
-
     }
 
 
