@@ -14,7 +14,11 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 public class WarcTypeResourceTest  extends UnitTestUtils{
 
-  
+  /*
+   * 
+   * The warc file for this unittest can not be shared public.
+   * 
+   */
   @Test
   public void testWarcParserTypeResource() throws Exception {
       
@@ -32,7 +36,7 @@ Content-Type: image/jpeg
 Content-Length: 1168
 
 */
-    
+    /*
       File file = getFile("src/test/resources/example_warc/20020308.warc.gz");
       
       ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 64049); //Image entry
@@ -51,5 +55,5 @@ Content-Length: 1168
       assertEquals("http://www.pimfortuyn.nl/images/newsBottomBG.jpg",arcEntry.getUrl());    
   
   }
-  
+  */
 }
