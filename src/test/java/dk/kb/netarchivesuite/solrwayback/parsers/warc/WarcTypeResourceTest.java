@@ -54,7 +54,7 @@ Content-Length: 1168
       assertEquals(29,image.getHeight());        
       assertEquals("http://www.pimfortuyn.nl/images/newsBottomBG.jpg",arcEntry.getUrl());    
   
-  */
+  */  
   }
   
 }
