@@ -2,6 +2,8 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -75,6 +77,7 @@ public class TwitterParser2 {
 
 		this.createdDate = parseTwitterDate(parentJSON);
 		parseUserInfo();
+
 		if (isRetweet()) {
 			parseRetweetedTweet();
 		} else {
@@ -92,8 +95,8 @@ public class TwitterParser2 {
 		this.retweetCount = Integer.parseInt(JsonUtils.getValue(json, "retweet_count"));
 		this.quoteCount = Integer.parseInt(JsonUtils.getValue(json, "quote_count"));
 		this.replyCount = Integer.parseInt(JsonUtils.getValue(json, "reply_count")); // TODO when to use this?
-		this.hashtags = parseHashtags(json);
-		this.mentions = parseMentions(json);
+		this.hashtags = parseHashtags(json, text);
+		this.mentions = parseMentions(json, text);
 		parseImages(json, imageUrlStrings);
 	}
 
@@ -120,8 +123,8 @@ public class TwitterParser2 {
 		parseQuoteUserInfo(quoteTweetJSON.getJSONObject("user"));
 		this.quoteCreatedDate = parseTwitterDate(quoteTweetJSON);
 		this.quoteText = JsonUtils.getValueIfExistsByPriority(quoteTweetJSON, "extended_tweet.full_text", "text");
-		this.quoteHashtags = parseHashtags(quoteTweetJSON);
-		this.quoteMentions = parseMentions(quoteTweetJSON);
+		this.quoteHashtags = parseHashtags(quoteTweetJSON, quoteText);
+		this.quoteMentions = parseMentions(quoteTweetJSON, quoteText);
 		parseImages(quoteTweetJSON, quoteImageUrlStrings);
 	}
 
@@ -136,17 +139,17 @@ public class TwitterParser2 {
 		this.quoteUserVerified = userJson.getBoolean("verified");
 	}
 
-	private Map<Pair<Integer, Integer>, String> parseHashtags(JSONObject json) {
-		List<Pair<Integer, Integer>> hashtagIndices = parseHashtagIndices(json);
+	private Map<Pair<Integer, Integer>, String> parseHashtags(JSONObject json, String tweetText) {
+		List<Pair<Integer, Integer>> hashtagIndices = parseHashtagIndices(json, tweetText);
 		List<String> hashtagsStrings = parseHashtagStrings(json);
 		return mergeListsIntoMap(hashtagIndices, hashtagsStrings);
 	}
 
-	private List<Pair<Integer, Integer>> parseHashtagIndices(JSONObject json) {
+	private List<Pair<Integer, Integer>> parseHashtagIndices(JSONObject json, String tweetText) {
 		Set<String> rawHashtagIndices = new LinkedHashSet<>();
 		JsonUtils.addAllValues(json, rawHashtagIndices, "entities.hashtags[].indices");
 		JsonUtils.addAllValues(json, rawHashtagIndices, "extended_tweet.entities.hashtags[].indices");
-		return makeIndicesWithOffset(rawHashtagIndices, getText());
+		return makeIndicesWithOffset(rawHashtagIndices, tweetText);
 	}
 
 	private List<String> parseHashtagStrings(JSONObject json) {
@@ -157,25 +160,25 @@ public class TwitterParser2 {
 				.map(hashtag -> "#" + hashtag).collect(Collectors.toList());
 	}
 
-	private Map<Pair<Integer, Integer>, String> parseMentions(JSONObject json) {
-		List<Pair<Integer, Integer>> mentionIndices = parseMentionIndices(json);
+	private Map<Pair<Integer, Integer>, String> parseMentions(JSONObject json, String tweetText) {
+		List<Pair<Integer, Integer>> mentionIndices = parseMentionIndices(json, tweetText);
 		List<String> mentionStrings = parseMentionStrings(json);
 		return mergeListsIntoMap(mentionIndices, mentionStrings);
 	}
 
-	private LinkedHashMap<Pair<Integer, Integer>, String> mergeListsIntoMap(List<Pair<Integer, Integer>> mentionIndices, List<String> mentionScreenNamesList) {
-		return IntStream.range(0, mentionScreenNamesList.size()).boxed()
-				.collect(Collectors.toMap(mentionIndices::get, mentionScreenNamesList::get,
+	private LinkedHashMap<Pair<Integer, Integer>, String> mergeListsIntoMap(List<Pair<Integer, Integer>> indices, List<String> tags) {
+		return IntStream.range(0, tags.size()).boxed()
+				.collect(Collectors.toMap(indices::get, tags::get,
 						(h1, h2) -> {
 							throw new IllegalStateException(); // If keys are same - shouldn't happen since no tag should share indices
 						}, LinkedHashMap::new));
 	}
 
-	private List<Pair<Integer, Integer>> parseMentionIndices(JSONObject json) {
+	private List<Pair<Integer, Integer>> parseMentionIndices(JSONObject json, String tweetText) {
 		Set<String> rawMentionIndices = new LinkedHashSet<>();
 		JsonUtils.addAllValues(json, rawMentionIndices, "entities.user_mentions[].indices");
 		JsonUtils.addAllValues(json, rawMentionIndices, "extended_tweet.entities.user_mentions[].indices");
-		return makeIndicesWithOffset(rawMentionIndices, getText());
+		return makeIndicesWithOffset(rawMentionIndices, tweetText);
 	}
 
 	private List<String> parseMentionStrings(JSONObject json) {
@@ -192,12 +195,13 @@ public class TwitterParser2 {
 		JsonUtils.addAllValues(json, imageSet, "extended_tweet.extended_entities.media[].media_url");
 	}
 
-	private List<Pair<Integer, Integer>> makeIndicesWithOffset(Set<String> rawHashtagIndices, String text) {
+	private List<Pair<Integer, Integer>> makeIndicesWithOffset(Set<String> rawHashtagIndices, String tweetText) {
 		return rawHashtagIndices.stream()
 				.map(rawIndicesString -> rawIndicesString.substring(1, rawIndicesString.length() - 1)) // Cut off surrounding brackets
 				.map(indicesString -> indicesString.split(","))
 				.map(indexPairString -> Pair.of(Integer.parseInt(indexPairString[0]), Integer.parseInt(indexPairString[1])))
-				.map(indexPair -> Pair.of(text.offsetByCodePoints(0, indexPair.getLeft()), text.offsetByCodePoints(0, indexPair.getRight())))
+				//.peek(pair -> log.info(pair.toString()))
+				.map(indexPair -> Pair.of(tweetText.offsetByCodePoints(0, indexPair.getLeft()), tweetText.offsetByCodePoints(0, indexPair.getRight())))
 				.collect(Collectors.toList());
 	}
 

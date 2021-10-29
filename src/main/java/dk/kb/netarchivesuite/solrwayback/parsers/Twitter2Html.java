@@ -26,7 +26,7 @@ public class Twitter2Html {
         // Get user profile image
         String tweeterProfileImage = parser.isRetweet() ? parser.getRetweetUserProfileImage() : parser.getUserProfileImage();
         List<String> tweeterProfileImageList = Collections.singletonList(tweeterProfileImage);
-        ArrayList<ImageUrl> tweeterProfileImageUrl = getImageUrlsFromSolr(tweeterProfileImageList, crawlDate);
+        List<ImageUrl> tweeterProfileImageUrl = getImageUrlsFromSolr(tweeterProfileImageList, crawlDate);
 
         // Get and format tweet text
         String mainTextHtml = formatTweetText(parser.getText(), parser.getHashtags(), parser.getMentions());
@@ -154,7 +154,7 @@ public class Twitter2Html {
                     "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -105px -50px;}"; // Missing correct icon
     }
 
-    private static String makeUserCard(ArrayList<ImageUrl> profileImageUrl, String userName, String userHandle,
+    private static String makeUserCard(List<ImageUrl> profileImageUrl, String userName, String userHandle,
                                        String description, int followingCount, int followersCount) {
         return "<div class='user-card'>" +
                     "<div class='item author'>" +
@@ -185,41 +185,42 @@ public class Twitter2Html {
 
 
     private static String getQuoteHtml(TwitterParser2 parser, String crawlDate) {
-        String quoteHtml = "";
-
+        List<ImageUrl> quoteProfileImageUrl = new ArrayList<>();
+        List<ImageUrl> quoteImageUrls = new ArrayList<>();
         try {
             List<String> quoteProfileImage = Collections.singletonList(parser.getQuoteUserProfileImage());
-            ArrayList<ImageUrl> quoteProfileImageUrl = getImageUrlsFromSolr(quoteProfileImage, crawlDate);
+            quoteProfileImageUrl = getImageUrlsFromSolr(quoteProfileImage, crawlDate);
             List<String> quoteImages = new ArrayList<>(parser.getQuoteImageUrlStrings());
-            ArrayList<ImageUrl> quoteImageUrls = getImageUrlsFromSolr(quoteImages, crawlDate);
-
-            quoteHtml =
-                    "<div class='quote'>" +
-                        "<div class='item author'>" +
-                            "<div class='user-wrapper'>" +
-                                "<a href='" + makeSolrSearchLink(parser.getQuoteUserScreenName()) + "'>" +
-                                    "<span class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</span>" +
-                                    "<div class='user-handles'>" +
-                                        "<h2>" + parser.getQuoteUserName() + "</h2>" +
-                                        "<h4>@" + parser.getQuoteUserScreenName() + "</h4>" +
-                                    "</div>" +
-                                "</a>" +
-                                makeUserCard(quoteProfileImageUrl, parser.getQuoteUserName(),
-                                        parser.getQuoteUserScreenName(), parser.getQuoteUserDescription(),
-                                        parser.getQuoteUserFriendsCount(), parser.getQuoteUserFollowersCount()) +
-                            "</div>" +
-                        "</div>" +
-                        "<div class='item date'>" +
-                            "<div>" + parser.getQuoteCreatedDate() + "</div>" +
-                        "</div>" +
-                        "<div class='item text'>" +
-                            formatTweetText(parser.getQuoteText(), parser.getQuoteHashtags(), parser.getQuoteMentions()) +
-                        "</div>" +
-                        (quoteImageUrls.isEmpty() ? "" : "<span class='image'>" + imageUrlToHtml(quoteImageUrls) + "</span>") +
-                    "</div>";
+            quoteImageUrls = getImageUrlsFromSolr(quoteImages, crawlDate);
         } catch (Exception e) {
             log.warn("Failed getting images for quote in tweet by '{}'", parser.getUserName(), e);
         }
+
+        String quoteHtml =
+                "<div class='quote'>" +
+                    "<div class='item author'>" +
+                        "<div class='user-wrapper'>" +
+                            "<a href='" + makeSolrSearchLink(parser.getQuoteUserScreenName()) + "'>" +
+                                "<span class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</span>" +
+                                "<div class='user-handles'>" +
+                                    "<h2>" + parser.getQuoteUserName() + "</h2>" +
+                                    "<h4>@" + parser.getQuoteUserScreenName() + "</h4>" +
+                                "</div>" +
+                            "</a>" +
+                            makeUserCard(quoteProfileImageUrl, parser.getQuoteUserName(),
+                                    parser.getQuoteUserScreenName(), parser.getQuoteUserDescription(),
+                                    parser.getQuoteUserFriendsCount(), parser.getQuoteUserFollowersCount()) +
+                        "</div>" +
+                    "</div>" +
+                    "<div class='item date'>" +
+                        "<div>" + parser.getQuoteCreatedDate() + "</div>" +
+                    "</div>" +
+                    "<div class='item text'>" +
+                        formatTweetText(parser.getQuoteText(), parser.getQuoteHashtags(), parser.getQuoteMentions()) +
+                    "</div>" +
+                    (quoteImageUrls.isEmpty() ? "" : "<span class='image'>" + imageUrlToHtml(quoteImageUrls) + "</span>") +
+                "</div>";
+
         return quoteHtml;
     }
 
@@ -233,7 +234,7 @@ public class Twitter2Html {
 
 
     private static String getRetweetHeader(TwitterParser2 parser, String crawlDate) {
-        ArrayList<ImageUrl> profileImageUrl = new ArrayList<>();
+        List<ImageUrl> profileImageUrl = new ArrayList<>();
         try {
             List<String> retweetProfileImage = Collections.singletonList(parser.getUserProfileImage());
             profileImageUrl = getImageUrlsFromSolr(retweetProfileImage, crawlDate);
@@ -256,7 +257,7 @@ public class Twitter2Html {
     }
 
 
-    public static String imageUrlToHtml(ArrayList<ImageUrl> images){
+    public static String imageUrlToHtml(List<ImageUrl> images){
         StringBuilder b = new StringBuilder();
         for (ImageUrl image : images){
             b.append("<img src='")
