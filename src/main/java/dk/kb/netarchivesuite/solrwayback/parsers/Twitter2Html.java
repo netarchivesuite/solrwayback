@@ -10,22 +10,18 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class Twitter2Html {
     private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
-    private static TwitterParser2 parser;
 
     public static String twitter2Html(String jsonString, String crawlDate) throws Exception{
-        parser = new TwitterParser2(jsonString);
+        TwitterParser2 parser = new TwitterParser2(jsonString);
 
         // Get user profile image
         String tweeterProfileImage = parser.isRetweet() ? parser.getRetweetUserProfileImage() : parser.getUserProfileImage();
@@ -33,10 +29,10 @@ public class Twitter2Html {
         ArrayList<ImageUrl> tweeterProfileImageUrl = getImageUrlsFromSolr(tweeterProfileImageList, crawlDate);
 
         // Get and format tweet text
-        String mainTextHtml = formatTweetMainText(parser.getText());
+        String mainTextHtml = formatTweetText(parser.getText(), parser.getHashtags(), parser.getMentions());
 
         // Get tweet images
-        List<String> tweetImages = new ArrayList<>(parser.getImageUrlsList());
+        List<String> tweetImages = new ArrayList<>(parser.getImageUrlStrings());
         ArrayList<ImageUrl> tweetImageUrls = getImageUrlsFromSolr(tweetImages, crawlDate);
 
         String cssFromFile = IOUtils.toString(
@@ -104,19 +100,21 @@ public class Twitter2Html {
         return html;
     }
 
-    private static String formatTweetMainText(String mainText) {
-        mainText = formatEntities(mainText);
-        mainText = newline2Br(mainText);
-        return mainText;
+    @SafeVarargs
+    private static String formatTweetText(String text, Map<Pair<Integer, Integer>, String>... entities) {
+        text = formatEntities(text, entities);
+        text = newline2Br(text);
+        return text;
     }
 
-    private static String formatEntities(String text) {
+    private static String formatEntities(String text, Map<Pair<Integer, Integer>, String>[] entities) {
         StringBuilder sb = new StringBuilder(text);
 
         // Merge hashtags and mentions - TODO RBKR handle urls aswell?
         Map<Pair<Integer, Integer>, String> allEntities = new LinkedHashMap<>();
-        allEntities.putAll(parser.getHashtags());
-        allEntities.putAll(parser.getMentions());
+        for (Map<Pair<Integer, Integer>, String> entityType : entities) {
+            allEntities.putAll(entityType);
+        }
 
         // Reverse to insert entities in text from end to start
         List<Pair<Integer, Integer>> reverseKeys = new ArrayList<>(allEntities.keySet());
@@ -215,12 +213,12 @@ public class Twitter2Html {
                             "<div>" + parser.getQuoteCreatedDate() + "</div>" +
                         "</div>" +
                         "<div class='item text'>" +
-                            parser.getQuoteText() +
+                            formatTweetText(parser.getQuoteText(), parser.getQuoteHashtags(), parser.getQuoteMentions()) +
                         "</div>" +
                         (quoteImageUrls.isEmpty() ? "" : "<span class='image'>" + imageUrlToHtml(quoteImageUrls) + "</span>") +
                     "</div>";
         } catch (Exception e) {
-            log.warn("Failed getting images for quote in tweet by '{}'", parser.getUserName());
+            log.warn("Failed getting images for quote in tweet by '{}'", parser.getUserName(), e);
         }
         return quoteHtml;
     }

@@ -1,26 +1,15 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import static org.junit.Assert.assertEquals;
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import org.json.JSONObject;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
-import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.Test;
-
-import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import static org.junit.Assert.assertEquals;
 
 public class Twitter2HtmlTest extends UnitTestUtils{
     @Test

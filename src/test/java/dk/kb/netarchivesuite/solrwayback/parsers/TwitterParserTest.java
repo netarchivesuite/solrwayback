@@ -37,8 +37,8 @@ public class TwitterParserTest {
 		assertEquals(1,tweet.getHashtags().size());
 		assertTrue(tweet.getHashtags().containsValue("math"));
 
-		assertEquals(1,tweet.getImageUrlsList().size());
-		assertEquals("http://pbs.twimg.com/media/ABCDE.jpg",tweet.getImageUrlsList().iterator().next());	    	   	    
+		assertEquals(1,tweet.getImageUrlStrings().size());
+		assertEquals("http://pbs.twimg.com/media/ABCDE.jpg",tweet.getImageUrlStrings().iterator().next());
 	}
 
 	@Test
