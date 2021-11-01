@@ -2,8 +2,6 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -32,7 +30,8 @@ public class TwitterParser2 {
 	private String userScreenName;
 	private String retweetUserScreenName;
 	private String retweetUserName;
-	private String userId;
+	private long retweetUserID;
+	private long userID;
 	private String text;
 	private boolean isRetweet;
 	private boolean hasQuote;
@@ -58,6 +57,7 @@ public class TwitterParser2 {
 	private Map<Pair<Integer, Integer>, String> mentions;
 
 	private String quoteText;
+	private long quoteUserID;
 	private String quoteUserName;
 	private String quoteUserScreenName;
 	private Date quoteCreatedDate;
@@ -76,7 +76,7 @@ public class TwitterParser2 {
 		this.hasQuote = parentJSON.getBoolean("is_quote_status");
 
 		this.createdDate = parseTwitterDate(parentJSON);
-		parseUserInfo();
+		parseMainUserInfo(parentJSON.getJSONObject("user"));
 
 		if (isRetweet()) {
 			parseRetweetedTweet();
@@ -88,16 +88,29 @@ public class TwitterParser2 {
 		}
 	}
 
-	private void parseTweetContent(JSONObject json) {
-		// Longer tweets contain the 'extended_tweet' keyword while short tweets do without it
-		this.text = JsonUtils.getValueIfExistsByPriority(json, "extended_tweet.full_text", "text");
-		this.likeCount = Integer.parseInt(JsonUtils.getValue(json, "favorite_count"));
-		this.retweetCount = Integer.parseInt(JsonUtils.getValue(json, "retweet_count"));
-		this.quoteCount = Integer.parseInt(JsonUtils.getValue(json, "quote_count"));
-		this.replyCount = Integer.parseInt(JsonUtils.getValue(json, "reply_count")); // TODO when to use this?
-		this.hashtags = parseHashtags(json, text);
-		this.mentions = parseMentions(json, text);
-		parseImages(json, imageUrlStrings);
+	private Date parseTwitterDate(JSONObject json) {
+		String dateStr = json.getString("created_at");
+		try {
+			DateFormat df = new SimpleDateFormat("EEE MMM dd kk:mm:ss Z yyyy", Locale.ENGLISH);
+			return df.parse(dateStr);
+		} catch (Exception e) {
+			log.error("failed to parse twitter date:" + dateStr);
+			return null;
+		}
+
+	}
+
+	private void parseMainUserInfo(JSONObject mainUserJSON) {
+		// All these values always exist
+		this.userID = mainUserJSON.getLong("id");
+		this.userName = mainUserJSON.getString("name");
+		this.userScreenName = mainUserJSON.getString("screen_name");
+		this.userProfileImage = mainUserJSON.getString("profile_image_url");
+		this.userDescription = mainUserJSON.isNull("description") ? "No description."
+				: mainUserJSON.getString("description"); // Might be null, so want a default
+		this.userFollowersCount = mainUserJSON.getInt("followers_count");
+		this.userFriendsCount = mainUserJSON.getInt("friends_count");
+		this.userVerified = mainUserJSON.getBoolean("verified");
 	}
 
 	private void parseRetweetedTweet() {
@@ -107,36 +120,27 @@ public class TwitterParser2 {
 		parseTweetContent(retweetedTweetJSON);
 	}
 
-	private void parseRetweetedUser(JSONObject retweetedUserJson) {
-		this.retweetUserName = retweetedUserJson.getString("name");
-		this.retweetUserScreenName = retweetedUserJson.getString("screen_name");
-		this.retweetUserProfileImage = retweetedUserJson.getString("profile_image_url");
-		this.retweetUserDescription = retweetedUserJson.get("description") == null ? "No description." : retweetedUserJson.getString("description");
-		this.retweetUserFollowersCount = retweetedUserJson.getInt("followers_count");
-		this.retweetUserFriendsCount = retweetedUserJson.getInt("friends_count");
+	private void parseRetweetedUser(JSONObject retweetedUserJSON) {
+		this.retweetUserID = retweetedUserJSON.getLong("id");
+		this.retweetUserName = retweetedUserJSON.getString("name");
+		this.retweetUserScreenName = retweetedUserJSON.getString("screen_name");
+		this.retweetUserProfileImage = retweetedUserJSON.getString("profile_image_url");
+		this.retweetUserDescription = retweetedUserJSON.isNull("description") ? "No description."
+				: retweetedUserJSON.getString("description");
+		this.retweetUserFollowersCount = retweetedUserJSON.getInt("followers_count");
+		this.retweetUserFriendsCount = retweetedUserJSON.getInt("friends_count");
 	}
 
-	private void parseQuote() {
-		// Twitter API has quote-JSON under both "quoted_status" and "retweeted_status.quoted_status" if retweet,
-		// so no need to use retweet prefix.
-		JSONObject quoteTweetJSON = parentJSON.getJSONObject("quoted_status");
-		parseQuoteUserInfo(quoteTweetJSON.getJSONObject("user"));
-		this.quoteCreatedDate = parseTwitterDate(quoteTweetJSON);
-		this.quoteText = JsonUtils.getValueIfExistsByPriority(quoteTweetJSON, "extended_tweet.full_text", "text");
-		this.quoteHashtags = parseHashtags(quoteTweetJSON, quoteText);
-		this.quoteMentions = parseMentions(quoteTweetJSON, quoteText);
-		parseImages(quoteTweetJSON, quoteImageUrlStrings);
-	}
-
-	private void parseQuoteUserInfo(JSONObject userJson) {
-		this.quoteUserName = userJson.getString("name");
-		this.quoteUserScreenName = userJson.getString("screen_name");
-		this.quoteUserProfileImage = userJson.getString("profile_image_url");
-		this.quoteUserDescription =
-				userJson.get("description") == null ? "No description." : userJson.getString("description");
-		this.quoteUserFollowersCount = userJson.getInt("followers_count");
-		this.quoteUserFriendsCount = userJson.getInt("friends_count");
-		this.quoteUserVerified = userJson.getBoolean("verified");
+	private void parseTweetContent(JSONObject json) {
+		// Longer tweets contain the 'extended_tweet' keyword while short tweets do without it
+		this.text = JsonUtils.getValueIfExistsByPriority(json, "extended_tweet.full_text", "text");
+		this.likeCount = json.getInt("favorite_count");
+		this.retweetCount = json.getInt("retweet_count");
+		this.quoteCount = json.getInt( "quote_count");
+		this.replyCount = json.getInt( "reply_count");
+		this.hashtags = parseHashtags(json, text);
+		this.mentions = parseMentions(json, text);
+		parseImages(json, imageUrlStrings);
 	}
 
 	private Map<Pair<Integer, Integer>, String> parseHashtags(JSONObject json, String tweetText) {
@@ -152,6 +156,15 @@ public class TwitterParser2 {
 		return makeIndicesWithOffset(rawHashtagIndices, tweetText);
 	}
 
+	private List<Pair<Integer, Integer>> makeIndicesWithOffset(Set<String> rawHashtagIndices, String tweetText) {
+		return rawHashtagIndices.stream()
+				.map(rawIndicesString -> rawIndicesString.substring(1, rawIndicesString.length() - 1)) // Cut off surrounding brackets
+				.map(indicesString -> indicesString.split(","))
+				.map(indexPairString -> Pair.of(Integer.parseInt(indexPairString[0]), Integer.parseInt(indexPairString[1])))
+				.map(indexPair -> Pair.of(tweetText.offsetByCodePoints(0, indexPair.getLeft()), tweetText.offsetByCodePoints(0, indexPair.getRight())))
+				.collect(Collectors.toList());
+	}
+
 	private List<String> parseHashtagStrings(JSONObject json) {
 		Set<String> hashtagsText = new LinkedHashSet<>();
 		JsonUtils.addAllValues(json, hashtagsText, "entities.hashtags[].text");
@@ -160,18 +173,18 @@ public class TwitterParser2 {
 				.map(hashtag -> "#" + hashtag).collect(Collectors.toList());
 	}
 
-	private Map<Pair<Integer, Integer>, String> parseMentions(JSONObject json, String tweetText) {
-		List<Pair<Integer, Integer>> mentionIndices = parseMentionIndices(json, tweetText);
-		List<String> mentionStrings = parseMentionStrings(json);
-		return mergeListsIntoMap(mentionIndices, mentionStrings);
-	}
-
 	private LinkedHashMap<Pair<Integer, Integer>, String> mergeListsIntoMap(List<Pair<Integer, Integer>> indices, List<String> tags) {
 		return IntStream.range(0, tags.size()).boxed()
 				.collect(Collectors.toMap(indices::get, tags::get,
 						(h1, h2) -> {
 							throw new IllegalStateException(); // If keys are same - shouldn't happen since no tag should share indices
 						}, LinkedHashMap::new));
+	}
+
+	private Map<Pair<Integer, Integer>, String> parseMentions(JSONObject json, String tweetText) {
+		List<Pair<Integer, Integer>> mentionIndices = parseMentionIndices(json, tweetText);
+		List<String> mentionStrings = parseMentionStrings(json);
+		return mergeListsIntoMap(mentionIndices, mentionStrings);
 	}
 
 	private List<Pair<Integer, Integer>> parseMentionIndices(JSONObject json, String tweetText) {
@@ -195,29 +208,29 @@ public class TwitterParser2 {
 		JsonUtils.addAllValues(json, imageSet, "extended_tweet.extended_entities.media[].media_url");
 	}
 
-	private List<Pair<Integer, Integer>> makeIndicesWithOffset(Set<String> rawHashtagIndices, String tweetText) {
-		return rawHashtagIndices.stream()
-				.map(rawIndicesString -> rawIndicesString.substring(1, rawIndicesString.length() - 1)) // Cut off surrounding brackets
-				.map(indicesString -> indicesString.split(","))
-				.map(indexPairString -> Pair.of(Integer.parseInt(indexPairString[0]), Integer.parseInt(indexPairString[1])))
-				//.peek(pair -> log.info(pair.toString()))
-				.map(indexPair -> Pair.of(tweetText.offsetByCodePoints(0, indexPair.getLeft()), tweetText.offsetByCodePoints(0, indexPair.getRight())))
-				.collect(Collectors.toList());
+	private void parseQuote() {
+		// Twitter API has quote-JSON under both "quoted_status" and "retweeted_status.quoted_status" if retweet,
+		// so no need to use retweet prefix.
+		JSONObject quoteTweetJSON = parentJSON.getJSONObject("quoted_status");
+		parseQuoteUserInfo(quoteTweetJSON.getJSONObject("user"));
+		this.quoteCreatedDate = parseTwitterDate(quoteTweetJSON);
+		this.quoteText = JsonUtils.getValueIfExistsByPriority(quoteTweetJSON, "extended_tweet.full_text", "text");
+		this.quoteHashtags = parseHashtags(quoteTweetJSON, quoteText);
+		this.quoteMentions = parseMentions(quoteTweetJSON, quoteText);
+		parseImages(quoteTweetJSON, quoteImageUrlStrings);
 	}
 
-	private void parseUserInfo() {
-		// All these values always exist
-		this.userName = JsonUtils.getValue(parentJSON, "user.name");
-		this.userId = JsonUtils.getValue(parentJSON, "user.id");
-		this.userScreenName = JsonUtils.getValue(parentJSON, "user.screen_name");
-		this.userProfileImage = JsonUtils.getValue(parentJSON, "user.profile_image_url");
-		this.userDescription = JsonUtils.getValue(parentJSON, "user.description",
-				"No description."); // Might be null, so want a default
-		this.userFollowersCount = Integer.parseInt(JsonUtils.getValue(parentJSON, "user.followers_count"));
-		this.userFriendsCount = Integer.parseInt(JsonUtils.getValue(parentJSON, "user.friends_count"));
-		this.userVerified = Boolean.parseBoolean(JsonUtils.getValue(parentJSON, "user.verified"));
+	private void parseQuoteUserInfo(JSONObject userJSON) {
+		this.quoteUserID = userJSON.getLong("id");
+		this.quoteUserName = userJSON.getString("name");
+		this.quoteUserScreenName = userJSON.getString("screen_name");
+		this.quoteUserProfileImage = userJSON.getString("profile_image_url");
+		this.quoteUserDescription = userJSON.isNull("description") ? "No description."
+				: userJSON.getString("description");
+		this.quoteUserFollowersCount = userJSON.getInt("followers_count");
+		this.quoteUserFriendsCount = userJSON.getInt("friends_count");
+		this.quoteUserVerified = userJSON.getBoolean("verified");
 	}
-
 
 	public String getUserName() {
 		return userName;
@@ -234,12 +247,8 @@ public class TwitterParser2 {
 	}
 
 
-	public String getUserId() {
-		return userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public long getUserID() {
+		return userID;
 	}
 
 	public String getText() {
@@ -321,18 +330,6 @@ public class TwitterParser2 {
 	}
 
 
-	private Date parseTwitterDate(JSONObject json) {
-		String dateStr = json.getString("created_at");
-		try {
-			DateFormat df = new SimpleDateFormat("EEE MMM dd kk:mm:ss Z yyyy", Locale.ENGLISH);
-			return df.parse(dateStr);
-		} catch (Exception e) {
-			log.error("failed to parse twitter date:" + dateStr);
-			return null;
-		}
-
-	}
-
 	public boolean hasQuote() {
 		return hasQuote;
 	}
@@ -407,5 +404,13 @@ public class TwitterParser2 {
 
 	public Map<Pair<Integer, Integer>, String> getQuoteMentions() {
 		return quoteMentions;
+	}
+
+	public long getRetweetUserID() {
+		return retweetUserID;
+	}
+
+	public long getQuoteUserID() {
+		return quoteUserID;
 	}
 }

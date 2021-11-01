@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,20 @@ public class Twitter2Html {
     private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
 
     public static String twitter2Html(String jsonString, String crawlDate) throws Exception{
+        Date date;
+        long userID;
+        String userName;
+        String userScreenName;
+        String userDescription;
+        int userFriendsCount;
+        int userFollowersCount;
         TwitterParser2 parser = new TwitterParser2(jsonString);
+
+        String cssFromFile = IOUtils.toString(
+                TwitterParser2.class.getClassLoader().getResourceAsStream("twitter_playback_style.css"),
+                StandardCharsets.UTF_8);
+        String reactionsCss = getReactionsCss();
+        String css = cssFromFile + reactionsCss;
 
         // Get user profile image
         String tweeterProfileImage = parser.isRetweet() ? parser.getRetweetUserProfileImage() : parser.getUserProfileImage();
@@ -35,11 +49,23 @@ public class Twitter2Html {
         List<String> tweetImages = new ArrayList<>(parser.getImageUrlStrings());
         ArrayList<ImageUrl> tweetImageUrls = getImageUrlsFromSolr(tweetImages, crawlDate);
 
-        String cssFromFile = IOUtils.toString(
-                TwitterParser2.class.getClassLoader().getResourceAsStream("twitter_playback_style.css"),
-                StandardCharsets.UTF_8);
-        String reactionsCss = getReactionsCss();
-        String css = cssFromFile + reactionsCss;
+        if (parser.isRetweet()) {
+            date = parser.getRetweetCreatedDate();
+            userID = parser.getRetweetUserID();
+            userName = parser.getRetweetUserName();
+            userScreenName = parser.getRetweetUserScreenName();
+            userDescription = parser.getRetweetUserDescription();
+            userFriendsCount = parser.getRetweetUserFriendsCount();
+            userFollowersCount = parser.getRetweetUserFollowersCount();
+        } else {
+            date = parser.getCreatedDate();
+            userID = parser.getUserID();
+            userName = parser.getUserName();
+            userScreenName = parser.getUserScreenName();
+            userDescription = parser.getUserDescription();
+            userFriendsCount = parser.getUserFriendsCount();
+            userFollowersCount = parser.getUserFollowersCount();
+        }
 
         String html =
                 "<!DOCTYPE html>"+
@@ -56,31 +82,26 @@ public class Twitter2Html {
                       (parser.isRetweet() ? getRetweetHeader(parser, crawlDate) : "")+
                       "<div class='item author'>"+
                         "<div class='user-wrapper'>"+
-                          "<a href='"+ (parser.isRetweet() ? makeSolrSearchLink(parser.getRetweetUserScreenName())
-                        		   : makeSolrSearchLink("tw_user_id:"+parser.getUserId())) +"'>"+
+                          "<a href='"+ makeSolrSearchLink("tw_user_id:" + userID) +"'>"+
                             "<span class='avatar'>"+
                               imageUrlToHtml(tweeterProfileImageUrl)+
                             "</span>"+
                             "<div class='user-handles'>"+
-                              "<h2>"+ (parser.isRetweet() ? parser.getRetweetUserName() : parser.getUserName()) +"</h2>"+
-                              "<h4>@"+ (parser.isRetweet() ? parser.getRetweetUserScreenName() : parser.getUserScreenName()) +"</h4>"+
+                              "<h2>"+ userName +"</h2>"+
+                              "<h4>@"+ userScreenName +"</h4>"+
                             "</div>"+
                           "</a>"+
-                          makeUserCard(tweeterProfileImageUrl,
-                                  parser.isRetweet() ? parser.getRetweetUserName() : parser.getUserName(),
-                                  parser.isRetweet() ? parser.getRetweetUserScreenName() : parser.getUserScreenName(),
-                                  parser.isRetweet() ? parser.getRetweetUserDescription() : parser.getUserDescription(),
-                                  parser.isRetweet() ? parser.getRetweetUserFriendsCount() : parser.getUserFriendsCount(),
-                                  parser.isRetweet() ? parser.getRetweetUserFollowersCount() : parser.getUserFollowersCount())+
+                          makeUserCard(tweeterProfileImageUrl, userName, userScreenName, userDescription,
+                                  userFriendsCount, userFollowersCount)+
                         "</div>"+
                       "</div>"+
                       "<div class='item date'>"+
-                        "<div>"+(parser.isRetweet() ? parser.getRetweetCreatedDate() : parser.getCreatedDate())+"</div>"+
+                        "<div>"+ date +"</div>"+
                       "</div>"+
                       "<div class='item text'>"+
                         mainTextHtml+
                       "</div>"+
-                      (tweetImageUrls.isEmpty() ? "" : "<span class='image'>"+ imageUrlToHtml(tweetImageUrls)) +"</span>"+ // TODO RBKR prettify
+                      (tweetImageUrls.isEmpty() ? "" : "<span class='image'>"+ imageUrlToHtml(tweetImageUrls)) +"</span>"+
                       (parser.hasQuote() ? getQuoteHtml(parser, crawlDate) : "")+
                       "<div class='item reactions'>"+
                         "<span class='icon replies'></span>"+
@@ -98,6 +119,25 @@ public class Twitter2Html {
                 "</html>";
 
         return html;
+    }
+
+    private static String getReactionsCss() {
+        String reactionIconsImageUrl = PropertiesLoader.WAYBACK_BASEURL + "images/twitter_sprite.png";
+        return ".item.reactions span.replies {" +
+                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -50px;}" + // Missing correct icon?
+                ".item.reactions span.retweets {" +
+                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -180px -50px;}" +
+                ".item.reactions span.likes {" +
+                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -130px;}" +
+                ".item.reactions span.quotes {" +
+                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -105px -50px;}"; // Missing correct icon
+    }
+
+    private static ArrayList<ImageUrl> getImageUrlsFromSolr(List<String> imagesList, String crawlDate) throws Exception {
+        String imagesSolrQuery = Facade.queryStringForImages(imagesList);
+        ArrayList<ArcEntryDescriptor> imageEntries = NetarchiveSolrClient.getInstance()
+                .findImagesForTimestamp(imagesSolrQuery, crawlDate);
+        return Facade.arcEntrys2Images(imageEntries);
     }
 
     @SafeVarargs
@@ -135,23 +175,54 @@ public class Twitter2Html {
         return sb.toString();
     }
 
-    private static ArrayList<ImageUrl> getImageUrlsFromSolr(List<String> imagesList, String crawlDate) throws Exception {
-        String imagesSolrQuery = Facade.queryStringForImages(imagesList);
-        ArrayList<ArcEntryDescriptor> imageEntries = NetarchiveSolrClient.getInstance()
-                .findImagesForTimestamp(imagesSolrQuery, crawlDate);
-        return Facade.arcEntrys2Images(imageEntries);
+    private static String newline2Br(String text) {
+        if (text == null){
+            return "";
+        }
+        return text.replace("\n","<br>");
     }
 
-    private static String getReactionsCss() {
-        String reactionIconsImageUrl = PropertiesLoader.WAYBACK_BASEURL + "images/twitter_sprite.png";
-        return ".item.reactions span.replies {" +
-                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -50px;}" + // Missing correct icon?
-                ".item.reactions span.retweets {" +
-                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -180px -50px;}" +
-                ".item.reactions span.likes {" +
-                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -130px;}" +
-                ".item.reactions span.quotes {" +
-                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -105px -50px;}"; // Missing correct icon
+    private static String getHeadTitle(TwitterParser2 parser) {
+        String titlePrefix = parser.isRetweet() ? "Retweet by: " : "Tweet by: ";
+        return titlePrefix + parser.getUserName() + " (userID: " + parser.getUserID() + ")";
+    }
+
+    private static String getRetweetHeader(TwitterParser2 parser, String crawlDate) {
+        List<ImageUrl> profileImageUrl = new ArrayList<>();
+        try {
+            List<String> retweetProfileImage = Collections.singletonList(parser.getUserProfileImage());
+            profileImageUrl = getImageUrlsFromSolr(retweetProfileImage, crawlDate);
+        } catch (Exception e) {
+            log.warn("Failed getting profile image of retweeter with username '{}'", parser.getUserName());
+        }
+        String html =
+                "<div class='retweet-author'>" +
+                        "<div class='user-wrapper'>" +
+                        "<a href='" + makeSolrSearchLink("tw_user_id:" + parser.getUserID()) + "'>" +
+                        "<h3>" + parser.getUserName() + " Retweeted</h3>" +
+                        "</a>" +
+                        makeUserCard(profileImageUrl, parser.getUserName(),
+                                parser.getUserScreenName(), parser.getUserDescription(),
+                                parser.getUserFriendsCount(), parser.getUserFollowersCount()) +
+                        "</div>" +
+                        "<div class='date'>&middot " + parser.getCreatedDate() + "</div>" +
+                        "</div>";
+        return html;
+    }
+
+    private static String makeSolrSearchLink(String searchString) {
+        String searchParams = " AND type%3A\"Twitter Tweet\"";
+        return PropertiesLoader.WAYBACK_BASEURL + "search?query=" + searchString + searchParams;
+    }
+
+    public static String imageUrlToHtml(List<ImageUrl> images){
+        StringBuilder b = new StringBuilder();
+        for (ImageUrl image : images){
+            b.append("<img src='")
+                    .append(image.getDownloadUrl())
+                    .append("'/>\n");
+        }
+        return b.toString();
     }
 
     private static String makeUserCard(List<ImageUrl> profileImageUrl, String userName, String userHandle,
@@ -178,12 +249,6 @@ public class Twitter2Html {
                 "</div>";
     }
 
-    private static String getHeadTitle(TwitterParser2 parser) {
-        String titlePrefix = parser.isRetweet() ? "Retweet by: " : "Tweet by: ";
-        return titlePrefix + parser.getUserName();
-    }
-
-
     private static String getQuoteHtml(TwitterParser2 parser, String crawlDate) {
         List<ImageUrl> quoteProfileImageUrl = new ArrayList<>();
         List<ImageUrl> quoteImageUrls = new ArrayList<>();
@@ -200,7 +265,7 @@ public class Twitter2Html {
                 "<div class='quote'>" +
                     "<div class='item author'>" +
                         "<div class='user-wrapper'>" +
-                            "<a href='" + makeSolrSearchLink(parser.getQuoteUserScreenName()) + "'>" +
+                            "<a href='" + makeSolrSearchLink("tw_user_id:" + parser.getQuoteUserID()) + "'>" +
                                 "<span class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</span>" +
                                 "<div class='user-handles'>" +
                                     "<h2>" + parser.getQuoteUserName() + "</h2>" +
@@ -222,53 +287,5 @@ public class Twitter2Html {
                 "</div>";
 
         return quoteHtml;
-    }
-
-
-    private static String newline2Br(String text) {
-        if (text == null){
-            return "";
-        }
-        return text.replace("\n","<br>");
-    }
-
-
-    private static String getRetweetHeader(TwitterParser2 parser, String crawlDate) {
-        List<ImageUrl> profileImageUrl = new ArrayList<>();
-        try {
-            List<String> retweetProfileImage = Collections.singletonList(parser.getUserProfileImage());
-            profileImageUrl = getImageUrlsFromSolr(retweetProfileImage, crawlDate);
-        } catch (Exception e) {
-            log.warn("Failed getting profile image of retweeter with username '{}'", parser.getUserName());
-        }
-        String html =
-                "<div class='retweet-author'>" +
-                    "<div class='user-wrapper'>" +
-                        "<a href='" + makeSolrSearchLink(parser.getUserScreenName()) + "'>" +
-                            "<h3>" + parser.getUserName() + " Retweeted</h3>" +
-                        "</a>" +
-                        makeUserCard(profileImageUrl, parser.getUserName(),
-                                        parser.getUserScreenName(), parser.getUserDescription(),
-                                        parser.getUserFriendsCount(), parser.getUserFollowersCount()) +
-                    "</div>" +
-                    "<div class='date'>&middot " + parser.getCreatedDate() + "</div>" +
-                "</div>";
-        return html;
-    }
-
-
-    public static String imageUrlToHtml(List<ImageUrl> images){
-        StringBuilder b = new StringBuilder();
-        for (ImageUrl image : images){
-            b.append("<img src='")
-                    .append(image.getDownloadUrl())
-                    .append("'/>\n");
-        }
-        return b.toString();
-    }
-
-    private static String makeSolrSearchLink(String searchString) {
-        String searchParams = " AND type%3A\"Twitter Tweet\"";
-        return PropertiesLoader.WAYBACK_BASEURL + "search?query=" + searchString + searchParams;
     }
 }

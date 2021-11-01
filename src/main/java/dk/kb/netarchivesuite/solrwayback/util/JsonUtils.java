@@ -34,11 +34,6 @@ public class JsonUtils {
 		return value;
 	}
 
-	public static String getValue(JSONObject json, String path, String defaultValue) {
-		String value = getValue(json, path);
-		return value == null || value.equals("null") ? defaultValue : value;
-	}
-
 	public static Set<String> addAllValues(ArrayList<JSONObject> jsonList, Set<String> values, String path) {
 		for (JSONObject obj : jsonList) {
 			addAllValues(obj, values, path);
