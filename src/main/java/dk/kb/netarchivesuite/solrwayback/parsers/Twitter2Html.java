@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -156,15 +157,15 @@ public class Twitter2Html {
             allEntities.putAll(entityType);
         }
 
-        // Reverse to insert entities in text from end to start
-        List<Pair<Integer, Integer>> reverseKeys = new ArrayList<>(allEntities.keySet());
-        Collections.reverse(reverseKeys);
+        List<Pair<Integer, Integer>> entityIndices = new ArrayList<>(allEntities.keySet());
+        entityIndices.sort(Comparator.comparing(Pair::getLeft));
+        Collections.reverse(entityIndices); // Reverse to insert entities in text from end to start
         try {
-            for (Pair<Integer, Integer> indexPair : reverseKeys) {
+            for (Pair<Integer, Integer> indexPair : entityIndices) {
                 String tag = allEntities.get(indexPair);
                 int startIndex = indexPair.getLeft();
                 int endIndex = indexPair.getRight();
-                String searchPrefix = tag.charAt(0) == '#' ? "keywords%3A" : ""; // TODO ugly hack for now
+                String searchPrefix = tag.charAt(0) == '#' ? "keywords%3A" : "";
                 String searchUrl = makeSolrSearchLink(searchPrefix + tag.substring(1));
                 String tagWithLink = "<span><a href='" + searchUrl + "'>" + tag + "</a></span>";
                 sb.replace(startIndex, endIndex, tagWithLink);
