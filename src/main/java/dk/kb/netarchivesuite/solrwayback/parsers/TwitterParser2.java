@@ -204,6 +204,7 @@ public class TwitterParser2 {
 
 	private void parseImages(JSONObject json, Set<String> imageSet) {
 		JsonUtils.addAllValues(json, imageSet, "entities.media[].media_url");
+		JsonUtils.addAllValues(json, imageSet, "extended_entities.media[].media_url");
 		JsonUtils.addAllValues(json, imageSet, "extended_tweet.entities.media[].media_url");
 		JsonUtils.addAllValues(json, imageSet, "extended_tweet.extended_entities.media[].media_url");
 	}

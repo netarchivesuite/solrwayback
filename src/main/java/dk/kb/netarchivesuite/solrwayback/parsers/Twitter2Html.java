@@ -109,10 +109,10 @@ public class Twitter2Html {
                         "<span class='number'>"+parser.getReplyCount()+"</span>"+
                         "<span class='icon retweets'></span>"+
                         "<span class='number'>"+parser.getRetweetCount()+"</span>"+
-                        "<span class='icon likes'></span>"+
-                        "<span class='number'>"+parser.getLikeCount()+"</span>"+
                         "<span class='icon quotes'></span>"+
                         "<span class='number'>"+parser.getQuoteCount()+"</span>"+
+                        "<span class='icon likes'></span>"+
+                        "<span class='number'>"+parser.getLikeCount()+"</span>"+
                       "</div>"+
                     "</div>"+
                   "</div>"+
