@@ -44,10 +44,11 @@ public class Twitter2Html {
         List<ImageUrl> tweeterProfileImageUrl = getImageUrlsFromSolr(tweeterProfileImageList, crawlDate);
 
         // Get and format tweet text
-        String mainTextHtml = formatTweetText(parser.getText(), parser.getHashtags(), parser.getMentions());
+        String mainTextHtml = formatTweetText(parser.getText(), parser.getHashtags(), parser.getMentions(),
+                parser.getURLs());
 
         // Get tweet images
-        List<String> tweetImages = new ArrayList<>(parser.getImageUrlStrings());
+        List<String> tweetImages = new ArrayList<>(parser.getImageURLStrings());
         ArrayList<ImageUrl> tweetImageUrls = getImageUrlsFromSolr(tweetImages, crawlDate);
 
         if (parser.isRetweet()) {
@@ -143,15 +144,16 @@ public class Twitter2Html {
 
     @SafeVarargs
     private static String formatTweetText(String text, Map<Pair<Integer, Integer>, String>... entities) {
-        text = formatEntities(text, entities);
+        text = formatEntitiesWithIndices(text, entities);
         text = newline2Br(text);
+        text = text.replaceFirst("https:\\/\\/t\\.co\\/[a-zA-Z0-9]{10}$", ""); // Replace trailing image URL
         return text;
     }
 
-    private static String formatEntities(String text, Map<Pair<Integer, Integer>, String>[] entities) {
+    private static String formatEntitiesWithIndices(String text, Map<Pair<Integer, Integer>, String>[] entities) {
         StringBuilder sb = new StringBuilder(text);
 
-        // Merge hashtags and mentions - TODO RBKR handle urls aswell?
+        // Merge hashtags, mentions and urls
         Map<Pair<Integer, Integer>, String> allEntities = new LinkedHashMap<>();
         for (Map<Pair<Integer, Integer>, String> entityType : entities) {
             allEntities.putAll(entityType);
@@ -161,19 +163,43 @@ public class Twitter2Html {
         entityIndices.sort(Comparator.comparing(Pair::getLeft));
         Collections.reverse(entityIndices); // Reverse to insert entities in text from end to start
         try {
-            for (Pair<Integer, Integer> indexPair : entityIndices) {
-                String tag = allEntities.get(indexPair);
-                int startIndex = indexPair.getLeft();
-                int endIndex = indexPair.getRight();
-                String searchPrefix = tag.charAt(0) == '#' ? "keywords%3A" : "";
-                String searchUrl = makeSolrSearchLink(searchPrefix + tag.substring(1));
-                String tagWithLink = "<span><a href='" + searchUrl + "'>" + tag + "</a></span>";
-                sb.replace(startIndex, endIndex, tagWithLink);
+            for (Pair<Integer, Integer> entityIndexPair : entityIndices) {
+                String entityTag = allEntities.get(entityIndexPair);
+                int startIndex = entityIndexPair.getLeft();
+                int endIndex = entityIndexPair.getRight();
+                String entityHTML;
+                if (!entityTag.isEmpty() && (entityTag.charAt(0) == '#' || entityTag.charAt(0) == '@')) {
+                    entityHTML = makeTagHtml(entityTag);
+                } else {
+                    entityHTML = makeURLHtml(entityIndexPair, entityTag);
+                }
+                sb.replace(startIndex, endIndex, entityHTML);
             }
         } catch (Exception e) { // Shouldn't happen
-            log.warn("Failed replacing raw tags with solr search links");
+            log.warn("Failed replacing raw tags with solr search links", e);
         }
         return sb.toString();
+    }
+
+    private static String makeTagHtml(String entityTag) {
+        String searchPrefix = entityTag.charAt(0) == '#' ? "keywords%3A" : "";
+        String searchUrl = makeSolrSearchLink(searchPrefix + entityTag.substring(1));
+        return "<span><a href='" + searchUrl + "'>" + entityTag + "</a></span>";
+    }
+
+    private static String makeURLHtml(Pair<Integer, Integer> entityIndexPair, String entityTag) {
+        String entityHTML;
+        if (entityTag.isEmpty()) { // Should atm. only happen when encountering quote URL
+            log.info("Removing url at {}", entityIndexPair);
+            entityHTML = "";
+        } else {
+            String[] urls = entityTag.split("\\|");
+            String url = urls[0];
+            String displayURL = urls[1];
+            log.info("Inserting url '{}' displayed as '{}' at position {}", url, displayURL, entityIndexPair);
+            entityHTML = "<span><a href='" + url + "'>" + displayURL + "</a></span>";
+        }
+        return entityHTML;
     }
 
     private static String newline2Br(String text) {
@@ -256,7 +282,7 @@ public class Twitter2Html {
         try {
             List<String> quoteProfileImage = Collections.singletonList(parser.getQuoteUserProfileImage());
             quoteProfileImageUrl = getImageUrlsFromSolr(quoteProfileImage, crawlDate);
-            List<String> quoteImages = new ArrayList<>(parser.getQuoteImageUrlStrings());
+            List<String> quoteImages = new ArrayList<>(parser.getQuoteImageURLStrings());
             quoteImageUrls = getImageUrlsFromSolr(quoteImages, crawlDate);
         } catch (Exception e) {
             log.warn("Failed getting images for quote in tweet by '{}'", parser.getUserName(), e);
@@ -282,7 +308,8 @@ public class Twitter2Html {
                         "<div>" + parser.getQuoteCreatedDate() + "</div>" +
                     "</div>" +
                     "<div class='item text'>" +
-                        formatTweetText(parser.getQuoteText(), parser.getQuoteHashtags(), parser.getQuoteMentions()) +
+                        formatTweetText(parser.getQuoteText(), parser.getQuoteHashtags(), parser.getQuoteMentions(),
+                                parser.getQuoteURLs()) +
                     "</div>" +
                     (quoteImageUrls.isEmpty() ? "" : "<span class='image'>" + imageUrlToHtml(quoteImageUrls) + "</span>") +
                 "</div>";
