@@ -2,7 +2,7 @@
   "quote_count":0,
   "contributors":null,
   "truncated":false,
-  "text":"RT @Test: Test text with some encoding:\u00e5 \u00f8 \u2026  ",
+  "text":"RT @Egense: Test full text with some encoding. This is an extended tweet within a retweet, so it should cut off at the 140 char mark:\u00e5c m\u00f8 \u2026",
   "is_quote_status":false,
   "in_reply_to_status_id":null,
   "reply_count":0,
@@ -14,7 +14,7 @@
         "id":22695562,
         "indices":[
           3,
-          12
+          10
 
         ],
         "id_str":"22695562",
@@ -51,7 +51,7 @@
     "quote_count":1,
     "contributors":null,
     "truncated":true,
-    "text":": Retweet text with some encoding and url:\u00e5c m\u00f8 \u2026 https://t.co/ABC",
+    "text":"Test full text with some encoding. This is an extended tweet within a retweet, so it should cut off at the 140 char\u2026 https://t.co/ABCDEFGHIJ",
     "is_quote_status":false,
     "in_reply_to_status_id":null,
     "reply_count":11,
@@ -72,7 +72,7 @@
       ],
       "urls":[
         {
-          "url":"https://t.co/ABC",
+          "url":"https://t.co/ABCDEFGHIJ",
           "indices":[
             117,
             140
@@ -117,7 +117,7 @@
       "profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png",
       "utc_offset":null,
       "statuses_count":12752,
-      "description":"Description text. Tweeting about om #math",
+      "description":"Description text. Tweeting about #math",
       "friends_count":3089,
       "location":null,
       "profile_link_color":"0084B4",
@@ -148,7 +148,7 @@
     "extended_tweet":{
       "display_text_range":[
         0,
-        279
+        176
 
       ],
       "entities":{
@@ -163,24 +163,31 @@
         "hashtags":[
           {
             "indices":[
-              273,
-              279
+              147,
+              152
 
             ],
             "text":"math"
-
           }
 
         ],
         "urls":[
-
+          {
+            "url":"https://t.co/ABCDEFGHIJ",
+            "indices":[
+              153,
+              176
+            ],
+            "expanded_url":"https://example.com/example/123",
+            "display_url":"https://example.com/example\u2026"
+          }
 
         ],
         "media":[
           {
             "expanded_url":"https://twitter.com/ThomasEgense/status/1234/photo/1",
             "display_url":"pic.twitter.com/dJo5JeESSh",
-            "url":"https://t.co/dJo5JeESSh",
+            "url":"https://t.co/1MAGEUR7L0L",
             "media_url_https":"https://pbs.twimg.com/media/ES8Vm7-X0AA61qZ.jpg",
             "id_str":"1238232181228687360",
             "sizes":{
@@ -229,7 +236,7 @@
           {
             "expanded_url":"https://twitter.com/ThomasEgense/status/1234/photo/1",
             "display_url":"pic.twitter.com/ABC",
-            "url":"https://t.co/ZYZ",
+            "url":"https://t.co/1MAGEUR7Y0",
             "media_url_https":"https://pbs.twimg.com/media/ABC.jpg",
             "id_str":"1238232181228687360",
             "sizes":{
@@ -260,8 +267,8 @@
 
             },
             "indices":[
-              280,
-              303
+              177,
+              200
 
             ],
             "type":"photo",
@@ -273,7 +280,7 @@
         ]
 
       },
-      "full_text":"Test full text with some encoding:\u00e5c m\u00f8 \u2026 and tag+link #math https://t.co/abc"
+      "full_text":"Test full text with some encoding. This is an extended tweet within a retweet, so it should cut off at the 140 char mark:\u00e5c m\u00f8 . Also has tag+link #math https://t.co/ABCDEFGHIJ https://t.co/1MAGEUR7Y0"
 
     },
     "created_at":"Thu Mar 12 22:35:33 +0000 2020",
@@ -304,7 +311,7 @@
     "friends_count":635,
     "location":null,
     "profile_link_color":"157781",
-    "profile_image_url":"http://pbs.twimg.com/profile_images/ABC_normal.jpg",
+    "profile_image_url":"http://pbs.twimg.com/profile_images/1234/H0waTByu_normal.jpg",
     "following":null,
     "geo_enabled":true,
     "profile_banner_url":"https://pbs.twimg.com/profile_banners/1234/12345",

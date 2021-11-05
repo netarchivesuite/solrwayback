@@ -56,38 +56,45 @@ public class TwitterParserTest {
 		String content = new String(Files.readAllBytes(Paths.get("src/test/resources/example_twitter/twitter1.json")));
 		TwitterParser2 tweet = new TwitterParser2(content);
 
-		//TODO (encoding test) assertEquals("RT @Test: Test text with some encoding:å ø …  ",tweet.getText());
-		assertEquals("Thomas2",tweet.getUserName());
-		assertEquals("2337958629",tweet.getUserID());
-		assertEquals(220,tweet.getLikeCount());
-		assertEquals(11,tweet.getReplyCount());
-		assertEquals(19,tweet.getRetweetCount());
 		assertTrue(tweet.isRetweet());
-		assertEquals("Fri Mar 13 07:01:00 CET 2020",tweet.getCreatedDate().toString());    
+		assertEquals("Test full text with some encoding. This is an extended tweet within a retweet, so it" +
+				" should cut off at the 140 char mark:åc mø . Also has tag+link #math https://t.co/ABCDEFGHIJ" +
+				" https://t.co/1MAGEUR7Y0", tweet.getText());
+		// Test retweet time and user
+		assertEquals("Fri Mar 13 07:01:00 CET 2020", tweet.getCreatedDate().toString());
+		assertEquals(2337958629L, tweet.getUserID());
+		assertEquals("Thomas2", tweet.getUserName());
+		assertEquals("thomas2", tweet.getUserScreenName());
+		assertEquals("Mathematician and beer drinker.", tweet.getUserDescription());
+		assertEquals("http://pbs.twimg.com/profile_images/1234/H0waTByu_normal.jpg", tweet.getUserProfileImage());
+		assertEquals(740, tweet.getUserFollowersCount());
+		assertEquals(635, tweet.getUserFriendsCount());
+		assertFalse(tweet.isUserVerified());
 
-		assertEquals(1,tweet.getHashtags().size());
-		assertTrue(tweet.getHashtags().containsValue("math"));
-		System.out.println(tweet.getHashtags());
-		//System.out.println(tweet.getImageUrlsList());        
+		// Test original tweet date and retweeted user
+		assertEquals("Thu Mar 12 23:35:33 CET 2020", tweet.getRetweetCreatedDate().toString());
+		assertEquals(22695562L, tweet.getRetweetUserID());
+		assertEquals("Thomas Egense", tweet.getRetweetUserName());
+		assertEquals("Egense", tweet.getRetweetUserScreenName());
+		assertEquals("Description text. Tweeting about #math", tweet.getRetweetUserDescription());
+		assertEquals("http://pbs.twimg.com/profile_images/12345/-SNh6awI_normal.jpg", tweet.getRetweetUserProfileImage());
+		assertEquals(42081, tweet.getRetweetUserFollowersCount());
+		assertEquals(3089, tweet.getRetweetUserFriendsCount());
+		//assertTrue(tweet.isRetweetUserVerified());
+
+		assertEquals(1, tweet.getQuoteCount());
+		assertEquals(220, tweet.getLikeCount());
+		assertEquals(11, tweet.getReplyCount());
+		assertEquals(19, tweet.getRetweetCount());
+
+		assertEquals(1, tweet.getHashtags().size());
+		Pair<Integer, Integer> mathHashtagIndices = Pair.of(147, 152);
+		assertTrue(tweet.getHashtags().containsKey(mathHashtagIndices));
+		assertEquals("#math", tweet.getHashtags().get(mathHashtagIndices));
+		assertEquals(0, tweet.getMentions().size());
+		assertEquals(1, tweet.getURLs().size());
+		Pair<Integer, Integer> urlIndices = Pair.of(153, 176);
+		assertTrue(tweet.getURLs().containsKey(urlIndices));
+		assertEquals("https://example.com/example/123|https://example.com/example\u2026", tweet.getURLs().get(urlIndices));
 	}
-
-	//TODO when proper hashtag replacement by offset has been implemented
-	/*
-	  public static String replaceHashTags(String text, HashSet<String> tags) {
-    	  String searchUrl = "http://localhost/";
-    	  String otherSearchParams=" AND type%3A\"Twitter Tweet\"&start=0&filter=&imgsearch=false&imggeosearch=false&grouping=false"; //TODO frontend fix so all other params not needed	  
-    	  for (String tag : tags) {
-            String link = searchUrl+"?query=keywords%3A"+tag+otherSearchParams;	
-    	    String replaceText = " <span><a href='"+link+"'>#"+tag+"</a></span> ";     
-            if (text.endsWith(tag)) {
-              text=text.replaceAll(" #"+tag, replaceText); //Replace if last in text. (no trailing white-space).
-            }
-            else {
-    	      text=text.replaceAll(" #"+tag+ " ", replaceText); //This will not find the tag if it is last. Need space not to replace within tags. Etc. #covid #covid19 
-            }	  
-    	  }
-    	  return text;	  	  
-      }
-	 */
-
 }
