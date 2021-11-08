@@ -838,9 +838,11 @@
          title^2.0
          description^2.0                                                                                   
          url_search^0.5              
+         tw_user_description^0.5
        </str>
        <str name="pf">
          text
+         tw_user_description^0.5
        </str>     
         <!--  Boost status 200. Negative boost on other+text -->
         <str name="bq">status_code:200^20</str>               
