@@ -1,9 +1,9 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.json.JSONObject;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -96,5 +96,50 @@ public class TwitterParserTest {
 		Pair<Integer, Integer> urlIndices = Pair.of(153, 176);
 		assertTrue(tweet.getURLs().containsKey(urlIndices));
 		assertEquals("https://example.com/example/123|https://example.com/example\u2026", tweet.getURLs().get(urlIndices));
+	}
+
+	@Test
+	public void testQuoteTweet() throws IOException {
+		String content = new String(Files.readAllBytes(Paths.get("src/test/resources/example_twitter/twitter3.json")));
+		TwitterParser2 tweet = new TwitterParser2(content);
+
+		assertTrue(tweet.isRetweet());
+		assertTrue(tweet.hasQuote());
+		assertEquals("Original tweet text that is being quoted goes here. The person who quoted this does not" +
+				" agree with its statement. Such is Twitter. \nRead me https://t.co/GhIjklMnOP\n#HASHtg" +
+				" #AnotherTagHere #SomeHashtag https://t.co/a1bc2D3EfG", tweet.getQuoteText());
+		assertEquals("Fri Jul 16 16:03:03 CEST 2021", tweet.getCreatedDate().toString());
+		assertEquals("Fri Jul 16 13:15:06 CEST 2021", tweet.getRetweetCreatedDate().toString());
+		assertEquals("Fri Jul 16 09:45:12 CEST 2021", tweet.getQuoteCreatedDate().toString());
+		assertEquals(22222222, tweet.getQuoteUserID());
+		assertEquals("CoolUser", tweet.getQuoteUserName());
+		assertEquals("cool_user", tweet.getQuoteUserScreenName());
+		assertEquals("This person is very interested in politics and boring stuff. Very interesting." +
+				" Have a link to their page no one cares about: https://www.example.com", tweet.getQuoteUserDescription());
+		assertEquals("http://pbs.twimg.com/profile_images/0101010101010101010/s-kiJ9xn_normal.png", tweet.getQuoteUserProfileImage());
+		assertEquals(5723923, tweet.getQuoteUserFollowersCount());
+		assertEquals(248, tweet.getQuoteUserFriendsCount());
+
+		assertEquals(0, tweet.getQuoteMentions().size());
+
+		assertEquals(3, tweet.getQuoteHashtags().size());
+		Pair<Integer, Integer> firstTag = Pair.of(164, 171);
+		assertTrue(tweet.getQuoteHashtags().containsKey(firstTag));
+		assertEquals("#HASHtg", tweet.getQuoteHashtags().get(firstTag));
+		Pair<Integer, Integer> secondTag = Pair.of(172, 187);
+		assertTrue(tweet.getQuoteHashtags().containsKey(secondTag));
+		assertEquals("#AnotherTagHere", tweet.getQuoteHashtags().get(secondTag));
+		Pair<Integer, Integer> thirdTag = Pair.of(188, 200);
+		assertTrue(tweet.getQuoteHashtags().containsKey(thirdTag));
+		assertEquals("#SomeHashtag", tweet.getQuoteHashtags().get(thirdTag));
+		//assertTrue(tweet.isQuoteUserVerified());
+
+		assertEquals(1, tweet.getQuoteURLs().size());
+		Pair<Integer, Integer> url = Pair.of(140, 163);
+		assertTrue(tweet.getQuoteURLs().containsKey(url));
+		assertEquals("https://abcde.dk/fghijk|abcde.dk/fghijk", tweet.getQuoteURLs().get(url));
+
+		assertEquals(1, tweet.getQuoteImageURLStrings().size());
+		assertEquals("http://pbs.twimg.com/media/M1EdIauRlHErEO-.jpg", tweet.getQuoteImageURLStrings().iterator().next());
 	}
 }
