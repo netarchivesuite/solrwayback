@@ -13,7 +13,6 @@ body {
 }
 
 h2 {
-    margin: 4px 0 0;
     font-size: 18px;
 }
 
@@ -106,6 +105,11 @@ h4 {
     float: left;
 }
 
+.user-handles h2 {
+    margin: 4px 0 0;
+    float: left;
+}
+
 .avatar{
     float: left;
     margin-right: .5em;
@@ -154,6 +158,13 @@ h4 {
 
 .user-wrapper a:hover h2 {
     text-decoration: underline;
+}
+
+.user-verified {
+    height: 20px;
+    width: 20px;
+    margin: 4px 0 0;
+    float: left;
 }
 
 .user-desc {

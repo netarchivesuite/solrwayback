@@ -51,6 +51,7 @@ public class TwitterParser2 {
 	private String retweetUserDescription;
 	private int retweetUserFollowersCount;
 	private int retweetUserFriendsCount;
+	private boolean retweetUserVerified;
 
 	private Map<Pair<Integer, Integer>, String> hashtags;
 	private Map<Pair<Integer, Integer>, String> mentions;
@@ -257,6 +258,7 @@ public class TwitterParser2 {
 				: retweetedUserJSON.getString("description");
 		this.retweetUserFollowersCount = retweetedUserJSON.getInt("followers_count");
 		this.retweetUserFriendsCount = retweetedUserJSON.getInt("friends_count");
+		this.retweetUserVerified = retweetedUserJSON.getBoolean("verified");
 	}
 
 	private void parseMainTweetContent(JSONObject json) {
@@ -464,5 +466,9 @@ public class TwitterParser2 {
 
 	public Map<Pair<Integer, Integer>, String> getQuoteURLs() {
 		return quoteURLs;
+	}
+
+	public boolean isRetweetUserVerified() {
+		return retweetUserVerified;
 	}
 }

@@ -30,12 +30,13 @@ public class Twitter2Html {
         String userDescription;
         int userFriendsCount;
         int userFollowersCount;
+        boolean userIsVerified;
         TwitterParser2 parser = new TwitterParser2(jsonString);
 
         String cssFromFile = IOUtils.toString(
                 TwitterParser2.class.getClassLoader().getResourceAsStream("twitter_playback_style.css"),
                 StandardCharsets.UTF_8);
-        String reactionsCss = getReactionsCss();
+        String reactionsCss = getIconsCSS();
         String css = cssFromFile + reactionsCss;
 
         // Get user profile image
@@ -59,6 +60,7 @@ public class Twitter2Html {
             userDescription = parser.getRetweetUserDescription();
             userFriendsCount = parser.getRetweetUserFriendsCount();
             userFollowersCount = parser.getRetweetUserFollowersCount();
+            userIsVerified = parser.isRetweetUserVerified();
         } else {
             date = parser.getCreatedDate();
             userID = parser.getUserID();
@@ -67,6 +69,7 @@ public class Twitter2Html {
             userDescription = parser.getUserDescription();
             userFriendsCount = parser.getUserFriendsCount();
             userFollowersCount = parser.getUserFollowersCount();
+            userIsVerified = parser.isUserVerified();
         }
 
         String html =
@@ -90,11 +93,12 @@ public class Twitter2Html {
                             "</span>"+
                             "<div class='user-handles'>"+
                               "<h2>"+ userName +"</h2>"+
+                              (userIsVerified ? "<span class='user-verified'></span>" : "") + // TODO: should probably be img
                               "<h4>@"+ userScreenName +"</h4>"+
                             "</div>"+
                           "</a>"+
                           makeUserCard(tweeterProfileImageUrl, userName, userScreenName, userDescription,
-                                  userFriendsCount, userFollowersCount)+
+                                  userFriendsCount, userFollowersCount, userIsVerified)+
                         "</div>"+
                       "</div>"+
                       "<div class='item date'>"+
@@ -106,7 +110,7 @@ public class Twitter2Html {
                       (tweetImageUrls.isEmpty() ? "" : "<span class='image'>"+ imageUrlToHtml(tweetImageUrls)) +"</span>"+
                       (parser.hasQuote() ? getQuoteHtml(parser, crawlDate) : "")+
                       "<div class='item reactions'>"+
-                        "<span class='icon replies'></span>"+
+                        "<span class='icon replies'></span>"+ // TODO: should probably be img
                         "<span class='number'>"+parser.getReplyCount()+"</span>"+
                         "<span class='icon retweets'></span>"+
                         "<span class='number'>"+parser.getRetweetCount()+"</span>"+
@@ -123,7 +127,7 @@ public class Twitter2Html {
         return html;
     }
 
-    private static String getReactionsCss() {
+    private static String getIconsCSS() {
         String reactionIconsImageUrl = PropertiesLoader.WAYBACK_BASEURL + "images/twitter_sprite.png";
         return ".item.reactions span.replies {" +
                 "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -50px;}" + // Missing correct icon?
@@ -132,7 +136,9 @@ public class Twitter2Html {
                 ".item.reactions span.likes {" +
                 "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -130px;}" +
                 ".item.reactions span.quotes {" +
-                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -105px -50px;}"; // Missing correct icon
+                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -105px -50px;}" + // Missing correct icon
+                "span.user-verified {" +
+                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -67px -130px;}"; // TODO: using temp icon atm
     }
 
     private static ArrayList<ImageUrl> getImageUrlsFromSolr(List<String> imagesList, String crawlDate) throws Exception {
@@ -230,7 +236,8 @@ public class Twitter2Html {
                         "</a>" +
                         makeUserCard(profileImageUrl, parser.getUserName(),
                                 parser.getUserScreenName(), parser.getUserDescription(),
-                                parser.getUserFriendsCount(), parser.getUserFollowersCount()) +
+                                parser.getUserFriendsCount(), parser.getUserFollowersCount(),
+                                parser.isUserVerified()) +
                         "</div>" +
                         "<div class='date'>&middot " + parser.getCreatedDate() + "</div>" +
                         "</div>";
@@ -253,12 +260,13 @@ public class Twitter2Html {
     }
 
     private static String makeUserCard(List<ImageUrl> profileImageUrl, String userName, String userHandle,
-                                       String description, int followingCount, int followersCount) {
+                                       String description, int followingCount, int followersCount, boolean verified) {
         return "<div class='user-card'>" +
                     "<div class='item author'>" +
                         "<span class='avatar'>" + imageUrlToHtml(profileImageUrl) + "</span>" +
                         "<div class='user-handles'>" +
                             "<h2>" + userName + "</h2>" +
+                            (verified ? "<span class='user-verified'></span>" : "") +
                             "<h4>@" + userHandle +"</h4>" +
                         "</div>" +
                     "</div>" +
@@ -296,12 +304,14 @@ public class Twitter2Html {
                                 "<span class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</span>" +
                                 "<div class='user-handles'>" +
                                     "<h2>" + parser.getQuoteUserName() + "</h2>" +
+                                    (parser.isQuoteUserVerified() ? "<span class='user-verified'></span>" : "") +
                                     "<h4>@" + parser.getQuoteUserScreenName() + "</h4>" +
                                 "</div>" +
                             "</a>" +
                             makeUserCard(quoteProfileImageUrl, parser.getQuoteUserName(),
                                     parser.getQuoteUserScreenName(), parser.getQuoteUserDescription(),
-                                    parser.getQuoteUserFriendsCount(), parser.getQuoteUserFollowersCount()) +
+                                    parser.getQuoteUserFriendsCount(), parser.getQuoteUserFollowersCount(),
+                                    parser.isQuoteUserVerified()) +
                         "</div>" +
                     "</div>" +
                     "<div class='item date'>" +
