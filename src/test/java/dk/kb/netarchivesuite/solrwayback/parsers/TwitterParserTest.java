@@ -21,7 +21,7 @@ public class TwitterParserTest {
 
 		assertFalse(tweet.isRetweet());
 		assertFalse(tweet.hasQuote());
-		assertEquals("Test text with link https://t.co/ABC123 filler text for no reason but to fill\n" +
+		assertEquals("Test with links https://t.co/ABC123DEFG filler text for no reason but to fill\n" +
 				"There is even one link in this tweet https://t.co/W1ldUr7w0W. The text goes even further beyond what" +
 				" is thought possible! What is this math? https://t.co/rABCDEFGHI #math  https://t.co/ABCDEFGHIJ",
 				tweet.getText());
@@ -44,9 +44,17 @@ public class TwitterParserTest {
 		assertEquals(1, tweet.getHashtags().size());
 		assertTrue(tweet.getHashtags().containsValue("#math"));
 		assertEquals(0, tweet.getMentions().size());
-		assertEquals(2, tweet.getURLs().size());
-		assertTrue(tweet.getURLs().containsValue("https://twitter.com/i/web/status/1234|twitter.com/i/web/status/1\u2026"));
-		assertTrue(tweet.getURLs().containsValue("http://thomas-egense.dk/math/|thomas-egense.dk/math/"));
+		assertEquals(3, tweet.getURLs().size());
+		Pair<Integer, Integer> firstURL = Pair.of(16, 39);
+		assertTrue(tweet.getURLs().containsKey(firstURL));
+		assertEquals("https://twitter.com/i/web/status/1234|twitter.com/i/web/status/1\u2026", tweet.getURLs().get(firstURL));
+		Pair<Integer, Integer> secondURL = Pair.of(115, 138);
+		assertTrue(tweet.getURLs().containsKey(secondURL));
+		assertEquals("https://twitter.com/i/web/status/1234|twitter.com/i/web/status/1\u2026", tweet.getURLs().get(secondURL));
+		Pair<Integer, Integer> thirdURL = Pair.of(219, 242);
+		assertTrue(tweet.getURLs().containsKey(thirdURL));
+		assertEquals("http://thomas-egense.dk/math/|thomas-egense.dk/math/", tweet.getURLs().get(thirdURL));
+
 		assertEquals(1, tweet.getImageURLStrings().size());
 		assertEquals("http://pbs.twimg.com/media/ABCDE.jpg", tweet.getImageURLStrings().iterator().next());
 	}

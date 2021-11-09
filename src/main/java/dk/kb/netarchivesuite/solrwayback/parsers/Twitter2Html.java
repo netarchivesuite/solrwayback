@@ -149,7 +149,7 @@ public class Twitter2Html {
     }
 
     @SafeVarargs
-    private static String formatTweetText(String text, Map<Pair<Integer, Integer>, String>... entities) {
+    public static String formatTweetText(String text, Map<Pair<Integer, Integer>, String>... entities) {
         text = formatEntitiesWithIndices(text, entities);
         text = newline2Br(text);
         text = text.replaceFirst("https:\\/\\/t\\.co\\/[a-zA-Z0-9]{10}$", ""); // Replace trailing image URL

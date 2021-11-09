@@ -154,12 +154,12 @@ public class TwitterParser2 {
 	}
 
 	private List<Pair<Integer, Integer>> parseHashtagIndices(JSONObject json, String tweetText) {
-		Set<String> rawHashtagIndices = new LinkedHashSet<>();
+		List<String> rawHashtagIndices = new ArrayList<>();
 		JsonUtils.addAllValues(json, rawHashtagIndices, "hashtags[].indices");
 		return makeIndicesWithOffset(rawHashtagIndices, tweetText);
 	}
 
-	private List<Pair<Integer, Integer>> makeIndicesWithOffset(Set<String> rawHashtagIndices, String tweetText) {
+	private List<Pair<Integer, Integer>> makeIndicesWithOffset(List<String> rawHashtagIndices, String tweetText) {
 		return rawHashtagIndices.stream()
 				.map(rawIndicesString -> rawIndicesString.substring(1, rawIndicesString.length() - 1)) // Cut off surrounding brackets
 				.map(indicesString -> indicesString.split(","))
@@ -170,7 +170,7 @@ public class TwitterParser2 {
 	}
 
 	private List<String> parseHashtagStrings(JSONObject json) {
-		Set<String> hashtagsText = new LinkedHashSet<>();
+		List<String> hashtagsText = new ArrayList<>();
 		JsonUtils.addAllValues(json, hashtagsText, "hashtags[].text");
 		return hashtagsText.stream()
 				.map(hashtag -> "#" + hashtag).collect(Collectors.toList());
@@ -191,13 +191,13 @@ public class TwitterParser2 {
 	}
 
 	private List<Pair<Integer, Integer>> parseMentionIndices(JSONObject json, String tweetText) {
-		Set<String> rawMentionIndices = new LinkedHashSet<>();
+		List<String> rawMentionIndices = new ArrayList<>();
 		JsonUtils.addAllValues(json, rawMentionIndices, "user_mentions[].indices");
 		return makeIndicesWithOffset(rawMentionIndices, tweetText);
 	}
 
 	private List<String> parseMentionStrings(JSONObject json) {
-		Set<String> mentionScreenNames = new LinkedHashSet<>();
+		List<String> mentionScreenNames = new ArrayList<>();
 		JsonUtils.addAllValues(json, mentionScreenNames, "user_mentions[].screen_name");
 		return mentionScreenNames.stream()
 				.map(mention -> "@" + mention).collect(Collectors.toList());
@@ -220,19 +220,19 @@ public class TwitterParser2 {
 	}
 
 	private List<Pair<Integer, Integer>> parseURLIndices(JSONObject json, String tweetText) {
-		Set<String> rawURLIndices = new LinkedHashSet<>();
+		List<String> rawURLIndices = new ArrayList<>();
 		JsonUtils.addAllValues(json, rawURLIndices, "urls[].indices");
 		return makeIndicesWithOffset(rawURLIndices, tweetText);
 	}
 
 	private List<String> parseURLStrings(JSONObject json) {
-		Set<String> urls = new LinkedHashSet<>();
+		List<String> urls = new ArrayList<>();
 		JsonUtils.addAllValues(json, urls, "urls[].expanded_url");
-		return new ArrayList<>(urls);
+		return urls;
 	}
 
 	private List<String> parseDisplayURLStrings(JSONObject json) {
-		Set<String> displayURLs = new LinkedHashSet<>();
+		List<String> displayURLs = new ArrayList<>();
 		JsonUtils.addAllValues(json, displayURLs, "urls[].display_url");
 		return new ArrayList<>(displayURLs);
 	}

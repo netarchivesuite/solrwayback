@@ -35,8 +35,8 @@
          {
             "url":"https://t.co/W1ldUr7w0W",
             "indices":[
-               117,
-               140
+               115,
+               138
             ],
             "expanded_url":"https://twitter.com/i/web/status/1234",
             "display_url":"twitter.com/i/web/status/1\u2026"
@@ -124,7 +124,7 @@
             {
                "indices":[
                   243,
-                  249
+                  248
 
                ],
                "text":"math"
@@ -145,8 +145,8 @@
             {
                "url":"https://t.co/W1ldUr7w0W",
                "indices":[
-                  117,
-                  140
+                  115,
+                  138
 
                ],
                "expanded_url":"https://twitter.com/i/web/status/1234",

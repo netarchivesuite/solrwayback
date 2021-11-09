@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 public class Twitter2HtmlTest extends UnitTestUtils{
     @Test
-    public void testReplaceTags() throws Exception {
+    public void testFormatTweetText() throws Exception {
         PropertiesLoader.initProperties(getFile("properties/solrwayback.properties").getPath());
         //First load and parse a tweet
         String content = new String(Files.readAllBytes(Paths.get("src/test/resources/example_twitter/twitter2.json")));
@@ -21,22 +21,27 @@ public class Twitter2HtmlTest extends UnitTestUtils{
 
         //Test before text. Text has hashtag #math
         String before = p.getText();
-        String expectedBefore = "Test full text with tag and link: #math https://t.co/ABCDE";
+        String expectedBefore = "Test with links https://t.co/ABC123DEFG filler text for no reason but to fill\n" +
+                "There is even one link in this tweet https://t.co/W1ldUr7w0W. The text goes even further beyond what" +
+                " is thought possible! What is this math? https://t.co/rABCDEFGHI #math  https://t.co/ABCDEFGHIJ";
         assertEquals(expectedBefore, before);
 
-        //Test replace hashtags with links
-        String otherSearchParam = "&test=test123";
-        String replacedText = "";//Twitter2Html.formatHashtags(p.getText(), p.getHashtags(), otherSearchParam); // TODO RBKR FIX
-        String expectedAfter = "Test full text with tag and link: <span><a href='" + PropertiesLoader.WAYBACK_BASEURL
-                + "?query=keywords%3Amath&test=test123'>#math</a></span> https://t.co/ABCDE";
-        assertEquals(expectedAfter, replacedText);
+        //Test replacing of hashtags and urls with links
+        String textAfterFormatting = Twitter2Html.formatTweetText(before, p.getHashtags(), p.getMentions(), p.getURLs());
+        String expectedAfter = "Test with links <span><a href='https://twitter.com/i/web/status/1234'>twitter.com/i/web/status/1…</a></span>" +
+                " filler text for no reason but to fill<br>There is even one link in this tweet" +
+                " <span><a href='https://twitter.com/i/web/status/1234'>twitter.com/i/web/status/1…</a></span>." +
+                " The text goes even further beyond what is thought possible! What is this math?" +
+                " <span><a href='http://thomas-egense.dk/math/'>thomas-egense.dk/math/</a></span>" +
+                " <span><a href='http://localhost:8080/solrwayback/search?query=keywords%3Amath AND type%3A\"Twitter Tweet\"'>#math</a></span>  ";
+        assertEquals(expectedAfter, textAfterFormatting);
     }
 
     @Test
     public void testStuff() throws IOException {
         // TODO consider making tests of below input - only problem is how..
-        String text = "Are You Ready for Today? \ud83d\ude0d\nhttps://t.co/osoFEsfpIq is Open\nAll top certified brands in stock.\n#Europe #Austria #Norge #Sverige #Suomi #Denmark #Spain #Greece #Poland #Croatia #Belgium #Italia #Germany #Australia #canada #USA #malaga #SuomiAreena2021 #medvapeshop #Portugal #Oslo https://t.co/cwqw3VDfwy";
-        String text2 = "Ingen har lyst til at \u00f8del\u00e6gge den gode stemning i DK med nye restriktioner selv om smitten er ved at l\u00f8be l\u00f8bsk.  Dem der tror, at de unge og de vaccinerede ikke blir s\u00e5 syge, kan lige l\u00e6se her. #COVID19dk #dkpol  https://t.co/zefrB4lTY2";
+        String text = "Are You Ready for Today? \ud83d\ude0d\nhttps://t.co/abcDEfgiJk is Open\nAll top certified brands in stock.\n#Europe #Austria #Norge #Sverige #Suomi #Denmark #Spain #Greece #Poland #Croatia #Belgium #Italia #Germany #Australia #canada #USA #malaga #SuomiAreena2021 #medvapeshop #Portugal #Oslo https://t.co/abcd1EFghi";
+        String text2 = "Ingen har lyst til at \u00f8del\u00e6gge den gode stemning i DK med nye restriktioner selv om smitten er ved at l\u00f8be l\u00f8bsk.  Dem der tror, at de unge og de vaccinerede ikke blir s\u00e5 syge, kan lige l\u00e6se her. #COVID19dk #dkpol  https://t.co/abcdE1fGH2";
         String text3 = "Er i Frankrig (gr\u00f8nt), s\u00e5 if\u00f8lge reglerne skal man ikke vise en negativ test for at flyve til DK. Vi er dog lidt i tvivl om flyselskabet kan kr\u00e6ve det ved boarding eller om de bare f\u00f8lger reglerne til det land, man skal flyve til. Nogen der har fl\u00f8jet hjem fra \ud83c\uddeb\ud83c\uddf7? #twitterhjerne";
         System.out.println(text3.length());
         StringBuilder sb = new StringBuilder(text3);

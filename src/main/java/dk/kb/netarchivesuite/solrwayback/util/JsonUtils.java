@@ -2,8 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,14 +33,13 @@ public class JsonUtils {
 		return value;
 	}
 
-	public static Set<String> addAllValues(ArrayList<JSONObject> jsonList, Set<String> values, String path) {
+	public static <T extends Collection<String>> void addAllValues(ArrayList<JSONObject> jsonList, T values, String path) {
 		for (JSONObject obj : jsonList) {
 			addAllValues(obj, values, path);
 		}
-		return values;
 	}
 
-	public static Set<String> addAllValues(JSONObject json, Set<String> values, String path) {
+	public static <T extends Collection<String>> void addAllValues(JSONObject json, T values, String path) {
 
 		// Split in tokens on .
 		String[] tokens = path.split("\\."); // Have to escape the dot
@@ -61,13 +59,13 @@ public class JsonUtils {
 					//System.out.println("full path:" + path);
 					//System.out.println("remaining path:" + remainingPath);
 					addAllValues(jsonObjectList, values, remainingPath); // Call recursive
-					return values;
+					return;
 				}
 			}
 
 			parentJson = getSubObjectIfExists(parentJson, token);
 			if (parentJson == null) {
-				return values;
+				return;
 			}
 		}
 		// Now take last which must be string value
@@ -75,7 +73,6 @@ public class JsonUtils {
 		if (value != null) {
 			values.add(value); // Last part of the path and found a value
 		}
-		return values;
 	}
 
 	/*
