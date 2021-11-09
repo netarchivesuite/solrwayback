@@ -1,16 +1,15 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import static org.junit.Assert.assertEquals;
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import org.json.JSONObject;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
-import org.json.JSONObject;
-import org.junit.Test;
-
-import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import static org.junit.Assert.assertEquals;
 
 public class Twitter2HtmlTest extends UnitTestUtils{
     @Test
@@ -27,12 +26,24 @@ public class Twitter2HtmlTest extends UnitTestUtils{
 
         //Test replace hashtags with links
         String otherSearchParam = "&test=test123";
-        String replacedText = Twitter2Html.formatHashtags(p.getText(), p.getHashTags(), otherSearchParam);
+        String replacedText = "";//Twitter2Html.formatHashtags(p.getText(), p.getHashtags(), otherSearchParam); // TODO RBKR FIX
         String expectedAfter = "Test full text with tag and link: <span><a href='" + PropertiesLoader.WAYBACK_BASEURL
                 + "?query=keywords%3Amath&test=test123'>#math</a></span> https://t.co/ABCDE";
         assertEquals(expectedAfter, replacedText);
     }
 
+    @Test
+    public void testStuff() throws IOException {
+        // TODO consider making tests of below input - only problem is how..
+        String text = "Are You Ready for Today? \ud83d\ude0d\nhttps://t.co/osoFEsfpIq is Open\nAll top certified brands in stock.\n#Europe #Austria #Norge #Sverige #Suomi #Denmark #Spain #Greece #Poland #Croatia #Belgium #Italia #Germany #Australia #canada #USA #malaga #SuomiAreena2021 #medvapeshop #Portugal #Oslo https://t.co/cwqw3VDfwy";
+        String text2 = "Ingen har lyst til at \u00f8del\u00e6gge den gode stemning i DK med nye restriktioner selv om smitten er ved at l\u00f8be l\u00f8bsk.  Dem der tror, at de unge og de vaccinerede ikke blir s\u00e5 syge, kan lige l\u00e6se her. #COVID19dk #dkpol  https://t.co/zefrB4lTY2";
+        String text3 = "Er i Frankrig (gr\u00f8nt), s\u00e5 if\u00f8lge reglerne skal man ikke vise en negativ test for at flyve til DK. Vi er dog lidt i tvivl om flyselskabet kan kr\u00e6ve det ved boarding eller om de bare f\u00f8lger reglerne til det land, man skal flyve til. Nogen der har fl\u00f8jet hjem fra \ud83c\uddeb\ud83c\uddf7? #twitterhjerne";
+        System.out.println(text3.length());
+        StringBuilder sb = new StringBuilder(text3);
+        JSONObject json = new JSONObject("{\"hashtags\": [{\"indices\": [94, 101], \"text\": \"Europe\"}, {\"indices\": [102, 110], \"text\": \"Austria\"}, {\"indices\": [111, 117], \"text\": \"Norge\"}, {\"indices\": [118, 126], \"text\": \"Sverige\"}, {\"indices\": [127, 133], \"text\": \"Suomi\"}, {\"indices\": [134, 142], \"text\": \"Denmark\"}, {\"indices\": [143, 149], \"text\": \"Spain\"}, {\"indices\": [150, 157], \"text\": \"Greece\"}, {\"indices\": [158, 165], \"text\": \"Poland\"}, {\"indices\": [166, 174], \"text\": \"Croatia\"}, {\"indices\": [175, 183], \"text\": \"Belgium\"}, {\"indices\": [184, 191], \"text\": \"Italia\"}, {\"indices\": [192, 200], \"text\": \"Germany\"}, {\"indices\": [201, 211], \"text\": \"Australia\"}, {\"indices\": [212, 219], \"text\": \"canada\"}, {\"indices\": [220, 224], \"text\": \"USA\"}, {\"indices\": [225, 232], \"text\": \"malaga\"}, {\"indices\": [233, 249], \"text\": \"SuomiAreena2021\"}, {\"indices\": [250, 262], \"text\": \"medvapeshop\"}, {\"indices\": [263, 272], \"text\": \"Portugal\"}, {\"indices\": [273, 278], \"text\": \"Oslo\"}]}");
+        JSONObject json2 = new JSONObject("{\"hashtags\": [{\"indices\": [196, 206], \"text\": \"COVID19dk\"}, {\"indices\": [207, 213], \"text\": \"dkpol\"}]}");
+        JSONObject json3 = new JSONObject("{\"hashtags\": [{\"indices\": [265, 279], \"text\": \"twitterhjerne\"}]}");
+    }
 /*
 
     @Test

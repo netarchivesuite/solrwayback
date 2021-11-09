@@ -364,18 +364,19 @@ This schema is for Solr 7+ and will not work under Solr 6.
         <field name="arc_job"              type="string" />
         <field name="arc_harvest"          type="string" />
         <field name="arc_harvesttime"      type="string" />
-
-        <!-- Twitter API specific fields below -->
-        <field name="tw_user_mentions"     type="string" multiValued="true" />
-        <field name="tw_user_screen_name"  type="string" />
+   
+   <!-- Twitter API specific fields below -->
+        <field name="tw_user_mentions"         type="string" multiValued="true" />
+        <field name="tw_user_name"             type="string" /> <!-- The easy-changing designation -->
+        <copyField source="tw_user_name" dest="author" />
+        <field name="tw_user_screen_name"      type="string" /> <!-- The Twitter handle -->
         <copyField source="tw_user_screen_name" dest="author" />
-        <field name="tw_user_profile_image" type="string" />
-        <copyField source="tw_user_profile_image" dest="links_images" />               
-        <field name="tw_user_url"          type="string" />
-        <field name="tw_json"              type="string" />
-        <field name="tw_user_id"           type="long" />
-        <field name="tw_user_followers_count" type="long" />
-        <field name="tw_user_friends_count"   type="long" />
+        <field name="tw_user_profile_image"    type="string" />
+        <copyField source="tw_user_profile_image" dest="links_images" />
+        <field name="tw_user_url"              type="string" />
+        <field name="tw_user_id"               type="long" />
+        <field name="tw_user_followers_count"  type="long" />
+        <field name="tw_user_friends_count"    type="long" />
         <field name="tw_user_favourites_count" type="long" />
         <field name="tw_user_statuses_count"   type="long" />
         <field name="tw_user_verified"         type="boolean" />
@@ -385,9 +386,11 @@ This schema is for Solr 7+ and will not work under Solr 6.
         <field name="tw_retweeted_count"       type="long" />
         <field name="tw_is_retweet"            type="boolean" />
         <field name="tw_is_quotetweet"         type="boolean" />
-        <field name="tw_tweet_id"              type="long" />
-        <field name="tw_reply_to_tweet_id"     type="long" />
+        <field name="tw_tweet_id"              type="string" /> <!-- string as JavaScript rounds everything above 2^54 -->
+        <field name="tw_reply_to_tweet_id"     type="string" /> <!-- string as JavaScript rounds everything above 2^54 -->
         <field name="tw_reply_to_user_id"      type="long" />
+
+        <field name="tw_json"                  type="string" indexed="false" docValues="false" stored="true" /> <!-- Opt-in -->
         <!-- Twitter specific fields above -->
 
         <!-- Dynamic fields intended for intstitution-specific fields without changing the schema.

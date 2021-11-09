@@ -13,7 +13,6 @@ body {
 }
 
 h2 {
-    margin: 4px 0 0;
     font-size: 18px;
 }
 
@@ -27,11 +26,6 @@ h4 {
     color: rgb(83, 100, 113);
     margin: 0 0 4px;
     font-weight: 400;
-}
-
-a {
-    text-decoration: none;
-    color: inherit;
 }
 
 .tweet {
@@ -111,6 +105,11 @@ a {
     float: left;
 }
 
+.user-handles h2 {
+    margin: 4px 0 0;
+    float: left;
+}
+
 .avatar{
     float: left;
     margin-right: .5em;
@@ -148,12 +147,24 @@ a {
     display:block;
 }
 
+.user-wrapper a {
+    text-decoration: none;
+    color: inherit;
+}
+
 .user-wrapper a:hover h3 {
     text-decoration: underline;
 }
 
 .user-wrapper a:hover h2 {
     text-decoration: underline;
+}
+
+.user-verified {
+    height: 20px;
+    width: 20px;
+    margin: 4px 0 0;
+    float: left;
 }
 
 .user-desc {
