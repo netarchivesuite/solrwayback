@@ -188,8 +188,15 @@ public class Twitter2Html {
     }
 
     private static String makeTagHtml(String entityTag) {
-        String searchPrefix = entityTag.charAt(0) == '#' ? "keywords%3A" : "";
-        String searchUrl = makeSolrSearchLink(searchPrefix + entityTag.substring(1));
+        String tagWithoutPrefixSymbol = entityTag.substring(1);
+        String searchString;
+        if (entityTag.charAt(0) == '#') {
+            searchString = "keywords%3A" + tagWithoutPrefixSymbol;
+        } else { // chatAt(0) == '@'
+            searchString = "(author:" + tagWithoutPrefixSymbol + " OR tw_user_mentions:"
+                    + tagWithoutPrefixSymbol.toLowerCase() + ")";
+        }
+        String searchUrl = makeSolrSearchLink(searchString);
         return "<span><a href='" + searchUrl + "'>" + entityTag + "</a></span>";
     }
 
