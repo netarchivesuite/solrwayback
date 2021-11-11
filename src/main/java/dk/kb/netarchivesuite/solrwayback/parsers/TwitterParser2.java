@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ public class TwitterParser2 {
 	private static final Logger log = LoggerFactory.getLogger(TwitterParser2.class);
 	private final JSONObject parentJSON;
 
+	private final String tweetID;
 	private final boolean isRetweet;
 	private final boolean hasQuote;
 	private final Date createdDate;
@@ -38,11 +40,15 @@ public class TwitterParser2 {
 	private int userFollowersCount;
 	private int userFriendsCount;
 	private boolean userVerified;
+	private Pair<Integer, Integer> tweetDisplayTextRange;
 	private String text;
 	private int likeCount; // "favorites"
 	private int retweetCount;
 	private int replyCount;
 	private int quoteCount;
+	private String retweetedTweetID;
+	private String replyToStatusID;
+	private List<String> replyMentions;
 	private Date retweetCreatedDate;
 	private long retweetUserID;
 	private String retweetUserScreenName;
@@ -63,6 +69,7 @@ public class TwitterParser2 {
 	private long quoteUserID;
 	private String quoteUserName;
 	private String quoteUserScreenName;
+	private Pair<Integer, Integer> quoteDisplayTextRange;
 	private String quoteText;
 	private String quoteUserProfileImage;
 	private String quoteUserDescription;
@@ -77,6 +84,7 @@ public class TwitterParser2 {
 
 	public TwitterParser2(String twitterJsonString) {
 		this.parentJSON = new JSONObject(twitterJsonString);
+		this.tweetID = parentJSON.getString("id_str");
 		this.isRetweet = parentJSON.has("retweeted_status");
 		this.hasQuote = parentJSON.getBoolean("is_quote_status");
 
@@ -110,8 +118,7 @@ public class TwitterParser2 {
 		this.userName = mainUserJSON.getString("name");
 		this.userScreenName = mainUserJSON.getString("screen_name");
 		this.userProfileImage = mainUserJSON.getString("profile_image_url");
-		this.userDescription = mainUserJSON.isNull("description") ? "No description."
-				: mainUserJSON.getString("description"); // Might be null, so want a default
+		this.userDescription = mainUserJSON.optString("description", "No description."); // Might be null, so want a default
 		this.userFollowersCount = mainUserJSON.getInt("followers_count");
 		this.userFriendsCount = mainUserJSON.getInt("friends_count");
 		this.userVerified = mainUserJSON.getBoolean("verified");
@@ -128,9 +135,11 @@ public class TwitterParser2 {
 		this.quoteText = JsonUtils.getValueIfExistsByPriority(quoteTweetJSON, "extended_tweet.full_text", "text");
 
 		JSONObject entityParentJSON = quoteTweetJSON.has("extended_tweet") ? quoteTweetJSON.getJSONObject("extended_tweet") : quoteTweetJSON;
+		JSONArray displayTextRangeArr = entityParentJSON.getJSONArray("display_text_range");
+		this.quoteDisplayTextRange = Pair.of(displayTextRangeArr.getInt(0), displayTextRangeArr.getInt(1));
 		JSONObject entityJSON = entityParentJSON.getJSONObject("entities");
 		this.quoteHashtags = parseHashtags(entityJSON, quoteText);
-		this.quoteMentions = parseMentions(entityJSON, quoteText);
+		this.quoteMentions = parseMentions(entityJSON, quoteText, quoteDisplayTextRange);
 		this.quoteURLs = parseURLs(entityJSON, quoteText);
 		parseImages(entityParentJSON, quoteImageURLStrings); // need to parse both 'entities' and 'extended_entities'
 	}
@@ -140,8 +149,7 @@ public class TwitterParser2 {
 		this.quoteUserName = userJSON.getString("name");
 		this.quoteUserScreenName = userJSON.getString("screen_name");
 		this.quoteUserProfileImage = userJSON.getString("profile_image_url");
-		this.quoteUserDescription = userJSON.isNull("description") ? "No description."
-				: userJSON.getString("description");
+		this.quoteUserDescription = userJSON.optString("description", "No description.");
 		this.quoteUserFollowersCount = userJSON.getInt("followers_count");
 		this.quoteUserFriendsCount = userJSON.getInt("friends_count");
 		this.quoteUserVerified = userJSON.getBoolean("verified");
@@ -176,18 +184,23 @@ public class TwitterParser2 {
 				.map(hashtag -> "#" + hashtag).collect(Collectors.toList());
 	}
 
-	private LinkedHashMap<Pair<Integer, Integer>, String> mergeListsIntoMap(List<Pair<Integer, Integer>> indices, List<String> tags) {
+	private Map<Pair<Integer, Integer>, String> mergeListsIntoMap(List<Pair<Integer, Integer>> indices, List<String> tags) {
 		return IntStream.range(0, tags.size()).boxed()
-				.collect(Collectors.toMap(indices::get, tags::get,
-						(h1, h2) -> {
-							throw new IllegalStateException(); // If keys are same - shouldn't happen since no tag should share indices
-						}, LinkedHashMap::new));
+				.collect(Collectors.toMap(indices::get, tags::get));
 	}
 
-	private Map<Pair<Integer, Integer>, String> parseMentions(JSONObject json, String tweetText) {
+	private Map<Pair<Integer, Integer>, String> filterEntitiesOutsideRange(Map<Pair<Integer, Integer>, String> entityMap, int displayRangeMin) {
+		return entityMap.entrySet().stream()
+				.filter(map -> map.getKey().getLeft() >= displayRangeMin)
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
+
+	private Map<Pair<Integer, Integer>, String> parseMentions(JSONObject json, String tweetText, Pair<Integer, Integer> displayTextRange) {
 		List<Pair<Integer, Integer>> mentionIndices = parseMentionIndices(json, tweetText);
 		List<String> mentionStrings = parseMentionStrings(json);
-		return mergeListsIntoMap(mentionIndices, mentionStrings);
+		// TODO need to filter mentions outside of display_text_range - maybe better to do in Twitter2Html
+		Map<Pair<Integer, Integer>, String> mentionsMap = mergeListsIntoMap(mentionIndices, mentionStrings);
+		return filterEntitiesOutsideRange(mentionsMap, displayTextRange.getLeft());
 	}
 
 	private List<Pair<Integer, Integer>> parseMentionIndices(JSONObject json, String tweetText) {
@@ -244,6 +257,7 @@ public class TwitterParser2 {
 
 	private void parseRetweetedTweet() {
 		JSONObject retweetedTweetJSON = parentJSON.getJSONObject("retweeted_status");
+		this.retweetedTweetID = retweetedTweetJSON.getString("id_str");
 		this.retweetCreatedDate = parseTwitterDate(retweetedTweetJSON);
 		parseRetweetedUser(retweetedTweetJSON.getJSONObject("user"));
 		parseMainTweetContent(retweetedTweetJSON);
@@ -254,8 +268,7 @@ public class TwitterParser2 {
 		this.retweetUserName = retweetedUserJSON.getString("name");
 		this.retweetUserScreenName = retweetedUserJSON.getString("screen_name");
 		this.retweetUserProfileImage = retweetedUserJSON.getString("profile_image_url");
-		this.retweetUserDescription = retweetedUserJSON.isNull("description") ? "No description."
-				: retweetedUserJSON.getString("description");
+		this.retweetUserDescription = retweetedUserJSON.optString("description", "No description.");
 		this.retweetUserFollowersCount = retweetedUserJSON.getInt("followers_count");
 		this.retweetUserFriendsCount = retweetedUserJSON.getInt("friends_count");
 		this.retweetUserVerified = retweetedUserJSON.getBoolean("verified");
@@ -269,11 +282,14 @@ public class TwitterParser2 {
 		this.retweetCount = json.getInt("retweet_count");
 		this.quoteCount = json.getInt( "quote_count");
 		this.replyCount = json.getInt( "reply_count");
+		this.replyToStatusID = json.optString("in_reply_to_status_id_str");
 
 		JSONObject entityParentJSON = json.has("extended_tweet") ? json.getJSONObject("extended_tweet") : json;
+		JSONArray displayTextRangeArr = entityParentJSON.getJSONArray("display_text_range");
+		this.tweetDisplayTextRange = Pair.of(displayTextRangeArr.getInt(0), displayTextRangeArr.getInt(1));
 		JSONObject entityJSON = entityParentJSON.getJSONObject("entities");
 		this.hashtags = parseHashtags(entityJSON, text);
-		this.mentions = parseMentions(entityJSON, text);
+		this.mentions = parseMentions(entityJSON, text, tweetDisplayTextRange);
 		this.urls = parseURLs(entityJSON, text);
 		parseImages(entityParentJSON, imageURLStrings); // need to parse both 'entities' and 'extended_entities'
 	}
@@ -470,5 +486,29 @@ public class TwitterParser2 {
 
 	public boolean isRetweetUserVerified() {
 		return retweetUserVerified;
+	}
+
+	public String getTweetID() {
+		return tweetID;
+	}
+
+	public String getRetweetedTweetID() {
+		return retweetedTweetID;
+	}
+
+	public String getReplyToStatusID() {
+		return replyToStatusID;
+	}
+
+	public List<String> getReplyMentions() {
+		return replyMentions;
+	}
+
+	public Pair<Integer, Integer> getTweetDisplayTextRange() {
+		return tweetDisplayTextRange;
+	}
+
+	public Pair<Integer, Integer> getQuoteDisplayTextRange() {
+		return quoteDisplayTextRange;
 	}
 }

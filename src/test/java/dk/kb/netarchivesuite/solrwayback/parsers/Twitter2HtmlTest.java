@@ -1,13 +1,20 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import org.json.JSONObject;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -48,6 +55,33 @@ public class Twitter2HtmlTest extends UnitTestUtils{
         JSONObject json = new JSONObject("{\"hashtags\": [{\"indices\": [94, 101], \"text\": \"Europe\"}, {\"indices\": [102, 110], \"text\": \"Austria\"}, {\"indices\": [111, 117], \"text\": \"Norge\"}, {\"indices\": [118, 126], \"text\": \"Sverige\"}, {\"indices\": [127, 133], \"text\": \"Suomi\"}, {\"indices\": [134, 142], \"text\": \"Denmark\"}, {\"indices\": [143, 149], \"text\": \"Spain\"}, {\"indices\": [150, 157], \"text\": \"Greece\"}, {\"indices\": [158, 165], \"text\": \"Poland\"}, {\"indices\": [166, 174], \"text\": \"Croatia\"}, {\"indices\": [175, 183], \"text\": \"Belgium\"}, {\"indices\": [184, 191], \"text\": \"Italia\"}, {\"indices\": [192, 200], \"text\": \"Germany\"}, {\"indices\": [201, 211], \"text\": \"Australia\"}, {\"indices\": [212, 219], \"text\": \"canada\"}, {\"indices\": [220, 224], \"text\": \"USA\"}, {\"indices\": [225, 232], \"text\": \"malaga\"}, {\"indices\": [233, 249], \"text\": \"SuomiAreena2021\"}, {\"indices\": [250, 262], \"text\": \"medvapeshop\"}, {\"indices\": [263, 272], \"text\": \"Portugal\"}, {\"indices\": [273, 278], \"text\": \"Oslo\"}]}");
         JSONObject json2 = new JSONObject("{\"hashtags\": [{\"indices\": [196, 206], \"text\": \"COVID19dk\"}, {\"indices\": [207, 213], \"text\": \"dkpol\"}]}");
         JSONObject json3 = new JSONObject("{\"hashtags\": [{\"indices\": [265, 279], \"text\": \"twitterhjerne\"}]}");
+    }
+
+    @Test
+    public void something() throws Exception {
+        // Tror nok, at man med Facade kan lave en søgning på f.eks. twitterID - så burde du kunne tage søgningsresultatet på en eller anden måde og så få
+        // source_file_path - med den kan du få fat i den fils json med ArcParserFileResolver.getArcEntry(source_file_path, offset)
+        NetarchiveSolrClient.initialize("http://localhost:8983/solr/netarchivebuilder/");
+        SearchResult searchResult = Facade.search("tw_tweet_id:1416051619951693825", null);
+        List<IndexDoc> results = searchResult.getResults();
+        System.out.println(results.size());
+        String sourceFile = results.get(0).getSource_file_path();
+        long offset = results.get(0).getOffset();
+        ArcEntry arc = Facade.getArcEntry(sourceFile, offset);
+        String json = new String(arc.getBinary(), StandardCharsets.UTF_8);
+        TwitterParser2 parser = new TwitterParser2(json);
+        System.out.println(parser.getText());
+        String tweetID = parser.getReplyToStatusID();
+
+        searchResult = Facade.search("tw_tweet_id:" + tweetID, null);
+        List<IndexDoc> results2 = searchResult.getResults();
+        System.out.println(results2.size());
+        String sourceFile2 = results2.get(0).getSource_file_path();
+        long offset2 = results2.get(0).getOffset();
+        ArcEntry arc2 = Facade.getArcEntry(sourceFile2, offset2);
+        String json2 = new String(arc2.getBinary(), StandardCharsets.UTF_8);
+        TwitterParser2 parser2 = new TwitterParser2(json2);
+        System.out.println(parser2.getText());
     }
 /*
 

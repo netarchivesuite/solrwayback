@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +105,7 @@ public class Twitter2Html {
                       "<div class='item date'>"+
                         "<div>"+ date +"</div>"+
                       "</div>"+
+                      (parser.getReplyToStatusID() == null ? getReplyLine(parser.getReplyMentions()) : "")+
                       "<div class='item text'>"+
                         mainTextHtml+
                       "</div>"+
@@ -148,11 +150,19 @@ public class Twitter2Html {
         return Facade.arcEntrys2Images(imageEntries);
     }
 
+    /**
+     * Assumes mentions/(urls?) outside display_text_range are filtered from parsed entities
+     * @param text
+     * @param entities
+     * @return
+     */
     @SafeVarargs
     public static String formatTweetText(String text, Map<Pair<Integer, Integer>, String>... entities) {
         text = formatEntitiesWithIndices(text, entities);
         text = newline2Br(text);
-        text = text.replaceFirst("https:\\/\\/t\\.co\\/[a-zA-Z0-9]{10}$", ""); // Replace trailing image URL
+        //text = text.replaceFirst("https:\\/\\/t\\.co\\/[a-zA-Z0-9]{10}$", ""); // Replace trailing image URL
+        /* TODO in order to cut off replies at start and imageURL at end we need to first cut off text to end index if display_text_range
+            Once formatting is done, you can then cut off reply mentions up to start index without issue*/
         return text;
     }
 
@@ -289,6 +299,28 @@ public class Twitter2Html {
                         "</div>" +
                     "</div>" +
                 "</div>";
+    }
+
+    private static String getReplyLine(List<String> replyMentions) { // TODO generalize to be usable both for std and quote
+        Iterator<String> iterator = replyMentions.iterator();
+        String firstMention = iterator.next();
+        StringBuilder replyTagsHTML = new StringBuilder(firstMention);
+        while (iterator.hasNext()) {
+            String mention = iterator.next();
+            if (!iterator.hasNext()) {
+                replyTagsHTML.append(" and ").append(mention);
+            } else {
+                replyTagsHTML.append(" ").append(mention);
+            }
+        }
+
+        String replyHTML =  "<div class='reply-line'>" +
+                              "Replying to " +
+                              "<div class='reply-tags'>" +
+                                replyTagsHTML +
+                              "</div>" +
+                            "</div>";
+        return replyHTML;
     }
 
     private static String getQuoteHtml(TwitterParser2 parser, String crawlDate) {

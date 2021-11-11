@@ -126,6 +126,16 @@ h4 {
     color: rgb(83, 100, 113);
 }
 
+.reply-line {
+    color: rgb(83, 100, 113);
+    font-size: 15px;
+}
+
+.reply-tags {
+    display: inline-flex;
+    color: rgb(29, 155, 240);
+}
+
 .user-wrapper {
     float: left;
 }
