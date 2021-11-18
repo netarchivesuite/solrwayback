@@ -40,7 +40,8 @@ h4 {
 }
 
 .retweet-author {
-    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
     margin: .5em 0 .25em
 }
 
@@ -127,6 +128,10 @@ h4 {
 }
 
 .reply-line {
+    display: block;
+}
+
+.reply-line-text {
     color: rgb(83, 100, 113);
     font-size: 15px;
     line-height: 1.2em;
@@ -137,12 +142,12 @@ h4 {
     color: rgb(29, 155, 240);
 }
 
-.reply-line a {
+.reply-line-text a {
     color: rgb(29, 155, 240);
     text-decoration: none;
 }
 
-.reply-line a:hover {
+.reply-line-text a:hover {
     text-decoration: underline;
 }
 

@@ -4,6 +4,8 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -105,7 +107,7 @@ public class Twitter2Html {
                       "<div class='item date'>"+
                         "<div>"+ date +"</div>"+
                       "</div>"+
-                      (parser.getReplyToStatusID().isEmpty() ? "" : getReplyLine(parser.getReplyMentions()))+
+                      (parser.getReplyToStatusID().isEmpty() ? "" : getReplyLine(parser.getReplyMentions(), parser.getReplyToStatusID()))+
                       // Few edge cases contain no main text - e.g. if tweet is a reply containing only a quote
                       (mainTextHtml.isEmpty() ? "" : "<div class='item text'>" + mainTextHtml+ "</div>")+
                       (tweetImageUrls.isEmpty() ? "" : "<span class='image'>"+ imageUrlToHtml(tweetImageUrls)) +"</span>"+
@@ -124,7 +126,6 @@ public class Twitter2Html {
                   "</div>"+
                 "</body>"+
                 "</html>";
-
         return html;
     }
 
@@ -248,17 +249,20 @@ public class Twitter2Html {
         }
         String html =
                 "<div class='retweet-author'>" +
+                    "<div class='retweet-text-wrap'>"+
                         "<div class='user-wrapper'>" +
-                        "<a href='" + makeSolrSearchLink("tw_user_id:" + parser.getUserID()) + "'>" +
-                        "<h3>" + parser.getUserName() + " Retweeted</h3>" +
-                        "</a>" +
-                        makeUserCard(profileImageUrl, parser.getUserName(),
-                                parser.getUserScreenName(), parser.getUserDescription(),
-                                parser.getUserFriendsCount(), parser.getUserFollowersCount(),
-                                parser.isUserVerified()) +
+                            "<a href='" + makeSolrSearchLink("tw_user_id:" + parser.getUserID()) + "'>" +
+                                "<h3>" + parser.getUserName() + " Retweeted</h3>" +
+                            "</a>" +
+                            makeUserCard(profileImageUrl, parser.getUserName(),
+                                    parser.getUserScreenName(), parser.getUserDescription(),
+                                    parser.getUserFriendsCount(), parser.getUserFollowersCount(),
+                                    parser.isUserVerified()) +
                         "</div>" +
                         "<div class='date'>&middot " + parser.getCreatedDate() + "</div>" +
-                        "</div>";
+                    "</div>" +
+                    makeButtonLinkingToTweet(parser.getRetweetedTweetID(), "View original tweet") +
+                "</div>";
         return html;
     }
 
@@ -302,7 +306,7 @@ public class Twitter2Html {
                 "</div>";
     }
 
-    private static String getReplyLine(List<String> replyMentions) {
+    private static String getReplyLine(List<String> replyMentions, String replyToTweetID) {
         // TODO collapse on more than 3 mentions
         List<String> replyMentionsHTML = new ArrayList<>();
         for (String replyMention : replyMentions) {
@@ -322,12 +326,39 @@ public class Twitter2Html {
         }
 
         String replyHTML =  "<div class='reply-line'>" +
-                              "Replying to " +
-                              "<div class='reply-tags'>" +
-                                replyTagsHTML +
+                              "<div class='reply-line-text'>" +
+                                "Replying to " +
+                                "<div class='reply-tags'>" +
+                                  replyTagsHTML +
+                                "</div>" +
                               "</div>" +
+                                makeButtonLinkingToTweet(replyToTweetID, "View tweet replied to") +
                             "</div>";
         return replyHTML;
+    }
+
+    private static String makeButtonLinkingToTweet(String tweetID, String buttonText) {
+        String output = "";
+        try {
+            SearchResult searchResult = Facade.search("tw_tweet_id:" + tweetID, null);
+            List<IndexDoc> results = searchResult.getResults();
+            if (results.isEmpty()) {
+                return output;
+            }
+
+            IndexDoc tweet = results.get(0);
+            String filePath = tweet.getSource_file_path();
+            long fileOffset = tweet.getOffset();
+            output =    "<div class='button-wrap'>" +
+                            "<a href='" + PropertiesLoader.WAYBACK_BASEURL + "services/viewForward?source_file_path=" +
+                                filePath + "&offset=" + fileOffset + "'>" +
+                                "<button type='button'>" + buttonText + "</button>" +
+                            "</a>" +
+                        "</div>";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return output;
     }
 
     private static String getQuoteHtml(TwitterParser2 parser, String crawlDate) {
@@ -363,7 +394,7 @@ public class Twitter2Html {
                     "<div class='item date'>" +
                         "<div>" + parser.getQuoteCreatedDate() + "</div>" +
                     "</div>" +
-                        (parser.getQuoteReplyToStatusID().isEmpty() ? "" : getReplyLine(parser.getQuoteReplyMentions())) +
+                    (parser.getQuoteReplyToStatusID().isEmpty() ? "" : getReplyLine(parser.getQuoteReplyMentions(), parser.getQuoteReplyToStatusID())) +
                     "<div class='item text'>" +
                         formatTweetText(parser.getQuoteText(), parser.getQuoteMinDisplayTextRange(),
                                 parser.getQuoteHashtags(), parser.getQuoteMentions(), parser.getQuoteURLs()) +
