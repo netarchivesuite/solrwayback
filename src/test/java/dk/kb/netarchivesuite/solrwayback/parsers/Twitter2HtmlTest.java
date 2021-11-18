@@ -34,7 +34,7 @@ public class Twitter2HtmlTest extends UnitTestUtils{
         assertEquals(expectedBefore, before);
 
         //Test replacing of hashtags and urls with links
-        String textAfterFormatting = Twitter2Html.formatTweetText(before, p.getHashtags(), p.getMentions(), p.getURLs());
+        String textAfterFormatting = Twitter2Html.formatTweetText(before, p.getTweetMinDisplayTextRange(), p.getHashtags(), p.getMentions(), p.getURLs());
         String expectedAfter = "Test with links <span><a href='https://twitter.com/i/web/status/1234'>twitter.com/i/web/status/1…</a></span>" +
                 " filler text for no reason but to fill<br>There is even one link in this tweet" +
                 " <span><a href='https://twitter.com/i/web/status/1234'>twitter.com/i/web/status/1…</a></span>." +

@@ -46,11 +46,11 @@ public class Twitter2Html {
         List<ImageUrl> tweeterProfileImageUrl = getImageUrlsFromSolr(tweeterProfileImageList, crawlDate);
 
         // Get and format tweet text
-        String mainTextHtml = formatTweetText(parser.getText(), parser.getHashtags(), parser.getMentions(),
-                parser.getURLs());
+        String mainTextHtml = formatTweetText(parser.getText(), parser.getTweetMinDisplayTextRange(),
+                parser.getHashtags(), parser.getMentions(), parser.getURLs());
 
         // Get tweet images
-        List<String> tweetImages = new ArrayList<>(parser.getImageURLStrings());
+        List<String> tweetImages = parser.getImageURLStrings();
         ArrayList<ImageUrl> tweetImageUrls = getImageUrlsFromSolr(tweetImages, crawlDate);
 
         if (parser.isRetweet()) {
@@ -105,10 +105,9 @@ public class Twitter2Html {
                       "<div class='item date'>"+
                         "<div>"+ date +"</div>"+
                       "</div>"+
-                      (parser.getReplyToStatusID() == null ? getReplyLine(parser.getReplyMentions()) : "")+
-                      "<div class='item text'>"+
-                        mainTextHtml+
-                      "</div>"+
+                      (parser.getReplyToStatusID().isEmpty() ? "" : getReplyLine(parser.getReplyMentions()))+
+                      // Few edge cases contain no main text - e.g. if tweet is a reply containing only a quote
+                      (mainTextHtml.isEmpty() ? "" : "<div class='item text'>" + mainTextHtml+ "</div>")+
                       (tweetImageUrls.isEmpty() ? "" : "<span class='image'>"+ imageUrlToHtml(tweetImageUrls)) +"</span>"+
                       (parser.hasQuote() ? getQuoteHtml(parser, crawlDate) : "")+
                       "<div class='item reactions'>"+
@@ -151,24 +150,28 @@ public class Twitter2Html {
     }
 
     /**
-     * Assumes mentions/(urls?) outside display_text_range are filtered from parsed entities
-     * @param text
-     * @param entities
-     * @return
+     * Formats the tweet text by inserting html links in place of hashtags, mentions and urls.
+     * Also removes reply mentions (these will always be in the start of the text outside 'display_text_range')
+     * and removes trailing image urls (if tweet contains images the text will always contain an url linking to images).
+     * @param text Parsed text to format
+     * @param minDisplayTextRange Minimum of the parsed 'display_text_range' used for cutting off reply mentions
+     * @param entities Maps of indices and the corresponding hashtags/mentions/urls
+     * @return The formatted text string to show in playback.
      */
     @SafeVarargs
-    public static String formatTweetText(String text, Map<Pair<Integer, Integer>, String>... entities) {
-        text = formatEntitiesWithIndices(text, entities);
-        text = newline2Br(text);
-        //text = text.replaceFirst("https:\\/\\/t\\.co\\/[a-zA-Z0-9]{10}$", ""); // Replace trailing image URL
-        /* TODO in order to cut off replies at start and imageURL at end we need to first cut off text to end index if display_text_range
-            Once formatting is done, you can then cut off reply mentions up to start index without issue*/
+    public static String formatTweetText(String text, int minDisplayTextRange, Map<Pair<Integer, Integer>, String>... entities) {
+        StringBuilder textBuilder = new StringBuilder(text);
+        formatEntitiesWithIndices(textBuilder, entities);
+
+        String htmlText = newline2Br(textBuilder.toString());
+        textBuilder = new StringBuilder(htmlText);
+        textBuilder.replace(0, minDisplayTextRange, ""); // Remove reply mentions if any
+        text = textBuilder.toString();
+        text = text.replaceFirst("https:\\/\\/t\\.co\\/[a-zA-Z0-9]{10}$", ""); // Remove trailing image-URL if any
         return text;
     }
 
-    private static String formatEntitiesWithIndices(String text, Map<Pair<Integer, Integer>, String>[] entities) {
-        StringBuilder sb = new StringBuilder(text);
-
+    private static void formatEntitiesWithIndices(StringBuilder textBuilder, Map<Pair<Integer, Integer>, String>[] entities) {
         // Merge hashtags, mentions and urls
         Map<Pair<Integer, Integer>, String> allEntities = new LinkedHashMap<>();
         for (Map<Pair<Integer, Integer>, String> entityType : entities) {
@@ -185,19 +188,19 @@ public class Twitter2Html {
                 int endIndex = entityIndexPair.getRight();
                 String entityHTML;
                 if (!entityTag.isEmpty() && (entityTag.charAt(0) == '#' || entityTag.charAt(0) == '@')) {
-                    entityHTML = makeTagHtml(entityTag);
+                    entityHTML = makeTagHTML(entityTag);
                 } else {
-                    entityHTML = makeURLHtml(entityIndexPair, entityTag);
+                    entityHTML = makeURLHtml(entityTag);
                 }
-                sb.replace(startIndex, endIndex, entityHTML);
+                log.debug("Inserting '{}' at indices {},{}", entityHTML, startIndex, endIndex);
+                textBuilder.replace(startIndex, endIndex, entityHTML);
             }
         } catch (Exception e) { // Shouldn't happen
             log.warn("Failed replacing raw tags with solr search links", e);
         }
-        return sb.toString();
     }
 
-    private static String makeTagHtml(String entityTag) {
+    private static String makeTagHTML(String entityTag) {
         String tagWithoutPrefixSymbol = entityTag.substring(1);
         String searchString;
         if (entityTag.charAt(0) == '#') {
@@ -210,16 +213,14 @@ public class Twitter2Html {
         return "<span><a href='" + searchUrl + "'>" + entityTag + "</a></span>";
     }
 
-    private static String makeURLHtml(Pair<Integer, Integer> entityIndexPair, String entityTag) {
+    private static String makeURLHtml(String entityTag) {
         String entityHTML;
         if (entityTag.isEmpty()) { // Should atm. only happen when encountering quote URL
-            log.info("Removing url at {}", entityIndexPair);
             entityHTML = "";
         } else {
             String[] urls = entityTag.split("\\|");
             String url = urls[0];
             String displayURL = urls[1];
-            log.info("Inserting url '{}' displayed as '{}' at position {}", url, displayURL, entityIndexPair);
             entityHTML = "<span><a href='" + url + "'>" + displayURL + "</a></span>";
         }
         return entityHTML;
@@ -301,10 +302,16 @@ public class Twitter2Html {
                 "</div>";
     }
 
-    private static String getReplyLine(List<String> replyMentions) { // TODO generalize to be usable both for std and quote
-        Iterator<String> iterator = replyMentions.iterator();
-        String firstMention = iterator.next();
-        StringBuilder replyTagsHTML = new StringBuilder(firstMention);
+    private static String getReplyLine(List<String> replyMentions) {
+        // TODO collapse on more than 3 mentions
+        List<String> replyMentionsHTML = new ArrayList<>();
+        for (String replyMention : replyMentions) {
+            replyMentionsHTML.add(makeTagHTML(replyMention));
+        }
+
+        Iterator<String> iterator = replyMentionsHTML.iterator();
+        String firstMentionHTML = iterator.next();
+        StringBuilder replyTagsHTML = new StringBuilder(firstMentionHTML);
         while (iterator.hasNext()) {
             String mention = iterator.next();
             if (!iterator.hasNext()) {
@@ -329,7 +336,7 @@ public class Twitter2Html {
         try {
             List<String> quoteProfileImage = Collections.singletonList(parser.getQuoteUserProfileImage());
             quoteProfileImageUrl = getImageUrlsFromSolr(quoteProfileImage, crawlDate);
-            List<String> quoteImages = new ArrayList<>(parser.getQuoteImageURLStrings());
+            List<String> quoteImages = parser.getQuoteImageURLStrings();
             quoteImageUrls = getImageUrlsFromSolr(quoteImages, crawlDate);
         } catch (Exception e) {
             log.warn("Failed getting images for quote in tweet by '{}'", parser.getUserName(), e);
@@ -356,9 +363,10 @@ public class Twitter2Html {
                     "<div class='item date'>" +
                         "<div>" + parser.getQuoteCreatedDate() + "</div>" +
                     "</div>" +
+                        (parser.getQuoteReplyToStatusID().isEmpty() ? "" : getReplyLine(parser.getQuoteReplyMentions())) +
                     "<div class='item text'>" +
-                        formatTweetText(parser.getQuoteText(), parser.getQuoteHashtags(), parser.getQuoteMentions(),
-                                parser.getQuoteURLs()) +
+                        formatTweetText(parser.getQuoteText(), parser.getQuoteMinDisplayTextRange(),
+                                parser.getQuoteHashtags(), parser.getQuoteMentions(), parser.getQuoteURLs()) +
                     "</div>" +
                     (quoteImageUrls.isEmpty() ? "" : "<span class='image'>" + imageUrlToHtml(quoteImageUrls) + "</span>") +
                 "</div>";

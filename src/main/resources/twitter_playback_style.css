@@ -129,11 +129,21 @@ h4 {
 .reply-line {
     color: rgb(83, 100, 113);
     font-size: 15px;
+    line-height: 1.2em;
 }
 
 .reply-tags {
-    display: inline-flex;
+    display: inline;
     color: rgb(29, 155, 240);
+}
+
+.reply-line a {
+    color: rgb(29, 155, 240);
+    text-decoration: none;
+}
+
+.reply-line a:hover {
+    text-decoration: underline;
 }
 
 .user-wrapper {
