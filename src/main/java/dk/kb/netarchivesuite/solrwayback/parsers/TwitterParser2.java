@@ -63,6 +63,7 @@ public class TwitterParser2 {
 
 	private String quotePermaLink;
 	private Date quoteCreatedDate;
+	private String quoteTweetID;
 	private long quoteUserID;
 	private String quoteUserName;
 	private String quoteUserScreenName;
@@ -131,6 +132,7 @@ public class TwitterParser2 {
 		JSONObject quoteTweetJSON = parentJSON.getJSONObject("quoted_status");
 		parseQuoteUserInfo(quoteTweetJSON.getJSONObject("user"));
 		this.quoteCreatedDate = parseTwitterDate(quoteTweetJSON);
+		this.quoteTweetID = quoteTweetJSON.getString("id_str");
 		this.quoteReplyToStatusID = quoteTweetJSON.optString("in_reply_to_status_id_str");
 		this.quoteReplyToScreenName = quoteTweetJSON.optString("in_reply_to_screen_name");
 		this.quoteText = JsonUtils.getValueIfExistsByPriority(quoteTweetJSON, "extended_tweet.full_text", "text");
@@ -557,5 +559,9 @@ public class TwitterParser2 {
 
 	public int getQuoteMinDisplayTextRange() {
 		return quoteMinDisplayTextRange;
+	}
+
+	public String getQuoteTweetID() {
+		return quoteTweetID;
 	}
 }

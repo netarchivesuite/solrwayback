@@ -88,12 +88,12 @@ public class Twitter2Html {
                   "<div id='wrapper'>"+
                     "<div class='tweet'>"+
                       (parser.isRetweet() ? getRetweetHeader(parser, crawlDate) : "")+
-                      "<div class='item author'>"+
+                      "<div class='author'>"+
                         "<div class='user-wrapper'>"+
                           "<a href='"+ makeSolrSearchLink("tw_user_id:" + userID) +"'>"+
-                            "<span class='avatar'>"+
+                            "<div class='avatar'>"+
                               imageUrlToHtml(tweeterProfileImageUrl)+
-                            "</span>"+
+                            "</div>"+
                             "<div class='user-handles'>"+
                               "<h2>"+ userName +"</h2>"+
                               (userIsVerified ? "<span class='user-verified'></span>" : "") + // TODO: should probably be img
@@ -110,17 +110,20 @@ public class Twitter2Html {
                       (parser.getReplyToStatusID().isEmpty() ? "" : getReplyLine(parser.getReplyMentions(), parser.getReplyToStatusID()))+
                       // Few edge cases contain no main text - e.g. if tweet is a reply containing only a quote
                       (mainTextHtml.isEmpty() ? "" : "<div class='item text'>" + mainTextHtml+ "</div>")+
-                      (tweetImageUrls.isEmpty() ? "" : "<span class='image'>"+ imageUrlToHtml(tweetImageUrls)) +"</span>"+
+                      (tweetImageUrls.isEmpty() ? "" : "<div class='images'>"+ imageUrlToHtml(tweetImageUrls) +"</div>")+
                       (parser.hasQuote() ? getQuoteHtml(parser, crawlDate) : "")+
-                      "<div class='item reactions'>"+
-                        "<span class='icon replies'></span>"+ // TODO: should probably be img
-                        "<span class='number'>"+parser.getReplyCount()+"</span>"+
-                        "<span class='icon retweets'></span>"+
-                        "<span class='number'>"+parser.getRetweetCount()+"</span>"+
-                        "<span class='icon quotes'></span>"+
-                        "<span class='number'>"+parser.getQuoteCount()+"</span>"+
-                        "<span class='icon likes'></span>"+
-                        "<span class='number'>"+parser.getLikeCount()+"</span>"+
+                      "<div class='item bottom-container'>"+
+                        "<div class='reactions'>"+
+                          "<span class='icon replies'></span>"+ // TODO: should probably be img
+                          "<span class='number'>"+parser.getReplyCount()+"</span>"+
+                          "<span class='icon retweets'></span>"+
+                          "<span class='number'>"+parser.getRetweetCount()+"</span>"+
+                          "<span class='icon quotes'></span>"+
+                          "<span class='number'>"+parser.getQuoteCount()+"</span>"+
+                          "<span class='icon likes'></span>"+
+                          "<span class='number'>"+parser.getLikeCount()+"</span>"+
+                        "</div>"+
+                        "<span class='found-replies-text'>"+ foundRepliesToTweet(parser.getTweetID()) +"</span>"+
                       "</div>"+
                     "</div>"+
                   "</div>"+
@@ -131,13 +134,13 @@ public class Twitter2Html {
 
     private static String getIconsCSS() {
         String reactionIconsImageUrl = PropertiesLoader.WAYBACK_BASEURL + "images/twitter_sprite.png";
-        return ".item.reactions span.replies {" +
+        return ".reactions span.replies {" +
                 "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -50px;}" + // Missing correct icon?
-                ".item.reactions span.retweets {" +
+                ".reactions span.retweets {" +
                 "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -180px -50px;}" +
-                ".item.reactions span.likes {" +
+                ".reactions span.likes {" +
                 "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -130px;}" +
-                ".item.reactions span.quotes {" +
+                ".reactions span.quotes {" +
                 "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -105px -50px;}" + // Missing correct icon
                 "span.user-verified {" +
                 "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -67px -130px;}"; // TODO: using temp icon atm
@@ -206,7 +209,7 @@ public class Twitter2Html {
         String searchString;
         if (entityTag.charAt(0) == '#') {
             searchString = "keywords%3A" + tagWithoutPrefixSymbol;
-        } else { // chatAt(0) == '@'
+        } else { // charAt(0) == '@'
             searchString = "(author:" + tagWithoutPrefixSymbol + " OR tw_user_mentions:"
                     + tagWithoutPrefixSymbol.toLowerCase() + ")";
         }
@@ -266,6 +269,19 @@ public class Twitter2Html {
         return html;
     }
 
+    private static String foundRepliesToTweet(String tweetID) {
+        String foundRepliesLine = "";
+        try {
+            SearchResult searchResult = Facade.search("tw_reply_to_tweet_id:", null);
+            int resultCount = searchResult.getResults().size();
+            String searchLink = makeSolrSearchLink("tw_reply_to_tweet_id:" + tweetID);
+            foundRepliesLine = "Found <a href='" + searchLink + "'>" + resultCount + "</a> replies"; // TODO for some reason shows 0 right now??
+        } catch (Exception e) {
+            log.warn("Error while trying to find replies for tweet " + tweetID);
+        }
+        return foundRepliesLine;
+    }
+
     private static String makeSolrSearchLink(String searchString) {
         String searchParams = " AND type%3A\"Twitter Tweet\"";
         return PropertiesLoader.WAYBACK_BASEURL + "search?query=" + searchString + searchParams;
@@ -284,8 +300,8 @@ public class Twitter2Html {
     private static String makeUserCard(List<ImageUrl> profileImageUrl, String userName, String userHandle,
                                        String description, int followingCount, int followersCount, boolean verified) {
         return "<div class='user-card'>" +
-                    "<div class='item author'>" +
-                        "<span class='avatar'>" + imageUrlToHtml(profileImageUrl) + "</span>" +
+                    "<div class='author'>" +
+                        "<div class='avatar'>" + imageUrlToHtml(profileImageUrl) + "</div>" +
                         "<div class='user-handles'>" +
                             "<h2>" + userName + "</h2>" +
                             (verified ? "<span class='user-verified'></span>" : "") +
@@ -375,21 +391,24 @@ public class Twitter2Html {
 
         String quoteHtml =
                 "<div class='quote'>" +
-                    "<div class='item author'>" +
-                        "<div class='user-wrapper'>" +
-                            "<a href='" + makeSolrSearchLink("tw_user_id:" + parser.getQuoteUserID()) + "'>" +
-                                "<span class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</span>" +
-                                "<div class='user-handles'>" +
-                                    "<h2>" + parser.getQuoteUserName() + "</h2>" +
-                                    (parser.isQuoteUserVerified() ? "<span class='user-verified'></span>" : "") +
-                                    "<h4>@" + parser.getQuoteUserScreenName() + "</h4>" +
-                                "</div>" +
-                            "</a>" +
-                            makeUserCard(quoteProfileImageUrl, parser.getQuoteUserName(),
-                                    parser.getQuoteUserScreenName(), parser.getQuoteUserDescription(),
-                                    parser.getQuoteUserFriendsCount(), parser.getQuoteUserFollowersCount(),
-                                    parser.isQuoteUserVerified()) +
+                    "<div class='author-container'>" +
+                        "<div class='author'>" +
+                            "<div class='user-wrapper'>" +
+                                "<a href='" + makeSolrSearchLink("tw_user_id:" + parser.getQuoteUserID()) + "'>" +
+                                    "<div class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</div>" +
+                                    "<div class='user-handles'>" +
+                                        "<h2>" + parser.getQuoteUserName() + "</h2>" +
+                                        (parser.isQuoteUserVerified() ? "<span class='user-verified'></span>" : "") +
+                                        "<h4>@" + parser.getQuoteUserScreenName() + "</h4>" +
+                                    "</div>" +
+                                "</a>" +
+                                makeUserCard(quoteProfileImageUrl, parser.getQuoteUserName(),
+                                        parser.getQuoteUserScreenName(), parser.getQuoteUserDescription(),
+                                        parser.getQuoteUserFriendsCount(), parser.getQuoteUserFollowersCount(),
+                                        parser.isQuoteUserVerified()) +
+                            "</div>" +
                         "</div>" +
+                        makeButtonLinkingToTweet(parser.getQuoteTweetID(), "View quote tweet") +
                     "</div>" +
                     "<div class='item date'>" +
                         "<div>" + parser.getQuoteCreatedDate() + "</div>" +
@@ -399,7 +418,7 @@ public class Twitter2Html {
                         formatTweetText(parser.getQuoteText(), parser.getQuoteMinDisplayTextRange(),
                                 parser.getQuoteHashtags(), parser.getQuoteMentions(), parser.getQuoteURLs()) +
                     "</div>" +
-                    (quoteImageUrls.isEmpty() ? "" : "<span class='image'>" + imageUrlToHtml(quoteImageUrls) + "</span>") +
+                    (quoteImageUrls.isEmpty() ? "" : "<div class='images'>" + imageUrlToHtml(quoteImageUrls) + "</div>") +
                 "</div>";
 
         return quoteHtml;
