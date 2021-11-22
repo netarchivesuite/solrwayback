@@ -217,6 +217,13 @@ public class Twitter2Html {
         return "<span><a href='" + searchUrl + "'>" + entityTag + "</a></span>";
     }
 
+    /**
+     * Makes the html for a given url. Is currently a bit hacky, so expects urls to be of the form
+     * 'expanded_url|display_url'. Also if the given url is an empty string no html is generated. This is because of
+     * not wanting to show urls linking to quotes although these urls will show in text if tweet contains quote.
+     * @param entityTag Entity which should be an url of the form 'expanded_url|display_url'
+     * @return html for url
+     */
     private static String makeURLHtml(String entityTag) {
         String entityHTML;
         if (entityTag.isEmpty()) { // Should atm. only happen when encountering quote URL
@@ -230,6 +237,11 @@ public class Twitter2Html {
         return entityHTML;
     }
 
+    /**
+     * Converts '\n' to the corresponding '<br>' tags in html
+     * @param text Text to convert.
+     * @return New string with newline characters replaced by <br>
+     */
     private static String newline2Br(String text) {
         if (text == null){
             return "";
@@ -237,11 +249,22 @@ public class Twitter2Html {
         return text.replace("\n","<br>");
     }
 
+    /**
+     * Generates the content for the html title tag. Depends on if retweet or standard tweet.
+     * @param parser The parser.
+     * @return String to put inside <title/> tag.
+     */
     private static String getHeadTitle(TwitterParser2 parser) {
         String titlePrefix = parser.isRetweet() ? "Retweet by: " : "Tweet by: ";
         return titlePrefix + parser.getUserName() + " (userID: " + parser.getUserID() + ")";
     }
 
+    /**
+     * Generates the html for the retweet header above a tweet stating the retweeter and their info etc.
+     * @param parser The parser.
+     * @param crawlDate The date of the crawl to search for profile image in Solr.
+     * @return html making up the retweet header
+     */
     private static String getRetweetHeader(TwitterParser2 parser, String crawlDate) {
         List<ImageUrl> profileImageUrl = new ArrayList<>();
         try {
@@ -269,13 +292,23 @@ public class Twitter2Html {
         return html;
     }
 
+    /**
+     * Searches solr for replies to the tweet given by the tweet ID and returns a string stating if any replies
+     * were found. If any replies were found, it will also contain a link to search for the replies in SolrWayback.
+     * @param tweetID ID of a tweet
+     * @return String stating if any replis were found.
+     */
     private static String foundRepliesToTweet(String tweetID) {
         String foundRepliesLine = "";
         try {
             SearchResult searchResult = Facade.search("tw_reply_to_tweet_id:", null);
             int resultCount = searchResult.getResults().size();
             String searchLink = makeSolrSearchLink("tw_reply_to_tweet_id:" + tweetID);
-            foundRepliesLine = "Found <a href='" + searchLink + "'>" + resultCount + "</a> replies"; // TODO for some reason shows 0 right now??
+            if (resultCount > 0) {
+                foundRepliesLine = "Found <a href='" + searchLink + "'>" + resultCount + "</a> replies"; // TODO for some reason shows 0 right now??
+            } else {
+                foundRepliesLine = "No replies found to tweet";
+            }
         } catch (Exception e) {
             log.warn("Error while trying to find replies for tweet " + tweetID);
         }
