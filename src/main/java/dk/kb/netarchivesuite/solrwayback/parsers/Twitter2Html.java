@@ -12,6 +12,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,10 +23,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class responsible for making html from twitter tweet-json.
+ * TODO in need of overhaul to extrapolate responsibilities into separate classes
+ */
 public class Twitter2Html {
     private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
 
-    public static String twitter2Html(String jsonString, String crawlDate) throws Exception{
+    /**
+     * The main method for this class.
+     * Builds all of the html for a tweet by giving the JSON to a parser and inserting the parsed tweet data
+     * in html tags that resemble the original tweet structure.
+     * @param jsonString JSON representing the tweet.
+     * @param crawlDate Date of the crawl.
+     * @return The html making up the tweet
+     */
+    public static String twitter2Html(String jsonString, String crawlDate) throws IOException {
         Date date;
         long userID;
         String userName;
@@ -35,6 +48,7 @@ public class Twitter2Html {
         int userFollowersCount;
         boolean userIsVerified;
         TwitterParser2 parser = new TwitterParser2(jsonString);
+        String tweetID = parser.getTweetID();
 
         String cssFromFile = IOUtils.toString(
                 TwitterParser2.class.getClassLoader().getResourceAsStream("twitter_playback_style.css"),
@@ -45,7 +59,12 @@ public class Twitter2Html {
         // Get user profile image
         String tweeterProfileImage = parser.isRetweet() ? parser.getRetweetUserProfileImage() : parser.getUserProfileImage();
         List<String> tweeterProfileImageList = Collections.singletonList(tweeterProfileImage);
-        List<ImageUrl> tweeterProfileImageUrl = getImageUrlsFromSolr(tweeterProfileImageList, crawlDate);
+        List<ImageUrl> tweeterProfileImageUrl = new ArrayList<>();
+        try {
+            tweeterProfileImageUrl = getImageUrlsFromSolr(tweeterProfileImageList, crawlDate);
+        } catch (Exception e) {
+            log.warn("Failed getting profile image from solr for main tweet '{}'..", tweetID, e);
+        }
 
         // Get and format tweet text
         String mainTextHtml = formatTweetText(parser.getText(), parser.getTweetMinDisplayTextRange(),
@@ -53,7 +72,12 @@ public class Twitter2Html {
 
         // Get tweet images
         List<String> tweetImages = parser.getImageURLStrings();
-        ArrayList<ImageUrl> tweetImageUrls = getImageUrlsFromSolr(tweetImages, crawlDate);
+        List<ImageUrl> tweetImageUrls = new ArrayList<>();
+        try {
+            tweetImageUrls = getImageUrlsFromSolr(tweetImages, crawlDate);
+        } catch (Exception e) {
+            log.warn("Failed getting images from solr for main tweet '{}..", tweetID, e);
+        }
 
         if (parser.isRetweet()) {
             date = parser.getRetweetCreatedDate();
@@ -90,7 +114,7 @@ public class Twitter2Html {
                       (parser.isRetweet() ? getRetweetHeader(parser, crawlDate) : "")+
                       "<div class='author'>"+
                         "<div class='user-wrapper'>"+
-                          "<a href='"+ makeSolrSearchLink("tw_user_id:" + userID) +"'>"+
+                          "<a href='"+ makeSolrSearchURL("tw_user_id:" + userID) +"'>"+
                             "<div class='avatar'>"+
                               imageUrlToHtml(tweeterProfileImageUrl)+
                             "</div>"+
@@ -123,7 +147,7 @@ public class Twitter2Html {
                           "<span class='icon likes'></span>"+
                           "<span class='number'>"+parser.getLikeCount()+"</span>"+
                         "</div>"+
-                        "<span class='found-replies-text'>"+ foundRepliesToTweet(parser.getTweetID()) +"</span>"+
+                        "<span class='found-replies-text'>"+ foundRepliesToTweet(tweetID) +"</span>"+
                       "</div>"+
                     "</div>"+
                   "</div>"+
@@ -132,6 +156,11 @@ public class Twitter2Html {
         return html;
     }
 
+    /**
+     * Creates the CSS for the tweet reaction icons.
+     * Because of the dynamic url path to the image location this is handled here instead of in the static css-file.
+     * @return String containing css for the tweet reaction icons
+     */
     private static String getIconsCSS() {
         String reactionIconsImageUrl = PropertiesLoader.WAYBACK_BASEURL + "images/twitter_sprite.png";
         return ".reactions span.replies {" +
@@ -146,7 +175,14 @@ public class Twitter2Html {
                 "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -67px -130px;}"; // TODO: using temp icon atm
     }
 
-    private static ArrayList<ImageUrl> getImageUrlsFromSolr(List<String> imagesList, String crawlDate) throws Exception {
+    /**
+     * Searches Solr for the provided images and returns the found ImageUrls, if any, in a list.
+     * @param imagesList The images to search for in Solr.
+     * @param crawlDate The date of the crawl to use in the search.
+     * @return List of the found ImageUrls
+     * @throws Exception If there is an issue with/while communicating with Solr.
+     */
+    private static List<ImageUrl> getImageUrlsFromSolr(List<String> imagesList, String crawlDate) throws Exception {
         String imagesSolrQuery = Facade.queryStringForImages(imagesList);
         ArrayList<ArcEntryDescriptor> imageEntries = NetarchiveSolrClient.getInstance()
                 .findImagesForTimestamp(imagesSolrQuery, crawlDate);
@@ -175,6 +211,13 @@ public class Twitter2Html {
         return text;
     }
 
+    /**
+     * Replaces the entities (hashtags/mentions/urls) in the tweet text by using the direct indices of the entities.
+     * This is done backwards through the text, end-to-start, to avoid having to keep track of an index offset while
+     * replacing the entities.
+     * @param textBuilder StringBuilder containing the text to replace the tags in.
+     * @param entities Array of maps containing pairs of indices and the hashtags/mentions/urls placed on these indices.
+     */
     private static void formatEntitiesWithIndices(StringBuilder textBuilder, Map<Pair<Integer, Integer>, String>[] entities) {
         // Merge hashtags, mentions and urls
         Map<Pair<Integer, Integer>, String> allEntities = new LinkedHashMap<>();
@@ -183,7 +226,7 @@ public class Twitter2Html {
         }
 
         List<Pair<Integer, Integer>> entityIndices = new ArrayList<>(allEntities.keySet());
-        entityIndices.sort(Comparator.comparing(Pair::getLeft));
+        entityIndices.sort(Comparator.comparing(Pair::getLeft)); // Sort entities to ensure replacement is done in order
         Collections.reverse(entityIndices); // Reverse to insert entities in text from end to start
         try {
             for (Pair<Integer, Integer> entityIndexPair : entityIndices) {
@@ -204,6 +247,12 @@ public class Twitter2Html {
         }
     }
 
+    /**
+     * Creates the html for a hashtag or mention in the tweet.
+     * This html will contain a link to search SolrWayback for the hashtag or tweets by this user or other mentions of them.
+     * @param entityTag The tag (hashtag/mention) to make html for.
+     * @return A string containing the html for the tag
+     */
     private static String makeTagHTML(String entityTag) {
         String tagWithoutPrefixSymbol = entityTag.substring(1);
         String searchString;
@@ -213,7 +262,7 @@ public class Twitter2Html {
             searchString = "(author:" + tagWithoutPrefixSymbol + " OR tw_user_mentions:"
                     + tagWithoutPrefixSymbol.toLowerCase() + ")";
         }
-        String searchUrl = makeSolrSearchLink(searchString);
+        String searchUrl = makeSolrSearchURL(searchString);
         return "<span><a href='" + searchUrl + "'>" + entityTag + "</a></span>";
     }
 
@@ -277,7 +326,7 @@ public class Twitter2Html {
                 "<div class='retweet-author'>" +
                     "<div class='retweet-text-wrap'>"+
                         "<div class='user-wrapper'>" +
-                            "<a href='" + makeSolrSearchLink("tw_user_id:" + parser.getUserID()) + "'>" +
+                            "<a href='" + makeSolrSearchURL("tw_user_id:" + parser.getUserID()) + "'>" +
                                 "<h3>" + parser.getUserName() + " Retweeted</h3>" +
                             "</a>" +
                             makeUserCard(profileImageUrl, parser.getUserName(),
@@ -293,20 +342,22 @@ public class Twitter2Html {
     }
 
     /**
-     * Searches solr for replies to the tweet given by the tweet ID and returns a string stating if any replies
+     * Searches Solr for replies to the tweet given by the tweet ID and returns a string stating if any replies
      * were found. If any replies were found, it will also contain a link to search for the replies in SolrWayback.
      * @param tweetID ID of a tweet
-     * @return String stating if any replis were found.
+     * @return String stating if any replies were found.
      */
     private static String foundRepliesToTweet(String tweetID) {
         String foundRepliesLine = "";
         try {
-            SearchResult searchResult = Facade.search("tw_reply_to_tweet_id:", null);
-            int resultCount = searchResult.getResults().size();
-            String searchLink = makeSolrSearchLink("tw_reply_to_tweet_id:" + tweetID);
+            SearchResult searchResult = Facade.search("tw_reply_to_tweet_id:" + tweetID, null);
+            long resultCount = searchResult.getNumberOfResults();
+            String searchLink = makeSolrSearchURL("tw_reply_to_tweet_id:" + tweetID);
             if (resultCount > 0) {
+                log.info("Found replies to tweet id {}.. {}", tweetID, resultCount);
                 foundRepliesLine = "Found <a href='" + searchLink + "'>" + resultCount + "</a> replies"; // TODO for some reason shows 0 right now??
             } else {
+                log.info("Didn't find any replies to tweet {}", tweetID);
                 foundRepliesLine = "No replies found to tweet";
             }
         } catch (Exception e) {
@@ -315,11 +366,21 @@ public class Twitter2Html {
         return foundRepliesLine;
     }
 
-    private static String makeSolrSearchLink(String searchString) {
+    /**
+     * Make a URL to search SolrWayback for the given string.
+     * @param searchString String to search for.
+     * @return SolrWayback search URL for given string.
+     */
+    private static String makeSolrSearchURL(String searchString) {
         String searchParams = " AND type%3A\"Twitter Tweet\"";
         return PropertiesLoader.WAYBACK_BASEURL + "search?query=" + searchString + searchParams;
     }
 
+    /**
+     * Converts a list of image URLs to a string of html img tags.
+     * @param images Images to make html for
+     * @return String of concatenated img tags
+     */
     public static String imageUrlToHtml(List<ImageUrl> images){
         StringBuilder b = new StringBuilder();
         for (ImageUrl image : images){
@@ -330,6 +391,17 @@ public class Twitter2Html {
         return b.toString();
     }
 
+    /**
+     * Method for creating the html for a user card - i.e. the little box with user info shown on hover over a user
+     * @param profileImageUrl List containing the profile image url. Should only contain one element.
+     * @param userName Username for user.
+     * @param userHandle User handle/screen name.
+     * @param description User description found in their profile.
+     * @param followingCount User following count.
+     * @param followersCount User followers count.
+     * @param verified Boolean specifying if user is verified.
+     * @return html for user card
+     */
     private static String makeUserCard(List<ImageUrl> profileImageUrl, String userName, String userHandle,
                                        String description, int followingCount, int followersCount, boolean verified) {
         return "<div class='user-card'>" +
@@ -355,6 +427,13 @@ public class Twitter2Html {
                 "</div>";
     }
 
+    /**
+     * Creates the html specific for a reply tweet. This consists of reply mentions (people being replied to) with
+     * links to SolrWayback searches for the individual users and a button that links to the tweet being replied to.
+     * @param replyMentions List of people being replied to.
+     * @param replyToTweetID ID for the tweet being replied to.
+     * @return Html for the reply line in a reply tweet.
+     */
     private static String getReplyLine(List<String> replyMentions, String replyToTweetID) {
         // TODO collapse on more than 3 mentions
         List<String> replyMentionsHTML = new ArrayList<>();
@@ -386,30 +465,43 @@ public class Twitter2Html {
         return replyHTML;
     }
 
+    /**
+     * Creates the html for a button linking to a SolrWayback search for a tweet.
+     * Empty string is returned if exception is thrown.
+     * @param tweetID ID of the tweet to search for.
+     * @param buttonText Explanatory text to put on button.
+     * @return Html for a button linking to search for a tweet or empty string
+     */
     private static String makeButtonLinkingToTweet(String tweetID, String buttonText) {
-        String output = "";
+        String buttonHTML = "";
         try {
             SearchResult searchResult = Facade.search("tw_tweet_id:" + tweetID, null);
             List<IndexDoc> results = searchResult.getResults();
             if (results.isEmpty()) {
-                return output;
+                return buttonHTML;
             }
 
             IndexDoc tweet = results.get(0);
             String filePath = tweet.getSource_file_path();
             long fileOffset = tweet.getOffset();
-            output =    "<div class='button-wrap'>" +
+            buttonHTML =    "<div class='button-wrap'>" +
                             "<a href='" + PropertiesLoader.WAYBACK_BASEURL + "services/viewForward?source_file_path=" +
                                 filePath + "&offset=" + fileOffset + "'>" +
                                 "<button type='button'>" + buttonText + "</button>" +
                             "</a>" +
                         "</div>";
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("Failed solr search for tweet '{}'", tweetID, e);
         }
-        return output;
+        return buttonHTML;
     }
 
+    /**
+     * Creates the html for a quote as part of a tweet.
+     * @param parser The parser.
+     * @param crawlDate The date of the crawl used for searching solr for images in the quote.
+     * @return All the html for a quote as a string
+     */
     private static String getQuoteHtml(TwitterParser2 parser, String crawlDate) {
         List<ImageUrl> quoteProfileImageUrl = new ArrayList<>();
         List<ImageUrl> quoteImageUrls = new ArrayList<>();
@@ -427,7 +519,7 @@ public class Twitter2Html {
                     "<div class='author-container'>" +
                         "<div class='author'>" +
                             "<div class='user-wrapper'>" +
-                                "<a href='" + makeSolrSearchLink("tw_user_id:" + parser.getQuoteUserID()) + "'>" +
+                                "<a href='" + makeSolrSearchURL("tw_user_id:" + parser.getQuoteUserID()) + "'>" +
                                     "<div class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</div>" +
                                     "<div class='user-handles'>" +
                                         "<h2>" + parser.getQuoteUserName() + "</h2>" +

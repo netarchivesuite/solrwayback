@@ -18,6 +18,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Class for parsing twitter tweet-json and returning meaningful output from this.
+ * TODO in need of overhaul to extrapolate responsibilities into separate classes
+ */
 public class TwitterParser2 {
 
 	private static final Logger log = LoggerFactory.getLogger(TwitterParser2.class);
@@ -31,7 +35,6 @@ public class TwitterParser2 {
 	private String userName;
 	private String userScreenName;
 	private String userProfileImage;
-	private String userBackGroundImage;  //TODO both http and https version
 	private String userDescription;
 	private int userFollowersCount;
 	private int userFriendsCount;
@@ -386,11 +389,6 @@ public class TwitterParser2 {
 
 	public boolean isUserVerified() {
 		return userVerified;
-	}
-
-
-	public String getUserBackGroundImage() {
-		return userBackGroundImage;
 	}
 
 
