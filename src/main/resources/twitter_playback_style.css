@@ -40,7 +40,8 @@ h4 {
 }
 
 .retweet-author {
-    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
     margin: .5em 0 .25em
 }
 
@@ -58,19 +59,28 @@ h4 {
     margin-top: 1.5em
 }
 
-.item.author {
+.author {
     padding: 0;
     overflow: hidden;
 }
 
-.image {
+.author-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.images {
     display: block;
     margin-top: 0.5em;
     max-width: 600px;
 }
 
-.image img {
+.images img {
     max-width: 100%;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 16px;
+    border-color: rgb(207, 217, 222);
 }
 
 .item.date {
@@ -85,19 +95,29 @@ h4 {
     margin-top: 0.5em;
 }
 
-.item.reactions span {
+.bottom-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.reactions span {
     vertical-align: middle;
 }
 
-.item.reactions span.icon {
+.reactions span.icon {
     display: inline-block;
     height: 20px;
     width: 20px;
 }
 
-.item.reactions span.number {
+.reactions span.number {
     display: inline-block;
     margin-right: 1.5em;
+}
+
+.found-replies-text {
+    color: rgb(83, 100, 113, 0.5);
+    font-size: 14px;
 }
 
 .user-handles {
@@ -124,6 +144,30 @@ h4 {
 
 .date{
     color: rgb(83, 100, 113);
+}
+
+.reply-line {
+    display: block;
+}
+
+.reply-line-text {
+    color: rgb(83, 100, 113);
+    font-size: 15px;
+    line-height: 1.2em;
+}
+
+.reply-tags {
+    display: inline;
+    color: rgb(29, 155, 240);
+}
+
+.reply-line-text a {
+    color: rgb(29, 155, 240);
+    text-decoration: none;
+}
+
+.reply-line-text a:hover {
+    text-decoration: underline;
 }
 
 .user-wrapper {
