@@ -109,7 +109,7 @@ public class Facade {
         List<IndexDoc> bothResults = result1.getResults();
         bothResults.addAll(result2.getResults());
         ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(bothResults);
-        log.info("Image search for query"+searchText +" took "+(System.currentTimeMillis()-start) +"millis)");
+        log.info("Image search for query: "+searchText +" took "+(System.currentTimeMillis()-start) +"millis)");
         return extractImages;
     }
 
