@@ -1,3 +1,7 @@
+4.2.3
+-----
+
+
 4.2.2
 -----
 Support for Warc record type 'resource'. Also required fix in the warc-indexer.
