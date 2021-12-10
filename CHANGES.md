@@ -1,6 +1,6 @@
 4.2.3
 -----
-
+Fixed in-player video player for some MP4 videos that was classified by Tika as 'application/mp4'.
 
 4.2.2
 -----
