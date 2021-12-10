@@ -86,7 +86,8 @@ export default {
       },
       
       getSource() {
-          return  {type:  this.result.content_type, 
+          const contentType = this.result.content_type
+          return  {type:  contentType === 'application/mp4' ? 'video/mp4' : contentType, 
                    src: `${Configs.playbackConfig.solrwaybackBaseURL}services/downloadRaw?source_file_path=${this.result.source_file_path}&offset=${this.result.source_file_offset}`
                   } 
       },
