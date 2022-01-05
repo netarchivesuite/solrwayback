@@ -9,7 +9,7 @@ SolrWayback bundle release 4.2.3 can be downloaded here: https://github.com/neta
 ## log4shell security alert - Patch your SolrWayback Bundle if you are using a release before 4.2.3.
 SolrWayback itself does not use log4j 2+ and is not directly affected by [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228).
 
-The SolrWayback bundle uses Solr 7.7.3, which **is affected by log4shell**. Please follow the [Solr log4shell mitigation guide](https://solr.apache.org/security.html#apache-solr-affected-by-apache-log4j-cve-2021-44228) if the bundled Solr is used. The quickest fix, taken from the guide, is
+The SolrWayback bundle uses Solr 7.7.3, which **is affected by log4shell**. Please follow the [Solr log4shell mitigation guide](https://solr.apache.org/security.html#apache-solr-affected-by-apache-log4j-cve-2021-44228) if the bundled Solr is used before versio 4.2.3. The quickest fix, taken from the guide, is
  * (Linux/MacOS) Edit your solr.in.sh file to include: SOLR_OPTS="$SOLR_OPTS -Dlog4j2.formatMsgNoLookups=true"
  * (Windows) Edit your solr.in.cmd file to include: set SOLR_OPTS=%SOLR_OPTS% -Dlog4j2.formatMsgNoLookups=true
 
