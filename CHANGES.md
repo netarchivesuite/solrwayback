@@ -7,7 +7,7 @@ Fixed log4shell vulnerabity in SolrWayback bundle (Solr and warc-indexer)
 
 4.2.2
 -----
-Support for Warc record type 'resource'. Also required fix in the warc-indexer.
+Support for Warc record type 'resource'. Also required fix in the warc-indexer and resourcetype added to config3.xml (in indexing folder)
 Improved playback for Twitter API harvest (https://github.com/netarchivesuite/so-me). (also changes in solrconfig.xml)
 Implemented new WARC file resolver. If WARCS files are removed after indexed, you can add a text file with the new location. Whenever a WARC needs needs to be loaded, if the WARC file is on the list, it will use that location instead of the one indexed into Solr.
 
