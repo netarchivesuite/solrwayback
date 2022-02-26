@@ -222,12 +222,13 @@ public class HtmlParserUrlRewriter {
 		rewriteInlineScripts(doc, crawlDate, urlReplaceMap);
 
 		replaceMS += System.currentTimeMillis();
-		log.info(String.format(
+		/*
+		log.debug(String.format(
 				"replaceLinks('%s', %s): Links unique=%d, replaced=%d, not_found=%d. " +
 				"Time total=%dms (resolveHTML=%dms, analysis+adjustment=%dms, resolveResources=%dms)",
 	            url, crawlDate, urlSet.size(), urlReplaceMap.getFoundCount(), urlReplaceMap.getFailCount(),
 				preReplaceMS+replaceMS, preReplaceMS, replaceMS-resolveMS, resolveMS));
-
+        */
 
 		String html_output= doc.toString();
 		html_output = RewriterBase.unescape(html_output);
@@ -273,7 +274,7 @@ public class HtmlParserUrlRewriter {
                            "&offset=" + indexDoc.getOffset() +
                            (extraParams == null ? "" : extraParams);
                 }
-                log.info("No harvest found for:"+sourceURL);
+                log.debug("No harvest found for:"+sourceURL);
                 return NOT_FOUND_LINK;
             };
     }
@@ -437,7 +438,7 @@ public class HtmlParserUrlRewriter {
             String newContent = transformer.apply(content);
 			if (newContent != null && !newContent.equals(content)) {
 				if (attribute == null || attribute.isEmpty()) {
-					e.html(newContent.replace("\n", RewriterBase.NEWLINE_REPLACEMENT));
+					e.html(newContent.replace("\n", RewriterBase.NEWLINE_PLACEHOLDER));
 				} else {
 					e.attr(attribute.replaceFirst("abs:", ""), newContent);
 				}

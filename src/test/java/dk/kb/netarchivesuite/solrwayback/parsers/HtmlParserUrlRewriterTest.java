@@ -7,6 +7,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import static org.junit.Assert.*;
 
 /*
@@ -35,7 +41,7 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testSimpleRewriting() throws Exception {
-        assertRewrite("simple", 11);
+        assertRewrite("simple");
     }
 
     // No verification of result, only count of replaced
@@ -46,12 +52,13 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testMultiSourceRewriting() throws Exception {
-        assertRewrite("multisource", 16);
+        // The -1 is due to the "substring trickery" entry
+        assertRewrite("multisource", count("_o[0-9]+", "multisource")-1);
     }
 
     @Test
     public void testCSSRewriting() throws Exception {
-        assertRewrite("css", 13);
+        assertRewrite("css");
     }
 
     @Test
@@ -61,12 +68,17 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testCSSImportRewriting() throws Exception {
-        assertRewrite("css_import", 3);
+        assertRewrite("css_import");
     }
 
     @Test
     public void testStyleElement() throws Exception {
-        assertRewrite("style_element", 6);
+        assertRewrite("style_element");
+    }
+
+    @Test
+    public void testCDATA() throws Exception {
+        assertRewrite("cdata");
     }
 
     @Test
@@ -77,17 +89,38 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testScript2Rewriting() throws Exception {
+        // TODO: Make a better counter for replaced
         assertRewrite("script2", 0);
     }
 
     @Test
     public void testScriptEscaping() throws Exception {
+        // TODO: Make a better counter for replaced
         assertRewrite("script_escape", 0);
     }
 
     /* *************************************************************************************
      * Helpers below
      ************************************************************************************* */
+
+    /**
+     * Count the number of times regexp matches the source file.
+     */
+    private int count(String regexp, String source) throws IOException {
+        final String input = RewriteTestHelper.fetchUTF8("example_rewrite/" + source + ".html");
+        Matcher matcher = Pattern.compile(regexp).matcher(input);
+
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+        }
+        return count;
+    }
+
+    // All links must contain {@code _oX} where X is an integer.
+    private void assertRewrite(String testPrefix) throws Exception {
+        assertRewrite(testPrefix, count("_o[0-9]+", testPrefix), -1);
+    }
 
     // All links must contain {@code _oX} where X is an integer.
     private void assertRewrite(String testPrefix, int expectedReplaced) throws Exception {
@@ -105,13 +138,30 @@ public class HtmlParserUrlRewriterTest {
                 RewriteTestHelper.createOXResolver(expectedNotFound >= 0));
 
         assertEquals("The result should be as expected for test '" + testPrefix + "'",
-                     expected, rewritten.getReplaced().replaceAll(" +\n", "\n"));
+                     normalise(expected), normalise(rewritten.getReplaced()));
         assertEquals("The number of replaced links should be as expected",
                      expectedReplaced, rewritten.getNumberOfLinksReplaced());
         if (expectedNotFound >= 0) {
             assertEquals("The number of not found links should be as expected",
                          expectedNotFound, rewritten.getNumberOfLinksNotFound());
         }
+    }
+
+    /**
+     * @param text multiline text.
+     * @return the text where leading and trailing spaces has been removed from all lines and empty lines
+     * has been removed.
+     */
+    private String normalise(String text) {
+        return Arrays.stream(
+                text.replace("> <!--", ">\n<!--") // JSoup won't put comments on their own lines
+                        .replace("</style> <a", "</style>\n<a") // JSoup strangeness with lines starting with <a...>
+                        .replace("</a> <a", "</a>\n<a")
+                        .replace("--> <a", "-->\n<a")
+                        .split("\n"))
+                .map(String::trim)
+                .filter(line -> !line.isEmpty())
+                .collect(Collectors.joining("\n"));
     }
 
     private void assertCount(String testPrefix, int expectedReplaced) throws Exception {

@@ -1,0 +1,2 @@
+/home/xxx/solrwayback_package_4.2.1/indexing/warcs1/356548-347-20210201093000132-00000-sb-prod-har-001.statsbiblioteket.dk.warc.gz
+/mount/netarchive/test-00000.warc.gz

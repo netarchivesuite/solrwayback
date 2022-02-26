@@ -3,18 +3,19 @@
   <title>Some page with JavaScript</title>
  </head>
  <body>
-  <h1>Modified from a specific page in the Danish net Archive</h1>
+  <h1>Less han/greater than problems</h1>
   <script>
- var foo = "\u003Chello\u003E";
- var bar = "\u003chello\u003E";
- var zoo = "\u003Chello\u003Eworld\u003C/hello\u003E";
- var foo2 = '\u003Chello\u003E';
- var bar2 = '\u003chello\u003E';
- var zoo2 = '\u003Chello\u003Eworld\u003C/hello\u003E';
+ var foo = "<hello>";
+ var bar = "\u003chello>";
+ var zoo = "<hello>world</hello>";
+ var foo2 = '<hello>';
+ var bar2 = '\u003chello>';
+ var zoo2 = '<hello>world</hello>';
  var slash = "\/";
- if (a \u003C b);
+ if (a < b);
  if (a \u003c b);
  console.log("&aelig;blegr&oelig;d"); // Outputs verbatim (with ampersands and all)
 </script>
+  <p onclick="if (foo < bar) action();">Click me!</p>
  </body>
 </html>

@@ -104,7 +104,6 @@ export default {
     }
   },
   beforeRouteUpdate (to, from, next) {
-    console.log('route changed!',to.query, from.query)
     // Check if any of our params have changed. Could be refactored into a nice functon.
     if(this.checkForChangesBetweenRouteQueries(to, from)) {
       //console.log('we doing a route search')

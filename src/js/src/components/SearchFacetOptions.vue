@@ -73,8 +73,9 @@ export default {
       return length <= 20 ? 'more ' + facet + 's' : 'less ' + facet + 's'
     },
     requestAdditionalFacets(facetArea) {
-      let structuredQuery = this.query + this.searchAppliedFacets.join('')
-      this.addSpecificRequestedFacets({facet:facetArea, query:structuredQuery})
+      let structuredQuery = this.query
+      let appliedFacets = this.searchAppliedFacets.join('')
+      this.addSpecificRequestedFacets({facet:facetArea, query:structuredQuery, appliedFacets:appliedFacets})
     },
     applyFacet(facetCategory, facet) {
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'

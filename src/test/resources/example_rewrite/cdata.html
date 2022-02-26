@@ -1,0 +1,14 @@
+<html lang="en">
+<head>
+  <title>Some page with JavaScript in CDATA</title>
+</head>
+<body>
+  <p>CDATA is not needed in HTML script-elements, but browsers are browsers...</p>
+  <p>Processing this page should not result in any changes.</p>
+<script type="text/javascript">
+//<![CDATA[
+document.write("<");
+//]]>
+</script>
+</body>
+</html>

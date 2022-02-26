@@ -34,6 +34,14 @@ public class ArcEntry {
       }
 
     
+    public enum TYPE {
+      REVISIT,
+      RESPONSE,
+      ARC,
+      RESOURCE,
+    }
+    
+    
     
   private FORMAT format;
     
@@ -52,6 +60,7 @@ public class ArcEntry {
   private long warcEntryContentLength; //From warc header#1. This does not exist for arc files
   private long binaryArraySize;
   private String contentType; //As returned by the webserver when harvested
+  private TYPE type;  
   private String contentTypeExt; //As returned by the webserver when harvested
   private String fileName; //only filename
   private String crawlDate; // format 2009-12-09T05:32:50Z
@@ -209,9 +218,13 @@ public void setBinaryArraySize(long binaryArraySize) {
     this.hasBeenDecompressed = hasBeenDecompressed;
   }
     
-public boolean isChunked() {
-    return chunked;
-}
+  
+public TYPE getType() {
+    return type;
+  }
+  public void setType(TYPE type) {
+    this.type = type;
+  }
 public void setChunked(boolean chunked) {
     this.chunked = chunked;
 }
@@ -365,8 +378,7 @@ public void setFormat(FORMAT format) {
   
   private InputStream maybeUnzip(InputStream before) throws Exception{
       if ("gzip".equalsIgnoreCase(contentEncoding) || "x-gzip".equalsIgnoreCase(contentEncoding)) {
-          this.setContentEncoding("identity");
-          log.info("uunzip");
+          this.setContentEncoding("identity");          
           return new GZIPInputStream(before);
           
       }
@@ -412,7 +424,8 @@ public void setFormat(FORMAT format) {
           break;
       }
       if (pos == 0 || pos > 8) {
-          log.debug("maybeDechunk found " + pos + " hex digits: Not a chunked stream, returning content as-is");
+
+        //log.debug("maybeDechunk found " + pos + " hex digits: Not a chunked stream, returning content as-is");
           buf.reset();
           return buf;
       }
@@ -471,8 +484,10 @@ public void setFormat(FORMAT format) {
                    ") but expected CRLF. This is likely chunking delivered by a non-standard compliant server." +
                    " The de-chunker is not lenient and will return the stream as-is");
       } else {
-          log.info("maybeDechunk found hex digits but could not locate CRLF. Instead it found 0x" +
+        /*  
+        log.debug("maybeDechunk found hex digits but could not locate CRLF. Instead it found 0x" +
                    Integer.toHexString(c) + ": Not a chunked stream, returning content as-is for");
+                   */
       }
       buf.reset();
       return buf;

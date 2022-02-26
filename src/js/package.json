@@ -8,7 +8,7 @@
     "lint": "node_modules/.bin/vue-cli-service lint"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "chart.js": "^2.9.4",
     "core-js": "^3.6.5",
     "d3": "3.5.17",
@@ -36,11 +36,11 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "eslint-plugin-vue": "^6.2.2",
-    "node-sass": "^4.12.0",
+    "node-sass": "^6.0.1",
     "prettier": "^1.19.1",
-    "sass-loader": "^8.0.2",
+    "sass-loader": "^10",
     "v-tooltip": "^1.1.6",
-    "video.js": "^7.8.4",
+    "video.js": "^7.15.2",
     "vue-template-compiler": "^2.6.11"
   }
 }

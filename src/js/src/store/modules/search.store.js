@@ -61,7 +61,7 @@ const actions = {
   addSpecificRequestedFacets ( {commit}, params ) {
     commit('setExtraFacetLoadingStatus', params.facet)
     requestService
-      .getMoreFacets(params.facet, params.query)
+      .getMoreFacets(params.facet, params.query, params.appliedFacets)
       .then(result => commit('loadMorefacetsRequestSuccess', {result:result, selectedFacet:params.facet}), error =>
         commit('loadMorefacetsRequestError', error))
   },

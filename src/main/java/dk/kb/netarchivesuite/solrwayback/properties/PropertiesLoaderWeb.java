@@ -3,7 +3,9 @@ package dk.kb.netarchivesuite.solrwayback.properties;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -26,19 +28,12 @@ public class PropertiesLoaderWeb {
     public static final String MAPS_RADIUS_PROPERTY = "maps.radius";
     public static final String ALLOW_EXPORT_WARC_PROPERTY = "allow.export.warc";
     public static final String ALLOW_EXPORT_CSV_PROPERTY = "allow.export.csv";
-    
+    public static final String WORDCLOUD_STOPWORDS_PROPERTY="wordcloud.stopwords";
     
     public static final String EXPORT_WARC_MAXRESULTS_PROPERTY = "export.warc.maxresults";
     public static final String EXPORT_CSV_MAXRESULTS_PROPERTY = "export.csv.maxresults";
     public static final String EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY = "export.warc.maxresults";
-    
-    
-    /*
-    export.warc.maxresults=1000000; 
-    export.csv.maxresults=1000000;        
-    export.warc.expanded.maxresults=10000  
-    */
-    
+         
     public static final String EXPORT_CSV_FIELDS_PROPERTY = "export.csv.fields";
     public static final String ABOUT_TEXT_FILE_PROPERTY = "about.text.file";
     public static final String SEARCH_HELP_FILE_PROPERTY = "search.help.text.file";
@@ -57,7 +52,7 @@ public class PropertiesLoaderWeb {
     public static String MAPS_LATITUDE;
     public static String MAPS_LONGITUDE;
     public static String MAPS_RADIUS;
-
+    
     public static long EXPORT_CSV_MAXRESULTS=10000000;// 10M default
     public static long EXPORT_WARC_MAXRESULTS=1000000; // 1M default
     public static long EXPORT_WARC_EXPANDED_MAXRESULTS=100000; // 500K default   
@@ -76,6 +71,9 @@ public class PropertiesLoaderWeb {
     //Default values.
     public static List<String> FACETS = Arrays.asList("domain", "content_type_norm", "type", "crawl_year", "status_code", "public_suffix"); 
 
+    //Default empty if not defined in properties
+    public static  List<String> WORDCLOUD_STOPWORDS = new ArrayList<String>();
+    
     public static void initProperties() {
         initProperties(DEFAULT_PROPERTY_WEB_FILE);      
     }
@@ -84,25 +82,30 @@ public class PropertiesLoaderWeb {
     public static void initProperties(String propertyFile) {
         try {
 
-            log.info("Initializing solrwaybackweb-properties");
+            log.info("Initializing solrwaybackweb-properties using property file '" + propertyFile + "'");
             String user_home=System.getProperty("user.home");
 
-            File f = new File(user_home,propertyFile);
+            File f = new File(propertyFile);
+            if (!f.exists()) { // Fallback to looking in the user home folder
+                f = new File(user_home, propertyFile);
+            }
             if (!f.exists()) {
                 log.info("Could not find contextroot specific propertyfile:"+propertyFile +". Using default:"+DEFAULT_PROPERTY_WEB_FILE);
-                propertyFile=DEFAULT_PROPERTY_WEB_FILE;                                 
-            }                        
+                f = new File(user_home, DEFAULT_PROPERTY_WEB_FILE);
+            }
             log.info("Load web-properties: Using user.home folder:" + user_home +" and propertyFile:"+propertyFile);
 
 
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(new File(user_home,propertyFile)), "ISO-8859-1");
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
 
             serviceProperties = new Properties();
             serviceProperties.load(isr);
             isr.close();
 
             WAYBACK_SERVER =serviceProperties.getProperty(WAYBACK_SERVER_PROPERTY);
-            FACETS = Arrays.asList(getProperty(FACETS_PROPERTY, StringUtils.join(FACETS, ",")).split(", *"));		   
+            FACETS = Arrays.asList(getProperty(FACETS_PROPERTY, StringUtils.join(FACETS, ",")).split(", *"));		
+            WORDCLOUD_STOPWORDS = Arrays.asList(getProperty(WORDCLOUD_STOPWORDS_PROPERTY, StringUtils.join(WORDCLOUD_STOPWORDS, ",")).split(", *"));
+                        
             OPENWAYBACK_SERVER = serviceProperties.getProperty(OPENWAYBACK_SERVER_PROPERTY);
             MAPS_LATITUDE = serviceProperties.getProperty(MAPS_LATITUDE_PROPERTY);
             MAPS_LONGITUDE = serviceProperties.getProperty(MAPS_LONGITUDE_PROPERTY);
@@ -164,6 +167,7 @@ public class PropertiesLoaderWeb {
             log.info("Property:"+ MAPS_LONGITUDE_PROPERTY+" = " +MAPS_LONGITUDE);
             log.info("Property:"+ MAPS_RADIUS_PROPERTY+" = " + MAPS_RADIUS);
             log.info("Property:"+ FACETS_PROPERTY +" = " + FACETS);
+            log.info("Property:"+ WORDCLOUD_STOPWORDS_PROPERTY +" = " + WORDCLOUD_STOPWORDS);            
             log.info("Property:"+ ABOUT_TEXT_FILE_PROPERTY +" = " + ABOUT_TEXT_FILE);
             log.info("Property:"+ SEARCH_HELP_FILE_PROPERTY +" = " + SEARCH_HELP_TEXT_FILE );
             log.info("Property:"+ ARCHIVE_START_YEAR_PROPERTY +" = " + ARCHIVE_START_YEAR);			

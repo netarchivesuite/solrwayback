@@ -1,40 +1,40 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import static org.junit.Assert.assertEquals;
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.junit.Test;
-
-import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import static org.junit.Assert.assertEquals;
 
 public class Twitter2HtmlTest extends UnitTestUtils{
     @Test
-    public void testReplaceTags() throws Exception {
-
+    public void testFormatTweetText() throws Exception {
+        PropertiesLoader.initProperties(getFile("properties/solrwayback.properties").getPath());
         //First load and parse a tweet
         String content = new String(Files.readAllBytes(Paths.get("src/test/resources/example_twitter/twitter2.json")));
         TwitterParser2 p = new TwitterParser2(content);
 
-
-
         //Test before text. Text has hashtag #math
         String before = p.getText();
-        String expectedBefore="Test full text with tag and link: #math https://t.co/ABCDE";
-        assertEquals(expectedBefore,before);
+        String expectedBefore = "Test with links https://t.co/ABC123DEFG filler text for no reason but to fill\n" +
+                "There is even one link in this tweet https://t.co/W1ldUr7w0W. The text goes even further beyond what" +
+                " is thought possible! What is this math? https://t.co/rABCDEFGHI #math  https://t.co/ABCDEFGHIJ";
+        assertEquals(expectedBefore, before);
 
-        //Test replace hashtags with links
-        String solrwaybackBaseUrl="http://solrwayback/";
-        String otherSearchParam="&test=test123";
-        String replacedText= Twitter2Html.replaceHashTags(solrwaybackBaseUrl, otherSearchParam,p.getText(), p.getHashTags());
-        String expectedAfter ="Test full text with tag and link: <span><a href='http://solrwayback/?query=keywords%3Amath&test=test123'>#math</a></span> https://t.co/ABCDE";
-        assertEquals(expectedAfter, replacedText);
-
+        //Test replacing of hashtags and urls with links
+        String textAfterFormatting = Twitter2Html.formatTweetText(before, p.getTweetMinDisplayTextRange(), p.getHashtags(), p.getMentions(), p.getURLs());
+        String expectedAfter = "Test with links <span><a href='https://twitter.com/i/web/status/1234'>twitter.com/i/web/status/1…</a></span>" +
+                " filler text for no reason but to fill<br>There is even one link in this tweet" +
+                " <span><a href='https://twitter.com/i/web/status/1234'>twitter.com/i/web/status/1…</a></span>." +
+                " The text goes even further beyond what is thought possible! What is this math?" +
+                " <span><a href='http://thomas-egense.dk/math/'>thomas-egense.dk/math/</a></span>" +
+                " <span><a href='http://localhost:8080/solrwayback/search?query=keywords%3Amath AND type%3A\"Twitter Tweet\"'>#math</a></span>  ";
+        assertEquals(expectedAfter, textAfterFormatting);
     }
+
 /*
 
     @Test

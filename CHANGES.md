@@ -1,8 +1,78 @@
-4.0.7
+4.2.3
+-----
+Fixed in-player video player for some MP4 videos that was classified by Tika as 'application/mp4'.
+Fixed log4shell vulnerabity in SolrWayback bundle (Solr and warc-indexer)
+
+
+
+4.2.2
+-----
+Support for Warc record type 'resource'. Also required fix in the warc-indexer and resourcetype added to config3.xml (in indexing folder)
+Improved playback for Twitter API harvest (https://github.com/netarchivesuite/so-me). (also changes in solrconfig.xml)
+Implemented new WARC file resolver. If WARCS files are removed after indexed, you can add a text file with the new location. Whenever a WARC needs needs to be loaded, if the WARC file is on the list, it will use that location instead of the one indexed into Solr.
+
+4.2.1
+-----
+Further improvements in serviceworker:
+a) The SolrWaybackRoot-servlet application is no longer required if the Serviceworker is loaded. For legacy browsers where servicerworker does not work, the root servlet will required for improved playback.
+b) In rare cases referer is missing so crawltime for the origin resource is unknown. As a default it uses current year as crawltime. This situation is often not relevant for playback since the requests often are to trackers and adds.
+
+Cleaned up in logging to the solrwayback.log file. It should not be as spammy now.
+Upgraded frontend dependencies   (security updates).   
+
+Fixed bug in load more facets for domain facet when there also was a filter query involved.
+
+4.2.0
+-----
+All Playback live leaks are now blocked or redirected back to SolrWayback with a javascript Serviceworker added to playback. No more leaking to the live web!  This will also improve playback when the live leak can be resolved in SolrWayback. (Thanks to Ilya Kreymer for pointing me in this direction). 
+The Serviceworker implementation require the SolrWayback server to run under HTTPS. This can be archived by setting an Apache or Nginx in front of the Tomcat.
+The Serviceworker feature is supported by most recent browser versions. See: https://caniuse.com/serviceworkers 
+Playback will still work in legacy browsers using url rewrite, but can leak to the live web in if not blocked by proxy server or sandboxed. 
+Encoding fix in javascript rewrite: Modify < > handling to preserve the original representation (including faulty ones). This closes SOLRWBFB-58
+Upgraded frontend depencencies (security updates).
+
+
+4.1.2
+-----
+Wordcloud stop words works can be configured in solrwaybackweb.properties.
+Added new property(wordcloud.stopwords) in solrwaybackweb.properties with default stopwords (english). Will use empty stopword list if not defined
+Word cloud html pages extraction reduced from 10.000 to 5.000 as difference was minimal, but doubles performance
+API method to extract word+count for a query+filterquery(optional) :  /services/frontend/wordcloud/wordfrequency?q=xxx&fg=yyy
+API method to extract wordcloud image for query+filterquery(optional): /services/frontend/wordcloud/query?q=xxx&fg=yyy
+
+Solr query caching for performance boost. 
+Added new optional properties in solrwayback.properties
+#Solr caching. Will be default false if not defined
+solr.server.caching=true
+solr.server.caching.max.entries=10000
+solr.server.caching.age.seconds=86400
+
+When clicking a link and opening playback in a new tab. The browser URL will match the crawl-time of the html page.
+
+4.1.1
+-----
+Added a better parallel indexing script for Linux/macOS with more options. (warc-indexer.sh)
+With warc-indexer.sh you can define number of threads. It keeps track of already index WARC-file so you can start it again after adding new WARC-files to the folder.
+Example: THREADS=20 ./warc-indexer.sh warcs1
+
+The file location of the two property-files solrwayback.properties and solrwaybackweb.properties can be configured so they do not have
+to be in the HOME directory. 
+To change to location copy this file: https://github.com/netarchivesuite/solrwayback/blob/master/src/main/webapp/META-INF/context.xml
+to the folder '/apache-tomcat-8.5.60/conf/Catalina/localhost' and rename it to solrwayback.war
+Remnove the uncomment of the environment variables and edit the location of the files. During start up of the tomcat server, the
+values will be logged in solrwayback.log.
+  
+Updated the README.md with more information about scaling and using SolrWayback in production.  
+
+4.1.0
+-----
+Indexing scripts updated for SolrWayback Bundle
+SolrWayback bundle release 4.1.0 uploaded to Github releases
+
+4.0.8
 -----
 Brotli encoding fix for javascript.
 Introduced JavascriptPlayback class. Does nothing but handle brotli, but can later be improved to do url-replacement in javascript files.
-
 
 4.0.7
 -----
@@ -14,8 +84,11 @@ These values is their default values.
 # Limit export size
 # 10M for CSV , 1M for warc, 10K for warc-expanded
 # For warc.expanded the total number of documents can be many times the max-results size.        
+
 export.csv.maxresults=10000000
+
 export.warc.maxresults=1000000 
+
 export.warc.expanded.maxresults=10000     
         
 

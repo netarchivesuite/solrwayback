@@ -1,0 +1,230 @@
+body {
+    background: #f3f3f6;
+    color: #333333;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+}
+
+#wrapper {
+    background: white;
+    margin: 0 auto;
+    padding: 2em;
+    max-width: 1000px;
+}
+
+h2 {
+    font-size: 18px;
+}
+
+h3 {
+    color: rgb(83, 100, 113);
+    font-size: 14px;
+    margin: 0;
+}
+
+h4 {
+    color: rgb(83, 100, 113);
+    margin: 0 0 4px;
+    font-weight: 400;
+}
+
+.tweet {
+    border: 1px solid #cccccc;
+    line-height: 1.6em;
+    overflow: hidden;
+    padding: 1em;
+}
+
+.item {
+    padding: .5em 0;
+}
+
+.retweet-author {
+    display: flex;
+    justify-content: space-between;
+    margin: .5em 0 .25em
+}
+
+.retweet-author a {
+    float: left;
+}
+
+.retweet-author .date {
+    font-size: 14px;
+    padding-left: 0.3em;
+    float: left;
+}
+
+.retweet-author .user-card {
+    margin-top: 1.5em
+}
+
+.author {
+    padding: 0;
+    overflow: hidden;
+}
+
+.author-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.images {
+    display: block;
+    margin-top: 0.5em;
+    max-width: 600px;
+}
+
+.images img {
+    max-width: 100%;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 16px;
+    border-color: rgb(207, 217, 222);
+}
+
+.item.date {
+    padding-bottom: 0;
+}
+
+.quote {
+    border-radius: 16px;
+    border: 1px solid rgb(207, 217, 222);
+    min-height: 64px;
+    padding: 1em;
+    margin-top: 0.5em;
+}
+
+.bottom-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.reactions span {
+    vertical-align: middle;
+}
+
+.reactions span.icon {
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+}
+
+.reactions span.number {
+    display: inline-block;
+    margin-right: 1.5em;
+}
+
+.found-replies-text {
+    color: rgb(83, 100, 113, 0.5);
+    font-size: 14px;
+}
+
+.user-handles {
+    line-height: 1.3em;
+    float: left;
+}
+
+.user-handles h2 {
+    margin: 4px 0 0;
+    float: left;
+}
+
+.avatar{
+    float: left;
+    margin-right: .5em;
+    display: inline-flex;
+    min-width: 48px;
+    min-height: 48px;
+}
+
+.avatar img{
+    border-radius: 50%;
+}
+
+.date{
+    color: rgb(83, 100, 113);
+}
+
+.reply-line {
+    display: block;
+}
+
+.reply-line-text {
+    color: rgb(83, 100, 113);
+    font-size: 15px;
+    line-height: 1.2em;
+}
+
+.reply-tags {
+    display: inline;
+    color: rgb(29, 155, 240);
+}
+
+.reply-line-text a {
+    color: rgb(29, 155, 240);
+    text-decoration: none;
+}
+
+.reply-line-text a:hover {
+    text-decoration: underline;
+}
+
+.user-wrapper {
+    float: left;
+}
+
+.user-card {
+    display: none;
+    background-color: #fff;
+    z-index: 1;
+    border: 1px solid #ccc;
+    position: absolute;
+    max-width: 20em;
+    margin-top: 3.5em;
+    padding: 0.8em;
+    box-shadow: rgb(101 119 134 / 20%) 0 0 15px, rgb(101 119 134 / 15%) 0 0 3px 1px;
+    border-radius: 16px;
+}
+
+.user-wrapper:hover .user-card {
+    display:block;
+}
+
+.user-wrapper a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.user-wrapper a:hover h3 {
+    text-decoration: underline;
+}
+
+.user-wrapper a:hover h2 {
+    text-decoration: underline;
+}
+
+.user-verified {
+    height: 20px;
+    width: 20px;
+    margin: 4px 0 0;
+    float: left;
+}
+
+.user-desc {
+    display: block;
+    line-height: 1.3em;
+}
+
+.following {
+    display: inline-block;
+    margin-right: 0.5em;
+}
+
+.followers {
+    display: inline-block;
+}
+
+.follow-num {
+    font-weight: bold;
+}

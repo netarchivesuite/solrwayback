@@ -252,8 +252,8 @@ function getLinkGraph(domain, facetLimit, ingoing, dateStart, dateEnd) {
   })
 }
 
-function getMoreFacets(domain, query) {
-  const url = `services/frontend/solr/search/facets/loadmore/?facetfield=${domain}&grouping=false&query=${encodeURIComponent(query)}`
+function getMoreFacets(domain, query, appliedFacets) {
+  const url = `services/frontend/solr/search/facets/loadmore/?facetfield=${domain}&grouping=false&query=${encodeURIComponent(query) + appliedFacets}`
   return axios.get(
     url).then(response => {
     return response.data

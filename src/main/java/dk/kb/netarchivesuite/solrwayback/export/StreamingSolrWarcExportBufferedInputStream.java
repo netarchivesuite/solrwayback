@@ -263,8 +263,8 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
       InputStream trailer = new ByteArrayInputStream("\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING));
 
-      log.debug(String.format(Locale.ENGLISH, "Delivering delayed stream for '%s' with a total of %d bytes",
-                              id, headers.size() + payload.size() + 4));
+      //Usefull but too spammy
+      //log.debug(String.format(Locale.ENGLISH, "Delivering delayed stream for '%s' with a total of %d bytes", id, headers.size() + payload.size() + 4));
       return StreamBridge.concat(headers, payload, trailer);
     } catch (Exception e) {
       throw new RuntimeException("Exception lazily constructing input streams for '" + id + "'", e);

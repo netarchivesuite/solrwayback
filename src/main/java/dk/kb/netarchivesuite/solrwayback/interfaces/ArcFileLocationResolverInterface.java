@@ -10,11 +10,14 @@ public interface ArcFileLocationResolverInterface {
    * using a lookup service give the filename.  
    *  
    * Implementing classes must have the default constructor
+   * Parameters are given by setParameters method
    *     
    *@param source_file_path is the complete file path when the arc file was indexed. example : /mountA/0211/filedir/12345.warc.gz
    *@return the new path : ie /mountB/12345.warc.gz   
    */
   String resolveArcFileLocation(String source_file_path);
-  
+
+  void setParameters(String parameter);
+  void initialize();
   
 }

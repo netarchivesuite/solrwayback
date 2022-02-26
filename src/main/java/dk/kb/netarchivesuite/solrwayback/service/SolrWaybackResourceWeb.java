@@ -46,6 +46,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreviewYearsInfo;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
+import dk.kb.netarchivesuite.solrwayback.service.dto.WordCloudWordAndCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
@@ -72,7 +73,39 @@ public class SolrWaybackResourceWeb {
     }
    
     
+    
+    @GET
+    @Path("serviceworker")
+    @Produces({ MediaType.TEXT_PLAIN})
+    public String getServiceWorker(@Context HttpServletRequest httpRequest) throws SolrWaybackServiceException {
+      String refererUrl = httpRequest.getHeader("referer");
 
+      log.info("serviceworker called with referer:"+refererUrl);
+      String sw_javascript=
+      " self.addEventListener('fetch', function(event) { "+   
+      "  url = event.request.url; "+
+      "  console.log('Serviceworker got url:'+url); "+      
+      "  if (url.startsWith('http') && !url.startsWith('https://solrwb-test.kb.dk:4000/')){ " +    
+      "      console.log('Found leak url:'+url); "+        
+      "     newUrl = 'https://solrwb-test.kb.dk:4000/solrwayback/web/20210121153119/'+url; "+                 
+      "     console.log('forwarding live leak url to:'+newUrl); "+ 
+      "     event.respondWith( "+
+      "       fetch(newUrl)); "+                            
+      "   } "+
+      "  else{ "+
+      "      console.log('not forwarding url'); "+
+      "  } "+
+      " }); ";
+     
+      //TODO header with javascript
+     return sw_javascript;
+    }
+
+    
+    
+  
+    
+    
     @GET
     @Path("smurf/text")
     @Produces({ MediaType.APPLICATION_JSON})
@@ -270,6 +303,10 @@ public class SolrWaybackResourceWeb {
       }
     }
     
+    /* 
+     * This method can be deleted when frontend has switched to calling new
+     */
+    
     @GET
     @Path("/wordcloud/domain")
     @Produces("image/png")
@@ -283,7 +320,30 @@ public class SolrWaybackResourceWeb {
       }
     }
 
+    @GET
+    @Path("/wordcloud/query")
+    @Produces("image/png")
+    public Response  wordCloudForDomain(@QueryParam("q") String query , @QueryParam("fq") String filterQuery) throws SolrWaybackServiceException {
+      try {                        
+          BufferedImage image = Facade.wordCloudForQuery(query, filterQuery);
+          return convertToPng(image);
+          
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
     
+    @GET
+    @Path("/wordcloud/wordfrequency")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<WordCloudWordAndCount> wordcloudFrequency( @QueryParam("q") String query , @QueryParam("fq") String filterQuery) throws SolrWaybackServiceException {
+      try {                                        
+        return Facade.wordCloudWordFrequency(query, filterQuery);                                        
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
+
     
     @GET
     @Path("/util/normalizeurl")

@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dk.kb.netarchivesuite.solrwayback</groupId>
     <artifactId>solrwayback</artifactId>
-    <version>4.0.8-SNAPSHOT</version>
+    <version>4.2.3</version>
     <packaging>war</packaging>
     <name>solrwayback</name>
-    <url>http://maven.apache.org</url>
+    <url>https://maven.apache.org</url>
 
     <properties>
         <build.time>${maven.build.timestamp}</build.time>
@@ -15,34 +15,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>sbprojects-nexus</id>
-            <url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>sbprojects-nexus</id>
-            <url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
+  <repositories>
+     <repository>
+     <id>maven-restlet</id>
+     <name>Public online Restlet repository</name>
+     <url>https://maven.restlet.com</url>
+   </repository>
+  </repositories>
 
     <dependencies>
-
-
         <!-- jUnit -->
         <dependency>
             <groupId>junit</groupId>
@@ -57,9 +38,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- REST -->
-
-
+    <!-- REST -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
@@ -114,7 +93,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.12.1</version>
+            <version>1.14.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
@@ -143,7 +122,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.20</version>
+            <version>1.21</version>
             <!-- Used to get a reliable decompression of multi-part gzip stream in test -->
             <scope>test</scope>
         </dependency>
@@ -250,7 +229,7 @@
         <dependency>
             <groupId>com.kennycason</groupId>
             <artifactId>kumo-core</artifactId>
-            <version>1.27</version>
+            <version>1.28</version>
               <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -286,7 +265,7 @@
 
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.5.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
