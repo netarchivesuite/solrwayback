@@ -1,9 +1,12 @@
 FROM maven:3-jdk-8 AS MAVEN_TOOL_CHAIN
 
+ARG MAVEN_OPTS
+
 # Collect all the dependencies:
 COPY pom.xml /tmp/
 WORKDIR /tmp/
-RUN mvn -B -q -s /usr/share/maven/ref/settings-docker.xml dependency:resolve-plugins dependency:go-offline
+#RUN mvn -B -q -s /usr/share/maven/ref/settings-docker.xml dependency:resolve-plugins dependency:go-offline
+RUN mvn -B -s /usr/share/maven/ref/settings-docker.xml dependency:resolve-plugins dependency:go-offline
 
 # Build the actual app:
 COPY src /tmp/src/
