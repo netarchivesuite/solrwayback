@@ -14,9 +14,11 @@ services:
         - "https_proxy=${HTTPS_PROXY}"
         - "MAVEN_OPTS=${MAVEN_OPTS}"
     ports:
-      - "8085:8080"
+      - "18080:8080"
     environment: 
       - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}"
+      # Setup base URL assuming we access via the 18080 local host port defined above:
+      - "BASE_URL=http://localhost:18080/solrwayback/"
 
   # Solr instance for running tests against
   solr:
