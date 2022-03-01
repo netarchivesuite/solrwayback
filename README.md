@@ -145,6 +145,17 @@ Absolute URL live-leaks (starting with http://domain...) will not be caught and 
  * Modify the property files. (default all urls http://localhost:8080)
  * Open search interface: http://localhost:8080/solrwayback
 
+
+## Build and test with Docker
+There is a `Dockerfile` that builds the SolrWayback WAR and deploys it via a containerised Tomcat server. This has been set up to allow configuration via environment variables as an alternative to supplying the properties file directly. There is also a `docker-compose` file that is intended to help with local building and testing of the SolrWayback Docker container. To use it:
+
+* Run `docker-compose build` to build (or re-build) the container.
+* Run `docker-compose up` to run the SolrWayback container along with a Solr instance that contains some test data.
+
+The Solr instance uses `ukwa/webarchive-discovery-solr`, which runs a Solr instance with a suitable collection and schema already set up.  It also runs a helper service to populate the instance with some test data.  If needed, the test Solr instance can be run separately via `docker-compose up solr populate`.
+
+Note that if you do not have direct internet access, you will need to set proxy variables including `MAVEN_OPTS` appropriately in order for the build to work.
+
 ## Contact
 Thomas Egense (thomas.egense@gmail.com) 
 Feel free to send emails with comments or questions.
