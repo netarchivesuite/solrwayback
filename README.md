@@ -152,7 +152,11 @@ There is a `Dockerfile` that builds the SolrWayback WAR and deploys it via a con
 * Run `docker-compose build` to build (or re-build) the container.
 * Run `docker-compose up` to run the SolrWayback container along with a Solr instance that contains some test data.
 
-The Solr instance uses `ukwa/webarchive-discovery-solr`, which runs a Solr instance with a suitable collection and schema already set up.  It also runs a helper service to populate the instance with some test data.  If needed, the test Solr instance can be run separately via `docker-compose up solr populate`.
+After running `docker-compose up` you should see logs from three services (`solrwayback`, `solr` and `populate`). SolrWayback itself should be available at http://localhost:8080/solrwayback/
+
+The Solr instance runs `ukwa/webarchive-discovery-solr`, which contains a suitable collection with the right schema.  The Solr service itself should be available on port 18983, i.e. http://localhost:18983/solr/ 
+
+The `docker-compose up` command also runs a helper service to populate the instance with some test data.  This waits a few seconds (for Solr to start up) before sending 1000 records to it, and then exits. If needed, the test Solr instance can be run separately via `docker-compose up solr populate`.
 
 Note that if you do not have direct internet access, you will need to set proxy variables including `MAVEN_OPTS` appropriately in order for the build to work.
 
