@@ -19,6 +19,20 @@ FROM tomcat:9.0-jre8-alpine
 # Support envsubst:
 RUN apk add gettext
 
+# Install Chromium for screenshots:
+RUN apk update && apk add --no-cache nmap && \
+    echo @edge http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
+    echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
+    apk update && \
+    apk add --no-cache \
+      chromium \
+      harfbuzz \
+      "freetype>2.8" \
+      ttf-freefont \
+      nss
+
+RUN chromium-browser --version
+
 # Copy in the fresh WAR:
 COPY --from=MAVEN_TOOL_CHAIN /tmp/target/solrwayback-*.war $CATALINA_HOME/webapps/solrwayback.war
 
