@@ -16,7 +16,7 @@ services:
     ports:
       - "8085:8080"
     environment: 
-      - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}`"
+      - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}"
 
   # Solr instance for running tests against
   solr:
@@ -29,6 +29,6 @@ services:
     image: ukwa/webarchive-discovery-solr:master
     command: "/populate.sh"
     environment:
-      - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}`"
+      - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}"
 
 
