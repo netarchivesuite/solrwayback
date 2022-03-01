@@ -152,7 +152,7 @@ There is a `Dockerfile` that builds the SolrWayback WAR and deploys it via a con
 * Run `docker-compose build` to build (or re-build) the container.
 * Run `docker-compose up` to run the SolrWayback container along with a Solr instance that contains some test data.
 
-After running `docker-compose up` you should see logs from three services (`solrwayback`, `solr` and `populate`). SolrWayback itself should be available at http://localhost:8080/solrwayback/
+After running `docker-compose up` you should see logs from three services (`solrwayback`, `solr` and `populate`). SolrWayback itself should be available on port 18080, at http://localhost:18080/solrwayback/
 
 The Solr instance runs `ukwa/webarchive-discovery-solr`, which contains a suitable collection with the right schema.  The Solr service itself should be available on port 18983, i.e. http://localhost:18983/solr/ 
 
