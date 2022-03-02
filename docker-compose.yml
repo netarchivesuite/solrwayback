@@ -1,0 +1,36 @@
+version: '3.2'
+
+services:
+
+# -----------------------------------------------------------
+# SolrWayback
+# -----------------------------------------------------------
+
+  solrwayback:
+    build:
+      context: .
+      args:
+        - "http_proxy=${HTTP_PROXY}"
+        - "https_proxy=${HTTPS_PROXY}"
+        - "MAVEN_OPTS=${MAVEN_OPTS}"
+    ports:
+      - "18080:8080"
+    environment: 
+      - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}"
+      # Setup base URL assuming we access via the 18080 local host port defined above:
+      - "BASE_URL=http://localhost:18080/solrwayback/"
+
+  # Solr instance for running tests against
+  solr:
+    image: ukwa/webarchive-discovery-solr:master
+    ports:
+      - "18983:8983"
+
+  # Hook to populate the image with test data:
+  populate:
+    image: ukwa/webarchive-discovery-solr:master
+    command: "/populate.sh"
+    environment:
+      - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}"
+
+

@@ -1,7 +1,7 @@
 .idea
 .DS_Store
 solrwayback.iml
-solrwayback.properties
+/solrwayback.properties
 target
 /.classpath
 /deployLocalTomcat.sh
