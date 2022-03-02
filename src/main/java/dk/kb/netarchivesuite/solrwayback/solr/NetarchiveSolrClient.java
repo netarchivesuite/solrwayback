@@ -299,6 +299,7 @@ public class NetarchiveSolrClient {
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(searchString); // only search images
+        addSolrParams(solrQuery);
         solrQuery.setRows(50); // get 50 images...
 
         solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
@@ -375,7 +376,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("fl", "id");
         solrQuery.setFilterQueries(filterQuery);
         solrQuery.setRows(0);
-
+        addSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         return rsp.getResults().getNumFound();
     }
@@ -528,6 +529,10 @@ public class NetarchiveSolrClient {
             solrQuery.add("sort", sort);
         }
         solrQuery.setRows(results);
+        
+        
+        addSolrParams(solrQuery); //NOT SURE ABOUT THIS ONE!
+        
         // The 3 lines defines geospatial search. The ( ) are required if you want to
         // AND with another query
         solrQuery.setQuery("({!geofilt sfield=exif_location}) AND " + searchText);
@@ -559,7 +564,7 @@ public class NetarchiveSolrClient {
         }
         
       
-
+        addSolrParams(solrQuery);
         QueryResponse rsp = loggedSolrQuery("search", solrQuery);
         SolrDocumentList docs = rsp.getResults();
 
@@ -956,22 +961,20 @@ public class NetarchiveSolrClient {
             }
         }
 
-        HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
-        for (String key : SOLR_PARAMS_MAP.keySet()) {
-            solrQuery.add(key,SOLR_PARAMS_MAP.get(key));            
-        }
+        addSolrParams(solrQuery);        
         
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");
 
         QueryRequest req = new QueryRequest(solrQuery);
         req.setResponseParser(rawJsonResponseParser);
-
-        NamedList<Object> resp = solrServer.request(req);
+        
+        NamedList<Object> resp = solrServer.request(req);        
         String jsonResponse = (String) resp.get("response");
         return jsonResponse;
     }
 
+    
     public String searchJsonResponseOnlyFacetsLoadMore( String query, List<String> fq, String facetField, boolean revisits) throws Exception {
         log.info("Solr query(load more from facet): "+query +" fg:"+fq+ " revisits:"+revisits +" facetField:"+facetField);
 
@@ -1005,16 +1008,14 @@ public class NetarchiveSolrClient {
             }
         }
 
+        
+        addSolrParams(solrQuery);
+        
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");
 
         QueryRequest req = new QueryRequest(solrQuery);
         req.setResponseParser(rawJsonResponseParser);
-
-        HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
-        for (String key : SOLR_PARAMS_MAP.keySet()) {
-            solrQuery.set(key,SOLR_PARAMS_MAP.get(key));            
-        }
         
         NamedList<Object> resp = solrServer.request(req);
         String jsonResponse = (String) resp.get("response");
@@ -1061,11 +1062,9 @@ public class NetarchiveSolrClient {
                 solrQuery.add("fq", filter);
             }
         }
-        HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
-        for (String key : SOLR_PARAMS_MAP.keySet()) {
-            solrQuery.set(key,SOLR_PARAMS_MAP.get(key));            
-        }
-
+       
+        addSolrParams(solrQuery);
+        
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");
 
@@ -1085,7 +1084,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("q.op", "AND");
         solrQuery.set("indent", "true");
         solrQuery.set("facet", "false");
-
+        
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");
 
@@ -1181,7 +1180,7 @@ public class NetarchiveSolrClient {
         for (String filter : fq) {
             solrQuery.addFilterQuery(filter);
         }
-
+        addSolrParams(solrQuery); //TODO not sure about this one
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");
 
@@ -1273,6 +1272,17 @@ public class NetarchiveSolrClient {
 
     }
 
+    
+    //        
+    private static void addSolrParams( SolrQuery solrQuery)throws Exception {
+        HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
+        for (String key : SOLR_PARAMS_MAP.keySet()) {
+            solrQuery.add(key,SOLR_PARAMS_MAP.get(key));            
+        }                
+        
+    }
+
+    
     /**
      * Performs a Solr call, logging the time it took; both measured and reported
      * QTime.
