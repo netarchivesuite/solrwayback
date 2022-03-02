@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,6 +34,8 @@ public class PropertiesLoader {
     private static final String SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY="solr.server.caching.age.seconds";
 
     private static final String WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY="warcindexer.urlnormaliser.legacy";
+    
+    private static final String SOLR_SEARCH_PARAMS_PROPERTY="solr.search.params";
     private static Properties serviceProperties = null;
 
     public static String SOLR_SERVER = null;
@@ -45,7 +48,7 @@ public class PropertiesLoader {
     public static String WARC_FILE_RESOLVER_PARAMETERS= null;
     public static String PID_COLLECTION_NAME = null;
     public static String WORDCLOUD_STOPWORDS;
-
+    public static HashMap<String,String> SOLR_PARAMS_MAP= new HashMap<String,String>(); 
 
     public static boolean SOLR_SERVER_CACHING=false;
     public static int SOLR_SERVER_CACHING_MAX_ENTRIES=1000; //default value
@@ -109,6 +112,16 @@ public class PropertiesLoader {
                 SOLR_SERVER_CACHING_MAX_ENTRIES=Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY).trim());
             }
 
+            //Format is key1=value1,key2=value2
+            String solrParamsStr = serviceProperties.getProperty( SOLR_SEARCH_PARAMS_PROPERTY);
+            if (solrParamsStr != null) {
+              buildSolrParams(solrParamsStr);
+            }
+            else {
+             log.info("no solrParams loaded");   
+            }
+            
+            
 
             log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
             log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);
@@ -124,11 +137,25 @@ public class PropertiesLoader {
             log.info("Property:"+ SOLR_SERVER_CACHING_PROPERTY +" = " +  SOLR_SERVER_CACHING);
             log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);
+            log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.error("Could not load property file:"+propertyFile);
+            log.error("Could not load property file:"+propertyFile,e);
+            e.printStackTrace();
         }
     }
 
+    //Format is key1=value1,key2=value2
+    private static void buildSolrParams(String solrParams) {
+    
+        String[] params = solrParams.split(";");
+        
+        for (String param : params) {
+            String[] keyVal=param.split("=");            
+            SOLR_PARAMS_MAP.put(keyVal[0],keyVal[1]);            
+        }        
+    
+    }
+    
 }

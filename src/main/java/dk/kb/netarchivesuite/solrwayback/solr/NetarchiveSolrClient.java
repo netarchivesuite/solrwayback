@@ -557,6 +557,8 @@ public class NetarchiveSolrClient {
         if (filterQuery != null) {
             solrQuery.setFilterQueries(filterQuery);
         }
+        
+      
 
         QueryResponse rsp = loggedSolrQuery("search", solrQuery);
         SolrDocumentList docs = rsp.getResults();
@@ -954,6 +956,11 @@ public class NetarchiveSolrClient {
             }
         }
 
+        HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
+        for (String key : SOLR_PARAMS_MAP.keySet()) {
+            solrQuery.add(key,SOLR_PARAMS_MAP.get(key));            
+        }
+        
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");
 
@@ -1004,6 +1011,11 @@ public class NetarchiveSolrClient {
         QueryRequest req = new QueryRequest(solrQuery);
         req.setResponseParser(rawJsonResponseParser);
 
+        HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
+        for (String key : SOLR_PARAMS_MAP.keySet()) {
+            solrQuery.set(key,SOLR_PARAMS_MAP.get(key));            
+        }
+        
         NamedList<Object> resp = solrServer.request(req);
         String jsonResponse = (String) resp.get("response");
         return jsonResponse;
@@ -1048,6 +1060,10 @@ public class NetarchiveSolrClient {
             for (String filter : fq) {
                 solrQuery.add("fq", filter);
             }
+        }
+        HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
+        for (String key : SOLR_PARAMS_MAP.keySet()) {
+            solrQuery.set(key,SOLR_PARAMS_MAP.get(key));            
         }
 
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
