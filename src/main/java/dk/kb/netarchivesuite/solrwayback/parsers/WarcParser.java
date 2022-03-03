@@ -3,13 +3,13 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 import java.io.BufferedInputStream;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 
-import java.io.RandomAccessFile;
-import java.nio.channels.Channels;
+import java.util.Locale;
 import java.util.zip.GZIPInputStream;
 
+import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,112 +48,37 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
    *Connection: close
    *Content-Length: 7178
    */
-  public static ArcEntry getWarcEntry(String warcFilePath, long warcEntryPosition, boolean loadBinary) throws Exception {
+  public static ArcEntry getWarcEntry(ArcSource arcSource, long warcEntryPosition, boolean loadBinary) throws Exception {
 
-    if (warcFilePath.endsWith(".gz")){ //It is zipped
-      return getWarcEntryZipped(warcFilePath, warcEntryPosition, loadBinary);                       
+    if (arcSource.getSource().toLowerCase(Locale.ROOT).endsWith(".gz")){ //It is zipped
+      return getWarcEntryZipped(arcSource, warcEntryPosition, loadBinary);
     }
     else {
-      return getWarcEntryNotZipped(warcFilePath, warcEntryPosition, loadBinary);
+      return getWarcEntryNotZipped(arcSource, warcEntryPosition, loadBinary);
     }          
   }
 
-  public static ArcEntry getWarcEntryNotZipped(String warcFilePath, long warcEntryPosition,boolean loadBinary) throws Exception {
+  public static ArcEntry getWarcEntryNotZipped(ArcSource arcSource, long warcEntryPosition,boolean loadBinary) throws Exception {
 
     ArcEntry warcEntry = new ArcEntry();
     warcEntry.setFormat(ArcEntry.FORMAT.WARC);
-    warcEntry.setSourceFilePath(warcFilePath);
+    warcEntry.setSource(arcSource);
     warcEntry.setOffset(warcEntryPosition);
 
-    RandomAccessFile raf=null;
-    try {
+    try (InputStream is = arcSource.get()) {
+        IOUtils.skipFully(is, warcEntryPosition);
 
-      raf = new RandomAccessFile(new File(warcFilePath), "r");
-      raf.seek(warcEntryPosition);
+        try (BufferedInputStream bis = new BufferedInputStream(is)) {
+            loadWarcHeader(bis, warcEntry);
 
-      loadWarcHeaderNotZipped(raf, warcEntry);
-
-      long binarySize = warcEntry.getBinaryArraySize();
-
-      if (binarySize > Integer.MAX_VALUE) {             
-        log.error("Binary size too large for java byte[]. Size:"+binarySize);
-        throw new Exception("Binary size too large for java byte[]. Size:"+binarySize);
-      }
-
-      if (loadBinary) {
-        byte[] bytes = new byte[(int) binarySize];
-        raf.read(bytes);            
-        warcEntry.setBinary(bytes);          
-      }
-
-      raf.close();
-      return warcEntry;
-    }
-    catch(Exception e){
-      throw e;
-    }
-    finally {
-      if (raf!= null){
-        raf.close();
-      }
+            //log.debug("Arc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);
+            if (loadBinary) {
+                loadBinary(is, warcEntry);
+            }
+        }
+        return warcEntry;
     }
   }
-
-
-
-  /*
-   * Will load the header information into the warcEntry
-   * The  RandomAccessFile will be returned with pointer in start of binary 
-   * warcEntry will have binaryArraySize defined
-   * 
-   */
-  private static void loadWarcHeaderNotZipped(RandomAccessFile raf, ArcEntry warcEntry) throws Exception{
-
-    StringBuffer headerLinesBuffer = new StringBuffer();
-    String line = raf.readLine(); // First line
-    headerLinesBuffer.append(line+newLineChar);
-
-    if  (!(line.startsWith("WARC/"))) //No version check yet
-    {            
-      throw new IllegalArgumentException("WARC header is not WARC/'version', instead it is : "+line);
-    }            
-
-    while (!"".equals(line)) { // End of warc first header block is an empty line                
-      line = raf.readLine();                
-      headerLinesBuffer.append(line+newLineChar);
-      populateWarcFirstHeader(warcEntry, line);                
-    }
-
-    if( !(warcEntry.getType() == ArcEntry.TYPE.RESOURCE)){ 
-    
-    long afterFirst = raf.getFilePointer(); //Now we are past the WARC header and back to the ARC standard 
-    line = raf.readLine();  
-    warcEntry.setStatus_code(getStatusCode(line));            
-    headerLinesBuffer.append(line+newLineChar);
-    while (!"".equals(line)) { // End of warc second header block is an empty line
-      line = raf.readLine();                  
-      headerLinesBuffer.append(line+"\r\n");
-      populateWarcSecondHeader(warcEntry, line);
-    }
-
-    warcEntry.setHeader(headerLinesBuffer.toString());
-
-    int totalSize= (int) warcEntry.getWarcEntryContentLength();            
-
-    // Load the binary blog. We are now right after the header. Rest will be the binary
-    long headerSize = raf.getFilePointer() - afterFirst;
-    long binarySize = totalSize - headerSize;
-    warcEntry.setBinaryArraySize(binarySize);
-    }
-    else {
-      warcEntry.setHeader(""); //NONE for resource type
-      warcEntry.setStatus_code(200); //fake it . Warc-indexer does the same
-      warcEntry.setBinaryArraySize((int) warcEntry.getWarcEntryContentLength());
-    }
-
-    //log.debug("Warc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);
-  }
-
 
   /*
    * Will load the header information into the warcEntry
@@ -161,7 +86,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
    * warcEntry will have binaryArraySize defined
    * 
    */
-  private static void loadWarcHeaderZipped( BufferedInputStream bis, ArcEntry warcEntry) throws Exception{
+  private static void loadWarcHeader(BufferedInputStream bis, ArcEntry warcEntry) throws Exception{
 
     StringBuffer headerLinesBuffer = new StringBuffer();
     String line = readLine(bis); // First line
@@ -208,89 +133,58 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     warcEntry.setBinaryArraySize(binarySize);
   }
 
-  public static ArcEntry getWarcEntryZipped(String warcFilePath, long warcEntryPosition, boolean loadBinary) throws Exception {
+  public static ArcEntry getWarcEntryZipped(ArcSource arcSource, long warcEntryPosition, boolean loadBinary) throws Exception {
 
     ArcEntry warcEntry = new ArcEntry();
     warcEntry.setFormat(ArcEntry.FORMAT.WARC);
-    warcEntry.setSourceFilePath(warcFilePath);
+    warcEntry.setSource(arcSource);
     warcEntry.setOffset(warcEntryPosition);
 
-    try (RandomAccessFile raf = new RandomAccessFile(new File(warcFilePath), "r")){      
+    try (InputStream is = arcSource.get()) {
+        IOUtils.skipFully(is, warcEntryPosition);
 
+        // log.info("file is zipped:"+arcFilePath);
+        try (GZIPInputStream stream = new GZIPInputStream(is);
+             BufferedInputStream  bis= new BufferedInputStream(stream)) {
 
-      raf.seek(warcEntryPosition);
+            loadWarcHeader(bis, warcEntry);
 
-      //  log.info("file is zipped:"+warcFilePath);
-      InputStream is = Channels.newInputStream(raf.getChannel());                           
-      GZIPInputStream zipStream = new GZIPInputStream(is);             
-
-      BufferedInputStream  bis= new BufferedInputStream(zipStream);
-
-
-      loadWarcHeaderZipped(bis, warcEntry);
-
-      long binarySize = warcEntry.getBinaryArraySize(); 
-
-      if (binarySize > Integer.MAX_VALUE) {
-
-        log.error("Binary size too large for java byte[]. Size:"+binarySize);
-        throw new Exception("Binary size too large for java byte[]. Size:"+binarySize);
-      }
-
-      //System.out.println("Warc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);          
-
-      if (loadBinary) {
-        byte[] chars = new byte[(int)binarySize];           
-        bis.read(chars);
-        warcEntry.setBinary(chars);
-
-      }          
-      raf.close();
-      bis.close();
-
-
-
+            //System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);
+            if (loadBinary) {
+                loadBinary(bis, warcEntry);
+            }
+        }
+    }
+    return warcEntry;
       /*
           System.out.println("-------- binary start");
           System.out.println(new String(chars));
           System.out.println("-------- slut");
        */
-      return warcEntry;
-    }
-    catch(Exception e){
-      throw e;
-    }      
   }
 
 
-  public static BufferedInputStream lazyLoadBinary(String arcFilePath, long arcEntryPosition) throws Exception{
+  public static BufferedInputStream lazyLoadBinary(ArcSource arcSource, long arcEntryPosition) throws Exception{
     ArcEntry arcEntry = new ArcEntry(); // We just throw away the header info anyway 
 
-    if (arcFilePath.endsWith(".gz")){ //It is zipped
+    InputStream is = arcSource.get();
+    IOUtils.skipFully(is, arcEntryPosition);
 
-      RandomAccessFile raf = new RandomAccessFile(new File(arcFilePath), "r");
-      raf.seek(arcEntryPosition);          
-
+    if (arcSource.getSource().toLowerCase(Locale.ROOT).endsWith(".gz")){ //It is zipped
       // log.info("file is zipped:"+arcFilePath);
-      InputStream is = Channels.newInputStream(raf.getChannel());                           
-      GZIPInputStream zipStream = new GZIPInputStream(is);              
+      GZIPInputStream zipStream = new GZIPInputStream(is);
       BufferedInputStream  bis= new BufferedInputStream(zipStream);
-
-      loadWarcHeaderZipped(bis, arcEntry);
+      loadWarcHeader(bis, arcEntry);
 
       BoundedInputStream maxStream = new BoundedInputStream(bis, arcEntry.getBinaryArraySize());
       return new BufferedInputStream(maxStream); // It's a mess to use nested BufferedInputStreams...
 
-    }
-    else {
-      RandomAccessFile raf = new RandomAccessFile(new File(arcFilePath), "r");
-      raf.seek(arcEntryPosition);              
-      loadWarcHeaderNotZipped(raf, arcEntry);
-      InputStream is = Channels.newInputStream(raf.getChannel());
+    } else {
+      BufferedInputStream  bis = new BufferedInputStream(is);
+      loadWarcHeader(bis, arcEntry);
       BoundedInputStream maxStream = new BoundedInputStream(is, arcEntry.getBinaryArraySize());
-      BufferedInputStream bis = new BufferedInputStream(maxStream);
-      return bis;
-    }            
+      return new BufferedInputStream(maxStream);
+    }
 
   }
 

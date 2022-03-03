@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import java.util.HashMap;
 
+import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
  */
 public class ArcParserFileResolver {
 
-  private static HashMap<String, String> cache = new HashMap<String, String>();
+  private static final HashMap<String, ArcSource> cache = new HashMap<>();
 
   private static ArcFileLocationResolverInterface resolver = new IdentityArcFileResolver(); // Default
   private static final Logger log = LoggerFactory.getLogger(ArcFileLocationResolverInterface.class);
@@ -61,20 +62,14 @@ public class ArcParserFileResolver {
     String source_file_path = source_file_path_org.trim();
 
     try {
-      String cached = cache.get(source_file_path);
-      String fileLocation = null;
-      if (cached != null) {
-        fileLocation = cached;
-        // log.info("Using cached arcfile location:"+source_file_path
-        // +"->"+fileLocation);
-      } else {
-        fileLocation = resolver.resolveArcFileLocation(source_file_path);
-        cache.put(source_file_path, fileLocation);
-        // log.debug("Resolved arcfile location:" + source_file_path + "->" +
-        // fileLocation);
+      ArcSource arcSource = cache.get(source_file_path);
+      if (arcSource == null) {
+
+        arcSource = resolver.resolveArcFileLocation(source_file_path);
+        cache.put(source_file_path, arcSource);
       }
 
-      return ArcFileParserFactory.getArcEntry(fileLocation, offset, loadBinary);
+      return ArcFileParserFactory.getArcEntry(arcSource, offset, loadBinary);
 
     } catch (Exception e) {
       // It CAN happen, but crazy unlikely, and not critical at all... (took 10

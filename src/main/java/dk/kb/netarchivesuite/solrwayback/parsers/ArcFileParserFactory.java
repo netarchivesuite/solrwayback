@@ -1,6 +1,9 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+
+import java.util.Locale;
 
 public class ArcFileParserFactory {
 
@@ -11,25 +14,26 @@ public class ArcFileParserFactory {
    * @param offset offset in the warc file
    * @param loadBinary will load the byte[] with the content. Do mot use for video/audio etc. Use the InputStream method for this
    */  
-    public static ArcEntry getArcEntry(String file_path, long offset, boolean loadBinary) throws Exception{
+    public static ArcEntry getArcEntry(ArcSource arcSource, long offset, boolean loadBinary) throws Exception{
         
-        if (file_path == null ){           
-            throw new IllegalArgumentException("file_path is null");        
+        if (arcSource == null ){
+            throw new IllegalArgumentException("No arcSupplier provided");
         }
 
         ArcEntry arcEntry = null; 
-       String fileLowerCase=file_path.toLowerCase(); 
-        
-        
-        if (fileLowerCase.endsWith(".warc")  || fileLowerCase.endsWith(".warc.gz") ) {
-            arcEntry = WarcParser.getWarcEntry(file_path, offset, loadBinary);     
+        String sourceLowercase = arcSource.getSource().toLowerCase(Locale.ROOT);
+
+
+        if (sourceLowercase.endsWith(".warc")  || sourceLowercase.endsWith(".warc.gz") ) {
+            arcEntry = WarcParser.getWarcEntry(arcSource, offset, loadBinary);
         }
                         
-        else if (fileLowerCase.endsWith(".arc") || fileLowerCase.endsWith("arc.gz")){
-            arcEntry = ArcParser.getArcEntry(file_path, offset,loadBinary);                     
+        else if (sourceLowercase.endsWith(".arc") || sourceLowercase.endsWith("arc.gz")){
+            arcEntry = ArcParser.getArcEntry(arcSource, offset,loadBinary);
         }
         else{
-            throw new IllegalArgumentException("File not arc or warc:"+file_path);
+            throw new IllegalArgumentException(
+                    "Expected (W)ARC source not arc or warc: '"+ arcSource.getSource() + "'");
         }
 
         return arcEntry;
