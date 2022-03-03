@@ -1211,7 +1211,13 @@ public class NetarchiveSolrClient {
         indexDoc.setUrl((String) doc.get("url"));
         indexDoc.setUrl_norm((String) doc.get("url_norm"));
         indexDoc.setOffset(getOffset(doc));
-        indexDoc.setContentType((String) doc.get("content_type"));
+        // Cope with some minor schema variations:
+        if ( doc.get("content_type") instanceof ArrayList) {
+            ArrayList<String> types = (ArrayList<String>) doc.get("content_type");
+            indexDoc.setContentType(types.get(0));
+        } else {
+            indexDoc.setContentType((String) doc.get("content_type"));
+        }
         indexDoc.setContentTypeNorm((String) doc.get("content_type_norm"));
         indexDoc.setContentEncoding((String) doc.get("content_encoding"));
         indexDoc.setType((String) doc.get("type"));
@@ -1234,7 +1240,13 @@ public class NetarchiveSolrClient {
         indexDoc.setCrawlDateLong(date.getTime());
         indexDoc.setCrawlDate(DateUtils.getSolrDate(date));
 
-        indexDoc.setMimeType((String) doc.get("content_type"));
+        // Cope with some minor schema variations:
+        if ( doc.get("content_type") instanceof ArrayList) {
+            ArrayList<String> types = (ArrayList<String>) doc.get("content_type");
+            indexDoc.setMimeType(types.get(0));
+        } else {
+            indexDoc.setMimeType((String) doc.get("content_type"));
+        }
 
         indexDoc.setOffset(getOffset(doc));
 
