@@ -55,7 +55,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
 
               //log.debug("Arc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);
               if (loadBinary) {
-                  loadBinary(is, arcEntry);
+                  loadBinary(bis, arcEntry);
               }
           }
           return arcEntry;
@@ -155,12 +155,12 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
           BoundedInputStream maxStream = new BoundedInputStream(bis, arcEntry.getBinaryArraySize());
           return new BufferedInputStream(maxStream); // It's a mess to use nested BufferedInputStreams...
           
-        } else {
-            BufferedInputStream  bis = new BufferedInputStream(is);
-            loadArcHeader(bis, arcEntry);
-            BoundedInputStream maxStream = new BoundedInputStream(is, arcEntry.getBinaryArraySize());
-            return new BufferedInputStream(maxStream);
-        }
+      } else {
+          BufferedInputStream  bis = new BufferedInputStream(is);
+          loadArcHeader(bis, arcEntry);
+          BoundedInputStream maxStream = new BoundedInputStream(bis, arcEntry.getBinaryArraySize());
+          return new BufferedInputStream(maxStream);
+      }
       
   }
 

@@ -31,7 +31,14 @@ public class ArcWarcFileParserAbstract {
       byte[] bytes = new byte[(int) binarySize];
 
       // we are not using IOUtils.readFully as we'd rather return non-complete data than nothing
-      is.read(bytes);
+      int read = is.read(bytes);
+      if (read == -1) {
+          log.warn("Attempted to load binary for {}#{} but got EOF immediately",
+                   arcEntry.getArcSource().getSource(), arcEntry.getOffset());
+      } else if (read < bytes.length) {
+          log.warn("Incomplete binary for {}#{}: {}/{} bytes read",
+                   arcEntry.getArcSource().getSource(), arcEntry.getOffset(), read, bytes.length);
+      }
       arcEntry.setBinary(bytes);
   }
 

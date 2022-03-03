@@ -50,7 +50,9 @@ public class ArcParserTest extends UnitTestUtils{
         
         assertNull(arcEntry.getBinary());
         arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767); //Image entry and load binary
-        byte[] orgBinary = arcEntry.getBinary();        
+        byte[] orgBinary = arcEntry.getBinary();
+        assertTrue("The extracted binary size should be > 0 but was " + arcEntry.getBinaryArraySize(),
+                   arcEntry.getBinaryArraySize() > 0);
         try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
             byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
             assertEquals("The expected number of bytes should be read from the lazy stream",

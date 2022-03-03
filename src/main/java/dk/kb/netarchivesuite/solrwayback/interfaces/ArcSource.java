@@ -66,4 +66,9 @@ public class ArcSource implements Supplier<InputStream> {
             }
         });
     }
+
+    @Override
+    public String toString() {
+        return "ArcSource(" + "source='" + source + '\'' + ')';
+    }
 }
