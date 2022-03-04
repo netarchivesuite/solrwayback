@@ -100,6 +100,7 @@ public class SkippingHTTPInputStream extends InputStream {
 
         URLConnection urlCon = createURLConnection(startOffset);
         inner = urlCon.getInputStream();
+        position = startOffset;
         return startOffset;
     }
 
@@ -123,6 +124,13 @@ public class SkippingHTTPInputStream extends InputStream {
             urlCon.setRequestProperty("Range", "bytes=" + startOffset + "-");
         }
         return urlCon;
+    }
+
+    /**
+     * @return the position in the resource, measured in bytes.
+     */
+    public long getPosition() {
+        return position;
     }
 
     @Override
