@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.zip.GZIPInputStream;
 
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
+import dk.kb.netarchivesuite.solrwayback.util.InputStreamUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.slf4j.Logger;
@@ -66,7 +67,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     warcEntry.setOffset(warcEntryPosition);
 
     try (InputStream is = arcSource.get()) {
-        IOUtils.skipFully(is, warcEntryPosition);
+        InputStreamUtils.skipFully(is, warcEntryPosition);
 
         try (BufferedInputStream bis = new BufferedInputStream(is)) {
             loadWarcHeader(bis, warcEntry);
@@ -141,7 +142,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     warcEntry.setOffset(warcEntryPosition);
 
     try (InputStream is = arcSource.get()) {
-        IOUtils.skipFully(is, warcEntryPosition);
+        InputStreamUtils.skipFully(is, warcEntryPosition);
 
         // log.info("file is zipped:"+arcFilePath);
         try (GZIPInputStream stream = new GZIPInputStream(is);
@@ -168,7 +169,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     ArcEntry arcEntry = new ArcEntry(); // We just throw away the header info anyway 
 
     InputStream is = arcSource.get();
-    IOUtils.skipFully(is, arcEntryPosition);
+    InputStreamUtils.skipFully(is, arcEntryPosition);
 
     if (arcSource.getSource().toLowerCase(Locale.ROOT).endsWith(".gz")){ //It is zipped
       // log.info("file is zipped:"+arcFilePath);

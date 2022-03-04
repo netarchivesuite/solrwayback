@@ -1,5 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import java.io.EOFException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.zip.GZIPInputStream;
@@ -43,5 +45,51 @@ public class InputStreamUtils {
         return pb;
     }
  }
-  
+
+    /**
+     * Re-implementation of {@link org.apache.commons.io.IOUtils#skipFully} using {@link InputStream#skip} instead of
+     * {@link InputStream#skip} to allow for efficient skipping.
+     * @param input stream to skip.
+     * @param toSkip the number of bytes to skip.
+     * @throws IOException              if there is a problem reading the file.
+     * @throws IllegalArgumentException if toSkip is negative.
+     * @throws EOFException             if the number of bytes skipped was incorrect.
+     */
+    public static void skipFully(final InputStream input, final long toSkip) throws IOException {
+        if (toSkip < 0) {
+            throw new IllegalArgumentException("Bytes to skip must not be negative: " + toSkip);
+        }
+        final long skipped = skip(input, toSkip);
+        if (skipped != toSkip) {
+            throw new EOFException("Bytes to skip: " + toSkip + " actual: " + skipped);
+        }
+    }
+
+    /**
+     * Ported and adjusted from {@link org.apache.commons.io.IOUtils#read} for using {@code read} to use
+     * {@code skip} to allow for efficient skipping.
+     * This implementation guarantees that it will skip as many bytes
+     * as possible before giving up; this may not always be the case for
+     * skip() implementations in subclasses of {@link InputStream}.
+     * @param input byte stream to skip
+     * @param toSkip number of bytes to skip.
+     * @return number of bytes actually skipped.
+     * @throws IOException              if there is a problem reading the file
+     * @throws IllegalArgumentException if toSkip is negative
+     */
+    public static long skip(final InputStream input, final long toSkip) throws IOException {
+        if (toSkip < 0) {
+            throw new IllegalArgumentException("Skip count must be non-negative, actual: " + toSkip);
+        }
+        long remain = toSkip;
+        while (remain > 0) {
+            // See https://issues.apache.org/jira/browse/IO-203 for why we use read() rather than delegating to skip()
+            final long n = input.skip(remain);
+            if (n == 0) { // skip has no explicit EOF mechanism. We do not retry when we skip nothing
+                break;
+            }
+            remain -= n;
+        }
+        return toSkip - remain;
+    }
 }
