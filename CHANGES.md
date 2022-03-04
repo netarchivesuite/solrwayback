@@ -4,6 +4,7 @@ Update frontend dependencies (security)
 Added support for WARC file reading with Inputstream, this can be used if WARC files are not on a file-system.
 Support for WARC resource type (Warc-Indexer) without URL in WARC header.
 Minor Solr query syntax fix, so it will also work on Solr 6. (not recommended to use Solr6!)
+Docker support. (so far limited support... write more later)
 
 4.2.3
 -----
