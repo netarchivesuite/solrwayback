@@ -356,7 +356,7 @@ public class Facade {
     }
 
 
-    /*
+    /**
      *
      * Notice only maximum of 50 images will be searched.
      * This method is only called for image-search and we dont want too many hits from same site.
