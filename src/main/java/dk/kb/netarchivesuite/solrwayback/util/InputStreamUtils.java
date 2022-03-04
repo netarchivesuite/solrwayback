@@ -51,11 +51,12 @@ public class InputStreamUtils {
      * {@link InputStream#skip} to allow for efficient skipping.
      * @param input stream to skip.
      * @param toSkip the number of bytes to skip.
+     * @return the number of bytes skipped. This will always be equal to toSkip as everything else raises an Exception.
      * @throws IOException              if there is a problem reading the file.
      * @throws IllegalArgumentException if toSkip is negative.
      * @throws EOFException             if the number of bytes skipped was incorrect.
      */
-    public static void skipFully(final InputStream input, final long toSkip) throws IOException {
+    public static long skipFully(final InputStream input, final long toSkip) throws IOException {
         if (toSkip < 0) {
             throw new IllegalArgumentException("Bytes to skip must not be negative: " + toSkip);
         }
@@ -63,6 +64,7 @@ public class InputStreamUtils {
         if (skipped != toSkip) {
             throw new EOFException("Bytes to skip: " + toSkip + " actual: " + skipped);
         }
+        return toSkip;
     }
 
     /**
