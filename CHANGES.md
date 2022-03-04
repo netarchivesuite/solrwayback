@@ -1,8 +1,14 @@
+4.2.4
+-----
+Update frontend dependencies (security)
+Added support for WARC file reading with Inputstream, this can be used if WARC files are not on a file-system.
+Support for WARC resource type (Warc-Indexer) without URL in WARC header.
+Minor Solr query syntax fix, so it will also work on Solr 6. (not recommended to use Solr6!)
+
 4.2.3
 -----
 Fixed in-player video player for some MP4 videos that was classified by Tika as 'application/mp4'.
 Fixed log4shell vulnerabity in SolrWayback bundle (Solr and warc-indexer)
-
 
 
 4.2.2
