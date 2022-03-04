@@ -1,7 +1,19 @@
 # SolrWayback
 
-## SolrWayback 4.2.1 software bundle has been released
-SolrWayback bundle release for 4.2.1 here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.2.1
+## SolrWayback 4.2.3 software bundle has been released
+SolrWayback bundle release 4.2.3 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.2.3
+
+**THIS VERSION HAS BEEN PATCHED AGAINST 'log4shell'**
+
+
+## log4shell security alert - Patch your SolrWayback Bundle if you are using a release before 4.2.3.
+SolrWayback itself does not use log4j 2+ and is not directly affected by [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228).
+
+The SolrWayback bundle uses Solr 7.7.3, which **is affected by log4shell**. Please follow the [Solr log4shell mitigation guide](https://solr.apache.org/security.html#apache-solr-affected-by-apache-log4j-cve-2021-44228) if the bundled Solr is used before versio 4.2.3. The quickest fix, taken from the guide, is
+ * (Linux/MacOS) Edit your solr.in.sh file to include: SOLR_OPTS="$SOLR_OPTS -Dlog4j2.formatMsgNoLookups=true"
+ * (Windows) Edit your solr.in.cmd file to include: set SOLR_OPTS=%SOLR_OPTS% -Dlog4j2.formatMsgNoLookups=true
+
+If another version of Solr is used, note that Solr >= 7.4 and < 8.11 are vulnerable. See the mitigation guide above for details.
 
 ## About SolrWayback
 
@@ -132,6 +144,21 @@ Absolute URL live-leaks (starting with http://domain...) will not be caught and 
    to `user/home/` folder for the J2EE server
  * Modify the property files. (default all urls http://localhost:8080)
  * Open search interface: http://localhost:8080/solrwayback
+
+
+## Build and test with Docker
+There is a `Dockerfile` that builds the SolrWayback WAR and deploys it via a containerised Tomcat server. This has been set up to allow configuration via environment variables as an alternative to supplying the properties file directly. There is also a `docker-compose` file that is intended to help with local building and testing of the SolrWayback Docker container. To use it:
+
+* Run `docker-compose build` to build (or re-build) the container.
+* Run `docker-compose up` to run the SolrWayback container along with a Solr instance that contains some test data.
+
+After running `docker-compose up` you should see logs from three services (`solrwayback`, `solr` and `populate`). SolrWayback itself should be available on port 18080, at http://localhost:18080/solrwayback/
+
+The Solr instance runs `ukwa/webarchive-discovery-solr`, which contains a suitable collection with the right schema.  The Solr service itself should be available on port 18983, i.e. http://localhost:18983/solr/ 
+
+The `docker-compose up` command also runs a helper service to populate the instance with some test data.  This waits a few seconds (for Solr to start up) before sending 1000 records to it, and then exits. If needed, the test Solr instance can be run separately via `docker-compose up solr populate`.
+
+Note that if you do not have direct internet access, you will need to set proxy variables including `MAVEN_OPTS` appropriately in order for the build to work.
 
 ## Contact
 Thomas Egense (thomas.egense@gmail.com) 
