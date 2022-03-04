@@ -3,7 +3,6 @@ package dk.kb.netarchivesuite.solrwayback.interfaces;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-
 import org.junit.Test;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
@@ -15,7 +14,7 @@ public class FileMovedMappingResolverTest extends UnitTestUtils {
     File file = getFile("src/test/resources/arc_resolvers/FileMovedMappingTest.txt");
 
     FileMovedMappingResolver resolver = new FileMovedMappingResolver();
-    resolver.setParameters(file.getCanonicalPath());
+    resolver.setMappingFile(file.getCanonicalPath());
     resolver.initialize();
 
     //Some warc-files not defined in the moved list

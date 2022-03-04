@@ -1,8 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.interfaces;
 
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.util.Map;
 
 public class IdentityArcFileResolver implements ArcFileLocationResolverInterface {
   /*
@@ -14,7 +13,7 @@ public class IdentityArcFileResolver implements ArcFileLocationResolverInterface
     return ArcSource.fromFile(source_file_path);
   }
   @Override
-  public void setParameters(String parameters) {
+  public void setParameters(Map<String, String> parameters) {
     //Does not use parameters
   }
   

@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.interfaces;
 
+import java.util.Map;
 import java.util.function.Supplier;
 
 public interface ArcFileLocationResolverInterface {
@@ -22,7 +23,7 @@ public interface ArcFileLocationResolverInterface {
    */
   ArcSource resolveArcFileLocation(String source_file_path);
 
-  void setParameters(String parameter);
+  void setParameters(Map<String, String> parameters);
   void initialize();
 
 }
