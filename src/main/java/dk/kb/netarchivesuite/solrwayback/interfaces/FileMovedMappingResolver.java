@@ -1,13 +1,12 @@
 package dk.kb.netarchivesuite.solrwayback.interfaces;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -73,18 +72,12 @@ public class FileMovedMappingResolver implements ArcFileLocationResolverInterfac
       //If the filename is not found in the mapping, return the input back.
     
     @Override
-    public String resolveArcFileLocation(String source_file_path){
+    public ArcSource resolveArcFileLocation(String source_file_path){
         String fileName = new File(source_file_path).getName();
-        String value=FILE_MAP.get(fileName);
-        if(value == null) {
-       // log.info("File location not moved:"+source_file_path);
-          return source_file_path; //Use original location
-        }
-        
-       // log.info("File location moved:"+source_file_path +" ->" + value+"/"+fileName);
-        return value+"/"+fileName;
+        String value = FILE_MAP.get(fileName);
+
+        String finalPath = value == null ? source_file_path : value + "/" + fileName;
+
+        return ArcSource.fromFile(finalPath);
       }
-
-
-      
 }

@@ -4,6 +4,7 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
+import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
@@ -38,7 +39,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
 
     byte[] upFrontBinary;
     {
-      ArcEntry warcEntry = WarcParser.getWarcEntry(WARC, OFFSET, true);
+      ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(WARC), OFFSET, true);
       upFrontBinary = warcEntry.getBinary();
       assertEquals("Length for up front load should be as expected", EXPECTED_CONTENT_LENGTH, upFrontBinary.length);
     }
@@ -71,7 +72,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
 
     byte[] upFrontBinary;
     {
-      ArcEntry warcEntry = WarcParser.getWarcEntry(WARC, OFFSET, true);
+      ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(WARC), OFFSET, true);
       upFrontBinary = warcEntry.getBinary();
       assertEquals("Length for up front load should be as expected", EXPECTED_CONTENT_LENGTH, upFrontBinary.length);
     }
@@ -219,7 +220,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     PropertiesLoader.initProperties();
     String source_file_path="/home/teg/workspace/solrwayback/storedanske_export-00000.warc";
     int offset = 515818793;
-    ArcEntry warcEntry = WarcParser.getWarcEntry(source_file_path,offset,true);
+    ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(source_file_path),offset,true);
     
     byte[] bytes = warcEntry.getBinary(); // <--------- The binary
     String fileFromBytes = "image1.jpg";

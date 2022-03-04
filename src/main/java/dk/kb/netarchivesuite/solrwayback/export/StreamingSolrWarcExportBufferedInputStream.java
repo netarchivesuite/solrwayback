@@ -239,7 +239,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
    * were encountered.
    */
   private InputStream getWARCEntryStream(EntryAndHeaders entryAndHeaders) {
-    final String id = entryAndHeaders.entry.getSourceFilePath() + "#" + entryAndHeaders.entry.getOffset();
+    final String id = entryAndHeaders.entry.getArcSource() + "#" + entryAndHeaders.entry.getOffset();
     try {
       // Retrieve the payload to local cache (heap or storage, depending on size)
       StatusInputStream payload = entryAndHeaders.entry.getBinaryArraySize() > 0 ?

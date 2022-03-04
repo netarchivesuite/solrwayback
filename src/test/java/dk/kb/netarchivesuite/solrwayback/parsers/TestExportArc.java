@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 
+import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
@@ -26,7 +27,7 @@ public class TestExportArc {
     
 
     
-    ArcEntry arcEntry = ArcParser.getArcEntry(arcFile, offset,true);
+    ArcEntry arcEntry = ArcParser.getArcEntry(ArcSource.fromFile(arcFile), offset, true);
     
     String warcHeader = ArcHeader2WarcHeader.arcHeader2WarcHeader(arcEntry);
     
