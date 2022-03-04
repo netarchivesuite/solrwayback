@@ -9,6 +9,7 @@ import java.util.zip.GZIPInputStream;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
 import org.apache.commons.httpclient.ChunkedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.brotli.dec.BrotliInputStream;
@@ -46,7 +47,7 @@ public class ArcEntry {
   private FORMAT format;
     
   private static final Logger log = LoggerFactory.getLogger(ArcEntry.class);
-  private String sourceFilePath; //full path
+  private ArcSource arcSource;
   private long offset;  
   private boolean hasBeenDecompressed=false;
   private boolean chunked=false;
@@ -70,11 +71,11 @@ public class ArcEntry {
   
   
   
-  public String getSourceFilePath() {
-    return sourceFilePath;
+  public ArcSource getArcSource() {
+    return arcSource;
 }
-public void setSourceFilePath(String sourceFilePath) {
-    this.sourceFilePath = sourceFilePath;
+public void setSource(ArcSource arcSource) {
+    this.arcSource = arcSource;
 }
 public long getOffset() {
     return offset;
@@ -244,16 +245,16 @@ public void setFormat(FORMAT format) {
  */
   public BufferedInputStream getBinaryLazyLoad() throws Exception{
       if (format.equals(FORMAT.ARC)) {
-         return ArcParser.lazyLoadBinary(sourceFilePath, offset);
+         return ArcParser.lazyLoadBinary(arcSource, offset);
      }
       else {
-          return WarcParser.lazyLoadBinary(sourceFilePath, offset);
+          return WarcParser.lazyLoadBinary(arcSource, offset);
       }            
   }
   
   public InputStream getBinaryLazyLoadNoChucking() throws Exception{
       if (format.equals(FORMAT.ARC)) {
-         BufferedInputStream is = ArcParser.lazyLoadBinary(sourceFilePath, offset);              
+         BufferedInputStream is = ArcParser.lazyLoadBinary(arcSource, offset);
          InputStream maybeDechunked = maybeDechunk(is);
          //InputStream maybeUnziped = maybeUnzip(maybeDechunked);
          InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeDechunked);
@@ -261,7 +262,7 @@ public void setFormat(FORMAT format) {
          return maybeBrotliDecoded;
       }
       else {
-           InputStream is = WarcParser.lazyLoadBinary(sourceFilePath, offset);              
+           InputStream is = WarcParser.lazyLoadBinary(arcSource, offset);
            InputStream maybeDechunked = maybeDechunk(is);
            //InputStream maybeUnziped = maybeUnzip(maybeDechunked);
            InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeDechunked);
