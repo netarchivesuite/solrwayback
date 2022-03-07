@@ -124,7 +124,7 @@ public class NetarchiveSolrClient {
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
 
         solrQuery.add("fl","id");
-
+        addSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         List<FacetCount> facetList = new ArrayList<FacetCount>();
         FacetField facet = rsp.getFacetField("domain");
@@ -154,7 +154,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("facet.limit", "" + (facetLimit + 1)); // +1 because itself will be removed and is almost certain of resultset is self-linking
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
         solrQuery.add("fl","id");                                                                                                                                                                  // request
-
+        addSolrParams(solrQuery);
         QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not cache
         List<FacetCount> facetList = new ArrayList<FacetCount>();
         FacetField facet = rsp.getFacetField("links_domains");
@@ -202,6 +202,7 @@ public class NetarchiveSolrClient {
         solrQuery.setGetFieldStatistics(statsField);
 
         long call1ns = -System.nanoTime();
+        addSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         call1ns += System.nanoTime();
         final long call1nsSolr = rsp.getQTime();
@@ -226,6 +227,7 @@ public class NetarchiveSolrClient {
         solrQuery.setGetFieldStatistics(statsField);
 
         long call2ns = -System.nanoTime();
+        addSolrParams(solrQuery);
         rsp = solrServer.query(solrQuery, METHOD.POST);
         call2ns += System.nanoTime();
         final long call2nsSolr = rsp.getQTime();
@@ -256,6 +258,7 @@ public class NetarchiveSolrClient {
             solrQuery.setGetFieldStatistics(statsField);
 
             callDomain = -System.nanoTime();
+            addSolrParams(solrQuery);
             rsp = solrServer.query(solrQuery, METHOD.POST);
             callDomain += System.nanoTime();
             callDomainSolr = rsp.getQTime();
@@ -271,6 +274,7 @@ public class NetarchiveSolrClient {
         solrQuery.setGetFieldStatistics("content_length");
 
         long call3ns = -System.nanoTime();
+        addSolrParams(solrQuery);
         rsp = solrServer.query(solrQuery, METHOD.POST);
         call3ns += System.nanoTime();
         final long call3nsSolr = rsp.getQTime();
@@ -354,7 +358,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
         solrQuery.add("fl", "id,crawl_date");
         solrQuery.setRows(1000000);
-
+        addSolrParams(solrQuery);
         QueryResponse rsp = loggedSolrQuery("getHarvestTimeForUrl", solrQuery);
 
         SolrDocumentList docs = rsp.getResults();
@@ -394,6 +398,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(5000);
 
         long solrNS = -System.nanoTime();
+        addSolrParams(solrQuery);
         QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not cache
         solrNS += System.nanoTime();
         SolrDocumentList docs = rsp.getResults();
@@ -423,6 +428,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(1000000);
 
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        addSolrParams(solrQuery);
         SolrDocumentList docs = rsp.getResults();
 
         ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
@@ -442,6 +448,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("facet.limit", "100"); //All years...
         solrQuery.add("fl","id");
         solrQuery.setRows(0);
+        addSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         ArrayList<FacetCount> facetList = new ArrayList<FacetCount>();
         FacetField facet = rsp.getFacetField("crawl_year");
@@ -475,6 +482,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(1);
 
         // QueryResponse rsp = loggedSolrQuery("getArchEntry", solrQuery); //Timing disabled due to spam. Also only took 1-5 millis
+        addSolrParams(solrQuery);
         QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = rsp.getResults();
 
@@ -577,6 +585,7 @@ public class NetarchiveSolrClient {
     public long numberOfDocuments() throws Exception {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*:*");
+        addSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = rsp.getResults();
         return docs.getNumFound();
@@ -630,7 +639,7 @@ public class NetarchiveSolrClient {
         return allDocs;
     }
 
-    public SolrDocumentList findNearestDocuments(HashSet<String> urls, String timeStamp, String fieldList) throws SolrServerException, IOException {
+    public SolrDocumentList findNearestDocuments(HashSet<String> urls, String timeStamp, String fieldList) throws SolrServerException, Exception {
         final int chunkSize = 1000;
 
         if (urls.size() > chunkSize) {
@@ -662,6 +671,7 @@ public class NetarchiveSolrClient {
         solrQuery.setFilterQueries(NO_REVISIT_FILTER); // No binary for revists.
 
         long solrNS = -System.nanoTime();
+        addSolrParams(solrQuery);
         QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not use cache
         solrNS += System.nanoTime();
 
@@ -740,7 +750,7 @@ public class NetarchiveSolrClient {
         // other methods in this class, but not as critical there.
         // Hoping for a solr fix....
         solrQuery.setRows(10);
-
+        addSolrParams(solrQuery);
         QueryResponse rsp = loggedSolrQuery(
                 String.format("findClosestHarvestTimeForUrl(url='%s', timestamp=%s)", url.length() > 50 ? url.substring(0, 50) + "..." : url, timeStamp),
                 solrQuery);
@@ -821,7 +831,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("facet.field", "crawl_year");
         solrQuery.set("facet.sort", "index");
         solrQuery.set("facet.limit", "500"); // 500 is higher than number of different years
-
+        addSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
 
         FacetField facetField = rsp.getFacetField("crawl_year");
@@ -843,6 +853,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(1); // 1 page only
 
         solrQuery.add("fl", indexDocFieldList);
+        addSolrParams(solrQuery);
         QueryResponse rsp = loggedSolrQuery("pwidQuery", solrQuery);
 
         SolrDocumentList docs = rsp.getResults();
@@ -868,7 +879,7 @@ public class NetarchiveSolrClient {
 
         solrQuery.add("fq","content_type_norm:html"); // only html pages
         solrQuery.add("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
-
+        addSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
 
         FacetField facetField = rsp.getFacetField("crawl_year");
@@ -900,7 +911,7 @@ public class NetarchiveSolrClient {
 
         solrQuery.add("fq","content_type_norm:html"); // only html pages
         solrQuery.add("fq",NO_REVISIT_FILTER); // do not include record_type:revisit
-
+        addSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
 
         FacetField facetField = rsp.getFacetField("crawl_year");
@@ -924,6 +935,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
         solrQuery.add("fl", indexDocFieldList);
         solrQuery.setFilterQueries(NO_REVISIT_FILTER); // No binary for revists.
+        addSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = groupsToDoc(rsp);
         return solrDocList2IndexDoc(docs);
@@ -1090,7 +1102,7 @@ public class NetarchiveSolrClient {
 
         QueryRequest req = new QueryRequest(solrQuery);
         req.setResponseParser(rawJsonResponseParser);
-
+        addSolrParams(solrQuery);
         NamedList<Object> resp = solrServer.request(req);
         String jsonResponse = (String) resp.get("response");
         return jsonResponse;
@@ -1124,7 +1136,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("stats", "true");
         solrQuery.add("stats.field", "{!count=true cardinality=true}url_norm"); // Important, use cardinality and not unique.
         solrQuery.add("stats.field", "{!sum=true}content_length");
-
+        addSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery);
 
         Map<String, FieldStatsInfo> statsMap = rsp.getFieldStatsInfo();
@@ -1275,7 +1287,8 @@ public class NetarchiveSolrClient {
         return (Long) doc.get("source_file_offset");
     }
 
-    private static String normalizeUrl(String url) {
+    private static String normalizeUrl(String url) {       
+        
         if (PropertiesLoader.WARC_INDEXER_URL_NORMALIZER_LEGACY) {
             return Normalisation.canonicaliseURL(url);
         } else {

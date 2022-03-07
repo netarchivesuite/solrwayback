@@ -2,6 +2,9 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import org.apache.commons.logging.LogFactory;
 import org.archive.wayback.util.url.AggressiveUrlCanonicalizer;
+
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+
 import org.apache.commons.logging.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -53,6 +56,12 @@ public class Normalisation {
      */
    
     public static String canonicaliseURL(String url, boolean allowHighOrder, boolean createUnambiguous) {
+        
+        if (PropertiesLoader.NORMALISE_URLS==false) { // Set only to false if using warc-indexer before version 3.0. (see solrwayback.properties)
+            return url;            
+        }        
+        
+        
         if (url == null || url.isEmpty()) {
             return url;
         }

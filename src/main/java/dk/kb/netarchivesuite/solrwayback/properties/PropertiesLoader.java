@@ -151,7 +151,7 @@ public class PropertiesLoader {
             log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);
             log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);
-            log.info("Property:"+ NORMALISE_URLS_PROPERTY+" loaded map: " +  NORMALISE_URLS);
+            log.info("Property:"+ NORMALISE_URLS_PROPERTY+" = " +  NORMALISE_URLS);
             
         }
         catch (Exception e) {
