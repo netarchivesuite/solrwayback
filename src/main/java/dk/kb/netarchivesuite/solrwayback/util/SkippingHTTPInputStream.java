@@ -153,14 +153,14 @@ public class SkippingHTTPInputStream extends InputStream {
         }
 
         // Skip by creating a new connection
-        long newPos = connect(position + n);
-        if (newPos - position != n) {
+        long oldPosition = position;
+        connect(position + n);
+        if (position != oldPosition + n) {
             throw new IOException(String.format(
                     Locale.ROOT,
                     "Unable to (re)connect and skip %d bytes from %d to %d. Only skipped %d bytes to %d: %s",
-                    n, position, position + n, newPos - position, newPos, url));
+                    n, oldPosition, oldPosition + n, position - oldPosition, position, url));
         }
-        position = newPos;
         return n;
     }
 
