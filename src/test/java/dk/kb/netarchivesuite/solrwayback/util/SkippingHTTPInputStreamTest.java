@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -52,14 +53,16 @@ public class SkippingHTTPInputStreamTest {
 
     public static void assertContent(InputStream is, String designation) throws IOException {
         byte[] BUFFER = new byte[1024];
-        assertEquals("Reading buffer of size " + BUFFER.length + " should fill the buffer",
-                     BUFFER.length, is.read(BUFFER));
+        IOUtils.readFully(is, BUFFER);
+//        assertEquals("Reading buffer of size " + BUFFER.length + " should fill the buffer",
+//                     BUFFER.length, is.read(BUFFER));
         assertEquals("Reading 1KB directly with '" + designation + "' should yield the expected byte at pos 870",
                      BYTE_870, 0xFF & BUFFER[870]);
 
         InputStreamUtils.skipFully(is, 31*1024);
-        assertEquals("Reading buffer of size " + BUFFER.length + " should fill the buffer",
-                     BUFFER.length, is.read(BUFFER));
+        IOUtils.readFully(is, BUFFER);
+//        assertEquals("Reading buffer of size " + BUFFER.length + " should fill the buffer",
+//                     BUFFER.length, is.read(BUFFER));
         assertEquals("Skipping 32KB more with ' " + designation + "' should yield the expected byte at pos 33638 (32KB + 870)",
                      BYTE_33638, 0xFF & BUFFER[870]);
     }
