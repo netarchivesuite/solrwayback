@@ -1,6 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +32,7 @@ public class ArcWarcFileParserAbstract {
       byte[] bytes = new byte[(int) binarySize];
 
       // we are not using IOUtils.readFully as we'd rather return non-complete data than nothing
-      int read = is.read(bytes);
+      int read = IOUtils.read(is, bytes);
       if (read == -1) {
           log.warn("Attempted to load binary for {}#{} but got EOF immediately",
                    arcEntry.getArcSource().getSource(), arcEntry.getOffset());

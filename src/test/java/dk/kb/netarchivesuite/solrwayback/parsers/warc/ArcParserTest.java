@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
@@ -56,7 +57,7 @@ public class ArcParserTest extends UnitTestUtils{
         try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
             byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
             assertEquals("The expected number of bytes should be read from the lazy stream",
-                         newBinary.length, buf.read(newBinary));
+                         newBinary.length, IOUtils.read(buf, newBinary));
             assertEquals(orgBinary.length, newBinary.length); //Same length
             assertArrayEquals(orgBinary, newBinary); //Same binary
             assertEquals("There should be no more content in the lazy loaded stream", -1, buf.read());

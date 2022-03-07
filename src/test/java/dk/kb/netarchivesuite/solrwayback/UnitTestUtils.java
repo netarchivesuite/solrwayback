@@ -1,5 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -35,7 +37,7 @@ public class UnitTestUtils {
         }
         InputStream in = new FileInputStream(source);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        pipe(in, bos);
+        IOUtils.copy(in, bos);
         in.close();
         return bos.toString("utf-8");
     }
@@ -49,13 +51,5 @@ public class UnitTestUtils {
         out.close();
     }
 
-    private static void pipe(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[1024];
-        int read;
-        while ((read = in.read(buffer)) != -1) {
-            out.write(buffer, 0, read);
-        }
-        out.flush();
-    }
 
 }
