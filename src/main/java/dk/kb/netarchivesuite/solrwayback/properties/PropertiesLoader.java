@@ -45,6 +45,8 @@ public class PropertiesLoader {
     private static final String WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY="warcindexer.urlnormaliser.legacy";
     
     private static final String SOLR_SEARCH_PARAMS_PROPERTY="solr.search.params";
+    private static final String NORMALISE_URLS_PROPERTY="normalise.urls";
+    
     private static Properties serviceProperties = null;
 
     public static String SOLR_SERVER = null;
@@ -62,11 +64,11 @@ public class PropertiesLoader {
     public static boolean SOLR_SERVER_CACHING=false;
     public static int SOLR_SERVER_CACHING_MAX_ENTRIES=1000; //default value
     public static int SOLR_SERVER_CACHING_AGE_SECONDS=84600; //default value 1 day
-
+ 
 
     public static int SCREENSHOT_PREVIEW_TIMEOUT = 10;//default
     public static boolean WARC_INDEXER_URL_NORMALIZER_LEGACY=false; //default
-
+    public static boolean NORMALISE_URLS=true; //default
     public static void initProperties() {
         initProperties(DEFAULT_PROPERTY_FILE);
     }
@@ -130,7 +132,10 @@ public class PropertiesLoader {
              log.info("no solrParams loaded");   
             }
             
-            
+            String normaliseStr=serviceProperties.getProperty(NORMALISE_URLS_PROPERTY);
+            if (normaliseStr != null) {
+                NORMALISE_URLS = !"false".equalsIgnoreCase(normaliseStr); 
+            }
 
             log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
             log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);
@@ -142,11 +147,12 @@ public class PropertiesLoader {
             log.info("Property:"+ WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY +" = " +  WARC_INDEXER_URL_NORMALIZER_LEGACY);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
 
-
             log.info("Property:"+ SOLR_SERVER_CACHING_PROPERTY +" = " +  SOLR_SERVER_CACHING);
             log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);
             log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);
+            log.info("Property:"+ NORMALISE_URLS_PROPERTY+" loaded map: " +  NORMALISE_URLS);
+            
         }
         catch (Exception e) {
             e.printStackTrace();
