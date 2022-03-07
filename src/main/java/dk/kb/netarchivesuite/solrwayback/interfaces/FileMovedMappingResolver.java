@@ -2,8 +2,10 @@ package dk.kb.netarchivesuite.solrwayback.interfaces;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,9 +45,13 @@ public class FileMovedMappingResolver implements ArcFileLocationResolverInterfac
     }    
     
     @Override
-    public void setParameters(String parameter) {
-      log.info("Initializing file mapping parameter:"+parameter);
-      mappingFile=parameter;      
+    public void setParameters(Map<String, String> parameters) {
+        setMappingFile(parameters.get(PropertiesLoader.WARC_FILE_RESOLVER_UNQUALIFIED));
+        log.info("Initializing file mapping parameter: " + mappingFile);
+    }
+
+    public void setMappingFile(String mappingFile) {
+        this.mappingFile = mappingFile;
     }
 
     @Override

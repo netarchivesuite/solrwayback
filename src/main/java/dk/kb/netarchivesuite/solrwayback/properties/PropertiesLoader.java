@@ -5,9 +5,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +15,14 @@ import org.apache.commons.lang3.StringUtils;
 public class PropertiesLoader {
 
     private static final Logger log = LoggerFactory.getLogger(PropertiesLoader.class);
+
+    /**
+     * If no name is given to a WARC file resolver param, it will be assigned this name.
+     * Example: {@code warc.file.resolver.parameters=foo} will result in {@code _unqualified_=foo} in the
+     * {@link #WARC_FILE_RESOLVER_PARAMETERS} map, while {@code warc.file.resolver.parameters.myparam=foo} will
+     * result in {@code myparam=foo}.
+     */
+    public static final String WARC_FILE_RESOLVER_UNQUALIFIED = "_unqualified_";
 
     private static final String DEFAULT_PROPERTY_FILE = "solrwayback.properties";
     private static final String SOLR_SERVER_PROPERTY="solr.server";
@@ -42,7 +48,7 @@ public class PropertiesLoader {
     public static String CHROME_COMMAND= null;
     public static String SCREENSHOT_TEMP_IMAGEDIR = null;
     public static String WARC_FILE_RESOLVER_CLASS = null;
-    public static String WARC_FILE_RESOLVER_PARAMETERS= null;
+    public static Map<String, String> WARC_FILE_RESOLVER_PARAMETERS= new HashMap<>();
     public static String PID_COLLECTION_NAME = null;
     public static String WORDCLOUD_STOPWORDS;
 
@@ -86,7 +92,7 @@ public class PropertiesLoader {
             SCREENSHOT_TEMP_IMAGEDIR = serviceProperties.getProperty(SCREENSHOT_TEMP_IMAGEDIR_PROPERTY);
             WARC_FILE_RESOLVER_CLASS = serviceProperties.getProperty(WARC_FILE_RESOLVER_CLASS_PROPERTY);
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
-            WARC_FILE_RESOLVER_PARAMETERS= serviceProperties.getProperty(WARC_FILE_RESOLVER_PARAMETERS_PROPERTY);
+            loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
             String legacyUrlNormalizer  = serviceProperties.getProperty(WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY);
 
@@ -131,4 +137,23 @@ public class PropertiesLoader {
         }
     }
 
+    /**
+     * Add all properties that starts with {@link #WARC_FILE_RESOLVER_PARAMETERS_PROPERTY} to
+     * {@link #WARC_FILE_RESOLVER_PARAMETERS}, with {@link #WARC_FILE_RESOLVER_PARAMETERS_PROPERTY} removed from
+     * the key.
+     */
+    private static void loadArcResolverParameters(Properties serviceProperties) {
+        for (String key: serviceProperties.stringPropertyNames()) {
+            if (WARC_FILE_RESOLVER_PARAMETERS_PROPERTY.equals(key)) {
+                WARC_FILE_RESOLVER_PARAMETERS.put(WARC_FILE_RESOLVER_UNQUALIFIED, serviceProperties.getProperty(key));
+            } else if (key.startsWith(WARC_FILE_RESOLVER_PARAMETERS_PROPERTY + ".")) {
+                String subKey = key.substring((WARC_FILE_RESOLVER_PARAMETERS_PROPERTY + ".").length());
+                if (subKey.isEmpty()) {
+                    log.error("Got empty subkey for property key '" + key + "'. Storing as _blank_");
+                    subKey = "_blank_";
+                }
+                WARC_FILE_RESOLVER_PARAMETERS.put(subKey, serviceProperties.getProperty(key));
+            }
+        }
+    }
 }
