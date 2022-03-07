@@ -87,48 +87,48 @@ public class DelayedInputStream extends InputStream {
     @Override
     public int read(byte[] b) throws IOException {
         ensureStream();
-        return inner.read(b);    // TODO: Implement this
+        return inner.read(b);
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         ensureStream();
-        return inner.read(b, off, len);    // TODO: Implement this
+        return inner.read(b, off, len);
     }
 
     @Override
     public long skip(long n) throws IOException {
         ensureStream();
-        return inner.skip(n);    // TODO: Implement this
+        return inner.skip(n);
     }
 
     @Override
     public int available() throws IOException {
         ensureStream();
-        return inner.available();    // TODO: Implement this
+        return inner.available();
     }
 
     @Override
     public void close() throws IOException {
         ensureStream();
-        inner.close();    // TODO: Implement this
+        inner.close();
     }
 
     @Override
     public synchronized void mark(int readlimit) {
         ensureStream();
-        inner.mark(readlimit);    // TODO: Implement this
+        inner.mark(readlimit);
     }
 
     @Override
     public synchronized void reset() throws IOException {
         ensureStream();
-        inner.reset();    // TODO: Implement this
+        inner.reset();
     }
 
     @Override
     public boolean markSupported() {
         ensureStream();
-        return inner.markSupported();    // TODO: Implement this
+        return inner.markSupported();
     }
 }

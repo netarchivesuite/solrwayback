@@ -6,10 +6,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,23 +34,10 @@ public class FileUtil {
             if (!Files.exists(path)) {
                 throw new FileNotFoundException("Unable to locate '" + resource + "'");
             }
-            
             url = path.toUri().toURL();
         }
-        try (InputStream in = url.openStream();
-                
-                ByteArrayOutputStream out = new ByteArrayOutputStream(1024);) {
-            byte[] buffer = new byte[1024];
-            int len = in.read(buffer);
-            while (len != -1) {
-                out.write(buffer, 0, len);
-                len = in.read(buffer);
-            }
-            return out.toString("utf-8");
-        }
+        return IOUtils.toString(url, StandardCharsets.UTF_8);
     }
-    
-    
     
     /**
      * 

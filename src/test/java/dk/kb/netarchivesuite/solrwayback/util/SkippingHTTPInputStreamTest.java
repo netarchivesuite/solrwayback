@@ -58,7 +58,6 @@ public class SkippingHTTPInputStreamTest {
 //                     BUFFER.length, is.read(BUFFER));
         assertEquals("Reading 1KB directly with '" + designation + "' should yield the expected byte at pos 870",
                      BYTE_870, 0xFF & BUFFER[870]);
-
         InputStreamUtils.skipFully(is, 31*1024);
         IOUtils.readFully(is, BUFFER);
 //        assertEquals("Reading buffer of size " + BUFFER.length + " should fill the buffer",
