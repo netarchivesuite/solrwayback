@@ -5,12 +5,16 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.commons.lang3.StringUtils;
 
 public class PropertiesLoader {
 
@@ -38,7 +42,11 @@ public class PropertiesLoader {
     private static final String SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY="solr.server.caching.max.entries";
     private static final String SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY="solr.server.caching.age.seconds";
 
-    private static final String WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY="warcindexer.urlnormaliser.legacy";
+    private static final String URL_NORMALISER_PROPERTY="url.normaliser";
+    
+    private static final String SOLR_SEARCH_PARAMS_PROPERTY="solr.search.params";
+    
+    
     private static Properties serviceProperties = null;
 
     public static String SOLR_SERVER = null;
@@ -51,15 +59,14 @@ public class PropertiesLoader {
     public static Map<String, String> WARC_FILE_RESOLVER_PARAMETERS= new HashMap<>();
     public static String PID_COLLECTION_NAME = null;
     public static String WORDCLOUD_STOPWORDS;
-
+    public static HashMap<String,String> SOLR_PARAMS_MAP= new HashMap<String,String>(); 
 
     public static boolean SOLR_SERVER_CACHING=false;
     public static int SOLR_SERVER_CACHING_MAX_ENTRIES=1000; //default value
     public static int SOLR_SERVER_CACHING_AGE_SECONDS=84600; //default value 1 day
-
+    public static String URL_NORMALISER="";
 
     public static int SCREENSHOT_PREVIEW_TIMEOUT = 10;//default
-    public static boolean WARC_INDEXER_URL_NORMALIZER_LEGACY=false; //default
 
     public static void initProperties() {
         initProperties(DEFAULT_PROPERTY_FILE);
@@ -94,7 +101,7 @@ public class PropertiesLoader {
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
             loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
-            String legacyUrlNormalizer  = serviceProperties.getProperty(WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY);
+            URL_NORMALISER  = serviceProperties.getProperty(URL_NORMALISER_PROPERTY);
 
             URL waybacksURL = new URL (WAYBACK_BASEURL);
             WAYBACK_SERVER_PORT =  waybacksURL.getPort();
@@ -103,10 +110,7 @@ public class PropertiesLoader {
             if (timeout != null){
                 SCREENSHOT_PREVIEW_TIMEOUT = Integer.parseInt(timeout);
             }
-            if (legacyUrlNormalizer != null){
-                WARC_INDEXER_URL_NORMALIZER_LEGACY= Boolean.valueOf(legacyUrlNormalizer);
-            }
-
+           
             String cachingStr= serviceProperties.getProperty(SOLR_SERVER_CACHING_PROPERTY);
 
             if (cachingStr != null && cachingStr.equalsIgnoreCase("true")) {
@@ -114,6 +118,16 @@ public class PropertiesLoader {
                 SOLR_SERVER_CACHING_AGE_SECONDS=Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY).trim());
                 SOLR_SERVER_CACHING_MAX_ENTRIES=Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY).trim());
             }
+
+            //Format is key1=value1,key2=value2
+            String solrParamsStr = serviceProperties.getProperty( SOLR_SEARCH_PARAMS_PROPERTY);
+            if (solrParamsStr != null) {
+              buildSolrParams(solrParamsStr);
+            }
+            else {
+             log.info("no solrParams loaded");   
+            }
+            
 
 
             log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
@@ -123,19 +137,33 @@ public class PropertiesLoader {
             log.info("Property:"+ SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY +" = " +  SCREENSHOT_PREVIEW_TIMEOUT);
             log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);
             log.info("Property:"+ WARC_FILE_RESOLVER_PARAMETERS_PROPERTY +" = " + WARC_FILE_RESOLVER_PARAMETERS);
-            log.info("Property:"+ WARC_INDEXER_URL_NORMALIZER_LEGACY_PROPERTY +" = " +  WARC_INDEXER_URL_NORMALIZER_LEGACY);
+            log.info("Property:"+ URL_NORMALISER_PROPERTY +" = " +  URL_NORMALISER);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
-
 
             log.info("Property:"+ SOLR_SERVER_CACHING_PROPERTY +" = " +  SOLR_SERVER_CACHING);
             log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);
+            log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);                        
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.error("Could not load property file:"+propertyFile);
+            log.error("Could not load property file:"+propertyFile,e);
+            e.printStackTrace();
         }
     }
+
+    //Format is key1=value1,key2=value2
+    private static void buildSolrParams(String solrParams) {
+    
+        String[] params = solrParams.split(";");
+        
+        for (String param : params) {
+            String[] keyVal=param.split("=");            
+            SOLR_PARAMS_MAP.put(keyVal[0],keyVal[1]);            
+        }        
+    
+    }
+    
 
     /**
      * Add all properties that starts with {@link #WARC_FILE_RESOLVER_PARAMETERS_PROPERTY} to
@@ -156,4 +184,5 @@ public class PropertiesLoader {
             }
         }
     }
+
 }

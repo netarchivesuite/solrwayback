@@ -1,7 +1,10 @@
-package dk.kb.netarchivesuite.solrwayback.parsers;
+package dk.kb.netarchivesuite.solrwayback.normalise;
 
 import org.apache.commons.logging.LogFactory;
 import org.archive.wayback.util.url.AggressiveUrlCanonicalizer;
+
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+
 import org.apache.commons.logging.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -16,8 +19,8 @@ import java.util.regex.Pattern;
  * TODO: It seems that https://github.com/iipc/urlcanon is a much better base for normalisation.
  * That should be incorporated here instead of the AggressiveUrlCanonicalizer and the custom code.
  */
-public class Normalisation {
-    private static Log log = LogFactory.getLog( Normalisation.class );
+public class NormalisationStandard {
+    private static Log log = LogFactory.getLog(NormalisationStandard.class );
 
     private static Charset UTF8_CHARSET = Charset.forName("UTF-8");
     private static AggressiveUrlCanonicalizer canon = new AggressiveUrlCanonicalizer();
@@ -31,13 +34,7 @@ public class Normalisation {
         return canonicaliseURL(url, true, true);
     }
 
-    /**
-     * Corrects errors in URLs. Currently only handles faulty escapes, such as "...wine 12% proof...".
-     */
-    public static String fixURLErrors(String url) {
-        return canonicaliseURL(url, false, false);
-    }
-
+   
     /**
      * Multi-step URL canonicalization. Besides using the {@link AggressiveUrlCanonicalizer} from wayback.org it
      * normalises https → http,
@@ -53,6 +50,7 @@ public class Normalisation {
      */
    
     public static String canonicaliseURL(String url, boolean allowHighOrder, boolean createUnambiguous) {
+                
         if (url == null || url.isEmpty()) {
             return url;
         }
