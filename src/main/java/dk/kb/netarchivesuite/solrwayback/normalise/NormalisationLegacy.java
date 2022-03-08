@@ -39,32 +39,17 @@ public class NormalisationLegacy {
         return canonicaliseURL(url, true, true);
     }
 
-    /**
-     * Resolved one URL relative to another, e.g.
-     * 'foo/bar.html' relative to 'http://example.com/zoo/' is 'http://example.com/zoo/foo/bar.html'.
-     * Always normalises the result. Use {@link #resolveRelative(String, String, boolean)} to choose otherwise.
-     * @param url       base URL.
-     * @param relative  resolved relative to url.
-     * @return the fully resolved version of the relative URL.
-     * @throws IllegalArgumentException if an unrecoverable unvalid URL was encountered,
-     */
+    
     public static String resolveRelative(String url, String relative) throws IllegalArgumentException {
         return resolveRelative(url, relative, true);
     }
-    /**
-     * Resolved one URL relative to another, e.g.
-     * 'foo/bar.html' relative to 'http://example.com/zoo/' is 'http://example.com/zoo/foo/bar.html'.
-     * @param url       base URL.
-     * @param relative  resolved relative to url.
-     * @param normalise if true the resulting URL is also normalised.
-     * @return the fully resolved version of the relative URL.
-     * @throws IllegalArgumentException if an unrecoverable unvalid URL was encountered,
-     */
+    
+    
     public static String resolveRelative(String url, String relative, boolean normalise) throws IllegalArgumentException {
         try {
             URL rurl = new URL(url);
             String resolved = new URL(rurl, relative).toString();
-            return normalise ? canonicaliseURL(resolved) : resolved;
+            return resolved;
         } catch (Exception e) {
             throw new IllegalArgumentException(String.format(
                     "Unable to resolve '%s' relative to '%s'", relative, url), e);

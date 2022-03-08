@@ -42,7 +42,7 @@ public class PropertiesLoader {
     private static final String SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY="solr.server.caching.max.entries";
     private static final String SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY="solr.server.caching.age.seconds";
 
-    private static final String URL_NORMALISE_PROPERTY="url.normalise";
+    private static final String URL_NORMALISER_PROPERTY="url.normaliser";
     
     private static final String SOLR_SEARCH_PARAMS_PROPERTY="solr.search.params";
     
@@ -64,7 +64,7 @@ public class PropertiesLoader {
     public static boolean SOLR_SERVER_CACHING=false;
     public static int SOLR_SERVER_CACHING_MAX_ENTRIES=1000; //default value
     public static int SOLR_SERVER_CACHING_AGE_SECONDS=84600; //default value 1 day
-    public static String URL_NORMALISE="";
+    public static String URL_NORMALISER="";
 
     public static int SCREENSHOT_PREVIEW_TIMEOUT = 10;//default
 
@@ -101,7 +101,7 @@ public class PropertiesLoader {
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
             loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
-            URL_NORMALISE  = serviceProperties.getProperty(URL_NORMALISE_PROPERTY);
+            URL_NORMALISER  = serviceProperties.getProperty(URL_NORMALISER_PROPERTY);
 
             URL waybacksURL = new URL (WAYBACK_BASEURL);
             WAYBACK_SERVER_PORT =  waybacksURL.getPort();
@@ -137,15 +137,13 @@ public class PropertiesLoader {
             log.info("Property:"+ SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY +" = " +  SCREENSHOT_PREVIEW_TIMEOUT);
             log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);
             log.info("Property:"+ WARC_FILE_RESOLVER_PARAMETERS_PROPERTY +" = " + WARC_FILE_RESOLVER_PARAMETERS);
-            log.info("Property:"+ URL_NORMALISE_PROPERTY +" = " +  URL_NORMALISE);
+            log.info("Property:"+ URL_NORMALISER_PROPERTY +" = " +  URL_NORMALISER);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
 
             log.info("Property:"+ SOLR_SERVER_CACHING_PROPERTY +" = " +  SOLR_SERVER_CACHING);
             log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);
-            log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);
-            
-            
+            log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);                        
         }
         catch (Exception e) {
             e.printStackTrace();
