@@ -42,6 +42,7 @@ import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);

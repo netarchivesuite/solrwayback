@@ -2,7 +2,7 @@
 -----
 Updated frontend dependencies (security)
 Added support for WARC file reading with Inputstream, this can be used if WARC files are not on a file-system. (Skipping HttpInputStream implementation for reading WARCs with offset)
-Support for WARC resource type (Warc-Indexer) without URL in WARC header.
+Support for WARC resource type (Warc-Indexer) without URL in WARC header. (still needs work)
 Minor Solr query syntax fix, so it will also work on Solr 6. (not recommended to use Solr6!)
 Docker support. (so far limited support... write more later)
 Support for legacy WARC-Indexer before version 3.0 that does not have url_norm field(see solrwayback.propersties)

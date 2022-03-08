@@ -26,8 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
 
-import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
-import dk.kb.netarchivesuite.solrwayback.parsers.NormalisationWWWremove;
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
@@ -1287,16 +1286,9 @@ public class NetarchiveSolrClient {
         return (Long) doc.get("source_file_offset");
     }
 
-    private static String normalizeUrl(String url) {       
-        
-        if (PropertiesLoader.WARC_INDEXER_URL_NORMALIZER_LEGACY) {
-            return Normalisation.canonicaliseURL(url);
-        } else {
-            return NormalisationWWWremove.canonicaliseURL(url);
-        }
-
+    private static String normalizeUrl(String url) {               
+        return Normalisation.canonicaliseURL(url);
     }
-
     
     //        
     private static void addSolrParams( SolrQuery solrQuery)throws Exception {
