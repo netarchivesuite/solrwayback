@@ -64,7 +64,7 @@ public class PropertiesLoader {
     public static boolean SOLR_SERVER_CACHING=false;
     public static int SOLR_SERVER_CACHING_MAX_ENTRIES=1000; //default value
     public static int SOLR_SERVER_CACHING_AGE_SECONDS=84600; //default value 1 day
-    public static String URL_NORMALISER="";
+    public static String URL_NORMALISER="normal";
 
     public static int SCREENSHOT_PREVIEW_TIMEOUT = 10;//default
 
@@ -101,7 +101,7 @@ public class PropertiesLoader {
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
             loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
-            URL_NORMALISER  = serviceProperties.getProperty(URL_NORMALISER_PROPERTY);
+            URL_NORMALISER  = serviceProperties.getProperty(URL_NORMALISER_PROPERTY,"normal");
 
             URL waybacksURL = new URL (WAYBACK_BASEURL);
             WAYBACK_SERVER_PORT =  waybacksURL.getPort();
