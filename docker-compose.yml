@@ -18,7 +18,7 @@ services:
     environment: 
       - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}"
       # Setup base URL assuming we access via the 18080 local host port defined above:
-      - "BASE_URL=http://localhost:18080/solrwayback/"
+      - "BASE_URL=${BASE_URL:-http://localhost:18080/solrwayback/}"
 
   # Solr instance for running tests against
   solr:
@@ -28,12 +28,14 @@ services:
 
   # Hook to populate the image with test data:
   populate:
-    image: ukwa/webarchive-discovery-solr:master
-    command: "/populate.sh"
+    image: ukwa/webarchive-discovery
+    command: "/docker/populate.sh"
     environment:
       - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}"
+    volumes:
+      - ./docker:/docker
 
-  # HTTP WARC server
+  # HTTP WARC server:
   warc-server:
     image: ukwa/warc-server
     ports:
