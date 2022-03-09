@@ -35,14 +35,12 @@ services:
     volumes:
       - ./docker:/docker
 
-  # HTTP WARC server:
+  # HTTP server that does range requests:
   warc-server:
-    image: ukwa/warc-server
+    image: nginx
     ports:
-      - "18000:8000"
-    environment:
-      - "WARC_PATHS=/warcs"
+      - "180:80"
     volumes:
-      - ./docker/test-warcs:/warcs
+      - ./docker/test-warcs:/usr/share/nginx/html
 
 
