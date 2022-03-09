@@ -33,4 +33,14 @@ services:
     environment:
       - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}"
 
+  # HTTP WARC server
+  warc-server:
+    image: ukwa/warc-server
+    ports:
+      - "18000:8000"
+    environment:
+      - "WARC_PATHS=/warcs"
+    volumes:
+      - ./docker/test-warcs:/warcs
+
 
