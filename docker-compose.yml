@@ -16,7 +16,9 @@ services:
     ports:
       - "18080:8080"
     environment: 
+      # Allow Solr and WARC server locations to be overidden:
       - "SOLR_URL=${SOLR_URL:-http://solr:8983/solr/discovery}"
+      - "WARC_SERVER_PREFIX=${WARC_SERVER_PREFIX:-http://warc-server/}"
       # Setup base URL assuming we access via the 18080 local host port defined above:
       - "BASE_URL=${BASE_URL:-http://localhost:18080/solrwayback/}"
 

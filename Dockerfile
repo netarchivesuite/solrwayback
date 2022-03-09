@@ -48,6 +48,7 @@ HEALTHCHECK --interval=1m --timeout=3s CMD wget --quiet --tries=1 --spider http:
 ENV SOLR_URL=http://localhost:8983/solr/netarchivebuilder/
 ENV BASE_URL=http://localhost:8080/solrwayback/
 ENV COLLECTION_NAME=netarkivet.dk
+ENV WARC_SERVER_PREFIX=http://warc-server/
 
 # Use a wrapper script to run envsubst:
 CMD "/docker-entrypoint.sh"
