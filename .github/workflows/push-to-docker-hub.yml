@@ -6,6 +6,7 @@ on:
       - '*'
     branches:
       - master
+      - docker-hub-action
 
 jobs:
   push_to_docker_hub:
