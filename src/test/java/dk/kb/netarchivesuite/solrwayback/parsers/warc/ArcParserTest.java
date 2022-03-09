@@ -15,7 +15,7 @@ import org.junit.Test;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
-import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 

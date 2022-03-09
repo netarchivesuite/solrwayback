@@ -14,6 +14,7 @@
  */
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 
 import org.apache.commons.io.IOUtils;

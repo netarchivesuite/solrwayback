@@ -1,7 +1,9 @@
-package dk.kb.netarchivesuite.solrwayback.parsers;
+package dk.kb.netarchivesuite.solrwayback.normalise;
 
 import org.apache.commons.logging.LogFactory;
 import org.archive.wayback.util.url.AggressiveUrlCanonicalizer;
+
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.logging.Log;
@@ -19,35 +21,13 @@ import java.util.regex.Pattern;
  * TODO: It seems that https://github.com/iipc/urlcanon is a much better base for normalisation.
  * That should be incorporated here instead of the AggressiveUrlCanonicalizer and the custom code.
  */
-public class NormalisationWWWremove {
-    private static Log log = LogFactory.getLog( Normalisation.class );
+public class NormalisationLegacy {
+    private static Log log = LogFactory.getLog( NormalisationLegacy.class );
 
     private static Charset UTF8_CHARSET = Charset.forName("UTF-8");
     private static AggressiveUrlCanonicalizer canon = new AggressiveUrlCanonicalizer();
 
-    /**
-     * Ensures that a value read from a WARC-header is usable. This means checking whether the value is
-     * encapsulated in {@code <} or {@code >} and if so, removing these signs.
-     * See <a href="https://github.com/ukwa/webarchive-discovery/issues/159">webarchive-discovery issues 159</a>.
-     * A warning is logged if there is exactly 1 of either leading {@code <} or trailing {@code >}.
-     * @param value the second part of a WARC-header key-value pair.
-     * @return the value not encapsulated in {@code <>}.
-     */
-    public static String sanitiseWARCHeaderValue(String value) {
-        if (value == null) {
-            return null;
-        }
-        if (value.startsWith("<")) {
-            if (value.endsWith(">")) {
-                return value.substring(1, value.length()-1);
-            }
-            log.warn("sanitiseWARCHeaderValue: The value started with '<' but did not end in '>': '" + value + "'");
-        } else if (value.endsWith(">")) {
-            log.warn("sanitiseWARCHeaderValue: The value ended with '>' but did not start with '<': '" + value + "'");
-        }
-        return value;
-    }
-
+   
     public static String canonicaliseHost(String host) throws URIException {
         return canon.urlStringToKey(host.trim()).replace("/", "");
     }
@@ -59,39 +39,17 @@ public class NormalisationWWWremove {
         return canonicaliseURL(url, true, true);
     }
 
-    /**
-     * Corrects errors in URLs. Currently only handles faulty escapes, such as "...wine 12% proof...".
-     */
-    public static String fixURLErrors(String url) {
-        return canonicaliseURL(url, false, false);
-    }
-
-    /**
-     * Resolved one URL relative to another, e.g.
-     * 'foo/bar.html' relative to 'http://example.com/zoo/' is 'http://example.com/zoo/foo/bar.html'.
-     * Always normalises the result. Use {@link #resolveRelative(String, String, boolean)} to choose otherwise.
-     * @param url       base URL.
-     * @param relative  resolved relative to url.
-     * @return the fully resolved version of the relative URL.
-     * @throws IllegalArgumentException if an unrecoverable unvalid URL was encountered,
-     */
+    
     public static String resolveRelative(String url, String relative) throws IllegalArgumentException {
         return resolveRelative(url, relative, true);
     }
-    /**
-     * Resolved one URL relative to another, e.g.
-     * 'foo/bar.html' relative to 'http://example.com/zoo/' is 'http://example.com/zoo/foo/bar.html'.
-     * @param url       base URL.
-     * @param relative  resolved relative to url.
-     * @param normalise if true the resulting URL is also normalised.
-     * @return the fully resolved version of the relative URL.
-     * @throws IllegalArgumentException if an unrecoverable unvalid URL was encountered,
-     */
+    
+    
     public static String resolveRelative(String url, String relative, boolean normalise) throws IllegalArgumentException {
         try {
             URL rurl = new URL(url);
             String resolved = new URL(rurl, relative).toString();
-            return normalise ? canonicaliseURL(resolved) : resolved;
+            return resolved;
         } catch (Exception e) {
             throw new IllegalArgumentException(String.format(
                     "Unable to resolve '%s' relative to '%s'", relative, url), e);
@@ -112,6 +70,7 @@ public class NormalisationWWWremove {
      *                          If false, valid %-escapes are kept as-is.
      */
     public static String canonicaliseURL(String url, boolean allowHighOrder, boolean createUnambiguous) {
+              
         // Basic normalisation, as shared with Heritrix, Wayback et al
         url = canon.canonicalize(url);
 

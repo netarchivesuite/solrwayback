@@ -1,9 +1,13 @@
 4.2.4
 -----
-Update frontend dependencies (security)
-Added support for WARC file reading with Inputstream, this can be used if WARC files are not on a file-system.
-Support for WARC resource type (Warc-Indexer) without URL in WARC header.
+Updated frontend dependencies (security)
+Added support for WARC file reading with Inputstream, this can be used if WARC files are not on a file-system. (Skipping HttpInputStream implementation for reading WARCs with offset)
+Support for WARC resource type (Warc-Indexer) without URL in WARC header. (still needs work)
 Minor Solr query syntax fix, so it will also work on Solr 6. (not recommended to use Solr6!)
+Docker support. (so far limited support... write more later)
+Support for legacy WARC-Indexer before version 3.0 that does not have url_norm field. See below. 
+New property in solwayback.properties 'url.normaliser'. Will default to normal. Other options are minimal and legacy. 
+New property in solwayback.properties 'solr.search.params'. Add default solr params to every query.
 
 4.2.3
 -----

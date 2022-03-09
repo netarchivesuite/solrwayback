@@ -42,6 +42,7 @@ import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
@@ -356,7 +357,7 @@ public class Facade {
     }
 
 
-    /*
+    /**
      *
      * Notice only maximum of 50 images will be searched.
      * This method is only called for image-search and we dont want too many hits from same site.

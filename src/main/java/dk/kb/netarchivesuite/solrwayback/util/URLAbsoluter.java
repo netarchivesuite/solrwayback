@@ -14,9 +14,10 @@
  */
 package dk.kb.netarchivesuite.solrwayback.util;
 
-import dk.kb.netarchivesuite.solrwayback.parsers.Normalisation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 
 import java.net.MalformedURLException;
 import java.net.URL;
