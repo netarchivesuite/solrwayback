@@ -59,7 +59,7 @@ public class PropertiesLoader {
     public static Map<String, String> WARC_FILE_RESOLVER_PARAMETERS= new HashMap<>();
     public static String PID_COLLECTION_NAME = null;
     public static String WORDCLOUD_STOPWORDS;
-    public static HashMap<String,String> SOLR_PARAMS_MAP= new HashMap<String,String>(); 
+    public static LinkedHashMap<String,String> SOLR_PARAMS_MAP= new LinkedHashMap<String,String>(); 
 
     public static boolean SOLR_SERVER_CACHING=false;
     public static int SOLR_SERVER_CACHING_MAX_ENTRIES=1000; //default value
