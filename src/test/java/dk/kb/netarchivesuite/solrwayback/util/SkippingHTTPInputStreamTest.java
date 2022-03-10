@@ -65,7 +65,7 @@ public class SkippingHTTPInputStreamTest {
             assertTime("First read", MAX_MS, () -> readSafe(is, BUFFER));
             assertTime("First skip", MAX_MS, () -> skipSafe(is, 31*1024));
             assertTime("Second read", MAX_MS, () -> readSafe(is, BUFFER));
-            assertTime("Long skip", MAX_MS, () -> skipSafe(is, 3*1024L*1024*1024)); // 1 GB
+            assertTime("Long skip", MAX_MS, () -> skipSafe(is, 1024L*1024*1024)); // 1 GB
             assertTime("Third read", MAX_MS, () -> readSafe(is, BUFFER));
             assertEquals("After skipping > 1GB, the first entry in the buffer should be as expected",
                          72, 0xFF & BUFFER[0]);
