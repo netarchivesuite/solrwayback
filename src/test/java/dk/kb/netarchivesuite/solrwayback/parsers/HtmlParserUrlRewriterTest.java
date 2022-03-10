@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,9 +34,11 @@ public class HtmlParserUrlRewriterTest {
     private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriterTest.class);
     // TODO: Check canonicalization
     @Before
-    public void invalidateProperties() {
+    public void invalidateProperties()  throws Exception{
+        
+        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback.properties").getPath());
+
         // We need this so that we know what the Solr server is set to
-        PropertiesLoader.initProperties();
         PropertiesLoader.WAYBACK_BASEURL = "http://localhost:0000/solrwayback/";
     }
 
