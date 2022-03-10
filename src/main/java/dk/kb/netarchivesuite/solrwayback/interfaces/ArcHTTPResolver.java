@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,14 +39,14 @@ public class ArcHTTPResolver implements ArcFileLocationResolverInterface {
     private static final Logger log = LoggerFactory.getLogger(ArcHTTPResolver.class);
 
     public static final String REGEXP_KEY = "path.regexp";
-    public static final String REGEXP_DEFAULT = ".*";
+    public static final String REGEXP_DEFAULT = ".*";  // Match everything
     public static final String REPLACEMENT_KEY = "path.replacement";
-    public static final String REPLACEMENT_DEFAULT = "$0";
+    public static final String REPLACEMENT_DEFAULT = "$0"; // The full match
     public static final String READ_FALLBACK_KEY = "readfallback";
     public static final boolean READ_FALLBACK_DEFAULT = false;
 
-    private Pattern regexp = Pattern.compile(".*"); // Match everything
-    private String replacement = "$1";                    // The full match
+    private Pattern regexp = Pattern.compile(REGEXP_DEFAULT);
+    private String replacement = REPLACEMENT_DEFAULT;
     private boolean readFallback = false;
 
     public ArcHTTPResolver() { }
@@ -78,12 +79,16 @@ public class ArcHTTPResolver implements ArcFileLocationResolverInterface {
     public ArcSource resolveArcFileLocation(String source_file_path) {
         Matcher m = regexp.matcher(source_file_path);
         if (!m.matches()) {
-            throw new IllegalArgumentException("Unable to match '" + source_file_path + "'");
+            throw new IllegalArgumentException(
+                    "Unable to match '" + source_file_path + "' against the pattern '" + regexp.pattern() + "'");
         }
         String rewritten = m.replaceFirst(replacement);
+        log.debug("Rewrote (W)ARCFileLocation '{}' to '{}'", source_file_path, rewritten);
         if (!rewritten.startsWith("http")) {
-            throw new IllegalArgumentException(
-                    "The source '" + rewritten + "' derived from '" + source_file_path + "' is not a HTTP URL");
+            throw new IllegalArgumentException(String.format(
+                    Locale.ROOT, "The (W)ARC location '%s' derived from '%s' using pattern '%s' with replacement '%s'" +
+                                 " is not a HTTP URL",
+                    rewritten, source_file_path, regexp.pattern(), replacement));
         }
         return makeHTTPSource(rewritten);
     }

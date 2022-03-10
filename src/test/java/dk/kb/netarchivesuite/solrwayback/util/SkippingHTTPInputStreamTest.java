@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /*
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,6 +50,50 @@ public class SkippingHTTPInputStreamTest {
         try (InputStream is = new SkippingHTTPInputStream(getAdamsURL())) {
             assertContent(is, "Skipping");
         }
+    }
+
+    /**
+     * Skips one gigabyte forward over HTTP and expects it to be done "fast".
+     * @throws IOException if skipping failed.
+     */
+    @Test
+    public void testLongSkip() throws IOException {
+        final long MAX_MS = 2000; // No read should take longer than 2 seconds
+        final byte[] BUFFER = new byte[1024];
+
+        try (InputStream is = new SkippingHTTPInputStream(getAdamsURL())) {
+            assertTime("First read", MAX_MS, () -> readSafe(is, BUFFER));
+            assertTime("First skip", MAX_MS, () -> skipSafe(is, 31*1024));
+            assertTime("Second read", MAX_MS, () -> readSafe(is, BUFFER));
+            assertTime("Long skip", MAX_MS, () -> skipSafe(is, 1024L*1024*1024)); // 1 GB
+            assertTime("Third read", MAX_MS, () -> readSafe(is, BUFFER));
+            assertEquals("After skipping > 1GB, the first entry in the buffer should be as expected",
+                         72, 0xFF & BUFFER[0]);
+        }
+    }
+
+    private void skipSafe(InputStream is, long distance) {
+        try {
+            InputStreamUtils.skipFully(is, distance);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void readSafe(InputStream is, byte[] buffer) {
+        try {
+            IOUtils.readFully(is, buffer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void assertTime(String designation, long maxMS, Runnable runnable) {
+        long startTime = System.nanoTime();
+        runnable.run();
+        long spendMS = (System.nanoTime()-startTime)/1000000L;
+        assertTrue("Performing '" + designation + "' should take at most '" + maxMS + "ms, but took " + spendMS + "ms",
+                   spendMS <= maxMS);
     }
 
     public static void assertContent(InputStream is, String designation) throws IOException {
