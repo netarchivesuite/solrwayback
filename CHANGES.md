@@ -8,6 +8,7 @@ Docker support. (so far limited support... write more later)
 Support for legacy WARC-Indexer before version 3.0 that does not have url_norm field. See below. 
 New property in solwayback.properties 'url.normaliser'. Will default to normal. Other options are minimal and legacy. 
 New property in solwayback.properties 'solr.search.params'. Add default solr params to every query.
+(Uncommented advanced query method added.)
 
 4.2.3
 -----
