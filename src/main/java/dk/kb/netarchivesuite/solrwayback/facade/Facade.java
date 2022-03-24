@@ -67,6 +67,9 @@ public class Facade {
         return proxySolrOnlyFacetsLoadMore(query, filterQueries, facetField, revisits);
     }
 
+    
+    
+    
     /*
      * returns json
      */
@@ -74,6 +77,14 @@ public class Facade {
         return NetarchiveSolrClient.getInstance().idLookupResponse(id);
     }
 
+    
+    /*
+    //TODO limit fields allowed 
+    public  static String getRawSolrQuery(String query,List<String> fq,String fieldList, int rows, int startRow, HashMap<String,String> rawQueryParams)  throws Exception{     
+        return NetarchiveSolrClient.getInstance().getRawSolrQuery(query, fq, fieldList, rows, startRow, rawQueryParams);            
+    }
+    */
+    
     public static IndexDoc findExactMatchPWID(String url, String utc) throws Exception {
         IndexDoc doc = NetarchiveSolrClient.getInstance().findExactMatchPWID(url, utc);
         return doc;

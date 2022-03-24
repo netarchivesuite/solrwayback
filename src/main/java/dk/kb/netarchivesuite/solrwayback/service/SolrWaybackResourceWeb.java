@@ -73,7 +73,7 @@ public class SolrWaybackResourceWeb {
     }
    
     
-    
+    /* NOT used. Use static file now
     @GET
     @Path("serviceworker")
     @Produces({ MediaType.TEXT_PLAIN})
@@ -100,7 +100,7 @@ public class SolrWaybackResourceWeb {
       //TODO header with javascript
      return sw_javascript;
     }
-
+*/
     
     
   
@@ -427,8 +427,44 @@ public class SolrWaybackResourceWeb {
       }
     }
 
-    
-    
+    //Piggyback on the horrible solr-admin UI:
+    //This method is very dangerous and needs "Solr Shield" parameter project to control parameters. 
+    //Easy to make out of memory for solr
+    // Example:http://localhost:8080/solrwayback/services/frontend/solr/rawquery?query=*:*&start=0&rows=10&params=(json.facet=%7Bdomains:%7Btype:terms,field:domain,limit:30,facet:%7Byears:%7Btype:range,field:crawl_year,start:2000,end:2022,gap:1%7D%7D%7D%7D;key2=value2)     
+    /*
+    @GET
+    @Path("solr/rawquery") 
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public String  fieldStat(@QueryParam("query") String query, @QueryParam("fq") List<String> fq, @QueryParam("fieldList") String fieldList , @QueryParam("rows") int rows, @QueryParam("start") int start, @QueryParam("params") String params) throws SolrWaybackServiceException {
+      try {
+               
+          HashMap<String, String> rawQueryParams = new HashMap<String, String>();
+          //Create map for raw query params.
+          if (params != null) {
+              if (!(params.startsWith("(") && params.endsWith(")"))){
+                  throw new InvalidArgumentServiceException("Raw solr params must start with ( and end with )");
+              }
+                             
+            String paramStr = params.substring(1,params.length()-2);
+            String[] keyVals = paramStr.split(";");
+            for (String keyVal : keyVals) {
+                keyVal=keyVal.trim();
+                int equalPos = keyVal.indexOf("=");
+                String key = keyVal.substring(0,equalPos);
+                String value  = keyVal.substring(equalPos+1);
+                log.debug("Raw Solr param key:"+key +" value:"+value);                
+                rawQueryParams.put(key, value);
+            }
+                            
+          }
+          
+          String res = Facade.getRawSolrQuery(query, fq, fieldList, rows, start, rawQueryParams);          
+        return res;
+      } catch (Exception e) {
+        throw handleServiceExceptions(e);
+      }
+    }
+    */
     
     @GET
     @Path("solr/idlookup")
