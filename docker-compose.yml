@@ -21,8 +21,8 @@ services:
       - "WARC_SERVER_PREFIX=${WARC_SERVER_PREFIX:-http://warc-server/}"
       # Setup base URL assuming we access via the 18080 local host port defined above:
       - "BASE_URL=${BASE_URL:-http://localhost:18080/act/solrwayback/}"
-      # This doesn't seem to work at present
-      #- "ALT_WAR_NAME=act#solrwayback"
+      # Example of using an alternative deployment prefix. Note this means changing BASE_URL to match.
+      #- "ALT_WAR_NAME=prefix#solrwayback"
 
   # Solr instance for running tests against
   solr:
