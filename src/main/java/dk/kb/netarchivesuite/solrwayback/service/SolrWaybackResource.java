@@ -708,6 +708,11 @@ public class SolrWaybackResource {
   @Path("/viewForward")
   public Response viewForward(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws SolrWaybackServiceException {
     try {
+              
+       if (PropertiesLoader.PLAYBACK_DISABLED) {            
+            throw new InvalidArgumentServiceException("Playback has been disabled in configuration");
+        }
+       
       IndexDoc arcEntry = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
 
       String url =  arcEntry.getUrl();
@@ -801,7 +806,12 @@ public class SolrWaybackResource {
 */
 
   private Response viewImpl(String source_file_path, long offset,Boolean showToolbar) throws Exception{    	    	
-//    log.debug("View from FilePath:" + source_file_path + " offset:" + offset);
+    
+      if (PropertiesLoader.PLAYBACK_DISABLED) {          
+          throw new InvalidArgumentServiceException("Playback has been disabled in the configuration");
+      }
+      
+     log.debug("View from FilePath:" + source_file_path + " offset:" + offset);
     IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); // better way to detect html pages than from arc file
    
     Response redirect = getRedirect(doc, null);

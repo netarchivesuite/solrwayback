@@ -44,11 +44,12 @@ public class PropertiesLoader {
 
     private static final String URL_NORMALISER_PROPERTY="url.normaliser";
     
+    private static final String PLAYBACK_DISABLED_PROPERTY="playback.disabled";
     private static final String SOLR_SEARCH_PARAMS_PROPERTY="solr.search.params";
     
     
     private static Properties serviceProperties = null;
-
+    public static boolean PLAYBACK_DISABLED = false;
     public static String SOLR_SERVER = null;
     public static String WAYBACK_BASEURL = null;
     public static String WAYBACK_HOST = null; //Taken from WAYBACK_BASEURL
@@ -128,8 +129,12 @@ public class PropertiesLoader {
              log.info("no solrParams loaded");   
             }
             
+            String playbackDisabledStr= serviceProperties.getProperty(PLAYBACK_DISABLED_PROPERTY);
+            if ("true".equalsIgnoreCase(playbackDisabledStr)) {
+                PLAYBACK_DISABLED=true;
+            }            
 
-
+            log.info("Property:"+ PLAYBACK_DISABLED_PROPERTY +" = " + PLAYBACK_DISABLED);
             log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
             log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);
             log.info("Property:"+ CHROME_COMMAND_PROPERTY +" = " + CHROME_COMMAND);
