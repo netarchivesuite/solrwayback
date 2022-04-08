@@ -770,8 +770,8 @@ public class NetarchiveSolrClient {
 
         String urlNormFixed = normalizeUrl(url);
         urlNormFixed = urlNormFixed.replace("\\", "\\\\"); // Solr encoded
+        //String query = "url_norm:\"" + urlNormFixed + "\" AND (status_code:200 OR status_code:400 OR status_code:404)"; //Need testing to see if this breaks something
         String query = "url_norm:\"" + urlNormFixed + "\" AND status_code:200";
-
         //log.debug("query:" + query);
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
