@@ -71,10 +71,11 @@ public class Facade {
     
     
     /*
+     * If fieldList is null all fields will be loaded
      * returns json
      */
     public static String solrIdLookup(String id) throws Exception {
-        return NetarchiveSolrClient.getInstance().idLookupResponse(id);
+        return NetarchiveSolrClient.getInstance().idLookupResponse(id,PropertiesLoaderWeb.FIELDS);
     }
 
     

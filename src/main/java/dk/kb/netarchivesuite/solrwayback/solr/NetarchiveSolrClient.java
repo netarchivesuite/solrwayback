@@ -1126,7 +1126,11 @@ public class NetarchiveSolrClient {
         return jsonResponse;
     }
 
-    public String idLookupResponse(String id) throws Exception {
+    /*
+     * field list is a comma seperated list of fields. If null all fields will loaded
+     * 
+     */
+    public String idLookupResponse(String id, String fieldList) throws Exception {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.set("rows", "1");
         solrQuery.set("q", "id:\"" + id + "\"");
@@ -1134,6 +1138,10 @@ public class NetarchiveSolrClient {
         solrQuery.set("q.op", "AND");
         solrQuery.set("indent", "true");
         solrQuery.set("facet", "false");
+        
+        if (fieldList!= null) {
+          solrQuery.set("fl",fieldList);        
+        }
         
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");

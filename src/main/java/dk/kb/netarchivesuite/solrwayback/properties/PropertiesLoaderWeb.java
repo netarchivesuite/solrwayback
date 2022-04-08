@@ -23,6 +23,7 @@ public class PropertiesLoaderWeb {
     public static final String WAYBACK_SERVER_PROPERTY="wayback.baseurl";
     public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";	
     public static final String FACETS_PROPERTY = "facets";	
+    public static final String FIELDS_PROPERTY = "fields";
     public static final String MAPS_LATITUDE_PROPERTY = "maps.latitude";
     public static final String MAPS_LONGITUDE_PROPERTY = "maps.longitude";
     public static final String MAPS_RADIUS_PROPERTY = "maps.radius";
@@ -70,7 +71,8 @@ public class PropertiesLoaderWeb {
     private static Properties serviceProperties = null;
     //Default values.
     public static List<String> FACETS = Arrays.asList("domain", "content_type_norm", "type", "crawl_year", "status_code", "public_suffix"); 
-
+    public static String FIELDS=null;
+    
     //Default empty if not defined in properties
     public static  List<String> WORDCLOUD_STOPWORDS = new ArrayList<String>();
     
@@ -154,6 +156,11 @@ public class PropertiesLoaderWeb {
                 ARCHIVE_START_YEAR=1998;
             }
 
+            String fieldsStr = serviceProperties.getProperty(FIELDS_PROPERTY);
+            if (fieldsStr != null) {
+                FIELDS=fieldsStr;                
+            }
+                        
             //Set max export sizes                                   
             log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
             log.info("Property:"+ ALLOW_EXPORT_WARC_PROPERTY +" = " + ALLOW_EXPORT_WARC);

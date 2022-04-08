@@ -6,9 +6,11 @@ Support for WARC resource type (Warc-Indexer) without URL in WARC header. (still
 Minor Solr query syntax fix, so it will also work on Solr 6. (not recommended to use Solr6!)
 Docker support. (so far limited support... write more later)
 Support for legacy WARC-Indexer before version 3.0 that does not have url_norm field. See below. 
-New property in solwayback.properties 'url.normaliser'. Will default to normal. Other options are minimal and legacy. 
-New property in solwayback.properties 'solr.search.params'. Add default solr params to every query.
-(Uncommented advanced query method added.)
+New optional property in solwayback.properties 'url.normaliser'. Will default to normal. Other options are minimal and legacy. 
+New optional property in solwayback.properties 'solr.search.params'. Add default solr params to every query.
+New optional property in solwayback.properties 'disable.playback'. Will just show a empty page that playback has been disabled. 
+New optional property in solwaybackweb.properties 'fields'. This is the fields show when clicking "Show Data fields" for a result. Comma seperated list of fields
+
 
 4.2.3
 -----
