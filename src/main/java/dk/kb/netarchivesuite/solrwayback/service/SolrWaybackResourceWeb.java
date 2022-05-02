@@ -367,7 +367,7 @@ public class SolrWaybackResourceWeb {
     @Path("upload/gethash")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.TEXT_PLAIN)
-    public String uploadPdf(List<Attachment> attachments,@Context HttpServletRequest request) throws  SolrWaybackServiceException { 
+    public String getHashForFile(List<Attachment> attachments,@Context HttpServletRequest request) throws  SolrWaybackServiceException { 
 
         log.info("upload called");          
         if (attachments.size() != 1) {
