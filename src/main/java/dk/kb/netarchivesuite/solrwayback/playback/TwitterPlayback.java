@@ -25,22 +25,22 @@ public class TwitterPlayback extends PlaybackHandler{
     public ArcEntry playback() throws Exception{
 
         log.debug(" Generate twitter webpage from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset());
-        //Fake html into arc.
-        String encoding="UTF-8"; //Why does encoding say ISO ? This seems to fix the bug
+        // Fake html into arc.
+        String encoding = "UTF-8"; // Why does encoding say ISO ? This seems to fix the bug
         String json = new String(arc.getBinary(), encoding);
         String html = Twitter2Html.twitter2Html(json, arc.getCrawlDate());
         arc.setBinary(html.getBytes());
         arc.setContentType("text/html");
-        ParseResult htmlReplaced = new ParseResult(); //Do not parse.
+        ParseResult htmlReplaced = new ParseResult(); // Do not parse.
         htmlReplaced.setReplaced(html);
-        String textReplaced = htmlReplaced.getReplaced(); //TODO count linkes found, replaced
+        String textReplaced = htmlReplaced.getReplaced(); // TODO count links found, replaced
 
-        //Inject toolbar
-        if (showToolbar) { //If true or null.
+        // Inject toolbar
+        if (showToolbar) { // If true or null.
             textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(doc, htmlReplaced, false);
         }
         arc.setContentEncoding(encoding);
-        arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
+        arc.setBinary(textReplaced.getBytes(encoding)); // Can give error. Uses UTF-8 (from index) instead of ISO-8859-1
 
         return arc;
     }

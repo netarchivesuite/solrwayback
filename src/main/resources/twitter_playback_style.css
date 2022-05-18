@@ -69,13 +69,13 @@ h4 {
     justify-content: space-between;
 }
 
-.images {
+.media {
     display: block;
     margin-top: 0.5em;
     max-width: 600px;
 }
 
-.images img {
+.media * {
     max-width: 100%;
     border-style: solid;
     border-width: 1px;

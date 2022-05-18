@@ -7,6 +7,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import dk.kb.netarchivesuite.solrwayback.util.SolrQueryUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -114,7 +115,7 @@ public class Twitter2Html {
                       (parser.isRetweet() ? getRetweetHeader(parser, crawlDate) : "")+
                       "<div class='author'>"+
                         "<div class='user-wrapper'>"+
-                          "<a href='"+ makeSolrSearchURL("tw_user_id:" + userID) +"'>"+
+                          "<a href='"+ SolrQueryUtils.createTwitterSearchURL("tw_user_id:" + userID) +"'>"+
                             "<div class='avatar'>"+
                               imageUrlToHtml(tweeterProfileImageUrl)+
                             "</div>"+
@@ -134,7 +135,7 @@ public class Twitter2Html {
                       (parser.getReplyToStatusID().isEmpty() ? "" : getReplyLine(parser.getReplyMentions(), parser.getReplyToStatusID()))+
                       // Few edge cases contain no main text - e.g. if tweet is a reply containing only a quote
                       (mainTextHtml.isEmpty() ? "" : "<div class='item text'>" + mainTextHtml+ "</div>")+
-                      (tweetImageUrls.isEmpty() ? "" : "<div class='images'>"+ imageUrlToHtml(tweetImageUrls) +"</div>")+
+                      (tweetImageUrls.isEmpty() ? "" : "<div class='media'>"+ imageUrlToHtml(tweetImageUrls) +"</div>")+
                       (parser.hasQuote() ? getQuoteHtml(parser, crawlDate) : "")+
                       "<div class='item bottom-container'>"+
                         "<div class='reactions'>"+
@@ -177,13 +178,13 @@ public class Twitter2Html {
 
     /**
      * Searches Solr for the provided images and returns the found ImageUrls, if any, in a list.
-     * @param imagesList The images to search for in Solr.
+     * @param imageUrls The image urls to search for in Solr.
      * @param crawlDate The date of the crawl to use in the search.
      * @return List of the found ImageUrls
      * @throws Exception If there is an issue with/while communicating with Solr.
      */
-    private static List<ImageUrl> getImageUrlsFromSolr(List<String> imagesList, String crawlDate) throws Exception {
-        String imagesSolrQuery = Facade.queryStringForImages(imagesList);
+    private static List<ImageUrl> getImageUrlsFromSolr(List<String> imageUrls, String crawlDate) throws Exception {
+        String imagesSolrQuery = SolrQueryUtils.createQueryStringForUrls(imageUrls);
         ArrayList<ArcEntryDescriptor> imageEntries = NetarchiveSolrClient.getInstance()
                 .findImagesForTimestamp(imagesSolrQuery, crawlDate);
         return Facade.arcEntrys2Images(imageEntries);
@@ -262,7 +263,7 @@ public class Twitter2Html {
             searchString = "(author:" + tagWithoutPrefixSymbol + " OR tw_user_mentions:"
                     + tagWithoutPrefixSymbol.toLowerCase() + ")";
         }
-        String searchUrl = makeSolrSearchURL(searchString);
+        String searchUrl = SolrQueryUtils.createTwitterSearchURL(searchString);
         return "<span><a href='" + searchUrl + "'>" + entityTag + "</a></span>";
     }
 
@@ -326,7 +327,7 @@ public class Twitter2Html {
                 "<div class='retweet-author'>" +
                     "<div class='retweet-text-wrap'>"+
                         "<div class='user-wrapper'>" +
-                            "<a href='" + makeSolrSearchURL("tw_user_id:" + parser.getUserID()) + "'>" +
+                            "<a href='" + SolrQueryUtils.createTwitterSearchURL("tw_user_id:" + parser.getUserID()) + "'>" +
                                 "<h3>" + parser.getUserName() + " Retweeted</h3>" +
                             "</a>" +
                             makeUserCard(profileImageUrl, parser.getUserName(),
@@ -352,7 +353,7 @@ public class Twitter2Html {
         try {
             SearchResult searchResult = Facade.search("tw_reply_to_tweet_id:" + tweetID, null);
             long resultCount = searchResult.getNumberOfResults();
-            String searchLink = makeSolrSearchURL("tw_reply_to_tweet_id:" + tweetID);
+            String searchLink = SolrQueryUtils.createTwitterSearchURL("tw_reply_to_tweet_id:" + tweetID);
             if (resultCount > 0) {
                 log.info("Found replies to tweet id {}.. {}", tweetID, resultCount);
                 foundRepliesLine = "Found <a href='" + searchLink + "'>" + resultCount + "</a> replies"; // TODO for some reason shows 0 right now??
@@ -364,16 +365,6 @@ public class Twitter2Html {
             log.warn("Error while trying to find replies for tweet " + tweetID);
         }
         return foundRepliesLine;
-    }
-
-    /**
-     * Make a URL to search SolrWayback for the given string.
-     * @param searchString String to search for.
-     * @return SolrWayback search URL for given string.
-     */
-    private static String makeSolrSearchURL(String searchString) {
-        String searchParams = " AND type%3A\"Twitter Tweet\"";
-        return PropertiesLoader.WAYBACK_BASEURL + "search?query=" + searchString + searchParams;
     }
 
     /**
@@ -519,7 +510,7 @@ public class Twitter2Html {
                     "<div class='author-container'>" +
                         "<div class='author'>" +
                             "<div class='user-wrapper'>" +
-                                "<a href='" + makeSolrSearchURL("tw_user_id:" + parser.getQuoteUserID()) + "'>" +
+                                "<a href='" + SolrQueryUtils.createTwitterSearchURL("tw_user_id:" + parser.getQuoteUserID()) + "'>" +
                                     "<div class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</div>" +
                                     "<div class='user-handles'>" +
                                         "<h2>" + parser.getQuoteUserName() + "</h2>" +
@@ -543,7 +534,7 @@ public class Twitter2Html {
                         formatTweetText(parser.getQuoteText(), parser.getQuoteMinDisplayTextRange(),
                                 parser.getQuoteHashtags(), parser.getQuoteMentions(), parser.getQuoteURLs()) +
                     "</div>" +
-                    (quoteImageUrls.isEmpty() ? "" : "<div class='images'>" + imageUrlToHtml(quoteImageUrls) + "</div>") +
+                    (quoteImageUrls.isEmpty() ? "" : "<div class='media'>" + imageUrlToHtml(quoteImageUrls) + "</div>") +
                 "</div>";
 
         return quoteHtml;

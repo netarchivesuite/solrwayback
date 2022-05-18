@@ -349,7 +349,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("group.field", "url_norm");
         solrQuery.add("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
         solrQuery.add("fq", "content_type_norm:image"); // only images
-        solrQuery.add("fq", NO_REVISIT_FILTER); // No binary for revists.
+        solrQuery.add("fq", NO_REVISIT_FILTER); // No binary for revisits.
         solrQuery.add("fq","image_size:[2000 TO *]"); // No small images. (fillers etc.)
         solrQuery.add("fl", indexDocFieldList);
 

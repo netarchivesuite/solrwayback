@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>dk.kb.netarchivesuite.solrwayback</groupId>
-    <artifactId>solrwayback</artifactId>
-    <version>4.2.4-SNAPSHOT</version>
-    <packaging>war</packaging>
-    <name>solrwayback</name>
-    <url>https://maven.apache.org</url>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dk.kb.netarchivesuite.solrwayback</groupId>
+  <artifactId>solrwayback</artifactId>
+  <version>4.2.4-SNAPSHOT</version>
+  <packaging>war</packaging>
+  <name>solrwayback</name>
+  <url>https://maven.apache.org</url>
 
-    <properties>
-        <build.time>${maven.build.timestamp}</build.time>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+  <properties>
+    <build.time>${maven.build.timestamp}</build.time>
+    <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
   <repositories>
-     <repository>
-     <id>maven-restlet</id>
-     <name>Public online Restlet repository</name>
-     <url>https://maven.restlet.com</url>
-   </repository>
+    <repository>
+      <id>maven-restlet</id>
+      <name>Public online Restlet repository</name>
+      <url>https://maven.restlet.com</url>
+    </repository>
   </repositories>
 
-    <dependencies>
-        <!-- jUnit -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>3.2.4</version>
-            <scope>test</scope>
-        </dependency>
+  <dependencies>
+    <!-- jUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>3.2.4</version>
+      <scope>test</scope>
+    </dependency>
 
     <!-- REST -->
     <dependency>
@@ -77,107 +77,107 @@
       <version>3.3.6</version>
     </dependency>
     <dependency>
-        <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-rt-rs-extension-providers</artifactId>
-        <version>3.3.6</version>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-rs-extension-providers</artifactId>
+      <version>3.3.6</version>
     </dependency>
-        
-        
-        
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.3.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.14.2</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
-        <!--Project only uses com.google.common.collect.Iterables  to split in blocks. Can be implemented simple and dependency removed-->
-        <dependency>
-           <groupId>com.google.guava</groupId>
-           <artifactId>guava</artifactId>
-           <version>30.0-jre</version>
-         </dependency>
-
-        <!-- SOLR -->
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-solrj</artifactId>
-            <version>7.1.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-test-framework</artifactId>
-            <version>7.1.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-compress</artifactId>
-            <version>1.21</version>
-            <!-- Used to get a reliable decompression of multi-part gzip stream in test -->
-            <scope>test</scope>
-        </dependency>
 
 
-        <!-- Content encoding -->
-        <dependency>
-            <groupId>org.brotli</groupId>
-            <artifactId>dec</artifactId>
-            <version>0.1.2</version>
-        </dependency>
+
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>1.14.2</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+    <!--Project only uses com.google.common.collect.Iterables  to split in blocks. Can be implemented simple and dependency removed-->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>30.0-jre</version>
+    </dependency>
+
+    <!-- SOLR -->
+    <dependency>
+      <groupId>org.apache.solr</groupId>
+      <artifactId>solr-solrj</artifactId>
+      <version>7.1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.solr</groupId>
+      <artifactId>solr-test-framework</artifactId>
+      <version>7.1.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.21</version>
+      <!-- Used to get a reliable decompression of multi-part gzip stream in test -->
+      <scope>test</scope>
+    </dependency>
 
 
-        <!-- Support for SVG and other image types. -->
-        <!-- Can render some SVG (and scale them), but causes a lot more trouble that it is worth for now.
-          <dependency>
-               <groupId>com.twelvemonkeys.imageio</groupId>
-               <artifactId>imageio-batik</artifactId>
-               <version>3.2.1</version>
-           </dependency>
-           <dependency>
-               <groupId>batik</groupId>
-               <artifactId>batik-transcoder</artifactId>
-               <version>1.6-1</version>
-              <exclusions>
-                   <exclusion>
-                       <artifactId>fop</artifactId>
-                       <groupId>fop</groupId>
-                   </exclusion>
-               </exclusions>
-           </dependency>
-        -->
-        <!-- used when uploading -->
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.3.3</version>
-        </dependency>
+    <!-- Content encoding -->
+    <dependency>
+      <groupId>org.brotli</groupId>
+      <artifactId>dec</artifactId>
+      <version>0.1.2</version>
+    </dependency>
 
-<!--  delete?
-        <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
-            <artifactId>htmlunit</artifactId>
-            <version>2.11</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
- -->
-      
-           <!-- Logging dependencies -->
-        <!-- Logging dependencies -->
+
+    <!-- Support for SVG and other image types. -->
+    <!-- Can render some SVG (and scale them), but causes a lot more trouble that it is worth for now.
+      <dependency>
+           <groupId>com.twelvemonkeys.imageio</groupId>
+           <artifactId>imageio-batik</artifactId>
+           <version>3.2.1</version>
+       </dependency>
+       <dependency>
+           <groupId>batik</groupId>
+           <artifactId>batik-transcoder</artifactId>
+           <version>1.6-1</version>
+          <exclusions>
+               <exclusion>
+                   <artifactId>fop</artifactId>
+                   <groupId>fop</groupId>
+               </exclusion>
+           </exclusions>
+       </dependency>
+    -->
+    <!-- used when uploading -->
+    <dependency>
+      <groupId>commons-fileupload</groupId>
+      <artifactId>commons-fileupload</artifactId>
+      <version>1.3.3</version>
+    </dependency>
+
+    <!--  delete?
+            <dependency>
+                <groupId>net.sourceforge.htmlunit</groupId>
+                <artifactId>htmlunit</artifactId>
+                <version>2.11</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+     -->
+
+    <!-- Logging dependencies -->
+    <!-- Logging dependencies -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -203,165 +203,162 @@
       <artifactId>logback-classic</artifactId>
       <version>1.2.3</version>
     </dependency>
-       
-      
-
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20180130</version>
-        </dependency>
 
 
-        <dependency>
-            <groupId>org.netpreserve.openwayback</groupId>
-            <artifactId>openwayback-core</artifactId>
-            <version>2.3.2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20180130</version>
+    </dependency>
 
 
-        <dependency>
-            <groupId>com.kennycason</groupId>
-            <artifactId>kumo-core</artifactId>
-            <version>1.28</version>
-              <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        
-        
-        </dependency>
+    <dependency>
+      <groupId>org.netpreserve.openwayback</groupId>
+      <artifactId>openwayback-core</artifactId>
+      <version>2.3.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
 
-        <!-- This is needed by openwayback !-->
-        <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
-        </dependency>
+    <dependency>
+      <groupId>com.kennycason</groupId>
+      <artifactId>kumo-core</artifactId>
+      <version>1.28</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
 
 
-    </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources
-                </directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-
-        <plugins>
+    </dependency>
 
 
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
+    <!-- This is needed by openwayback !-->
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>3.1</version>
+    </dependency>
 
 
-            <plugin>
-                <!-- Filter resources -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>
-                                true
-                            </addDefaultImplementationEntries>
-                        </manifest>
-                    </archive>
-                    <webResources>
-                        <webResource>
-                            <directory>${basedir}/src/js/dist</directory>
-                        </webResource>
-                        <webResource>
-                            <directory>${basedir}/src/main/resources/</directory>
-                            <includes>
-                                <include>build.properties</include>
-                            </includes>
-                            <targetPath>WEB-INF/classes</targetPath>
-                            <filtering>true</filtering>
-                        </webResource>
-                        <webResource>
-                            <directory>${basedir}/src/main/webapp/</directory>
-                            <includes>
-                                <include>api.jsp</include>
-                            </includes>
-                            <filtering>true</filtering>
-                        </webResource>
-                </webResources>
-                </configuration>
-            </plugin>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources
+        </directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <!-- Filter resources -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>
+                true
+              </addDefaultImplementationEntries>
+            </manifest>
+          </archive>
+          <webResources>
+            <webResource>
+              <directory>${basedir}/src/js/dist</directory>
+            </webResource>
+            <webResource>
+              <directory>${basedir}/src/main/resources/</directory>
+              <includes>
+                <include>build.properties</include>
+              </includes>
+              <targetPath>WEB-INF/classes</targetPath>
+              <filtering>true</filtering>
+            </webResource>
+            <webResource>
+              <directory>${basedir}/src/main/webapp/</directory>
+              <includes>
+                <include>api.jsp</include>
+              </includes>
+              <filtering>true</filtering>
+            </webResource>
+          </webResources>
+        </configuration>
+      </plugin>
 
 
-            <!-- Frontend plugin to do all the node.js based processing-->
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.10.0</version>
+      <!-- Frontend plugin to do all the node.js based processing-->
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>1.10.0</version>
 
-                <configuration>
-                    <workingDirectory>${basedir}/src/js</workingDirectory>
-                </configuration>
+        <configuration>
+          <workingDirectory>${basedir}/src/js</workingDirectory>
+        </configuration>
 
-                <executions>
+        <executions>
 
-                    <execution>
-                        <id>Install node and npm</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                        </goals>
-                        <configuration>
-                            <nodeVersion>v12.16.1</nodeVersion>
-                            <npmVersion>6.14.5</npmVersion>
-                            <installDirectory>target</installDirectory>
-                        </configuration>
-                    </execution>
+          <execution>
+            <id>Install node and npm</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>install-node-and-npm</goal>
+            </goals>
+            <configuration>
+              <nodeVersion>v12.16.1</nodeVersion>
+              <npmVersion>6.14.5</npmVersion>
+              <installDirectory>target</installDirectory>
+            </configuration>
+          </execution>
 
-                    <execution>
-                        <id>Install JS dependencies (npm install)</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install</arguments>
-                            <installDirectory>target</installDirectory>
-                        </configuration>
-                    </execution>
+          <execution>
+            <id>Install JS dependencies (npm install)</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>install</arguments>
+              <installDirectory>target</installDirectory>
+            </configuration>
+          </execution>
 
-                    <execution>
-                        <id>Build frontend distribution for PRODUCTION (npm run build)</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run build</arguments>
-                            <installDirectory>target</installDirectory>
-                        </configuration>
-                    </execution>
+          <execution>
+            <id>Build frontend distribution for PRODUCTION (npm run build)</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>run build</arguments>
+              <installDirectory>target</installDirectory>
+            </configuration>
+          </execution>
 
 
-                </executions>
-            </plugin>
+        </executions>
+      </plugin>
 
       <!--     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -408,8 +405,8 @@
           </webApp>
         </configuration>
       </plugin> -->
-           
-        </plugins>
 
-    </build>
+    </plugins>
+
+  </build>
 </project>
