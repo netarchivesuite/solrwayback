@@ -475,9 +475,8 @@ public class Twitter2Html {
             IndexDoc tweet = results.get(0);
             String filePath = tweet.getSource_file_path();
             long fileOffset = tweet.getOffset();
-            buttonHTML =    "<div class='button-wrap'>" +
-                            "<a href='" + PropertiesLoader.WAYBACK_BASEURL + "services/viewForward?source_file_path=" +
-                                filePath + "&offset=" + fileOffset + "'>" +
+            buttonHTML = "<div class='button-wrap'>" +
+                            "<a href='" + getPlaybackUrl(filePath, fileOffset) + "'>" +
                                 "<button type='button'>" + buttonText + "</button>" +
                             "</a>" +
                         "</div>";
@@ -485,6 +484,17 @@ public class Twitter2Html {
             log.warn("Failed solr search for tweet '{}'", tweetID, e);
         }
         return buttonHTML;
+    }
+
+    /**
+     * Builds the tweet playback url from the given source file path and its offset. TODO consider moving to utils class
+     * @param filePath File path to warc file containing the content to show.
+     * @param fileOffset Offset to look at in the file.
+     * @return The full wayback url for playback.
+     */
+    private static String getPlaybackUrl(String filePath, long fileOffset) {
+        return PropertiesLoader.WAYBACK_BASEURL +
+                "services/viewForward?source_file_path=" + filePath + "&offset=" + fileOffset;
     }
 
     /**
