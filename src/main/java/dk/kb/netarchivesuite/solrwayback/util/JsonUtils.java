@@ -40,7 +40,6 @@ public class JsonUtils {
 	}
 
 	public static <T extends Collection<String>> void addAllValues(JSONObject json, T values, String path) {
-
 		// Split in tokens on .
 		String[] tokens = path.split("\\."); // Have to escape the dot
 
@@ -55,9 +54,9 @@ public class JsonUtils {
 					ArrayList<JSONObject> jsonObjectList = array2List(jsonArray);
 					// Create a sub-array from the full array.
 					String[] remainingTokens = Arrays.copyOfRange(tokens, i + 1, tokens.length);
-					String remainingPath = String.join(". ", remainingTokens);
-					//System.out.println("full path:" + path);
-					//System.out.println("remaining path:" + remainingPath);
+					String remainingPath = String.join(".", remainingTokens);
+					// System.out.println("full path:" + path);
+					// System.out.println("remaining path:" + remainingPath);
 					addAllValues(jsonObjectList, values, remainingPath); // Call recursive
 					return;
 				}
