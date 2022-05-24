@@ -3,8 +3,8 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import dk.kb.netarchivesuite.solrwayback.pojos.Tweet;
-import dk.kb.netarchivesuite.solrwayback.pojos.TwitterUser;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.Tweet;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetUser;
 import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
@@ -131,7 +131,7 @@ public class TwitterParser2 {
 
 	private void parseMainUserInfo(JSONObject mainUserJSON) {
 		// All these values always exist
-		TwitterUser user = tweet.getUser();
+		TweetUser user = tweet.getUser();
 		this.userID = user.getId();
 		this.userName = user.getName();
 		this.userScreenName = user.getScreenName();
@@ -308,7 +308,7 @@ public class TwitterParser2 {
 	}
 
 	private void parseRetweetedUser(JSONObject retweetedUserJSON) {
-		TwitterUser user = tweet.getRetweetedTweet().getUser();
+		TweetUser user = tweet.getRetweetedTweet().getUser();
 		this.retweetUserID = user.getId();
 		this.retweetUserName = user.getName();
 		this.retweetUserScreenName = user.getScreenName();

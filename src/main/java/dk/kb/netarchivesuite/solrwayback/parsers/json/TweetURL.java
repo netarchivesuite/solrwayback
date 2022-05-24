@@ -1,9 +1,9 @@
-package dk.kb.netarchivesuite.solrwayback.pojos;
+package dk.kb.netarchivesuite.solrwayback.parsers.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class TweetUrl {
+public class TweetURL {
     private Pair<Integer, Integer> indices;
 
     private String expandedUrl;
@@ -11,7 +11,7 @@ public class TweetUrl {
     private String displayUrl;
 
 
-    public TweetUrl() {
+    public TweetURL() {
     }
 
     @JsonProperty("indices")

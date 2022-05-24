@@ -1,14 +1,18 @@
-package dk.kb.netarchivesuite.solrwayback.pojos;
+package dk.kb.netarchivesuite.solrwayback.parsers.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
+/**
+ * Even though 'entities' also includes 'media'-objects this is parsed outside this pojo, as media will always
+ * be contained inside 'extended_entities' that is on the same level as 'entities'.
+ */
 public class TweetEntities {
     @JsonProperty("user_mentions")
     private List<TweetMention> mentions;
 
-    private List<TweetUrl> urls;
+    private List<TweetURL> urls;
 
     private List<TweetHashtag> hashtags;
 
@@ -24,11 +28,11 @@ public class TweetEntities {
         this.mentions = mentions;
     }
 
-    public List<TweetUrl> getUrls() {
+    public List<TweetURL> getUrls() {
         return urls;
     }
 
-    public void setUrls(List<TweetUrl> urls) {
+    public void setUrls(List<TweetURL> urls) {
         this.urls = urls;
     }
 

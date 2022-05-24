@@ -1,19 +1,19 @@
-package dk.kb.netarchivesuite.solrwayback.pojos;
+package dk.kb.netarchivesuite.solrwayback.parsers.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class TwitterUser {
+public class TweetUser {
     @JsonProperty("id_str")
     private String id;
     private String name;
     private String screenName;
     private String profileImageUrl;
-    private String description; // Might be null, so want a default - "No description."
+    private String description = "No description."; // Might be null, so want a default
     private long followersCount;
     private int friendsCount;
     private boolean verified;
 
-    public TwitterUser() {
+    public TweetUser() {
     }
 
     public String getId() {

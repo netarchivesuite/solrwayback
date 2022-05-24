@@ -1,14 +1,15 @@
-package dk.kb.netarchivesuite.solrwayback.pojos;
+package dk.kb.netarchivesuite.solrwayback.parsers.json;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
-public class Tweet { // TODO move to meaningful package
+public class Tweet {
     private String quotePermalink;
 
     @JsonProperty("id_str")
@@ -25,7 +26,7 @@ public class Tweet { // TODO move to meaningful package
     @JsonProperty("quoted_status")
     private Tweet quotedTweet;
 
-    private TwitterUser user;
+    private TweetUser user;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "EEE MMM dd kk:mm:ss Z yyyy") // "Thu Nov 04 23:37:36 +0000 2021"
     @JsonProperty("created_at")
@@ -36,15 +37,18 @@ public class Tweet { // TODO move to meaningful package
 
     private String inReplyToScreenName;
 
-    private int minTextRange;
+    // Default to size of standard tweet if no display_text_range is found
+    private Pair<Integer, Integer> displayTextRange = Pair.of(0, 140);
 
-    @JsonProperty("extended_entities")
-    @JsonAlias("entities")
+    // Tweet sometimes also has extended_entities at same level, but that will only contain media and not hashtags etc.
+    // See #unpackMedia().
     private TweetEntities entities;
 
+    private List<TweetMedia> media;
 
-    public Tweet() {
-    }
+    @JsonProperty("extended_tweet")
+    private TweetExtendedContent extendedContent;
+
 
     @JsonProperty("quoted_status_permalink")
     private void unpackQuotePermalink(Map<String, String> quotedStatusPermalinkObj) {
@@ -52,9 +56,16 @@ public class Tweet { // TODO move to meaningful package
     }
 
     @JsonProperty("display_text_range")
-    private void unpackMinTextRange(ArrayList<Integer> displayTextRange) {
-        // NB: defaults to 0 if display_text_range does not exist - this is also what it should be
-        minTextRange = displayTextRange.get(0);
+    private void unpackDisplayTextRange(int[] displayTextRange) {
+        this.displayTextRange = Pair.of(displayTextRange[0], displayTextRange[1]);
+    }
+
+    @JsonProperty("extended_entities")
+    private void unpackMedia(Map<String, List<TweetMedia>> extendedEntitiesObj) {
+        this.media = extendedEntitiesObj.get("media");
+    }
+
+    public Tweet() {
     }
 
     public String getQuotePermalink() {
@@ -93,11 +104,11 @@ public class Tweet { // TODO move to meaningful package
         this.hasQuote = isQuoteStatus;
     }
 
-    public TwitterUser getUser() {
+    public TweetUser getUser() {
         return user;
     }
 
-    public void setUser(TwitterUser user) {
+    public void setUser(TweetUser user) {
         this.user = user;
     }
 
@@ -133,8 +144,8 @@ public class Tweet { // TODO move to meaningful package
         this.inReplyToScreenName = inReplyToScreenName;
     }
 
-    public int getMinTextRange() {
-        return minTextRange;
+    public Pair<Integer, Integer> getDisplayTextRange() {
+        return displayTextRange;
     }
 
     public TweetEntities getEntities() {
@@ -143,5 +154,13 @@ public class Tweet { // TODO move to meaningful package
 
     public void setEntities(TweetEntities entities) {
         this.entities = entities;
+    }
+
+    public TweetExtendedContent getExtendedContent() {
+        return extendedContent;
+    }
+
+    public void setExtendedContent(TweetExtendedContent extendedContent) {
+        this.extendedContent = extendedContent;
     }
 }

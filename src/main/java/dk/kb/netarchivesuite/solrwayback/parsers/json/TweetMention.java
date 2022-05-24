@@ -1,4 +1,4 @@
-package dk.kb.netarchivesuite.solrwayback.pojos;
+package dk.kb.netarchivesuite.solrwayback.parsers.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.tuple.Pair;
