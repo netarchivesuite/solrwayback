@@ -41,12 +41,12 @@ public class Twitter2Html {
      */
     public static String twitter2Html(String jsonString, String crawlDate) throws IOException {
         Date date;
-        long userID;
+        String userID;
         String userName;
         String userScreenName;
         String userDescription;
         int userFriendsCount;
-        int userFollowersCount;
+        long userFollowersCount;
         boolean userIsVerified;
         TwitterParser2 parser = new TwitterParser2(jsonString);
         String tweetID = parser.getTweetID();
@@ -394,7 +394,7 @@ public class Twitter2Html {
      * @return html for user card
      */
     private static String makeUserCard(List<ImageUrl> profileImageUrl, String userName, String userHandle,
-                                       String description, int followingCount, int followersCount, boolean verified) {
+                                       String description, int followingCount, long followersCount, boolean verified) {
         return "<div class='user-card'>" +
                     "<div class='author'>" +
                         "<div class='avatar'>" + imageUrlToHtml(profileImageUrl) + "</div>" +

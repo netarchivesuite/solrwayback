@@ -1,5 +1,10 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import dk.kb.netarchivesuite.solrwayback.pojos.Tweet;
+import dk.kb.netarchivesuite.solrwayback.pojos.TwitterUser;
 import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
@@ -7,6 +12,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,12 +37,12 @@ public class TwitterParser2 {
 	private final boolean isRetweet;
 	private final boolean hasQuote;
 	private final Date createdDate;
-	private long userID;
+	private String userID;
 	private String userName;
 	private String userScreenName;
 	private String userProfileImage;
 	private String userDescription;
-	private int userFollowersCount;
+	private long userFollowersCount;
 	private int userFriendsCount;
 	private boolean userVerified;
 	private int tweetMinDisplayTextRange;
@@ -50,12 +56,12 @@ public class TwitterParser2 {
 	private String replyToScreenName;
 	private List<String> replyMentions;
 	private Date retweetCreatedDate;
-	private long retweetUserID;
+	private String retweetUserID;
 	private String retweetUserScreenName;
 	private String retweetUserName;
 	private String retweetUserProfileImage;
 	private String retweetUserDescription;
-	private int retweetUserFollowersCount;
+	private long retweetUserFollowersCount;
 	private int retweetUserFriendsCount;
 	private boolean retweetUserVerified;
 
@@ -85,18 +91,24 @@ public class TwitterParser2 {
 	private Map<Pair<Integer, Integer>, String> quoteMentions;
 	private Map<Pair<Integer, Integer>, String> quoteURLs;
 	private final List<String> quoteImageURLStrings = new ArrayList<>();
+	private Tweet tweet;
 
-	public TwitterParser2(String twitterJsonString) {
+	public TwitterParser2(String twitterJsonString) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+		tweet = mapper.readValue(twitterJsonString, Tweet.class);
+
 		this.parentJSON = new JSONObject(twitterJsonString);
-		this.tweetID = parentJSON.getString("id_str");
-		this.isRetweet = parentJSON.has("retweeted_status");
-		this.hasQuote = parentJSON.getBoolean("is_quote_status");
+		this.tweetID = tweet.getId();
+		this.isRetweet = tweet.getRetweetedTweet() != null;
+		this.hasQuote = tweet.hasQuote();
 
-		this.createdDate = parseTwitterDate(parentJSON);
+		this.createdDate = tweet.getCreationDate();
 		parseMainUserInfo(parentJSON.getJSONObject("user"));
 
 		if (hasQuote()) {
-			this.quotePermaLink = parentJSON.getJSONObject("quoted_status_permalink").getString("expanded");
+			this.quotePermaLink = tweet.getQuotePermalink();
 			parseQuote();
 		}
 		if (isRetweet()) {
@@ -119,14 +131,15 @@ public class TwitterParser2 {
 
 	private void parseMainUserInfo(JSONObject mainUserJSON) {
 		// All these values always exist
-		this.userID = mainUserJSON.getLong("id");
-		this.userName = mainUserJSON.getString("name");
-		this.userScreenName = mainUserJSON.getString("screen_name");
-		this.userProfileImage = mainUserJSON.getString("profile_image_url");
-		this.userDescription = mainUserJSON.optString("description", "No description."); // Might be null, so want a default
-		this.userFollowersCount = mainUserJSON.getInt("followers_count");
-		this.userFriendsCount = mainUserJSON.getInt("friends_count");
-		this.userVerified = mainUserJSON.getBoolean("verified");
+		TwitterUser user = tweet.getUser();
+		this.userID = user.getId();
+		this.userName = user.getName();
+		this.userScreenName = user.getScreenName();
+		this.userProfileImage = user.getProfileImageUrl();
+		this.userDescription = user.getDescription();
+		this.userFollowersCount = user.getFollowersCount();
+		this.userFriendsCount = user.getFriendsCount();
+		this.userVerified = user.isVerified();
 	}
 
 	private void parseQuote() {
@@ -295,14 +308,15 @@ public class TwitterParser2 {
 	}
 
 	private void parseRetweetedUser(JSONObject retweetedUserJSON) {
-		this.retweetUserID = retweetedUserJSON.getLong("id");
-		this.retweetUserName = retweetedUserJSON.getString("name");
-		this.retweetUserScreenName = retweetedUserJSON.getString("screen_name");
-		this.retweetUserProfileImage = retweetedUserJSON.getString("profile_image_url");
-		this.retweetUserDescription = retweetedUserJSON.optString("description", "No description.");
-		this.retweetUserFollowersCount = retweetedUserJSON.getInt("followers_count");
-		this.retweetUserFriendsCount = retweetedUserJSON.getInt("friends_count");
-		this.retweetUserVerified = retweetedUserJSON.getBoolean("verified");
+		TwitterUser user = tweet.getRetweetedTweet().getUser();
+		this.retweetUserID = user.getId();
+		this.retweetUserName = user.getName();
+		this.retweetUserScreenName = user.getScreenName();
+		this.retweetUserProfileImage = user.getProfileImageUrl();
+		this.retweetUserDescription = user.getDescription();
+		this.retweetUserFollowersCount = user.getFollowersCount();
+		this.retweetUserFriendsCount = user.getFriendsCount();
+		this.retweetUserVerified = user.isVerified();
 	}
 
 	private void parseMainTweetContent(JSONObject json) {
@@ -353,7 +367,7 @@ public class TwitterParser2 {
 	}
 
 
-	public long getUserID() {
+	public String getUserID() {
 		return userID;
 	}
 
@@ -417,7 +431,7 @@ public class TwitterParser2 {
 	}
 
 
-	public int getUserFollowersCount() {
+	public long getUserFollowersCount() {
 		return userFollowersCount;
 	}
 
@@ -491,7 +505,7 @@ public class TwitterParser2 {
 		return retweetUserDescription;
 	}
 
-	public int getRetweetUserFollowersCount() {
+	public long getRetweetUserFollowersCount() {
 		return retweetUserFollowersCount;
 	}
 
@@ -511,7 +525,7 @@ public class TwitterParser2 {
 		return quoteReplyMentions;
 	}
 
-	public long getRetweetUserID() {
+	public String getRetweetUserID() {
 		return retweetUserID;
 	}
 

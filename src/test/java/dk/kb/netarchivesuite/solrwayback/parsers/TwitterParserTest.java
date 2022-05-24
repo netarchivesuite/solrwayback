@@ -27,7 +27,7 @@ public class TwitterParserTest {
 				tweet.getText());
 
 		assertEquals("Fri Mar 13 00:03:52 CET 2020", tweet.getCreatedDate().toString());
-		assertEquals(2600310521L, tweet.getUserID());
+		assertEquals("2600310521", tweet.getUserID());
 		assertEquals("Thomas Egense", tweet.getUserName());
 		assertEquals("ThomasEgense", tweet.getUserScreenName());
 		assertEquals("Here is another description", tweet.getUserDescription());
@@ -70,7 +70,7 @@ public class TwitterParserTest {
 				" https://t.co/1MAGEUR7Y0", tweet.getText());
 		// Test retweet time and user
 		assertEquals("Fri Mar 13 07:01:00 CET 2020", tweet.getCreatedDate().toString());
-		assertEquals(2337958629L, tweet.getUserID());
+		assertEquals("2337958629", tweet.getUserID());
 		assertEquals("Thomas2", tweet.getUserName());
 		assertEquals("thomas2", tweet.getUserScreenName());
 		assertEquals("Mathematician and beer drinker.", tweet.getUserDescription());
@@ -81,7 +81,7 @@ public class TwitterParserTest {
 
 		// Test original tweet date and retweeted user
 		assertEquals("Thu Mar 12 23:35:33 CET 2020", tweet.getRetweetCreatedDate().toString());
-		assertEquals(22695562L, tweet.getRetweetUserID());
+		assertEquals("22695562", tweet.getRetweetUserID());
 		assertEquals("Thomas Egense", tweet.getRetweetUserName());
 		assertEquals("Egense", tweet.getRetweetUserScreenName());
 		assertEquals("Description text. Tweeting about #math", tweet.getRetweetUserDescription());
