@@ -210,4 +210,9 @@ public class Tweet {
     public void setExtendedContent(TweetExtendedContent extendedContent) {
         this.extendedContent = extendedContent;
     }
+
+    // ---------- Non-Jackson methods ----------
+    public boolean isRetweet() {
+        return retweetedTweet != null;
+    }
 }
