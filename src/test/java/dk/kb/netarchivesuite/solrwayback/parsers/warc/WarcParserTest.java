@@ -35,8 +35,8 @@ public class WarcParserTest extends UnitTestUtils{
         assertEquals(116,image.getHeight());        
         assertEquals("http://www.archive.org/images/hewlett.jpg",arcEntry.getUrl());
     
-        System.out.println(arcEntry.getCrawlDate());
-        System.out.println(arcEntry.getWaybackDate());
+        //System.out.println(arcEntry.getCrawlDate());
+        //System.out.println(arcEntry.getWaybackDate());
     
     }
     
@@ -47,7 +47,7 @@ public class WarcParserTest extends UnitTestUtils{
         
         ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 216504,false); //Image entry
 
-        System.out.println(arcEntry.getRedirectUrl());
+        //System.out.println(arcEntry.getRedirectUrl());
         
     
     }
