@@ -67,23 +67,20 @@ public class SolrWaybackResource {
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
   public ArcEntry getArcEntry(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
       try {                                                                                      
-        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,false);
         return arcEntry;                              
       } catch (Exception e) {         
           throw handleServiceExceptions(e);
       }
   }
   
-  /*
-   * Only for debugging/error finding. Not called from SolrWayback frontend.
-   * Can be improved to not also load binary which are not shown. 
-   */
+  
   @GET
   @Path("warc/header")
   @Produces({ MediaType.TEXT_PLAIN})
   public String getWarcHeader( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
       try {                                                                                      
-        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,false);
         return arcEntry.getHeader();                              
       } catch (Exception e) {         
           throw handleServiceExceptions(e);
@@ -95,7 +92,7 @@ public class SolrWaybackResource {
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
   public ArcEntry getWarcParsed( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
       try {                                                                                      
-        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,true);
          return arcEntry;                              
       } catch (Exception e) {         
           throw handleServiceExceptions(e);
@@ -156,7 +153,7 @@ public class SolrWaybackResource {
 
       //log.debug("Getting image from source_file_path:" + source_file_path + " offset:" + offset + " targetWidth:" + width + " targetHeight:" + height);
 
-      ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+      ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,true);
 
       BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
 
@@ -955,7 +952,7 @@ public class SolrWaybackResource {
       ResponseBuilder response = Response.status(status);
       
       if(arc == null){
-        arc = Facade.getArcEntry(doc.getSource_file_path(), doc.getOffset());
+        arc = Facade.getArcEntry(doc.getSource_file_path(), doc.getOffset(),false); //Do not load binary
       }      
       response.status(status); // jersey require a legal status code.
 

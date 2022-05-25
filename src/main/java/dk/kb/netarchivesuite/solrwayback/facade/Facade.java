@@ -446,10 +446,9 @@ public class Facade {
         }
     }
 
-    public static ArcEntry getArcEntry(String source_file_path, long offset) throws Exception {
-        return ArcParserFileResolver.getArcEntry(source_file_path, offset);
-    }
-
+    /**
+    * Important to set the load binary flag to false if not used    
+    */    
     public static ArcEntry getArcEntry(String source_file_path, long offset, boolean loadBinary) throws Exception {
         return ArcParserFileResolver.getArcEntry(source_file_path, offset, loadBinary);
     }

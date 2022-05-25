@@ -31,7 +31,7 @@ public class WarcBinaryCompressionTest extends UnitTestUtils{
     @Test
     public void testCompressionsNoneGz() throws Exception {        
         File file = getFile("compressions_warc/transfer_compression_none.warc.gz");        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 881 ); //HTML entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 881,true ); //HTML entry
         String content = arcEntry.getBinaryContentAsStringUnCompressed();
         assertTrue(content.indexOf(HTML_TEXT_PART)> 0);                         
     }
@@ -39,7 +39,7 @@ public class WarcBinaryCompressionTest extends UnitTestUtils{
     @Test
     public void testCompressionsNone() throws Exception {        
         File file = getFile("compressions_warc/transfer_compression_none.warc");        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 1198 ); //HTML entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 1198 ,true ); //HTML entry
         String content = arcEntry.getBinaryContentAsStringUnCompressed();
         assertTrue(content.indexOf(HTML_TEXT_PART)> 0);                         
     }
@@ -47,7 +47,7 @@ public class WarcBinaryCompressionTest extends UnitTestUtils{
     @Test
     public void testCompressionsZipGz() throws Exception {        
         File file = getFile("compressions_warc/transfer_compression_gzip.warc.gz");        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 899 ); //HTML entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 899  ,true); //HTML entry
         String content = arcEntry.getBinaryContentAsStringUnCompressed();
         assertTrue(content.indexOf(HTML_TEXT_PART)> 0);                         
     }
@@ -55,7 +55,7 @@ public class WarcBinaryCompressionTest extends UnitTestUtils{
     @Test
     public void testCompressionsZip() throws Exception {        
         File file = getFile("compressions_warc/transfer_compression_gzip.warc");        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 1227 ); //HTML entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 1227 ,true); //HTML entry
         String content = arcEntry.getBinaryContentAsStringUnCompressed();
         assertTrue(content.indexOf(HTML_TEXT_PART)> 0);                         
     }
@@ -65,7 +65,7 @@ public class WarcBinaryCompressionTest extends UnitTestUtils{
     @Test
     public void testCompressionsBrotli() throws Exception {        
         File file = getFile("compressions_warc/transfer_compression_brotli.warc");        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 1227 ); //HTML entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 1227 ,true); //HTML entry
         String content = arcEntry.getBinaryContentAsStringUnCompressed();
         assertTrue(content.indexOf(HTML_TEXT_PART)> 0);    
         System.out.println(content);
@@ -75,7 +75,7 @@ public class WarcBinaryCompressionTest extends UnitTestUtils{
     @Test
     public void testCompressionsBrotliGz() throws Exception {        
         File file = getFile("compressions_warc/transfer_compression_brotli.warc.gz");        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 898 ); //HTML entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 898  ,true); //HTML entry
         String content = arcEntry.getBinaryContentAsStringUnCompressed();
         assertTrue(content.indexOf(HTML_TEXT_PART)> 0);    
         System.out.println(content);
@@ -86,7 +86,7 @@ public class WarcBinaryCompressionTest extends UnitTestUtils{
     @Test
     public void testCompressionsZipChunkedGz() throws Exception {        
         File file = getFile("compressions_warc/transfer_compression_gzip_chunked.warc.gz");        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 275 ); //HTML entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 275 ,true); //HTML entry
         String content = arcEntry.getBinaryContentAsStringUnCompressed();
             
         System.out.println(content);

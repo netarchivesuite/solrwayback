@@ -23,7 +23,7 @@ public class WarcParserTest extends UnitTestUtils{
         
         File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688); //Image entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688,true); //Image entry
         assertEquals("image/jpeg", arcEntry.getContentType());
         assertEquals("hewlett.jpg", arcEntry.getFileName());
         assertEquals(7812, arcEntry.getWarcEntryContentLength());
@@ -45,7 +45,7 @@ public class WarcParserTest extends UnitTestUtils{
 
         File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 216504); //Image entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 216504,false); //Image entry
 
         System.out.println(arcEntry.getRedirectUrl());
         
@@ -60,7 +60,7 @@ public class WarcParserTest extends UnitTestUtils{
         ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688, false); //Image entry
         
         assertNull(arcEntry.getBinary());
-        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688); //Image entry and load binary
+        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688,true); //Image entry and load binary
         byte[] orgBinary = arcEntry.getBinary();        
         try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
             byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];

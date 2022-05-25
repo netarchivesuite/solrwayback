@@ -20,7 +20,7 @@ public class ArcGzParserTest extends UnitTestUtils {
         
         File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc.gz");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 1306 ); //HTML entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 1306,true); //HTML entry
         assertEquals("text/html", arcEntry.getContentType());
         assertEquals("www.archive.org", arcEntry.getFileName());
         assertEquals(366, arcEntry.getContentLength()); //From header        
@@ -35,7 +35,7 @@ public class ArcGzParserTest extends UnitTestUtils {
         
         File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc.gz");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 7733 ); //Image entry (or   9699) 
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 7733 ,true); //Image entry (or   9699) 
         assertEquals("image/jpeg", arcEntry.getContentType());
         assertEquals("logoc.jpg", arcEntry.getFileName());
         assertEquals(1662, arcEntry.getContentLength()); //From header        
@@ -50,7 +50,7 @@ public class ArcGzParserTest extends UnitTestUtils {
         ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(),7733, false); //Image entry
         
         assertNull(arcEntry.getBinary());
-        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 7733); //Image entry and load binary
+        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 7733,true); 
         byte[] orgBinary = arcEntry.getBinary();        
         try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
             byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];

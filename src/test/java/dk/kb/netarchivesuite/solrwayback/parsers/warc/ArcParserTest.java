@@ -26,7 +26,7 @@ public class ArcParserTest extends UnitTestUtils{
         
         File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767 ); //Image entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767 ,true); //Image entry
         assertEquals("image/jpeg", arcEntry.getContentType());
         assertEquals("hewlett.jpg", arcEntry.getFileName());
         assertEquals(7510, arcEntry.getContentLength());
@@ -50,7 +50,7 @@ public class ArcParserTest extends UnitTestUtils{
         ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767, false); //Image entry
         
         assertNull(arcEntry.getBinary());
-        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767); //Image entry and load binary
+        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767,true); //Image entry and load binary
         byte[] orgBinary = arcEntry.getBinary();
         assertTrue("The extracted binary size should be > 0 but was " + arcEntry.getBinaryArraySize(),
                    arcEntry.getBinaryArraySize() > 0);
@@ -73,7 +73,7 @@ public class ArcParserTest extends UnitTestUtils{
       
       File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc");
       
-      ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 280750 ); //redirect
+      ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 280750 ,false); //redirect
 
       
       String url=arcEntry.getUrl();
