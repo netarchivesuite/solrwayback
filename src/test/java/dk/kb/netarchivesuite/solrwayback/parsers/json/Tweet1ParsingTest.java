@@ -44,6 +44,7 @@ public class Tweet1ParsingTest {
         assertNotNull(tweet.getEntities());
         assertNull(tweet.getExtendedContent());
         assertNull(tweet.getInReplyToScreenName());
+        assertNull(tweet.getMedia());
     }
 
     @Test
