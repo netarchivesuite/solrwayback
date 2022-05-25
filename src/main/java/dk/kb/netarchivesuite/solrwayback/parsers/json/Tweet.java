@@ -1,6 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.parsers.json;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,6 +18,14 @@ public class Tweet {
     private Tweet retweetedTweet;
 
     private String text;
+
+    private int favoriteCount;
+
+    private int retweetCount;
+
+    private int quoteCount;
+
+    private int replyCount;
 
     @JsonProperty("is_quote_status")
     private boolean hasQuote;
@@ -96,6 +103,38 @@ public class Tweet {
         this.text = text;
     }
 
+    public int getFavoriteCount() {
+        return favoriteCount;
+    }
+
+    public void setFavoriteCount(int favoriteCount) {
+        this.favoriteCount = favoriteCount;
+    }
+
+    public int getRetweetCount() {
+        return retweetCount;
+    }
+
+    public void setRetweetCount(int retweetCount) {
+        this.retweetCount = retweetCount;
+    }
+
+    public int getQuoteCount() {
+        return quoteCount;
+    }
+
+    public void setQuoteCount(int quoteCount) {
+        this.quoteCount = quoteCount;
+    }
+
+    public int getReplyCount() {
+        return replyCount;
+    }
+
+    public void setReplyCount(int replyCount) {
+        this.replyCount = replyCount;
+    }
+
     public boolean hasQuote() {
         return hasQuote;
     }
@@ -154,6 +193,14 @@ public class Tweet {
 
     public void setEntities(TweetEntities entities) {
         this.entities = entities;
+    }
+
+    public List<TweetMedia> getMedia() {
+        return media;
+    }
+
+    public void setMedia(List<TweetMedia> media) {
+        this.media = media;
     }
 
     public TweetExtendedContent getExtendedContent() {

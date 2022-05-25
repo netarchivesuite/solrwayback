@@ -73,7 +73,7 @@ public class TwitterParser2 {
 	private String quotePermaLink;
 	private Date quoteCreatedDate;
 	private String quoteTweetID;
-	private long quoteUserID;
+	private String quoteUserID;
 	private String quoteUserName;
 	private String quoteUserScreenName;
 	private String quoteReplyToStatusID;
@@ -91,7 +91,7 @@ public class TwitterParser2 {
 	private Map<Pair<Integer, Integer>, String> quoteMentions;
 	private Map<Pair<Integer, Integer>, String> quoteURLs;
 	private final List<String> quoteImageURLStrings = new ArrayList<>();
-	private Tweet tweet;
+	private final Tweet tweet;
 
 	public TwitterParser2(String twitterJsonString) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
@@ -145,18 +145,19 @@ public class TwitterParser2 {
 	private void parseQuote() {
 		// Twitter API has quote-JSON under both "quoted_status" and "retweeted_status.quoted_status" if retweet,
 		// so no need to use retweet prefix.
+		Tweet quotedTweet = tweet.getQuotedTweet();
 		JSONObject quoteTweetJSON = parentJSON.getJSONObject("quoted_status");
-		parseQuoteUserInfo(quoteTweetJSON.getJSONObject("user"));
-		this.quoteCreatedDate = parseTwitterDate(quoteTweetJSON);
-		this.quoteTweetID = quoteTweetJSON.getString("id_str");
-		this.quoteReplyToStatusID = quoteTweetJSON.optString("in_reply_to_status_id_str");
-		this.quoteReplyToScreenName = quoteTweetJSON.optString("in_reply_to_screen_name");
+		parseQuoteUserInfo();
+		this.quoteCreatedDate = quotedTweet.getCreationDate();
+		this.quoteTweetID = quotedTweet.getId();
+		this.quoteReplyToStatusID = quotedTweet.getInReplyToTweetId();
+		this.quoteReplyToScreenName = quotedTweet.getInReplyToScreenName();
 		this.quoteText = JsonUtils.getValueIfExistsByPriority(quoteTweetJSON, "extended_tweet.full_text", "text");
 
 		JSONObject entityParentJSON = quoteTweetJSON.has("extended_tweet") ? quoteTweetJSON.getJSONObject("extended_tweet") : quoteTweetJSON;
 		this.quoteMinDisplayTextRange = parseMinDisplayTextRange(entityParentJSON);
 		JSONObject entityJSON = entityParentJSON.getJSONObject("entities");
-		if (!quoteReplyToStatusID.isEmpty()) {
+		if (quoteReplyToStatusID != null) {
 			this.quoteReplyMentions = parseReplyMentions(entityJSON, quoteMinDisplayTextRange, quoteReplyToScreenName, quoteText);
 		}
 		this.quoteMentions = parseMentions(entityJSON, quoteText, quoteMinDisplayTextRange);
@@ -165,15 +166,16 @@ public class TwitterParser2 {
 		parseImages(entityParentJSON, quoteImageURLStrings);
 	}
 
-	private void parseQuoteUserInfo(JSONObject userJSON) {
-		this.quoteUserID = userJSON.getLong("id");
-		this.quoteUserName = userJSON.getString("name");
-		this.quoteUserScreenName = userJSON.getString("screen_name");
-		this.quoteUserProfileImage = userJSON.getString("profile_image_url");
-		this.quoteUserDescription = userJSON.optString("description", "No description.");
-		this.quoteUserFollowersCount = userJSON.getInt("followers_count");
-		this.quoteUserFriendsCount = userJSON.getInt("friends_count");
-		this.quoteUserVerified = userJSON.getBoolean("verified");
+	private void parseQuoteUserInfo() {
+		TweetUser user = tweet.getQuotedTweet().getUser();
+		this.quoteUserID = user.getId();
+		this.quoteUserName = user.getName();
+		this.quoteUserScreenName = user.getScreenName();
+		this.quoteUserProfileImage = user.getProfileImageUrl();
+		this.quoteUserDescription = user.getDescription();
+		this.quoteUserFollowersCount = user.getFollowersCount();
+		this.quoteUserFriendsCount = user.getFriendsCount();
+		this.quoteUserVerified = user.isVerified();
 	}
 
 	private Map<Pair<Integer, Integer>, String> parseHashtags(JSONObject json, String tweetText) {
@@ -322,18 +324,18 @@ public class TwitterParser2 {
 	private void parseMainTweetContent(JSONObject json) {
 		// Longer tweets contain the 'extended_tweet' keyword while short tweets do without it.
 		// However, 'extended_tweet.text' does not exist and is instead found under 'full_text'
-		this.likeCount = json.getInt("favorite_count");
-		this.retweetCount = json.getInt("retweet_count");
-		this.quoteCount = json.getInt( "quote_count");
-		this.replyCount = json.getInt( "reply_count");
-		this.replyToStatusID = json.optString("in_reply_to_status_id_str"); // Empty str if not a reply
-		this.replyToScreenName = json.optString("in_reply_to_screen_name");
+		this.likeCount = tweet.getFavoriteCount();
+		this.retweetCount = tweet.getRetweetCount();
+		this.quoteCount = tweet.getQuoteCount();
+		this.replyCount = tweet.getReplyCount();
+		this.replyToStatusID = tweet.getInReplyToTweetId();
+		this.replyToScreenName = tweet.getInReplyToScreenName();
 		this.text = JsonUtils.getValueIfExistsByPriority(json, "extended_tweet.full_text", "text");
 
 		JSONObject entityParentJSON = json.has("extended_tweet") ? json.getJSONObject("extended_tweet") : json;
 		JSONObject entityJSON = entityParentJSON.getJSONObject("entities");
 		this.tweetMinDisplayTextRange = parseMinDisplayTextRange(entityParentJSON);
-		if (!replyToStatusID.isEmpty()) {
+		if (replyToStatusID != null) {
 			this.replyMentions = parseReplyMentions(entityJSON, tweetMinDisplayTextRange, replyToScreenName, text);
 		}
 		this.hashtags = parseHashtags(entityJSON, text);
@@ -529,7 +531,7 @@ public class TwitterParser2 {
 		return retweetUserID;
 	}
 
-	public long getQuoteUserID() {
+	public String getQuoteUserID() {
 		return quoteUserID;
 	}
 

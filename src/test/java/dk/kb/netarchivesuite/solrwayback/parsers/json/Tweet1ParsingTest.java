@@ -33,6 +33,10 @@ public class Tweet1ParsingTest {
         assertNotNull(tweet.getUser());
         assertEquals("RT @Egense: Test full text with some encoding. This is an extended tweet within" +
                 " a retweet, so it should cut off at the 140 char mark:\u00e5c m\u00f8 \u2026", tweet.getText());
+        assertEquals(0, tweet.getFavoriteCount());
+        assertEquals(0, tweet.getRetweetCount());
+        assertEquals(0, tweet.getQuoteCount());
+        assertEquals(0, tweet.getReplyCount());
         assertNotNull(tweet.getRetweetedTweet()); // Tweet is a retweet
         assertNull(tweet.getQuotedTweet()); // No quoted tweet
         assertEquals("Fri Mar 13 07:01:00 CET 2020", tweet.getCreationDate().toString());
@@ -81,6 +85,10 @@ public class Tweet1ParsingTest {
         assertNotNull(retweetedTweet.getExtendedContent());
         assertEquals("Test full text with some encoding. This is an extended tweet within a retweet," +
                 " so it should cut off at the 140 char\u2026 https://t.co/ABCDEFGHIJ", retweetedTweet.getText());
+        assertEquals(220, retweetedTweet.getFavoriteCount());
+        assertEquals(19, retweetedTweet.getRetweetCount());
+        assertEquals(1, retweetedTweet.getQuoteCount());
+        assertEquals(11, retweetedTweet.getReplyCount());
         assertNull(retweetedTweet.getQuotedTweet());
         assertNull(retweetedTweet.getInReplyToScreenName());
         assertNotNull(retweetedTweet.getEntities());

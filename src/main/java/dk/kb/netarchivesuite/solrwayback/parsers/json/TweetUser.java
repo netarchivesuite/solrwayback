@@ -9,7 +9,7 @@ public class TweetUser {
     private String screenName;
     private String profileImageUrl;
     private String description = "No description."; // Might be null, so want a default
-    private long followersCount;
+    private int followersCount;
     private int friendsCount;
     private boolean verified;
 
@@ -56,11 +56,11 @@ public class TweetUser {
         this.description = description;
     }
 
-    public long getFollowersCount() {
+    public int getFollowersCount() {
         return followersCount;
     }
 
-    public void setFollowersCount(long followersCount) {
+    public void setFollowersCount(int followersCount) {
         this.followersCount = followersCount;
     }
 

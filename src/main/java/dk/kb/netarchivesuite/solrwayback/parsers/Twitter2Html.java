@@ -132,7 +132,7 @@ public class Twitter2Html {
                       "<div class='item date'>"+
                         "<div>"+ date +"</div>"+
                       "</div>"+
-                      (parser.getReplyToStatusID().isEmpty() ? "" : getReplyLine(parser.getReplyMentions(), parser.getReplyToStatusID()))+
+                      (parser.getReplyToStatusID() == null ? "" : getReplyLine(parser.getReplyMentions(), parser.getReplyToStatusID()))+
                       // Few edge cases contain no main text - e.g. if tweet is a reply containing only a quote
                       (mainTextHtml.isEmpty() ? "" : "<div class='item text'>" + mainTextHtml+ "</div>")+
                       (tweetImageUrls.isEmpty() ? "" : "<div class='media'>"+ imageUrlToHtml(tweetImageUrls) +"</div>")+
@@ -539,7 +539,7 @@ public class Twitter2Html {
                     "<div class='item date'>" +
                         "<div>" + parser.getQuoteCreatedDate() + "</div>" +
                     "</div>" +
-                    (parser.getQuoteReplyToStatusID().isEmpty() ? "" : getReplyLine(parser.getQuoteReplyMentions(), parser.getQuoteReplyToStatusID())) +
+                    (parser.getQuoteReplyToStatusID() == null ? "" : getReplyLine(parser.getQuoteReplyMentions(), parser.getQuoteReplyToStatusID())) +
                     "<div class='item text'>" +
                         formatTweetText(parser.getQuoteText(), parser.getQuoteMinDisplayTextRange(),
                                 parser.getQuoteHashtags(), parser.getQuoteMentions(), parser.getQuoteURLs()) +
