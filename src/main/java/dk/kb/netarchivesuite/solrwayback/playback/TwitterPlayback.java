@@ -1,14 +1,12 @@
 package dk.kb.netarchivesuite.solrwayback.playback;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 import dk.kb.netarchivesuite.solrwayback.parsers.ParseResult;
-import dk.kb.netarchivesuite.solrwayback.parsers.Twitter2Html;
+import dk.kb.netarchivesuite.solrwayback.parsers.Twitter2Html2;
 import dk.kb.netarchivesuite.solrwayback.parsers.WaybackToolbarInjecter;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * This is for JSON harvesting from Twitter only. For normal HTTP harvest, the HTMLPlayback is used.
@@ -28,7 +26,7 @@ public class TwitterPlayback extends PlaybackHandler{
         // Fake html into arc.
         String encoding = "UTF-8"; // Why does encoding say ISO ? This seems to fix the bug
         String json = new String(arc.getBinary(), encoding);
-        String html = Twitter2Html.twitter2Html(json, arc.getCrawlDate());
+        String html = Twitter2Html2.twitter2Html(json, arc.getCrawlDate());
         arc.setBinary(html.getBytes());
         arc.setContentType("text/html");
         ParseResult htmlReplaced = new ParseResult(); // Do not parse.

@@ -1,17 +1,17 @@
 package dk.kb.netarchivesuite.solrwayback.parsers.json;
 
 public class TweetMedia {
-    private String expandedUrl;
+    private String mediaUrl;
 
 
     public TweetMedia() {
     }
 
-    public String getExpandedUrl() {
-        return expandedUrl;
+    public String getMediaUrl() {
+        return mediaUrl;
     }
 
-    public void setExpandedUrl(String expandedUrl) {
-        this.expandedUrl = expandedUrl;
+    public void setMediaUrl(String mediaUrl) {
+        this.mediaUrl = mediaUrl;
     }
 }

@@ -5,6 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.Tweet;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetEntities;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetEntity;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetHashtag;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetMention;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetURL;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetUser;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
@@ -14,15 +19,20 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.SolrQueryUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Twitter2Html2 {
     private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
@@ -37,12 +47,13 @@ public class Twitter2Html2 {
     public static String twitter2Html(String twitterJSON, String crawlDate) throws IOException {
         crawlerDate = crawlDate;
         ObjectMapper mapper = new ObjectMapper();
+        // Ignore properties that are not found when parsing json - TODO consider worth using @JSONIgnore instead
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         tweet = mapper.readValue(twitterJSON, Tweet.class);
         mainUser = tweet.getUser();
-        mainContentTweet = helper.getMainContentTweet();
         helper = new TwitterHelper(tweet, crawlDate);
+        mainContentTweet = helper.getMainContentTweet();
 
 
         String cssFromFile = IOUtils.toString(
@@ -59,6 +70,16 @@ public class Twitter2Html2 {
         } catch (Exception e) {
             log.warn("Failed getting profile image from solr for tweet '{}'..", tweet.getId(), e);
         }
+
+        List<String> tweetImages = helper.getTweetImageURLStrings(mainContentTweet);
+        List<ImageUrl> tweetImageUrls = new ArrayList<>();
+        try {
+            tweetImageUrls = getImageUrlsFromSolr(tweetImages);
+        } catch (Exception e) {
+            log.warn("Failed getting images from solr for main tweet '{}..", tweet.getId(), e);
+        }
+
+        String mainTextHtml = getFormattedTweetText(mainContentTweet);
 
         String html =
                 "<!DOCTYPE html>" +
@@ -93,13 +114,14 @@ public class Twitter2Html2 {
                         "</div>" +
                       "</div>" +
                       "<div class='item date'>" +
-                        "<div>" + helper.getMainContentTweet().getCreationDate() + "</div>" +
+                        "<div>" + mainContentTweet.getCreationDate() + "</div>" +
                       "</div>"+
-                      (helper.getMainContentTweet().getInReplyToTweetId() == null ? "" : getReplyLine(parser.getReplyMentions(), parser.getReplyToStatusID()))+
+                      (mainContentTweet.getInReplyToTweetId() == null ? "" : getReplyLine(
+                              helper.getReplyMentions(mainContentTweet), mainContentTweet.getInReplyToTweetId()))+
                       // Few edge cases contain no main text - e.g. if tweet is a reply containing only a quote
                       (mainTextHtml.isEmpty() ? "" : "<div class='item text'>" + mainTextHtml+ "</div>")+
                       (tweetImageUrls.isEmpty() ? "" : "<div class='media'>"+ imageUrlToHtml(tweetImageUrls) +"</div>")+
-                      (parser.hasQuote() ? getQuoteHtml(parser, crawlDate) : "")+
+                      (mainContentTweet.hasQuote() ? getQuoteHtml() : "")+
                       "<div class='item bottom-container'>" +
                         "<div class='reactions'>" +
                           "<span class='icon replies'></span>" + // TODO: should probably be img
@@ -111,7 +133,7 @@ public class Twitter2Html2 {
                           "<span class='icon likes'></span>" +
                           "<span class='number'>" + mainContentTweet.getFavoriteCount() + "</span>" +
                         "</div>" +
-                        "<span class='found-replies-text'>" + foundRepliesToTweet(tweetID) + "</span>" +
+                        "<span class='found-replies-text'>" + foundRepliesToTweet(mainContentTweet.getId()) + "</span>" +
                       "</div>" +
                     "</div>" +
                   "</div>" +
@@ -128,15 +150,15 @@ public class Twitter2Html2 {
     private static String getIconsCSS() {
         String reactionIconsImageUrl = PropertiesLoader.WAYBACK_BASEURL + "images/twitter_sprite.png";
         return ".reactions span.replies {" +
-                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -50px;}" + // Missing correct icon?
+                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -50px;}" + // Missing correct icon?
                 ".reactions span.retweets {" +
-                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -180px -50px;}" +
+                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -180px -50px;}" +
                 ".reactions span.likes {" +
-                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -130px;}" +
+                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -145px -130px;}" +
                 ".reactions span.quotes {" +
-                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -105px -50px;}" + // Missing correct icon
+                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -105px -50px;}" + // Missing correct icon
                 "span.user-verified {" +
-                "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -67px -130px;}"; // TODO: using temp icon atm
+                    "background: transparent url(" + reactionIconsImageUrl + ") no-repeat -67px -130px;}"; // TODO: using temp icon atm
     }
 
     /**
@@ -293,11 +315,12 @@ public class Twitter2Html2 {
      * @param replyToTweetID ID for the tweet being replied to.
      * @return Html for the reply line in a reply tweet.
      */
-    private static String getReplyLine(List<String> replyMentions, String replyToTweetID) {
+    private static String getReplyLine(List<TweetMention> replyMentions, String replyToTweetID) {
         // TODO collapse on more than 3 mentions
         List<String> replyMentionsHTML = new ArrayList<>();
-        for (String replyMention : replyMentions) {
-            String replyMentionHTML = makeTagHTML(replyMention);
+        for (TweetMention replyMention : replyMentions) {
+            String replyScreenName = replyMention.getScreenName();
+            String replyMentionHTML = makeMentionHTML(replyScreenName);
             replyMentionsHTML.add(replyMentionHTML);
         }
 
@@ -327,21 +350,196 @@ public class Twitter2Html2 {
     }
 
     /**
+     * TODO fix
      * Creates the html for a hashtag or mention in the tweet.
      * This html will contain a link to search SolrWayback for the hashtag or tweets by this user or other mentions of them.
-     * @param entityTag The tag (hashtag/mention) to make html for.
+     * @param mentionScreenName The tag (hashtag/mention) to make html for.
      * @return A string containing the html for the tag
      */
-    private static String makeTagHTML(String entityTag) {
-        String tagWithoutPrefixSymbol = entityTag.substring(1);
-        String searchString;
-        if (entityTag.charAt(0) == '#') {
-            searchString = "keywords%3A" + tagWithoutPrefixSymbol;
-        } else { // charAt(0) == '@'
-            searchString = "(author:" + tagWithoutPrefixSymbol + " OR tw_user_mentions:"
-                    + tagWithoutPrefixSymbol.toLowerCase() + ")";
-        }
+    private static String makeMentionHTML(String mentionScreenName) {
+        String searchString = "(author:" + mentionScreenName + " OR tw_user_mentions:"
+                    + mentionScreenName.toLowerCase() + ")";
         String searchUrl = SolrQueryUtils.createTwitterSearchURL(searchString);
-        return "<span><a href='" + searchUrl + "'>" + entityTag + "</a></span>";
+        return "<span><a href='" + searchUrl + "'>@" + mentionScreenName + "</a></span>";
+    }
+
+    private static String makeHashtagHTML(String hashtagText) {
+        String searchString = "keywords%3A" + hashtagText;
+        String searchUrl = SolrQueryUtils.createTwitterSearchURL(searchString);
+        return "<span><a href='" + searchUrl + "'>#" + hashtagText + "</a></span>";
+    }
+
+    private static String makeURLHtml(TweetURL tweetURL) {
+        String expandedUrl = tweetURL.getExpandedUrl();
+        log.info("Making URL html from url '{}'", expandedUrl);
+        if (expandedUrl.equals(tweet.getQuotePermalink())) { // Ignore URL if it's the quote url
+            log.info("Ignored quote permalink while inserting url html '{}'", tweet.getQuotePermalink());
+            return "";
+        }
+        String displayUrl = tweetURL.getDisplayUrl();
+        return "<span><a href='" + expandedUrl + "'>" + displayUrl + "</a></span>";
+    }
+
+    /**
+     * Creates the html for a quote as part of a tweet.
+     * @return All the html for a quote as a string
+     */
+    private static String getQuoteHtml() {
+        Tweet quote = mainContentTweet.getQuotedTweet();
+        TweetUser quotedUser = quote.getUser();
+        List<ImageUrl> quoteProfileImageUrl = new ArrayList<>();
+        List<ImageUrl> quoteImageUrls = new ArrayList<>();
+        try {
+            List<String> quoteProfileImage = Collections.singletonList(quotedUser.getProfileImageUrl());
+            quoteProfileImageUrl = getImageUrlsFromSolr(quoteProfileImage);
+            List<String> quoteImages = helper.getTweetImageURLStrings(quote);
+            quoteImageUrls = getImageUrlsFromSolr(quoteImages);
+        } catch (Exception e) {
+            log.warn("Failed getting images for quote in tweet by '{}'", mainUser.getName(), e);
+        }
+
+        String quoteHtml =
+                "<div class='quote'>" +
+                  "<div class='author-container'>" +
+                    "<div class='author'>" +
+                      "<div class='user-wrapper'>" +
+                        "<a href='" + SolrQueryUtils.createTwitterSearchURL(
+                                "tw_user_id:" + quotedUser.getId()) + "'>" +
+                          "<div class='avatar'>" + imageUrlToHtml(quoteProfileImageUrl) + "</div>" +
+                          "<div class='user-handles'>" +
+                            "<h2>" + quotedUser.getName() + "</h2>" +
+                            (quotedUser.isVerified() ? "<span class='user-verified'></span>" : "") +
+                            "<h4>@" + quotedUser.getScreenName() + "</h4>" +
+                          "</div>" +
+                        "</a>" +
+                        makeUserCard(quoteProfileImageUrl, quotedUser.getName(),
+                                quotedUser.getScreenName(), quotedUser.getDescription(),
+                                quotedUser.getFriendsCount(), quotedUser.getFollowersCount(),
+                                quotedUser.isVerified()) +
+                      "</div>" +
+                    "</div>" +
+                    makeButtonLinkingToTweet(quote.getId(), "View quote tweet") +
+                  "</div>" +
+                  "<div class='item date'>" +
+                    "<div>" + quote.getCreationDate() + "</div>" +
+                  "</div>" +
+                  (quote.getInReplyToTweetId() == null ? "" : getReplyLine(
+                          helper.getReplyMentions(quote), quote.getInReplyToTweetId())) +
+                  "<div class='item text'>" +
+                    getFormattedTweetText(quote) +
+                  "</div>" +
+                  (quoteImageUrls.isEmpty() ? "" : "<div class='media'>" + imageUrlToHtml(quoteImageUrls) + "</div>") +
+                "</div>";
+
+        return quoteHtml;
+    }
+
+    /**
+     * TODO fix
+     * Formats the tweet text by inserting html links in place of hashtags, mentions and urls.
+     * Also removes reply mentions (these will always be in the start of the text outside 'display_text_range')
+     * and removes trailing image urls (if tweet contains images the text will always contain an url linking to images).
+     * @param text Parsed text to format
+     * @param minDisplayTextRange Minimum of the parsed 'display_text_range' used for cutting off reply mentions
+     * @param entities Maps of indices and the corresponding hashtags/mentions/urls
+     * @return The formatted text string to show in playback.
+     */
+    public static String getFormattedTweetText(Tweet tweet) {
+        String contentText = helper.getContentText(tweet);
+        int tweetTextStartIndex = helper.getDisplayTextRangeMin(tweet);
+        StringBuilder textBuilder = new StringBuilder(contentText);
+        formatTweetEntitiesWithIndices(textBuilder, tweet);
+
+        String htmlText = newline2Br(textBuilder.toString());
+        textBuilder = new StringBuilder(htmlText);
+        textBuilder.replace(0, tweetTextStartIndex, ""); // Remove reply mentions if any
+        contentText = textBuilder.toString();
+        contentText = contentText.replaceFirst("https:\\/\\/t\\.co\\/[a-zA-Z0-9]{10}$", ""); // Remove trailing image-URL if any
+        return contentText;
+    }
+
+    /**
+     * Replaces the entities (hashtags/mentions/urls) in the tweet text by using the direct indices of the entities.
+     * This is done backwards through the text, end-to-start, to avoid having to keep track of an index offset while
+     * replacing the entities.
+     * @param textBuilder StringBuilder containing the text to replace the tags in.
+     * @param entities Array of maps containing pairs of indices and the hashtags/mentions/urls placed on these indices.
+     */
+    private static void formatTweetEntitiesWithIndices(StringBuilder textBuilder, Tweet tweet) {
+        String contentText = helper.getContentText(tweet);
+        TweetEntities entities = helper.getContentEntities(tweet);
+        // Merge hashtags, mentions and urls
+        List<? extends TweetEntity> hashtags = entities.getHashtags();
+        List<? extends TweetEntity> mentions = helper.getContentMentions(tweet);
+        List<? extends TweetEntity> test = entities.getUrls();
+
+        List<? extends TweetEntity> allEntities = Stream.of(hashtags, mentions, test)
+                .flatMap(Collection::stream)
+                .sorted(Comparator.comparing(entity -> entity.getIndices().getLeft()))
+                .collect(Collectors.toList());
+
+        Collections.reverse(allEntities); // Reverse to insert entities in text from end to start
+
+        try {
+            for (TweetEntity entity : allEntities) {
+                String entityHTML;
+                if (entity instanceof TweetMention) {
+                    String mentionScreenName = ((TweetMention) entity).getScreenName();
+                    entityHTML = makeMentionHTML(mentionScreenName);
+                } else if (entity instanceof TweetHashtag) {
+                    String hashtagText = ((TweetHashtag) entity).getText();
+                    entityHTML = makeHashtagHTML(hashtagText);
+                } else { // instanceof TweetURL
+                    entityHTML = makeURLHtml((TweetURL) entity);
+                }
+                Pair<Integer, Integer> indices = entity.getIndices();
+                int startIndex = indices.getLeft();
+                int endIndex = indices.getRight();
+                // Use indices with offset to avoid emojis ruining every - TODO prettify
+                int offsetStartIndex = contentText.offsetByCodePoints(0, startIndex);
+                int offsetEndIndex = contentText.offsetByCodePoints(0, endIndex);
+                log.debug("Inserting '{}' at indices {},{}", entityHTML, offsetStartIndex, offsetEndIndex);
+                textBuilder.replace(offsetStartIndex, offsetEndIndex, entityHTML);
+            }
+        } catch (Exception e) { // Shouldn't happen
+            log.warn("Failed replacing raw tags with solr search links", e);
+        }
+    }
+
+    /**
+     * Converts '\n' to the corresponding '<br>' tags in html
+     * @param text Text to convert.
+     * @return New string with newline characters replaced by <br>
+     */
+    private static String newline2Br(String text) {
+        if (text == null){
+            return "";
+        }
+        return text.replace("\n","<br>");
+    }
+
+    /**
+     * Searches Solr for replies to the tweet given by the tweet ID and returns a string stating if any replies
+     * were found. If any replies were found, it will also contain a link to search for the replies in SolrWayback.
+     * @param tweetID ID of a tweet
+     * @return String stating if any replies were found.
+     */
+    private static String foundRepliesToTweet(String tweetID) {
+        String foundRepliesLine = "";
+        try {
+            SearchResult searchResult = Facade.search("tw_reply_to_tweet_id:" + tweetID, null);
+            long resultCount = searchResult.getNumberOfResults();
+            String searchLink = SolrQueryUtils.createTwitterSearchURL("tw_reply_to_tweet_id:" + tweetID);
+            if (resultCount > 0) {
+                log.info("Found replies to tweet id {}.. {}", tweetID, resultCount);
+                foundRepliesLine = "Found <a href='" + searchLink + "'>" + resultCount + "</a> replies"; // TODO for some reason shows 0 right now?? - edit: not sure if relevant anymore
+            } else {
+                log.info("Didn't find any replies to tweet {}", tweetID);
+                foundRepliesLine = "No replies found to tweet";
+            }
+        } catch (Exception e) {
+            log.warn("Error while trying to find replies for tweet " + tweetID);
+        }
+        return foundRepliesLine;
     }
 }

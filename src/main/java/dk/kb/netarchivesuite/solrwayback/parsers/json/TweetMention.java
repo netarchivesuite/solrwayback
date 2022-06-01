@@ -3,7 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.parsers.json;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class TweetMention {
+public class TweetMention implements TweetEntity {
     @JsonProperty("id_str")
     private String id;
 
@@ -13,6 +13,10 @@ public class TweetMention {
 
 
     public TweetMention() {
+    }
+
+    public TweetMention(String screenName) {
+        this.screenName = screenName;
     }
 
     @JsonProperty("indices")
@@ -30,6 +34,11 @@ public class TweetMention {
 
     public Pair<Integer, Integer> getIndices() {
         return indices;
+    }
+
+    @Override
+    public void setIndices(Pair<Integer, Integer> newIndices) {
+        this.indices = newIndices;
     }
 
     public String getScreenName() {

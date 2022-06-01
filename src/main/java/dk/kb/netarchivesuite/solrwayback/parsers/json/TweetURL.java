@@ -3,7 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.parsers.json;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class TweetURL {
+public class TweetURL implements TweetEntity {
     private Pair<Integer, Integer> indices;
 
     private String expandedUrl;
@@ -21,6 +21,11 @@ public class TweetURL {
 
     public Pair<Integer, Integer> getIndices() {
         return indices;
+    }
+
+    @Override
+    public void setIndices(Pair<Integer, Integer> newIndices) {
+        this.indices = newIndices;
     }
 
     public String getExpandedUrl() {
