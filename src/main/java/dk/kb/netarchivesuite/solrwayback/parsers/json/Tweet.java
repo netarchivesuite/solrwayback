@@ -67,6 +67,8 @@ public class Tweet {
         this.displayTextRange = Pair.of(displayTextRange[0], displayTextRange[1]);
     }
 
+    // 'extended_entities' should always exist when media is contained in tweet, so we only parse media from this
+    // instead of also handling media inside 'entities'
     @JsonProperty("extended_entities")
     private void unpackMedia(Map<String, List<TweetMedia>> extendedEntitiesObj) {
         this.media = extendedEntitiesObj.get("media");

@@ -18,6 +18,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.SolrQueryUtils;
+import dk.kb.netarchivesuite.solrwayback.util.TwitterParsingUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -41,9 +42,17 @@ public class Twitter2Html2 {
     private static Tweet tweet;
     private static TweetUser mainUser;
     private static Tweet mainContentTweet;
-    private static TwitterHelper helper;
 
     // TODO this is fugly. Consider making non-static
+    /**
+     * The main method for this class.
+     * Builds all the html for a tweet by parsing the JSON with Jackson and inserting the parsed tweet data
+     * in html tags that resemble the original tweet structure.
+     * @param twitterJSON The JSON from Twitter
+     * @param crawlDate Date of the crawl - used for Solr searches
+     * @return The html making up the tweet
+     * @throws IOException If Jackson fails in parsing the JSON or css-file is not found
+     */
     public static String twitter2Html(String twitterJSON, String crawlDate) throws IOException {
         crawlerDate = crawlDate;
         ObjectMapper mapper = new ObjectMapper();
@@ -52,8 +61,7 @@ public class Twitter2Html2 {
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         tweet = mapper.readValue(twitterJSON, Tweet.class);
         mainUser = tweet.getUser();
-        helper = new TwitterHelper(tweet, crawlDate);
-        mainContentTweet = helper.getMainContentTweet();
+        mainContentTweet = TwitterParsingUtils.getMainContentTweet(tweet);
 
 
         String cssFromFile = IOUtils.toString(
@@ -62,8 +70,8 @@ public class Twitter2Html2 {
         String reactionsCss = getIconsCSS();
         String css = cssFromFile + reactionsCss;
 
-        TweetUser contentAuthor = helper.getMainContentAuthor();
-        List<String> contentAuthorProfileImageList = Collections.singletonList(contentAuthor.getProfileImageUrl());
+        TweetUser mainContentAuthor = TwitterParsingUtils.getMainContentAuthor(tweet);
+        List<String> contentAuthorProfileImageList = Collections.singletonList(mainContentAuthor.getProfileImageUrl());
         List<ImageUrl> contentAuthorProfileImageUrl = new ArrayList<>();
         try {
             contentAuthorProfileImageUrl = getImageUrlsFromSolr(contentAuthorProfileImageList);
@@ -71,7 +79,7 @@ public class Twitter2Html2 {
             log.warn("Failed getting profile image from solr for tweet '{}'..", tweet.getId(), e);
         }
 
-        List<String> tweetImages = helper.getTweetImageURLStrings(mainContentTweet);
+        List<String> tweetImages = TwitterParsingUtils.getTweetImageURLStrings(mainContentTweet);
         List<ImageUrl> tweetImageUrls = new ArrayList<>();
         try {
             tweetImageUrls = getImageUrlsFromSolr(tweetImages);
@@ -97,31 +105,33 @@ public class Twitter2Html2 {
                       "<div class='author'>" +
                         "<div class='user-wrapper'>" +
                           "<a href='" + SolrQueryUtils.createTwitterSearchURL(
-                                  "tw_user_id:" + helper.getMainContentAuthor().getId()) + "'>" +
+                                  "tw_user_id:" + mainContentAuthor.getId()) + "'>" +
                             "<div class='avatar'>" +
                               imageUrlToHtml(contentAuthorProfileImageUrl)+
                             "</div>" +
                             "<div class='user-handles'>" +
-                              "<h2>" + helper.getMainContentAuthor().getName() + "</h2>" +
-                              (helper.getMainContentAuthor().isVerified() ? "<span class='user-verified'></span>" : "") + // TODO: should probably be img
-                              "<h4>@" + helper.getMainContentAuthor().getScreenName() + "</h4>" +
+                              "<h2>" + mainContentAuthor.getName() + "</h2>" +
+                              (mainContentAuthor.isVerified() ? "<span class='user-verified'></span>" : "") + // TODO: should probably be img
+                              "<h4>@" + mainContentAuthor.getScreenName() + "</h4>" +
                             "</div>" +
                           "</a>" +
-                          makeUserCard(contentAuthorProfileImageUrl, contentAuthor.getName(),
-                                  contentAuthor.getScreenName(), contentAuthor.getDescription(),
-                                  contentAuthor.getFriendsCount(), contentAuthor.getFollowersCount(),
-                                  contentAuthor.isVerified())+
+                          makeUserCard(contentAuthorProfileImageUrl, mainContentAuthor.getName(),
+                                  mainContentAuthor.getScreenName(), mainContentAuthor.getDescription(),
+                                  mainContentAuthor.getFriendsCount(), mainContentAuthor.getFollowersCount(),
+                                  mainContentAuthor.isVerified())+
                         "</div>" +
                       "</div>" +
                       "<div class='item date'>" +
                         "<div>" + mainContentTweet.getCreationDate() + "</div>" +
                       "</div>"+
                       (mainContentTweet.getInReplyToTweetId() == null ? "" : getReplyLine(
-                              helper.getReplyMentions(mainContentTweet), mainContentTweet.getInReplyToTweetId()))+
+                              TwitterParsingUtils.getReplyMentions(mainContentTweet),
+                              mainContentTweet.getInReplyToTweetId())) +
                       // Few edge cases contain no main text - e.g. if tweet is a reply containing only a quote
-                      (mainTextHtml.isEmpty() ? "" : "<div class='item text'>" + mainTextHtml+ "</div>")+
-                      (tweetImageUrls.isEmpty() ? "" : "<div class='media'>"+ imageUrlToHtml(tweetImageUrls) +"</div>")+
-                      (mainContentTweet.hasQuote() ? getQuoteHtml() : "")+
+                      (mainTextHtml.isEmpty() ? "" : "<div class='item text'>" + mainTextHtml + "</div>") +
+                      (tweetImageUrls.isEmpty() ? "" :
+                              "<div class='media'>" + imageUrlToHtml(tweetImageUrls) + "</div>") +
+                      (mainContentTweet.hasQuote() ? getQuoteHtml() : "") +
                       "<div class='item bottom-container'>" +
                         "<div class='reactions'>" +
                           "<span class='icon replies'></span>" + // TODO: should probably be img
@@ -350,11 +360,10 @@ public class Twitter2Html2 {
     }
 
     /**
-     * TODO fix
-     * Creates the html for a hashtag or mention in the tweet.
-     * This html will contain a link to search SolrWayback for the hashtag or tweets by this user or other mentions of them.
-     * @param mentionScreenName The tag (hashtag/mention) to make html for.
-     * @return A string containing the html for the tag
+     * Creates the html for a mention in a tweet.
+     * This html will contain a link to search SolrWayback for tweets by the mentioned user or other mentions of them.
+     * @param mentionScreenName The mention to make html for.
+     * @return A string containing the html for the mention
      */
     private static String makeMentionHTML(String mentionScreenName) {
         String searchString = "(author:" + mentionScreenName + " OR tw_user_mentions:"
@@ -363,17 +372,28 @@ public class Twitter2Html2 {
         return "<span><a href='" + searchUrl + "'>@" + mentionScreenName + "</a></span>";
     }
 
+    /**
+     * Creates the html for a hashtag in a tweet.
+     * This html will contain a link to search SolrWayback for other tweets containing the hashtag.
+     * @param hashtagText The hashtag to make html for.
+     * @return A string containing the html for the hashtag
+     */
     private static String makeHashtagHTML(String hashtagText) {
         String searchString = "keywords%3A" + hashtagText;
         String searchUrl = SolrQueryUtils.createTwitterSearchURL(searchString);
         return "<span><a href='" + searchUrl + "'>#" + hashtagText + "</a></span>";
     }
 
+    /**
+     * Creates the html for a URL in a tweet.
+     * This simply makes a link tag for the URL, so the link in the tweet is clickable.
+     * @param tweetURL The URL to make html for.
+     * @return A string containing the html for the tag
+     */
     private static String makeURLHtml(TweetURL tweetURL) {
         String expandedUrl = tweetURL.getExpandedUrl();
-        log.info("Making URL html from url '{}'", expandedUrl);
-        if (expandedUrl.equals(tweet.getQuotePermalink())) { // Ignore URL if it's the quote url
-            log.info("Ignored quote permalink while inserting url html '{}'", tweet.getQuotePermalink());
+        if (expandedUrl.equals(tweet.getQuotePermalink())) { // Insert nothing if URL is the quote-URL
+            log.debug("Ignored quote permalink '{}' while inserting url html", tweet.getQuotePermalink());
             return "";
         }
         String displayUrl = tweetURL.getDisplayUrl();
@@ -392,7 +412,7 @@ public class Twitter2Html2 {
         try {
             List<String> quoteProfileImage = Collections.singletonList(quotedUser.getProfileImageUrl());
             quoteProfileImageUrl = getImageUrlsFromSolr(quoteProfileImage);
-            List<String> quoteImages = helper.getTweetImageURLStrings(quote);
+            List<String> quoteImages = TwitterParsingUtils.getTweetImageURLStrings(quote);
             quoteImageUrls = getImageUrlsFromSolr(quoteImages);
         } catch (Exception e) {
             log.warn("Failed getting images for quote in tweet by '{}'", mainUser.getName(), e);
@@ -424,7 +444,7 @@ public class Twitter2Html2 {
                     "<div>" + quote.getCreationDate() + "</div>" +
                   "</div>" +
                   (quote.getInReplyToTweetId() == null ? "" : getReplyLine(
-                          helper.getReplyMentions(quote), quote.getInReplyToTweetId())) +
+                          TwitterParsingUtils.getReplyMentions(quote), quote.getInReplyToTweetId())) +
                   "<div class='item text'>" +
                     getFormattedTweetText(quote) +
                   "</div>" +
@@ -435,18 +455,15 @@ public class Twitter2Html2 {
     }
 
     /**
-     * TODO fix
      * Formats the tweet text by inserting html links in place of hashtags, mentions and urls.
-     * Also removes reply mentions (these will always be in the start of the text outside 'display_text_range')
+     * Also removes reply mentions from the text (these will always be in the start of the text outside 'display_text_range')
      * and removes trailing image urls (if tweet contains images the text will always contain an url linking to images).
-     * @param text Parsed text to format
-     * @param minDisplayTextRange Minimum of the parsed 'display_text_range' used for cutting off reply mentions
-     * @param entities Maps of indices and the corresponding hashtags/mentions/urls
+     * @param tweet The tweet to format text for - can be 'main' tweet, retweeted tweet or quote
      * @return The formatted text string to show in playback.
      */
     public static String getFormattedTweetText(Tweet tweet) {
-        String contentText = helper.getContentText(tweet);
-        int tweetTextStartIndex = helper.getDisplayTextRangeMin(tweet);
+        String contentText = TwitterParsingUtils.getContentText(tweet);
+        int tweetTextStartIndex = TwitterParsingUtils.getDisplayTextRangeMin(tweet);
         StringBuilder textBuilder = new StringBuilder(contentText);
         formatTweetEntitiesWithIndices(textBuilder, tweet);
 
@@ -463,14 +480,14 @@ public class Twitter2Html2 {
      * This is done backwards through the text, end-to-start, to avoid having to keep track of an index offset while
      * replacing the entities.
      * @param textBuilder StringBuilder containing the text to replace the tags in.
-     * @param entities Array of maps containing pairs of indices and the hashtags/mentions/urls placed on these indices.
+     * @param tweet The tweet to grab entities and text from.
      */
     private static void formatTweetEntitiesWithIndices(StringBuilder textBuilder, Tweet tweet) {
-        String contentText = helper.getContentText(tweet);
-        TweetEntities entities = helper.getContentEntities(tweet);
+        String contentText = TwitterParsingUtils.getContentText(tweet);
+        TweetEntities entities = TwitterParsingUtils.getContentEntities(tweet);
         // Merge hashtags, mentions and urls
         List<? extends TweetEntity> hashtags = entities.getHashtags();
-        List<? extends TweetEntity> mentions = helper.getContentMentions(tweet);
+        List<? extends TweetEntity> mentions = TwitterParsingUtils.getContentMentions(tweet);
         List<? extends TweetEntity> test = entities.getUrls();
 
         List<? extends TweetEntity> allEntities = Stream.of(hashtags, mentions, test)
