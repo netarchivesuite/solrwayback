@@ -9,8 +9,9 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 
+// TODO REWRITE ME
 public class Twitter2HtmlTest extends UnitTestUtils{
-    @Test
+    /*@Test
     public void testFormatTweetText() throws Exception {
         PropertiesLoader.initProperties(getFile("properties/solrwayback.properties").getPath());
         //First load and parse a tweet
@@ -33,7 +34,7 @@ public class Twitter2HtmlTest extends UnitTestUtils{
                 " <span><a href='http://thomas-egense.dk/math/'>thomas-egense.dk/math/</a></span>" +
                 " <span><a href='http://localhost:8080/solrwayback/search?query=keywords%3Amath AND type%3A\"Twitter Tweet\"'>#math</a></span>  ";
         assertEquals(expectedAfter, textAfterFormatting);
-    }
+    }*/
 
 /*
 
