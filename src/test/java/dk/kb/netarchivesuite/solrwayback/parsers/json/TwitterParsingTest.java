@@ -1,15 +1,8 @@
-package dk.kb.netarchivesuite.solrwayback.parsers;
+package dk.kb.netarchivesuite.solrwayback.parsers.json;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import dk.kb.netarchivesuite.solrwayback.parsers.json.Tweet;
-import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetEntities;
-import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetHashtag;
-import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetMedia;
-import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetMention;
-import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetURL;
-import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetUser;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-// TODO refactor to test only one tweet and have test-methods for different objects
+// TODO refactor to be more like Tweet1ParsingTest
 public class TwitterParsingTest {
 	private static ObjectMapper mapper;
 	private static Tweet tweet;

@@ -140,6 +140,6 @@ public class Tweet1ParsingTest {
         assertTrue(entities.getMentions().isEmpty());
 
         assertEquals(1, extendedContent.getMedia().size());
-        assertEquals("https://twitter.com/ThomasEgense/status/1234/photo/1", extendedContent.getMedia().get(0).getMediaUrl());
+        assertEquals("http://pbs.twimg.com/media/ES8Vm7-X0AA61qZ.jpg", extendedContent.getMedia().get(0).getMediaUrl());
     }
 }
