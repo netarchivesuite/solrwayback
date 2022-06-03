@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Twitter2Html2 {
-    private static final Logger log = LoggerFactory.getLogger(Twitter2Html2.class);
+public class Twitter2Html {
+    private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
 
     private static String crawlerDate;
     private static Tweet tweet;
@@ -65,7 +65,7 @@ public class Twitter2Html2 {
 
 
         String cssFromFile = IOUtils.toString(
-                Twitter2Html2.class.getClassLoader().getResourceAsStream("twitter_playback_style.css"),
+                Twitter2Html.class.getClassLoader().getResourceAsStream("twitter_playback_style.css"),
                 StandardCharsets.UTF_8);
         String reactionsCss = getIconsCSS();
         String css = cssFromFile + reactionsCss;
