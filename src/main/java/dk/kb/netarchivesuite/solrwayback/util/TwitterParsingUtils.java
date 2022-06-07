@@ -2,16 +2,20 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.json.Tweet;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetEntities;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetEntity;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetMedia;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetMention;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetUser;
-import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetVideoInfo;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetVideoVariant;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TwitterParsingUtils {
     private TwitterParsingUtils() {
@@ -71,7 +75,7 @@ public class TwitterParsingUtils {
      * @param tweet Tweet to get mentions for
      * @return List of mentions that are contained in the tweets text
      */
-    public static List<TweetMention> getContentMentions(Tweet tweet) {
+    public static List<TweetMention> getTextContentMentions(Tweet tweet) {
         List<TweetMention> allMentions = getContentEntities(tweet).getMentions();
         int minDisplayRange = getDisplayTextRangeMin(tweet);
         return allMentions.stream()
@@ -93,13 +97,20 @@ public class TwitterParsingUtils {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Grabs the video urls with best bitrate from the tweet media if any exist.
+     * @param tweet The tweet to get video urls for
+     * @return List of video urls in tweet or empty list if tweet contains none
+     */
     public static List<String> getTweetVideoURLStrings(Tweet tweet) {
         List<TweetMedia> media = getTweetMedia(tweet);
         return media.stream()
-                .filter(mediaObj -> mediaObj.getType().equals("video")) // Get only videos
-                .map(TweetMedia::getVideoInfo)
-                .map(TweetVideoInfo::getVariants) // Get the actual video part of the media
-                .map(variant -> variant.get(1).getUrl()) // Atm do it stupidly simple - 2nd element seems to always be video with highest bitrate
+                .filter(mediaObj -> mediaObj.getType().equals("video")) // Get only video media
+                .map(TweetMedia::getVideoInfo) // Get the video info object
+                // Get video variant with best bitrate
+                .map(videoInfo -> Collections.max(
+                        videoInfo.getVariants(), Comparator.comparing(TweetVideoVariant::getBitrate)))
+                .map(TweetVideoVariant::getUrl)// Get the url
                 .collect(Collectors.toList());
     }
 
@@ -177,5 +188,28 @@ public class TwitterParsingUtils {
             contentEntities = tweet.getEntities();
         }
         return contentEntities;
+    }
+
+    /**
+     * Gets the entities for the given tweet and sorts them by their indices in descending order for easy insertion
+     * backwards through the tweet text.
+     * @param tweet Tweet to grab the entities from.
+     * @return The sorted entities in descending order.
+     */
+    public static List<? extends TweetEntity> getSortedEntitiesForInsertion(Tweet tweet) {
+        TweetEntities entities = getContentEntities(tweet);
+        // Merge hashtags, mentions and urls
+        List<? extends TweetEntity> hashtags = entities.getHashtags();
+        // Can't just get mentions straight up since they also contain reply mentions
+        List<? extends TweetEntity> mentions = getTextContentMentions(tweet);
+        List<? extends TweetEntity> test = entities.getUrls();
+
+        List<? extends TweetEntity> allEntities = Stream.of(hashtags, mentions, test)
+                .flatMap(Collection::stream)
+                .sorted(Comparator.comparing(entity -> entity.getIndices().getLeft()))
+                .collect(Collectors.toList());
+
+        Collections.reverse(allEntities); // Reverse to insert entities in text from end to start
+        return allEntities;
     }
 }

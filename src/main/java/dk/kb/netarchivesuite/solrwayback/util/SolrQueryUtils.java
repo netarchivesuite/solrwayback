@@ -9,9 +9,14 @@ import java.util.List;
 
 public class SolrQueryUtils {
     public static final Logger log = LoggerFactory.getLogger(SolrQueryUtils.class);
+
     /**
+     * Normalizes a given list of urls and makes a Solr search string from the result.
+     *
      * Notice only maximum of 50 urls will be searched for.
      * This method is only called for image- and video search, and we don't want too many hits from same site.
+     * @param urls Urls to make the search string from.
+     * @return Solr query string to search Solr for the given images.
      */
     public static String createQueryStringForUrls(List<String> urls) {
         if (urls.size() > 50) {
@@ -35,11 +40,6 @@ public class SolrQueryUtils {
         query.append(" url_norm:none)"); // Just close last OR
 
         return query.toString();
-    }
-
-    public static String createQueryStringForUrl(String url) {
-        String canonicalizedUrl = Normalisation.canonicaliseURL(url);
-        return "url_norm:\"" + url + "\"";
     }
 
     /**

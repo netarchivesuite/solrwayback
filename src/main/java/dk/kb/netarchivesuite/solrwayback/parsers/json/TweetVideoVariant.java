@@ -1,10 +1,11 @@
 package dk.kb.netarchivesuite.solrwayback.parsers.json;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class TweetVideoVariant {
-    @JsonProperty("url")
     private String url;
+
+    private int bitrate;
+
+    private String contentType;
 
     public TweetVideoVariant() {
     }
@@ -15,5 +16,21 @@ public class TweetVideoVariant {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public int getBitrate() {
+        return bitrate;
+    }
+
+    public void setBitrate(int bitrate) {
+        this.bitrate = bitrate;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }
