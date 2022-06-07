@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-// TODO refactor to be more like Tweet1ParsingTest
+// TODO consider splitting up into separate classes parsing different objects
 public class TwitterParsingTest {
 	private static ObjectMapper mapper;
 	private static Tweet tweet;
@@ -81,7 +81,6 @@ public class TwitterParsingTest {
 		assertEquals("http://pbs.twimg.com/media/ABCDE.jpg", media.get(0).getMediaUrl());
 	}
 
-	// TODO probably move to new class
 	@Test
 	public void testRetweet() throws Exception {
 		String jsonContent = new String(Files.readAllBytes(Paths.get("src/test/resources/example_twitter/twitter1.json")));
@@ -135,7 +134,6 @@ public class TwitterParsingTest {
 		assertEquals(Pair.of(153, 176), urls.get(0).getIndices());
 	}
 
-	// TODO probably move to new class
 	@Test
 	public void testQuoteTweet() throws IOException {
 		String jsonContent = new String(Files.readAllBytes(Paths.get("src/test/resources/example_twitter/twitter3.json")));
