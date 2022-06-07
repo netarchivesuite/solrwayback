@@ -214,6 +214,8 @@ h4 {
 .user-desc {
     display: block;
     line-height: 1.3em;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
 }
 
 .following {

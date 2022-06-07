@@ -140,6 +140,7 @@ public class Tweet1ParsingTest {
         assertTrue(entities.getMentions().isEmpty());
 
         assertEquals(1, extendedContent.getMedia().size());
+        assertEquals("photo", extendedContent.getMedia().get(0).getType());
         assertEquals("http://pbs.twimg.com/media/ES8Vm7-X0AA61qZ.jpg", extendedContent.getMedia().get(0).getMediaUrl());
     }
 }

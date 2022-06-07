@@ -63,12 +63,14 @@ public class Tweet {
     }
 
     @JsonProperty("display_text_range")
-    private void unpackDisplayTextRange(int[] displayTextRange) {
+    private void parseDisplayTextRangeAsPair(int[] displayTextRange) {
         this.displayTextRange = Pair.of(displayTextRange[0], displayTextRange[1]);
     }
 
     // 'extended_entities' should always exist when media is contained in tweet, so we only parse media from this
     // instead of also handling media inside 'entities'
+    // WARN: This way of parsing a nested object will fail if the JSON was ever to change such that 'extended_entities'
+    // would contain anything that can not be parsed as List<TweetMedia> - only works because 'media' is its only element atm.
     @JsonProperty("extended_entities")
     private void unpackMedia(Map<String, List<TweetMedia>> extendedEntitiesObj) {
         this.media = extendedEntitiesObj.get("media");

@@ -5,12 +5,12 @@ import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetEntities;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetMedia;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetMention;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetUser;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetVideoInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TwitterParsingUtils {
@@ -80,26 +80,48 @@ public class TwitterParsingUtils {
     }
 
     /**
-     * Grabs the image urls from the tweet if any exist.
+     * TODO probably merge with getTweetVideoURLStrings, so content order is preserved
+     * Grabs the image urls from the tweet media if any exist.
+     * @param tweet The tweet to get image urls for
+     * @return List of image urls in tweet or empty list if tweet contains none
+     */
+    public static List<String> getTweetImageURLStrings(Tweet tweet) {
+        List<TweetMedia> media = getTweetMedia(tweet);
+        return media.stream()
+                .filter(mediaObj -> mediaObj.getType().equals("photo"))
+                .map(TweetMedia::getMediaUrl)
+                .collect(Collectors.toList());
+    }
+
+    public static List<String> getTweetVideoURLStrings(Tweet tweet) {
+        List<TweetMedia> media = getTweetMedia(tweet);
+        return media.stream()
+                .filter(mediaObj -> mediaObj.getType().equals("video")) // Get only videos
+                .map(TweetMedia::getVideoInfo)
+                .map(TweetVideoInfo::getVariants) // Get the actual video part of the media
+                .map(variant -> variant.get(1).getUrl()) // Atm do it stupidly simple - 2nd element seems to always be video with highest bitrate
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get the tweet media.
      *
      * The tweet-JSON can either contain media on its first level or under the 'extended_tweet' tag, and this method
      * accounts for that unlike just using {@link Tweet#getMedia()}.
      * An 'extended_entities'-tag containing media can actually also exist, but this is accounted for when parsing
      * (see e.g. {@link Tweet#unpackMedia(Map)}).
-     * @param tweet The tweet to get image urls for
-     * @return List of image urls in tweet or empty list if tweet contains none
+     * @param tweet Tweet to get the media from.
+     * @return List of tweet media. If no media exists return an empty list
      */
-    public static List<String> getTweetImageURLStrings(Tweet tweet) {
-        List<TweetMedia> images;
+    private static List<TweetMedia> getTweetMedia(Tweet tweet) {
+        List<TweetMedia> media;
         if (tweet.getExtendedContent() != null) {
-            images = tweet.getExtendedContent().getMedia();
+            media = tweet.getExtendedContent().getMedia();
         } else {
-            images = tweet.getMedia();
+            media = tweet.getMedia();
         }
         // Unlike the other entities in json 'media' won't exist if no media is contained - so need to check for null
-        return Optional.ofNullable(images).orElseGet(Collections::emptyList).stream()
-                .map(TweetMedia::getMediaUrl)
-                .collect(Collectors.toList());
+        return (media != null) ? media : Collections.emptyList();
     }
 
     /**

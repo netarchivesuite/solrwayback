@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.parsers.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 
 public class TweetUser {
     @JsonProperty("id_str")
@@ -52,6 +54,7 @@ public class TweetUser {
         return description;
     }
 
+    @JsonSetter(nulls = Nulls.SKIP)
     public void setDescription(String description) {
         this.description = description;
     }

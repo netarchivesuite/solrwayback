@@ -87,7 +87,16 @@ public class Twitter2Html {
             log.warn("Failed getting images from solr for main tweet '{}..", tweet.getId(), e);
         }
 
+        List<String> rawVideoUrlStrings = TwitterParsingUtils.getTweetVideoURLStrings(mainContentTweet);
+        List<String> tweetVideoUrls = new ArrayList<>();
+        try {
+            tweetVideoUrls = getVideoUrlsFromSolr(rawVideoUrlStrings);
+        } catch (Exception e) {
+            log.warn("Failed getting videos from solr for main tweet '{}..", tweet.getId(), e);
+        }
+
         String mainTextHtml = getFormattedTweetText(mainContentTweet);
+        boolean tweetHasNoMedia = tweetImageUrls.isEmpty() && tweetVideoUrls.isEmpty();
 
         String html =
                 "<!DOCTYPE html>" +
@@ -129,8 +138,8 @@ public class Twitter2Html {
                               mainContentTweet.getInReplyToTweetId())) +
                       // Few edge cases contain no main text - e.g. if tweet is a reply containing only a quote
                       (mainTextHtml.isEmpty() ? "" : "<div class='item text'>" + mainTextHtml + "</div>") +
-                      (tweetImageUrls.isEmpty() ? "" :
-                              "<div class='media'>" + imageUrlToHtml(tweetImageUrls) + "</div>") +
+                      (tweetHasNoMedia ? "" : "<div class='media'>"
+                              + imageUrlToHtml(tweetImageUrls) + videoUrlToHtml(tweetVideoUrls) + "</div>") +
                       (mainContentTweet.hasQuote() ? getQuoteHtml() : "") +
                       "<div class='item bottom-container'>" +
                         "<div class='reactions'>" +
@@ -216,6 +225,22 @@ public class Twitter2Html {
     }
 
     /**
+     * Searches Solr for the provided video urls and returns a list of the equivalent download-urls.
+     * @param rawVideoUrls List of video urls directly from tweet.
+     * @return List of download-urls for playback of the videos in SolrWayback.
+     * @throws Exception If there is an issue with/while communicating with Solr.
+     */
+    private static List<String> getVideoUrlsFromSolr(List<String> rawVideoUrls) throws Exception {
+        String imagesSolrQuery = SolrQueryUtils.createQueryStringForUrls(rawVideoUrls);
+        List<ArcEntryDescriptor> videoEntries = NetarchiveSolrClient.getInstance()
+                .findVideosForTimestamp(imagesSolrQuery, crawlerDate);
+
+        return videoEntries.stream()
+                .map(videoEntry -> getDownloadUrl(videoEntry.getSource_file_path(), videoEntry.getOffset()))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Generates the content for the html title tag. Depends on if retweet or standard tweet.
      * @return String to put inside <title/> tag.
      */
@@ -225,6 +250,7 @@ public class Twitter2Html {
     }
 
     /**
+     * TODO maybe make links for URLs, hashtags and mentions in user description (need to be done by regex)
      * Method for creating the html for a user card - i.e. the little box with user info shown on hover over a user
      * @param profileImageUrl List containing the profile image url. Should only contain one element.
      * @param userName Username for user.
@@ -262,14 +288,29 @@ public class Twitter2Html {
 
     /**
      * Converts a list of image URLs to a string of html img tags.
-     * @param images Images to make html for
-     * @return String of concatenated img tags
+     * @param images Images to make html for.
+     * @return String of concatenated img tags.
      */
     public static String imageUrlToHtml(List<ImageUrl> images){
         StringBuilder b = new StringBuilder();
         for (ImageUrl image : images){
             b.append("<img src='")
                     .append(image.getDownloadUrl())
+                    .append("'/>\n");
+        }
+        return b.toString();
+    }
+
+    /**
+     * Converts a list of video URLs to a string of html video tags.
+     * @param videoUrls Video URLs to make html for.
+     * @return String of concatenated video tags.
+     */
+    public static String videoUrlToHtml(List<String> videoUrls) {
+        StringBuilder b = new StringBuilder();
+        for (String videoUrl : videoUrls){
+            b.append("<video controls src='")
+                    .append(videoUrl)
                     .append("'/>\n");
         }
         return b.toString();
@@ -308,14 +349,25 @@ public class Twitter2Html {
     }
 
     /**
-     * Builds the tweet playback url from the given source file path and its offset. TODO consider moving to utils class
-     * @param filePath File path to warc file containing the content to show.
+     * Builds the tweet playback url from the given source file path and its offset. TODO move to some utils class
+     * @param sourcePath File path to warc file containing the content to show.
      * @param fileOffset Offset to look at in the file.
      * @return The full wayback url for playback.
      */
-    private static String getPlaybackUrl(String filePath, long fileOffset) {
+    private static String getPlaybackUrl(String sourcePath, long fileOffset) {
         return PropertiesLoader.WAYBACK_BASEURL +
-                "services/viewForward?source_file_path=" + filePath + "&offset=" + fileOffset;
+                "services/viewForward?source_file_path=" + sourcePath + "&offset=" + fileOffset;
+    }
+
+    /**
+     * Builds the resource download-url from a given source file path and its offset. TODO move to some utils class
+     * @param sourcePath File path to warc file containing the content to show.
+     * @param fileOffset Offset to look at in the file.
+     * @return The full wayback url for playback.
+     */
+    private static String getDownloadUrl(String sourcePath, long fileOffset) {
+        return PropertiesLoader.WAYBACK_BASEURL +
+                "services/downloadRaw?source_file_path=" + sourcePath + "&offset=" + fileOffset;
     }
 
     /**
@@ -408,11 +460,13 @@ public class Twitter2Html {
         Tweet quote = mainContentTweet.getQuotedTweet();
         TweetUser quotedUser = quote.getUser();
         List<ImageUrl> quoteProfileImageUrl = new ArrayList<>();
+        List<String> quoteProfileImage = Collections.singletonList(quotedUser.getProfileImageUrl());
         List<ImageUrl> quoteImageUrls = new ArrayList<>();
+        List<String> quoteImages = TwitterParsingUtils.getTweetImageURLStrings(quote);
+        List<String> quoteVideoUrls = TwitterParsingUtils.getTweetVideoURLStrings(quote);
+        boolean quoteHasNoMedia = quoteImages.isEmpty() && quoteVideoUrls.isEmpty();
         try {
-            List<String> quoteProfileImage = Collections.singletonList(quotedUser.getProfileImageUrl());
             quoteProfileImageUrl = getImageUrlsFromSolr(quoteProfileImage);
-            List<String> quoteImages = TwitterParsingUtils.getTweetImageURLStrings(quote);
             quoteImageUrls = getImageUrlsFromSolr(quoteImages);
         } catch (Exception e) {
             log.warn("Failed getting images for quote in tweet by '{}'", mainUser.getName(), e);
@@ -448,7 +502,8 @@ public class Twitter2Html {
                   "<div class='item text'>" +
                     getFormattedTweetText(quote) +
                   "</div>" +
-                  (quoteImageUrls.isEmpty() ? "" : "<div class='media'>" + imageUrlToHtml(quoteImageUrls) + "</div>") +
+                  (quoteHasNoMedia ? "" : "<div class='media'>"
+                          + imageUrlToHtml(quoteImageUrls) + videoUrlToHtml(quoteVideoUrls) + "</div>") +
                 "</div>";
 
         return quoteHtml;
@@ -549,7 +604,7 @@ public class Twitter2Html {
             String searchLink = SolrQueryUtils.createTwitterSearchURL("tw_reply_to_tweet_id:" + tweetID);
             if (resultCount > 0) {
                 log.info("Found replies to tweet id {}.. {}", tweetID, resultCount);
-                foundRepliesLine = "Found <a href='" + searchLink + "'>" + resultCount + "</a> replies"; // TODO for some reason shows 0 right now?? - edit: not sure if relevant anymore
+                foundRepliesLine = "Found <a href='" + searchLink + "'>" + resultCount + "</a> replies";
             } else {
                 log.info("Didn't find any replies to tweet {}", tweetID);
                 foundRepliesLine = "No replies found to tweet";
