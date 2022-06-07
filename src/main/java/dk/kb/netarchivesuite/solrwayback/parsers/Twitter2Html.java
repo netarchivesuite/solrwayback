@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -34,31 +35,39 @@ import java.util.stream.Collectors;
 public class Twitter2Html {
     private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
 
-    private static String crawlerDate;
-    private static Tweet tweet;
-    private static TweetUser mainUser;
-    private static Tweet mainContentTweet;
+    private final String crawlDate;
+    private final Tweet tweet;
+    private final TweetUser mainUser;
+    private final Tweet mainContentTweet;
 
-    // TODO this is fugly. Consider making non-static
     /**
-     * The main method for this class.
-     * Builds all the html for a tweet by parsing the JSON with Jackson and inserting the parsed tweet data
-     * in html tags that resemble the original tweet structure.
-     * @param twitterJSON The JSON from Twitter
-     * @param crawlDate Date of the crawl - used for Solr searches
-     * @return The html making up the tweet
-     * @throws IOException If Jackson fails in parsing the JSON or css-file is not found
+     * Constructor.
+     * Parses the given Twitter JSON into a Tweet object and initializes commonly used variables from the tweet.
+     * @param twitterJSON The JSON from Twitter.
+     * @param crawlDate Date of the crawl - used for Solr searches.
+     * @throws JsonProcessingException If Jackson fails to process the given json into a Tweet object.
      */
-    public static String twitter2Html(String twitterJSON, String crawlDate) throws IOException {
-        crawlerDate = crawlDate;
+    public Twitter2Html(String twitterJSON, String crawlDate) throws JsonProcessingException {
+        this.crawlDate = crawlDate;
         ObjectMapper mapper = new ObjectMapper();
+
         // Ignore properties that are not found when parsing json - TODO consider worth using @JSONIgnore instead
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         tweet = mapper.readValue(twitterJSON, Tweet.class);
         mainUser = tweet.getUser();
         mainContentTweet = TwitterParsingUtils.getMainContentTweet(tweet);
+    }
 
+    /**
+     * The main method for this class.
+     * Builds all the html for a tweet by parsing the JSON with Jackson and inserting the parsed tweet data
+     * in html tags that resemble the original tweet structure.
+
+     * @return The html making up the tweet.
+     * @throws IOException If Jackson fails in parsing the JSON or css-file is not found.
+     */
+    public String getHtmlFromJson() throws IOException {
         String cssFromFile = IOUtils.toString(
                 Twitter2Html.class.getClassLoader().getResourceAsStream("twitter_playback_style.css"),
                 StandardCharsets.UTF_8);
@@ -119,7 +128,7 @@ public class Twitter2Html {
                       (mainContentTweet.hasQuote() ? getQuoteHtml() : "") +
                       "<div class='item bottom-container'>" +
                         "<div class='reactions'>" +
-                          "<span class='icon replies'></span>" + // TODO: should probably be img
+                          "<span class='icon replies'></span>" + // TODO: should probably be div (optimally img)
                           "<span class='number'>" + mainContentTweet.getReplyCount() + "</span>" +
                           "<span class='icon retweets'></span>" +
                           "<span class='number'>" + mainContentTweet.getRetweetCount() + "</span>" +
@@ -160,7 +169,7 @@ public class Twitter2Html {
      * Generates the html for the retweet header above a tweet stating the retweeter and their info etc.
      * @return html making up the retweet header
      */
-    private static String getRetweetHeader() {
+    private String getRetweetHeader() {
         List<ImageUrl> profileImageUrl = new ArrayList<>();
         try {
             List<String> retweetProfileImage = Collections.singletonList(mainUser.getProfileImageUrl());
@@ -193,7 +202,7 @@ public class Twitter2Html {
      * @param user The tweet author/user.
      * @return Html string containing all the author-related part of the tweet.
      */
-    private static String getAuthorHtml(List<ImageUrl> profileImageUrl, TweetUser user) {
+    private String getAuthorHtml(List<ImageUrl> profileImageUrl, TweetUser user) {
         return "<div class='author'>" +
                   "<div class='user-wrapper'>" +
                     "<a href='" + SolrQueryUtils.createTwitterSearchURL(
@@ -219,10 +228,10 @@ public class Twitter2Html {
      * @return List of the found ImageUrls
      * @throws Exception If there is an issue with/while communicating with Solr.
      */
-    private static List<ImageUrl> getImageUrlsFromSolr(List<String> imageUrls) throws Exception {
+    private List<ImageUrl> getImageUrlsFromSolr(List<String> imageUrls) throws Exception {
         String imagesSolrQuery = SolrQueryUtils.createQueryStringForUrls(imageUrls);
         ArrayList<ArcEntryDescriptor> imageEntries = NetarchiveSolrClient.getInstance()
-                .findImagesForTimestamp(imagesSolrQuery, crawlerDate);
+                .findImagesForTimestamp(imagesSolrQuery, crawlDate);
         return Facade.arcEntrys2Images(imageEntries);
     }
 
@@ -232,10 +241,10 @@ public class Twitter2Html {
      * @return List of download-urls for playback of the videos in SolrWayback.
      * @throws Exception If there is an issue with/while communicating with Solr.
      */
-    private static List<String> getVideoUrlsFromSolr(List<String> rawVideoUrls) throws Exception {
+    private List<String> getVideoUrlsFromSolr(List<String> rawVideoUrls) throws Exception {
         String imagesSolrQuery = SolrQueryUtils.createQueryStringForUrls(rawVideoUrls);
         List<ArcEntryDescriptor> videoEntries = NetarchiveSolrClient.getInstance()
-                .findVideosForTimestamp(imagesSolrQuery, crawlerDate);
+                .findVideosForTimestamp(imagesSolrQuery, crawlDate);
 
         return videoEntries.stream()
                 .map(videoEntry -> getDownloadUrl(videoEntry.getSource_file_path(), videoEntry.getOffset()))
@@ -246,7 +255,7 @@ public class Twitter2Html {
      * Generates the content for the html title tag. Depends on if retweet or standard tweet.
      * @return String to put inside <title/> tag.
      */
-    public static String getHeadTitle() {
+    private String getHeadTitle() {
         String titlePrefix = tweet.isRetweet() ? "Retweet by: " : "Tweet by: ";
         return titlePrefix + mainUser.getName() + " (userID: " + mainUser.getId() + ")";
     }
@@ -263,7 +272,7 @@ public class Twitter2Html {
      * @param verified Boolean specifying if user is verified.
      * @return html for user card
      */
-    private static String makeUserCard(List<ImageUrl> profileImageUrl, String userName, String userHandle,
+    private String makeUserCard(List<ImageUrl> profileImageUrl, String userName, String userHandle,
                                        String description, int followingCount, long followersCount, boolean verified) {
         return "<div class='user-card'>" +
                   "<div class='author'>" +
@@ -293,7 +302,7 @@ public class Twitter2Html {
      * @param images Images to make html for.
      * @return String of concatenated img tags.
      */
-    public static String imageUrlToHtml(List<ImageUrl> images){
+    private String imageUrlToHtml(List<ImageUrl> images){
         StringBuilder b = new StringBuilder();
         for (ImageUrl image : images){
             b.append("<img src='")
@@ -444,7 +453,7 @@ public class Twitter2Html {
      * @param tweetURL The URL to make html for.
      * @return A string containing the html for the tag
      */
-    private static String makeURLHtml(TweetURL tweetURL) {
+    private String makeURLHtml(TweetURL tweetURL) {
         String expandedUrl = tweetURL.getExpandedUrl();
         if (expandedUrl.equals(tweet.getQuotePermalink())) { // Insert nothing if URL is the quote-URL
             log.debug("Ignored quote permalink '{}' while inserting url html", tweet.getQuotePermalink());
@@ -458,7 +467,7 @@ public class Twitter2Html {
      * Creates the html for a quote as part of a tweet.
      * @return All the html for a quote as a string
      */
-    private static String getQuoteHtml() {
+    private String getQuoteHtml() {
         Tweet quote = mainContentTweet.getQuotedTweet();
         TweetUser quotedUser = quote.getUser();
         List<ImageUrl> quoteProfileImage = new ArrayList<>();
@@ -505,7 +514,7 @@ public class Twitter2Html {
      * @param tweet The tweet to format text for - can be 'main' tweet, retweeted tweet or quote
      * @return The formatted text string to show in playback.
      */
-    public static String getFormattedTweetText(Tweet tweet) {
+    public String getFormattedTweetText(Tweet tweet) {
         String contentText = TwitterParsingUtils.getContentText(tweet);
         int tweetTextStartIndex = TwitterParsingUtils.getDisplayTextRangeMin(tweet);
         StringBuilder textBuilder = new StringBuilder(contentText);
@@ -526,7 +535,7 @@ public class Twitter2Html {
      * @param textBuilder StringBuilder containing the text to replace the tags in.
      * @param tweet The tweet to grab entities and text from.
      */
-    private static void replaceTextEntitiesAtIndices(StringBuilder textBuilder, Tweet tweet) {
+    private void replaceTextEntitiesAtIndices(StringBuilder textBuilder, Tweet tweet) {
         String contentText = TwitterParsingUtils.getContentText(tweet);
         List<? extends TweetEntity> sortedEntities = TwitterParsingUtils.getSortedEntitiesForInsertion(tweet);
 
@@ -536,7 +545,7 @@ public class Twitter2Html {
                 Pair<Integer, Integer> indices = entity.getIndices();
                 int startIndex = indices.getLeft();
                 int endIndex = indices.getRight();
-                // Use indices with offset to avoid emojis ruining every - TODO prettify
+                // Use indices with offset to avoid emojis ruining everything
                 int offsetStartIndex = contentText.offsetByCodePoints(0, startIndex);
                 int offsetEndIndex = contentText.offsetByCodePoints(0, endIndex);
                 log.debug("Inserting '{}' at indices {},{}", entityHtml, offsetStartIndex, offsetEndIndex);
@@ -552,7 +561,7 @@ public class Twitter2Html {
      * @param entity Entity to make html for.
      * @return String of html ready for insertion in text.
      */
-    private static String getEntityHtml(TweetEntity entity) {
+    private String getEntityHtml(TweetEntity entity) {
         String entityHTML;
         if (entity instanceof TweetMention) {
             String mentionScreenName = ((TweetMention) entity).getScreenName();
@@ -571,7 +580,7 @@ public class Twitter2Html {
      * @param text Text to convert.
      * @return New string with newline characters replaced by <br>
      */
-    private static String newline2Br(String text) {
+    private String newline2Br(String text) {
         if (text == null){
             return "";
         }
@@ -584,7 +593,7 @@ public class Twitter2Html {
      * @param tweetID ID of a tweet
      * @return String stating if any replies were found.
      */
-    private static String foundRepliesToTweet(String tweetID) {
+    private String foundRepliesToTweet(String tweetID) {
         String foundRepliesLine = "";
         try {
             SearchResult searchResult = Facade.search("tw_reply_to_tweet_id:" + tweetID, null);

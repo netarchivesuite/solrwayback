@@ -26,7 +26,8 @@ public class TwitterPlayback extends PlaybackHandler{
         // Fake html into arc.
         String encoding = "UTF-8"; // Why does encoding say ISO ? This seems to fix the bug
         String json = new String(arc.getBinary(), encoding);
-        String html = Twitter2Html.twitter2Html(json, arc.getCrawlDate());
+        Twitter2Html parser = new Twitter2Html(json, arc.getCrawlDate());
+        String html = parser.getHtmlFromJson();
         arc.setBinary(html.getBytes());
         arc.setContentType("text/html");
         ParseResult htmlReplaced = new ParseResult(); // Do not parse.
