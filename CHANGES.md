@@ -12,7 +12,7 @@ New optional property in solwayback.properties 'disable.playback'. Set to true t
 
 Fixed n-gram to show statistics for years after 2020....
 New optional property in solwaybackweb.properties 'fields'. This is the fields shown when clicking "Show Data fields" for a result. Comma seperated list of fields
-With loading binaries from WARC-file+offset check that the the resource is in the collection (in Solr). This will prevent URL hacking from guessing WARC-files and offset that is not in the collection but on the file-system.
+With loading binaries from WARC-file+offset check that the the resource is in the collection (in Solr). This will prevent URL hacking from guessing WARC-files and offset that is not in the collection but on the file-system. (still needs to define property)
 
 
 4.2.3

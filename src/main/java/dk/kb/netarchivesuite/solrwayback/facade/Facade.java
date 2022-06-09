@@ -452,7 +452,9 @@ public class Facade {
     public static ArcEntry getArcEntry(String source_file_path, long offset, boolean loadBinary) throws Exception {      
         //Validate WARC+offset has been indexed and in the collection.
         //This will prevent url hacking and accessing other WARC-files if you know location on filesystem.
-        if (true) { //Maybe set property. But this seems only to be a very minor performance impact
+      boolean validateArcInCollection=false; //TODO define property
+        
+        if (validateArcInCollection) {  But this seems only to be a very minor performance impact
            NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); //Correct exception already thrown if not found
         }        
         
