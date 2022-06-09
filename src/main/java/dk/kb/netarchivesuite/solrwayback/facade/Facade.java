@@ -454,7 +454,7 @@ public class Facade {
         //This will prevent url hacking and accessing other WARC-files if you know location on filesystem.
       boolean validateArcInCollection=false; //TODO define property
         
-        if (validateArcInCollection) {  But this seems only to be a very minor performance impact
+        if (validateArcInCollection) { // But this seems only to be a very minor performance impact
            NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); //Correct exception already thrown if not found
         }        
         
