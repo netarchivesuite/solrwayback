@@ -380,46 +380,43 @@ public class NetarchiveSolrClient {
         return images;
     }
 
-    public List<ArcEntryDescriptor> findVideosForTimestamp(String searchString, String timeStamp) throws Exception {
-        List<ArcEntryDescriptor> videos = new ArrayList<>();
-
+    /**
+     * Searches Solr for a video matching the given search string. If no indexed entry is found returns null.
+     * @param videoQueryString String to query Solr for.
+     * @return ArcEntryDescriptor containing info on first video found in search or null if no results found.
+     * @throws Exception If communication with Solr fails.
+     */
+    public ArcEntryDescriptor findVideo(String videoQueryString) throws Exception {
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery(searchString);
+        solrQuery.setQuery(videoQueryString);
         setSolrParams(solrQuery);
-        solrQuery.setRows(50); // get up to 50 results
+        solrQuery.setRows(1); // Just get one result
 
-        solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
-        solrQuery.add("group", "true");
-        solrQuery.add("group.field", "url_norm");
-        solrQuery.add("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
-        solrQuery.add("fq", "content_type_norm:video"); // only images
-        solrQuery.add("fq", NO_REVISIT_FILTER); // No binary for revisits.
+        solrQuery.set("facet", "false"); // Very important. Must overwrite to false. Facets are very slow and expensive.
+        solrQuery.add("fq", "content_type_norm:video"); // only videos
+        solrQuery.add("fq", NO_REVISIT_FILTER);
         solrQuery.add("fl", indexDocFieldList);
 
-        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse response = solrServer.query(solrQuery, METHOD.POST);
 
-        if (rsp.getGroupResponse() == null) {
-            return videos;
+        SolrDocumentList queryResults = response.getResults();
+        if (queryResults.getNumFound() == 0) {
+            return null;
+        } else {
+            ArcEntryDescriptor videoDescriptor = new ArcEntryDescriptor();
+
+            SolrDocument solrDoc = queryResults.get(0);
+            IndexDoc indexDoc = solrDocument2IndexDoc(solrDoc);
+
+            videoDescriptor.setUrl(indexDoc.getUrl());
+            videoDescriptor.setUrl_norm(indexDoc.getUrl_norm());
+            videoDescriptor.setSource_file_path(indexDoc.getSource_file_path());
+            videoDescriptor.setHash(indexDoc.getHash());
+            videoDescriptor.setOffset(indexDoc.getOffset());
+            videoDescriptor.setContent_type(indexDoc.getMimeType());
+
+            return videoDescriptor;
         }
-
-        List<Group> values = rsp.getGroupResponse().getValues().get(0).getValues(); // Empty if no videos found
-        for (Group current : values) {
-            SolrDocumentList docs = current.getResult();
-            ArrayList<IndexDoc> groupDocs = solrDocList2IndexDoc(docs);
-            String source_file_path = groupDocs.get(0).getSource_file_path();
-            ArcEntryDescriptor desc = new ArcEntryDescriptor();
-            desc.setUrl(groupDocs.get(0).getUrl());
-            desc.setUrl_norm(groupDocs.get(0).getUrl_norm());
-            desc.setSource_file_path(source_file_path);
-            desc.setHash(groupDocs.get(0).getHash());
-            desc.setOffset(groupDocs.get(0).getOffset());
-            desc.setContent_type(groupDocs.get(0).getMimeType());
-
-            videos.add(desc);
-        }
-
-        // log.info("resolve videos:" + searchString + " found:" + videos.size());
-        return videos;
     }
 
     public SearchResult search(String searchString, int results) throws Exception {

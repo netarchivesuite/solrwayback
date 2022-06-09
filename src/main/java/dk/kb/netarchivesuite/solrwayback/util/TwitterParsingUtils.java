@@ -84,7 +84,7 @@ public class TwitterParsingUtils {
     }
 
     /**
-     * TODO probably merge with getTweetVideoURLStrings, so content order is preserved
+     * TODO should optimally merge this with getTweetVideos, so media content order is preserved
      * Grabs the image urls from the tweet media if any exist.
      * @param tweet The tweet to get image urls for
      * @return List of image urls in tweet or empty list if tweet contains none
@@ -98,20 +98,26 @@ public class TwitterParsingUtils {
     }
 
     /**
-     * Grabs the video urls with best bitrate from the tweet media if any exist.
-     * @param tweet The tweet to get video urls for
-     * @return List of video urls in tweet or empty list if tweet contains none
+     * Gets the videos contained within the given tweet (on its own level - not nested in e.g. quote).
+     * @param tweet Tweet to get videos from.
+     * @return List of video media.
      */
-    public static List<String> getTweetVideoURLStrings(Tweet tweet) {
+    public static List<TweetMedia> getTweetVideos(Tweet tweet) {
         List<TweetMedia> media = getTweetMedia(tweet);
         return media.stream()
                 .filter(mediaObj -> mediaObj.getType().equals("video")) // Get only video media
-                .map(TweetMedia::getVideoInfo) // Get the video info object
-                // Get video variant with best bitrate
-                .map(videoInfo -> Collections.max(
-                        videoInfo.getVariants(), Comparator.comparing(TweetVideoVariant::getBitrate)))
-                .map(TweetVideoVariant::getUrl)// Get the url
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets the video variant with best bitrate from a parsed video object.
+     * NB: throws null pointer if given TweetMedia is not actually a video.
+     * @param videoMedia Parsed video object.
+     * @return The video object's variant with the best bitrate.
+     */
+    public static TweetVideoVariant getBestBitrateVideoVariant(TweetMedia videoMedia) {
+        List<TweetVideoVariant> videoVariants = videoMedia.getVideoInfo().getVariants();
+        return Collections.max(videoVariants, Comparator.comparing(TweetVideoVariant::getBitrate));
     }
 
     /**

@@ -27,9 +27,8 @@ public class SolrQueryUtils {
         query.append("(");
         for (String url : urls) {
             try {
-                // Fix https etc.
-                String canonicalizedUrl = Normalisation.canonicaliseURL(url);
-                query.append(" url_norm:\"" + canonicalizedUrl + "\" OR");
+                String urlQueryString = createQueryStringForUrl(url);
+                query.append(urlQueryString).append(" OR ");
             }
             catch (Exception e) {
                 // This can happen since urls from HTML are extracted without any sanity-check by the warc-indexer.
@@ -37,9 +36,19 @@ public class SolrQueryUtils {
                 log.info("Could not normalise url:" + url);
             }
         }
-        query.append(" url_norm:none)"); // Just close last OR
+        query.append("url_norm:none)"); // Just close last OR
 
         return query.toString();
+    }
+
+    /**
+     * Normalizes the given url and makes a Solr search string from the result.
+     * @param url Url to make the search string from.
+     * @return Solr query string.
+     */
+    public static String createQueryStringForUrl(String url) {
+        String canonicalizedUrl = Normalisation.canonicaliseURL(url);
+        return "url_norm:\"" + canonicalizedUrl + "\"";
     }
 
     /**

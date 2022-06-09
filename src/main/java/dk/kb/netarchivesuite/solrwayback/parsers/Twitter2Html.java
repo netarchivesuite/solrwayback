@@ -8,9 +8,11 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.Tweet;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetEntity;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetHashtag;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetMedia;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetMention;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetURL;
 import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetUser;
+import dk.kb.netarchivesuite.solrwayback.parsers.json.TweetVideoVariant;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
@@ -30,8 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
+// TODO could use a hand in refactoring into more classes with separate responsibilities.
 public class Twitter2Html {
     private static final Logger log = LoggerFactory.getLogger(Twitter2Html.class);
 
@@ -75,32 +77,17 @@ public class Twitter2Html {
         String css = cssFromFile + reactionsCss;
 
         TweetUser mainContentAuthor = TwitterParsingUtils.getMainContentAuthor(tweet);
+
         List<String> contentAuthorProfileImageList = Collections.singletonList(mainContentAuthor.getProfileImageUrl());
-        List<ImageUrl> contentAuthorProfileImageUrl = new ArrayList<>();
-        try {
-            contentAuthorProfileImageUrl = getImageUrlsFromSolr(contentAuthorProfileImageList);
-        } catch (Exception e) {
-            log.warn("Failed getting profile image from solr for tweet '{}'..", tweet.getId(), e);
-        }
+        List<ImageUrl> contentAuthorProfileImageUrl = getImageUrlsFromSolr(contentAuthorProfileImageList);
 
         List<String> tweetImages = TwitterParsingUtils.getTweetImageURLStrings(mainContentTweet);
-        List<ImageUrl> tweetImageUrls = new ArrayList<>();
-        try {
-            tweetImageUrls = getImageUrlsFromSolr(tweetImages);
-        } catch (Exception e) {
-            log.warn("Failed getting images from solr for main tweet '{}..", tweet.getId(), e);
-        }
+        List<ImageUrl> tweetImageUrls = getImageUrlsFromSolr(tweetImages);
 
-        List<String> rawVideoUrlStrings = TwitterParsingUtils.getTweetVideoURLStrings(mainContentTweet);
-        List<String> tweetVideoUrls = new ArrayList<>();
-        try {
-            tweetVideoUrls = getVideoUrlsFromSolr(rawVideoUrlStrings);
-        } catch (Exception e) {
-            log.warn("Failed getting videos from solr for main tweet '{}..", tweet.getId(), e);
-        }
+        List<TweetMedia> tweetVideos = TwitterParsingUtils.getTweetVideos(mainContentTweet);
 
         String mainTextHtml = getFormattedTweetText(mainContentTweet);
-        String tweetMedia = imageUrlToHtml(tweetImageUrls) + videoUrlToHtml(tweetVideoUrls);
+        String tweetMedia = getVideosHtml(tweetVideos) + imageUrlsToHtmlTags(tweetImageUrls);
 
         String html =
                 "<!DOCTYPE html>" +
@@ -124,7 +111,7 @@ public class Twitter2Html {
                               mainContentTweet.getInReplyToTweetId())) +
                       // Few edge cases contain no main text - e.g. if tweet is a reply containing only a quote
                       (mainTextHtml.isEmpty() ? "" : "<div class='item text'>" + mainTextHtml + "</div>") +
-                      (tweetMedia.isEmpty() ? "" : "<div class='media'>" + tweetMedia + "</div>") +
+                      "<div class='media'>" + tweetMedia + "</div>" +
                       (mainContentTweet.hasQuote() ? getQuoteHtml() : "") +
                       "<div class='item bottom-container'>" +
                         "<div class='reactions'>" +
@@ -207,7 +194,7 @@ public class Twitter2Html {
                   "<div class='user-wrapper'>" +
                     "<a href='" + SolrQueryUtils.createTwitterSearchURL(
                     "tw_user_id:" + user.getId()) + "'>" +
-                      "<div class='avatar'>" + imageUrlToHtml(profileImageUrl) + "</div>" +
+                      "<div class='avatar'>" + imageUrlsToHtmlTags(profileImageUrl) + "</div>" +
                       "<div class='user-handles'>" +
                         "<h2>" + user.getName() + "</h2>" +
                         (user.isVerified() ? "<span class='user-verified'></span>" : "") +
@@ -223,32 +210,83 @@ public class Twitter2Html {
     }
 
     /**
+     * TODO should make an equivalent method to this for just getting a single image
      * Searches Solr for the provided images and returns the found ImageUrls, if any, in a list.
-     * @param imageUrls The image urls to search for in Solr.
+     * @param imageUrlStrings The image urls to search for in Solr.
      * @return List of the found ImageUrls
-     * @throws Exception If there is an issue with/while communicating with Solr.
      */
-    private List<ImageUrl> getImageUrlsFromSolr(List<String> imageUrls) throws Exception {
-        String imagesSolrQuery = SolrQueryUtils.createQueryStringForUrls(imageUrls);
-        ArrayList<ArcEntryDescriptor> imageEntries = NetarchiveSolrClient.getInstance()
-                .findImagesForTimestamp(imagesSolrQuery, crawlDate);
-        return Facade.arcEntrys2Images(imageEntries);
+    private List<ImageUrl> getImageUrlsFromSolr(List<String> imageUrlStrings) {
+        ArrayList<ImageUrl> imageUrls = new ArrayList<>();
+        try {
+            String imagesSolrQuery = SolrQueryUtils.createQueryStringForUrls(imageUrlStrings);
+            ArrayList<ArcEntryDescriptor> imageEntries = NetarchiveSolrClient.getInstance()
+                    .findImagesForTimestamp(imagesSolrQuery, crawlDate);
+            imageUrls = Facade.arcEntrys2Images(imageEntries);
+        } catch (Exception e) {
+            log.warn("Failed communication with Solr while trying to query for images '{}' in tweet '{}'",
+                    imageUrlStrings, tweet.getId());
+        }
+        return imageUrls;
     }
 
     /**
-     * Searches Solr for the provided video urls and returns a list of the equivalent download-urls.
-     * @param rawVideoUrls List of video urls directly from tweet.
-     * @return List of download-urls for playback of the videos in SolrWayback.
-     * @throws Exception If there is an issue with/while communicating with Solr.
+     * Creates the html string for the given video objects.
+     * @param tweetVideos List of video media.
+     * @return String of concatenated video-tags.
      */
-    private List<String> getVideoUrlsFromSolr(List<String> rawVideoUrls) throws Exception {
-        String imagesSolrQuery = SolrQueryUtils.createQueryStringForUrls(rawVideoUrls);
-        List<ArcEntryDescriptor> videoEntries = NetarchiveSolrClient.getInstance()
-                .findVideosForTimestamp(imagesSolrQuery, crawlDate);
+    private String getVideosHtml(List<TweetMedia> tweetVideos) {
+        StringBuilder sb = new StringBuilder();
 
-        return videoEntries.stream()
-                .map(videoEntry -> getDownloadUrl(videoEntry.getSource_file_path(), videoEntry.getOffset()))
-                .collect(Collectors.toList());
+        for (TweetMedia video : tweetVideos) {
+            try {
+                buildVideoHtmlString(sb, video);
+            } catch (Exception e) {
+                log.warn("Failed communication with Solr while trying to query for video with URL '{}' in tweet '{}'",
+                        video.getMediaUrl(), tweet.getId());
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Fetches playback urls for the given media from Solr if possible and appends a video-tag to
+     * the given StringBuilder with the fetched info (or empty strings if nothing found in index).
+     * @param sb StringBuilder to append video-tag to.
+     * @param video Video object parsed from tweet.
+     * @throws Exception If communication with Solr fails while trying to query for video.
+     */
+    private void buildVideoHtmlString(StringBuilder sb, TweetMedia video) throws Exception {
+        TweetVideoVariant bestVideo = TwitterParsingUtils.getBestBitrateVideoVariant(video);
+        String bestVideoUrl = bestVideo.getUrl();
+        String videoImageUrl = video.getMediaUrl();
+        String videoSolrQuery = SolrQueryUtils.createQueryStringForUrl(bestVideoUrl);
+
+        String videoDownloadUrl = "";
+        ArcEntryDescriptor videoSolrEntry = NetarchiveSolrClient.getInstance().findVideo(videoSolrQuery);
+        if (videoSolrEntry != null) {
+            videoDownloadUrl = getDownloadUrl(videoSolrEntry.getSource_file_path(), videoSolrEntry.getOffset());
+        }
+
+        String videoPlaceholderImageUrl = "";
+        List<ImageUrl> imageUrlsFromSolr = getImageUrlsFromSolr(Collections.singletonList(videoImageUrl));
+        if (!imageUrlsFromSolr.isEmpty()) {
+            videoPlaceholderImageUrl = imageUrlsFromSolr.get(0).getDownloadUrl();
+        }
+
+        String videoHtml = videoUrlsToHtmlTag(videoDownloadUrl, videoPlaceholderImageUrl);
+        sb.append(videoHtml);
+    }
+
+    /**
+     * Creates a video tag with the given video urls.
+     * If the download URL is an empty string the video tag will visually just show as the placeholder image
+     * given by the other URL, which most likely will be indexed.
+     * @param downloadUrl Url pointing to indexed video source.
+     * @param placeholderImageUrl Url pointing to placeholder image for video.
+     * @return String of html video tag for playback of indexed video.
+     */
+    private String videoUrlsToHtmlTag(String downloadUrl, String placeholderImageUrl) {
+        return "<video controls src='" + downloadUrl + "' poster='" + placeholderImageUrl + "'/>\n";
     }
 
     /**
@@ -276,7 +314,7 @@ public class Twitter2Html {
                                        String description, int followingCount, long followersCount, boolean verified) {
         return "<div class='user-card'>" +
                   "<div class='author'>" +
-                    "<div class='avatar'>" + imageUrlToHtml(profileImageUrl) + "</div>" +
+                    "<div class='avatar'>" + imageUrlsToHtmlTags(profileImageUrl) + "</div>" +
                     "<div class='user-handles'>" +
                       "<h2>" + userName + "</h2>" +
                       (verified ? "<span class='user-verified'></span>" : "") +
@@ -302,29 +340,14 @@ public class Twitter2Html {
      * @param images Images to make html for.
      * @return String of concatenated img tags.
      */
-    private String imageUrlToHtml(List<ImageUrl> images){
-        StringBuilder b = new StringBuilder();
+    private String imageUrlsToHtmlTags(List<ImageUrl> images){
+        StringBuilder sb = new StringBuilder();
         for (ImageUrl image : images){
-            b.append("<img src='")
+            sb.append("<img src='")
                     .append(image.getDownloadUrl())
                     .append("'/>\n");
         }
-        return b.toString();
-    }
-
-    /**
-     * Converts a list of video URLs to a string of html video tags.
-     * @param videoUrls Video URLs to make html for.
-     * @return String of concatenated video tags.
-     */
-    public static String videoUrlToHtml(List<String> videoUrls) {
-        StringBuilder b = new StringBuilder();
-        for (String videoUrl : videoUrls){
-            b.append("<video controls src='")
-                    .append(videoUrl)
-                    .append("'/>\n");
-        }
-        return b.toString();
+        return sb.toString();
     }
 
     /**
@@ -470,22 +493,20 @@ public class Twitter2Html {
     private String getQuoteHtml() {
         Tweet quote = mainContentTweet.getQuotedTweet();
         TweetUser quotedUser = quote.getUser();
-        List<ImageUrl> quoteProfileImage = new ArrayList<>();
         List<String> rawQuoteProfileImageUrl = Collections.singletonList(quotedUser.getProfileImageUrl());
-        List<ImageUrl> quoteImages = new ArrayList<>();
         List<String> rawQuoteImageUrls = TwitterParsingUtils.getTweetImageURLStrings(quote);
-        List<String> quoteVideos = new ArrayList<>();
-        List<String> rawQuoteVideoUrls = TwitterParsingUtils.getTweetVideoURLStrings(quote);
+        List<TweetMedia> quoteVideos = TwitterParsingUtils.getTweetVideos(quote);
+
+        List<ImageUrl> quoteProfileImage = new ArrayList<>();
+        String quoteMediaHtml = "";
         try {
             quoteProfileImage = getImageUrlsFromSolr(rawQuoteProfileImageUrl);
-            quoteImages = getImageUrlsFromSolr(rawQuoteImageUrls);
-            quoteVideos = getVideoUrlsFromSolr(rawQuoteVideoUrls);
 
+            List<ImageUrl> quoteImages = getImageUrlsFromSolr(rawQuoteImageUrls);
+            quoteMediaHtml = getVideosHtml(quoteVideos) + imageUrlsToHtmlTags(quoteImages);
         } catch (Exception e) {
-            log.warn("Failed getting images for quote in tweet by '{}'", mainUser.getName(), e);
+            log.warn("Failed getting media for quote in tweet by '{}'", mainUser.getName(), e);
         }
-
-        String quoteMedia = imageUrlToHtml(quoteImages) + videoUrlToHtml(quoteVideos);
 
         String quoteHtml =
                 "<div class='quote'>" +
@@ -501,7 +522,7 @@ public class Twitter2Html {
                   "<div class='item text'>" +
                     getFormattedTweetText(quote) +
                   "</div>" +
-                  (quoteMedia.isEmpty() ? "" : "<div class='media'>" + quoteMedia + "</div>") +
+                  "<div class='media'>" + quoteMediaHtml + "</div>" +
                 "</div>";
 
         return quoteHtml;
