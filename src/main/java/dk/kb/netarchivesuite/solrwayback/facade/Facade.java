@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 import javax.ws.rs.QueryParam;
 
+import dk.kb.netarchivesuite.solrwayback.util.SolrQueryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -267,7 +268,7 @@ public class Facade {
 
         ArrayList<IndexDoc> indexDocs = NetarchiveSolrClient.getInstance().getHarvestPreviewsForUrl(year,url); // Only contains the required fields for this method
         // Convert to PagePreview
-        ArrayList<PagePreview> previews = new ArrayList<PagePreview>();
+        ArrayList<PagePreview> previews = new ArrayList<>();
 
         for (IndexDoc doc : indexDocs) {
             PagePreview pp = new PagePreview();
@@ -361,46 +362,12 @@ public class Facade {
         IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
         ArrayList<String> imageLinks = doc.getImageUrls();
         if (imageLinks.size() == 0) {
-            return new ArrayList<ArcEntryDescriptor>();
+            return new ArrayList<>();
         }
-        String queryStr = queryStringForImages(imageLinks);
+        String queryStr = SolrQueryUtils.createQueryStringForUrls(imageLinks);
         ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, doc.getCrawlDate());
         return imagesFromHtmlPage;
     }
-
-
-    /**
-     *
-     * Notice only maximum of 50 images will be searched.
-     * This method is only called for image-search and we dont want too many hits from same site.
-     *
-     */
-    public static String queryStringForImages(List<String> imageLinks) {
-        if (imageLinks.size() > 50) {
-            imageLinks = imageLinks.subList(0, 50);
-        }
-
-        StringBuilder query = new StringBuilder();
-        query.append("(");
-        for (String imageUrl : imageLinks) {
-            //fix https!
-            try {
-                String fixedUrl = Normalisation.canonicaliseURL(imageUrl);
-
-                query.append(" url_norm:\""+fixedUrl+"\" OR");
-
-            }
-            catch (Exception e) {
-                //This can happen since url's from HTML are extracted without any sanity-check by the warc-indexer. Just ignore
-                log.info("Could not normalise image url:" + imageUrl);
-            }
-        }
-        query.append(" url_norm:none)"); //just close last OR
-        String queryStr = query.toString();
-        return queryStr;
-    }
-
-
 
     /*
      * Find images on a HTML page. THIS IS NOT WORKING REALLY. To many searches
