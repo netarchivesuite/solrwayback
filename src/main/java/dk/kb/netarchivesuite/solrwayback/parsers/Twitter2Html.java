@@ -286,6 +286,11 @@ public class Twitter2Html {
      * @return String of html video tag for playback of indexed video.
      */
     private String videoUrlsToHtmlTag(String downloadUrl, String placeholderImageUrl) {
+
+        if (downloadUrl== null || downloadUrl.isEmpty()) {            
+            return "<video controls poster='" + placeholderImageUrl + "'/>\n";
+        }
+        
         return "<video controls src='" + downloadUrl + "' poster='" + placeholderImageUrl + "'/>\n";
     }
 
