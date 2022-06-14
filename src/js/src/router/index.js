@@ -71,9 +71,9 @@ const routes = [
 
 const router = new VueRouter({
   mode: 'history',
-  base:  router.options.base === '' ? configs.playbackConfig.solrwaybackBaseURL : process.env.BASE_URL,
   routes
 })
+router.options.base = router.options.base=== '' ? configs.playbackConfig.solrwaybackBaseURL : process.env.BASE_URL 
 console.log('router router', router)
 console.log('router configs', configs)
 console.log('router configs.playbackConfig.solrwaybackBaseURL', configs.playbackConfig.solrwaybackBaseURL)
