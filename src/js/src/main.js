@@ -24,6 +24,7 @@ Axios.get('services/frontend/properties/solrwaybackweb/')
         configs.visualizations.ngram.startYear = response.data['archive.start.year']
         configs.logo.url = response.data['top.left.logo.image']
         configs.logo.link = response.data['top.left.logo.image.link']  
+        router.options.base = configs.playbackConfig.solrwaybackBaseURL
         initializeVue()
     })
     .catch(error => initializeVue())

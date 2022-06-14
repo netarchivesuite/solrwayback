@@ -144,9 +144,7 @@ module.exports = {
       }
     }
   },
-  publicPath: process.env.NODE_ENV === 'production'
-  ? '/solrwayback/'
-  : '/',
+  publicPath: './',
   assetsDir: 'static',
   indexPath: 'solrwayback_index_page.html',
   chainWebpack: config => {

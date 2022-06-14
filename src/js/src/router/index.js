@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import SolrWayback from '../views/SolrWayback.vue'
+import configs from '../configs/'
 
 Vue.use(VueRouter)
 
@@ -70,8 +71,9 @@ const routes = [
 
 const router = new VueRouter({
   mode: 'history',
-  base: process.env.BASE_URL,
+  base:  configs.foo,
   routes
 })
-
+console.log(router)
+console.log(configs)
 export default router
