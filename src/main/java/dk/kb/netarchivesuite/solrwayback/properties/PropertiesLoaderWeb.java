@@ -21,6 +21,7 @@ public class PropertiesLoaderWeb {
 
     
     public static final String WAYBACK_SERVER_PROPERTY="wayback.baseurl";
+    public static final String WEBAPP_BASEURL_PROPERTY="webapp.baseurl";
     public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";	
     public static final String FACETS_PROPERTY = "facets";	
     public static final String FIELDS_PROPERTY = "fields";
@@ -50,6 +51,7 @@ public class PropertiesLoaderWeb {
     public static String OPENWAYBACK_SERVER;
     public static int ARCHIVE_START_YEAR;
     public static String WAYBACK_SERVER = null;
+    public static String WEBAPP_BASEURL = null;
     public static String MAPS_LATITUDE;
     public static String MAPS_LONGITUDE;
     public static String MAPS_RADIUS;
@@ -107,7 +109,7 @@ public class PropertiesLoaderWeb {
             WAYBACK_SERVER =serviceProperties.getProperty(WAYBACK_SERVER_PROPERTY);
             FACETS = Arrays.asList(getProperty(FACETS_PROPERTY, StringUtils.join(FACETS, ",")).split(", *"));		
             WORDCLOUD_STOPWORDS = Arrays.asList(getProperty(WORDCLOUD_STOPWORDS_PROPERTY, StringUtils.join(WORDCLOUD_STOPWORDS, ",")).split(", *"));
-                        
+            WEBAPP_BASEURL = serviceProperties.getProperty(WEBAPP_BASEURL_PROPERTY);
             OPENWAYBACK_SERVER = serviceProperties.getProperty(OPENWAYBACK_SERVER_PROPERTY);
             MAPS_LATITUDE = serviceProperties.getProperty(MAPS_LATITUDE_PROPERTY);
             MAPS_LONGITUDE = serviceProperties.getProperty(MAPS_LONGITUDE_PROPERTY);
@@ -162,6 +164,9 @@ public class PropertiesLoaderWeb {
             }
                         
             //Set max export sizes                                   
+            
+            
+            log.info("Property:"+ WEBAPP_BASEURL_PROPERTY +" = " + WEBAPP_BASEURL);
             log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
             log.info("Property:"+ ALLOW_EXPORT_WARC_PROPERTY +" = " + ALLOW_EXPORT_WARC);
             log.info("Property:"+ ALLOW_EXPORT_CSV_PROPERTY +" = " + ALLOW_EXPORT_CSV);
