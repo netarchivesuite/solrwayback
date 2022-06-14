@@ -16,6 +16,7 @@ Axios.get('services/frontend/properties/solrwaybackweb/')
     .then(response => {
         configs.playbackConfig.openwaybackBaseURL = response.data['openwayback.baseurl']
         configs.playbackConfig.solrwaybackBaseURL = response.data['wayback.baseurl']
+        
         configs.exportOptions.warcAllowed = response.data['allow.export.warc']
         configs.exportOptions.csvAllowed = response.data['allow.export.csv']
         configs.exportOptions.csvFields = response.data['export.csv.fields']
@@ -28,9 +29,9 @@ Axios.get('services/frontend/properties/solrwaybackweb/')
         configs.logo.url = response.data['top.left.logo.image']
         configs.logo.link = response.data['top.left.logo.image.link'] 
         
-        initializeVue('/test/solrwayback')
+        initializeVue(response.data['webapp.baseurl'])
     })
-    .catch(error => initializeVue())
+    .catch(error => initializeVue(prcosess.env.BASE_URL))
 
 function initializeVue(base){
   console.log('initialize router')
