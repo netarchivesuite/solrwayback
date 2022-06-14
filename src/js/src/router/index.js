@@ -71,9 +71,13 @@ const routes = [
 
 const router = new VueRouter({
   mode: 'history',
-  base:  configs.foo,
+  base:  router.options.base === '' ? configs.playbackConfig.solrwaybackBaseURL : process.env.BASE_URL,
   routes
 })
-console.log(router)
-console.log(configs)
+console.log('router router', router)
+console.log('router configs', configs)
+console.log('router configs.playbackConfig.solrwaybackBaseURL', configs.playbackConfig.solrwaybackBaseURL)
+console.log('router current base', router.options.base)
+console.log('router process env base', process.env.BASE_URL)
+
 export default router

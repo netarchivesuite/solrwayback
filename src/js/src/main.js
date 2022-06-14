@@ -30,9 +30,19 @@ Axios.get('services/frontend/properties/solrwaybackweb/')
     .catch(error => initializeVue())
 
 function initializeVue(){
+  console.log('initialize router', router)
+  console.log('initialize configs', configs)
+  console.log('initialize configs.playbackConfig.solrwaybackBaseURL', configs.playbackConfig.solrwaybackBaseURL)
+  console.log('initialize current base', router.options.base)
+  console.log('initialize process env base', process.env.BASE_URL)
 new Vue({
   router,
   store,
   render: h => h(App)
 }).$mount('#app')
+console.log('initialize app mounted router', router)
+  console.log('initialize app mounted configs', configs)
+  console.log('initialize app mounted configs.playbackConfig.solrwaybackBaseURL', configs.playbackConfig.solrwaybackBaseURL)
+  console.log('initialize app mounted current base', router.options.base)
+  console.log('initialize app mounted process env base', process.env.BASE_URL)
 }
