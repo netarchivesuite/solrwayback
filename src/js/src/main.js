@@ -1,9 +1,12 @@
 import Vue from 'vue'
 import App from './App.vue'
-import router from './router'
 import store from './store'
 import Axios from 'axios'
 import configs from './configs'
+import VueRouter from 'vue-router'
+import SolrWayback from './views/SolrWayback.vue'
+
+
 
 import './assets/styles/main.scss'
 
@@ -23,18 +26,96 @@ Axios.get('services/frontend/properties/solrwaybackweb/')
         configs.leaflet.map.radius = response.data['maps.radius']
         configs.visualizations.ngram.startYear = response.data['archive.start.year']
         configs.logo.url = response.data['top.left.logo.image']
-        configs.logo.link = response.data['top.left.logo.image.link']  
-        router.options.base = configs.playbackConfig.solrwaybackBaseURL
-        initializeVue()
+        configs.logo.link = response.data['top.left.logo.image.link'] 
+        
+        initializeVue('/test/solrwayback')
     })
     .catch(error => initializeVue())
 
-function initializeVue(){
-  console.log('initialize router', router)
+function initializeVue(base){
+  console.log('initialize router')
   console.log('initialize configs', configs)
   console.log('initialize configs.playbackConfig.solrwaybackBaseURL', configs.playbackConfig.solrwaybackBaseURL)
-  console.log('initialize current base', router.options.base)
+  console.log('initialize current base')
   console.log('initialize process env base', process.env.BASE_URL)
+   
+  const routes = [
+    {
+      path: '/',
+      name: 'SolrWayback',
+      component: SolrWayback,
+    },
+    {
+      path: '/search/:query?',
+      name: 'Search',
+      component: SolrWayback,
+    },
+    {
+      path: '/about',
+      name: 'About',
+      meta: {
+        title: 'About SolrWayback'
+      },
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () =>
+        import(/* webpackChunkName: "about" */ './views/About.vue')
+    },
+    {
+      path: '/calendar',
+      name: 'HarvestCalendar',
+      meta: {
+        title: 'Harvest Calendar'
+      },
+      component: () =>
+        import(/* webpackChunkName: "harvest-calendar" */ './views/HarvestCalendar.vue')
+    },
+    {
+      path: '/pageharvestdata',
+      name: 'PageHavestData',
+      meta: {
+        title: 'Page Harvest Data'
+      },
+      component: () =>
+        import(/* webpackChunkName: "page-harvest-data" */ './views/PageHarvestData.vue')
+    },
+    {
+      path: '/pwid',
+      name: 'PWID',
+      meta: {
+        title: 'PWID'
+      },
+      component: () =>
+        import(/* webpackChunkName: "PWID" */ './views/PWID.vue')
+    },
+    {
+      path: '/linkgraph',
+      name: 'Linkgraph',
+      meta: {
+        title: 'Link graph'
+      },
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () =>
+        import(/* webpackChunkName: "Linkgraph" */ './components/ToolboxComponents/LinkGraph.vue')
+    },
+  ]
+  
+  const router = new VueRouter({
+    mode: 'history',
+    base:base,
+    routes
+  })
+  console.log('router router', router)
+  console.log('router configs', configs)
+  console.log('router configs.playbackConfig.solrwaybackBaseURL', configs.playbackConfig.solrwaybackBaseURL)
+  console.log('router current base', router.options.base)
+  console.log('router process env base', process.env.BASE_URL)
+  
+  Vue.use(VueRouter)
+  
 new Vue({
   router,
   store,
