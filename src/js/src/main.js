@@ -4,7 +4,6 @@ import VueRouter from 'vue-router'
 import { routes } from './router/routes'
 import store from './store'
 import Axios from 'axios'
-import configs from './configs'
 import { setServerConfigInApp } from './configs/configHelper'
 
 import './assets/styles/main.scss'
