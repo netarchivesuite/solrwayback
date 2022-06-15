@@ -1,14 +1,6 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import SolrWayback from '../views/SolrWayback.vue'
-import configs from '../configs/'
-import Axios from 'axios'
+import SolrWayback from '../views/SolrWayback'
 
-
-
-
-
-const routes = [
+export const routes = [
   {
     path: '/',
     name: 'SolrWayback',
@@ -25,9 +17,6 @@ const routes = [
     meta: {
       title: 'About SolrWayback'
     },
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "about" */ '../views/About.vue')
   },
@@ -64,23 +53,7 @@ const routes = [
     meta: {
       title: 'Link graph'
     },
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "Linkgraph" */ '../components/ToolboxComponents/LinkGraph.vue')
   },
 ]
-
-const router = new VueRouter({
-  mode: 'history',
-  
-  routes
-})
-console.log('router router', router)
-console.log('router configs', configs)
-console.log('router configs.playbackConfig.solrwaybackBaseURL', configs.playbackConfig.solrwaybackBaseURL)
-console.log('router current base', router.options.base)
-console.log('router process env base', process.env.BASE_URL)
-
-export default router
