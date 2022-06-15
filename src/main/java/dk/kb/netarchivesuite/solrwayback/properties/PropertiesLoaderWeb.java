@@ -109,7 +109,7 @@ public class PropertiesLoaderWeb {
             WAYBACK_SERVER =serviceProperties.getProperty(WAYBACK_SERVER_PROPERTY);
             FACETS = Arrays.asList(getProperty(FACETS_PROPERTY, StringUtils.join(FACETS, ",")).split(", *"));		
             WORDCLOUD_STOPWORDS = Arrays.asList(getProperty(WORDCLOUD_STOPWORDS_PROPERTY, StringUtils.join(WORDCLOUD_STOPWORDS, ",")).split(", *"));
-            WEBAPP_BASEURL = serviceProperties.getProperty(WEBAPP_BASEURL_PROPERTY);
+            WEBAPP_BASEURL = serviceProperties.getProperty(WEBAPP_BASEURL_PROPERTY,"/solrwayback/"); //Default to /solrwayback/ if not defined
             OPENWAYBACK_SERVER = serviceProperties.getProperty(OPENWAYBACK_SERVER_PROPERTY);
             MAPS_LATITUDE = serviceProperties.getProperty(MAPS_LATITUDE_PROPERTY);
             MAPS_LONGITUDE = serviceProperties.getProperty(MAPS_LONGITUDE_PROPERTY);
@@ -123,6 +123,10 @@ public class PropertiesLoaderWeb {
             LEAFLET_ATTRIBUTION = serviceProperties.getProperty(LEAFLET_ATTRIBUTION_PROPERTY);
             TOP_LEFT_LOGO_IMAGE = serviceProperties.getProperty(TOP_LEFT_LOGO_IMAGE_PROPERTY);
             TOP_LEFT_LOGO_IMAGE_LINK = serviceProperties.getProperty(TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY);
+            
+            
+            
+            
             
             
             String csv_max_results= serviceProperties.getProperty(EXPORT_CSV_MAXRESULTS_PROPERTY);
