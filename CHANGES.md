@@ -9,10 +9,15 @@ Support for legacy WARC-Indexer before version 3.0 that does not have url_norm f
   New optional property in solwayback.properties 'url.normaliser'. Will default to normal. Other options are minimal and legacy. 
   New optional property in solwayback.properties 'solr.search.params'. Add default solr params to every query.
 New optional property in solwayback.properties 'disable.playback'. Set to true to disable playback. Will just show a empty page with info that playback has been disabled.  
-
 Fixed n-gram to show statistics for years after 2020....
 New optional property in solwaybackweb.properties 'fields'. This is the fields shown when clicking "Show Data fields" for a result. Comma seperated list of fields
 With loading binaries from WARC-file+offset check that the the resource is in the collection (in Solr). This will prevent URL hacking from guessing WARC-files and offset that is not in the collection but on the file-system.
+
+SolrWayback can now be deployed at a deeper url that 'https://kb.dk/solrwayback' but https://kb.dk/covid-collection/solrwayback'.
+If the webapp base above is not just domain/solrwayback, then an additional property needs to be defined in solrwaybackweb.properties.
+In the case above the property : webapp.baseurl=/test/solrwayback/ 
+If the property is not defined it will default to /solrwayback/
+
 
 
 4.2.3
