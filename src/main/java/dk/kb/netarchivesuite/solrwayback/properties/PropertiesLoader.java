@@ -37,7 +37,8 @@ public class PropertiesLoader {
     private static final String SCREENSHOT_TEMP_IMAGEDIR_PROPERTY="screenshot.temp.imagedir";
     private static final String PID_COLLECTION_NAME_PROPERTY="pid.collection.name";
     private static final String SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY="screenshot.preview.timeout";
-
+    private static final String WARC_FILES_VERIFY_COLLECTION_PROPERTY  ="warc.files.verify.collection";
+    
     private static final String SOLR_SERVER_CACHING_PROPERTY="solr.server.caching";
     private static final String SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY="solr.server.caching.max.entries";
     private static final String SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY="solr.server.caching.age.seconds";
@@ -63,6 +64,7 @@ public class PropertiesLoader {
     public static LinkedHashMap<String,String> SOLR_PARAMS_MAP= new LinkedHashMap<String,String>(); 
 
     public static boolean SOLR_SERVER_CACHING=false;
+    public static boolean WARC_FILES_VERIFY_COLLECTION=false;
     public static int SOLR_SERVER_CACHING_MAX_ENTRIES=1000; //default value
     public static int SOLR_SERVER_CACHING_AGE_SECONDS=84600; //default value 1 day
     public static String URL_NORMALISER="normal";
@@ -120,6 +122,9 @@ public class PropertiesLoader {
                 SOLR_SERVER_CACHING_MAX_ENTRIES=Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY).trim());
             }
 
+            String verifyCollectionString = serviceProperties.getProperty(WARC_FILES_VERIFY_COLLECTION_PROPERTY,"false");            
+            WARC_FILES_VERIFY_COLLECTION = Boolean.valueOf(verifyCollectionString);
+            
             //Format is key1=value1,key2=value2
             String solrParamsStr = serviceProperties.getProperty( SOLR_SEARCH_PARAMS_PROPERTY);
             if (solrParamsStr != null) {
@@ -144,7 +149,7 @@ public class PropertiesLoader {
             log.info("Property:"+ WARC_FILE_RESOLVER_PARAMETERS_PROPERTY +" = " + WARC_FILE_RESOLVER_PARAMETERS);
             log.info("Property:"+ URL_NORMALISER_PROPERTY +" = " +  URL_NORMALISER);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
-
+            log.info("Property:"+ WARC_FILES_VERIFY_COLLECTION_PROPERTY  +" = " + WARC_FILES_VERIFY_COLLECTION);
             log.info("Property:"+ SOLR_SERVER_CACHING_PROPERTY +" = " +  SOLR_SERVER_CACHING);
             log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);

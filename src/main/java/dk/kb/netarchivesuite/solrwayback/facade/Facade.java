@@ -423,9 +423,9 @@ public class Facade {
        //Minor performance impact
        //Define property to make it active.
        
-       boolean validateArcInCollection=false; //TODO define property        
-        if (validateArcInCollection) { // But this seems only to be a very minor performance impact
-           NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); //Correct exception already thrown if not found
+       boolean validateWARCFileInCollection=PropertiesLoader.WARC_FILES_VERIFY_COLLECTION;        
+        if (validateWARCFileInCollection) { 
+            NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); //Call Solr. Correct exception already thrown if not found
         }        
         
         return ArcParserFileResolver.getArcEntry(source_file_path, offset, loadBinary);
