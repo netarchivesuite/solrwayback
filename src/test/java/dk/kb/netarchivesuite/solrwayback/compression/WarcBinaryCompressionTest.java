@@ -68,7 +68,7 @@ public class WarcBinaryCompressionTest extends UnitTestUtils{
         ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 1227 ,true); //HTML entry
         String content = arcEntry.getBinaryContentAsStringUnCompressed();
         assertTrue(content.indexOf(HTML_TEXT_PART)> 0);    
-        System.out.println(content);
+        //System.out.println(content);
     }
 
 
@@ -78,7 +78,7 @@ public class WarcBinaryCompressionTest extends UnitTestUtils{
         ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 898  ,true); //HTML entry
         String content = arcEntry.getBinaryContentAsStringUnCompressed();
         assertTrue(content.indexOf(HTML_TEXT_PART)> 0);    
-        System.out.println(content);
+        //System.out.println(content);
     }
 
     
@@ -89,7 +89,7 @@ public class WarcBinaryCompressionTest extends UnitTestUtils{
         ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 275 ,true); //HTML entry
         String content = arcEntry.getBinaryContentAsStringUnCompressed();
             
-        System.out.println(content);
+       // System.out.println(content);
     }
 
     
