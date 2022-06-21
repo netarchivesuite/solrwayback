@@ -17,7 +17,7 @@
 self.addEventListener('fetch', function(event) {   
     destination_url = event.request.url; //destination url
     referer_url=event.request.referrer; //where we can from. Use this to find the timestamp.
-    //console.log('SolrWayback serviceworker referer:'+referer_url); 
+    // console.log('SolrWayback serviceworker referer:'+referer_url); 
 
     referer_solrwayback_url_index = referer_url.indexOf('/solrwayback/');
 
@@ -25,8 +25,10 @@ self.addEventListener('fetch', function(event) {
     solrwayback_server=self.location.origin;
     //console.log('Solrwayback url:'+solrwayback_url);
 
-    //Where sw.js was loaded from and the solrwayback base url: example https://kb.dk:4000/solrwayback
-    solrwayback_url=self.location.origin +'/solrwayback'; 
+    //Where sw.js was loaded from and the solrwayback base url: example https://kb.dk:4000/solrwayback/ og https://kb.dk:4000/covid-19/solrwayback/)
+    //This is cached in the serviceworker and used to reconstruct the server-url when fixing leaks
+    solrwayback_url=self.registration.scope; 
+    //console.log('SolrWayback webapp url:'+solrwayback_url);
 
     //console.log('SolrWayback serviceworker got url:'+destination_url);
     destinationUrl = new URL(destination_url);
@@ -40,7 +42,7 @@ self.addEventListener('fetch', function(event) {
         //Leak to tomcat root servlet. Direct it to /solrwayback context root
         if( !destination_url.startsWith(solrwayback_url)){
             console.log('SolrWayback Serviceworker found relative leak to:'+destination_url);
-            newUrl = solrwayback_url+'/services/webProxyLeak/'+destination_url;  //Can be both url or warc+offset. Handle this in java
+            newUrl = solrwayback_url+'services/webProxyLeak/'+destination_url;  //Can be both url or warc+offset. Handle this in java
             console.log('Forwarding leak to:'+ newUrl);	    
             event.respondWith(fetch(newUrl, {    
                 headers: {
@@ -57,7 +59,7 @@ self.addEventListener('fetch', function(event) {
         //Missing referer. Hardcode this year as crawltime. (Can be discussed if this is the best solution). These leaks seems to be trackers/adds or fonts. So rarely relevant which crawltime
         if (referer_solrwayback_url_index == -1){	
             crawltime_hardcoded =getYearCrawlDate();
-            newUrl = solrwayback_url+'/services/web/'+crawltime_hardcoded+'/'+destination_url;                 	 
+            newUrl = solrwayback_url+'services/web/'+crawltime_hardcoded+'/'+destination_url;                 	 
             console.log('SolrWayback Serviceworker forwarding live leak url to (crawltime is latest):'+newUrl);	 
             event.respondWith(fetch(newUrl));          
         }
@@ -65,13 +67,13 @@ self.addEventListener('fetch', function(event) {
             web_start = referer_url.indexOf('/services/web/'); 	
             if(web_start== -1 ){	 			
                 crawltime_hardcoded =getYearCrawlDate();
-                newUrl = solrwayback_url+'/services/web/'+crawltime_hardcoded+'/'+destination_url;                 	 
+                newUrl = solrwayback_url+'services/web/'+crawltime_hardcoded+'/'+destination_url;                 	 
                 console.log('SolrWayback Serviceworker forwarding live leak url to (crawltime is latest):'+newUrl);	 
                 event.respondWith(fetch(newUrl));
             }
             else{ //Most common case: Forward the live leak back into solrwayback. This live leak has been patched perfectly.
                 crawltime= referer_url.substring(web_start+14, web_start+28);
-                newUrl = solrwayback_url+'/services/web/'+crawltime+'/'+destination_url;                 	 
+                newUrl = solrwayback_url+'services/web/'+crawltime+'/'+destination_url;                 	 
                 console.log('SolrWayback Serviceworker forwarding live leak url to:'+newUrl);	 
                 event.respondWith(fetch(newUrl));                             
             }		 

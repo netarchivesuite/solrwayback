@@ -417,10 +417,13 @@ public class Facade {
     * Important to set the load binary flag to false if not used    
     */    
     public static ArcEntry getArcEntry(String source_file_path, long offset, boolean loadBinary) throws Exception {      
-        //Validate WARC+offset has been indexed and in the collection.
-        //This will prevent url hacking and accessing other WARC-files if you know location on filesystem.
-      boolean validateArcInCollection=false; //TODO define property
-        
+
+       //Validate WARC+offset has been indexed and in the collection.
+       //This will prevent url hacking and accessing other WARC-files if you know location on filesystem.
+       //Minor performance impact
+       //Define property to make it active.
+       
+       boolean validateArcInCollection=false; //TODO define property        
         if (validateArcInCollection) { // But this seems only to be a very minor performance impact
            NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); //Correct exception already thrown if not found
         }        
@@ -752,6 +755,7 @@ public class Facade {
     // For fronted
     public static HashMap<String, String> getPropertiesWeb() throws Exception {
         HashMap<String, String> props = new HashMap<String, String>();
+        props.put(PropertiesLoaderWeb.WEBAPP_BASEURL_PROPERTY,PropertiesLoaderWeb.WEBAPP_BASEURL);
         props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY, PropertiesLoaderWeb.WAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY, PropertiesLoaderWeb.OPENWAYBACK_SERVER);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
