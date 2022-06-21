@@ -24,7 +24,7 @@ If the property is not defined it will default to /solrwayback/
 4.2.3
 -----
 Fixed in-player video player for some MP4 videos that was classified by Tika as 'application/mp4'.
-Fixed log4shell vulnerabity in SolrWayback bundle (Solr and warc-indexer)
+Fixed log4shell vulnerability in SolrWayback bundle (Solr and warc-indexer)
 
 
 4.2.2
