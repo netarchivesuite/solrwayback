@@ -349,7 +349,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("group.field", "url_norm");
         solrQuery.add("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
         solrQuery.add("fq", "content_type_norm:image"); // only images
-        solrQuery.add("fq", NO_REVISIT_FILTER); // No binary for revists.
+        solrQuery.add("fq", NO_REVISIT_FILTER); // No binary for revisits.
         solrQuery.add("fq","image_size:[2000 TO *]"); // No small images. (fillers etc.)
         solrQuery.add("fl", indexDocFieldList);
 
@@ -378,6 +378,45 @@ public class NetarchiveSolrClient {
 
         // log.info("resolve images:" + searchString + " found:" + images.size());
         return images;
+    }
+
+    /**
+     * Searches Solr for a video matching the given search string. If no indexed entry is found returns null.
+     * @param videoQueryString String to query Solr for.
+     * @return ArcEntryDescriptor containing info on first video found in search or null if no results found.
+     * @throws Exception If communication with Solr fails.
+     */
+    public ArcEntryDescriptor findVideo(String videoQueryString) throws Exception {
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(videoQueryString);
+        setSolrParams(solrQuery);
+        solrQuery.setRows(1); // Just get one result
+
+        solrQuery.set("facet", "false"); // Very important. Must overwrite to false. Facets are very slow and expensive.
+        solrQuery.add("fq", "content_type_norm:video"); // only videos
+        solrQuery.add("fq", NO_REVISIT_FILTER);
+        solrQuery.add("fl", indexDocFieldList);
+
+        QueryResponse response = solrServer.query(solrQuery, METHOD.POST);
+
+        SolrDocumentList queryResults = response.getResults();
+        if (queryResults.getNumFound() == 0) {
+            return null;
+        } else {
+            ArcEntryDescriptor videoDescriptor = new ArcEntryDescriptor();
+
+            SolrDocument solrDoc = queryResults.get(0);
+            IndexDoc indexDoc = solrDocument2IndexDoc(solrDoc);
+
+            videoDescriptor.setUrl(indexDoc.getUrl());
+            videoDescriptor.setUrl_norm(indexDoc.getUrl_norm());
+            videoDescriptor.setSource_file_path(indexDoc.getSource_file_path());
+            videoDescriptor.setHash(indexDoc.getHash());
+            videoDescriptor.setOffset(indexDoc.getOffset());
+            videoDescriptor.setContent_type(indexDoc.getMimeType());
+
+            return videoDescriptor;
+        }
     }
 
     public SearchResult search(String searchString, int results) throws Exception {
@@ -1336,14 +1375,12 @@ public class NetarchiveSolrClient {
     private static String normalizeUrl(String url) {               
         return Normalisation.canonicaliseURL(url);
     }
-    
-    //        
-    private static void setSolrParams( SolrQuery solrQuery)throws Exception {
+
+    private static void setSolrParams(SolrQuery solrQuery) {
         HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
         for (String key : SOLR_PARAMS_MAP.keySet()) {        
             solrQuery.set(key,SOLR_PARAMS_MAP.get(key));            
-        }                
-        
+        }
     }
 
     
