@@ -610,7 +610,7 @@ public class SolrWaybackResource {
       log.info("full url:"+fullUrl);
       int pwidStart=fullUrl.indexOf("/pwid/web/"); //urn:pwid:netarkivet.dk:2018-12-10T06:27:01Z:part:https://www.petdreams.dk/katteracer-siameser
       String pwid = fullUrl.substring(pwidStart+10);
-      System.out.println("Pwid object:"+pwid);
+
       if (!(pwid.startsWith("urn:pwid:"))){
         //syntax not correct
          log.warn("pwid syntax not correct:"+pwid);
