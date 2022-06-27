@@ -45,7 +45,7 @@ public class PropertiesLoader {
 
     private static final String URL_NORMALISER_PROPERTY="url.normaliser";
     
-    private static final String PLAYBACK_DISABLED_PROPERTY="playback.disabled";
+    public static final String PLAYBACK_DISABLED_PROPERTY="playback.disabled";
     private static final String SOLR_SEARCH_PARAMS_PROPERTY="solr.search.params";
     
     
