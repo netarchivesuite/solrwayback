@@ -29,15 +29,15 @@ public class InitializationContextListener implements ServletContextListener {
         Properties props = new Properties();
         try {
           
-            String webbAppContext = event.getServletContext().getContextPath();                    
+            String webAppContext = event.getServletContext().getContextPath();                    
             props.load(InitializationContextListener.class.getResourceAsStream("/build.properties"));
             version = props.getProperty("APPLICATION.VERSION");
             PropertiesLoaderWeb.SOLRWAYBACK_VERSION = version;
 
             // Resolve property locations
             // Properties are either explicitly set using the web app Environment or taken from user home
-            String backendConfig = webbAppContext + ".properties"; // If contextroot is not solrwayback, it will first look for that context specific propertyfile
-            String frontendConfig = webbAppContext + "web.properties";
+            String backendConfig = webAppContext + ".properties"; // If contextroot is not solrwayback, it will first look for that context specific propertyfile
+            String frontendConfig = webAppContext + "web.properties";
             try {
                 InitialContext ctx = new InitialContext();
 
