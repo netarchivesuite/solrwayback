@@ -6,7 +6,6 @@ export default {
     let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
     let dataUrl =  `services/frontend/graph/domain_result/?q=${query + facets.join('') + optionString}`
     
-    console.log('d3 is here',d3)
     var margin = {top: 20, right: 200, bottom: 50, left: 32},
     width = 1050 - margin.left - margin.right,
     height = 700 - margin.top - margin.bottom

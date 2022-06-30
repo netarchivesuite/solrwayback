@@ -3,7 +3,7 @@
     <div v-show="!imageLoaded" class="loader" />
     <img
       loading="lazy"
-      :class="inputType === 'multiple' ? 'previewImage' : 'imageEntry'"
+      :class="getImgClass()"
       :src="inputType === 'multiple' ? item.imageUrl + '&height=200&width=200' : item"
       @load="setImageLoaded(true)"
       @click="toggleFullImage(index)">
@@ -25,6 +25,9 @@
 <script>
 import SearchSingleItemFocusImage from './SearchSingleItemFocusImage.vue'
 import ImageSearchUtils from './../../mixins/ImageSearchUtils'
+import configs from '../../configs'
+import { isPlaybackDisabled } from '../../configs/configHelper'
+
 
 export default {
   name: 'SearchSingleItemPreviewImage',
@@ -65,8 +68,15 @@ export default {
   },
   methods: {
     toggleFullImage(index) {
+      if (!isPlaybackDisabled){
       this.$emit('toggle-fullimage', this.index)
+      }
     },
+
+    getImgClass() {
+      return `${this.inputType === 'multiple' ? 'previewImage' : 'imageEntry'} ${configs.playbackConfig.playbackDisabled ? 'noPointer' : ''}`
+    },
+
     closeWindow() {
       this.$emit('toggle-fullimage', null)
     },

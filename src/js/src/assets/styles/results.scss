@@ -665,6 +665,9 @@ margin-left:40px;
   cursor:pointer;
 }
 
+.images .column .columnImageContainer.noPointer {
+  cursor:default;
+}
 
 .images .column .columnImageContainer img {
   object-fit: cover;

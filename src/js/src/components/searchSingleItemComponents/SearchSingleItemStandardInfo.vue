@@ -9,9 +9,18 @@
    
     <p class="entryInfo">
       <span class="highlightText titleInfo">
-        <div :title="result.type.toLowerCase()" :class="'typePreview ' + getIconForType(result.type)" /><a :href="getPlaybackURL(result.source_file_path, result.source_file_offset)" target="_blank"><span>{{ result.title || `${result.content_type_norm} - no title` }}</span></a>
+        <div :title="result.type.toLowerCase()" :class="'typePreview ' + getIconForType(result.type)" />
+        <span v-if="playbackDisabled()">
+          <span title="Playback has been disabled in the configuration">{{ result.title || `${result.content_type_norm} - no title` }}</span>
+        </span>
+        <span v-else>
+          <a :href="getPlaybackURL(result.source_file_path, result.source_file_offset)" target="_blank">
+            <span>{{ result.title || `${result.content_type_norm} - no title` }}</span>
+          </a>
+        </span>
       </span>
-      <a v-if="result.content_type_norm === 'html'"
+
+      <a v-if="result.content_type_norm === 'html' && !playbackDisabled()"
          :href="getOpenWaybackLink(result.wayback_date, result.url)"
          title="Alternative playback engine"
          class="openWaybackLink"
@@ -42,6 +51,7 @@
 
 <script>
 import configs from '../../configs'
+import { isPlaybackDisabled } from '../../configs/configHelper'
 import { mapState } from 'vuex'
 
 
@@ -75,8 +85,11 @@ export default {
     getOpenWaybackLink(wayback_date, url) {
       return `${configs.playbackConfig.openwaybackBaseURL}${wayback_date}/${url}`    
     },
-    
 
+    playbackDisabled(){
+      return isPlaybackDisabled()
+    },
+    
     getIconForType(type) {
       switch(type) {   
         case 'Web Page': return 'web'
