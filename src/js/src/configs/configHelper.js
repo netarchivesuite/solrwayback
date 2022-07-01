@@ -19,9 +19,9 @@ export function setServerConfigInApp(configFromServer) {
 }
 
 export function isPlaybackDisabled(){
-    return `${configs.playbackConfig.playbackDisabled}`
+    return configs.playbackConfig.playbackDisabled.trim() === 'true'? true : false
 }
 
 export function isUploadFileSearchDisabled(){
-        return `${configs.search.uploadedFileDisabled}`
+      return configs.search.uploadedFileDisabled.trim() === 'true'? true : false
     }
