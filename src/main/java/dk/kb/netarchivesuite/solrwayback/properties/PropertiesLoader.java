@@ -133,12 +133,8 @@ public class PropertiesLoader {
             else {
              log.info("no solrParams loaded");   
             }
+            PLAYBACK_DISABLED = Boolean.parseBoolean(serviceProperties.getProperty(PLAYBACK_DISABLED_PROPERTY));
             
-            String playbackDisabledStr= serviceProperties.getProperty(PLAYBACK_DISABLED_PROPERTY);
-            if ("true".equalsIgnoreCase(playbackDisabledStr)) {
-                PLAYBACK_DISABLED=true;
-            }            
-
             log.info("Property:"+ PLAYBACK_DISABLED_PROPERTY +" = " + PLAYBACK_DISABLED);
             log.info("Property:"+ SOLR_SERVER_PROPERTY +" = " + SOLR_SERVER);
             log.info("Property:"+ WAYBACK_BASEURL_PROPERTY +" = " + WAYBACK_BASEURL);

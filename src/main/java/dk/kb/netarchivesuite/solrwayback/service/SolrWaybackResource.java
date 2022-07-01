@@ -149,7 +149,14 @@ public class SolrWaybackResource {
   @Produces("image/png")
   public Response getImage(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("height") int height, @QueryParam("width") int width)
       throws SolrWaybackServiceException {
-    try {
+    
+      //If playback is disable, only tumbnals is allowed.
+      if (PropertiesLoader.PLAYBACK_DISABLED && (height > 200 || width >200)) {
+          throw new InvalidArgumentServiceException("Playback has been disabled in the configuration");          
+      }
+      
+      
+      try {
 
       //log.debug("Getting image from source_file_path:" + source_file_path + " offset:" + offset + " targetWidth:" + width + " targetHeight:" + height);
 
@@ -198,6 +205,10 @@ public class SolrWaybackResource {
   public Response downloadRaw(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
     try {
 
+        if(PropertiesLoader.PLAYBACK_DISABLED) {
+            throw new InvalidArgumentServiceException("Playback has been disabled in the configuration");
+        }
+        
   //  log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
       ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,false); //DO not load binary in memory
       
