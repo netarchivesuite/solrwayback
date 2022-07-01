@@ -74,7 +74,7 @@ export default {
     },
 
     getImgClass() {
-      return `${this.inputType === 'multiple' ? 'previewImage' : 'imageEntry'} ${configs.playbackConfig.playbackDisabled ? 'noPointer' : ''}`
+      return `${this.inputType === 'multiple' ? 'previewImage' : 'imageEntry'} ${isPlaybackDisabled() ? 'noPointer' : ''}`
     },
 
     closeWindow() {
