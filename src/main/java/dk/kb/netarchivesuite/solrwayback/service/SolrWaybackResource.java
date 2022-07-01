@@ -356,7 +356,12 @@ public class SolrWaybackResource {
   @Produces("image/png")
   public Response getHtmlPagePreview(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset)
       throws SolrWaybackServiceException {
-    try {
+      
+      if (PropertiesLoader.PLAYBACK_DISABLED) {            
+          throw new InvalidArgumentServiceException("Playback has been disabled in configuration");
+      }
+            
+     try {
       log.debug("Getting thumbnail html image from source_file_path:" + source_file_path + " offset:" + offset);
       BufferedImage image = Facade.getHtmlPagePreview(source_file_path, offset);          
       return convertToPng(image);                       
