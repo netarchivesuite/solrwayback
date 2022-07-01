@@ -68,7 +68,7 @@ export default {
   },
   methods: {
     toggleFullImage(index) {
-      if (!isPlaybackDisabled){
+      if (!isPlaybackDisabled()){
       this.$emit('toggle-fullimage', this.index)
       }
     },
