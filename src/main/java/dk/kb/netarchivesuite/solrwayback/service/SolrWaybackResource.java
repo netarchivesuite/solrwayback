@@ -205,7 +205,15 @@ public class SolrWaybackResource {
   public Response downloadRaw(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
     try {
 
+        
+        //TODO! Remove this hack when frontend has fixed it
         if(PropertiesLoader.PLAYBACK_DISABLED) {
+            //Temporary hack. Check if image and return tumbnail
+            IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);      
+            if ("image".equals(indexDoc.getContentTypeNorm())){
+                return getImage(source_file_path, offset, 200, 200);                
+            }
+            
             throw new InvalidArgumentServiceException("Playback has been disabled in the configuration");
         }
         
