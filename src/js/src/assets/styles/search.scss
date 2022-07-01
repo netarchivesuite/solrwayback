@@ -298,6 +298,18 @@ color:var(--secondary-text-color);
   border-bottom: 1px solid var(--secondary-highlight-color);
 }
 
+.searchForm .tools .searchByFileButton:disabled {
+  background-color: white;
+	border: 0px;
+	cursor: not-allowed;
+	text-transform: uppercase;
+	color: #696969;
+	margin-right: 10px;
+	padding: 0px;
+  border-bottom: 1px solid var(--secondary-highlight-color);
+}
+
+
 .searchForm .tools .toolbox {
   text-transform: uppercase;
   padding-left:0px;
@@ -523,6 +535,15 @@ color:var(--secondary-text-color);
   margin-right: auto;
   padding: 15px;
 }
+
+img.previewImage.noPointer {
+  cursor:auto;
+}
+
+img.imageEntry.noPointer {
+    cursor:auto;
+}
+  
 
 .domainHelperText {
   font-size: 75%;

@@ -1,9 +1,9 @@
 <template>
-  <div class="columnImageContainer">
+  <div :class="getColumnClass()">
     <div class="number">
       #{{ row + number * rowNumber }}
     </div>
-    <div v-if="!imageLoaded" class="loader" />
+    <div v-if="!playbackDisabled() && !imageLoaded" class="loader" />
     <img
       loading="lazy" 
       :src="result.imageUrl + '&height=200&width=200'"
@@ -28,6 +28,8 @@
 
 import SearchSingleItemFocusImage from './SearchSingleItemFocusImage'
 import ImageSearchUtils from './../../mixins/ImageSearchUtils'
+import configs from '../../configs'
+import { isPlaybackDisabled } from '../../configs/configHelper'
 import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -75,7 +77,15 @@ export default {
       this.imageLoaded = value
     },
      toggleFullImage(index) {
+      if (!this.playbackDisabled()){
       this.showFullImage !== null ? this.showFullImage = null : this.showFullImage = index
+      }
+    },
+    playbackDisabled(){
+      return isPlaybackDisabled()
+    },
+    getColumnClass() {
+      return `columnImageContainer ${this.playbackDisabled() ? 'noPointer' : ''}`
     },
     closeWindow(index) {
       this.showFullImage = null

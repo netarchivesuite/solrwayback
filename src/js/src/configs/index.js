@@ -1,7 +1,8 @@
 export default {
   playbackConfig: { 
       openwaybackBaseURL: '',
-      solrwaybackBaseURL:''
+      solrwaybackBaseURL:'',
+      playbackDisabled:false
   },
   exportOptions: {
     warcAllowed:false,
@@ -17,6 +18,10 @@ export default {
 
   logo:{
     url: ''
+  },
+
+  search:{
+    uploadedFileDisabled:false
   },
 
   leaflet: {

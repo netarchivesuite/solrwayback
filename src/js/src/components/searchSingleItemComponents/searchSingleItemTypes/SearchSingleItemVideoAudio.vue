@@ -6,25 +6,27 @@
                                :hash="result.hash"
                                :url-norm="result.url_norm"
                                input-type="multiple" />
-    <inline-player v-if="initVideo"
-                   :result="result" />
+    <span v-if="!playbackDisabled()">
+      <inline-player v-if="initVideo"
+                     :result="result" />
    
-    <div v-if="!initVideo"
-         class="vjs-play-button wrap"
-         title="Play"
-         @click="initVideo = !initVideo">
-      <div class="vjs-play-button circle" />
-    </div>
+      <div v-if="!initVideo"
+           class="vjs-play-button wrap"
+           title="Play"
+           @click="initVideo = !initVideo">
+        <div class="vjs-play-button circle" />
+      </div>
    
-    <div class="downloadFileLinkBox">
-      <!-- we need to pick a path here - wither the download attribute og target _blank. I'm using both for now to acommodate both Firefox and Chrome -->
-      <a :href="downloadRawSourceFile()" target="_blank" download>
-        Download source file
-      </a>
-    </div>
-    <search-single-item-all-data :id="result.id"
-                                 :source="result.source_file_path"
-                                 :offset="result.source_file_offset" />
+      <div class="downloadFileLinkBox">
+        <!-- we need to pick a path here - wither the download attribute og target _blank. I'm using both for now to acommodate both Firefox and Chrome -->
+        <a :href="downloadRawSourceFile()" target="_blank" download>
+          Download source file
+        </a>
+      </div>
+      <search-single-item-all-data :id="result.id"
+                                   :source="result.source_file_path"
+                                   :offset="result.source_file_offset" />
+    </span>
   </div>
 </template>
 
@@ -34,6 +36,8 @@ import SearchSingleItemAllData from './../SearchSingleItemAllData.vue'
 import SearchSingleItemImages from './../SearchSingleItemImages.vue'
 import InlinePlayer from '../../inlinePlayer/InlinePlayer'
 import Configs from '../../../configs/'
+import { isPlaybackDisabled } from '../../../configs/configHelper'
+
 
 export default {
   name: 'SearchSingleItemVideo',
@@ -75,7 +79,12 @@ export default {
   methods: {
     downloadRawSourceFile() {
       return `${Configs.playbackConfig.solrwaybackBaseURL}services/downloadRaw?source_file_path=${this.result.source_file_path}&offset=${this.result.source_file_offset}`
-    }
+    },
+
+    playbackDisabled(){
+      return isPlaybackDisabled()
+    },
+    
   }
 
 }

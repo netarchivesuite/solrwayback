@@ -769,6 +769,8 @@ public class Facade {
         props.put(PropertiesLoaderWeb.ARCHIVE_START_YEAR_PROPERTY, ""+PropertiesLoaderWeb.ARCHIVE_START_YEAR);
         props.put(PropertiesLoaderWeb.WORDCLOUD_STOPWORDS_PROPERTY, ""+PropertiesLoaderWeb.WORDCLOUD_STOPWORDS);
         props.put(PropertiesLoaderWeb.FACETS_PROPERTY, ""+PropertiesLoaderWeb.FACETS);
+        props.put(PropertiesLoaderWeb.SEARCH_UPLOADED_FILE_DISABLED_PROPERTY, ""+PropertiesLoaderWeb.SEARCH_UPLOADED_FILE_DISABLED);
+        props.put(PropertiesLoader.PLAYBACK_DISABLED_PROPERTY, ""+""+PropertiesLoader.PLAYBACK_DISABLED);
         props.put("solrwayback.version",PropertiesLoaderWeb.SOLRWAYBACK_VERSION);
 
         if (PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE != null && !"".equals(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE.trim())) {

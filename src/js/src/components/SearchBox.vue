@@ -71,7 +71,10 @@
           </div>
         </div>
         <div class="tools">
-          <button class="searchByFileButton" @click.prevent="showUploadFileSearch = !showUploadFileSearch">
+          <button :class="getSearchFileUploadClass()"
+                  :title="getSearchWithUploadedFileTitle()"
+                  :disabled="searchWithUploadedFileDisabled()"
+                  @click.prevent="showUploadFileSearch = !showUploadFileSearch">
             Search with uploaded file
           </button>
           <button class="toolbox" @click.prevent="toggleToolbox()">
@@ -100,6 +103,8 @@ import SearchUtils from './../mixins/SearchUtils'
 import SearchUploadFile from './SearchUploadFile.vue'
 import Toolbox from './Toolbox.vue'
 import {debounce} from './../utils/globalUtils'
+import { isUploadFileSearchDisabled } from '../configs/configHelper'
+
 
 export default {
   components: {
@@ -231,7 +236,19 @@ export default {
 
     checkQuery() {
       this.searchHints = this.$_checkQueryForBadSyntax(this.futureQuery.trim())
-  }
+    },
+
+    searchWithUploadedFileDisabled(){
+      return isUploadFileSearchDisabled()
+    },
+
+    getSearchFileUploadClass() {
+      return `searchByFileButton ${this.searchWithUploadedFileDisabled() ? 'fade' : ''}`
+    },
+
+    getSearchWithUploadedFileTitle() {
+      return this.searchWithUploadedFileDisabled() ? 'Search by uploaded file has been disabled in the configuration' : ''
+    }
   }
 }
 
