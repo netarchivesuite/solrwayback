@@ -77,7 +77,7 @@ export default {
       this.imageLoaded = value
     },
      toggleFullImage(index) {
-      if (!this.playbackDisabled){
+      if (!this.playbackDisabled()){
       this.showFullImage !== null ? this.showFullImage = null : this.showFullImage = index
       }
     },
@@ -85,7 +85,7 @@ export default {
       return isPlaybackDisabled()
     },
     getColumnClass() {
-      return `columnImageContainer ${this.playbackDisabled ? 'noPointer' : ''}`
+      return `columnImageContainer ${this.playbackDisabled() ? 'noPointer' : ''}`
     },
     closeWindow(index) {
       this.showFullImage = null
