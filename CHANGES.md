@@ -1,28 +1,49 @@
+# SolrWayback changelog
+
+
 4.3.0
 -----
 Updated frontend dependencies (security)
+
 Added support for WARC file reading with Inputstream, this can be used if WARC files are not on a file-system. (Skipping HttpInputStream implementation for reading WARCs with offset)
+
 Support for WARC resource type (Warc-Indexer) without URL in WARC header. (Typical created with Warcit from a file system)
+
 Minor Solr query syntax fix, so it will also work on Solr 6. (not recommended to use Solr6!)
-Docker support. (so far limited support... write more later)
-Support for legacy WARC-Indexer before version 3.0 that does not have url_norm field.
-has been disabled.  
+
+Docker support. Only recommended for trying a demo SolrWayback if you do not want to use the bundle install. See README for more info.
+
+Support for legacy WARC-Indexer before version 3.0 that does not have url_norm field
+
 Fixed n-gram to show statistics for years after 2020.
 
 
 New optional property in solwaybackweb.properties. This is the fields shown when clicking "Show Data fields" for a result. Define by a comma seperated list of fields.
+
 SolrWayback can now be deployed at a deeper url than 'https://kb.dk/solrwayback' but https://kb.dk/covid-collection/solrwayback'.
+
 If the webapp base above is not just domain/solrwayback, then an additional property needs to be defined in solrwaybackweb.properties.
+
 In the case above the property : webapp.baseurl=/covid-collection/solrwayback/ 
+
 If the property is not defined it will default to /solrwayback/
+
 With loading binaries from WARC-file+offset check that the the resource is in the collection (in Solr). This will prevent URL hacking from guessing WARC-files and offset that is not in the collection but on the file-system. This can be enabled by new a property. Enabled this property will have minor performance impact on playback.
 
-New properties:
+Solr memory increased from 512MB to 1024MB in SolrWayback bundle. Some large text blocks in WARC files could cause Solr memory error with multiple threads.
+
+###### New properties:
+
 New optional property in solwayback.properties 'fields'. Will default to all fields if not defined. Use comma seperated list of fields to be shown when clicking "Show Data fields" from the results page.
+
 New optional property in solwayback.properties 'url.normaliser'. Will default to normal. Other options are minimal and legacy. 
+
 New optional property in solwayback.properties 'solr.search.params'. Add default solr params to every query.
+
 New optional property in solwayback.properties 'warc.files.verify.collection'. Default false. Will check WARC file +offset is in the collection before returning binaries.
+
 New optional property in solrwayback.properties 'playback.disabled'.Default false. If set to true all playback and access to binaries (pdf, full size images etc.) will be disabled. Will only allow images tumbnail preview 200*200 pixels.
+
 New optional property in solrwaybackweb.properties 'search.uploaded.file.disabled'. Default false. If set to true search by fileupload (hash-value) will be disabled.
 
 
