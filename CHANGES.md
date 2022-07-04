@@ -21,7 +21,6 @@ New properties:
 New optional property in solwayback.properties 'fields'. Will default to all fields if not defined. Use comma seperated list of fields to be shown when clicking "Show Data fields" from the results page.
 New optional property in solwayback.properties 'url.normaliser'. Will default to normal. Other options are minimal and legacy. 
 New optional property in solwayback.properties 'solr.search.params'. Add default solr params to every query.
-New optional property in solwayback.properties 'disable.playback'. Set to true to disable playback. Will just show a empty page with info that playback 
 New optional property in solwayback.properties 'warc.files.verify.collection'. Default false. Will check WARC file +offset is in the collection before returning binaries.
 New optional property in solrwayback.properties 'playback.disabled'.Default false. If set to true all playback and access to binaries (pdf, full size images etc.) will be disabled. Will only allow images tumbnail preview 200*200 pixels.
 New optional property in solrwaybackweb.properties 'search.uploaded.file.disabled'. Default false. If set to true search by fileupload (hash-value) will be disabled.
