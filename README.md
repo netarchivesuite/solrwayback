@@ -244,7 +244,7 @@ application from 'http://localhost:8080/solrwayback/' to 'http://localhost:8080/
 defining the property in solrwaybackweb.properties: webapp.prefix=/collection1/solrwayback/
 The 'wayback.baseurl' in solrwayback.properties also needs to be fixed to match. 
 It will not work to try renaming a Tomcat deployment descriptor to collection1#solrwayback.xml. (hopefull fixed in a later release)
-The two property files must then be placed in the a /collection1 in the home-directory. This way multiple SolrWaybacks can be 
+The two property files must then be placed in the a /collection1 folder in the home-directory. This way multiple SolrWaybacks can be 
 running in the same Tomcat server. None of the two property files must exist in the home-directory with this setup.
 
 ## Scaling and using SolrWayback in production environment.
