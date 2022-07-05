@@ -70,7 +70,7 @@ Archon/Actika is a book keeping application for warc-files and can start multipl
 <p align="center">
 Solrwayback showing the playback of an archived webpage with playback toolbox overlay.
 </p>
-
+gui
 <p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_linkgraph.png?raw=true" />
 </p>
@@ -266,13 +266,7 @@ If you want to index a new collection into solr and remove the old index.
 
 ### Faster indexing
 A powerful laptop can handle up to 8 simultaneous indexing processes with Solr running on the same laptop. 
-Using an SSD for the Solr-index will speed up indexing and also improve search/playback performance.
-
-#### Solrwayback control GUI (Windows only)
-For Windows users there is a executable GUI setup program that will start tomcat/solr and copy properties to the home directory.
-From the GUI you can select WARC files with a file choose and start indexing. Click the /addOn/SolrSetup.exe file to start GUI.
-
-For more information see: https://github.com/MadsGreen/SolrSetup/
+Using an SSD for the Solr-index will speed up indexing and also improve search/playback performance drastically.
 
 ### 4) SEARCHING AND ADDITIONAL FEATURES  
 Click the question mark in the search-field to get help with the search syntax for more complex queries and using 
