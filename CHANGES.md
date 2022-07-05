@@ -17,16 +17,9 @@ Support for legacy WARC-Indexer before version 3.0 that does not have url_norm f
 
 Fixed n-gram to show statistics for years after 2020.
 
-
-New optional property in solwaybackweb.properties. This is the fields shown when clicking "Show Data fields" for a result. Define by a comma seperated list of fields.
-
 SolrWayback can now be deployed at a deeper url than 'https://kb.dk/solrwayback' but https://kb.dk/covid-collection/solrwayback'.
 
-If the webapp base above is not just domain/solrwayback, then an additional property needs to be defined in solrwaybackweb.properties.
-
-In the case above the property : webapp.baseurl=/covid-collection/solrwayback/ 
-
-If the property is not defined it will default to /solrwayback/
+If the webapp base above is not just domain/solrwayback, then an additional property needs to be defined in solrwaybackweb.properties. In the case above the property : webapp.prefix=/covid-collection/solrwayback/  . See more in the README.md how to install SolrWayback under another subdirectory after domain. If the property is not defined it will default to /solrwayback/
 
 With loading binaries from WARC-file+offset check that the the resource is in the collection (in Solr). This will prevent URL hacking from guessing WARC-files and offset that is not in the collection but on the file-system. This can be enabled by new a property. Enabled this property will have minor performance impact on playback.
 
@@ -46,6 +39,7 @@ New optional property in solrwayback.properties 'playback.disabled'.Default fals
 
 New optional property in solrwaybackweb.properties 'search.uploaded.file.disabled'. Default false. If set to true search by fileupload (hash-value) will be disabled.
 
+New optional property in solrwaybackweb.properties 'webapp.prefix'. Default to /solrwayback/. If SolrWayback is deployet at kb.dk/covid-19/solrwayback, then set this property to '/covid-19/solrwayback/'
 
 
 4.2.3
