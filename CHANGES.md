@@ -7,21 +7,21 @@ Updated frontend dependencies (security)
 
 Added support for WARC file reading with Inputstream, this can be used if WARC files are not on a file-system. (Skipping HttpInputStream implementation for reading WARCs with offset)
 
-Support for WARC resource type (Warc-Indexer) without URL in WARC header. (Typical created with Warcit from a file system)
+Warc-indexer not supports WARC type 'resource' without URL in WARC header  (Typical created with Warcit from a file system)
 
 Minor Solr query syntax fix, so it will also work on Solr 6. (not recommended to use Solr6!)
 
 Docker support. Only recommended for trying a demo SolrWayback if you do not want to use the bundle install. See README for more info.
 
-Support for legacy WARC-Indexer before version 3.0 that does not have url_norm field
+Support for legacy WARC-Indexer before version 3.0 that does not have url_norm field. (not recommended)
 
 Fixed n-gram to show statistics for years after 2020.
 
-SolrWayback can now be deployed at a deeper url than 'https://kb.dk/solrwayback' but https://kb.dk/covid-collection/solrwayback'.
+SolrWayback can now be deployed at a deeper url than 'https://kb.dk/solrwayback' . Etc. : 'https://kb.dk/covid-collection/solrwayback'.
 
 If the webapp base above is not just domain/solrwayback, then an additional property needs to be defined in solrwaybackweb.properties. In the case above the property : webapp.prefix=/covid-collection/solrwayback/  . See more in the README.md how to install SolrWayback under another subdirectory after domain. If the property is not defined it will default to /solrwayback/
 
-With loading binaries from WARC-file+offset check that the the resource is in the collection (in Solr). This will prevent URL hacking from guessing WARC-files and offset that is not in the collection but on the file-system. This can be enabled by new a property. Enabled this property will have minor performance impact on playback.
+When loading binaries from WARC-file+offset check that the the resource is in the collection (in Solr). This will prevent URL hacking from guessing WARC-files and offset that is not in the collection but on the file-system. This can be enabled by new a property. Enabled this property will have minor performance impact on playback.
 
 Solr memory increased from 512MB to 1024MB in SolrWayback bundle. Some large text blocks in WARC files could cause Solr memory error with multiple threads.
 
