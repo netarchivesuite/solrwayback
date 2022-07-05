@@ -1,7 +1,7 @@
 # SolrWayback
 
-## SolrWayback 4.2.3 software bundle has been released
-SolrWayback bundle release 4.2.3 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.2.3
+## SolrWayback 4.3.5 software bundle has been released
+SolrWayback bundle release 4.3.5 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.3.5
 
 **THIS VERSION HAS BEEN PATCHED AGAINST 'log4shell'**
 
@@ -236,6 +236,15 @@ There can be up to 5 minutes delay before the indexed files are visible from sea
 There is a batch_warcs2_folder.sh similar script to show how to easily add new WARC files to the collection without indexing the old ones again.
 
 For more information about the warc-indexer see: https://github.com/ukwa/webarchive-discovery/wiki/Quick-Start
+
+
+## Deploying under another directory context.
+Renaming the solrwayback.war to collection1#solrwayback.war in the tomcat/webapps/ folder will gave tomcat mapping the 
+application from 'http://localhost:8080/solrwayback/' to 'http://localhost:8080/collection1/solrwayback/'. The requires
+defining the property in solrwaybackweb.properties: webapp.prefix=/collection1/solrwayback/
+The 'wayback.baseurl' in solrwayback.properties also needs to be fixed to match. 
+It will not work to try renaming a Tomcat deployment descriptor to collection1#solrwayback.xml. (hopefull fixed in a later release)
+
 
 ## Scaling and using SolrWayback in production environment.
 The stand alone Solr-server and indexing workflow using warc-indexer.sh can scale up to 20000 WARC files of size 1GB. Using 20 threads
