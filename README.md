@@ -239,7 +239,7 @@ For more information about the warc-indexer see: https://github.com/ukwa/webarch
 
 
 ## Deploying under another directory context.
-Renaming the solrwayback.war to collection1#solrwayback.war in the tomcat/webapps/ folder will gave tomcat mapping the 
+Renaming the solrwayback.war to collection1#solrwayback.war in the tomcat/webapps/ folder will have tomcat mapping the 
 application from 'http://localhost:8080/solrwayback/' to 'http://localhost:8080/collection1/solrwayback/'. The requires
 defining the property in solrwaybackweb.properties: webapp.prefix=/collection1/solrwayback/
 The 'wayback.baseurl' in solrwayback.properties also needs to be fixed to match. 
