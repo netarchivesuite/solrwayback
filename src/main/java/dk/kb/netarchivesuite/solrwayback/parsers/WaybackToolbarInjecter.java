@@ -57,7 +57,7 @@ public class WaybackToolbarInjecter {
     htmlParsed.setNumberOfLinksReplaced(17);
         
     String injectedHtml = injectInHmtl(htmlParsed,stats, "test",1234L, false);
-    System.out.println(injectedHtml);   
+    //System.out.println(injectedHtml);   
   }
   
   
