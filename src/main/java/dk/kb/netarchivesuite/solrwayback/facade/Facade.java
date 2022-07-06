@@ -210,8 +210,6 @@ public class Facade {
 
         ProcessBuilder pb = null;
 
-        // Use proxy. Construct proxy URL from base url and proxy port.
-        String proxyUrl = getPreviewUrl();
 
         int timeoutMillis = PropertiesLoader.SCREENSHOT_PREVIEW_TIMEOUT * 1000;
 
@@ -220,11 +218,10 @@ public class Facade {
         pb = new ProcessBuilder(chromeCommand, "--headless", "--disable-gpu", "--ipc-connection-timeout=10000", "--timeout=" + timeoutMillis,
                 "--screenshot=" + filename, "--window-size=1280,1024", url);
 
-        log.info(chromeCommand + " --headless --disable-gpu --ipc-connection-timeout=10000 --timeout=" + timeoutMillis + " --screenshot=" + filename
-                + " --window-size=1280,1024", url);
-        // chromium-browser --headless --disable-gpu --ipc-connection-timeout=3000
-        // --screenshot=test.png --window-size=1280,1024
-        // --proxy-server="socks4://localhost:9000" https://www.google.com/
+        log.info("Screenshot native command:"+chromeCommand + " --headless --disable-gpu --ipc-connection-timeout=10000 --timeout=" + timeoutMillis + " --screenshot=" + filename
+                + " --window-size=1280,1024 " + url);
+        // example: chromium-browser --headless --disable-gpu --ipc-connection-timeout=3000 --screenshot=test.png --window-size=1280,1024 http://google.com
+
         Process start = pb.start();
         // Due to a bug in chromium, the process can hang and never terminate. The
         // timeout is not working.. Also the screenshot will not be written to file.
@@ -922,21 +919,6 @@ public class Facade {
 
         long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
         return sign + seconds + " seconds";
-    }
-
-    // takes the wayback_base url and create the proxy url
-    // http://localhost:8080/solrwayback/ -> socks4://localhost:9000
-    private static String getPreviewUrl() throws Exception {
-
-        String baseUrl = PropertiesLoader.WAYBACK_BASEURL;
-        String port = "8080"; // TODO load
-        URL url = new URL(baseUrl);
-        String host = url.getHost();
-        String part = url.getPath();
-        String socksUrl = "http://" + host + ":" + port;
-        log.info("socks url:" + socksUrl);
-        return socksUrl;
-
     }
 
 }
