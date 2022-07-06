@@ -39,7 +39,7 @@ New optional property in solrwayback.properties 'playback.disabled'.Default fals
 
 New optional property in solrwaybackweb.properties 'search.uploaded.file.disabled'. Default false. If set to true search by fileupload (hash-value) will be disabled.
 
-New optional property in solrwaybackweb.properties 'webapp.prefix'. Default to /solrwayback/. If SolrWayback is deployet at kb.dk/covid-19/solrwayback, then set this property to '/covid-19/solrwayback/'
+New optional property in solrwaybackweb.properties 'webapp.prefix'. Default to /solrwayback/. If SolrWayback is deployed at kb.dk/covid-19/solrwayback, then set this property to '/covid-19/solrwayback/'
 
 
 4.2.3
