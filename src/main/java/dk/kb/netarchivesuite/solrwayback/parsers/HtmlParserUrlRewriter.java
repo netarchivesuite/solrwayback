@@ -71,7 +71,7 @@ public class HtmlParserUrlRewriter {
 			}
 		}
 
-		System.out.println("done");
+		System.out.println(" ");
 		System.exit(1);
 */
 //	      System.exit(1);
