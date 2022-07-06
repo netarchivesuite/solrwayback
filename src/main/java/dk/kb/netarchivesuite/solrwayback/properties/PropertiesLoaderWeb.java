@@ -141,15 +141,15 @@ public class PropertiesLoaderWeb {
             String warc_expanded_max_results= serviceProperties.getProperty(EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY);
             
             if (csv_max_results != null) {
-                EXPORT_CSV_MAXRESULTS  = Long.parseLong(csv_max_results);                
+                EXPORT_CSV_MAXRESULTS  = Long.parseLong(csv_max_results.trim());                
             }
             
             if (warc_max_results  != null) {
-                EXPORT_WARC_MAXRESULTS  = Long.parseLong(warc_max_results);               
+                EXPORT_WARC_MAXRESULTS  = Long.parseLong(warc_max_results.trim());               
             }
 
             if ( warc_expanded_max_results!= null) {                
-                EXPORT_WARC_EXPANDED_MAXRESULTS  = Long.parseLong( warc_expanded_max_results);               
+                EXPORT_WARC_EXPANDED_MAXRESULTS  = Long.parseLong( warc_expanded_max_results.trim());               
             }
 
                         
