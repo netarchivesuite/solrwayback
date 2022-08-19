@@ -1,6 +1,12 @@
 # SolrWayback changelog
 
 
+4.3.1
+-----
+Playback improvement. Fixed some redirect/url-parsing bugs in the ROOT.war (solrwaybackrootproxy). 
+TODO: Fix the solr-escaping+ data-image bug...
+
+
 4.3.0
 -----
 Updated frontend dependencies (security)
