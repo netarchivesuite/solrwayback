@@ -1,15 +1,15 @@
 <template>
   <div class="domainStatsContainer">
     <h2 class="toolboxHeadline">
-      Domain stats
+      {{ $t('toolBox:domain_stats') }}
     </h2>
     <div class="domainContentContainer">
       <input v-model="domain"
-             placeholder="Enter domain, like 'kb.dk'"
+             :placeholder="$t('toolBox:enter_domain')"
              :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
              @keyup.enter="loadGraphData(domain)">
       <button :disabled="loading" class="domainStatsButton" @click.prevent="loadGraphData(domain)">
-        Generate
+        {{ $t('toolBox:generate') }}
       </button>
       <div v-if="loading" class="spinner" />
       <div v-show="!loading && rawData" id="lineContainer">
@@ -30,19 +30,19 @@
           </thead>
           <tbody>
             <tr>
-              <td>Size in KB</td>
+              <td v-html="$t('toolBox:size_in_kb')"></td>
               <td v-for="(item, index) in rawData" :key="index">
                 {{ item.sizeInKb.toLocaleString("en") }}
               </td>
             </tr>
             <tr>
-              <td>Total pages</td>
+              <td v-html="$t('toolBox:total_pages')"></td>
               <td v-for="(item, index) in rawData" :key="index">
                 {{ item.totalPages.toLocaleString("en") }}
               </td>
             </tr>
             <tr>
-              <td>Ingoing links</td>
+              <td v-html="$t('toolBox:ingoing_links')"></td>
               <td v-for="(item, index) in rawData" :key="index">
                 {{ item.ingoingLinks.toLocaleString("en") }}
               </td>

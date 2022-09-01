@@ -1,7 +1,7 @@
 <template>
   <div class="linkGraphContainer">
     <h2 class="toolboxHeadline">
-      Ngram Netarchive
+      {{ $t('toolBox:ngram_netarchive') }}
     </h2>
     <div class="contentContainer">
       <transition name="loading-overlay">

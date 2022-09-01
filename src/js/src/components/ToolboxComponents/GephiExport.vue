@@ -1,7 +1,7 @@
 <template>
   <div class="gephiExportContainer">
     <h2 class="toolboxHeadline">
-      Link Grap Gephi Export
+      {{ $t('toolBox:link_graph_gephi_export') }}
     </h2>
     <div class="gephiExportInterface">
       <div class="gephiQueryContainer">

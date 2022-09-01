@@ -13,7 +13,7 @@
     </transition>   
     <div class="searchBoxContainer">
       <form class="searchForm" @submit.prevent="launchNewSearch()">
-        <span v-if="preNormalizedQuery !== null" class="orgQuery">Original query: <span class="preQuery">{{ preNormalizedQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
+        <span v-if="preNormalizedQuery !== null" class="orgQuery">{{ $t('searchBox:original_query') }}: <span class="preQuery">{{ preNormalizedQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
         <transition name="url-search-helper">
           <span v-if="solrSettings.urlSearch" class="urlSearchHelper">URL:</span>
         </transition>
@@ -31,7 +31,7 @@
                   @keyup.prevent="solrSettings.urlSearch ? null : checkQuery()"
                   @input="$_getSizeOfTextArea('query')" />
         <button type="button"
-                title="See search guidelines"
+                :title="$t('searchBox:see_search_guidelines')"
                 class="searchGuidelinesButton"
                 @click.prevent="openSelectedModal('guidelines')">
           ?
@@ -41,7 +41,7 @@
         </button>
         <button v-if="futureQuery !== '' || Object.keys(results).length !== 0"
                 id="clearSubmit"
-                title="Clear search and results"
+                :title="$t('searchBox:clear_search_and_results')"
                 type="button"
                 @click="clearResultsAndSearch()" />
         <div class="sortOptions">
@@ -51,7 +51,7 @@
                    type="checkbox"
                    name="groupedSearch"
                    @click.stop="updateSolrSettingGrouping(!solrSettings.grouping)">
-            <label for="groupedSearch">Grouped search <span class="buttonExplanation" title="Grouping results by URL, meaning you only seen an URL as one hit, even though it might have been a hit on several params.">[ ? ]</span></label>
+            <label for="groupedSearch">{{ $t('searchBox:grouped_search') }} <span class="buttonExplanation" :title="$t('searchBox:grouped_search_button_explanation')">[ ? ]</span></label>
           </div>
           <div class="floatRight" @click.prevent="selectSearchMethod('urlSearch')">
             <input id="urlSearch"
@@ -59,7 +59,7 @@
                    type="checkbox"
                    name="urlSearch"
                    @click.stop="selectSearchMethod('urlSearch')">
-            <label for="urlSearch">URL search <span class="buttonExplanation" title="Search for a specific URL. The search will also puny encode the domain name and normalize the URL so all different representations of the same URL is found.">[ ? ]</span></label>
+            <label for="urlSearch">{{ $t('searchBox:url_search') }} <span class="buttonExplanation" :title="$t('searchBox:url_search_button_explanation')">[ ? ]</span></label>
           </div>
           <div class="floatRight marginRight" @click.prevent="selectSearchMethod('imgSearch')">
             <input id="imgSearch"
@@ -67,22 +67,22 @@
                    type="checkbox"
                    name="imgSearch"
                    @click.stop="selectSearchMethod('imgSearch')">
-            <label for="imgSearch">Image search <span class="buttonExplanation" title="Will show images found in  HTML pages near the search text and also include images where search text matches meta-data or resource name in URL.">[ ? ]</span></label>
+            <label for="imgSearch">{{ $t('searchBox:image_search') }} <span class="buttonExplanation" :title="$t('searchBox:img_search_button_eplanation')">[ ? ]</span></label>
           </div>
         </div>
         <div class="tools">
           <button :class="getSearchFileUploadClass()"
                   :title="getSearchWithUploadedFileTitle()"
                   :disabled="searchWithUploadedFileDisabled()"
-                  @click.prevent="showUploadFileSearch = !showUploadFileSearch">
-            Search with uploaded file
+                  @click.prevent="showUploadFileSearch = !showUploadFileSearch"
+                  v-html="$t('searchBox:search_with_uploaded_file')">
           </button>
           <button class="toolbox" @click.prevent="toggleToolbox()">
-            <span class="toolboxText">Toolbox</span>
+            <span class="toolboxText" v-html="$t('searchBox:toolbox')"></span>
             <span class="toolboxIcon" />
           </button>
           <button class="gpsSearchButton" @click.prevent="openSelectedModal('gpssearch')">
-            <span class="gpsText">GPS Image Search</span>
+            <span class="gpsText" v-html="$t('searchBox:gps_image_search')"></span>
             <span class="gpsIcon" />
           </button>
         </div>

@@ -2,22 +2,22 @@
   <div id="linkGraphContainer" class="linkGraphContainer">
     <div id="graphControlsContainer" class="graphControlsContainer">
       <h2 class="toolboxHeadline">
-        Link graph
+        {{ $t('toolBox:link_graph') }}
       </h2>
       <div class="linkGraphSettings">
         <div class="linkGraphDomainContainer contain">
           <input v-model="domain"
-                 placeholder="Enter domain, like 'kb.dk'"
+                 :placeholder="$t('toolBox:enter_domain')"
                  :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
                  @keyup.enter="!loading ? loadLinkGraph(domain) : null">
         </div>
         <div class="generateButtonContainer contain">
           <button :disabled="loading" class="linkGraphButton" @click.prevent="loadLinkGraph(domain)">
-            Generate
+            {{ $t('toolBox:generate') }}
           </button>
         </div>
         <div class="linkNumberContainer contain">
-          <label class="linkGraphLabel">Max. node degree:</label>
+          <label class="linkGraphLabel">{{ $t('linkGraph:max_node_degree') }}:</label>
           <div class="linkNumbersliderContainer">
             <vue-slider v-model="linkNumber"
                         tooltip="always"
@@ -26,21 +26,21 @@
           </div>
         </div>
         <div class="directionContainer contain">
-          <label class="linkGraphLabel label">Link direction:</label>
+          <label class="linkGraphLabel label">{{ $t('linkGraph:link_direction') }}:</label>
           <input id="linkGraphRadioOne"
                  v-model="ingoing"
                  type="radio"
                  value="true">
-          <label class="label" for="linkGraphRadioTwo">Ingoing</label>
+          <label class="label" for="linkGraphRadioTwo">{{ $t('linkGraph:ingoing') }}</label>
           <input id="linkGraphRadioTwo"
                  v-model="ingoing"
                  type="radio"
                  value="false">
-          <label class="label" for="linkGraphRadioTwo">Outgoing</label>
+          <label class="label" for="linkGraphRadioTwo">{{ $t('linkGraph:outgoing') }}</label>
         </div> 
       </div>
       <div class="sliderContainer">
-        <label class="linkGraphLabel">Time frame:</label>
+        <label class="linkGraphLabel">{{ $t('linkGraph:time_frame') }}:</label>
         <vue-slider v-model="sliderValues"
                     tooltip="always"
                     :min="minValue"

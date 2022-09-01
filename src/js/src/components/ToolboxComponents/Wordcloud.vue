@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2 class="toolboxHeadline">
-      Wordcloud
+      {{ $t('toolBox:wordcloud') }} 
     </h2>
     <div class="wordcloudContainer">
       <div class="wordcloudExplanation">

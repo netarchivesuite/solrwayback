@@ -7,22 +7,22 @@
       <div class="toolboxNavigation">
         <h3>
           <span class="toolboxIcon" />
-          Available tools:
+          {{ $t('toolBox:available_tools') }} :
         </h3>
         <button :class="currentTool === 'wordcloud' ? 'activeTool' : ''" @click="setCurrentTool('wordcloud')">
-          Wordcloud
+          {{ $t('toolBox:wordcloud') }} 
         </button>
         <button :class="currentTool === 'linkgraph' ? 'activeTool' : ''" @click="setCurrentTool('linkgraph')">
-          Link graph
+          {{ $t('toolBox:link_graph') }} 
         </button>
         <button :class="currentTool === 'domainstats' ? 'activeTool' : ''" @click="setCurrentTool('domainstats')">
-          Domain stats
+          {{ $t('toolBox:domain_stats') }}
         </button>
         <button :class="currentTool === 'gephiexport' ? 'activeTool' : ''" @click="setCurrentTool('gephiexport')">
-          Link graph Gephi export
+          {{ $t('toolBox:link_graph_gephi_export') }}
         </button>
         <button :class="currentTool === 'ngramnetarchive' ? 'activeTool' : ''" @click="setCurrentTool('ngramnetarchive')">
-          Ngram Netarchive 
+          {{ $t('toolBox:ngram_netarchive') }}
         </button>
         <hr>
       </div>
