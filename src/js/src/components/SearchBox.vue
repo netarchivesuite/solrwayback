@@ -26,7 +26,7 @@
                   :class="solrSettings.urlSearch 
                     ? decideActiveClassesForQueryBox()
                     : ''"
-                  :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'"
+                  :placeholder="solrSettings.urlSearch ? $t('seachBox:enter_search_url') : $t('seachBox:enter_search_term')"
                   @keydown.enter="checkKeyPresses()"
                   @keyup.prevent="solrSettings.urlSearch ? null : checkQuery()"
                   @input="$_getSizeOfTextArea('query')" />
