@@ -374,6 +374,20 @@ color:var(--secondary-text-color);
   border-bottom: 0px !important;
 }
 
+.languageIcon {
+  background-image: url('../icons/location.svg');
+  height: 16px;
+	position: relative;
+  width: 16px;
+  margin-right:10px;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+  top: 3px;
+  border-bottom: 0px !important;
+}
+
 .toolboxNavigation h3 {
   display:inline-block;
   text-transform: uppercase;
@@ -988,4 +1002,27 @@ img.imageEntry.noPointer {
 
 .searchHints h2 {
   text-align:center;
+}
+
+// locale changer
+
+.localeChanger {
+  width: 100%;
+  text-align: right;
+}
+
+.localeChangerContainer {
+  padding: 10px;
+  font-size: 0.9em;
+}
+
+.localeChangerContainer a {
+  text-decoration: none;
+  color: var(--main-highlight-color);
+}
+
+.localeChangerContainer a span {
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--main-highlight-color);
+  font-weight: bold;
 }

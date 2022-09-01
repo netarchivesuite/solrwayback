@@ -1,5 +1,7 @@
 {
   "lang": "PL",
-  "seachBox:enter_search_url": "Wpisz wyszukiwany URL",
-  "seachBox:enter_search_term": "Wpisz frazę wyszukiwania"
+  "solrWayback:h1" : "Solr<span>Wayback</span>",
+  "solrWayback:toggle_language" : "Przełącz język",
+  "searchBox:enter_search_url": "Wpisz wyszukiwany URL",
+  "searchBox:enter_search_term": "Wpisz frazę wyszukiwania"
 }

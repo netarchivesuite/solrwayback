@@ -1,5 +1,7 @@
 {
   "lang": "EN",
-  "seachBox:enter_search_url": "Enter search URL",
-  "seachBox:enter_search_term": "Enter search term"
+  "solrWayback:h1" : "Solr<span>Wayback</span>",
+  "solrWayback:toggle_language" : "Toggle language",
+  "searchBox:enter_search_url": "Enter search URL",
+  "searchBox:enter_search_term": "Enter search term"
 }

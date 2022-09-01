@@ -26,7 +26,7 @@
                   :class="solrSettings.urlSearch 
                     ? decideActiveClassesForQueryBox()
                     : ''"
-                  :placeholder="solrSettings.urlSearch ? $t('seachBox:enter_search_url') : $t('seachBox:enter_search_term')"
+                  :placeholder="solrSettings.urlSearch ? $t('searchBox:enter_search_url') : $t('searchBox:enter_search_term')"
                   @keydown.enter="checkKeyPresses()"
                   @keyup.prevent="solrSettings.urlSearch ? null : checkQuery()"
                   @input="$_getSizeOfTextArea('query')" />
@@ -105,12 +105,11 @@ import Toolbox from './Toolbox.vue'
 import {debounce} from './../utils/globalUtils'
 import { isUploadFileSearchDisabled } from '../configs/configHelper'
 
-
 export default {
   components: {
     AppliedSearchFacets,
     SearchUploadFile,
-    Toolbox
+    Toolbox,
   },
   mixins: [HistoryRoutingUtils, SearchUtils, SearchboxUtils],
   data () {

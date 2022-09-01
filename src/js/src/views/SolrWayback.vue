@@ -1,5 +1,6 @@
 <template>
   <div>
+    <locale-changer />
     <div v-if="logoLink && logoLink !== ''" class="topMenu">
       <a :href="logoLink" target="_blank">
         <img :src="logoUrl"
@@ -13,7 +14,7 @@
         <loading-overlay />
       </transition>
       <notifications />
-      <h1>Solr<span>Wayback</span></h1>
+      <h1 v-html="$t('solrWayback:h1')"></h1>
       <search-box />
       <all-search-results />
       <about-component />
@@ -39,6 +40,7 @@
  import { mapState, mapActions } from 'vuex'
  import PrimaryModal from './../components/modalComponents/PrimaryModal'
  import Configs from '../configs'
+ import LocaleChanger from './../components/LocaleChanger.vue'
 
 export default {
   name: 'SolrWayback',
@@ -48,7 +50,8 @@ export default {
    Notifications,
    LoadingOverlay,
    AboutComponent,
-   PrimaryModal
+   PrimaryModal,
+   LocaleChanger
   },
   mixins: [SearchUtils],
   data: () => ({
