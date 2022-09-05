@@ -329,7 +329,7 @@ color:var(--secondary-text-color);
   margin-right:5px !important;
 }
 
-.searchForm .tools .toolboxIcon {
+.searchForm .tools {
   margin-right:0px !important;
 }
 
@@ -347,6 +347,27 @@ color:var(--secondary-text-color);
   border-bottom: 0px !important;
 }
 
+.collectionInfoIcon {
+  background-image: url('../icons/warc.svg');
+  height: 16px;
+	position: relative;
+  width: 16px;
+  margin-right:0px !important;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+  top: 3px;
+  border-bottom: 0px !important;
+}
+
+.collectionInfoNavigation h3 {
+  display:inline-block;
+  text-transform: uppercase;
+  text-align: center;
+  font-weight: bold;
+}
+
 .gpsSearchButton {
   background-color:white;
   border:0px;
@@ -354,7 +375,7 @@ color:var(--secondary-text-color);
   text-transform: uppercase;
   color:var(--main-highlight-color);
   margin-left:10px;
-  margin-right:10px;
+  margin-right:0px;
   padding:0px;
   float:right;
   margin-top:-4px;

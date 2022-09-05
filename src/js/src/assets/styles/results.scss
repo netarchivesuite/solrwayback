@@ -937,7 +937,7 @@ margin-left:40px;
   z-index:1;
 }
 
-.csvExportOptions, .toolboxContainer {
+.csvExportOptions, .toolboxContainer, .collectionInfoContainer {
   position: fixed;
 	width: 100%;
 	height: 100%;
@@ -947,7 +947,7 @@ margin-left:40px;
   z-index:10;
 }
 
-.toolboxContent {
+.toolboxContent, .collectionInfoContent {
   top: 0px;
   left: 0px;
 	position: relative;
