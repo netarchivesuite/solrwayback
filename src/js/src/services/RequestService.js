@@ -112,7 +112,6 @@ function uploadFileRequest(fileData) {
 }
 
 function getNormalizedUrlSearch(query, facets, options) {
-  console.log(query)
   const url = `services/frontend/util/normalizeurl/?url=${encodeURIComponent(query)}`
   return axios.get(
     url).then(response => {
