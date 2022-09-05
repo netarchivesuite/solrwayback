@@ -1,5 +1,8 @@
 <template>
-  <div class="toolboxContainer">
+  <div ref="toolboxContainer"
+       class="toolboxContainer"
+       tabindex="0"
+       @keyup.esc="closeToolbox">
     <button class="toolboxCloseButton" @click="closeToolbox">
       ✕
     </button>
@@ -58,6 +61,9 @@ export default {
       currentTool:'wordcloud'
     }
   },
+  mounted() {
+    this.$refs.toolboxContainer.focus()
+},
   methods: {
     closeToolbox() {
       this.$emit('close-toolbox', this.index)

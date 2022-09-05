@@ -1,5 +1,8 @@
 <template>
-  <div class="modalContainer">
+  <div ref="modalContainer"
+       class="modalContainer"
+       tabindex="0"
+       @keyup.esc="closeModal">
     <button class="closeButton" @click="closeModal()">
       ✕
     </button>
@@ -31,6 +34,9 @@ export default {
       currentModal: state => state.Modal.currentModal,
     })
   },
+  mounted() {
+    this.$refs.modalContainer.focus()
+},
   methods: {
        ...mapActions('Modal', {
       updateShowModal:'updateShowModal',
