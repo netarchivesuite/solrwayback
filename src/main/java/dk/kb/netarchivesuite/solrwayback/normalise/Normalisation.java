@@ -22,21 +22,24 @@ public class Normalisation {
    static private NormaliseType type = NormaliseType.NORMAL;
    
     static {
-       String normaliseProperty=PropertiesLoader.URL_NORMALISER;
-              
-       if ("legacy".equalsIgnoreCase(normaliseProperty)){
-           type=NormaliseType.LEGACY;
-       }
-       else if("minimal".equalsIgnoreCase(normaliseProperty)){
-           type=NormaliseType.MINIMAL;
-       } 
-       else {
-           type = NormaliseType.NORMAL;           
-       }
-       log.info("URL normalise will use type:"+type);
+        setTypeFromConfig();
     }
     
-    
+    public static void setTypeFromConfig() {
+        String normaliseProperty=PropertiesLoader.URL_NORMALISER;
+
+        if ("legacy".equalsIgnoreCase(normaliseProperty)){
+            type=NormaliseType.LEGACY;
+        }
+        else if("minimal".equalsIgnoreCase(normaliseProperty)){
+            type=NormaliseType.MINIMAL;
+        }
+        else {
+            type = NormaliseType.NORMAL;
+        }
+        log.info("URL normalise will use type:"+type);
+    }
+
     public static String canonicaliseURL(String url) {        
 
         switch (type) {
@@ -83,5 +86,12 @@ public class Normalisation {
            return NormalisationMinimal.resolveRelative(url, relative, normalise);                         
         }
         return NormalisationStandard.resolveRelative(url, relative, normalise);
+    }
+
+    /**
+     * @return the type of normalisation that is used (stated in the properties).
+     */
+    public static NormaliseType getType() {
+        return type;
     }
 }

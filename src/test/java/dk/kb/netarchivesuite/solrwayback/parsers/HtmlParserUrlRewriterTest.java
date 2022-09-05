@@ -1,6 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,11 +33,13 @@ import static org.junit.Assert.*;
  */
 public class HtmlParserUrlRewriterTest {
     private static final Logger log = LoggerFactory.getLogger(HtmlParserUrlRewriterTest.class);
-    // TODO: Check canonicalization
+
     @Before
     public void invalidateProperties()  throws Exception{
-        
+
+        // Need this to ensure that the normaliser has a known setting
         PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback.properties").getPath());
+        Normalisation.setTypeFromConfig();
 
         // We need this so that we know what the Solr server is set to
         PropertiesLoader.WAYBACK_BASEURL = "http://localhost:0000/solrwayback/";
@@ -88,6 +91,16 @@ public class HtmlParserUrlRewriterTest {
     public void testScriptRewriting() throws Exception {
         // TODO: Make a better counter for replaced
         assertRewrite("script", 0);
+    }
+
+    @Test
+    public void testEncodingRewriting() throws Exception {
+        assertRewrite("encoding", 0);
+    }
+
+    @Test
+    public void testAmpersandRewriting() throws Exception {
+        assertRewrite("url_escape", 0);
     }
 
     @Test
