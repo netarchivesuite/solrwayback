@@ -16,7 +16,7 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 
-public class PuneEncodeAndNormaliseTest extends UnitTestUtils {
+public class PunyEncodeAndNormaliseTest extends UnitTestUtils {
 
     @Before
     public void invalidateProperties() throws IOException {
