@@ -310,7 +310,7 @@ color:var(--secondary-text-color);
 }
 
 
-.searchForm .tools .toolbox {
+.searchForm .tools .toolbox, .searchForm .tools .collectionInfo  {
   text-transform: uppercase;
   padding-left:0px;
   padding-right:0px;
@@ -324,7 +324,7 @@ color:var(--secondary-text-color);
 	float: right;
 }
 
-.searchForm .tools .toolboxText, .searchForm .gpsText {
+.searchForm .tools .toolboxText, .searchForm .gpsText, .searchForm .collectionInfoText {
   border-bottom: 1px solid var(--secondary-highlight-color);
   margin-right:5px !important;
 }
