@@ -77,7 +77,7 @@
                   @click.prevent="showUploadFileSearch = !showUploadFileSearch">
             Search with uploaded file
           </button>
-          <button class="toolbox" @click.prevent="toggleToolbox()">
+          <button class="toolbox" @click.prevent="openSelectedModal('collectioninfo')">
             <span class="toolboxText">About the collection</span>
             <span class="collectionInfoIcon" />
           </button>

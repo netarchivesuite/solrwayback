@@ -7,6 +7,7 @@
       <search-guidelines v-if="currentModal === 'guidelines'" />
       <search-visualization v-if="currentModal === 'visualization'" />
       <gps-search v-if="currentModal === 'gpssearch'" />
+      <collection-info v-if="currentModal === 'collectioninfo'" />
     </div>
   </div>
 </template>
@@ -16,6 +17,7 @@
 import SearchGuidelines from './SearchGuidelines'
 import SearchVisualization from './SearchVisualization'
 import GpsSearch from './GpsSearch'
+import CollectionInfo from './CollectionInfo'
 import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -23,7 +25,8 @@ export default {
   components: {
     SearchGuidelines,
     SearchVisualization,
-    GpsSearch
+    GpsSearch,
+    CollectionInfo
   },
   computed: {
     ...mapState({

@@ -42,6 +42,7 @@ public class PropertiesLoaderWeb {
     public static final String EXPORT_CSV_FIELDS_PROPERTY = "export.csv.fields";
     public static final String ABOUT_TEXT_FILE_PROPERTY = "about.text.file";
     public static final String SEARCH_HELP_FILE_PROPERTY = "search.help.text.file";
+    public static final String COLLECTION_TEXT_FILE_PROPERTY = "collection.text.file";
     public static final String ARCHIVE_START_YEAR_PROPERTY = "archive.start.year";
 
     public static final String LEAFLET_SOURCE_PROPERTY = "leaflet.source";
@@ -72,6 +73,7 @@ public class PropertiesLoaderWeb {
     public static String LEAFLET_ATTRIBUTION;
     public static String ABOUT_TEXT_FILE;
     public static String SEARCH_HELP_TEXT_FILE;
+    public static String COLLECTION_TEXT_FILE;
     public static String TOP_LEFT_LOGO_IMAGE;
     public static String TOP_LEFT_LOGO_IMAGE_LINK;
 
@@ -126,6 +128,7 @@ public class PropertiesLoaderWeb {
             EXPORT_CSV_FIELDS = serviceProperties.getProperty(EXPORT_CSV_FIELDS_PROPERTY);
             ABOUT_TEXT_FILE = serviceProperties.getProperty(ABOUT_TEXT_FILE_PROPERTY).trim();
             SEARCH_HELP_TEXT_FILE = serviceProperties.getProperty(SEARCH_HELP_FILE_PROPERTY).trim();
+            COLLECTION_TEXT_FILE = serviceProperties.getProperty(COLLECTION_TEXT_FILE_PROPERTY).trim();
             LEAFLET_SOURCE = serviceProperties.getProperty(LEAFLET_SOURCE_PROPERTY);
             LEAFLET_ATTRIBUTION = serviceProperties.getProperty(LEAFLET_ATTRIBUTION_PROPERTY);
             TOP_LEFT_LOGO_IMAGE = serviceProperties.getProperty(TOP_LEFT_LOGO_IMAGE_PROPERTY);
@@ -194,6 +197,7 @@ public class PropertiesLoaderWeb {
             log.info("Property:"+ SEARCH_UPLOADED_FILE_DISABLED_PROPERTY+" = " +SEARCH_UPLOADED_FILE_DISABLED);            
             log.info("Property:"+ ABOUT_TEXT_FILE_PROPERTY +" = " + ABOUT_TEXT_FILE);
             log.info("Property:"+ SEARCH_HELP_FILE_PROPERTY +" = " + SEARCH_HELP_TEXT_FILE );
+            log.info("Property:"+ COLLECTION_TEXT_FILE_PROPERTY +" = " + COLLECTION_TEXT_FILE );
             log.info("Property:"+ ARCHIVE_START_YEAR_PROPERTY +" = " + ARCHIVE_START_YEAR);			
             log.info("Property:"+ LEAFLET_SOURCE_PROPERTY +" = " + LEAFLET_SOURCE);
             log.info("Property:"+ LEAFLET_ATTRIBUTION_PROPERTY +" = " + LEAFLET_ATTRIBUTION);

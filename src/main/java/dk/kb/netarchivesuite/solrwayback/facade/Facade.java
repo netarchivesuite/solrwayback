@@ -104,6 +104,12 @@ public class Facade {
         return searchHelpText;
     }
 
+    public static String getCollectionText() throws Exception {
+        String collectionFile = PropertiesLoaderWeb.COLLECTION_TEXT_FILE;
+        String collectionText = FileUtil.fetchUTF8(collectionFile);
+        return collectionText;
+    }
+
     public static String generateDomainResultGraph(@QueryParam("q") String q, @QueryParam("fq") List<String> fq) throws Exception {
         String jsonStr = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq);
         HashMap<Integer, List<FacetCount>> domainStatisticsForQuery = DomainStatisticsForDomainParser.parseDomainStatisticsJson(jsonStr);
