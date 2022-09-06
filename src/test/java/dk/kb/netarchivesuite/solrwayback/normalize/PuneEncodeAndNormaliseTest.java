@@ -4,6 +4,11 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
+
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import org.junit.Before;
 import org.junit.Test;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
@@ -12,7 +17,14 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 
 public class PuneEncodeAndNormaliseTest extends UnitTestUtils {
-       
+
+    @Before
+    public void invalidateProperties() throws IOException {
+        // Ensures that the normaliser has a known setting
+        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback.properties").getPath());
+        Normalisation.setTypeFromConfig();
+    }
+
     @Test
     public void testPunyEncodingAndNormalize() throws Exception {
         

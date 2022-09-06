@@ -1,5 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,9 +29,13 @@ public class ScriptRewriterTest {
     public final String MOCK_DATE = "2020-05-11T13:22:00Z";
 
     @Before
-    public void invalidateProperties() {
-        // We need this so that we know what the Solr server is set to
-        PropertiesLoader.initProperties();
+    public void invalidateProperties() throws IOException {
+
+        // Need this to ensure that the normaliser has a known setting
+        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback.properties").getPath());
+        Normalisation.setTypeFromConfig();
+//        PropertiesLoader.initProperties();
+        // Also need this so that we know what the Solr server is set to
         PropertiesLoader.WAYBACK_BASEURL = "http://localhost:0000/solrwayback/";
     }
 
@@ -78,5 +84,6 @@ public class ScriptRewriterTest {
         assertEquals(expected, rewritten.getReplaced());
         assertEquals("The number of replaces links should be reported", 0, rewritten.getNumberOfLinksReplaced());
     }
+
 
 }
