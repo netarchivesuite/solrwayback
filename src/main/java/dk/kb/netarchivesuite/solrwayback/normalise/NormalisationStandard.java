@@ -5,6 +5,7 @@ import org.archive.wayback.util.url.AggressiveUrlCanonicalizer;
 import org.apache.commons.logging.Log;
 
 import java.net.URL;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -17,7 +18,7 @@ public class NormalisationStandard extends NormalisationAbstract{
     private static Log log = LogFactory.getLog(NormalisationStandard.class );
     
     private static AggressiveUrlCanonicalizer canon = new AggressiveUrlCanonicalizer();
-
+    private static Pattern WWW_PREFIX = Pattern.compile("([a-z]+://)(?:www[0-9]*|ww2|ww)[.](.+)");
     
 
     /**
@@ -53,6 +54,14 @@ public class NormalisationStandard extends NormalisationAbstract{
         // Protocol: https → http
         url = url.startsWith("https://") ? "http://" + url.substring(8) : url;
 
+     // www. prefix
+        if (createUnambiguous) {
+            Matcher wwwMatcher = WWW_PREFIX.matcher(url);
+            if (wwwMatcher.matches()) {
+                url = wwwMatcher.group(1) + wwwMatcher.group(2);
+            }
+        }
+        
         // TODO: Consider if this should only be done if createUnambiguous == true
         // Trailing slashes: http://example.com/foo/ → http://example.com/foo
         while (url.endsWith("/")) { // Trailing slash affects the URL semantics

@@ -6,10 +6,19 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.commons.logging.Log;
 
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 /**
+ * The Legacy normalizer should only be used if the index was build with a version 3.1 or earlier of the warc-indexer
+ * The Legacy normalizer will keep www,www1 etc prefixes before domains, but ONLY if the whole url is a domain only link with no path.
+ * This is required to match the url_norm in the solr-index that was build with the warc-indexer
+ * This is the only difference compared to the normal type normalizer
+ * 
+ * Examples:
+ * http://www.example.com/ -> http://www.example.com/   (www is kept)
+ * http://www.example.com/index.html -> http://example.com/index.html (www is removed(
+ * 
+ * 
  * String- and URL-normalisation helper class.
  *
  * TODO: It seems that https://github.com/iipc/urlcanon is a much better base for normalisation.
@@ -20,9 +29,6 @@ public class NormalisationLegacy extends NormalisationAbstract{
 
     private static AggressiveUrlCanonicalizer canon = new AggressiveUrlCanonicalizer();
    
-    private static Pattern WWW_PREFIX = Pattern.compile("([a-z]+://)(?:www[0-9]*|ww2|ww)[.](.+)");
-
-    
    
     public static String canonicaliseHost(String host) throws URIException {
         return canon.urlStringToKey(host.trim()).replace("/", "");
@@ -73,13 +79,7 @@ public class NormalisationLegacy extends NormalisationAbstract{
         // Protocol: https → http
         url = url.startsWith("https://") ? "http://" + url.substring(8) : url;
 
-        // www. prefix
-        if (createUnambiguous) {
-            Matcher wwwMatcher = WWW_PREFIX.matcher(url);
-            if (wwwMatcher.matches()) {
-                url = wwwMatcher.group(1) + wwwMatcher.group(2);
-            }
-        }
+        
 
         // Create temporary url with %-fixing and high-order characters represented directly
         byte[] urlBytes = fixEscapeErrorsAndUnescapeHighOrderUTF8(url);

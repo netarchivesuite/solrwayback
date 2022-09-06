@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation.NormaliseType;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,10 +20,8 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 public class PunyEncodeAndNormaliseTest extends UnitTestUtils {
 
     @Before
-    public void invalidateProperties() throws IOException {
-        // Ensures that the normaliser has a known setting
-        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback.properties").getPath());
-        Normalisation.setTypeFromConfig();
+    public void setNormalisation() throws IOException {     
+        Normalisation.setType(NormaliseType.NORMAL);
     }
 
     @Test
