@@ -47,7 +47,7 @@ public class URLAbsoluterTest {
         String urlDomainOnly ="http://www.example.com"; //www will be kept and a slash added to end
         String urlDomainOnlyNorm= Normalisation.canonicaliseURL(urlDomainOnly );
         assertEquals("http://www.example.com/", urlDomainOnlyNorm);        
-        String urlDomainWithPath ="http://www.example.com/index.html"; //www be removed
+        String urlDomainWithPath ="http://www.example.com/index.html"; //www must be removed
         String urlDomainWithPathNorm= Normalisation.canonicaliseURL(urlDomainWithPath );                
         assertEquals("http://example.com/index.html", urlDomainWithPathNorm);
         
