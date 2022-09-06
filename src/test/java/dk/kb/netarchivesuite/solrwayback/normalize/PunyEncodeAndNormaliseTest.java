@@ -41,6 +41,11 @@ public class PunyEncodeAndNormaliseTest extends UnitTestUtils {
         urlPunyNorm= Facade.punyCodeAndNormaliseUrl(url);
         assertEquals("http://xn--plser-vua.dk/pølseguf.html?pølse=medister", urlPunyNorm);
         
+        
+        url="http://www.pølser.dk/pølseguf.html?pølse=Medister"; //normal normaliser removes www
+        urlPunyNorm= Facade.punyCodeAndNormaliseUrl(url);
+        assertEquals("http://xn--plser-vua.dk/pølseguf.html?pølse=medister", urlPunyNorm);
+        
     
     }
    }
