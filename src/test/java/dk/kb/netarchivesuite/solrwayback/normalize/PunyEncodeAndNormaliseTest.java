@@ -19,14 +19,11 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 public class PunyEncodeAndNormaliseTest extends UnitTestUtils {
 
-    @Before
-    public void setNormalisation() throws IOException {     
-        Normalisation.setType(NormaliseType.NORMAL);
-    }
 
     @Test
     public void testPunyEncodingAndNormalize() throws Exception {
         
+        Normalisation.setType(NormaliseType.NORMAL);
         String url="http://www.test.dk/ABC.cfm?value=27";        
         String urlPunyNorm= Facade.punyCodeAndNormaliseUrl(url);
         assertEquals("http://test.dk/abc.cfm?value=27", urlPunyNorm);
@@ -46,6 +43,30 @@ public class PunyEncodeAndNormaliseTest extends UnitTestUtils {
         urlPunyNorm= Facade.punyCodeAndNormaliseUrl(url);
         assertEquals("http://xn--plser-vua.dk/pølseguf.html?pølse=medister", urlPunyNorm);
         
+        url="http://www.pølser.dk/"; //normal normaliser removes www 
+        urlPunyNorm= Facade.punyCodeAndNormaliseUrl(url);
+        assertEquals("http://xn--plser-vua.dk/", urlPunyNorm);
+
+        
     
     }
+    @Test
+    public void testPunyEncodingAndNormalizeWithLegacy() throws Exception {             
+        Normalisation.setType(NormaliseType.LEGACY);
+       
+        String url="http://www.pølser.dk"; //normal should NOT remove www. 
+        String urlPunyNorm= Facade.punyCodeAndNormaliseUrl(url);
+        assertEquals("http://www.xn--plser-vua.dk/", urlPunyNorm);
+
+         url="http://www.pølser.dk/"; //normal should NOT remove www. 
+         urlPunyNorm= Facade.punyCodeAndNormaliseUrl(url);
+         assertEquals("http://www.xn--plser-vua.dk/", urlPunyNorm);
+        
+         url="http://www.pølser.dk/pølseguf.html?pølse=ostepølse"; //legacy should remove www 
+         urlPunyNorm= Facade.punyCodeAndNormaliseUrl(url);
+         assertEquals("http://xn--plser-vua.dk/pølseguf.html?pølse=ostepølse", urlPunyNorm);
+         
+    }
+    
+    
    }
