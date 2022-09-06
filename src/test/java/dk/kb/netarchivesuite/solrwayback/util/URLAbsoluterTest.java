@@ -1,7 +1,9 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation.NormaliseType;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +36,22 @@ public class URLAbsoluterTest {
         PropertiesLoader.WAYBACK_BASEURL = "http://localhost:0000/solrwayback/";
     }
 
+    @Test
+    public void testTemp() {
+        String url ="http://www.example.com";
+        Normalisation.setType(NormaliseType.NORMAL);
+        String urlNorm1 = Normalisation.canonicaliseURL(url);
+        System.out.println(Normalisation.getType());
+        System.out.println(urlNorm1);
+        Normalisation.setType(NormaliseType.LEGACY);
+        String urlNorm2 = Normalisation.canonicaliseURL(url);
+        System.out.println(Normalisation.getType());
+        System.out.println(urlNorm2);
+        
+    }
+
+    
+    
     @Test
     public void testSimple() {
         URLAbsoluter absoluter = new URLAbsoluter("http://example.com", true);

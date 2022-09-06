@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public class Normalisation {
  
    private static final Logger log = LoggerFactory.getLogger(Normalisation.class);
-   private enum NormaliseType {NORMAL,LEGACY,MINIMAL};
+  public enum NormaliseType {NORMAL,LEGACY,MINIMAL};
    
    static private NormaliseType type = NormaliseType.NORMAL;
    
@@ -94,4 +94,10 @@ public class Normalisation {
     public static NormaliseType getType() {
         return type;
     }
+
+    public static void setType(NormaliseType type) {
+        Normalisation.type = type;
+    }
+    
+    
 }
