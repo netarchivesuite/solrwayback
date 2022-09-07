@@ -5,3 +5,13 @@
 <p>
 There are multiple aspects to consider when working with the archived web.
 </p>
+
+<h3> kb.dk </h3>
+<p>KB is our own site. It is harvested to perfection! </p>
+
+<h3> fonts.googleapis.com </h3>
+
+<p>
+Google fonts is used for webdesign. It is used to apply fonts to websites. 
+</p>
+
