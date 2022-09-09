@@ -271,7 +271,7 @@ public class HtmlParserUrlRewriter {
 					return sourceURL;
 				}
                 sourceURL =  sourceURL.replace("/../", "/");
-    
+
                 IndexDocShort indexDoc = urlReplaceMap.get(Normalisation.canonicaliseURL(sourceURL));
                 if (indexDoc != null){
                     return PropertiesLoader.WAYBACK_BASEURL + "services/" + type +
@@ -283,7 +283,6 @@ public class HtmlParserUrlRewriter {
                 return NOT_FOUND_LINK;
             };
     }
-
 
     /**
      * Collect URLs for resources on the page, intended for later replacement with links to archived versions.

@@ -274,6 +274,7 @@ public abstract class RewriterBase {
 	public static void escapeContent(ParseResult parseResult, PACKAGING packaging) {
 		escapeContent(parseResult, packaging, false);
 	}
+	
 	/**
 	 * Escape the given content with regard to the packaging.
 	 * @param parseResult holds the content.

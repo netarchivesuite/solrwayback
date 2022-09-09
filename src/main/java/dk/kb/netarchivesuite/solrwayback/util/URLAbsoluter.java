@@ -61,16 +61,13 @@ public class URLAbsoluter {
      * @return an absolute URL.
      */
     public String apply(String url) {
-        if (url == null || getBaseURL() == null) {
+        if (url == null || getBaseURL() == null || url.startsWith("data:")) {
             return url;
         }
         if (normalise) {
             url = url.trim().replace("/../", "/");
         }
         if (url.isEmpty()) {
-            return url;
-        }
-        if (url.startsWith("data:")) { // Typically used for embedding image data in HTML
             return url;
         }
 
