@@ -9,7 +9,7 @@ Our goal is to ensure the material can be used for future research purposes.
 Our collection has been collected through four primary strategies for collecting.  
 </p>
 <br>
-<h3>Harvest strategy</h3>
+<h4>Harvest strategy</h4>
  <ul>
   <li>Cross-sectional collection which takes a snapshot of all Danish domains up to four times a year</li>
   <li>Selective collection from the following types of websites: all Danish news media (ranging from 12 times daily to weekly), political parties, organisations and associations, ministries and agencies, selected profiles from social media, YouTube videos (for example weekly)</li>
