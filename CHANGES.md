@@ -3,9 +3,20 @@
 
 4.3.1
 -----
-Playback improvement. Fixed some redirect/url-parsing bugs in the ROOT.war (solrwaybackrootproxy). 
+New propety must be added to the solrwaybackweb.properties:
+collection.text.file=/about_collection.txt
+Just as with the about-text this can be customized and point to a file on the local disk.
+The "About this archive" text has been changed to "About us". This is intended for short information 
+about the institution. While "About the Collection" should contain text of the corpus 
+behind the collection and curator information about crawl-years etc.
+
+
+
+Playback improvement. Fixed some redirect/url-parsing bugs in the ROOT.war (solrwaybackrootproxy).  https://github.com/netarchivesuite/solrwayback/issues/231 
 Playback improvement: Queries for page resource resolving are now properly quited, avoiding a scenario where resolving of all page resources failed. https://github.com/netarchivesuite/solrwayback/issues/230
 Playback improvement: data: URLs are now bypassed is resource URL rewriting and are thus supported for playback. https://github.com/netarchivesuite/solrwayback/issues/230
+
+
 
 
 4.3.0
