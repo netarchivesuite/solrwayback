@@ -210,6 +210,7 @@ public abstract class RewriterBase {
 			ParseResult parseResult, Set<String> urlSet, PACKAGING packaging) throws Exception {
 
 		long resolveStartMS = System.currentTimeMillis();
+
 		List<IndexDocShort> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
 		parseResult.addTiming("findNearest", System.currentTimeMillis()-resolveStartMS);
 
@@ -389,6 +390,9 @@ public abstract class RewriterBase {
         return (String sourceURL) -> {
         	if ((sourceURL = absoluter.apply(sourceURL)) == null) {
 				return null;
+			}
+			if (sourceURL.startsWith("data:")) { // Data URLs are self-contained
+				return sourceURL;
 			}
 
         	if (service == SOLRWAYBACK_SERVICE.normalised) {

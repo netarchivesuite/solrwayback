@@ -258,6 +258,7 @@ public class HtmlParserUrlRewriter {
 	/**
 	 * Generic transformer creator that normalises the incoming URL and return a link to an archived version,
 	 * if such a version exists. Else a {@code notfound} link is returned.
+	 * If the URL us a {@code data:}-URL, it is returned unmodified.
 	 * @param urlReplaceMap         a map of archived versions for normalised URLs on the page.
 	 * @param type                  view or downloadRAW.
 	 * @param extraParams           optional extra parameters for the URL to return.
@@ -266,6 +267,9 @@ public class HtmlParserUrlRewriter {
 	private static UnaryOperator<String> createTransformer(
             Map<String, IndexDocShort> urlReplaceMap, String type, String extraParams) {
         return (String sourceURL) -> {
+			    if (sourceURL.startsWith("data:")) {
+					return sourceURL;
+				}
                 sourceURL =  sourceURL.replace("/../", "/");
     
                 IndexDocShort indexDoc = urlReplaceMap.get(Normalisation.canonicaliseURL(sourceURL));
@@ -275,7 +279,7 @@ public class HtmlParserUrlRewriter {
                            "&offset=" + indexDoc.getOffset() +
                            (extraParams == null ? "" : extraParams);
                 }
-                log.debug("No harvest found for:"+sourceURL);
+                log.debug("No harvest found for: {}", sourceURL);
                 return NOT_FOUND_LINK;
             };
     }

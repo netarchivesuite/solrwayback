@@ -70,6 +70,9 @@ public class URLAbsoluter {
         if (url.isEmpty()) {
             return url;
         }
+        if (url.startsWith("data:")) { // Typically used for embedding image data in HTML
+            return url;
+        }
 
         try {
             if (getBaseURL() != null && !IS_ABSOLUTE_URL.matcher(url).matches()) {
