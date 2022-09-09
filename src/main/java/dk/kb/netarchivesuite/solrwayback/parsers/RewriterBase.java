@@ -210,7 +210,6 @@ public abstract class RewriterBase {
 			ParseResult parseResult, Set<String> urlSet, PACKAGING packaging) throws Exception {
 
 		long resolveStartMS = System.currentTimeMillis();
-
 		List<IndexDocShort> docs = nearestResolver.findNearestHarvestTime(urlSet, crawlDate);
 		parseResult.addTiming("findNearest", System.currentTimeMillis()-resolveStartMS);
 

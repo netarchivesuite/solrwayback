@@ -266,12 +266,13 @@ public class HtmlParserUrlRewriter {
 	 */
 	private static UnaryOperator<String> createTransformer(
             Map<String, IndexDocShort> urlReplaceMap, String type, String extraParams) {
-        return (String sourceURL) -> {
+		return (String sourceURL) -> {
 			if (sourceURL.startsWith("data:")) {
 				return sourceURL;
 			}
 			sourceURL =  sourceURL.replace("/../", "/");
-
+			sourceURL =  sourceURL.replace("/../", "/");
+    
 			IndexDocShort indexDoc = urlReplaceMap.get(Normalisation.canonicaliseURL(sourceURL));
 			if (indexDoc != null){
 				return PropertiesLoader.WAYBACK_BASEURL + "services/" + type +
@@ -279,10 +280,10 @@ public class HtmlParserUrlRewriter {
 					   "&offset=" + indexDoc.getOffset() +
 					   (extraParams == null ? "" : extraParams);
 			}
-			log.debug("No harvest found for: {}", sourceURL);
+			log.debug("No harvest found for:"+sourceURL);
 			return NOT_FOUND_LINK;
 		};
-    }
+	}
 
     /**
      * Collect URLs for resources on the page, intended for later replacement with links to archived versions.

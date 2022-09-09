@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import dk.kb.netarchivesuite.solrwayback.parsers.ParseResult;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 
@@ -734,7 +733,7 @@ public class NetarchiveSolrClient {
         SolrQuery solrQuery = new SolrQuery();
 
         String urlOrQuery = urlQueryJoin("url_norm", "OR", urls);
-        //urlOrQuery = urlOrQuery.replace("\\", "\\\\"); // Solr encode is now handled in urlQueryJoin
+        urlOrQuery = urlOrQuery.replace("\\", "\\\\"); // Solr encode
         solrQuery.setQuery(urlOrQuery);
 
         solrQuery.setFacet(false);
