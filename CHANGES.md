@@ -15,7 +15,8 @@ behind the collection and curator information about crawl-years etc.
 Playback improvement. Fixed some redirect/url-parsing bugs in the ROOT.war (solrwaybackrootproxy).  https://github.com/netarchivesuite/solrwayback/issues/231 
 Playback improvement: Queries for page resource resolving are now properly quited, avoiding a scenario where resolving of all page resources failed. https://github.com/netarchivesuite/solrwayback/issues/230
 Playback improvement: data: URLs are now bypassed is resource URL rewriting and are thus supported for playback. https://github.com/netarchivesuite/solrwayback/issues/230
-
+The SolrWaybackRootProxy (ROOT.war) in the Software bundle has been updated to fix rare playback 
+issues.
 
 
 
