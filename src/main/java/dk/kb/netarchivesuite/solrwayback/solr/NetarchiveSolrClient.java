@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import dk.kb.netarchivesuite.solrwayback.parsers.ParseResult;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 
@@ -734,7 +733,7 @@ public class NetarchiveSolrClient {
         SolrQuery solrQuery = new SolrQuery();
 
         String urlOrQuery = urlQueryJoin("url_norm", "OR", urls);
-        //urlOrQuery = urlOrQuery.replace("\\", "\\\\"); // Solr encode is now handled in urlQueryJoin
+        urlOrQuery = urlOrQuery.replace("\\", "\\\\"); // Solr encode
         solrQuery.setQuery(urlOrQuery);
 
         solrQuery.setFacet(false);
@@ -780,44 +779,20 @@ public class NetarchiveSolrClient {
         return docs;
     }
 
-    /**
-     * Creates a query for 1 or more URLs, taking care to quote URLs and escape characters where needed.
-     * The result will be in the form {@code field:("url1" OR "url2")} or {@code field:("url1" AND "url2")}
-     * depending on operator.
-     *
-     * Note: {@code data:}-URLs are ignored as they will never match.
-     * @param field    the field to query. Typically {@code url} or {@code url_norm}.
-     * @param operator {@code AND} or {@code OR}.
-     * @param urls     the URLs to create a query for.
-     * @return a query for the given URLs.
-     */
     @SuppressWarnings("SameParameterValue")
     private String urlQueryJoin(String field, String operator, Iterable<String> urls) {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         sb.append(field).append(":(");
         for (String url : urls) {
-            if (url.startsWith("data:")) {
-                continue;
-            }
             if (!first) {
                 sb.append(" ").append(operator).append(" ");
             }
             first = false;
-            sb.append(createPhrase(normalizeUrl(url)));
+            sb.append("\"").append(normalizeUrl(url)).append("\"");
         }
         sb.append(")");
         return sb.toString();
-    }
-
-    /**
-     * Quotes the given phrase and escapes characters that needs escaping (backslash and quote).
-     * {@code foo \bar "zoo} becomes {@code "foo \\bar \"zoo"}.
-     * @param phrase any phrase.
-     * @return the phrase quoted and escaped.
-     */
-    private String createPhrase(String phrase) {
-        return "\"" + phrase.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
 
     /*
