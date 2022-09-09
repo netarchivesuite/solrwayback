@@ -61,7 +61,7 @@ public class URLAbsoluter {
      * @return an absolute URL.
      */
     public String apply(String url) {
-        if (url == null || getBaseURL() == null) {
+        if (url == null || getBaseURL() == null || url.startsWith("data:")) {
             return url;
         }
         if (normalise) {

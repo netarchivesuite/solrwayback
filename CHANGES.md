@@ -4,7 +4,8 @@
 4.3.1
 -----
 Playback improvement. Fixed some redirect/url-parsing bugs in the ROOT.war (solrwaybackrootproxy). 
-TODO: Fix the solr-escaping+ data-image bug...
+Playback improvement: Queries for page resource resolving are now properly quited, avoiding a scenario where resolving of all page resources failed. https://github.com/netarchivesuite/solrwayback/issues/230
+Playback improvement: data: URLs are now bypassed is resource URL rewriting and are thus supported for playback. https://github.com/netarchivesuite/solrwayback/issues/230
 
 
 4.3.0
