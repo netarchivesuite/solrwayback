@@ -18,6 +18,9 @@ Playback improvement: data: URLs are now bypassed is resource URL rewriting and 
 The SolrWaybackRootProxy (ROOT.war) in the Software bundle has been updated to fix rare playback 
 issues.
 
+GUI improvement. Use escape-key to close all modal pop-ups. (toolbox, search syntax, full size 
+images)
+
 
 
 4.3.0
