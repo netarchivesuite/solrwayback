@@ -260,6 +260,17 @@ public class SolrWaybackResourceWeb {
         throw handleServiceExceptions(e);
       }
     }
+
+    @GET
+    @Path("/help/collection")
+    @Produces( MediaType.TEXT_PLAIN)
+    public String getCollectionText() throws SolrWaybackServiceException {
+      try {                    
+        return Facade.getCollectionText();
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
     
     
     @GET
