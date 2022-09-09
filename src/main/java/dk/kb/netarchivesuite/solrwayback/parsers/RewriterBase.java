@@ -14,6 +14,7 @@
  */
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
@@ -384,7 +385,6 @@ public abstract class RewriterBase {
 		if (service == SOLRWAYBACK_SERVICE.identity) {
 			return url -> url;
 		}
-
 		final URLAbsoluter absoluter = new URLAbsoluter(baseURL, normalise);
         return (String sourceURL) -> {
         	if ((sourceURL = absoluter.apply(sourceURL)) == null) {

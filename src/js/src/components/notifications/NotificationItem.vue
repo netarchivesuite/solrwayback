@@ -1,6 +1,9 @@
 <template>
-  <div class="notification"
-       :class="current === true ? notification.type : notification.type + ' collapsed'">
+  <div ref="notificationItem"
+       class="notification"
+       tabindex="0"
+       :class="current === true ? notification.type : notification.type + ' collapsed'"
+       @keyup.esc="doDismiss(notification)">
     <button class="notificationCloseBtn"
             type="button"
             @click="doDismiss(notification)">
@@ -56,6 +59,7 @@ export default {
             this.doDismiss(this.notification)
         }, delay)
     }
+    this.$refs.notificationItem.focus()
   },
  
   methods: {

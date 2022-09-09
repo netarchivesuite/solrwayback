@@ -8,35 +8,36 @@ import org.slf4j.LoggerFactory;
  * 
  * This class will delegate to the Normalisation class defined in solrWayback.properties 
  * Always use NORMAL unless you using very old versions of WARC-Indexer
- * 
- * This class needs some refactoring into an abstract class instead of the switches!
- * 
+ *  
  * @author teg
  *
  */
 public class Normalisation {
  
    private static final Logger log = LoggerFactory.getLogger(Normalisation.class);
-   private enum NormaliseType {NORMAL,LEGACY,MINIMAL};
+  public enum NormaliseType {NORMAL,LEGACY,MINIMAL};
    
    static private NormaliseType type = NormaliseType.NORMAL;
    
     static {
-       String normaliseProperty=PropertiesLoader.URL_NORMALISER;
-              
-       if ("legacy".equalsIgnoreCase(normaliseProperty)){
-           type=NormaliseType.LEGACY;
-       }
-       else if("minimal".equalsIgnoreCase(normaliseProperty)){
-           type=NormaliseType.MINIMAL;
-       } 
-       else {
-           type = NormaliseType.NORMAL;           
-       }
-       log.info("URL normalise will use type:"+type);
+        setTypeFromConfig();
     }
     
-    
+    public static void setTypeFromConfig() {
+        String normaliseProperty=PropertiesLoader.URL_NORMALISER;
+
+        if ("legacy".equalsIgnoreCase(normaliseProperty)){
+            type=NormaliseType.LEGACY;
+        }
+        else if("minimal".equalsIgnoreCase(normaliseProperty)){
+            type=NormaliseType.MINIMAL;
+        }
+        else {
+            type = NormaliseType.NORMAL;
+        }
+        log.info("URL normalise will use type:"+type);
+    }
+
     public static String canonicaliseURL(String url) {        
 
         switch (type) {
@@ -84,4 +85,18 @@ public class Normalisation {
         }
         return NormalisationStandard.resolveRelative(url, relative, normalise);
     }
+
+    /**
+     * @return the type of normalisation that is used (stated in the properties).
+     */
+    public static NormaliseType getType() {
+        return type;
+    }
+
+    // Only called from unittests
+    public static void setType(NormaliseType type) {
+        Normalisation.type = type;
+    }
+    
+    
 }

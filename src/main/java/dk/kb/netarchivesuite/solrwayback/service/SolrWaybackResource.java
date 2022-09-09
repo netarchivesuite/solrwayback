@@ -206,7 +206,8 @@ public class SolrWaybackResource {
     try {
 
         
-        //TODO! Remove this hack when frontend has fixed it
+        // If playback is disabled, the download raw must be blocked. Except for images which will be resized.
+        // Too much work in frontend to rewrite the logic to call the /image url instead and then downloadRaw method could be blocked always
         if(PropertiesLoader.PLAYBACK_DISABLED) {
             //Temporary hack. Check if image and return tumbnail
             IndexDoc indexDoc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);      

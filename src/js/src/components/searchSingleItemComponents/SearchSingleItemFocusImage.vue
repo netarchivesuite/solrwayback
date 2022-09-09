@@ -1,5 +1,9 @@
 <template>
-  <div class="searchSingleItemFocusImage" @click="closeImage">
+  <div ref="imgBox"
+       class="searchSingleItemFocusImage"
+       tabindex="0"
+       @click="closeImage"
+       @keyup.esc="closeImage">
     <img :src="image" @click.stop>
     <button @click="closeImage">
       ✕
@@ -29,6 +33,9 @@ export default {
       imageShown:false,
     }
   },
+  mounted() {
+    this.$refs.imgBox.focus()
+},
   methods: {
     closeImage() {
       this.$emit('close-window', this.index)

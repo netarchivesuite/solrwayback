@@ -339,19 +339,20 @@ public class Facade {
         URL uri = new URL(url);
         String hostName = uri.getHost();
         String hostNameEncoded = IDN.toASCII(hostName);
-
+        
         String path = uri.getPath();
         if ("".equals(path)) {
             path = "/";
         }
         String urlQueryPath = uri.getQuery();
+        String urlPunied = null;
         if (urlQueryPath == null) {
-            urlQueryPath = "";
+             urlPunied = "http://" + hostNameEncoded + path;
         }
-
-        String urlPunied = "http://" + hostNameEncoded + path +"?"+ urlQueryPath;
-        String urlPuniedAndNormalized = Normalisation.canonicaliseURL(urlPunied);
-
+        else {
+            urlPunied = "http://" + hostNameEncoded + path +"?"+ urlQueryPath;            
+        }
+        String urlPuniedAndNormalized = Normalisation.canonicaliseURL(urlPunied);       
         return urlPuniedAndNormalized;
     }
 
