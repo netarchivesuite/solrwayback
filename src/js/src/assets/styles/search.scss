@@ -149,6 +149,13 @@ color:var(--secondary-text-color);
   color:rgba(30,30,30,0.5)
 }
 
+.facetExplanation {
+  cursor:default;
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 13px;
+  font-weight: bold;
+}
+
 .searchForm #querySubmit {
   box-sizing: border-box;
   width:60px;

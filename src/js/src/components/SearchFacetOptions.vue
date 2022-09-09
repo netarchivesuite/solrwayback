@@ -14,7 +14,6 @@
              :class="facetIndex % 2 === 0 ? 'facetItem' : 'facetCount'"
              @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet) : null">
           {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
-          <span v-if="filter(facetObj, facet)" class="buttonExplanation" :title="getDescription(facetObj, facet)">&#9432;</span> 
         </div>
         <div v-show="extraFacetLoading === facetCategory[0]" class="extraFacetsloading">
         </div>
@@ -45,16 +44,6 @@ import { requestService } from '../services/RequestService'
 export default {
   name: 'SearchFacetOptions',
   mixins: [HistoryRoutingUtils],
-  data() {
-    return {
-      facetObj: [
-        {facet: 'kb.dk', description: 'kb.dk is our own domain, it is harvested perfectly!'},
-        {facet: 'dr.dk', description: 'dr.dk is nicely harvested through professional cooperation'},
-        {facet: 'text', description: 'This facet shows only collected text'},
-        {facet: 'elvium.com', description: 'Does this work?'}
-      ]
-    }
-  },
   computed: {
     ...mapState({
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
@@ -64,10 +53,7 @@ export default {
       loading: state => state.Search.loading,
       facetLoading: state => state.Search.facetLoading,
       extraFacetLoading: state => state.Search.extraFacetLoading
-    }),
-    description() {
-      return this.facetObj.facet === facetItem ? 'Yes' : 'No'
-    }
+    })
   },
   methods: {
     ...mapActions('Search', {
@@ -106,19 +92,6 @@ export default {
           facets[item].length !== 0 ? fate = true : null 
         }) 
       } return fate
-    },
-    filter(facetObj, name) {
-      const inArray = facetObj.some(el => el.facet === name)
-      return inArray
-    },
-    getDescription(facetObj, facet) {
-      let output = ''
-      facetObj.map(obj => {
-          if (obj.facet == facet) {
-            output += obj.description
-          }
-      })
-      return output
     }
   }
 }
