@@ -389,14 +389,11 @@ public abstract class RewriterBase {
 		}
 		final URLAbsoluter absoluter = new URLAbsoluter(baseURL, normalise);
         return (String sourceURL) -> {
-        	if ((sourceURL = absoluter.apply(sourceURL)) == null) {
+			if ((sourceURL = absoluter.apply(sourceURL)) == null) {
 				return null;
 			}
-			if (sourceURL.startsWith("data:")) { // Data URLs are self-contained
-				return sourceURL;
-			}
 
-        	if (service == SOLRWAYBACK_SERVICE.normalised) {
+        	if (service == SOLRWAYBACK_SERVICE.normalised || sourceURL.startsWith("data:")) {
         		return sourceURL;
 			}
 

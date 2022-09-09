@@ -780,26 +780,26 @@ public class NetarchiveSolrClient {
         return docs;
     }
 
-    /**
-     * Creates a query for 1 or more URLs, taking care to quote URLs and escape characters where needed.
-     * The result will be in the form {@code field:("url1" OR "url2")} or {@code field:("url1" AND "url2")}
-     * depending on operator.
-     *
-     * Note: {@code data:}-URLs are ignored as they will never match.
-     * @param field    the field to query. Typically {@code url} or {@code url_norm}.
-     * @param operator {@code AND} or {@code OR}.
-     * @param urls     the URLs to create a query for.
-     * @return a query for the given URLs.
-     */
+     /**
+      * Creates a query for 1 or more URLs, taking care to quote URLs and escape characters where needed.
+      * The result will be in the form {@code field:("url1" OR "url2")} or {@code field:("url1" AND "url2")}
+      * depending on operator.
+      *
+      * Note: {@code data:}-URLs are ignored as they will never match.
+      * @param field    the field to query. Typically {@code url} or {@code url_norm}.
+      * @param operator {@code AND} or {@code OR}.
+      * @param urls     the URLs to create a query for.
+      * @return a query for the given URLs.
+      */
     @SuppressWarnings("SameParameterValue")
     private String urlQueryJoin(String field, String operator, Iterable<String> urls) {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         sb.append(field).append(":(");
         for (String url : urls) {
-            if (url.startsWith("data:")) {
-                continue;
-            }
+            if (url.startsWith("data:") ) {
+                 continue;
+             }
             if (!first) {
                 sb.append(" ").append(operator).append(" ");
             }
@@ -810,15 +810,15 @@ public class NetarchiveSolrClient {
         return sb.toString();
     }
 
-    /**
-     * Quotes the given phrase and escapes characters that needs escaping (backslash and quote).
-     * {@code foo \bar "zoo} becomes {@code "foo \\bar \"zoo"}.
-     * @param phrase any phrase.
-     * @return the phrase quoted and escaped.
-     */
-    private String createPhrase(String phrase) {
-        return "\"" + phrase.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
-    }
+     /**
+      * Quotes the given phrase and escapes characters that needs escaping (backslash and quote).
+      * {@code foo \bar "zoo} becomes {@code "foo \\bar \"zoo"}.
+      * @param phrase any phrase.
+      * @return the phrase quoted and escaped.
+      */
+     private String createPhrase(String phrase) {
+         return "\"" + phrase.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+     }
 
     /*
      * Notice here do we not fix url_norm
