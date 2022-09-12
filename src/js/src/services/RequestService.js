@@ -16,6 +16,7 @@ export const requestService = {
   getHarvestedPageResources,
   getDomainStatistics,
   getSearchGuidelines,
+  getCollectionInfo,
   getNgramNetarchive,
   fireGeoImageSearchRequest,
   getPWID,
@@ -163,6 +164,16 @@ function getAboutText() {
 
 function getSearchGuidelines() {
   const url = 'services/frontend/help/search/'
+  return axios.get(
+    url).then(response => {
+    return response.data
+  }).catch(error => {
+    return Promise.reject(error)
+  })
+}
+
+function getCollectionInfo() {
+  const url = 'services/frontend/help/collection/'
   return axios.get(
     url).then(response => {
     return response.data

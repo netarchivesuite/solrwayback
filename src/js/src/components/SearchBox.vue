@@ -77,6 +77,10 @@
                   @click.prevent="showUploadFileSearch = !showUploadFileSearch">
             Search with uploaded file
           </button>
+          <button class="collectionInfo" @click.prevent="openSelectedModal('collectioninfo')">
+            <span class="collectionInfoText">About the collection</span>
+            <span class="collectionInfoIcon" />
+          </button>
           <button class="toolbox" @click.prevent="toggleToolbox()">
             <span class="toolboxText">Toolbox</span>
             <span class="toolboxIcon" />
@@ -105,13 +109,12 @@ import Toolbox from './Toolbox.vue'
 import {debounce} from './../utils/globalUtils'
 import { isUploadFileSearchDisabled } from '../configs/configHelper'
 
-
 export default {
   components: {
     AppliedSearchFacets,
     SearchUploadFile,
-    Toolbox
-  },
+    Toolbox,
+    },
   mixins: [HistoryRoutingUtils, SearchUtils, SearchboxUtils],
   data () {
     return {    

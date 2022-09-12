@@ -92,10 +92,17 @@ body {
   font-family: Trebuchet MS,Ubuntu;
 }
 
-h2 {
+h2{
   font-weight: bold;
   color:var(--main-highlight-color);
   font-size:120%;
+  text-transform: uppercase;
+}
+
+h4 {
+  font-weight: bold;
+  color:var(--main-highlight-color);
+  font-size:100%;
   text-transform: uppercase;
 }
 

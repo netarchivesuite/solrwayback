@@ -149,6 +149,13 @@ color:var(--secondary-text-color);
   color:rgba(30,30,30,0.5)
 }
 
+.facetExplanation {
+  cursor:default;
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 13px;
+  font-weight: bold;
+}
+
 .searchForm #querySubmit {
   box-sizing: border-box;
   width:60px;
@@ -310,7 +317,7 @@ color:var(--secondary-text-color);
 }
 
 
-.searchForm .tools .toolbox {
+.searchForm .tools .toolbox, .searchForm .tools .collectionInfo  {
   text-transform: uppercase;
   padding-left:0px;
   padding-right:0px;
@@ -324,12 +331,12 @@ color:var(--secondary-text-color);
 	float: right;
 }
 
-.searchForm .tools .toolboxText, .searchForm .gpsText {
+.searchForm .tools .toolboxText, .searchForm .gpsText, .searchForm .collectionInfoText {
   border-bottom: 1px solid var(--secondary-highlight-color);
   margin-right:5px !important;
 }
 
-.searchForm .tools .toolboxIcon {
+.searchForm .tools {
   margin-right:0px !important;
 }
 
@@ -347,6 +354,27 @@ color:var(--secondary-text-color);
   border-bottom: 0px !important;
 }
 
+.collectionInfoIcon {
+  background-image: url('../icons/warc.svg');
+  height: 16px;
+	position: relative;
+  width: 16px;
+  margin-right:0px !important;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+  top: 3px;
+  border-bottom: 0px !important;
+}
+
+.collectionInfoNavigation h3 {
+  display:inline-block;
+  text-transform: uppercase;
+  text-align: center;
+  font-weight: bold;
+}
+
 .gpsSearchButton {
   background-color:white;
   border:0px;
@@ -354,7 +382,7 @@ color:var(--secondary-text-color);
   text-transform: uppercase;
   color:var(--main-highlight-color);
   margin-left:10px;
-  margin-right:10px;
+  margin-right:0px;
   padding:0px;
   float:right;
   margin-top:-4px;
