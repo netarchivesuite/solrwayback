@@ -25,12 +25,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * Special purpose cache for Solr requests. Supports max entry count and max age.
+ * Time oriented cache where oldest entry can be evicted either due to not being accessed in a given time or the cache
+ * being full. The cache can share size with other TimeCaches when checking for fullness.
  */
 public class TimeCache<O> implements Map<String, O> {
     private static final Logger log = LoggerFactory.getLogger(TimeCache.class);
 
-    private final LinkedHashMap<String, TimeEntry<O>> inner;
+    private final Map<String, TimeEntry<O>> inner;
     private final int maxCapacity;
     private final long maxAge;
     private final AtomicLong calls = new AtomicLong(0);
@@ -39,7 +40,6 @@ public class TimeCache<O> implements Map<String, O> {
     private final Set<TimeCache<?>> linkedCaches = new HashSet<>();
 
     /**
-     *
      * @param maxCapacity the maximum numbers of entries to hold in the cache.
      * @param maxAgeMS    the maximum number og milliseconds that an object can exist in the cache.
      */
@@ -47,17 +47,17 @@ public class TimeCache<O> implements Map<String, O> {
         super();
         this.maxCapacity = maxCapacity;
         this.maxAge = maxAgeMS;
-        this.inner = new LinkedHashMap<String, TimeEntry<O>>() {
+        this.inner = Collections.synchronizedMap(new LinkedHashMap<String, TimeEntry<O>>() {
             @Override
             protected boolean removeEldestEntry(Map.Entry<String, TimeEntry<O>> eldest) {
                 int totalSize = size() + linkedCaches.stream().mapToInt(TimeCache::size).sum();
                 return totalSize > maxCapacity || eldest.getValue().isTooOld();
             }
-        };
+        });
     }
 
     /**
-     * Create a new cache, typically with another type, that is linked to this cached.
+     * Create a new cache, typically with another type, that is linked to this cache.
      * Linked cache has shared capacity.
      * @param <T> the type of the cache.
      * @return a new cache with limits (max count and age) shared with this cache.
@@ -87,7 +87,7 @@ public class TimeCache<O> implements Map<String, O> {
      *
      * If the key is null, no caching is attempted and the supplier is called directly.
      * @param key      the key for the object to retrieve.
-     * @param supplier used for creating the object if is is not available.
+     * @param supplier used for creating the object if it is not available.
      * @return the object corresponding to the key.
      */
     public O get(String key, Supplier<O> supplier) {
@@ -168,9 +168,11 @@ public class TimeCache<O> implements Map<String, O> {
 
     @Override
     public boolean containsValue(Object value) {
-        return inner.values().stream()
-                .map(TimeEntry::getValue)
-                .anyMatch(value::equals);
+        synchronized (inner) {
+            return inner.values().stream()
+                    .map(TimeEntry::getValue)
+                    .anyMatch(value::equals);
+        }
     }
 
     @Override
@@ -198,23 +200,38 @@ public class TimeCache<O> implements Map<String, O> {
         inner.clear();
     }
 
+    /**
+     * Calling keySet triggers a shallow copy of all keys. This is potentially a heavy operation!
+     */
     @Override
     public Set<String> keySet() {
-        return inner.keySet();
+        synchronized (inner) {
+            return new HashSet<>(inner.keySet());
+        }
     }
 
+    /**
+     * Calling values triggers a shallow copy of all values. This is potentially a heavy operation!
+     */
     @Override
     public Collection<O> values() {
-        return inner.values().stream()
-                .map(TimeEntry::getValue)
-                .collect(Collectors.toList());
+        synchronized (inner) {
+            return inner.values().stream()
+                    .map(TimeEntry::getValue)
+                    .collect(Collectors.toList());
+        }
     }
 
+    /**
+     * Calling entrySet triggers a full build of the response set. This is potentially a heavy operation!
+     */
     @Override
     public Set<Entry<String, O>> entrySet() {
-        return inner.entrySet().stream()
-                .map(e -> new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().getValue()))
-                .collect(Collectors.toSet());
+        synchronized (inner) {
+            return inner.entrySet().stream()
+                    .map(e -> new AbstractMap.SimpleImmutableEntry<>(e.getKey(), e.getValue().getValue()))
+                    .collect(Collectors.toSet());
+        }
     }
 
     /* Helper class */
