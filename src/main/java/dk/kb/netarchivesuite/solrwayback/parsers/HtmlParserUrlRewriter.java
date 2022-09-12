@@ -178,6 +178,7 @@ public class HtmlParserUrlRewriter {
 		UnaryOperator<String> rewriterRaw = createTransformer(
 				urlReplaceMap, "downloadRaw", "");
         processElement(doc, "img",    "abs:src", rewriterRaw);
+        processElement(doc, "img",    "abs:data-src", rewriterRaw); // JQuery convention used for delayed loading of images
         processElement(doc, "embed",  "abs:src", rewriterRaw);
         processElement(doc, "source", "abs:src", rewriterRaw);
 		processElement(doc, "script", "abs:src", rewriterRaw);
@@ -300,6 +301,7 @@ public class HtmlParserUrlRewriter {
         };
 
         processElement(doc, "img",    "abs:src", collector);
+        processElement(doc, "img",    "abs:data-src", collector);  // JQuery convention used for delayed loading of images
         processElement(doc, "embed",  "abs:src", collector);
         processElement(doc, "source", "abs:src", collector);
 		processElement(doc, "script", "abs:src", collector);
