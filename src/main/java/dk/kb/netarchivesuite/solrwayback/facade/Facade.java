@@ -10,6 +10,7 @@ import java.net.IDN;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.QueryParam;
@@ -603,7 +604,10 @@ public class Facade {
 
         // the original page REMEMBER
 
-        HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
+        // Get all resources that does not start with "data:"
+        HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc).stream().
+                filter(url -> !url.startsWith("data:")).
+                collect(Collectors.toCollection(HashSet::new));
 
         ArrayList<IndexDoc> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFullFields(resources, arc.getCrawlDate());
 
