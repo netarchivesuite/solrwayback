@@ -69,6 +69,7 @@ public class IndexWatcher {
         this.solrClient = solrClient;
         this.intervalMS = intervalMS;
         this.callback = callback;
+        log.debug("Initializing IndexWatcher");
 
         if (intervalMS <= 1000) {
             log.warn("Watch interval is {} milliseconds. This is very low and might harm general Solr performance",
@@ -150,9 +151,11 @@ public class IndexWatcher {
         solrQuery.set("stats", "true");
         solrQuery.set("stats.field", "{!max=true}index_time");
 
+        long queryTime = -System.currentTimeMillis();
         QueryResponse rsp;
         try {
             rsp = solrClient.query(solrQuery, SolrRequest.METHOD.POST);
+            queryTime += System.currentTimeMillis();
         } catch (Exception e) {
             log.warn("Unable to determine initial watch condition for Solr index", e);
             setStatus(STATUS.unavailable);
@@ -162,13 +165,19 @@ public class IndexWatcher {
         try {
             Date maxDate = (Date)rsp.getFieldStatsInfo().get(TIME_FIELD).getMax();
             lastMaxIndexTime = DateUtils.getSolrDateFull(maxDate);
-            log.debug("Initial max {} was '{}'", TIME_FIELD, lastMaxIndexTime);
+            log.debug("Initial max {} was '{}', retrieved in {}ms", TIME_FIELD, lastMaxIndexTime, queryTime);
         } catch (Exception e) {
             log.warn("Got result for initial max {} with stats request but was unable to retrieve the value",
                      TIME_FIELD);
         }
     }
 
+    /**
+     * Performs a range query for documents newer than last recorded max time stamp.
+     * The query is (hopefully) cached by Solr so checks against a non-changed index are fast.
+     * When the index has changed, the request takes longer, scaling up with index size.
+     * @return true if the index has changed since last call to the method.
+     */
     private boolean hasIndexChanged() throws SolrServerException, IOException {
         // Handle the situation where Solr was down initially
         if (lastMaxIndexTime == null) {
@@ -186,7 +195,9 @@ public class IndexWatcher {
         solrQuery.setFields(TIME_FIELD);
 
         // Only check for changes means passing exceptions to the caller
+        long queryTime = -System.currentTimeMillis();
         QueryResponse rsp = solrClient.query(solrQuery, SolrRequest.METHOD.POST);
+        queryTime += System.currentTimeMillis();
 
         if (rsp.getResults().getNumFound() == 0) {
             return false;
@@ -199,7 +210,8 @@ public class IndexWatcher {
                      "time from field {}", changedQuery, TIME_FIELD);
             return false;
         }
-        log.debug("Received new max {} '{}' from query '{}'", TIME_FIELD, lastMaxIndexTime, changedQuery);
+        log.debug("Received new max {} '{}' from query '{}' in {}ms",
+                  TIME_FIELD, lastMaxIndexTime, changedQuery, queryTime);
         return true;
     }
 

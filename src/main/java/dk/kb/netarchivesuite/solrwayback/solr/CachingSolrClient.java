@@ -76,6 +76,7 @@ public class CachingSolrClient extends SolrClient {
      * Clear all cached entries. This does not clear the calls/hits-statistics.
      */
     public void clearCache() {
+        log.debug("Clearing cached queries");
         queryCache.clear();
         namedCache.clear();
     }
