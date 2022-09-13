@@ -53,7 +53,7 @@ public class HtmlParserUrlRewriterTest {
     // No verification of result, only count of replaced
     @Test
     public void testSimpleRewritingCount() throws Exception {
-        assertCount("simple", 11);
+        assertCount("simple", 13);
     }
 
     @Test
