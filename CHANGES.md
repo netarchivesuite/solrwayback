@@ -21,6 +21,7 @@ issues.
 GUI improvement. Use escape-key to close all modal pop-ups. (toolbox, search syntax, full size 
 images)
 
+Cache invalidation based on background checks for index changes.
 
 
 4.3.0
