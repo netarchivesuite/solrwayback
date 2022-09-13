@@ -46,7 +46,9 @@ public class IndexWatcher {
         /** The backing Solr has become responsive after a period of unresponsiveness */
         available,
         /** The index of the backing solr has changed since last check */
-        changed
+        changed,
+        /** The backing Solr has not been queried */
+        undetermined
     }
 
     public static final String TIME_FIELD = "index_time";
@@ -56,7 +58,7 @@ public class IndexWatcher {
     private final Consumer<STATUS> callback;
     private final Timer timer;
 
-    private STATUS status = null;
+    private STATUS status = STATUS.undetermined;
     private String lastMaxIndexTime = null;
 
     /**
@@ -78,7 +80,6 @@ public class IndexWatcher {
 
         timer = new Timer("IndexWatcher", true);
         timer.schedule(createWatchTask(), intervalMS, intervalMS);
-        initWatch();
         log.info("Created index watcher with interval {}ms", intervalMS);
     }
 

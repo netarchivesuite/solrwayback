@@ -257,14 +257,15 @@ public class SolrWaybackResourceWeb {
      * The availability status is updated internally by {@link dk.kb.netarchivesuite.solrwayback.solr.IndexWatcher}
      * and is controlled by the property {@code solr.server.check.interval}.
      * See {@link dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader} for further information.
-     * @return true if the backing Solr is available, else false.
+     * @return true if the backing Solr is available, else false. {@code N/A} if the status check has not been done.
      */
     @GET
     @Path("solr/available")
     @Produces(MediaType.TEXT_PLAIN +"; charset=UTF-8")
     public String isSolrAvailable() throws SolrWaybackServiceException {
         try {
-            return Boolean.toString(NetarchiveSolrClient.getInstance().isSolrAvailable());
+            Boolean isAvailable = NetarchiveSolrClient.getInstance().isSolrAvailable();
+            return isAvailable == null ? "N/A": isAvailable.toString();
         } catch (Exception e) {
             log.error("Unable to retrieve Solr availability", e);
             throw handleServiceExceptions(e);

@@ -53,7 +53,7 @@ public class NetarchiveSolrClient {
     protected static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_full,content_type_norm,hash,type,crawl_date,content_encoding,exif_location,status_code,last_modified,redirect_to_norm";
     protected static String indexDocFieldListShort = "url,url_norm,source_file_path,source_file,source_file_offset,crawl_date";
 
-    protected boolean solrAvailable = true;
+    protected Boolean solrAvailable = null;
 
     protected NetarchiveSolrClient() { // private. Singleton
     }
@@ -114,6 +114,9 @@ public class NetarchiveSolrClient {
             case unavailable:
                 solrAvailable = false;
                 break;
+            case undetermined:
+                log.debug("Got IndexWatcher.STATUS.undetermined. This should not be possible");
+                break;
             default:
                 log.warn("Unsupported value for IndexWatcher.STATUS: '{}'", status);
         }
@@ -122,9 +125,9 @@ public class NetarchiveSolrClient {
     /**
      * Requires a running {@link IndexWatcher}. If not enabled, the result will always be true.
      * Enabled per default, controlled by {@link PropertiesLoader#SOLR_SERVER_CHECK_INTERVAL}).
-     * @return true if the backing Solr is available, else false.
+     * @return true if the backing Solr is available, else false. null if not determined
      */
-    public boolean isSolrAvailable() {
+    public Boolean isSolrAvailable() {
         return solrAvailable;
     }
 
