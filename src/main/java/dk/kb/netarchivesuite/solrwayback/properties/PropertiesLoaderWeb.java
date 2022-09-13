@@ -126,9 +126,9 @@ public class PropertiesLoaderWeb {
             SEARCH_UPLOADED_FILE_DISABLED = Boolean.parseBoolean(serviceProperties.getProperty(SEARCH_UPLOADED_FILE_DISABLED_PROPERTY));
             EXPORT_CSV_FIELDS = serviceProperties.getProperty(EXPORT_CSV_FIELDS_PROPERTY);
             
-            ABOUT_TEXT_FILE = serviceProperties.getProperty(ABOUT_TEXT_FILE_PROPERTY).trim();
-            SEARCH_HELP_TEXT_FILE = serviceProperties.getProperty(SEARCH_HELP_FILE_PROPERTY).trim();
-            COLLECTION_TEXT_FILE = serviceProperties.getProperty(COLLECTION_TEXT_FILE_PROPERTY).trim();
+            ABOUT_TEXT_FILE = serviceProperties.getProperty(ABOUT_TEXT_FILE_PROPERTY);
+            SEARCH_HELP_TEXT_FILE = serviceProperties.getProperty(SEARCH_HELP_FILE_PROPERTY);
+            COLLECTION_TEXT_FILE = serviceProperties.getProperty(COLLECTION_TEXT_FILE_PROPERTY);
 
             LEAFLET_SOURCE = serviceProperties.getProperty(LEAFLET_SOURCE_PROPERTY);
             LEAFLET_ATTRIBUTION = serviceProperties.getProperty(LEAFLET_ATTRIBUTION_PROPERTY);
@@ -151,18 +151,18 @@ public class PropertiesLoaderWeb {
                 EXPORT_WARC_EXPANDED_MAXRESULTS  = Long.parseLong( warc_expanded_max_results.trim());               
             }
 
-            if (ABOUT_TEXT_FILE == null || ABOUT_TEXT_FILE.isEmpty()) {
-                ABOUT_TEXT_FILE = "/about_this_archive.txt".trim();
+            if (ABOUT_TEXT_FILE == null || ABOUT_TEXT_FILE.trim().isEmpty()) {
+                ABOUT_TEXT_FILE = "/about_this_archive.txt";
                 log.warn("about.text.file in solrwaybackweb.properties is not set. Using default: /about_this_archive.txt");
             }
 
-            if (SEARCH_HELP_TEXT_FILE == null || SEARCH_HELP_TEXT_FILE.isEmpty()) {
-                SEARCH_HELP_TEXT_FILE = "/search_help.txt".trim();
+            if (SEARCH_HELP_TEXT_FILE == null || SEARCH_HELP_TEXT_FILE.trim().isEmpty()) {
+                SEARCH_HELP_TEXT_FILE = "/search_help.txt";
                 log.warn("search.help.text.file in solrwaybackweb.properties is not set. Using default: /search_help.txt");
             }
 
-            if (COLLECTION_TEXT_FILE == null || COLLECTION_TEXT_FILE.isEmpty()) {
-                COLLECTION_TEXT_FILE = "/about_collection.txt".trim();
+            if (COLLECTION_TEXT_FILE == null || COLLECTION_TEXT_FILE.trim().isEmpty()) {
+                COLLECTION_TEXT_FILE = "/about_collection.txt";
                 log.warn("collection.text.file in solrwaybackweb.properties is not set. Using default: /about_collection.txt");
             }
                         
