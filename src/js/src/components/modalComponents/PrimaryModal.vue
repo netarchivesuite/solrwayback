@@ -1,5 +1,8 @@
 <template>
-  <div class="modalContainer">
+  <div ref="modalContainer"
+       class="modalContainer"
+       tabindex="0"
+       @keyup.esc="closeModal">
     <button class="closeButton" @click="closeModal()">
       ✕
     </button>
@@ -7,6 +10,7 @@
       <search-guidelines v-if="currentModal === 'guidelines'" />
       <search-visualization v-if="currentModal === 'visualization'" />
       <gps-search v-if="currentModal === 'gpssearch'" />
+      <collection-info v-if="currentModal === 'collectioninfo'" />
     </div>
   </div>
 </template>
@@ -16,6 +20,7 @@
 import SearchGuidelines from './SearchGuidelines'
 import SearchVisualization from './SearchVisualization'
 import GpsSearch from './GpsSearch'
+import CollectionInfo from './CollectionInfo'
 import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -23,7 +28,8 @@ export default {
   components: {
     SearchGuidelines,
     SearchVisualization,
-    GpsSearch
+    GpsSearch,
+    CollectionInfo
   },
   computed: {
     ...mapState({
@@ -31,6 +37,9 @@ export default {
       currentModal: state => state.Modal.currentModal,
     })
   },
+  mounted() {
+    this.$refs.modalContainer.focus()
+},
   methods: {
        ...mapActions('Modal', {
       updateShowModal:'updateShowModal',

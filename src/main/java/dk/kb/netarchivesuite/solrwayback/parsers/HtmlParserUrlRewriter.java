@@ -178,6 +178,7 @@ public class HtmlParserUrlRewriter {
 		UnaryOperator<String> rewriterRaw = createTransformer(
 				urlReplaceMap, "downloadRaw", "");
         processElement(doc, "img",    "abs:src", rewriterRaw);
+        processElement(doc, "img",    "abs:data-src", rewriterRaw); // JQuery convention used for delayed loading of images
         processElement(doc, "embed",  "abs:src", rewriterRaw);
         processElement(doc, "source", "abs:src", rewriterRaw);
 		processElement(doc, "script", "abs:src", rewriterRaw);
@@ -258,6 +259,7 @@ public class HtmlParserUrlRewriter {
 	/**
 	 * Generic transformer creator that normalises the incoming URL and return a link to an archived version,
 	 * if such a version exists. Else a {@code notfound} link is returned.
+	 * If the URL us a {@code data:} URL, it is returned unmodified.
 	 * @param urlReplaceMap         a map of archived versions for normalised URLs on the page.
 	 * @param type                  view or downloadRAW.
 	 * @param extraParams           optional extra parameters for the URL to return.
@@ -265,21 +267,24 @@ public class HtmlParserUrlRewriter {
 	 */
 	private static UnaryOperator<String> createTransformer(
             Map<String, IndexDocShort> urlReplaceMap, String type, String extraParams) {
-        return (String sourceURL) -> {
-                sourceURL =  sourceURL.replace("/../", "/");
+		return (String sourceURL) -> {
+			if (sourceURL.startsWith("data:")) {
+				return sourceURL;
+			}
+			sourceURL =  sourceURL.replace("/../", "/");
+			sourceURL =  sourceURL.replace("/../", "/");
     
-                IndexDocShort indexDoc = urlReplaceMap.get(Normalisation.canonicaliseURL(sourceURL));
-                if (indexDoc != null){
-                    return PropertiesLoader.WAYBACK_BASEURL + "services/" + type +
-                           "?source_file_path=" + indexDoc.getSource_file_path() +
-                           "&offset=" + indexDoc.getOffset() +
-                           (extraParams == null ? "" : extraParams);
-                }
-                log.debug("No harvest found for:"+sourceURL);
-                return NOT_FOUND_LINK;
-            };
-    }
-
+			IndexDocShort indexDoc = urlReplaceMap.get(Normalisation.canonicaliseURL(sourceURL));
+			if (indexDoc != null){
+				return PropertiesLoader.WAYBACK_BASEURL + "services/" + type +
+					   "?source_file_path=" + indexDoc.getSource_file_path() +
+					   "&offset=" + indexDoc.getOffset() +
+					   (extraParams == null ? "" : extraParams);
+			}
+			log.debug("No harvest found for:"+sourceURL);
+			return NOT_FOUND_LINK;
+		};
+	}
 
     /**
      * Collect URLs for resources on the page, intended for later replacement with links to archived versions.
@@ -296,6 +301,7 @@ public class HtmlParserUrlRewriter {
         };
 
         processElement(doc, "img",    "abs:src", collector);
+        processElement(doc, "img",    "abs:data-src", collector);  // JQuery convention used for delayed loading of images
         processElement(doc, "embed",  "abs:src", collector);
         processElement(doc, "source", "abs:src", collector);
 		processElement(doc, "script", "abs:src", collector);

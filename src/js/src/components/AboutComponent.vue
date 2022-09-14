@@ -19,7 +19,7 @@ export default {
   }),
   computed: {
     aboutButtonText: function() {
-      return this.showAbout ? 'Show less' : 'About this archive'
+      return this.showAbout ? 'Show less' : 'About Us'
     }
   },
   mounted () {
@@ -27,7 +27,7 @@ export default {
   },
   methods: {
     getAboutTextFromService() {
-      requestService.getAboutText().then(result => this.aboutText = result, error => console.log('No information found about this archive.'))
+      requestService.getAboutText().then(result => this.aboutText = result, error => console.log('No information found about this archival institution.'))
     },
     toggleAboutText() {
       this.showAbout = !this.showAbout

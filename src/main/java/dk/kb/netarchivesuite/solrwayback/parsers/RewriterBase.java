@@ -14,6 +14,7 @@
  */
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
@@ -272,6 +273,7 @@ public abstract class RewriterBase {
 	public static void escapeContent(ParseResult parseResult, PACKAGING packaging) {
 		escapeContent(parseResult, packaging, false);
 	}
+	
 	/**
 	 * Escape the given content with regard to the packaging.
 	 * @param parseResult holds the content.
@@ -384,14 +386,13 @@ public abstract class RewriterBase {
 		if (service == SOLRWAYBACK_SERVICE.identity) {
 			return url -> url;
 		}
-
 		final URLAbsoluter absoluter = new URLAbsoluter(baseURL, normalise);
         return (String sourceURL) -> {
-        	if ((sourceURL = absoluter.apply(sourceURL)) == null) {
+			if ((sourceURL = absoluter.apply(sourceURL)) == null) {
 				return null;
 			}
 
-        	if (service == SOLRWAYBACK_SERVICE.normalised) {
+        	if (service == SOLRWAYBACK_SERVICE.normalised || sourceURL.startsWith("data:")) {
         		return sourceURL;
 			}
 

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,10 +39,11 @@ public class PropertiesLoaderWeb {
     public static final String EXPORT_WARC_MAXRESULTS_PROPERTY = "export.warc.maxresults";
     public static final String EXPORT_CSV_MAXRESULTS_PROPERTY = "export.csv.maxresults";
     public static final String EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY = "export.warc.maxresults";
-         
+
     public static final String EXPORT_CSV_FIELDS_PROPERTY = "export.csv.fields";
     public static final String ABOUT_TEXT_FILE_PROPERTY = "about.text.file";
     public static final String SEARCH_HELP_FILE_PROPERTY = "search.help.text.file";
+    public static final String COLLECTION_TEXT_FILE_PROPERTY = "collection.text.file";
     public static final String ARCHIVE_START_YEAR_PROPERTY = "archive.start.year";
 
     public static final String LEAFLET_SOURCE_PROPERTY = "leaflet.source";
@@ -49,7 +51,6 @@ public class PropertiesLoaderWeb {
     public static final String TOP_LEFT_LOGO_IMAGE_PROPERTY = "top.left.logo.image";
     public static final String TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY = "top.left.logo.image.link";
  
-
     public static String SOLRWAYBACK_VERSION; //Will be set from initialcontext-listener
     public static String OPENWAYBACK_SERVER;
     public static int ARCHIVE_START_YEAR;
@@ -72,6 +73,7 @@ public class PropertiesLoaderWeb {
     public static String LEAFLET_ATTRIBUTION;
     public static String ABOUT_TEXT_FILE;
     public static String SEARCH_HELP_TEXT_FILE;
+    public static String COLLECTION_TEXT_FILE;
     public static String TOP_LEFT_LOGO_IMAGE;
     public static String TOP_LEFT_LOGO_IMAGE_LINK;
 
@@ -85,8 +87,7 @@ public class PropertiesLoaderWeb {
     
     public static void initProperties() {
         initProperties(DEFAULT_PROPERTY_WEB_FILE);      
-    }
-
+    }        
 
     public static void initProperties(String propertyFile) {
         try {
@@ -124,34 +125,46 @@ public class PropertiesLoaderWeb {
             
             SEARCH_UPLOADED_FILE_DISABLED = Boolean.parseBoolean(serviceProperties.getProperty(SEARCH_UPLOADED_FILE_DISABLED_PROPERTY));
             EXPORT_CSV_FIELDS = serviceProperties.getProperty(EXPORT_CSV_FIELDS_PROPERTY);
-            ABOUT_TEXT_FILE = serviceProperties.getProperty(ABOUT_TEXT_FILE_PROPERTY).trim();
-            SEARCH_HELP_TEXT_FILE = serviceProperties.getProperty(SEARCH_HELP_FILE_PROPERTY).trim();
+            
+            ABOUT_TEXT_FILE = serviceProperties.getProperty(ABOUT_TEXT_FILE_PROPERTY);
+            SEARCH_HELP_TEXT_FILE = serviceProperties.getProperty(SEARCH_HELP_FILE_PROPERTY);
+            COLLECTION_TEXT_FILE = serviceProperties.getProperty(COLLECTION_TEXT_FILE_PROPERTY);
+
             LEAFLET_SOURCE = serviceProperties.getProperty(LEAFLET_SOURCE_PROPERTY);
             LEAFLET_ATTRIBUTION = serviceProperties.getProperty(LEAFLET_ATTRIBUTION_PROPERTY);
             TOP_LEFT_LOGO_IMAGE = serviceProperties.getProperty(TOP_LEFT_LOGO_IMAGE_PROPERTY);
             TOP_LEFT_LOGO_IMAGE_LINK = serviceProperties.getProperty(TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY);
-            
-            
-            
-            
-            
-            
+                        
             String csv_max_results= serviceProperties.getProperty(EXPORT_CSV_MAXRESULTS_PROPERTY);
             String warc_max_results= serviceProperties.getProperty(EXPORT_WARC_MAXRESULTS_PROPERTY);
             String warc_expanded_max_results= serviceProperties.getProperty(EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY);
-            
+
             if (csv_max_results != null) {
                 EXPORT_CSV_MAXRESULTS  = Long.parseLong(csv_max_results.trim());                
             }
             
-            if (warc_max_results  != null) {
+            if (warc_max_results != null) {
                 EXPORT_WARC_MAXRESULTS  = Long.parseLong(warc_max_results.trim());               
             }
 
-            if ( warc_expanded_max_results!= null) {                
+            if ( warc_expanded_max_results != null) {                
                 EXPORT_WARC_EXPANDED_MAXRESULTS  = Long.parseLong( warc_expanded_max_results.trim());               
             }
 
+            if (ABOUT_TEXT_FILE == null || ABOUT_TEXT_FILE.trim().isEmpty()) {
+                ABOUT_TEXT_FILE = "/about_this_archive.txt";
+                log.warn("about.text.file in solrwaybackweb.properties is not set. Using default: /about_this_archive.txt");
+            }
+
+            if (SEARCH_HELP_TEXT_FILE == null || SEARCH_HELP_TEXT_FILE.trim().isEmpty()) {
+                SEARCH_HELP_TEXT_FILE = "/search_help.txt";
+                log.warn("search.help.text.file in solrwaybackweb.properties is not set. Using default: /search_help.txt");
+            }
+
+            if (COLLECTION_TEXT_FILE == null || COLLECTION_TEXT_FILE.trim().isEmpty()) {
+                COLLECTION_TEXT_FILE = "/about_collection.txt";
+                log.warn("collection.text.file in solrwaybackweb.properties is not set. Using default: /about_collection.txt");
+            }
                         
             // start year
             String startYearStr = serviceProperties.getProperty(ARCHIVE_START_YEAR_PROPERTY);
@@ -175,8 +188,6 @@ public class PropertiesLoaderWeb {
             }
                         
             //Set max export sizes                                   
-            
-            
             log.info("Property:"+ WEBAPP_PREFIX_PROPERTY +" = " + WEBAPP_PREFIX);
             log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
             log.info("Property:"+ ALLOW_EXPORT_WARC_PROPERTY +" = " + ALLOW_EXPORT_WARC);
@@ -194,6 +205,7 @@ public class PropertiesLoaderWeb {
             log.info("Property:"+ SEARCH_UPLOADED_FILE_DISABLED_PROPERTY+" = " +SEARCH_UPLOADED_FILE_DISABLED);            
             log.info("Property:"+ ABOUT_TEXT_FILE_PROPERTY +" = " + ABOUT_TEXT_FILE);
             log.info("Property:"+ SEARCH_HELP_FILE_PROPERTY +" = " + SEARCH_HELP_TEXT_FILE );
+            log.info("Property:"+ COLLECTION_TEXT_FILE_PROPERTY +" = " + COLLECTION_TEXT_FILE );
             log.info("Property:"+ ARCHIVE_START_YEAR_PROPERTY +" = " + ARCHIVE_START_YEAR);			
             log.info("Property:"+ LEAFLET_SOURCE_PROPERTY +" = " + LEAFLET_SOURCE);
             log.info("Property:"+ LEAFLET_ATTRIBUTION_PROPERTY +" = " + LEAFLET_ATTRIBUTION);
@@ -205,6 +217,7 @@ public class PropertiesLoaderWeb {
             e.printStackTrace();
             log.error("Could not load property file:"+ propertyFile);
         }
+        
     }
 
     public static String getProperty(String key, String defaultValue) {
@@ -214,5 +227,4 @@ public class PropertiesLoaderWeb {
         Object o = serviceProperties.getProperty(key);
         return o == null ? defaultValue : o.toString();
     }
-
 }
