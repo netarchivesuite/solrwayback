@@ -10,19 +10,22 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.CursorMarkParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static org.apache.commons.lang3.StringUtils.join;
 
 /**
  * CursorMark-based chunking search client allowing for arbitrary sized result sets.
  */
-public class SolrGenericStreaming {
+public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
   private static final int DEFAULT_PAGESIZE = 1000; // Due to Solr boolean queries limit
   public static final String DEFAULT_SORT = "score desc, id asc";
@@ -47,6 +50,7 @@ public class SolrGenericStreaming {
 
   /**
    * Streams documents that are closest in time to crawl_time, removing duplicates.
+   * If expandResources is enabled, the extra resources are not deduplicated
    *
    * @param solrServerUrl complete address for a Solr server.
    * @param fields        comma separated fields to export.
@@ -139,9 +143,11 @@ public class SolrGenericStreaming {
   }
 
   /**
-   * Advanced version where the user provides the Solrquery object. Not recommended for casual use. If the user insists,
-   * note that the cursormark must be set to the start value. If avoidDuplicates is true, the fields "source_file_path"
-   * and "source_file_offset" must be returned.
+   * Advanced version where the user provides the SolrQuery object. Not recommended for casual use.
+   * The cursormark is set to the start value if it not already defined in the solrQuery.
+   * The rows is set to {@link #DEFAULT_PAGESIZE} if it is not already defined in the solrQuery.
+   *
+   * If avoidDuplicates is true, the fields "source_file_path" and "source_file_offset" must be requested by fl.
    * @param solrServerUrl       complete address for a Solr server.
    * @param solrQuery           a Solr query object ready for use.
    * @param expandResources     if true, embedded resources for HTML pages are extracted and added to the delivered
@@ -153,12 +159,60 @@ public class SolrGenericStreaming {
    */
   public SolrGenericStreaming(
           String solrServerUrl, SolrQuery solrQuery, boolean expandResources, boolean avoidDuplicates) {
+    solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, solrQuery.get(
+            CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START));
+    solrQuery.set(CommonParams.ROWS, solrQuery.get(CommonParams.ROWS, Integer.toString(DEFAULT_PAGESIZE)));
     solrServer =  new HttpSolrClient.Builder(solrServerUrl).build();
     this.solrQuery = solrQuery;
     this.expandResources = expandResources;
-    this.encountered = avoidDuplicates ? new HashSet<String>() : null;
+    this.encountered = avoidDuplicates ? new HashSet<>() : null;
     this.fields = Arrays.asList(solrQuery.getFields().split(","));
     this.pageSize = solrQuery.getRows();
+  }
+
+  /**
+   * Stream the Solr response one document at a time.
+   * @return a stream of SolrDocuments.
+   */
+  public Stream<SolrDocument> stream() {
+    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), 0), false);
+  }
+
+  /**
+   * @return an iterator of SolrDocuments.
+   */
+  @Override
+  public Iterator<SolrDocument> iterator() {
+    return new Iterator<SolrDocument>() {
+      SolrDocumentList list = null;
+      int index = 0;
+
+      @Override
+      public boolean hasNext() {
+        // Request new list if it is depleted and there are more document lists available
+        if ((list == null || index == list.size()) && !hasFinished()) {
+          try {
+            list = nextDocuments();
+            index = 0;
+          } catch (Exception e) {
+            throw new RuntimeException("Exception requesting next batch", e);
+          }
+        }
+        // Remove list if it is depleted
+        if (list != null && index == list.size()) {
+          list = null;
+        }
+        return list != null;
+      }
+
+      @Override
+      public SolrDocument next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException("No more elements");
+        }
+        return list.get(index++);
+      }
+    };
   }
 
   private static SolrQuery buildBaseQuery(
