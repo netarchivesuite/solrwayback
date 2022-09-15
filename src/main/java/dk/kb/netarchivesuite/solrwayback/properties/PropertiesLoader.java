@@ -67,7 +67,7 @@ public class PropertiesLoader {
     public static boolean SOLR_SERVER_CACHING=false;
     public static boolean WARC_FILES_VERIFY_COLLECTION=false;
     public static int SOLR_SERVER_CACHING_MAX_ENTRIES=1000; //default value
-    public static int SOLR_SERVER_CACHING_AGE_SECONDS=84600; //default value 1 day
+    public static int SOLR_SERVER_CACHING_AGE_SECONDS=36584600; //default value 1 year (effectively disabled)
     /**
      * How often the status (available, unavailable, changed) of the backing Solr is checked.
      *
