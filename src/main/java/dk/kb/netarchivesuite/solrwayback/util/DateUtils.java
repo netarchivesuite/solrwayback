@@ -36,11 +36,22 @@ public class DateUtils {
   }
   
   
+    /**
+     * @return Solr formatted timestamp with second precision.
+     */
   public static String getSolrDate(Date date){
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new         
     dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));    
     return dateFormat.format(date)+"Z";
+  }
 
+    /**
+     * @return Solr formatted timestamp with millisecond precision.
+     */
+  public static String getSolrDateFull(Date date){
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"); //not thread safe, so create new
+    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return dateFormat.format(date)+"Z";
   }
 
   public static String convertUtcDate2WaybackDate(String solrDate) throws RuntimeException{

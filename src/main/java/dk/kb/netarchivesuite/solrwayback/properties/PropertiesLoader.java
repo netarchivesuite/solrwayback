@@ -42,6 +42,7 @@ public class PropertiesLoader {
     private static final String SOLR_SERVER_CACHING_PROPERTY="solr.server.caching";
     private static final String SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY="solr.server.caching.max.entries";
     private static final String SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY="solr.server.caching.age.seconds";
+    public static final String SOLR_SERVER_CHECK_INTERVAL_PROPERTY = "solr.server.check.interval.seconds";
 
     private static final String URL_NORMALISER_PROPERTY="url.normaliser";
     
@@ -66,7 +67,16 @@ public class PropertiesLoader {
     public static boolean SOLR_SERVER_CACHING=false;
     public static boolean WARC_FILES_VERIFY_COLLECTION=false;
     public static int SOLR_SERVER_CACHING_MAX_ENTRIES=1000; //default value
-    public static int SOLR_SERVER_CACHING_AGE_SECONDS=84600; //default value 1 day
+    public static int SOLR_SERVER_CACHING_AGE_SECONDS=36584600; //default value 1 year (effectively disabled)
+    /**
+     * How often the status (available, unavailable, changed) of the backing Solr is checked.
+     *
+     * Set this to -1 or 0 to disable the running check.
+     *
+     * Used by {@link dk.kb.netarchivesuite.solrwayback.solr.IndexWatcher}
+     * through {@link dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient}.
+     */
+    public static int SOLR_SERVER_CHECK_INTERVAL = 60000; //default value every minute
     public static String URL_NORMALISER="normal";
 
     public static int SCREENSHOT_PREVIEW_TIMEOUT = 10;//default
@@ -122,6 +132,9 @@ public class PropertiesLoader {
                 SOLR_SERVER_CACHING_MAX_ENTRIES=Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY).trim());
             }
 
+            SOLR_SERVER_CHECK_INTERVAL = Integer.parseInt(serviceProperties.getProperty(
+                    SOLR_SERVER_CHECK_INTERVAL_PROPERTY, Integer.toString(SOLR_SERVER_CHECK_INTERVAL)));
+
             String verifyCollectionString = serviceProperties.getProperty(WARC_FILES_VERIFY_COLLECTION_PROPERTY,"false");            
             WARC_FILES_VERIFY_COLLECTION = Boolean.valueOf(verifyCollectionString);
             
@@ -149,7 +162,8 @@ public class PropertiesLoader {
             log.info("Property:"+ SOLR_SERVER_CACHING_PROPERTY +" = " +  SOLR_SERVER_CACHING);
             log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);
-            log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);                        
+            log.info("Property:"+ SOLR_SERVER_CHECK_INTERVAL_PROPERTY +" = " +  SOLR_SERVER_CHECK_INTERVAL);
+            log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);
         }
         catch (Exception e) {
             e.printStackTrace();
