@@ -42,7 +42,7 @@ public class PropertiesLoader {
     private static final String SOLR_SERVER_CACHING_PROPERTY="solr.server.caching";
     private static final String SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY="solr.server.caching.max.entries";
     private static final String SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY="solr.server.caching.age.seconds";
-    public static final String SOLR_SERVER_CHECK_INTERVAL_PROPERTY = "solr.server.check.interval";
+    public static final String SOLR_SERVER_CHECK_INTERVAL_PROPERTY = "solr.server.check.interval.seconds";
 
     private static final String URL_NORMALISER_PROPERTY="url.normaliser";
     

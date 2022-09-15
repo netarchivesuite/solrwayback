@@ -255,7 +255,7 @@ public class SolrWaybackResourceWeb {
      * NOTE: This does not trigger an active check, so the call is cheap.
      *
      * The availability status is updated internally by {@link dk.kb.netarchivesuite.solrwayback.solr.IndexWatcher}
-     * and is controlled by the property {@code solr.server.check.interval}.
+     * and is controlled by the property {@code solr.server.check.interval.seconds}.
      * See {@link dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader} for further information.
      * @return true if the backing Solr is available, else false. {@code N/A} if the status check has not been done.
      */

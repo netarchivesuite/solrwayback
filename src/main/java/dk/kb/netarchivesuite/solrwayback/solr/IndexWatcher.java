@@ -54,7 +54,7 @@ public class IndexWatcher {
     public static final String TIME_FIELD = "index_time";
 
     private final SolrClient solrClient;
-    private final long intervalMS;
+    private final long intervalSeconds;
     private final Consumer<STATUS> callback;
     private final Timer timer;
 
@@ -64,30 +64,30 @@ public class IndexWatcher {
     /**
      *
      * @param solrClient standard SolrClient.
-     * @param intervalMS how long to wait between check for index changes.
+     * @param intervalSeconds how long to wait between check for index changes.
      * @param callback   called if the index changes status.
      */
-    public IndexWatcher(SolrClient solrClient, long intervalMS, Consumer<STATUS> callback) {
+    public IndexWatcher(SolrClient solrClient, long intervalSeconds, Consumer<STATUS> callback) {
         this.solrClient = solrClient;
-        this.intervalMS = intervalMS;
+        this.intervalSeconds = intervalSeconds;
         this.callback = callback;
         log.debug("Initializing IndexWatcher");
 
-        if (intervalMS <= 1000) {
-            log.warn("Watch interval is {} milliseconds. This is very low and might harm general Solr performance",
-                     intervalMS);
+        if (intervalSeconds < 5) {
+            log.warn("Watch interval is {} seconds. This is very low and might harm general Solr performance",
+                     this.intervalSeconds);
         }
 
         timer = new Timer("IndexWatcher", true);
-        timer.schedule(createWatchTask(), intervalMS, intervalMS);
-        log.info("Created index watcher with interval {}ms", intervalMS);
+        timer.schedule(createWatchTask(), this.intervalSeconds*1000, this.intervalSeconds*1000);
+        log.info("Created index watcher with interval {} seconds", this.intervalSeconds);
     }
 
     /**
      * @return the number of milliseconds between each check.
      */
     public long getIntervalMS() {
-        return intervalMS;
+        return intervalSeconds;
     }
 
     /**
