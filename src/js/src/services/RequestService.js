@@ -113,7 +113,7 @@ function uploadFileRequest(fileData) {
 }
 
 function getNormalizedUrlSearch(query, facets, options) {
-  const url = 'services/frontend/util/normalizeurl/' + '?url=' + query
+  const url = `services/frontend/util/normalizeurl/?url=${encodeURIComponent(query)}`
   return axios.get(
     url).then(response => {
     // Split url and move to config
@@ -128,7 +128,7 @@ function getNormalizedUrlSearch(query, facets, options) {
 }
 
 function getNormalizedUrlFacets(query, facets, options) {
-  const url = 'services/frontend/util/normalizeurl/' + '?url=' + query
+  const url = `services/frontend/util/normalizeurl/?url=${encodeURIComponent(query)}`
   return axios.get(
     url).then(response => {
     // Split url and move to config
