@@ -12,6 +12,7 @@ export const requestService = {
   getHarvestDates,
   getNormalizedUrlSearch,
   getAboutText,
+  getNormalizedURL,
   getNormalizedUrlFacets,
   getHarvestedPageResources,
   getDomainStatistics,
@@ -112,34 +113,30 @@ function uploadFileRequest(fileData) {
   })
 }
 
-function getNormalizedUrlSearch(query, facets, options) {
+function getNormalizedURL(query) {
   const url = 'services/frontend/util/normalizeurl/' + '?url=' + query
   return axios.get(
     url).then(response => {
-    // Split url and move to config
-    return fireSearchRequest('url_norm:"' + response.data.url + '"', facets, options).then(returnObj => {
-        return returnObj
+    return response.data.url 
       }).catch(error => {
         return Promise.reject(error)
       })
-  }).catch(error => {
-    return Promise.reject(error)
-  })
 }
 
-function getNormalizedUrlFacets(query, facets, options) {
-  const url = 'services/frontend/util/normalizeurl/' + '?url=' + query
-  return axios.get(
-    url).then(response => {
-    // Split url and move to config
-    return fireFacetRequest('url_norm:"' + response.data.url + '"', facets, options).then(returnObj => {
+function getNormalizedUrlSearch(url, facets, options) {
+    return fireSearchRequest('url_norm:"' + url + '"', facets, options).then(returnObj => {
         return returnObj
       }).catch(error => {
         return Promise.reject(error)
       })
-  }).catch(error => {
-    return Promise.reject(error)
-  })
+}
+
+function getNormalizedUrlFacets(url, facets, options) {
+    return fireFacetRequest('url_norm:"' + url + '"', facets, options).then(returnObj => {
+        return returnObj
+      }).catch(error => {
+        return Promise.reject(error)
+      })
 }
 
 function getHarvestDates(harvestUrl) {
