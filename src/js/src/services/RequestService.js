@@ -114,7 +114,7 @@ function uploadFileRequest(fileData) {
 }
 
 function getNormalizedURL(query) {
-  const url = 'services/frontend/util/normalizeurl/' + '?url=' + query
+  const url =  `services/frontend/util/normalizeurl/?url=${encodeURIComponent(query)}` 
   return axios.get(
     url).then(response => {
     return response.data.url 
