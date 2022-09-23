@@ -452,14 +452,14 @@ public class Facade {
                 throw new InvalidArgumentServiceException("Number of results for warc expanded  export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
             }
         }
-        SolrGenericStreaming solr = new SolrGenericStreaming(PropertiesLoader.SOLR_SERVER, 100, Arrays.asList("source_file_path", "source_file_offset"),
+        SolrGenericStreaming solr = new SolrGenericStreaming(null, 100, Arrays.asList("source_file_path", "source_file_offset"),
                 expandResources, avoidDuplicates, query, filterqueries);
 
         return new StreamingSolrWarcExportBufferedInputStream(solr, max, gzip); // Use maximum export results from property-file
     }
 
     public static InputStream exportLinkGraphStreaming(String q) {
-        SolrStreamingLinkGraphCSVExportClient solr = SolrStreamingLinkGraphCSVExportClient.createExporter(PropertiesLoader.SOLR_SERVER, q);
+        SolrStreamingLinkGraphCSVExportClient solr = SolrStreamingLinkGraphCSVExportClient.createExporter(null, q);
         return new StreamingSolrExportBufferedInputStream(solr, 1000000); // 1 MIL
     }
 
@@ -472,7 +472,7 @@ public class Facade {
             throw new InvalidArgumentServiceException("Number of results for csv export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
         }
 
-        SolrStreamingExportClient solr = SolrStreamingExportClient.createCvsExporter(PropertiesLoader.SOLR_SERVER, q, fields, fq);
+        SolrStreamingExportClient solr = SolrStreamingExportClient.createCvsExporter(null, q, fields, fq);
         return new StreamingSolrExportBufferedInputStream(solr, PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
     }
 

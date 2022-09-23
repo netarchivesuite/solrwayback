@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
   private boolean first = true;
 
   public SolrStreamingExportClient(
-          String solrServerUrl, int pageSize, String solrFields, String csvFields,
+          SolrClient solrClient, int pageSize, String solrFields, String csvFields,
           boolean expandResources, boolean avoidDuplicates, String query, String... filterQueries) {
     if (solrFields == null || solrFields.isEmpty() || csvFields == null || csvFields.isEmpty()) {
       throw new IllegalArgumentException("fields argument was empty, but must be specified");
@@ -39,7 +40,7 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
     this.solrFieldsArray = solrFields.split(", *");
     this.csvFieldsArray = csvFields.split(", *");
     inner = new SolrGenericStreaming(
-            solrServerUrl, pageSize, Arrays.asList(solrFieldsArray), expandResources, avoidDuplicates,
+            solrClient, pageSize, Arrays.asList(solrFieldsArray), expandResources, avoidDuplicates,
             query, filterQueries);
     this.solrFields = solrFields;
     this.csvFields = csvFields;
@@ -48,13 +49,13 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
     //solrServer.setRequestWriter(new BinaryRequestWriter()); 
   }
 
-  public static SolrStreamingExportClient createCvsExporter(String solrServerUrl, String query,String fields, String... filterQueries) {
+  public static SolrStreamingExportClient createCvsExporter(SolrClient solrClient, String query, String fields, String... filterQueries) {
     // TODO: It does not make sense to have 50000 as page size both for brief and full export
 
       //Remove spaces in fieldlist
       fields = fields.replace(" ", "");
       
-    return new SolrStreamingExportClient(solrServerUrl, DEFAULT_PAGE_SIZE, fields ,fields, false, false, query, filterQueries);
+    return new SolrStreamingExportClient(solrClient, DEFAULT_PAGE_SIZE, fields ,fields, false, false, query, filterQueries);
   }
 
   public String next() throws Exception {
