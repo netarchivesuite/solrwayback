@@ -101,7 +101,8 @@ public class SolrGenericStreamingTest {
     public void timeProximityMulti() {
         List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
                 null, Arrays.asList("id", "crawl_date"), false, false, 0, "2019-04-15T12:31:51Z", "url", "*:*").
-                stream().collect(Collectors.toList());
+                stream().
+                collect(Collectors.toList());
         assertTrue("Multiple results expected",
                      docs.size() > 1);
         Set<Object> dates = new HashSet<>();
@@ -112,6 +113,50 @@ public class SolrGenericStreamingTest {
                    dates.size() > 1);
     }
 
+    @Test
+    public void testFlatten() {
+        SolrDocument multi = new SolrDocument();
+        multi.setField("id", "foo");
+        multi.setField("m", Arrays.asList("bar", "zoo"));
+
+        List<SolrDocument> singles = SolrGenericStreaming.flatten(multi).collect(Collectors.toList());
+
+        assertEquals("There should be the expected number of single-value only documents",
+                     2, singles.size());
+        for (SolrDocument doc: singles) {
+            assertEquals("The 'm' field should only contain a single value",
+                         1, doc.getFieldValues("m").size());
+        }
+        assertEquals("The first document should contain the expected 'm'-value",
+                     "bar", singles.get(0).getFieldValue("m"));
+        assertEquals("The second document should contain the expected 'm'-value",
+                     "zoo", singles.get(1).getFieldValue("m"));
+    }
+
+    @Test
+    public void linksExportMulti() {
+        List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
+                Arrays.asList("url", "links"), false, false, 0, "2019-04-15T12:31:51Z", "url_norm", "*:*").
+                stream().
+                collect(Collectors.toList());
+        for (SolrDocument doc: docs) {
+            assertTrue("The 'links' field should contain multiple values",
+                       doc.getFieldValues("links").size() > 1);
+        }
+    }
+
+    @Test
+    public void linksExportSingle() {
+        List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
+                Arrays.asList("url", "links"), false, false, 0, "2019-04-15T12:31:51Z", "url_norm", "*:*").
+                stream().
+                flatMap(SolrGenericStreaming::flatten).
+                collect(Collectors.toList());
+        for (SolrDocument doc: docs) {
+            assertEquals("The 'links' field should only contain a single value",
+                         1, doc.getFieldValues("links").size());
+        }
+    }
 
     private static void fillSolr() throws SolrServerException, IOException {
         final int DOCS = 100;
@@ -139,6 +184,7 @@ public class SolrGenericStreamingTest {
         document.addField("url_norm", "http://example.com/" + id%10);
         document.addField("record_type","response");
         document.addField("source_file_path", "some.warc_" + id);
+        document.addField("links", Arrays.asList("http://example.com/everywhere", "http://example.com/mod10_" + id%10));
         document.addField("status_code", "200");
         document.setField("crawl_date", CRAWL_TIMES[r.nextInt(CRAWL_TIMES.length)]);
         embeddedServer.add(document);

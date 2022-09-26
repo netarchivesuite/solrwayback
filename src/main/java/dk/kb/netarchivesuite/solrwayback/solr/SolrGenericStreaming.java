@@ -59,11 +59,19 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   public static final String STOP_PAGING = "___STOP_PAGING___";
 
+  /**
+   * Solr ISO timestamp parsing. Supports optional milliseconds.
+   * Sample inputs: {@code 2022-09-26T12:05:00Z}, {@code 2022-09-26T12:05:00.123Z}.
+   */
+  private static final Pattern ISO_TIME = Pattern.compile(
+          "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9][.]?[0-9]?[0-9]?[0-9]?Z");
+
   private final SolrClient solrClient;
   private final boolean expandResources;
 
   private final SolrQuery solrQuery;
-  private final List<String> fields;
+  private final Set<String> initialFields; // Fields provided by the caller
+  private final List<String> fields;        // Fields after adjusting for unique etc.
   private final int pageSize;
 
   private final Set<String> uniqueTracker;
@@ -85,8 +93,10 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
   /**
    * Streams documents that are closest in time to crawl_time, removing duplicates.
+   * {@link #defaultSolrClient} will be used for the requests.
    *
-   * @param solrClient       used for issuing Solr requests. If null, the {@link #defaultSolrClient} is used.
+   * Note: The given solrQuery will be adjusted using {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+   *
    * @param fields           fields to export. deduplicatefield will be added to this is not already present.
    * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
    *                         lists of Solr Documents.
@@ -98,7 +108,45 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    *                         If the number of uniques exceeds this limit, an exception is thrown.
    *                         Specifying null means {@link #DEFAULT_MAX_UNIQUE} will be used.
    * @param idealTime        The time that the resources should be closest to, stated as a Solr timestamp
-   *                         {@code YYYY-MM-DDTHH:mm:SSZ}. Also supports {@code oldest} and {@code newest} as values.
+   *                         {@code YYYY-MM-DDTHH:mm:SSZ}.
+   *                         Also supports {@code oldest} and {@code newest} as values.
+   * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
+   *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
+   *                         if expandResources is true and uniqueness must also be guaranteed for resources.
+   * @param query            standard Solr query.
+   * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+   *                         If multiple filters are to be used, consider collapsing them into one:
+   *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   */
+  // TODO: When https://github.com/ukwa/webarchive-discovery/issues/214 gets implemented it should be possible to use Last-Modied/Date from HTTP headers instead of crawl_date
+  public static SolrGenericStreaming timeProximity(
+          List<String> fields, boolean expandResources, boolean ensureUnique, Integer maxUnique,
+          String idealTime, String deduplicateField,
+          String query, String... filterQueries) throws IllegalArgumentException {
+    return timeProximity(defaultSolrClient, fields,
+                         expandResources, ensureUnique, maxUnique,
+                         idealTime, deduplicateField,
+                         query, filterQueries);
+  }
+  /**
+   * Streams documents that are closest in time to crawl_time, removing duplicates.
+   *
+   * Note: The given solrQuery will be adjusted using {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+   *
+   * @param solrClient       used for issuing Solr requests.
+   * @param fields           fields to export. deduplicatefield will be added to this is not already present.
+   * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
+   *                         lists of Solr Documents.
+   *                         Note: Indirect references (through JavaScript & CSS) are not followed.
+   * @param ensureUnique     if true, unique documents are guaranteed. This is only sane if expandResources is true.
+   *                         Note that a HashSet is created to keep track of encountered documents and will impose
+   *                         a memory overhead linear to the number of results.
+   * @param maxUnique        the maximum number of uniques to track when ensureUnique is true.
+   *                         If the number of uniques exceeds this limit, an exception is thrown.
+   *                         Specifying null means {@link #DEFAULT_MAX_UNIQUE} will be used.
+   * @param idealTime        The time that the resources should be closest to, stated as a Solr timestamp
+   *                         {@code YYYY-MM-DDTHH:mm:SSZ}.
+   *                         Also supports {@code oldest} and {@code newest} as values.
    * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
    *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
    *                         if expandResources is true and uniqueness must also be guaranteed for resources.
@@ -139,11 +187,27 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     SolrQuery timeQuery = buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, sort);
     return new SolrGenericStreaming(solrClient, timeQuery, expandResources, ensureUnique, maxUnique, deduplicateField);
   }
-  private static final Pattern ISO_TIME = Pattern.compile(
-          "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9][.]?[0-9]?[0-9]?[0-9]?Z");
 
   /**
-   * Default page size 1000, expandResources=false and avoidDuplicates=false.
+   * Export the documents matching query and filterQueries with no limit on result size.
+   * {@link #defaultSolrClient} will be used for the requests.
+   *
+   * Default page size 1000, expandResources=false and ensureUnique=false.
+   * @param fields        the fields to export.
+   * @param query         standard Solr query.
+   * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+   *                      If multiple filters are to be used, consider collapsing them into one:
+   *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   */
+  public SolrGenericStreaming(List<String> fields, String query, String... filterQueries) {
+    this(defaultSolrClient, buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, DEFAULT_SORT),
+         false, false, 0, null);
+  }
+
+  /**
+   * Export the documents matching query and filterQueries with no limit on result size.
+   *
+   * Default page size 1000, expandResources=false and ensureUnique=false.
    * @param solrClient    used for issuing Solr requests. If null is specified, {@link #defaultSolrClient} is used.
    * @param fields        the fields to export.
    * @param query         standard Solr query.
@@ -157,6 +221,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   }
 
   /**
+   * Export the documents matching query and filterQueries with no limit on result size.
+   *
    * @param solrClient       used for issuing Solr requests. If null is specified, {@link #defaultSolrClient} is used.
    * @param pageSize         paging size. 1000-100,000 depending on fields.
    * @param fields           the fields to export.
@@ -202,6 +268,10 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
           SolrClient solrClient, SolrQuery solrQuery,
           boolean expandResources, boolean ensureUnique, Integer maxUnique,
           String deduplicateField) throws IllegalArgumentException {
+    this.initialFields = new LinkedHashSet<>(Arrays.asList(solrQuery.getFields().split(",")));
+
+    adjustSolrQuery(solrQuery, expandResources, ensureUnique, deduplicateField);
+
     this.solrClient = Optional.ofNullable(solrClient).orElse(defaultSolrClient);
     this.solrQuery = solrQuery;
     this.expandResources = expandResources;
@@ -210,8 +280,6 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     this.fields = Arrays.asList(solrQuery.getFields().split(","));
     this.pageSize = solrQuery.getRows();
     this.deduplicateField = deduplicateField;
-
-    adjustSolrQuery(solrQuery, expandResources, ensureUnique, deduplicateField);
   }
 
   /**
@@ -255,7 +323,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
                   solrQuery.get(CommonParams.ROWS, Integer.toString(DEFAULT_PAGESIZE)));
 
     // Adjust fl based on enabled features
-    Set<String> fl = new HashSet<>(Arrays.asList(solrQuery.get(CommonParams.FL).split(", *")));
+    Set<String> fl = new LinkedHashSet<>(Arrays.asList(solrQuery.get(CommonParams.FL).split(", *")));
     if (expandResources) {
       fl.add("content_type_norm");  // Needed to determine if a resource is a webpage
       fl.add("source_file_path");   // Needed to fetch the webpage for link extraction
@@ -377,7 +445,6 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       // No more documents buffered, attempt to require new documents
       solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
       QueryResponse rsp = solrClient.query(solrQuery, METHOD.POST);
-
       undelivered = rsp.getResults();
 
       if (deduplicateField != null) {
@@ -389,6 +456,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       if (uniqueTracker != null) {
         removeDuplicates(undelivered);
       }
+
+      // Only deliver the fields that were requested
+      undelivered.forEach(this::reduceAndSortFields);
 
       // Has the last page been reached?
       String newCursormark = rsp.getNextCursorMark();
@@ -434,16 +504,24 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     }
   }
 
+  /**
+   * Performs a lookup of a HTML resource, extracting links to embedded resources and issues searches for
+   * those. Plain {@code <a href="..." ...>} links are not part of this. The graph traversal is only 1 level deep.
+   * @param html a SolrDocument representing a HTML page.
+   * @return the resources (images, CSS, JavaScript...) used by the page.
+   */
   private SolrDocumentList getHTMLResources(SolrDocument html) {
     try {
       String sourceFile = html.getFieldValue("source_file_path").toString();
-      Long offset = Long.parseLong(html.getFieldValue("source_file_offset").toString());
+      long offset = Long.parseLong(html.getFieldValue("source_file_offset").toString());
       ArcEntry arc= ArcParserFileResolver.getArcEntry(sourceFile, offset);
       HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
-      
+
+      // This could technically be done with SolrGenericStreaming.timeProximity but findNearestDocuments is
+      // optimized towards many tiny lookups where each lookup yields at most 1 result.
       return NetarchiveSolrClient.getInstance().findNearestDocuments(resources, arc.getCrawlDate(), join(fields, ","));
     } catch (Exception e) {
-      log.warn("Unable to get resources for Solrdocument " + html, e);
+      log.warn("Unable to get resources for SolrDocument '" + html + "'", e);
       return new SolrDocumentList();
     }
   }
@@ -494,9 +572,73 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     documents.addAll(unique);
   }
 
+  /**
+   * Remove all fields not explicitly requested by the caller and ensure the order matches the given field order.
+   * @param doc a Solrdocuments that potentially holds more fields that defined by the caller.
+   */
+  private void reduceAndSortFields(SolrDocument doc) {
+    Map<String, Object> entries = new LinkedHashMap<>(doc.size());
+    for (String fieldName: initialFields) {
+      if (doc.containsKey(fieldName)) {
+        entries.put(fieldName, doc.get(fieldName));
+      }
+    }
+    doc.clear();
+    doc.putAll(entries);
+  }
+
   private String getID(SolrDocument solrDocument) {
     return solrDocument.getFieldValue("id").toString();
     //return solrDocument.getFieldValue("source_file_path") + "@" +
     //       solrDocument.getFieldValue("source_file_offset");
   }
+
+  /**
+   * Takes a SolrDocument which has at most 1 multi-valued field and flattens that to multiple documents where the
+   * multi-valued field has been converted to single-valued.
+   *
+   * Typically used for exporting to CSV where multi-value is not desirable.
+   *
+   * The following example delivers a list of documents with a single source and a single destination URL for each link
+   * on each unique page on the kb.dk domain:
+   * <pre>
+   *   List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
+   *       Arrays.asList("url", "links"), false, false, 0, "2019-04-15T12:31:51Z", "hash", "domain:kb.dk").
+   *       stream().
+   *       flatMap(SolrGenericStreaming::flatten).
+   *       collect(Collectors.toList());
+   * </pre>
+   *
+   * @param doc a document with at most 1 multi-valued field.
+   * @return the input document flattened to at least 1 documents holding only single-valued field.
+   */
+  public static Stream<SolrDocument> flatten(SolrDocument doc) {
+    String multiField = null;
+    for  (String fieldName: doc.getFieldNames()) {
+      if (doc.getFieldValues(fieldName).size() > 1) {
+        if (multiField != null) {
+          throw new IllegalArgumentException(
+                  "There are at least 2 multi-value fields '" + multiField + "' and '" + fieldName +
+                  "' where at most 1 is allowed");
+        }
+        multiField = fieldName;
+      }
+    }
+
+    // If there are no multi-valued field, just return the input document
+    if (multiField == null) {
+      return Stream.of(doc);
+    }
+
+    final String mField = multiField; // lambda requires final
+    // Return a stream of documents where the multi-valued field has been flattened
+    return doc.getFieldValues(mField).stream().
+            map(value -> {
+              SolrDocument newDoc = new SolrDocument(new LinkedHashMap<>(doc));
+              newDoc.setField(mField, value);
+              return newDoc;
+            });
+
+  }
+
 }
