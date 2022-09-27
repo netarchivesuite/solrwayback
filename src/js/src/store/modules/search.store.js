@@ -5,6 +5,7 @@ import { requestService } from '../../services/RequestService'
 const initialState = () => ({
   query: '',
   preNormalizedQuery:null,
+  normalizedQuery:null,
   searchAppliedFacets:[],
   results: {},
   facets: {},
@@ -36,6 +37,9 @@ const actions = {
   },
   updatePreNormalizedQuery ( {commit}, param) {
     commit('updatePreNormalizedQuerySuccess', param)
+  },
+  updateNormalizedQuery ( {commit}, param) {
+    commit('updateNormalizedQuerySuccess', param)
   },
   updateSolrSettingGrouping ( {commit}, param ) {
     commit('updateSolrSettingGroupingSuccess', param)
@@ -92,7 +96,7 @@ const actions = {
     commit('setLoadingStatus',true)
     requestService
       .getNormalizedUrlSearch(params.query, params.facets, params.options)
-      .then(result => commit('doUrlSearchSuccess', result), error =>
+      .then(result => commit('doUrlSearchSuccess', {result, params}), error =>
         commit('doUrlSearchError', error))
   },
   requestNormalizedFacets({commit}, params) {
@@ -121,6 +125,10 @@ const mutations = {
   updatePreNormalizedQuerySuccess(state, param) {
     state.preNormalizedQuery = param
   },
+  updateNormalizedQuerySuccess(state, param) {
+    state.normalizedQuery = param
+  },
+
   updateSolrSettingGroupingSuccess(state, param) {
     state.solrSettings.grouping = param
   },
@@ -208,9 +216,9 @@ const mutations = {
     })
     state.loading = false
   },
-  doUrlSearchSuccess(state, result) {
-    state.results = result.response
-    state.query = result.responseHeader.params.q
+  doUrlSearchSuccess(state, data) {
+    state.results = data.result.response
+    state.query =  data.params.preNormalizedQuery //data.result.responseHeader.params.q
     state.loading = false
   },
   doUrlSearchError(state, message) {

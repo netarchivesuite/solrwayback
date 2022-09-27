@@ -648,6 +648,10 @@ img.imageEntry.noPointer {
 	margin-top: -20px;
   color: rgba(30,30,30,0.3);
   position: absolute;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width:600px;
 }
 
 .searchForm .orgQuery .preQuery {

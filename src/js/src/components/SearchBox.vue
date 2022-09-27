@@ -13,7 +13,7 @@
     </transition>   
     <div class="searchBoxContainer">
       <form class="searchForm" @submit.prevent="launchNewSearch()">
-        <span v-if="preNormalizedQuery !== null" class="orgQuery">Original query: <span class="preQuery">{{ preNormalizedQuery }}</span><span class="preQueryExplanation" title="When you search for an URL, we normalize it for you, so we can search the archive for you."> [ ? ]</span></span>
+        <span v-if="preNormalizedQuery !== null" class="orgQuery">Normalized query<span class="preQueryExplanation" title="When you search for an URL, we normalize it for you - this is the normalized URL we used for the search">[ ? ]</span>: <span class="preQuery" :title="normalizedQuery">{{ normalizedQuery }}</span></span>
         <transition name="url-search-helper">
           <span v-if="solrSettings.urlSearch" class="urlSearchHelper">URL:</span>
         </transition>
@@ -128,6 +128,7 @@ export default {
     ...mapState({
       query: state => state.Search.query,
       preNormalizedQuery: state => state.Search.preNormalizedQuery,
+      normalizedQuery: state => state.Search.normalizedQuery,
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
       results: state => state.Search.results,
       solrSettings: state => state.Search.solrSettings,
@@ -138,13 +139,13 @@ export default {
   },
   watch: {
     query: function (val) {
-      this.futureQuery  = decodeURIComponent(val)
+      this.futureQuery  = val
     },
   },
   mounted () {
     const routerQuery = this.$router.history.current.query
     if(routerQuery.query) {
-      this.futureQuery = decodeURIComponent(routerQuery.query)
+      this.futureQuery =  routerQuery.query
       if(routerQuery.facets) {
       let newFacets = routerQuery.facets.split('&fq=')
       newFacets.shift()

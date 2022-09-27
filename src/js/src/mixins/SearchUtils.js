@@ -19,6 +19,7 @@ export default {
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
       updateSolrSettingOffset:'updateSolrSettingOffset',
       updatePreNormalizedQuery:'updatePreNormalizedQuery',
+      updateNormalizedQuery:'updateNormalizedQuery',
       clearResults:'clearResults',
       clearFacets:'clearFacets',
       requestSearch:'requestSearch',
@@ -47,8 +48,9 @@ export default {
       this.updatePreNormalizedQuery(futureQuery)
       if(this.$_validateUrlSearchPrefix(this.disectQueryForNewUrlSearch(futureQuery))) {
         let normalizedURL = await requestService.getNormalizedURL(this.disectQueryForNewUrlSearch(futureQuery))
-        this.requestUrlSearch({query:normalizedURL, facets:this.searchAppliedFacets, options:this.solrSettings})
-        this.requestNormalizedFacets({query:normalizedURL, facets:this.searchAppliedFacets, options:this.solrSettings})
+        this.updateNormalizedQuery(normalizedURL)
+        this.requestUrlSearch({query:normalizedURL, facets:this.searchAppliedFacets, options:this.solrSettings, preNormalizedQuery:this.disectQueryForNewUrlSearch(futureQuery)})
+        this.requestNormalizedFacets({query:normalizedURL, facets:this.searchAppliedFacets, options:this.solrSettings, preNormalizedQuery:this.disectQueryForNewUrlSearch(futureQuery)})
         updateHistory ? this.$_pushSearchHistory('Search', normalizedURL, this.searchAppliedFacets, this.solrSettings) : null
       }
       else {
@@ -72,6 +74,7 @@ export default {
     // Prepare for a new search
     prepareStateForNewSearch(futureQuery, pagnation) {
       this.updatePreNormalizedQuery(null)
+      this.updateNormalizedQuery(null)
       this.clearResults()
       !pagnation ? this.clearFacets() : null
       this.updateQuery(futureQuery)
