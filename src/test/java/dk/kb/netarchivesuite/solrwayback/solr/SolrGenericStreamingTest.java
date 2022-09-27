@@ -135,8 +135,9 @@ public class SolrGenericStreamingTest {
 
     @Test
     public void linksExportMulti() {
-        List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
-                Arrays.asList("url", "links"), false, false, 0, "2019-04-15T12:31:51Z", "url_norm", "*:*").
+        List<SolrDocument> docs = SolrGenericStreaming.generic(
+                false, false, 0, "url_norm",
+                Arrays.asList("url", "links"), null,  "*:*").
                 stream().
                 collect(Collectors.toList());
         for (SolrDocument doc: docs) {
@@ -147,8 +148,9 @@ public class SolrGenericStreamingTest {
 
     @Test
     public void linksExportSingle() {
-        List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
-                Arrays.asList("url", "links"), false, false, 0, "2019-04-15T12:31:51Z", "url_norm", "*:*").
+        List<SolrDocument> docs = SolrGenericStreaming.generic(
+                false, false, 0, "url_norm",
+                Arrays.asList("url", "links"), null,  "*:*").
                 stream().
                 flatMap(SolrGenericStreaming::flatten).
                 collect(Collectors.toList());

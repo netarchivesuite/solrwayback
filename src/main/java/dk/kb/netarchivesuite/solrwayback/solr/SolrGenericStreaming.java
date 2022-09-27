@@ -154,6 +154,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
    *                         If multiple filters are to be used, consider collapsing them into one:
    *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   * @return an instance of SolrGenericstreaming, ready for use.
    */
   // TODO: When https://github.com/ukwa/webarchive-discovery/issues/214 gets implemented it should be possible to use Last-Modied/Date from HTTP headers instead of crawl_date
   public static SolrGenericStreaming timeProximity(
@@ -186,6 +187,90 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     String sort = String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, origo);
     SolrQuery timeQuery = buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, sort);
     return new SolrGenericStreaming(solrClient, timeQuery, expandResources, ensureUnique, maxUnique, deduplicateField);
+  }
+
+  /**
+   * Generic stream where most parts are optional.
+   * {@link #defaultSolrClient} will be used for the requests.
+   *
+   * Note: The given solrQuery will be adjusted using {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+   *
+   * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
+   *                         lists of Solr Documents.
+   *                         Note: Indirect references (through JavaScript & CSS) are not followed.
+   * @param ensureUnique     if true, unique documents are guaranteed. This is only sane if expandResources is true.
+   *                         Note that a HashSet is created to keep track of encountered documents and will impose
+   *                         a memory overhead linear to the number of results.
+   * @param maxUnique        the maximum number of uniques to track when ensureUnique is true.
+   *                         If the number of uniques exceeds this limit, an exception is thrown.
+   *                         Specifying null means {@link #DEFAULT_MAX_UNIQUE} will be used.
+   * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
+   *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
+   *                         if expandResources is true and uniqueness must also be guaranteed for resources.
+   *                         This is an optional parameter, null means no deduplication.
+   * @param fields           fields to export. deduplicatefield will be added to this is not already present.
+   *                         This parameter must be defined.
+   * @param sort             standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
+   *                         by {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+   *                         This is an optional parameter.
+   * @param query            standard Solr query.
+   * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+   *                         If multiple filters are to be used, consider collapsing them into one:
+   *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   * @return an instance of SolrGenericstreaming, ready for use.
+   */
+  public static SolrGenericStreaming generic(
+          boolean expandResources, boolean ensureUnique, Integer maxUnique, String deduplicateField,
+          List<String> fields,
+          String sort,
+          String query, String... filterQueries) throws IllegalArgumentException {
+    return generic(defaultSolrClient,
+                   expandResources, ensureUnique, maxUnique, deduplicateField,
+                   fields, sort,
+                   query, filterQueries);
+  }
+
+  /**
+   * Generic stream where most parts are optional.
+   *
+   * Note: The given solrQuery will be adjusted using {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+   *
+   * @param solrClient       used for issuing Solr requests.
+   * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
+   *                         lists of Solr Documents.
+   *                         Note: Indirect references (through JavaScript & CSS) are not followed.
+   * @param ensureUnique     if true, unique documents are guaranteed. This is only sane if expandResources is true.
+   *                         Note that a HashSet is created to keep track of encountered documents and will impose
+   *                         a memory overhead linear to the number of results.
+   * @param maxUnique        the maximum number of uniques to track when ensureUnique is true.
+   *                         If the number of uniques exceeds this limit, an exception is thrown.
+   *                         Specifying null means {@link #DEFAULT_MAX_UNIQUE} will be used.
+   * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
+   *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
+   *                         if expandResources is true and uniqueness must also be guaranteed for resources.
+   *                         This is an optional parameter, null means no deduplication.
+   * @param fields           fields to export. deduplicatefield will be added to this is not already present.
+   *                         This parameter must be defined.
+   * @param sort             standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
+   *                         by {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+   *                         This is an optional parameter.
+   * @param query            standard Solr query.
+   * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+   *                         If multiple filters are to be used, consider collapsing them into one:
+   *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   * @return an instance of SolrGenericstreaming, ready for use.
+   */
+  public static SolrGenericStreaming generic(
+          SolrClient solrClient,
+          boolean expandResources, boolean ensureUnique, Integer maxUnique, String deduplicateField,
+          List<String> fields,
+          String sort,
+          String query, String... filterQueries) throws IllegalArgumentException {
+    if (fields == null || fields.isEmpty()) {
+      throw new IllegalArgumentException("No fields defined");
+    }
+    SolrQuery solrQuery = buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, sort);
+    return new SolrGenericStreaming(solrClient, solrQuery, expandResources, ensureUnique, maxUnique, deduplicateField);
   }
 
   /**
