@@ -13,7 +13,10 @@
     </transition>   
     <div class="searchBoxContainer">
       <form class="searchForm" @submit.prevent="launchNewSearch()">
-        <span v-if="preNormalizedQuery !== null" class="orgQuery">Normalized query<span class="preQueryExplanation" title="When you search for an URL, we normalize it for you - this is the normalized URL we used for the search">[ ? ]</span>: <span class="preQuery" :title="normalizedQuery">{{ normalizedQuery }}</span></span>
+        <span v-if="preNormalizedQuery !== null" class="orgQuery">Normalized query<span class="preQueryExplanation" title="When you search for an URL, we normalize it for you - this is the normalized query we used for the search">[ ? ]</span>: <span class="preQuery" :title="normalizedQuery"><span class="urlNormPrefix">url_norm:"</span>{{ normalizedQuery }}<span class="urlNormPrefix">"</span></span><span class="copyToClipboard"
+                                                                                                                                                                                                                                                                                                                                                                                                                       :class="normalizedQueryCopied ? 'checkmarkIcon' : 'clipboardIcon'"
+                                                                                                                                                                                                                                                                                                                                                                                                                       title="Copy normalized query to clipboard"
+                                                                                                                                                                                                                                                                                                                                                                                                                       @click.prevent="copyURLSearchQuery()" /></span>
         <transition name="url-search-helper">
           <span v-if="solrSettings.urlSearch" class="urlSearchHelper">URL:</span>
         </transition>
@@ -100,6 +103,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import {copyTextToClipboard} from '../utils/globalUtils'
 import AppliedSearchFacets from './AppliedSearchFacets.vue'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
 import SearchboxUtils from './../mixins/SearchboxUtils'
@@ -121,7 +125,8 @@ export default {
       futureQuery:'',
       showUploadFileSearch: false,
       showToolbox: false,
-      searchHints:[]
+      searchHints:[],
+      normalizedQueryCopied: false
     }
   },
   computed: {
@@ -252,6 +257,16 @@ export default {
 
     getSearchWithUploadedFileTitle() {
       return this.searchWithUploadedFileDisabled() ? 'Search by uploaded file has been disabled in the configuration' : ''
+    },
+    copyURLSearchQuery(){
+      const normalizedQueryToCopy = `url_norm:"${this.normalizedQuery}"`  
+      if (copyTextToClipboard(normalizedQueryToCopy)) {
+         this.normalizedQueryCopied = true
+          setTimeout(() => {
+            this.normalizedQueryCopied = false
+            },
+            3000)
+        }
     }
   }
 }
