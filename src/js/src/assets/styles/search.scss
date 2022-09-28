@@ -646,15 +646,45 @@ img.imageEntry.noPointer {
   font-size: 75%;
 	text-transform: uppercase;
 	margin-top: -20px;
-  color: rgba(30,30,30,0.3);
+  color: rg≠ba(30,30,30,0.6);
   position: absolute;
 }
 
 .searchForm .orgQuery .preQuery {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  display: inline-block;
+  max-width:500px;
   text-transform: none;
-  color: rgba(0,46,112,0.5);
+  color: rgba(0,46,112,0.7);
+  line-height:12px;  
 
 }
+
+.searchForm .orgQuery .preQuery .urlNormPrefix  {
+  color:green;
+}
+
+.searchForm .orgQuery .copyToClipboard {
+  display:inline-block;
+  height: 15px;  /*height of icon */
+  width: 15px;  /*width of icon */
+  margin: 0 0 -2px 5px;
+  cursor: pointer;
+}
+
+.searchForm .orgQuery .clipboardIcon {
+  background: url(../../assets/icons/Font_Awesome_5_regular_clipboard.svg) no-repeat 0px 0px;
+}
+
+.searchForm .orgQuery .checkmarkIcon {
+  background: url(../../assets/icons/Icons8_flat_checkmark.svg) no-repeat 0px 0px;
+}
+
+
+
+
 
 .fileUploader {
   margin:20px 0 20px 0;

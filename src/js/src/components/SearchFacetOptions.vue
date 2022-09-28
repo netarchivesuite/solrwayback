@@ -15,8 +15,7 @@
              @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet) : null">
           {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
-        <div v-show="extraFacetLoading === facetCategory[0]" class="extraFacetsloading">
-        </div>
+        <div v-show="extraFacetLoading === facetCategory[0]" class="extraFacetsloading" />
         <!-- here we're excluding the crawl_year facets, because OP don't want a show more on those -->
         <div v-if="facetCategory[1].length >= 20 && facetCategory[0] !== 'crawl_year'" class="moreFacets">
           <div v-if="facetCategory[1].length > 20" class="facetArrow up">
