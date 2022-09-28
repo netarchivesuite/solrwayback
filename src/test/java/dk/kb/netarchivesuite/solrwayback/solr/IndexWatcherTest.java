@@ -18,7 +18,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
  *  limitations under the License.
  *
  */
-public class IndexWatcherTest extends TestCase {
+public class IndexWatcherTest {
 
     public static final String SOLR_SERVER = "http://localhost:8983/solr/netarchivebuilder";
 
