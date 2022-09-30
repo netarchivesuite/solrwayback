@@ -76,6 +76,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
   private final Set<String> uniqueTracker;
   private final int maxUnique;
+  private int delivered = 0;
+  private final long maxResults;
   private long duplicatesRemoved = 0;
   private SolrDocumentList undelivered = null; // Leftover form previous call to keep deliveries below pageSize
 
@@ -123,7 +125,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
           List<String> fields, boolean expandResources, boolean ensureUnique, Integer maxUnique,
           String idealTime, String deduplicateField,
           String query, String... filterQueries) throws IllegalArgumentException {
-    return timeProximity(defaultSolrClient, fields,
+    return timeProximity(defaultSolrClient, fields, null,
                          expandResources, ensureUnique, maxUnique,
                          idealTime, deduplicateField,
                          query, filterQueries);
@@ -135,6 +137,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    *
    * @param solrClient       used for issuing Solr requests.
    * @param fields           fields to export. deduplicatefield will be added to this is not already present.
+   * @param maxResults       the maximum number of results to return. This includes expanded resources.
+   *                         If null, there is no limit on result size.
    * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
    *                         lists of Solr Documents.
    *                         Note: Indirect references (through JavaScript & CSS) are not followed.
@@ -158,7 +162,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   // TODO: When https://github.com/ukwa/webarchive-discovery/issues/214 gets implemented it should be possible to use Last-Modied/Date from HTTP headers instead of crawl_date
   public static SolrGenericStreaming timeProximity(
-          SolrClient solrClient, List<String> fields,
+          SolrClient solrClient, List<String> fields, Long maxResults,
           boolean expandResources, boolean ensureUnique, Integer maxUnique,
           String idealTime, String deduplicateField,
           String query, String... filterQueries) throws IllegalArgumentException {
@@ -186,7 +190,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
     String sort = String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, origo);
     SolrQuery timeQuery = buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, sort);
-    return new SolrGenericStreaming(solrClient, timeQuery, expandResources, ensureUnique, maxUnique, deduplicateField);
+    return new SolrGenericStreaming(
+            solrClient, timeQuery, expandResources, ensureUnique, maxUnique, deduplicateField, maxResults);
   }
 
   /**
@@ -210,6 +215,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    *                         This is an optional parameter, null means no deduplication.
    * @param fields           fields to export. deduplicatefield will be added to this is not already present.
    *                         This parameter must be defined.
+   * @param maxResults       the maximum number of results to return. This includes expanded resources.
+   *                         If null, there is no limit on result size.
    * @param sort             standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
    *                         by {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
    *                         This is an optional parameter.
@@ -221,12 +228,12 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   public static SolrGenericStreaming generic(
           boolean expandResources, boolean ensureUnique, Integer maxUnique, String deduplicateField,
-          List<String> fields,
+          List<String> fields, Long maxResults,
           String sort,
           String query, String... filterQueries) throws IllegalArgumentException {
     return generic(defaultSolrClient,
                    expandResources, ensureUnique, maxUnique, deduplicateField,
-                   fields, sort,
+                   fields, maxResults, sort,
                    query, filterQueries);
   }
 
@@ -251,6 +258,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    *                         This is an optional parameter, null means no deduplication.
    * @param fields           fields to export. deduplicatefield will be added to this is not already present.
    *                         This parameter must be defined.
+   * @param maxResults       the maximum number of results to return. This includes expanded resources.
+   *                         If null, there is no limit on result size.
    * @param sort             standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
    *                         by {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
    *                         This is an optional parameter.
@@ -263,14 +272,15 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   public static SolrGenericStreaming generic(
           SolrClient solrClient,
           boolean expandResources, boolean ensureUnique, Integer maxUnique, String deduplicateField,
-          List<String> fields,
+          List<String> fields, Long maxResults,
           String sort,
           String query, String... filterQueries) throws IllegalArgumentException {
     if (fields == null || fields.isEmpty()) {
       throw new IllegalArgumentException("No fields defined");
     }
     SolrQuery solrQuery = buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, sort);
-    return new SolrGenericStreaming(solrClient, solrQuery, expandResources, ensureUnique, maxUnique, deduplicateField);
+    return new SolrGenericStreaming(
+            solrClient, solrQuery, expandResources, ensureUnique, maxUnique, deduplicateField, maxResults);
   }
 
   /**
@@ -286,7 +296,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   public SolrGenericStreaming(List<String> fields, String query, String... filterQueries) {
     this(defaultSolrClient, buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, DEFAULT_SORT),
-         false, false, 0, null);
+         false, false, 0, null, null);
   }
 
   /**
@@ -302,7 +312,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   public SolrGenericStreaming(SolrClient solrClient, List<String> fields, String query, String... filterQueries) {
     this(solrClient, buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, DEFAULT_SORT),
-         false, false, 0, null);
+         false, false, 0, null, null);
   }
 
   /**
@@ -326,7 +336,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
           SolrClient solrClient, int pageSize, List<String> fields, boolean expandResources, boolean ensureUnique,
           String query, String... filterQueries) {
     this(solrClient, buildBaseQuery(pageSize, fields, query, filterQueries, DEFAULT_SORT),
-         expandResources, ensureUnique, DEFAULT_MAX_UNIQUE, null);
+         expandResources, ensureUnique, DEFAULT_MAX_UNIQUE, null, null);
   }
 
   /**
@@ -347,12 +357,14 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    *                         Specifying null means {@link #DEFAULT_MAX_UNIQUE} will be used.
    * @param deduplicateField if not null, the value for the given field for a document will be compared to the value
    *                         for the previous document. If they are equal, the current document will be skipped.
+   * @param maxResults       the maximum number of results to return. This includes expanded resources.
+   *                         If null, there is no limit on result size.
    * @throws IllegalArgumentException if solrQuery has {@code group=true}.
    */
   public SolrGenericStreaming(
           SolrClient solrClient, SolrQuery solrQuery,
           boolean expandResources, boolean ensureUnique, Integer maxUnique,
-          String deduplicateField) throws IllegalArgumentException {
+          String deduplicateField, Long maxResults) throws IllegalArgumentException {
     this.initialFields = new LinkedHashSet<>(Arrays.asList(solrQuery.getFields().split(",")));
 
     adjustSolrQuery(solrQuery, expandResources, ensureUnique, deduplicateField);
@@ -365,6 +377,12 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     this.fields = Arrays.asList(solrQuery.getFields().split(","));
     this.pageSize = solrQuery.getRows();
     this.deduplicateField = deduplicateField;
+    if (maxResults != null && maxResults < solrQuery.getInt(CommonParams.ROWS)) {
+      solrQuery.set(CommonParams.ROWS, maxResults.intValue());
+      this.maxResults = maxResults;
+    } else {
+      this.maxResults = Long.MAX_VALUE;
+    }
   }
 
   /**
@@ -514,7 +532,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   public SolrDocumentList nextDocuments() throws SolrServerException, IOException {
     String cursorMark = solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
-    while (!hasFinished) {
+    while (!hasFinished && delivered < maxResults) {
 
       // Return batch if undelivered contains any documents
       if (undelivered != null && undelivered.size() > 0) {
@@ -540,6 +558,10 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       }
       if (uniqueTracker != null) {
         removeDuplicates(undelivered);
+      }
+      // Reduce to maxResults
+      while (maxResults-delivered < undelivered.size() && !undelivered.isEmpty()) {
+        undelivered.remove(undelivered.size()-1);
       }
 
       // Only deliver the fields that were requested
@@ -567,6 +589,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     if (undelivered == null || undelivered.size() < pageSize) {
       SolrDocumentList oldUndelivered = undelivered;
       undelivered = null;
+      delivered += oldUndelivered.size();
       return oldUndelivered;
     }
 
@@ -576,6 +599,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     SolrDocumentList newUndelivered = new SolrDocumentList();
     newUndelivered.addAll(undelivered.subList(pageSize, undelivered.size()));
     undelivered = newUndelivered;
+    delivered += batch.size();
 
     return batch;
   }

@@ -41,6 +41,7 @@ import static org.junit.Assert.*;
 public class SolrGenericStreamingTest {
     private static final Logger log = LoggerFactory.getLogger(SolrGenericStreamingTest.class);
 
+    public static final int TEST_DOCS = 100; // Changing this might make some unit tests fail
     private static final String SOLR_HOME = "target/test-classes/solr";
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
@@ -88,7 +89,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void timeProximity() {
         List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
-                null, Arrays.asList("id", "crawl_date"), false, false, 0, "2019-04-15T12:31:51Z", "url", "title:title_5").
+                Arrays.asList("id", "crawl_date"), false, false, 0, "2019-04-15T12:31:51Z", "url", "title:title_5").
                 stream().collect(Collectors.toList());
         assertEquals("Single result expected",
                      1, docs.size());
@@ -100,7 +101,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void timeProximityMulti() {
         List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
-                null, Arrays.asList("id", "crawl_date"), false, false, 0, "2019-04-15T12:31:51Z", "url", "*:*").
+                Arrays.asList("id", "crawl_date"), false, false, 0, "2019-04-15T12:31:51Z", "url", "*:*").
                 stream().
                 collect(Collectors.toList());
         assertTrue("Multiple results expected",
@@ -111,6 +112,22 @@ public class SolrGenericStreamingTest {
         }
         assertTrue("There should be more than 1 unique data in the time proximity result set",
                    dates.size() > 1);
+    }
+
+    @Test
+    public void testLimit() {
+        assertEquals("Limiting maxResults should return the desired max number of documents",
+                     7,
+                     SolrGenericStreaming.generic(
+                                     false, false, 0, null,
+                                     Arrays.asList("url", "links"), 7L, null,  "*:*").
+                             stream().count());
+        assertEquals("Having maxResults above the total number of documents should work",
+                     100,
+                     SolrGenericStreaming.generic(
+                                     false, false, 0, null,
+                                     Arrays.asList("url", "links"), 100000L, null,  "*:*").
+                             stream().count());
     }
 
     @Test
@@ -137,7 +154,7 @@ public class SolrGenericStreamingTest {
     public void linksExportMulti() {
         List<SolrDocument> docs = SolrGenericStreaming.generic(
                 false, false, 0, "url_norm",
-                Arrays.asList("url", "links"), null,  "*:*").
+                Arrays.asList("url", "links"), null, null,  "*:*").
                 stream().
                 collect(Collectors.toList());
         for (SolrDocument doc: docs) {
@@ -150,7 +167,7 @@ public class SolrGenericStreamingTest {
     public void linksExportSingle() {
         List<SolrDocument> docs = SolrGenericStreaming.generic(
                 false, false, 0, "url_norm",
-                Arrays.asList("url", "links"), null,  "*:*").
+                Arrays.asList("url", "links"), null, null,  "*:*").
                 stream().
                 flatMap(SolrGenericStreaming::flatten).
                 collect(Collectors.toList());
@@ -161,10 +178,9 @@ public class SolrGenericStreamingTest {
     }
 
     private static void fillSolr() throws SolrServerException, IOException {
-        final int DOCS = 100;
-        log.info("Filling embedded server with {} documents", DOCS);
+        log.info("Filling embedded server with {} documents", TEST_DOCS);
         final Random r = new Random(87); // Random but not too random
-        for (int i = 0 ; i < DOCS ; i++) {
+        for (int i = 0 ; i < TEST_DOCS ; i++) {
             addDoc(i, r);
         }
         embeddedServer.commit();
