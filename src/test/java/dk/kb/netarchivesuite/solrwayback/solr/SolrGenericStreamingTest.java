@@ -1,3 +1,17 @@
+/*
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
 package dk.kb.netarchivesuite.solrwayback.solr;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
@@ -15,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -24,20 +37,6 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
-/*
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- */
 public class SolrGenericStreamingTest {
     private static final Logger log = LoggerFactory.getLogger(SolrGenericStreamingTest.class);
 
@@ -81,15 +80,22 @@ public class SolrGenericStreamingTest {
     @Test
     public void basicStreaming() {
         log.debug("Testing basic streaming");
-        List<SolrDocument> docs = new SolrGenericStreaming(embeddedServer, 2, Collections.singletonList("id"), false, false, "title:title_5").
+        List<SolrDocument> docs = SolrGenericStreaming.create(
+                        SolrGenericStreaming.SRequest.builder().
+                                query("title:title_5").
+                                fields("id").
+                                pageSize(2)).
                 stream().collect(Collectors.toList());
         assertFalse("Basic streaming should return some documents", docs.isEmpty());
     }
 
     @Test
     public void timeProximity() {
-        List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
-                Arrays.asList("id", "crawl_date"), false, false, 0, "2019-04-15T12:31:51Z", "url", "title:title_5").
+        List<SolrDocument> docs = SolrGenericStreaming.create(
+                        SolrGenericStreaming.SRequest.builder().
+                                query("title:title_5").
+                                fields("id", "crawl_date").
+                                timeProximityDeduplication("2019-04-15T12:31:51Z", "url")).
                 stream().collect(Collectors.toList());
         assertEquals("Single result expected",
                      1, docs.size());
@@ -100,8 +106,11 @@ public class SolrGenericStreamingTest {
 
     @Test
     public void timeProximityMulti() {
-        List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
-                Arrays.asList("id", "crawl_date"), false, false, 0, "2019-04-15T12:31:51Z", "url", "*:*").
+        List<SolrDocument> docs = SolrGenericStreaming.create(
+                        SolrGenericStreaming.SRequest.builder().
+                                query("*:*").
+                                fields("id", "crawl_date").
+                                timeProximityDeduplication("2019-04-15T12:31:51Z", "url")).
                 stream().
                 collect(Collectors.toList());
         assertTrue("Multiple results expected",
@@ -118,15 +127,13 @@ public class SolrGenericStreamingTest {
     public void testLimit() {
         assertEquals("Limiting maxResults should return the desired max number of documents",
                      7,
-                     SolrGenericStreaming.generic(
-                                     false, false, 0, null,
-                                     Arrays.asList("url", "links"), 7L, null,  "*:*").
+                     SolrGenericStreaming.create(SolrGenericStreaming.SRequest.create(
+                             "*:*", "url", "links").maxResults(7)).
                              stream().count());
         assertEquals("Having maxResults above the total number of documents should work",
                      100,
-                     SolrGenericStreaming.generic(
-                                     false, false, 0, null,
-                                     Arrays.asList("url", "links"), 100000L, null,  "*:*").
+                     SolrGenericStreaming.create(SolrGenericStreaming.SRequest.create(
+                             "*:*", "url", "links").maxResults(100000)).
                              stream().count());
     }
 
@@ -152,9 +159,8 @@ public class SolrGenericStreamingTest {
 
     @Test
     public void linksExportMulti() {
-        List<SolrDocument> docs = SolrGenericStreaming.generic(
-                false, false, 0, "url_norm",
-                Arrays.asList("url", "links"), null, null,  "*:*").
+        List<SolrDocument> docs = SolrGenericStreaming.create(SolrGenericStreaming.SRequest.builder().
+                query("*:*").fields("url", "links").deduplicateField("url_norm")).
                 stream().
                 collect(Collectors.toList());
         for (SolrDocument doc: docs) {
@@ -165,9 +171,8 @@ public class SolrGenericStreamingTest {
 
     @Test
     public void linksExportSingle() {
-        List<SolrDocument> docs = SolrGenericStreaming.generic(
-                false, false, 0, "url_norm",
-                Arrays.asList("url", "links"), null, null,  "*:*").
+        List<SolrDocument> docs = SolrGenericStreaming.create(SolrGenericStreaming.SRequest.builder().
+                query("*:*").fields("url", "links").deduplicateField("url_norm")).
                 stream().
                 flatMap(SolrGenericStreaming::flatten).
                 collect(Collectors.toList());

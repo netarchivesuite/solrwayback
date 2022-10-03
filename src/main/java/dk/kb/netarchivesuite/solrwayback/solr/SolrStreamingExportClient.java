@@ -39,9 +39,14 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
     }
     this.solrFieldsArray = solrFields.split(", *");
     this.csvFieldsArray = csvFields.split(", *");
-    inner = new SolrGenericStreaming(
-            solrClient, pageSize, Arrays.asList(solrFieldsArray), expandResources, avoidDuplicates,
-            query, filterQueries);
+    inner = SolrGenericStreaming.create(
+            SolrGenericStreaming.SRequest.builder().
+                    solrClient(solrClient).
+                    query(query).filterQueries(filterQueries).
+                    fields(solrFieldsArray).
+                    pageSize(pageSize).
+                    expandResources(expandResources).
+                    ensureUnique(avoidDuplicates));
     this.solrFields = solrFields;
     this.csvFields = csvFields;
     this.query = query;

@@ -37,9 +37,14 @@ public class SolrStreamingLinkGraphCSVExportClient implements SolrStreamingLineB
     }
     this.solrFieldsArray = solrFields.split(", *");
     this.csvFieldsArray = csvFields.split(", *");
-    inner = new SolrGenericStreaming(
-            solrClient, pageSize, Arrays.asList(solrFieldsArray), false ,false,
-            query, filters);
+
+    inner = SolrGenericStreaming.create(
+            SolrGenericStreaming.SRequest.builder().
+                    solrClient(solrClient).
+                    query(query).filterQueries(filters).
+                    fields(solrFields).
+                    pageSize(pageSize));
+
     this.solrFields = solrFields;
     this.csvFields = csvFields;
     this.query = query;

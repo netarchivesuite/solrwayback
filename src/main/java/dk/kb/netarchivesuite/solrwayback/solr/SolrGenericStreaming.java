@@ -29,6 +29,10 @@ import java.util.stream.StreamSupport;
 
 import static org.apache.commons.lang3.StringUtils.join;
 
+// TODO: Add support for redirects; needs to work with expandResources
+// TODO: Add support for revisits; needs (W)ARC lookup and needs to work with expandResources
+// TODO: Make graph traversal of JavaScript & CSS-includes with expandResources
+
 /**
  * Cursormark based chunking search client allowing for arbitrary sized result sets.
  */
@@ -66,22 +70,17 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   private static final Pattern ISO_TIME = Pattern.compile(
           "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9][.]?[0-9]?[0-9]?[0-9]?Z");
 
-  private final SolrClient solrClient;
-  private final boolean expandResources;
+  private final SRequest request;
+  private final SolrQuery solrQuery; // Constructed from request
 
-  private final SolrQuery solrQuery;
-  private final Set<String> initialFields; // Fields provided by the caller
-  private final List<String> fields;        // Fields after adjusting for unique etc.
-  private final int pageSize;
+  private final List<String> initialFields;  // Caller provided fields
+  private final List<String> adjustedFields; // Fields after adjusting for unique etc.
 
   private final Set<String> uniqueTracker;
-  private final int maxUnique;
   private int delivered = 0;
-  private final long maxResults;
   private long duplicatesRemoved = 0;
   private SolrDocumentList undelivered = null; // Leftover form previous call to keep deliveries below pageSize
 
-  private final String deduplicateField; // If set, timeProximity is used
   private Object lastStreamDeduplicateValue = null; // Used with timeProximity
 
   private boolean hasFinished = false;
@@ -91,196 +90,16 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   private static SolrClient defaultSolrClient = new HttpSolrClient.Builder(PropertiesLoader.SOLR_SERVER).build();
 
-  // TODO: Make graph traversal of JavaScript & CSS-includes with expandResources
 
   /**
-   * Streams documents that are closest in time to crawl_time, removing duplicates.
-   * {@link #defaultSolrClient} will be used for the requests.
+   * Generic stream where all parts except {@link SRequest#query(String)} and {@link SRequest#fields(String...)}
+   * are optional.
    *
-   * Note: The given solrQuery will be adjusted using {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
-   *
-   * @param fields           fields to export. deduplicatefield will be added to this is not already present.
-   * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
-   *                         lists of Solr Documents.
-   *                         Note: Indirect references (through JavaScript & CSS) are not followed.
-   * @param ensureUnique     if true, unique documents are guaranteed. This is only sane if expandResources is true.
-   *                         Note that a HashSet is created to keep track of encountered documents and will impose
-   *                         a memory overhead linear to the number of results.
-   * @param maxUnique        the maximum number of uniques to track when ensureUnique is true.
-   *                         If the number of uniques exceeds this limit, an exception is thrown.
-   *                         Specifying null means {@link #DEFAULT_MAX_UNIQUE} will be used.
-   * @param idealTime        The time that the resources should be closest to, stated as a Solr timestamp
-   *                         {@code YYYY-MM-DDTHH:mm:SSZ}.
-   *                         Also supports {@code oldest} and {@code newest} as values.
-   * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
-   *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
-   *                         if expandResources is true and uniqueness must also be guaranteed for resources.
-   * @param query            standard Solr query.
-   * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
-   *                         If multiple filters are to be used, consider collapsing them into one:
-   *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   * @param request stream setup.
+   * @return an instance of SolrGenericStreaming, ready for use.
    */
-  // TODO: When https://github.com/ukwa/webarchive-discovery/issues/214 gets implemented it should be possible to use Last-Modied/Date from HTTP headers instead of crawl_date
-  public static SolrGenericStreaming timeProximity(
-          List<String> fields, boolean expandResources, boolean ensureUnique, Integer maxUnique,
-          String idealTime, String deduplicateField,
-          String query, String... filterQueries) throws IllegalArgumentException {
-    return timeProximity(defaultSolrClient, fields, null,
-                         expandResources, ensureUnique, maxUnique,
-                         idealTime, deduplicateField,
-                         query, filterQueries);
-  }
-  /**
-   * Streams documents that are closest in time to crawl_time, removing duplicates.
-   *
-   * Note: The given solrQuery will be adjusted using {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
-   *
-   * @param solrClient       used for issuing Solr requests.
-   * @param fields           fields to export. deduplicatefield will be added to this is not already present.
-   * @param maxResults       the maximum number of results to return. This includes expanded resources.
-   *                         If null, there is no limit on result size.
-   * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
-   *                         lists of Solr Documents.
-   *                         Note: Indirect references (through JavaScript & CSS) are not followed.
-   * @param ensureUnique     if true, unique documents are guaranteed. This is only sane if expandResources is true.
-   *                         Note that a HashSet is created to keep track of encountered documents and will impose
-   *                         a memory overhead linear to the number of results.
-   * @param maxUnique        the maximum number of uniques to track when ensureUnique is true.
-   *                         If the number of uniques exceeds this limit, an exception is thrown.
-   *                         Specifying null means {@link #DEFAULT_MAX_UNIQUE} will be used.
-   * @param idealTime        The time that the resources should be closest to, stated as a Solr timestamp
-   *                         {@code YYYY-MM-DDTHH:mm:SSZ}.
-   *                         Also supports {@code oldest} and {@code newest} as values.
-   * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
-   *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
-   *                         if expandResources is true and uniqueness must also be guaranteed for resources.
-   * @param query            standard Solr query.
-   * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
-   *                         If multiple filters are to be used, consider collapsing them into one:
-   *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
-   * @return an instance of SolrGenericstreaming, ready for use.
-   */
-  // TODO: When https://github.com/ukwa/webarchive-discovery/issues/214 gets implemented it should be possible to use Last-Modied/Date from HTTP headers instead of crawl_date
-  public static SolrGenericStreaming timeProximity(
-          SolrClient solrClient, List<String> fields, Long maxResults,
-          boolean expandResources, boolean ensureUnique, Integer maxUnique,
-          String idealTime, String deduplicateField,
-          String query, String... filterQueries) throws IllegalArgumentException {
-    // Extra steps for timeProximity:
-    // 1) Construct sort "<deduplicateField> asc, abs(sub(ms(2014-01-03T11:56:58Z), crawl_date)) asc")
-    // 2) Keep track of latest received deduplicateField. When the value changes, accept the document and
-    //    remember the new value for future deduplication
-    String origo = idealTime;
-    if ("newest".equals(idealTime)) {
-      origo = "9999-12-31T23:59:59Z";
-    } else if ("oldest".equals(idealTime)) {
-      origo = "0001-01-01T00:00:01Z";
-    } else if (!ISO_TIME.matcher(idealTime).matches()) {
-      throw new IllegalArgumentException(
-              "The idealTime '" + idealTime + "' does not match 'oldest', 'newest', 'YYYY-MM-DDTHH:mm:SSZ' or " +
-              "'YYYY-MM-DDTHH:mm:SS.sssZ");
-    }
-    if (ensureUnique && !expandResources) {
-      log.warn("timeProximity: ensureUnique == true with expandResources == false. " +
-               "This practically never makes sense and will only impose unnecessary memory overhead");
-    }
-    if (deduplicateField == null) {
-      throw new NullPointerException("deduplicateField == null which is not allowed for timeProximity");
-    }
-
-    String sort = String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, origo);
-    SolrQuery timeQuery = buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, sort);
-    return new SolrGenericStreaming(
-            solrClient, timeQuery, expandResources, ensureUnique, maxUnique, deduplicateField, maxResults);
-  }
-
-  /**
-   * Generic stream where most parts are optional.
-   * {@link #defaultSolrClient} will be used for the requests.
-   *
-   * Note: The given solrQuery will be adjusted using {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
-   *
-   * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
-   *                         lists of Solr Documents.
-   *                         Note: Indirect references (through JavaScript & CSS) are not followed.
-   * @param ensureUnique     if true, unique documents are guaranteed. This is only sane if expandResources is true.
-   *                         Note that a HashSet is created to keep track of encountered documents and will impose
-   *                         a memory overhead linear to the number of results.
-   * @param maxUnique        the maximum number of uniques to track when ensureUnique is true.
-   *                         If the number of uniques exceeds this limit, an exception is thrown.
-   *                         Specifying null means {@link #DEFAULT_MAX_UNIQUE} will be used.
-   * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
-   *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
-   *                         if expandResources is true and uniqueness must also be guaranteed for resources.
-   *                         This is an optional parameter, null means no deduplication.
-   * @param fields           fields to export. deduplicatefield will be added to this is not already present.
-   *                         This parameter must be defined.
-   * @param maxResults       the maximum number of results to return. This includes expanded resources.
-   *                         If null, there is no limit on result size.
-   * @param sort             standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
-   *                         by {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
-   *                         This is an optional parameter.
-   * @param query            standard Solr query.
-   * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
-   *                         If multiple filters are to be used, consider collapsing them into one:
-   *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
-   * @return an instance of SolrGenericstreaming, ready for use.
-   */
-  public static SolrGenericStreaming generic(
-          boolean expandResources, boolean ensureUnique, Integer maxUnique, String deduplicateField,
-          List<String> fields, Long maxResults,
-          String sort,
-          String query, String... filterQueries) throws IllegalArgumentException {
-    return generic(defaultSolrClient,
-                   expandResources, ensureUnique, maxUnique, deduplicateField,
-                   fields, maxResults, sort,
-                   query, filterQueries);
-  }
-
-  /**
-   * Generic stream where most parts are optional.
-   *
-   * Note: The given solrQuery will be adjusted using {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
-   *
-   * @param solrClient       used for issuing Solr requests.
-   * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
-   *                         lists of Solr Documents.
-   *                         Note: Indirect references (through JavaScript & CSS) are not followed.
-   * @param ensureUnique     if true, unique documents are guaranteed. This is only sane if expandResources is true.
-   *                         Note that a HashSet is created to keep track of encountered documents and will impose
-   *                         a memory overhead linear to the number of results.
-   * @param maxUnique        the maximum number of uniques to track when ensureUnique is true.
-   *                         If the number of uniques exceeds this limit, an exception is thrown.
-   *                         Specifying null means {@link #DEFAULT_MAX_UNIQUE} will be used.
-   * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
-   *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
-   *                         if expandResources is true and uniqueness must also be guaranteed for resources.
-   *                         This is an optional parameter, null means no deduplication.
-   * @param fields           fields to export. deduplicatefield will be added to this is not already present.
-   *                         This parameter must be defined.
-   * @param maxResults       the maximum number of results to return. This includes expanded resources.
-   *                         If null, there is no limit on result size.
-   * @param sort             standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
-   *                         by {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
-   *                         This is an optional parameter.
-   * @param query            standard Solr query.
-   * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
-   *                         If multiple filters are to be used, consider collapsing them into one:
-   *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
-   * @return an instance of SolrGenericstreaming, ready for use.
-   */
-  public static SolrGenericStreaming generic(
-          SolrClient solrClient,
-          boolean expandResources, boolean ensureUnique, Integer maxUnique, String deduplicateField,
-          List<String> fields, Long maxResults,
-          String sort,
-          String query, String... filterQueries) throws IllegalArgumentException {
-    if (fields == null || fields.isEmpty()) {
-      throw new IllegalArgumentException("No fields defined");
-    }
-    SolrQuery solrQuery = buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, sort);
-    return new SolrGenericStreaming(
-            solrClient, solrQuery, expandResources, ensureUnique, maxUnique, deduplicateField, maxResults);
+  public static SolrGenericStreaming create(SRequest request) throws IllegalArgumentException {
+    return new SolrGenericStreaming(request);
   }
 
   /**
@@ -293,96 +112,27 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
    *                      If multiple filters are to be used, consider collapsing them into one:
    *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   * @return an instance of SolrGenericStreaming, ready for use.
    */
-  public SolrGenericStreaming(List<String> fields, String query, String... filterQueries) {
-    this(defaultSolrClient, buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, DEFAULT_SORT),
-         false, false, 0, null, null);
+  public static SolrGenericStreaming create(List<String> fields, String query, String... filterQueries) {
+    return create(SRequest.create(query, fields).filterQueries(filterQueries));
   }
 
   /**
-   * Export the documents matching query and filterQueries with no limit on result size.
+   * Generic stream where all parts except {@link SRequest#query(String)} and {@link SRequest#fields(String...)}
+   * are optional.
    *
-   * Default page size 1000, expandResources=false and ensureUnique=false.
-   * @param solrClient    used for issuing Solr requests. If null is specified, {@link #defaultSolrClient} is used.
-   * @param fields        the fields to export.
-   * @param query         standard Solr query.
-   * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
-   *                      If multiple filters are to be used, consider collapsing them into one:
-   *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   * @param request stream setup.
    */
-  public SolrGenericStreaming(SolrClient solrClient, List<String> fields, String query, String... filterQueries) {
-    this(solrClient, buildBaseQuery(DEFAULT_PAGESIZE, fields, query, filterQueries, DEFAULT_SORT),
-         false, false, 0, null, null);
-  }
+  public SolrGenericStreaming(SRequest request) {
+    this.request = request;
+    solrQuery = request.getMergedSolrQuery();
+    this.initialFields = Arrays.asList(solrQuery.getFields().split(","));
 
-  /**
-   * Export the documents matching query and filterQueries with no limit on result size.
-   *
-   * @param solrClient       used for issuing Solr requests. If null is specified, {@link #defaultSolrClient} is used.
-   * @param pageSize         paging size. 1000-100,000 depending on fields.
-   * @param fields           the fields to export.
-   * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
-   *                         lists of Solr Documents.
-   *                         Note: Indirect references (through JavaScript & CSS) are not followed.
-   * @param ensureUnique     if true, unique documents are guaranteed. This is only sane if expandResources is true.
-   *                         Note that a HashSet is created to keep track of encountered documents and will impose
-   *                         a memory overhead linear to the number of results.
-   * @param query            standard Solr query.
-   * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
-   *                         If multiple filters are to be used, consider collapsing them into one:
-   *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
-   */
-  public SolrGenericStreaming(
-          SolrClient solrClient, int pageSize, List<String> fields, boolean expandResources, boolean ensureUnique,
-          String query, String... filterQueries) {
-    this(solrClient, buildBaseQuery(pageSize, fields, query, filterQueries, DEFAULT_SORT),
-         expandResources, ensureUnique, DEFAULT_MAX_UNIQUE, null, null);
-  }
+    adjustSolrQuery(solrQuery, request.expandResources, request.ensureUnique, request.deduplicateField);
+    this.adjustedFields = Arrays.asList(solrQuery.getFields().split(","));
 
-  /**
-   * Advanced version where the user provides the SolrQuery object. Not recommended for casual use.
-   *
-   * Note: The given solrQuery will be adjusted using {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
-   *
-   * @param solrClient       used for issuing Solr requests. If null is specified, {@link #defaultSolrClient} is used.
-   * @param solrQuery        a Solr query object ready for use.
-   * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
-   *                         lists of Solr Documents.
-   *                         Note: Indirect references (through JavaScript & CSS) are not followed.
-   * @param ensureUnique     if true, unique documents are guaranteed. This is only sane if expandResources is true.
-   *                         Note that a HashSet is created to keep track of encountered documents and will impose
-   *                         a memory overhead linear to the number of results.
-   * @param maxUnique        the maximum number of uniques to track when ensureUnique is true.
-   *                         If the number of uniques exceeds this limit, an exception is thrown.
-   *                         Specifying null means {@link #DEFAULT_MAX_UNIQUE} will be used.
-   * @param deduplicateField if not null, the value for the given field for a document will be compared to the value
-   *                         for the previous document. If they are equal, the current document will be skipped.
-   * @param maxResults       the maximum number of results to return. This includes expanded resources.
-   *                         If null, there is no limit on result size.
-   * @throws IllegalArgumentException if solrQuery has {@code group=true}.
-   */
-  public SolrGenericStreaming(
-          SolrClient solrClient, SolrQuery solrQuery,
-          boolean expandResources, boolean ensureUnique, Integer maxUnique,
-          String deduplicateField, Long maxResults) throws IllegalArgumentException {
-    this.initialFields = new LinkedHashSet<>(Arrays.asList(solrQuery.getFields().split(",")));
-
-    adjustSolrQuery(solrQuery, expandResources, ensureUnique, deduplicateField);
-
-    this.solrClient = Optional.ofNullable(solrClient).orElse(defaultSolrClient);
-    this.solrQuery = solrQuery;
-    this.expandResources = expandResources;
-    this.uniqueTracker = ensureUnique ? new HashSet<>() : null;
-    this.maxUnique = maxUnique == null ? DEFAULT_MAX_UNIQUE : maxUnique;
-    this.fields = Arrays.asList(solrQuery.getFields().split(","));
-    this.pageSize = solrQuery.getRows();
-    this.deduplicateField = deduplicateField;
-    if (maxResults != null && maxResults < solrQuery.getInt(CommonParams.ROWS)) {
-      solrQuery.set(CommonParams.ROWS, maxResults.intValue());
-      this.maxResults = maxResults;
-    } else {
-      this.maxResults = Long.MAX_VALUE;
-    }
+    this.uniqueTracker = request.ensureUnique ? new HashSet<>() : null;
   }
 
   /**
@@ -508,31 +258,14 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     SolrGenericStreaming.defaultSolrClient = defaultSolrClient;
   }
 
-  private static SolrQuery buildBaseQuery(
-          int pageSize, List<String> fields, String query, String[] filterQueries, String sort) {
-    SolrQuery solrQuery = new SolrQuery();
-    solrQuery.add(CommonParams.FL, join(fields, ","));
-    solrQuery.add(CommonParams.SORT, sort);
-    solrQuery.setRows(pageSize);
-    solrQuery.setQuery(query);
-    if (filterQueries != null) {
-      for (String filter: filterQueries) {
-        if (filter != null) {
-          solrQuery.addFilterQuery(filter);
-        }
-      }
-    }
-    return solrQuery;
-  }
-
   /**
-   * @return at least 1 and at most {@link #pageSize} documents or null if there are no more documents.
+   * @return at least 1 and at most {@link SRequest#pageSize} documents or null if there are no more documents.
    * @throws SolrServerException if Solr could not handle a request for new documents.
    * @throws IOException if general communication with Solr failed.
    */
   public SolrDocumentList nextDocuments() throws SolrServerException, IOException {
     String cursorMark = solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
-    while (!hasFinished && delivered < maxResults) {
+    while (!hasFinished && delivered < request.maxResults) {
 
       // Return batch if undelivered contains any documents
       if (undelivered != null && undelivered.size() > 0) {
@@ -547,20 +280,20 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
       // No more documents buffered, attempt to require new documents
       solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
-      QueryResponse rsp = solrClient.query(solrQuery, METHOD.POST);
+      QueryResponse rsp = request.solrClient.query(solrQuery, METHOD.POST);
       undelivered = rsp.getResults();
 
-      if (deduplicateField != null) {
+      if (request.deduplicateField != null) {
         streamDeduplicate(undelivered);
       }
-      if (expandResources) {
+      if (request.expandResources) {
         expandResources(undelivered);
       }
       if (uniqueTracker != null) {
         removeDuplicates(undelivered);
       }
       // Reduce to maxResults
-      while (maxResults-delivered < undelivered.size() && !undelivered.isEmpty()) {
+      while (request.maxResults-delivered < undelivered.size() && !undelivered.isEmpty()) {
         undelivered.remove(undelivered.size()-1);
       }
 
@@ -582,11 +315,12 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   }
 
   /**
-   * If there are more than {@link #pageSize} documents in {@link #undelivered}, exactly pageSize documents are returned and
-   * the rest are kept in {@link #undelivered}. Else the full amount of documents in {@link #undelivered} is returned.
+   * If there are more than {@link SRequest#pageSize} documents in {@link #undelivered}, exactly pageSize documents
+   * are returned and the rest are kept in {@link #undelivered}. Else the full amount of documents in
+   * {@link #undelivered} is returned.
    */
   private SolrDocumentList nextPageUndelivered() {
-    if (undelivered == null || undelivered.size() < pageSize) {
+    if (undelivered == null || undelivered.size() < request.pageSize) {
       SolrDocumentList oldUndelivered = undelivered;
       undelivered = null;
       delivered += oldUndelivered.size();
@@ -594,10 +328,10 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     }
 
     SolrDocumentList batch = new SolrDocumentList();
-    batch.addAll(undelivered.subList(0, pageSize));
+    batch.addAll(undelivered.subList(0, request.pageSize));
 
     SolrDocumentList newUndelivered = new SolrDocumentList();
-    newUndelivered.addAll(undelivered.subList(pageSize, undelivered.size()));
+    newUndelivered.addAll(undelivered.subList(request.pageSize, undelivered.size()));
     undelivered = newUndelivered;
     delivered += batch.size();
 
@@ -628,7 +362,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
       // This could technically be done with SolrGenericStreaming.timeProximity but findNearestDocuments is
       // optimized towards many tiny lookups where each lookup yields at most 1 result.
-      return NetarchiveSolrClient.getInstance().findNearestDocuments(resources, arc.getCrawlDate(), join(fields, ","));
+      return NetarchiveSolrClient.getInstance().findNearestDocuments(resources, arc.getCrawlDate(), join(adjustedFields, ","));
     } catch (Exception e) {
       log.warn("Unable to get resources for SolrDocument '" + html + "'", e);
       return new SolrDocumentList();
@@ -654,9 +388,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
         duplicatesRemoved++;
       }
     });
-    if (uniqueTracker.size() > maxUnique) {
+    if (uniqueTracker.size() > request.maxUnique) {
       throw new ArrayIndexOutOfBoundsException(
-              "The number of elements in the unique tracker exceeded the limit " + maxUnique +
+              "The number of elements in the unique tracker exceeded the limit " + request.maxUnique +
               ". Processing has been stopped to avoid Out Of Memory errors");
     }
     documents.clear();
@@ -670,8 +404,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     List<SolrDocument> unique = new ArrayList<>(documents.size());
     for (SolrDocument doc: documents) {
       if (lastStreamDeduplicateValue == null ||
-          !lastStreamDeduplicateValue.equals(doc.getFieldValue(deduplicateField))) {
-          lastStreamDeduplicateValue = doc.getFieldValue(deduplicateField);
+          !lastStreamDeduplicateValue.equals(doc.getFieldValue(request.deduplicateField))) {
+          lastStreamDeduplicateValue = doc.getFieldValue(request.deduplicateField);
           unique.add(doc);
       } else {
         duplicatesRemoved++;
@@ -748,6 +482,291 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
               return newDoc;
             });
 
+  }
+
+  /**
+   * Encapsulation of the request to SolrGenericStreaming. Care has been taken to ensure sane defaults; the only
+   * required attributes are {@link #query(String)} and {@link #fields(String...)}.
+   * 
+   * Use as a builder: {@code SRequest.builder().query("*:*").fields("url", "url_norm")}
+   * 
+   * Note: If {@link SRequest#solrQuery(SolrQuery)} is specified it will be used as a base for the full request.
+   */
+  public static class SRequest {
+    public SolrClient solrClient = defaultSolrClient;
+    public SolrQuery solrQuery = new SolrQuery();
+    public boolean expandResources = false;
+    public boolean ensureUnique = false;
+    public Integer maxUnique = DEFAULT_MAX_UNIQUE;
+    private String idealTime; // If defined, a sort will be created as String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
+    public String deduplicateField = null;
+    List<String> fields;
+    public long maxResults = Long.MAX_VALUE;
+    public String sort = DEFAULT_SORT;
+    public String query = null;
+    public List<String> filterQueries;
+    public int pageSize = DEFAULT_PAGESIZE;
+
+    /**
+     * @return a fresh instance of SRequest intended for further adjustment.
+     */
+    public static SRequest builder() {
+      return new SRequest();
+    }
+
+    /**
+     * Creates a request with query and fields.
+     * As the returned request is initialized with query and fields, it can be used without further adjustments.
+     * @return an instance of SRequest, initialized with the provided query and fields.
+     */
+    public static SRequest create(String query, String... fields) {
+      return new SRequest().query(query).fields(fields);
+    }
+
+    /**
+     * Creates a request with query and fields.
+     * As the returned request is initialized with query and fields, it can be used without further adjustments.
+     * @return an instance of SRequest, initialized with the provided query and fields.
+     */
+    public static SRequest create(String query, List<String> fields) {
+      return new SRequest().query(query).fields(fields);
+    }
+
+    /**
+     * @param solrClient       used for issuing Solr requests. If not specified, {@link #defaultSolrClient} will be used.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest solrClient(SolrClient solrClient) {
+      if (solrClient == null) {
+        log.debug("solrClient(null) called. Leaving solrClient unchanged");
+        return this;
+      }
+      this.solrClient = solrClient;
+      return this;
+    }
+
+    /**
+     * The parameters in the solrQuery has the lowest priority: All calls to modifier methods will override matching
+     * values in the solrQuery.
+     * @param solrQuery        the base for the request. If not provided it will be constructed from scratch.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest solrQuery(SolrQuery solrQuery) {
+      this.solrQuery = solrQuery;
+      return this;
+    }
+
+    /**
+     * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
+     *                         lists of Solr Documents. Default is false.
+     *                         Note: Indirect references (through JavaScript & CSS) are not followed.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest expandResources(boolean expandResources) {
+      this.expandResources = expandResources;
+      return this;
+    }
+
+    /**
+     * @param ensureUnique     if true, unique documents are guaranteed. This is only sane if expandResources is true.
+     *                         Default is false.
+     *                         Note that a HashSet is created to keep track of encountered documents and will impose
+     *                         a memory overhead linear to the number of results.
+     * @return the SRequest adjusted with the provided value.
+     * @see #maxUnique(Integer)
+     */
+    public SRequest ensureUnique(boolean ensureUnique) {
+      this.ensureUnique = ensureUnique;
+      return this;
+    }
+
+    /**
+     * @param maxUnique        the maximum number of uniques to track when ensureUnique is true.
+     *                         If the number of uniques exceeds this limit, an exception will be thrown.
+     *                         Default is {@link #DEFAULT_MAX_UNIQUE}.
+     * @return the SRequest adjusted with the provided value.
+     * @see #ensureUnique(boolean)
+     */
+    public SRequest maxUnique(Integer maxUnique) {
+      this.maxUnique = maxUnique;
+      return this;
+    }
+
+    /**
+     * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
+     *                         Default is null (no deduplication).
+     *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
+     *                         if expandResources is true and uniqueness must also be guaranteed for resources.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest deduplicateField(String deduplicateField) {
+      this.deduplicateField = deduplicateField;
+      return this;
+    }
+
+    /**
+     * Deduplication combined with time proximity sorting. This is a shorthand for
+     * {@code request.deduplicatefield(deduplicateField).sort("abs(sub(ms(idealTime), crawl_date)) asc");}
+     *
+     * Use case: Extract unique URLs for matches that are closest to a given point in time:
+     *           {@code timeProximityDeduplication("2014-01-03T11:56:58Z", "url_norm"}.
+     *
+     * Note: This overrides any existing {@link #sort(String)}.
+     * @param idealTime        The time that the resources should be closest to, stated as a Solr timestamp
+     *                         {@code YYYY-MM-DDTHH:mm:SSZ}.
+     *                         Also supports {@code oldest} and {@code newest} as values.
+     * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
+     * @return the SRequest adjusted with the provided values.
+     */
+    public SRequest timeProximityDeduplication(String idealTime, String deduplicateField) {
+      String origo = idealTime;
+      if ("newest".equals(idealTime)) {
+        origo = "9999-12-31T23:59:59Z";
+      } else if ("oldest".equals(idealTime)) {
+        origo = "0001-01-01T00:00:01Z";
+      } else if (!ISO_TIME.matcher(idealTime).matches()) {
+        throw new IllegalArgumentException(
+                "The idealTime '" + idealTime + "' does not match 'oldest', 'newest', 'YYYY-MM-DDTHH:mm:SSZ' or " +
+                "'YYYY-MM-DDTHH:mm:SS.sssZ");
+      }
+      this.idealTime = origo;
+
+      if (deduplicateField == null) {
+        throw new NullPointerException("deduplicateField == null which is not allowed for timeProximityDeduplication");
+      }
+      this.deduplicateField = deduplicateField;
+      return this;
+    }
+
+    /**
+     * @param fields           fields to export (fl). deduplicateField will be added to this is not already present.
+     *                         This parameter has no default and must be defined.
+     * @return the SRequest adjusted with the provided value.
+     * @see #fields(String...)
+     */
+    public SRequest fields(List<String> fields) {
+      this.fields = fields;
+      return this;
+    }
+
+    /**
+     * @param fields           fields to export (fl). deduplicateField will be added to this is not already present.
+     *                         This parameter has no default and must be defined.
+     * @return the SRequest adjusted with the provided value.
+     * @see #fields(List)
+     */
+    public SRequest fields(String... fields) {
+      this.fields = Arrays.asList(fields);
+      return this;
+    }
+
+    /**
+     * @param maxResults       the maximum number of results to return. This includes expanded resources.
+     *                         Default is {@link Long#MAX_VALUE} (effectively no limit).
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest maxResults(long maxResults) {
+      this.maxResults = maxResults;
+      return this;
+    }
+
+    /**
+     * Note: {@link #timeProximityDeduplication(String, String)} takes precedence over sort.
+     * @param sort             standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
+     *                         by {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+     *                         Default is {@link #DEFAULT_SORT}.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest sort(String sort) {
+      this.sort = sort;
+      return this;
+    }
+
+    /**
+     * @param query            standard Solr query.
+     *                         This parameter has no default and must be defined either directly or
+     *                         through {@link #solrQuery(SolrQuery)}.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest query(String query) {
+      this.query = query;
+      return this;
+    }
+
+    /**
+     * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+     *                         If multiple filters are to be used, consider collapsing them into one:
+     *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     * @return the SRequest adjusted with the provided value.
+     * @see #filterQueries(String...)
+     */
+    public SRequest filterQueries(List<String> filterQueries) {
+      this.filterQueries = filterQueries;
+      return this;
+    }
+    /**
+     * @param filterQueries    optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+     *                         If multiple filters are to be used, consider collapsing them into one:
+     *                         {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     * @return the SRequest adjusted with the provided value.
+     * @see #filterQueries(List)
+     */
+    public SRequest filterQueries(String... filterQueries) {
+      this.filterQueries = Arrays.asList(filterQueries);
+      return this;
+    }
+
+    /**
+     * @param pageSize         paging size. Typically 500-100,000 depending on fields.
+     *                         Default is {@link #DEFAULT_PAGESIZE}.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest pageSize(int pageSize) {
+      this.pageSize = pageSize;
+      return this;
+    }
+
+    public SolrQuery finalizeSolrQuery() {
+      throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    /**
+     * Copies {@link #solrQuery} and adjusts it with defined attributes from the SRequest, extending with needed
+     * SolrRequest-attributes.
+     * @return a SolrQuery ready for processing.
+     */
+    public SolrQuery getMergedSolrQuery() {
+      SolrQuery solrQuery = deepCopy(this.solrQuery);
+      if (query != null) {
+        solrQuery.setQuery(query);
+      }
+      if (filterQueries != null) {
+        solrQuery.setFilterQueries(filterQueries.toArray(new String[0]));
+      }
+
+      if (idealTime != null) {
+        sort = String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
+      }
+      solrQuery.set(CommonParams.SORT, sort);
+      if (fields != null) {
+        solrQuery.set(CommonParams.FL, String.join(",", fields));
+      }
+      solrQuery.set(CommonParams.ROWS, (int)Math.min(maxResults, pageSize));
+      return solrQuery;
+    }
+
+    /**
+     * Makes an independent copy of the given SolrQuery by deep-copying the {@code String[]} values.
+     * @param solrQuery any Solr query.
+     * @return an independent copy of the given Solr query.
+     */
+    private SolrQuery deepCopy(SolrQuery solrQuery) {
+      SolrQuery qc = new SolrQuery();
+      solrQuery.getMap().entrySet().stream().
+              peek(entry -> entry.setValue(Arrays.copyOf(entry.getValue(), entry.getValue().length))).
+              forEach(entry -> qc.set(entry.getKey(), entry.getValue()));
+      return qc;
+    }
   }
 
 }

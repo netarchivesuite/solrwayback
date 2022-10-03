@@ -452,8 +452,13 @@ public class Facade {
                 throw new InvalidArgumentServiceException("Number of results for warc expanded  export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
             }
         }
-        SolrGenericStreaming solr = new SolrGenericStreaming(null, 100, Arrays.asList("source_file_path", "source_file_offset"),
-                expandResources, avoidDuplicates, query, filterqueries);
+        SolrGenericStreaming solr = SolrGenericStreaming.create(
+                SolrGenericStreaming.SRequest.builder().
+                        query(query).filterQueries(filterqueries).
+                        fields("source_file_path", "source_file_offset").
+                        pageSize(100). // TODO: Why so low? The two fields are tiny and single-valued
+                        expandResources(expandResources).
+                        ensureUnique(avoidDuplicates));
 
         return new StreamingSolrWarcExportBufferedInputStream(solr, max, gzip); // Use maximum export results from property-file
     }
