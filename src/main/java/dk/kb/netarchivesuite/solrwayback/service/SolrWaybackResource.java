@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
@@ -15,6 +16,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +33,9 @@ import javax.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
@@ -591,6 +596,7 @@ public class SolrWaybackResource {
         throw new NotFoundServiceException("Url has never been harvested:"+url);
       }        
    
+      verifyACL(doc, httpRequest);
       
       //THIS BLOCK WILL FORWARD URLS TO MATCH CRAWLTIME FOR HTML PLAYBACK
        // html forward to a new request so date in url will show the true crawldate of the document. Avoid having 2020 in url with the page is from 2021 etc.      
@@ -1019,4 +1025,198 @@ public class SolrWaybackResource {
       return new InternalServiceException(e.getMessage());
     }
   }
+
+  private static Boolean checkACLRule(JsonNode rule, String url, String crawlDate, String aclUser) {
+    // Long Boolean:
+    //   true: allowed by rule
+    //   false: blocked by rule
+    //   null: undecided
+
+    // URLs
+    String matchUrl = url.replaceFirst("^https?://", "");
+    matchUrl = matchUrl.replaceFirst("/$", "");
+    JsonNode urlPatterns = rule.findValue("urlPatterns");
+    if (urlPatterns == null) {
+      log.error("Rule has no url pattern - ignoring");
+      return null;
+    }
+
+    Iterator<JsonNode> urlIterator = urlPatterns.elements();
+    boolean urlMatched = false;
+    while(urlIterator.hasNext()) {
+      String urlPattern = urlIterator.next().asText();
+      String origPattern = urlPattern;
+
+      boolean startAnchor = ! urlPattern.startsWith("*");
+      boolean endAnchor = ! urlPattern.endsWith("*");
+      urlPattern = urlPattern.replaceFirst("^\\*", "");
+      urlPattern = urlPattern.replaceFirst("\\*$", "");
+      urlPattern = urlPattern.replaceFirst("^https?://", "");
+      urlPattern = urlPattern.replaceFirst("/$", "");
+
+      log.debug("does '" + urlPattern + "' match '" + matchUrl + "'?");
+      if (startAnchor && endAnchor) {
+        if (matchUrl.equals(urlPattern)) urlMatched = true;
+      } else if (startAnchor) {
+        if (matchUrl.startsWith(urlPattern)) urlMatched = true;
+      } else if (endAnchor) {
+        if (matchUrl.endsWith(urlPattern)) urlMatched = true;
+      } else {
+        if (matchUrl.contains(urlPattern)) urlMatched = true;
+      }
+      if (urlMatched) {
+        log.debug("url pattern '" + origPattern + "' matches '" + url + "'");
+        break;
+      }
+      log.debug("url pattern '" + origPattern + "' does not match '" + url + "'");
+    }
+
+    if (! urlMatched) {
+      log.debug("rule is not applicable - no URL pattern matches");
+      return null;
+    }
+
+    // Capture dates
+    // assuming all timestamps are in the same format 'YYYY-mm-ddTHH:MM:SSZ',
+    // we can simply compare them as strings
+    JsonNode captureDates = rule.findValue("captured");
+    if (captureDates != null) {
+      JsonNode startDate = captureDates.findValue("start");
+      if (startDate != null) {
+        if (startDate.asText().compareTo(crawlDate) > 0) {
+          log.debug("rule is not applicable - crawlDate '" + crawlDate + "' < '" + startDate.asText() + "'");
+          return null;
+        } else {
+          log.debug("rule may be applicable - crawlDate '" + crawlDate + "' >= '" + startDate.asText() + "'");
+        }
+      }
+      JsonNode endDate = captureDates.findValue("end");
+      if (endDate != null) {
+        if (endDate.asText().compareTo(crawlDate) < 0) {
+          log.debug("rule is not applicable - crawlDate '" + crawlDate + "' > '" + endDate.asText() + "'");
+          return null;
+        } else {
+          log.debug("rule may be applicable - crawlDate '" + crawlDate + "' <= '" + endDate.asText() + "'");
+        }
+      }
+    }
+
+    // User names
+    JsonNode userNames = rule.findValue("userNames");
+    if (userNames != null) {
+      Iterator<JsonNode> userNameIterator = userNames.elements();
+      boolean userMatched = false;
+      while(userNameIterator.hasNext()) {
+        String userName = userNameIterator.next().asText();
+        if (userName.equals(aclUser)) {
+          log.debug("rule may be applicable - userName '" + userName + "' == '" + aclUser + "'");
+          userMatched = true;
+          break;
+        }
+      }
+      if (! userMatched) {
+        log.debug("rule is not applicable - no userName matches '" + aclUser + "'");
+        return null;
+      }
+    }
+
+    // action
+    JsonNode actionNode = rule.findValue("action");
+    String action = actionNode != null ? actionNode.asText() : "block";
+    log.debug("rule is applicable - action: " + action);
+
+    return "allow".equals(action);
+  }
+
+  private static JsonNode accessControlList;
+  private static Long accessControlFileRead = 0L;
+  private void verifyACL(IndexDoc doc, HttpServletRequest httpRequest) throws NotFoundServiceException {
+    String aclPath = PropertiesLoader.ACCESS_CONTROL_LIST_PATH;
+    if (aclPath == null) return;
+
+    try {
+      File aclJson = new File(aclPath);
+      if (!aclJson.exists()) { // fall back to looking in the user home folder
+        String user_home = System.getProperty("user.home");
+        aclJson = new File(user_home, aclPath);
+      }
+      if (!aclJson.exists()) {
+        log.error("Access Control List '" + aclPath + "' does not exist");
+        return;
+      }
+
+      Long accessControlFileUpdated = aclJson.lastModified();
+      if (accessControlFileRead < accessControlFileUpdated) {
+        accessControlFileRead = accessControlFileUpdated;
+        log.info("Reading Access Control List from '" + aclPath + "'");
+        ObjectMapper mapper = new ObjectMapper();
+        accessControlList = mapper.readTree(aclJson);
+      }
+    } catch (IOException e) {
+      log.error("Error opening Access Control List", e);
+      return;
+    }
+
+    String url = doc.getUrl();
+    if (url == null) url = "";
+    String crawlDate = doc.getCrawlDate();
+    if (crawlDate == null) crawlDate = "";
+
+    // we don't handle authentication but e.g. Nginx can set an access
+    // control header after authentication or based on source address
+    String aclHeaderName = PropertiesLoader.ACCESS_CONTROL_HEADER_NAME;
+    String aclUser = aclHeaderName != null ? httpRequest.getHeader(aclHeaderName) : null;
+    if (aclUser == null) aclUser = "";
+    log.debug("Checking ACL rules for url: " + url + ", crawlDate: " + crawlDate + ", aclUser: " + aclUser);
+
+    Iterator<JsonNode> rules = accessControlList.elements();
+    while(rules.hasNext()) {
+      JsonNode rule = rules.next();
+      Boolean result = checkACLRule(rule, url, crawlDate, aclUser);
+      if (result == null) {
+        // undecided - try next rule
+        continue;
+      } else {
+        if (result) {
+          // allowed by rule - skip further rules
+          return;
+        } else {
+          // denied by rule - skip further rules
+          log.info("Url is blocked: " + url);
+          throw new NotFoundServiceException("Url is blocked: " + url);
+        }
+      }
+    }
+  }
 }
+/**
+  [
+    {
+      "comment": "Sample ACL",
+      "comment 2": "the action of the first matching rule will be applied"
+    },
+    {
+      "action": "allow",
+      "urlPatterns": ["*.iana.org/*"],
+      "userNames": ["admin"]
+    },
+    {
+      "comment": "block is the default action",
+      "urlPatterns": ["*.iana.org/*"]
+    },
+    {
+      "action": "block",
+      "urlPatterns": [
+        "*example.com",
+        "http://example.com/foo/*",
+        "http://example.com.au/*"
+      ],
+      "captured": {
+        "comment": "both timestamps are inclusive UTC timestamps",
+        "comment 2": "compared as strings for simplicity",
+        "start": "2014-01-01T00:00:00Z",
+        "end": "2014-12-31T23:59:59Z"
+      }
+    }
+  ]
+*/

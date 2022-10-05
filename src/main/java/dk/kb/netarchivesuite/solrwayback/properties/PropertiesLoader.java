@@ -48,6 +48,8 @@ public class PropertiesLoader {
     
     public static final String PLAYBACK_DISABLED_PROPERTY="playback.disabled";
     private static final String SOLR_SEARCH_PARAMS_PROPERTY="solr.search.params";
+    private static final String ACCESS_CONTROL_LIST_PATH_PROPERTY="access.control.list.path";
+    private static final String ACCESS_CONTROL_HEADER_NAME_PROPERTY="access.control.header.name";
     
     
     private static Properties serviceProperties = null;
@@ -63,6 +65,8 @@ public class PropertiesLoader {
     public static String PID_COLLECTION_NAME = null;
     public static String WORDCLOUD_STOPWORDS;
     public static LinkedHashMap<String,String> SOLR_PARAMS_MAP= new LinkedHashMap<String,String>(); 
+    public static String ACCESS_CONTROL_LIST_PATH = null;
+    public static String ACCESS_CONTROL_HEADER_NAME = null;
 
     public static boolean SOLR_SERVER_CACHING=false;
     public static boolean WARC_FILES_VERIFY_COLLECTION=false;
@@ -115,6 +119,8 @@ public class PropertiesLoader {
             loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
             URL_NORMALISER  = serviceProperties.getProperty(URL_NORMALISER_PROPERTY,"normal");
+            ACCESS_CONTROL_LIST_PATH = serviceProperties.getProperty(ACCESS_CONTROL_LIST_PATH_PROPERTY);
+            ACCESS_CONTROL_HEADER_NAME = serviceProperties.getProperty(ACCESS_CONTROL_HEADER_NAME_PROPERTY);
 
             URL waybacksURL = new URL (WAYBACK_BASEURL);
             WAYBACK_SERVER_PORT =  waybacksURL.getPort();
@@ -164,6 +170,8 @@ public class PropertiesLoader {
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);
             log.info("Property:"+ SOLR_SERVER_CHECK_INTERVAL_PROPERTY +" = " +  SOLR_SERVER_CHECK_INTERVAL);
             log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);
+            log.info("Property:"+ ACCESS_CONTROL_LIST_PATH_PROPERTY +" = " +  ACCESS_CONTROL_LIST_PATH);
+            log.info("Property:"+ ACCESS_CONTROL_HEADER_NAME_PROPERTY +" = " +  ACCESS_CONTROL_HEADER_NAME);
         }
         catch (Exception e) {
             e.printStackTrace();
