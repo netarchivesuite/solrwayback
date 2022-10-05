@@ -40,11 +40,6 @@
   </div>
 </template>
 
-<style lang="scss">
-@import '../../../node_modules/leaflet/dist/leaflet.css';
-@import '../../../node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css';
-</style>
-
 <script>
 
 import L from 'leaflet'
@@ -224,5 +219,11 @@ export default {
 }
 
 </script>
+
+<style lang="scss">
+  @import '../../../node_modules/leaflet/dist/leaflet.css';
+  @import '../../../node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css';
+  </style>
+  
 
     

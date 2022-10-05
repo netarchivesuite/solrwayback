@@ -10,10 +10,6 @@
   </div>
 </template>
 
-<style lang="scss">
-  @import '../../../assets/styles/charts.scss'; 
-</style>
-
 <script>
   
   import LineChart from '../chartsCore/chartEngines/LineChart'
@@ -61,6 +57,10 @@
     }
   }
 </script>
+
+<style lang="scss">
+  @import '../../../assets/styles/charts.scss'; 
+</style>
 
 
 

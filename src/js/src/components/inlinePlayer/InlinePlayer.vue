@@ -6,10 +6,6 @@
   </div>
 </template>
 
-<style lang="scss">
-@import '../../../node_modules/video.js/dist/video-js.min.css';
-</style>
-
 <script>
 import videojs from 'video.js'
 import {mapActions} from 'vuex'
@@ -99,3 +95,7 @@ export default {
     }
 }
 </script>
+
+<style lang="scss">
+  @import '../../../node_modules/video.js/dist/video-js.min.css';
+  </style>

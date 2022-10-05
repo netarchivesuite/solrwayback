@@ -15,9 +15,6 @@
   </div>     
 </template>
 
-<style lang="scss">
-  @import '../assets/styles/pwid.scss'; 
-</style>
 
 <script>
 import { requestService } from '../services/RequestService'
@@ -82,5 +79,9 @@ export default {
 }
 
 </script>
+
+<style lang="scss">
+  @import '../assets/styles/pwid.scss'; 
+</style>
 
     

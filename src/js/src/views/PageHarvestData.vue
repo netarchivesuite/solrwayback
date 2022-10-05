@@ -22,9 +22,7 @@
   </div>
 </template>
 
-<style lang="scss">
-  @import '../assets/styles/harvestTimes.scss'; 
-</style>
+
 
 <script>
 import { requestService } from '../services/RequestService'
@@ -83,3 +81,7 @@ export default {
    },
 }
 </script>
+
+<style lang="scss">
+  @import '../assets/styles/harvestTimes.scss'; 
+</style>
