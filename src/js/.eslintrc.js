@@ -5,14 +5,12 @@ module.exports = {
   },
   'extends': [
     'plugin:vue/recommended'
-    
   ],
   rules: {
-      "semi": ["error", "never"],
-      "quotes": ["error", "single"],
+      'semi': ['error', 'never'],
+      'quotes': ['error', 'single'],
   
-      //REMEMBER to fix this before production...
-      // 'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    //'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'vue/html-closing-bracket-newline': ['error', {
       'singleline': 'never',
@@ -27,7 +25,7 @@ module.exports = {
     }]
   },
   parserOptions: {
-    parser: "babel-eslint"
+    parser: 'babel-eslint'
   },
   
 }
