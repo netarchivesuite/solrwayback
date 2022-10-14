@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 
 public class TestGenerateLinkGraphCSV {
 
@@ -14,8 +16,9 @@ public class TestGenerateLinkGraphCSV {
     PropertiesLoader.initProperties();
     
     String query = "katte";
-    
-     SolrStreamingLinkGraphCSVExportClient solr =  SolrStreamingLinkGraphCSVExportClient.createExporter(SOLR_SERVER, query);
+
+    SolrClient solrClient = new HttpSolrClient.Builder(PropertiesLoader.SOLR_SERVER).build();
+     SolrStreamingLinkGraphCSVExportClient solr =  SolrStreamingLinkGraphCSVExportClient.createExporter(solrClient, query);
 
     //MAX 100.000 results
      StreamingSolrExportBufferedInputStream streamExport = new StreamingSolrExportBufferedInputStream(solr,100000);

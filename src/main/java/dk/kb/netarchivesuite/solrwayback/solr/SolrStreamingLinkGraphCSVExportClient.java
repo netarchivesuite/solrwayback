@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
@@ -30,25 +31,29 @@ public class SolrStreamingLinkGraphCSVExportClient implements SolrStreamingLineB
   private HashSet<String> domainsCache= new HashSet<String>(); 
 
   public SolrStreamingLinkGraphCSVExportClient(
-          String solrServerUrl, int pageSize, String solrFields, String csvFields,String query) {
+          SolrClient solrClient, int pageSize, String solrFields, String csvFields, String query) {
     if (solrFields == null || solrFields.isEmpty() || csvFields == null || csvFields.isEmpty()) {
       throw new IllegalArgumentException("fields argument was empty, but must be specified");
     }
     this.solrFieldsArray = solrFields.split(", *");
     this.csvFieldsArray = csvFields.split(", *");
-    inner = new SolrGenericStreaming(
-            solrServerUrl, pageSize, Arrays.asList(solrFieldsArray), false ,false, 
-            query, filters);
+
+    inner = SolrGenericStreaming.create(
+            SolrGenericStreaming.SRequest.builder().
+                    solrClient(solrClient).
+                    query(query).filterQueries(filters).
+                    fields(solrFields).
+                    pageSize(pageSize));
+
     this.solrFields = solrFields;
     this.csvFields = csvFields;
     this.query = query;
     //solrServer.setRequestWriter(new BinaryRequestWriter()); 
   }
 
-  public static SolrStreamingLinkGraphCSVExportClient createExporter(
-          String solrServerUrl,  String query) {
+  public static SolrStreamingLinkGraphCSVExportClient createExporter(SolrClient solrClient,  String query) {
     return new SolrStreamingLinkGraphCSVExportClient(
-            solrServerUrl, DEFAULT_PAGE_SIZE,  LINKGRAPH_FL, LINKGRAPH_FL, query);
+            solrClient, DEFAULT_PAGE_SIZE,  LINKGRAPH_FL, LINKGRAPH_FL, query);
   }
 
   
