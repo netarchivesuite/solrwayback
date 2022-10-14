@@ -191,7 +191,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   public static Stream<SolrGenericStreaming> multiQuery(SRequest baseRequest, Stream<String> queries, int batchSize) {
     return CollectionUtils.splitToLists(queries, batchSize).
-            map(batch -> String.join(" OR ", batch)). // 1 big OR query
+            map(batch -> "(" + String.join(") OR (", batch) + ")"). // 1 big OR query
             map(query -> baseRequest.deepCopy().query(query)).
             map(SolrGenericStreaming::create);
   }
