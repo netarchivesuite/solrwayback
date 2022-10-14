@@ -8,18 +8,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.IDN;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.QueryParam;
 
+import dk.kb.netarchivesuite.solrwayback.export.GenerateCSV;
 import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.StreamBridge;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -473,6 +476,9 @@ public class Facade {
         return new StreamingSolrExportBufferedInputStream(solr, 1000000); // 1 MIL
     }
 
+    /**
+     * @deprecated use {@link #exportFields(String, boolean, String, String, String...)} instead.
+     */
     public static InputStream exportCvsStreaming(String q, String fq, String fields) throws Exception {
         // TODO test only allowed fields are selected!
 
@@ -487,36 +493,108 @@ public class Facade {
     }
 
     /**
-     * Export the search result for the given query and filterQuery in the form of JSON-Lines with content for
-     * the requested fields.
+     * Export the search result for the given query and filterQuery as content for the requested fields.
+     * @param fields        comma separated list of fields to export.
+     * @param flatten       if true, {@link SolrGenericStreaming#flatten(SolrDocument)} will be called on each
+     *                      SolrDocument to ensure that no field holds multiple values.
+     * @param format        Valid formats are {@code json}, {@code jsonl} and {@code csv}.
      * @param query         a Solr query.
      * @param filterQueries optional Solr filter queries.
-     * @param fields        comma separated list of fields to export.
      * @return an InputStream delivering the result.
      * @throws InvalidArgumentServiceException if the request was invalid.
      * @throws IOException if something went wrong during search or delivery.
      * @throws SolrServerException if the number of matches could not be requested from Solr.
      */
-    public static InputStream exportJSONStreaming(String fields, String query, String... filterQueries) throws
-            IOException, InvalidArgumentServiceException, SolrServerException {
+    public static InputStream exportFields(String fields, boolean flatten, String format,
+                                           String query, String... filterQueries)
+            throws IOException, InvalidArgumentServiceException, SolrServerException {
+        String formatL = format.toLowerCase(Locale.ROOT);
+        if (!formatL.equals("json") && !formatL.equals("jsonl") && !formatL.equals("csv")) {
+            throw new InvalidArgumentServiceException(
+                    "The requested format was '" + format + "' where only 'json', 'jsonl' and 'csv' are accepted");
+        }
         // TODO check that only allowed fields are selected!
 
-        //Check size
+        // Validate result set size
         long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
         if (results > PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS) {
-            throw new InvalidArgumentServiceException("Number of results for json/csv export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
+            throw new InvalidArgumentServiceException(
+                    "Number of results for " + format + " export exceeds the configured limit: " +
+                    PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
         }
 
-        SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
-                query(query).
-                filterQueries(filterQueries).
-                fields(fields.split(", *"));
-
         return StreamBridge.outputToInputSafe(out -> {
-            SolrGenericStreaming.create(request).stream().
-                    map(JsonUtils::toJSON).
-                    forEach(out::writeln);
+            // Setup request
+            SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+                    query(query).
+                    filterQueries(filterQueries).
+                    fields(fields.split(", *"));
+
+            // Initiate streaming
+            Stream<SolrDocument> docs = SolrGenericStreaming.create(request).stream().
+                    flatMap(solrDoc -> flatten ? SolrGenericStreaming.flatten(solrDoc) : Stream.of(solrDoc));
+
+            // Write results
+            switch (formatL) {
+                case "csv": {
+                    writeCSV(docs, fields, out);
+                    break;
+                }
+                case "json": {
+                    writeJSON(docs, out);
+                    break;
+                }
+                case "jsonl": {
+                    writeJSONLines(docs, out);
+                    break;
+                }
+                default:
+                    throw new UnsupportedOperationException("The format '" + format + "' is not supported");
+            }
         });
+    }
+
+    /**
+     * Write the given SolrDocuments as <a href="https://jsonlines.org/">JSON-Lines</a>: One JSON block for each
+     * document, with one block per line.
+     * @param docs a Stream of Solr documents.
+     * @param out where to write the output.
+     */
+    private static void writeJSONLines(Stream<SolrDocument> docs, StreamBridge.SafeOutputStream out) {
+        docs.map(JsonUtils::toJSON).
+                forEach(out::writeln);
+    }
+
+    /**
+     * Write the given SolrDocuments as a single JSON array containing one JSON block for each document.
+     * @param docs a Stream of Solr documents.
+     * @param out where to write the output.
+     */
+    private static void writeJSON(Stream<SolrDocument> docs, StreamBridge.SafeOutputStream out) {
+        AtomicBoolean hasWritten = new AtomicBoolean(false);
+        out.writeln("[");
+        docs.map(JsonUtils::toJSON).
+                peek(json -> {
+                    if (!hasWritten.get()) {
+                        hasWritten.set(true);
+                    } else {
+                        out.writeln(",");
+                    }
+                }).
+                forEach(out::write);
+        out.writeln("\n]");
+    }
+
+    /**
+     * Write the given SolrDocuments as Comma Separated Values.
+     * First line acts as header and lists the field names.
+     * @param docs a Stream of Solr documents.
+     * @param out where to write the output.
+     */
+    private static void writeCSV(Stream<SolrDocument> docs, String fields, StreamBridge.SafeOutputStream out) {
+        GenerateCSV csvMapper = new GenerateCSV(fields.split(", *"));
+        docs.map(csvMapper::toCVSLine).
+                forEach(out::write);
     }
 
     public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing, String dateStart, String dateEnd) throws Exception {

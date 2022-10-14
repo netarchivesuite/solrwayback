@@ -1,16 +1,9 @@
 package dk.kb.netarchivesuite.solrwayback.export;
 
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.solr.common.SolrDocument;
-
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 
 /**
  * Created by teg on 10/28/16.
@@ -22,16 +15,42 @@ public class GenerateCSV {
     private static final String FIELD_SEPARATOR = ",";
     private static final String MULTIVALUE_SEPARATOR = "\t";
 
-    
-    
-    
 
-   public static void addHeadlineFields(StringBuffer buffer, String[] csvFields) throws Exception{
+    private final String[] fields;
+    private boolean hasBeenCalled = false;
+
+    /**
+     * Create a stateful CSV handler where first call to {@link #toCVSLine(SolrDocument)} will insert headers above
+     * the standard output.
+     * @param fields the fields to write.
+     */
+    public GenerateCSV(String[] fields) {
+        this.fields = fields;
+    }
+
+    /**
+     * Output the {@link #fields} for the given Solr Document.
+     * If this is the first call, the output will have a header line before the data line.
+     * @param doc a Solr Document with at least {@link #fields}.
+     * @return a String containing the {@link #fields} content as Comma Separated Values.
+     */
+    public String toCVSLine(SolrDocument doc) {
+        StringBuffer sb = new StringBuffer();
+        if (!hasBeenCalled) {
+            addHeadlineFields(sb, fields);
+            hasBeenCalled = true;
+        }
+        generateLine(sb, doc, fields);
+        return sb.toString();
+    }
+
+
+    public static void addHeadlineFields(StringBuffer buffer, String[] csvFields) {
      boolean modified = false;
      
      for (String field: csvFields) {
          if (modified) {
-             buffer.append(",");
+             buffer.append(FIELD_SEPARATOR);
          }
          modified = true;
          buffer.append(field);

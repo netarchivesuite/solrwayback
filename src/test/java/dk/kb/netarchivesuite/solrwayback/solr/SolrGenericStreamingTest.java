@@ -262,9 +262,9 @@ public class SolrGenericStreamingTest {
      * Quite misplaced as it tests a {@link Facade} method. TODO: Consider creating a Facade test class.
      */
     @Test
-    public void testFacadeJSONExport() throws SolrServerException, InvalidArgumentServiceException, IOException {
+    public void testFacadeJSONLExport() throws SolrServerException, InvalidArgumentServiceException, IOException {
         List<String> jsons = IOUtils.readLines(
-                Facade.exportJSONStreaming("url, links", "title:title_5"),
+                Facade.exportFields("url, links", false, "jsonl", "title:title_5"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 10, jsons.size());
         for (String line: jsons) {
@@ -280,9 +280,26 @@ public class SolrGenericStreamingTest {
      * Quite misplaced as it tests a {@link Facade} method. TODO: Consider creating a Facade test class.
      */
     @Test
+    public void testFacadeJSONExport() throws SolrServerException, InvalidArgumentServiceException, IOException {
+        List<String> jsons = IOUtils.readLines(
+                Facade.exportFields("url, links", false, "json", "title:title_5"),
+                "utf-8");
+        assertEquals("The right number of lines should be returned", 12, jsons.size());
+        assertEquals("The second line should be as expected",
+                     "{\"url\":\"htts://example.COM/5\",\"links\":[\"http://example.com/everywhere\",\"http://example.com/mod10_5\"]},",
+                     jsons.get(1));
+    }
+
+    /**
+     * Simple test of CSV export.
+     *
+     * Quite misplaced as it tests a {@link Facade} method. TODO: Consider creating a Facade test class.
+     */
+    @Test
     public void testFacadeCSVExport() throws Exception {
         List<String> cvs = IOUtils.readLines(
-                Facade.exportCvsStreaming("title:title_5", null, "url, links"),
+                Facade.exportFields("url, links", false, "csv", "title:title_5"),
+                //Facade.exportCvsStreaming("title:title_5", null, "url, links"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 11, cvs.size()); // First line is header
         assertEquals("The first line should be a header line as expected",
@@ -291,6 +308,30 @@ public class SolrGenericStreamingTest {
         assertEquals("The second line should be a data line as expected",
                      "\"htts://example.COM/5\",\"http://example.com/everywhere\thttp://example.com/mod10_5\"",
                      cvs.get(1));
+    }
+
+    /**
+     * Test of CSV export with flattening, i.e. modifying the output to use more lines instead of lines with
+     * multi-value for a field.
+     *
+     * Quite misplaced as it tests a {@link Facade} method. TODO: Consider creating a Facade test class.
+     */
+    @Test
+    public void testFacadeCSVExportFlatten() throws Exception {
+        List<String> cvs = IOUtils.readLines(
+                Facade.exportFields("url, links", true, "csv", "title:title_5"),
+                //Facade.exportCvsStreaming("title:title_5", null, "url, links"),
+                "utf-8");
+        assertEquals("The right number of lines should be returned", 21, cvs.size()); // First line is header
+        assertEquals("The first line should be a header line as expected",
+                     "url,links",
+                     cvs.get(0));
+        assertEquals("The second line should be the first part of a flattened solr document",
+                     "\"htts://example.COM/5\",\"http://example.com/everywhere\"",
+                     cvs.get(1));
+        assertEquals("The third line should be the second part of a flattened solr document",
+                     "\"htts://example.COM/5\",\"http://example.com/mod10_5\"",
+                     cvs.get(2));
     }
 
     private static void fillSolr() throws SolrServerException, IOException {
