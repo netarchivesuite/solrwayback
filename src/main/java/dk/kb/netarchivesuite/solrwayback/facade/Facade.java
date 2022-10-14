@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import javax.ws.rs.QueryParam;
 
-import dk.kb.netarchivesuite.solrwayback.util.SolrQueryUtils;
+import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -369,7 +369,7 @@ public class Facade {
         if (imageLinks.size() == 0) {
             return new ArrayList<>();
         }
-        String queryStr = SolrQueryUtils.createQueryStringForUrls(imageLinks);
+        String queryStr = SolrUtils.createQueryStringForUrls(imageLinks);
         ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, doc.getCrawlDate());
         return imagesFromHtmlPage;
     }

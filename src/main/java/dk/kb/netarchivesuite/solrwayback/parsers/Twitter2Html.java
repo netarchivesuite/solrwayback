@@ -19,7 +19,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
-import dk.kb.netarchivesuite.solrwayback.util.SolrQueryUtils;
+import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.TwitterParsingUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -166,19 +166,19 @@ public class Twitter2Html {
         }
         String html =
                 "<div class='retweet-author'>" +
-                  "<div class='retweet-text-wrap'>" +
-                    "<div class='user-wrapper'>" +
-                      "<a href='" + SolrQueryUtils.createTwitterSearchURL("tw_user_id:" + mainUser.getId()) + "'>" +
-                        "<h3>" + mainUser.getName() + " Retweeted</h3>" +
-                      "</a>" +
-                      makeUserCard(profileImageUrl, mainUser.getName(),
+                "<div class='retweet-text-wrap'>" +
+                "<div class='user-wrapper'>" +
+                "<a href='" + SolrUtils.createTwitterSearchURL("tw_user_id:" + mainUser.getId()) + "'>" +
+                "<h3>" + mainUser.getName() + " Retweeted</h3>" +
+                "</a>" +
+                makeUserCard(profileImageUrl, mainUser.getName(),
                               mainUser.getScreenName(), mainUser.getDescription(),
                               mainUser.getFriendsCount(), mainUser.getFollowersCount(),
                               mainUser.isVerified()) +
-                    "</div>" +
-                    "<div class='date'>&middot " + tweet.getCreationDate() + "</div>" +
-                  "</div>" +
-                  makeButtonLinkingToTweet(tweet.getRetweetedTweet().getId(), "View original tweet") +
+                "</div>" +
+                "<div class='date'>&middot " + tweet.getCreationDate() + "</div>" +
+                "</div>" +
+                makeButtonLinkingToTweet(tweet.getRetweetedTweet().getId(), "View original tweet") +
                 "</div>";
         return html;
     }
@@ -191,22 +191,22 @@ public class Twitter2Html {
      */
     private String getAuthorHtml(List<ImageUrl> profileImageUrl, TweetUser user) {
         return "<div class='author'>" +
-                  "<div class='user-wrapper'>" +
-                    "<a href='" + SolrQueryUtils.createTwitterSearchURL(
+               "<div class='user-wrapper'>" +
+               "<a href='" + SolrUtils.createTwitterSearchURL(
                     "tw_user_id:" + user.getId()) + "'>" +
-                      "<div class='avatar'>" + imageUrlsToHtmlTags(profileImageUrl) + "</div>" +
-                      "<div class='user-handles'>" +
-                        "<h2>" + user.getName() + "</h2>" +
-                        (user.isVerified() ? "<span class='user-verified'></span>" : "") +
-                        "<h4>@" + user.getScreenName() + "</h4>" +
-                      "</div>" +
-                    "</a>" +
-                    makeUserCard(profileImageUrl, user.getName(),
+               "<div class='avatar'>" + imageUrlsToHtmlTags(profileImageUrl) + "</div>" +
+               "<div class='user-handles'>" +
+               "<h2>" + user.getName() + "</h2>" +
+               (user.isVerified() ? "<span class='user-verified'></span>" : "") +
+               "<h4>@" + user.getScreenName() + "</h4>" +
+               "</div>" +
+               "</a>" +
+               makeUserCard(profileImageUrl, user.getName(),
                             user.getScreenName(), user.getDescription(),
                             user.getFriendsCount(), user.getFollowersCount(),
                             user.isVerified()) +
-                  "</div>" +
-                "</div>";
+               "</div>" +
+               "</div>";
     }
 
     /**
@@ -218,7 +218,7 @@ public class Twitter2Html {
     private List<ImageUrl> getImageUrlsFromSolr(List<String> imageUrlStrings) {
         ArrayList<ImageUrl> imageUrls = new ArrayList<>();
         try {
-            String imagesSolrQuery = SolrQueryUtils.createQueryStringForUrls(imageUrlStrings);
+            String imagesSolrQuery = SolrUtils.createQueryStringForUrls(imageUrlStrings);
             ArrayList<ArcEntryDescriptor> imageEntries = NetarchiveSolrClient.getInstance()
                     .findImagesForTimestamp(imagesSolrQuery, crawlDate);
             imageUrls = Facade.arcEntrys2Images(imageEntries);
@@ -259,7 +259,7 @@ public class Twitter2Html {
         TweetVideoVariant bestVideo = TwitterParsingUtils.getBestBitrateVideoVariant(video);
         String bestVideoUrl = bestVideo.getUrl();
         String videoImageUrl = video.getMediaUrl();
-        String videoSolrQuery = SolrQueryUtils.createQueryStringForUrl(bestVideoUrl);
+        String videoSolrQuery = SolrUtils.createQueryStringForUrl(bestVideoUrl);
 
         String videoDownloadUrl = "";
         ArcEntryDescriptor videoSolrEntry = NetarchiveSolrClient.getInstance().findVideo(videoSolrQuery);
@@ -459,7 +459,7 @@ public class Twitter2Html {
     private static String makeMentionHtml(String mentionScreenName) {
         String searchString = "(author:" + mentionScreenName + " OR tw_user_mentions:"
                     + mentionScreenName.toLowerCase() + ")";
-        String searchUrl = SolrQueryUtils.createTwitterSearchURL(searchString);
+        String searchUrl = SolrUtils.createTwitterSearchURL(searchString);
         return "<span><a href='" + searchUrl + "'>@" + mentionScreenName + "</a></span>";
     }
 
@@ -471,7 +471,7 @@ public class Twitter2Html {
      */
     private static String makeHashtagHtml(String hashtagText) {
         String searchString = "keywords%3A" + hashtagText;
-        String searchUrl = SolrQueryUtils.createTwitterSearchURL(searchString);
+        String searchUrl = SolrUtils.createTwitterSearchURL(searchString);
         return "<span><a href='" + searchUrl + "'>#" + hashtagText + "</a></span>";
     }
 
@@ -624,7 +624,7 @@ public class Twitter2Html {
         try {
             SearchResult searchResult = Facade.search("tw_reply_to_tweet_id:" + tweetID, null);
             long resultCount = searchResult.getNumberOfResults();
-            String searchLink = SolrQueryUtils.createTwitterSearchURL("tw_reply_to_tweet_id:" + tweetID);
+            String searchLink = SolrUtils.createTwitterSearchURL("tw_reply_to_tweet_id:" + tweetID);
             if (resultCount > 0) {
                 log.info("Found replies to tweet id {}.. {}", tweetID, resultCount);
                 foundRepliesLine = "Found <a href='" + searchLink + "'>" + resultCount + "</a> replies";

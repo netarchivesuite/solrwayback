@@ -7,8 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class SolrQueryUtils {
-    public static final Logger log = LoggerFactory.getLogger(SolrQueryUtils.class);
+public class SolrUtils {
+    public static final Logger log = LoggerFactory.getLogger(SolrUtils.class);
 
     /**
      * Normalizes a given list of urls and makes a Solr search string from the result.
