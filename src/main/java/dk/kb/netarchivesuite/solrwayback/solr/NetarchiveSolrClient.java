@@ -371,34 +371,26 @@ public class NetarchiveSolrClient {
 
     }
 
-    public ArrayList<ArcEntryDescriptor> findImagesForTimestamp(String searchString, String timeStamp) throws Exception {
-        ArrayList<ArcEntryDescriptor> images = new ArrayList<>();
-
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery(searchString); // only search images
-        setSolrParams(solrQuery);
-        solrQuery.setRows(50); // get 50 images...
-
-        solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
-        solrQuery.add("group", "true");
-        solrQuery.add("group.field", "url_norm");
-        solrQuery.add("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
-        solrQuery.add("fq", "content_type_norm:image"); // only images
-        solrQuery.add("fq", SolrUtils.NO_REVISIT_FILTER); // No binary for revisits.
-        solrQuery.add("fq","image_size:[2000 TO *]"); // No small images. (fillers etc.)
-        solrQuery.add("fl", SolrUtils.indexDocFieldList);
-
-        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
-
-        if (rsp.getGroupResponse() == null) { // Pretty sure this would never happen - an exception would be thrown
-            // log.warn("No response received for search: " + searchString);
-            return images;
-        }
-
-        List<Group> values = rsp.getGroupResponse().getValues().get(0).getValues(); // Empty if no images found
-        return values.stream().
-                map(g -> g.getResult().get(0)). // First group value
-                map(SolrUtils::solrDocument2ArcEntryDescriptor). // SolrDoc -> arcEntry
+    /**
+     * Find images matching the given searchString, deduplicating on {@code url_norm} and prioritizing versions
+     * closest to the given timestamp.
+     * @param searchString Solr search String (aka query).
+     * @param timeStamp ISO-timestamp, Solr style: {@code 2011-10-14T14:44:00Z}.
+     * @return ArcEntry representation of the matching images.
+     */
+    public ArrayList<ArcEntryDescriptor> findImagesForTimestamp(String searchString, String timeStamp) {
+        return SolrGenericStreaming.create(
+                        SolrGenericStreaming.SRequest.builder().
+                                query(searchString).
+                                filterQueries("content_type_norm:image",   // only images
+                                              SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
+                                              "image_size:[2000 TO *]").   // No small images. (fillers etc.)
+                                fields(SolrUtils.indexDocFieldList).
+                                timeProximityDeduplication(timeStamp, "url_norm").
+                                maxResults(50)
+                ).
+                stream().
+                map(SolrUtils::solrDocument2ArcEntryDescriptor).
                 collect(Collectors.toCollection(ArrayList::new));
     }
 
