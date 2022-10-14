@@ -31,10 +31,54 @@ import static org.apache.commons.lang3.StringUtils.join;
 
 // TODO: Add support for redirects; needs to work with expandResources
 // TODO: Add support for revisits; needs (W)ARC lookup and needs to work with expandResources
-// TODO: Make graph traversal of JavaScript & CSS-includes with expandResources
+// TODO: Add optional graph traversal of JavaScript & CSS-includes with expandResources
 
 /**
  * Cursormark based chunking search client allowing for arbitrary sized result sets.
+ *
+ * Use this by creating a {@link SRequest} and calling {@link #create(SRequest)}.
+ *
+ * Results can be retrieved in chunks with {@link #nextDocuments()}, one at a time with {@link #iterator()} or
+ * streaming with {@link #stream()}.
+ *
+ *
+ * Sample calls below.
+ *
+ * Extract {@code id} for all documents matching a simple query
+ * <pre>
+ * List<String> ids = SolrGenericStreaming.create(
+ *                 SolrGenericStreaming.SRequest.builder().
+ *                         query("kittens").
+ *                         fields("id")).
+ *         stream().
+ *         map(d -> d.getFieldValue("id").toString()).
+ *         collect(Collectors.toList());
+ * </pre>
+ *
+ * Get all source-path and offsets for images matching the query {@code kittens}, with de-duplication on {@code url}
+ * and with the images closest to the time {@code 2019-04-15T12:31:51Z}:
+ * <pre>
+ * SolrGenericStreaming.create(SolrGenericStreaming.SRequest.builder().
+ *     query("kitten").
+ *     filterQueries("content_type_norm:image").
+ *     fields("source_file_path", "source_file_offset").
+ *     timeProximityDeduplication("2019-04-15T12:31:51Z", "url"))...
+ * </pre>
+ *
+ * Get all url_norms, source-paths and offsets for all pages about {@code kittens}, including embedded images,
+ * JavaScript and CSS.
+ * With de-duplication on page {@code url} and with the pages closest to the time {@code 2019-04-15T12:31:51Z}.
+ * Furthermore ensure that all resources are unique. Note: The requirement for uniqueness imposes memory overhead and
+ * a limit in result size.
+ * <pre>
+ *     SolrGenericStreaming.create(SolrGenericStreaming.SRequest.builder().
+ *         query("kitten").
+ *         filterQueries("content_type_norm:html").
+ *         fields("url_norm", "source_file_path", "source_file_offset").
+ *         timeProximityDeduplication("2019-04-15T12:31:51Z", "url").
+ *         expandResources(true).
+ *         ensureUnique(true))...
+ * </pre>
  */
 public class SolrGenericStreaming implements Iterable<SolrDocument> {
   private static final Logger log = LoggerFactory.getLogger(SolrGenericStreaming.class);

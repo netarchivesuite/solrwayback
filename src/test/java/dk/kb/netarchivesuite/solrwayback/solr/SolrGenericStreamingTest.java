@@ -90,6 +90,22 @@ public class SolrGenericStreamingTest {
     }
 
     @Test
+    public void getIDsStreaming() {
+        log.debug("Extract IDs");
+        List<String> ids = SolrGenericStreaming.create(
+                        SolrGenericStreaming.SRequest.builder().
+                                query("title:title_5").
+                                fields("id")).
+                stream().
+                map(d -> d.getFieldValue("id").toString()).
+                collect(Collectors.toList());
+        assertFalse("Basic streaming should return some ids", ids.isEmpty());
+    }
+
+    /**
+     * De-duplicate the stream on field {@code url} and get the records closest to the time {@coe 2019-04-15T12:31:51Z}.
+     */
+    @Test
     public void timeProximity() {
         List<SolrDocument> docs = SolrGenericStreaming.create(
                         SolrGenericStreaming.SRequest.builder().
@@ -104,6 +120,11 @@ public class SolrGenericStreamingTest {
                      "Fri Mar 15 13:31:51 CET 2019", doc.get("crawl_date").toString());
     }
 
+    /**
+     * De-duplicate the stream on field {@code url} and get the records closest to the time {@coe 2019-04-15T12:31:51Z}.
+     *
+     * Differs from {@link #timeProximity()} by having more than 1 result.
+     */
     @Test
     public void timeProximityMulti() {
         List<SolrDocument> docs = SolrGenericStreaming.create(
@@ -123,6 +144,26 @@ public class SolrGenericStreamingTest {
                    dates.size() > 1);
     }
 
+    /*
+    // Disabled as expandResources can only be tested by requesting WARC entries
+    @Test
+    public void exportPages() {
+        List<SolrDocument> docs = SolrGenericStreaming.create(
+                        SolrGenericStreaming.SRequest.builder().
+                                query("kitten").
+                                filterQueries("content_type_norm:html").
+                                fields("url_norm", "source_file_path", "source_file_offset").
+                                timeProximityDeduplication("2019-04-15T12:31:51Z", "url").
+                                expandResources(true).
+                                ensureUnique(true)).
+
+                stream().
+                collect(Collectors.toList());
+    } *(
+
+    /**
+     * Specify maximum results from streaming.
+     */
     @Test
     public void testLimit() {
         assertEquals("Limiting maxResults should return the desired max number of documents",
@@ -137,6 +178,9 @@ public class SolrGenericStreamingTest {
                              stream().count());
     }
 
+    /**
+     * Flatten record with multi-value field to single-value by producing multiple single-field records.
+     */
     @Test
     public void testFlatten() {
         SolrDocument multi = new SolrDocument();
@@ -157,6 +201,9 @@ public class SolrGenericStreamingTest {
                      "zoo", singles.get(1).getFieldValue("m"));
     }
 
+    /**
+     * Export records with a field ({@code links} that is multi-value.
+     */
     @Test
     public void linksExportMulti() {
         List<SolrDocument> docs = SolrGenericStreaming.create(SolrGenericStreaming.SRequest.builder().
@@ -169,6 +216,10 @@ public class SolrGenericStreamingTest {
         }
     }
 
+    /**
+     * Export records with a field ({@code links} that is multi-value, but convert the field to single-value by
+     * adding extra records.
+     */
     @Test
     public void linksExportSingle() {
         List<SolrDocument> docs = SolrGenericStreaming.create(SolrGenericStreaming.SRequest.builder().
