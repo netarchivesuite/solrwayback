@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -117,5 +123,16 @@ public class JsonUtils {
 	// foo | foo[] -> foo
 	private static String elementName(String element) {
 		return element.endsWith("[]") ? element.substring(0, element.length() - 2) : element;
+	}
+
+	public static String toJSON(Object o) {
+		ObjectMapper mapper = JsonMapper.builder().build();
+		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+		ObjectWriter jsonWriter = mapper.writer(new MinimalPrettyPrinter());
+		try {
+			return jsonWriter.writeValueAsString(o);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException("Unable to write Object of class " + o.getClass() + " as JSON", e);
+		}
 	}
 }

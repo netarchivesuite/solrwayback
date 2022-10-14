@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.IDN;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -15,7 +16,10 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import javax.ws.rs.QueryParam;
 
+import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
+import dk.kb.netarchivesuite.solrwayback.util.StreamBridge;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -480,6 +484,39 @@ public class Facade {
 
         SolrStreamingExportClient solr = SolrStreamingExportClient.createCvsExporter(null, q, fields, fq);
         return new StreamingSolrExportBufferedInputStream(solr, PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
+    }
+
+    /**
+     * Export the search result for the given query and filterQuery in the form of JSON-Lines with content for
+     * the requested fields.
+     * @param query         a Solr query.
+     * @param filterQueries optional Solr filter queries.
+     * @param fields        comma separated list of fields to export.
+     * @return an InputStream delivering the result.
+     * @throws InvalidArgumentServiceException if the request was invalid.
+     * @throws IOException if something went wrong during search or delivery.
+     * @throws SolrServerException if the number of matches could not be requested from Solr.
+     */
+    public static InputStream exportJSONStreaming(String fields, String query, String... filterQueries) throws
+            IOException, InvalidArgumentServiceException, SolrServerException {
+        // TODO check that only allowed fields are selected!
+
+        //Check size
+        long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
+        if (results > PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS) {
+            throw new InvalidArgumentServiceException("Number of results for json/csv export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
+        }
+
+        SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+                query(query).
+                filterQueries(filterQueries).
+                fields(fields.split(", *"));
+
+        return StreamBridge.outputToInputSafe(out -> {
+            SolrGenericStreaming.create(request).stream().
+                    map(JsonUtils::toJSON).
+                    forEach(out::writeln);
+        });
     }
 
     public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing, String dateStart, String dateEnd) throws Exception {

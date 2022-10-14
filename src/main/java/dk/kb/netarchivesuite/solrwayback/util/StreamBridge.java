@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.*;
@@ -55,6 +56,27 @@ public class StreamBridge {
      */
     public static InputStream outputToInput(Consumer<OutputStream> provider) throws IOException {
         return outputToInput(Collections.singletonList(provider));
+    }
+
+    /**
+     * A "safe" version of {@link #outputToInput(Consumer)} where all OutputStream Exceptions are caught and rethrown
+     * as RuntimeExceptions. Intended for Stream-oriented processing.
+     *
+     * The provider is responsible for adding content to the provided OutputStream. The added content will be available
+     * in the form of the returned InputStream.
+     *
+     * The provider will be called inside of a Thread and the coupling of the OutputStream and the InputStream will be
+     * buffer-based, so there is low memory overhead, no matter how much content is produced.
+     *
+     * The stream will be automatically closed after the producer has finished processing.
+     *
+     * Important: This method uses a thread from {@link #executor}. Do not make thousands of call to this method without
+     * ensuring that the InputStreams from previous calls has been depleted.
+     * @param provider the provider of the bytes to pipe to the returned InputStream.
+     * @return an InputStream which will be populated with data from the provider.
+     */
+    public static InputStream outputToInputSafe(Consumer<SafeOutputStream> provider) throws IOException {
+        return outputToInputSafe(Collections.singletonList(provider));
     }
 
     /**
@@ -104,6 +126,56 @@ public class StreamBridge {
     }
 
     /**
+     * A "safe" version of {@link #outputToInput(Consumer)} where all OutputStream Exceptions are caught and rethrown
+     * as RuntimeExceptions. Intended for Stream-oriented processing.
+     *
+     * The providers are responsible for adding content to the provided OutputStream. The added content will be
+     * available in the form of the returned InputStream.
+     *
+     * The providers will be called inside of a Thread and the coupling of the OutputStream and the InputStream will be
+     * buffer-based, so there is low memory overhead, no matter how much content is produced.
+     *
+     * The stream will be automatically closed after the producer has finished processing or if processing fails.
+     *
+     * Important: This method uses a thread from {@link #executor}. Do not make thousands of call to this method without
+     * ensuring that the InputStreams from previous calls has been depleted. The number of providers in a single call
+     * has no limit per se.
+     * @param providers the providers of the bytes to pipe to the returned InputStream.
+     * @return an InputStream which will be populated with data from the provider.
+     */
+    public static InputStream outputToInputSafe(Collection<Consumer<SafeOutputStream>> providers) throws IOException {
+        PipedOutputStream out = new PipedOutputStream();
+        PipedInputStream in = new PipedInputStream(out);
+
+        List<Consumer<SafeOutputStream>> providerList = new ArrayList<>(providers);
+        OutputStream noCloseOut = new NonClosingOutputStream(out); // The sub-streams are concatenated
+        SafeOutputStream safeOut = new SafeOutputStream(noCloseOut);
+
+        // Iterate all providers, sending their content to the piped stream
+        // If a provider fails, the Exception is logged and processing continues with the next provider
+        executor.submit(() -> {
+            for (int i = 0 ; i < providerList.size() ; i++) {
+                try {
+                    providerList.get(i).accept(safeOut);
+                } catch (Exception e) {
+                    log.warn(String.format(
+                            Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d. " +
+                                            "Switching to next sub-provider",
+                            i+1, providerList.size()), e);
+                }
+            }
+            //providers.forEach(provider -> provider.accept(noCloseOut));
+            try {
+                out.flush();
+                out.close();
+            } catch (IOException e) {
+                log.error("IOException closing piped stream", e);
+            }
+        });
+        return in;
+    }
+
+    /**
      * Wrapper for an Outputstream that ignores calls to {@link OutputStream#close()}.
      * Used for ensuring that sub-providers in a list of providers does not close the overall OutputStream.
      */
@@ -115,6 +187,82 @@ public class StreamBridge {
         @Override
         public void close() throws IOException {
             // no-op
+        }
+    }
+
+    /**
+     * Wrapper for an OutputStream where all exceptions are catched and rethrown as RuntimeExceptions.
+     *
+     * Intended for use with Streams.
+     */
+    public static class SafeOutputStream extends OutputStream {
+        final OutputStream inner;
+
+        public SafeOutputStream(OutputStream inner) {
+            this.inner = inner;
+        }
+
+        /**
+         * Convenience method for writing the given String s as UTF-8 bytes.
+         * @param s any String.
+         */
+        public void write(String s) {
+            write(s.getBytes(StandardCharsets.UTF_8));
+        }
+
+        /**
+         * Convenience method for writing the given String s as UTF-8 bytes followed by newline {@code \n}.
+         * @param s any String.
+         */
+        public void writeln(String s) {
+            write(s.getBytes(StandardCharsets.UTF_8));
+            write(LN);
+        }
+        private static final byte[] LN = "\n".getBytes(StandardCharsets.UTF_8);
+
+        @Override
+        public void write(int b) {
+            try {
+                inner.write(b);
+            } catch (IOException e) {
+                throw new RuntimeException("IOException while writing integer " + b, e);
+            }
+        }
+
+        @Override
+        public void write(byte[] b) {
+            try {
+                inner.write(b);
+            } catch (IOException e) {
+                throw new RuntimeException("IOException while writing byte array", e);
+            }
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) {
+            try {
+                inner.write(b, off, len);
+            } catch (IOException e) {
+                throw new RuntimeException("IOException while writing byte array", e);
+            }
+        }
+
+        @Override
+        public void flush() {
+            try {
+                inner.flush();
+            } catch (IOException e) {
+                throw new RuntimeException("IOException while calling flush()", e);
+            }
+        }
+
+        @Override
+        public void close() {
+            try {
+                inner.close();
+            } catch (IOException e) {
+                throw new RuntimeException("IOException while calling close()", e);
+            }
         }
     }
 

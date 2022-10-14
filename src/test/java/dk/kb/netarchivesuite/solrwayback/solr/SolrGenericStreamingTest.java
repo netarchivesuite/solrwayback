@@ -14,7 +14,10 @@
  */
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
+import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -253,6 +256,24 @@ public class SolrGenericStreamingTest {
             assertEquals("The 'links' field should only contain a single value",
                          1, doc.getFieldValues("links").size());
         }
+    }
+
+    /**
+     * Quite misplaced as it tests a {@link Facade} method. TODO: Consider creating a Facade test class.
+     */
+    @Test
+    public void testFacadeJSONExport() throws SolrServerException, InvalidArgumentServiceException, IOException {
+        List<String> jsons = IOUtils.readLines(
+                Facade.exportJSONStreaming("url, links", "title:title_5"),
+                "utf-8");
+        assertEquals("The right number of lines should be returned", 10, jsons.size());
+        for (String line: jsons) {
+            assertTrue("All lines should start with '{'. Problematic line: '" + line + "'",
+                       line.startsWith("{"));
+        }
+        assertEquals("The first line should be as expected",
+                     "{\"url\":\"htts://example.COM/5\",\"links\":[\"http://example.com/everywhere\",\"http://example.com/mod10_5\"]}",
+                     jsons.get(0));
     }
 
     private static void fillSolr() throws SolrServerException, IOException {

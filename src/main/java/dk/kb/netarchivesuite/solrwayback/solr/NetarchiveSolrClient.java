@@ -454,12 +454,12 @@ public class NetarchiveSolrClient {
     /*
      * Fast solr method that counts number of results
      */
-    public long countResults(String query, String[] filterQuery) throws Exception {
+    public long countResults(String query, String... filterQueries) throws SolrServerException, IOException {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery = new SolrQuery(query);
         solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
         solrQuery.add("fl", "id");
-        solrQuery.setFilterQueries(filterQuery);
+        solrQuery.setFilterQueries(filterQueries);
         solrQuery.setRows(0);
         setSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
