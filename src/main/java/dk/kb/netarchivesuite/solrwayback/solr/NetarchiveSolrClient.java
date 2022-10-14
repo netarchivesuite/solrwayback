@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrClient;
@@ -395,23 +396,10 @@ public class NetarchiveSolrClient {
         }
 
         List<Group> values = rsp.getGroupResponse().getValues().get(0).getValues(); // Empty if no images found
-        for (Group current : values) {
-            SolrDocumentList docs = current.getResult();
-            ArrayList<IndexDoc> groupDocs = SolrUtils.solrDocList2IndexDoc(docs);
-            String source_file_path = groupDocs.get(0).getSource_file_path();
-            ArcEntryDescriptor desc = new ArcEntryDescriptor();
-            desc.setUrl(groupDocs.get(0).getUrl());
-            desc.setUrl_norm(groupDocs.get(0).getUrl_norm());
-            desc.setSource_file_path(source_file_path);
-            desc.setHash(groupDocs.get(0).getHash());
-            desc.setOffset(groupDocs.get(0).getOffset());
-            desc.setContent_type(groupDocs.get(0).getMimeType());
-
-            images.add(desc);
-        }
-
-        // log.info("resolve images:" + searchString + " found:" + images.size());
-        return images;
+        return values.stream().
+                map(g -> g.getResult().get(0)). // First group value
+                map(SolrUtils::solrDocument2ArcEntryDescriptor). // SolrDoc -> arcEntry
+                collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -437,19 +425,7 @@ public class NetarchiveSolrClient {
         if (queryResults.getNumFound() == 0) {
             return null;
         } else {
-            ArcEntryDescriptor videoDescriptor = new ArcEntryDescriptor();
-
-            SolrDocument solrDoc = queryResults.get(0);
-            IndexDoc indexDoc = SolrUtils.solrDocument2IndexDoc(solrDoc);
-
-            videoDescriptor.setUrl(indexDoc.getUrl());
-            videoDescriptor.setUrl_norm(indexDoc.getUrl_norm());
-            videoDescriptor.setSource_file_path(indexDoc.getSource_file_path());
-            videoDescriptor.setHash(indexDoc.getHash());
-            videoDescriptor.setOffset(indexDoc.getOffset());
-            videoDescriptor.setContent_type(indexDoc.getMimeType());
-
-            return videoDescriptor;
+            return SolrUtils.solrDocument2ArcEntryDescriptor(queryResults.get(0));
         }
     }
 

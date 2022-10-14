@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
@@ -166,5 +167,33 @@ public class SolrUtils {
         Date date = (Date) doc.get("crawl_date");
         indexDoc.setCrawlDate(DateUtils.getSolrDate(date));
         return indexDoc;
+    }
+
+    /**
+     * Convert the given {@link SolrDocument} to an {@link ArcEntryDescriptor}.
+     * @param solrDoc a Solr document with {@code url}, {@code url_norm}, {@code source_file_path},
+     * {@code source_file_offset}, {@code hash} and {@code content_type} defined.
+     * @return an ARC entry descriptor.
+     */
+    public static ArcEntryDescriptor solrDocument2ArcEntryDescriptor(SolrDocument solrDoc) {
+        return indexDoc2ArcEntryDescriptor(solrDocument2IndexDoc(solrDoc));
+    }
+
+    /**
+     * Convert the given {@link IndexDoc} to an {@link ArcEntryDescriptor}.
+     * @param indexDoc a document with {@link IndexDoc#getUrl()}, {@link IndexDoc#getUrl_norm()},
+     * {@link IndexDoc#getSource_file_path()}, {@link IndexDoc#getOffset()}, {@link IndexDoc#getHash()} and
+     * {@link IndexDoc#getMimeType()} returning usable values.
+     * @return an ARC entry descriptor.
+     */
+    public static ArcEntryDescriptor indexDoc2ArcEntryDescriptor(IndexDoc indexDoc) {
+        ArcEntryDescriptor desc = new ArcEntryDescriptor();
+        desc.setUrl(indexDoc.getUrl());
+        desc.setUrl_norm(indexDoc.getUrl_norm());
+        desc.setSource_file_path(indexDoc.getSource_file_path());
+        desc.setHash(indexDoc.getHash());
+        desc.setOffset(indexDoc.getOffset());
+        desc.setContent_type(indexDoc.getMimeType());
+        return desc;
     }
 }
