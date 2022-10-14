@@ -6,7 +6,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -673,52 +672,16 @@ public class NetarchiveSolrClient {
         return docs.getNumFound();
     }
 
-    public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrlsFullFields(Collection<String> urls, String timeStamp) throws Exception {
-        ArrayList<IndexDoc> allDocs = new ArrayList<IndexDoc>();
-        Iterable<List<String>> splitSets = Iterables.partition(urls, 1000); // split into sets of size max 1000;
-        for (List<String> set : splitSets) {
-            HashSet<String> urlPartSet = new HashSet<String>();
-            urlPartSet.addAll(set);
-            List<IndexDoc> partIndexDocs = findNearestHarvestTimeForMultipleUrlsMax1000(urlPartSet, timeStamp);
-            allDocs.addAll(partIndexDocs);
-        }
-        return allDocs;
+    public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrlsFullFields(Collection<String> urls, String timeStamp) {
+        return findNearestDocuments(urls, timeStamp, SolrUtils.indexDocFieldList).stream().
+                map(SolrUtils::solrDocument2IndexDoc).
+                collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public ArrayList<IndexDocShort> findNearestHarvestTimeForMultipleUrlsFewFields(Collection<String> urls, String timeStamp) throws Exception {
-        ArrayList<IndexDocShort> allDocs = new ArrayList<IndexDocShort>();
-        Iterable<List<String>> splitSets = Iterables.partition(urls, 1000); // split into sets of size max 1000;
-        for (List<String> set : splitSets) {
-            HashSet<String> urlPartSet = new HashSet<String>();
-            urlPartSet.addAll(set);
-            List<IndexDocShort> partIndexDocs = findNearestHarvestTimeForMultipleUrlsMax1000Short(urlPartSet, timeStamp);
-            allDocs.addAll(partIndexDocs);
-        }
-        return allDocs;
-    }
-
-    private List<IndexDocShort> findNearestHarvestTimeForMultipleUrlsMax1000Short(HashSet<String> urls, String timeStamp) throws Exception {
-        SolrDocumentList docs = findNearestDocuments(urls, timeStamp, SolrUtils.indexDocFieldListShort);
-
-        ArrayList<IndexDocShort> allDocs = new ArrayList<IndexDocShort>(docs.size());
-        for (SolrDocument current : docs) {
-            IndexDocShort groupDoc = SolrUtils.solrDocument2IndexDocShort(current);
-            allDocs.add(groupDoc);
-        }
-
-        return allDocs;
-    }
-
-    private List<IndexDoc> findNearestHarvestTimeForMultipleUrlsMax1000(HashSet<String> urls, String timeStamp) throws Exception {
-        SolrDocumentList docs = findNearestDocuments(urls, timeStamp, SolrUtils.indexDocFieldList);
-
-        ArrayList<IndexDoc> allDocs = new ArrayList<IndexDoc>(docs.size());
-        for (SolrDocument current : docs) {
-            IndexDoc groupDoc = SolrUtils.solrDocument2IndexDoc(current);
-            allDocs.add(groupDoc);
-        }
-
-        return allDocs;
+    public ArrayList<IndexDocShort> findNearestHarvestTimeForMultipleUrlsFewFields(Collection<String> urls, String timeStamp){
+        return findNearestDocuments(urls, timeStamp, SolrUtils.indexDocFieldListShort).stream().
+                map(SolrUtils::solrDocument2IndexDocShort).
+                collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -738,7 +701,6 @@ public class NetarchiveSolrClient {
         SolrGenericStreaming.SRequest baseRequest = SolrGenericStreaming.SRequest.builder().
                 filterQueries(SolrUtils.NO_REVISIT_FILTER). // No binary for revists
                 fields(fieldList).
-                pageSize(chunkSize). // Optimization
                 timeProximityDeduplication(timeStamp, "url_norm");
 
         Stream<String> urlQueries = urls.stream().
@@ -748,8 +710,7 @@ public class NetarchiveSolrClient {
                 map(url -> "url_norm:" + url);
 
         SolrGenericStreaming.multiQuery(baseRequest, urlQueries, chunkSize).
-                map(SolrGenericStreaming::streamList).
-                flatMap(Function.identity()).
+                flatMap(SolrGenericStreaming::streamList).
                 forEach(docList -> mergeInto(allDocs, docList));
 
         totalNS += System.nanoTime();
