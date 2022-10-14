@@ -1,6 +1,7 @@
 process.env.VUE_APP_VERSION = process.env.NODE_ENV === 'production' ? require('./package.json').version : 'DEVELOPMENT BUILD'
 module.exports = {
   devServer: {
+    historyApiFallback: true,
     proxy: {
     '^/services/frontend/solr/': {
         target: 'http://localhost:8080/solrwayback/services/frontend/solr/',

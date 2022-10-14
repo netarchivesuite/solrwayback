@@ -15,9 +15,10 @@
     "date-fns": "^1.28.5",
     "leaflet": "^1.7.1",
     "leaflet.markercluster": "^1.4.1",
-    "vue": "^2.6.11",
+    "video.js": "7.20.3",
+    "vue": "^2.7.10",
     "vue-chartjs": "^3.5.1",
-    "vue-router": "^3.2.0",
+    "vue-router": "^3.6.5",
     "vue-slider-component": "^3.2.10",
     "vuex": "^3.4.0"
   },
@@ -40,7 +41,6 @@
     "prettier": "^1.19.1",
     "sass-loader": "^10",
     "v-tooltip": "^1.1.6",
-    "video.js": "^7.15.2",
     "vue-template-compiler": "^2.6.11"
   }
 }
