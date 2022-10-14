@@ -337,7 +337,41 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   }
 
   /**
+   * Stream the Solr response one document list at a time.
+   * @return a stream of lists of SolrDocuments.
+   */
+  public Stream<SolrDocumentList> streamList() {
+    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iteratorList(), 0), false);
+  }
+
+  /**
+   * @return an iterator of SolrDocumentLists.
+   */
+  public Iterator<SolrDocumentList> iteratorList() {
+    return new Iterator<SolrDocumentList>() {
+      @Override
+      public boolean hasNext() {
+        return !hasFinished();
+      }
+
+      @Override
+      public SolrDocumentList next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException("No more elements");
+        }
+        try {
+          return nextDocuments();
+        } catch (Exception e) {
+          throw new RuntimeException("Exception requesting next document list", e);
+        }
+      }
+    };
+
+  }
+
+  /**
    * @return at least 1 and at most {@link SRequest#pageSize} documents or null if there are no more documents.
+   *         Call {@link #hasFinished()} to see if more document lists are available.
    * @throws SolrServerException if Solr could not handle a request for new documents.
    * @throws IOException if general communication with Solr failed.
    */

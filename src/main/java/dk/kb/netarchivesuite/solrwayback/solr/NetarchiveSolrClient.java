@@ -6,8 +6,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
@@ -732,40 +734,29 @@ public class NetarchiveSolrClient {
         final int chunkSize = 1000;
 
         SolrDocumentList allDocs = new SolrDocumentList();
-        CollectionUtils.splitToLists(urls.stream(), chunkSize). // Split into batches of max 1000 URLs
-                map(batch -> urlQueryJoin("url_norm", "OR", batch)). // 1 big OR query with each URL batch
-                map(q -> findNearest(q, timeStamp, fieldList, chunkSize)).
-                forEach(batchResult -> mergeInto(allDocs, batchResult));
+
+        SolrGenericStreaming.SRequest baseRequest = SolrGenericStreaming.SRequest.builder().
+                filterQueries(SolrUtils.NO_REVISIT_FILTER). // No binary for revists
+                fields(fieldList).
+                pageSize(chunkSize). // Optimization
+                timeProximityDeduplication(timeStamp, "url_norm");
+
+        Stream<String> urlQueries = urls.stream().
+                filter(url -> !url.startsWith("data:")).
+                map(NetarchiveSolrClient::normalizeUrl).
+                map(NetarchiveSolrClient::createPhrase).
+                map(url -> "url_norm:" + url);
+
+        SolrGenericStreaming.multiQuery(baseRequest, urlQueries, chunkSize).
+                map(SolrGenericStreaming::streamList).
+                flatMap(Function.identity()).
+                forEach(docList -> mergeInto(allDocs, docList));
 
         totalNS += System.nanoTime();
         log.info(String.format(
                 Locale.ROOT, "findNearestDocuments(#urls=%d, timestamp='%s', ...) found %d harvested URLs in %d ms",
                 urls.size(), timeStamp, allDocs.size(), totalNS / M));
         return allDocs;
-    }
-
-    /**
-     * Helper for {@link #findNearestDocuments(Collection, String, String)} responsible for issuing a single batch
-     * request with deduplication on {@code url_norm} and time proximity prioritization.
-     * @param query a single query.
-     * @param timeStamp ISO-timestamp, Solr style: {@code 2011-10-14T14:44:00Z}.
-     * @param fieldList the fields to return.
-     * @param chunkSize the expected size of the result set. Should be equal to the number of URLs in the query.
-     * @return the documents matching the query, deduplicated on {@code url_norm}.
-     */
-    private SolrDocumentList findNearest(String query, String timeStamp, String fieldList, int chunkSize) {
-        try {
-            return SolrGenericStreaming.create(
-                    SolrGenericStreaming.SRequest.builder().
-                            query(query).
-                            filterQueries(SolrUtils.NO_REVISIT_FILTER). // No binary for revists
-                            fields(fieldList).
-                            pageSize(chunkSize). // Optimization
-                            timeProximityDeduplication(timeStamp, "url_norm")
-            ).nextDocuments();
-        } catch (Exception e) {
-            throw new RuntimeException("Exception requesting nextDocuments", e);
-        }
     }
 
     public static void mergeInto(SolrDocumentList main, SolrDocumentList additional) {
@@ -825,7 +816,7 @@ public class NetarchiveSolrClient {
       * @param phrase any phrase.
       * @return the phrase quoted and escaped.
       */
-     private String createPhrase(String phrase) {
+     private static String createPhrase(String phrase) {
          return "\"" + phrase.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
      }
 
