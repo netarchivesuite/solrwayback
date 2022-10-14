@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
 
 public class SolrUtils {
     public static final Logger log = LoggerFactory.getLogger(SolrUtils.class);
+    public static String NO_REVISIT_FILTER ="record_type:response OR record_type:arc OR record_type:resource";
+    public static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_full,content_type_norm,hash,type,crawl_date,content_encoding,exif_location,status_code,last_modified,redirect_to_norm";
+    public static String indexDocFieldListShort = "url,url_norm,source_file_path,source_file,source_file_offset,crawl_date";
 
     /**
      * Normalizes a given list of urls and makes a Solr search string from the result.
