@@ -32,6 +32,7 @@ import static org.apache.commons.lang3.StringUtils.join;
 // TODO: Add support for redirects; needs to work with expandResources
 // TODO: Add support for revisits; needs (W)ARC lookup and needs to work with expandResources
 // TODO: Add optional graph traversal of JavaScript & CSS-includes with expandResources
+// TODO: Avoid extra paging request by looking at numFound and counting received documents
 
 /**
  * Cursormark based chunking search client allowing for arbitrary sized result sets.

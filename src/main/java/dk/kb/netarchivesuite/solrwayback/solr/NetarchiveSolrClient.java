@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -718,46 +719,53 @@ public class NetarchiveSolrClient {
         return allDocs;
     }
 
-    public SolrDocumentList findNearestDocuments(HashSet<String> urls, String timeStamp, String fieldList) throws SolrServerException, Exception {
+    /**
+     * Perform searches for all given URLs, deduplicating on {@code url_norm} and prioritizing those closest to the
+     * given timestamp. The only practical limit of the number of URLs is the memory to hold the search result.
+     * @param urls 0 or more URLs, which will be normalised and searched with {@code url_norm:"normalized_url"}.
+     * @param timeStamp ISO-timestamp, Solr style: {@code 2011-10-14T14:44:00Z}.
+     * @param fieldList the fields to return.
+     * @return the documents with the given URLs.
+     */
+    public SolrDocumentList findNearestDocuments(Collection<String> urls, String timeStamp, String fieldList) {
+        long totalNS = -System.nanoTime();
         final int chunkSize = 1000;
 
-        if (urls.size() > chunkSize) {
-            SolrDocumentList allDocs = new SolrDocumentList();
-            Iterable<List<String>> splitSets = Iterables.partition(urls, chunkSize); // split into sets of size max chunkSize;
-            for (List<String> chunk : splitSets) {
-                SolrDocumentList chunkDocs = findNearestDocuments(new HashSet<>(chunk), timeStamp, fieldList);
-                mergeInto(allDocs, chunkDocs);
-                // What is allDocs.start and should we care?
-            }
-            return allDocs;
+        SolrDocumentList allDocs = new SolrDocumentList();
+        CollectionUtils.splitToLists(urls.stream(), chunkSize). // Split into batches of max 1000 URLs
+                map(batch -> urlQueryJoin("url_norm", "OR", batch)). // 1 big OR query with each URL batch
+                map(q -> findNearest(q, timeStamp, fieldList, chunkSize)).
+                forEach(batchResult -> mergeInto(allDocs, batchResult));
+
+        totalNS += System.nanoTime();
+        log.info(String.format(
+                Locale.ROOT, "findNearestDocuments(#urls=%d, timestamp='%s', ...) found %d harvested URLs in %d ms",
+                urls.size(), timeStamp, allDocs.size(), totalNS / M));
+        return allDocs;
+    }
+
+    /**
+     * Helper for {@link #findNearestDocuments(Collection, String, String)} responsible for issuing a single batch
+     * request with deduplication on {@code url_norm} and time proximity prioritization.
+     * @param query a single query.
+     * @param timeStamp ISO-timestamp, Solr style: {@code 2011-10-14T14:44:00Z}.
+     * @param fieldList the fields to return.
+     * @param chunkSize the expected size of the result set. Should be equal to the number of URLs in the query.
+     * @return the documents matching the query, deduplicated on {@code url_norm}.
+     */
+    private SolrDocumentList findNearest(String query, String timeStamp, String fieldList, int chunkSize) {
+        try {
+            return SolrGenericStreaming.create(
+                    SolrGenericStreaming.SRequest.builder().
+                            query(query).
+                            filterQueries(SolrUtils.NO_REVISIT_FILTER). // No binary for revists
+                            fields(fieldList).
+                            pageSize(chunkSize). // Optimization
+                            timeProximityDeduplication(timeStamp, "url_norm")
+            ).nextDocuments();
+        } catch (Exception e) {
+            throw new RuntimeException("Exception requesting nextDocuments", e);
         }
-
-        SolrQuery solrQuery = new SolrQuery();
-
-        String urlOrQuery = urlQueryJoin("url_norm", "OR", urls);
-        urlOrQuery = urlOrQuery.replace("\\", "\\\\"); // Solr encode
-        solrQuery.setQuery(urlOrQuery);
-
-        solrQuery.setFacet(false);
-        solrQuery.setGetFieldStatistics(false);
-        solrQuery.setRows(urls.size());
-        solrQuery.set("group", "true");
-        solrQuery.set("group.field", "url_norm");
-        solrQuery.set("group.limit", "1");
-        solrQuery.set("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
-        solrQuery.add("fl", fieldList);
-
-        solrQuery.setFilterQueries(SolrUtils.NO_REVISIT_FILTER); // No binary for revists.
-
-        long solrNS = -System.nanoTime();
-        setSolrParams(solrQuery);
-        QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not use cache
-        solrNS += System.nanoTime();
-
-        SolrDocumentList docs = groupsToDoc(rsp);
-        log.info(String.format("findNearestDocuments number URLS in search:%d, number of harvested url found:%d, time:%d ms (qtime=%d ms)", urls.size(),
-                docs.size(), solrNS / M, rsp.getQTime()));
-        return docs;
     }
 
     public static void mergeInto(SolrDocumentList main, SolrDocumentList additional) {
