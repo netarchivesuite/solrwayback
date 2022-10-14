@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 
@@ -400,7 +401,7 @@ public class NetarchiveSolrClient {
         List<Group> values = rsp.getGroupResponse().getValues().get(0).getValues(); // Empty if no images found
         for (Group current : values) {
             SolrDocumentList docs = current.getResult();
-            ArrayList<IndexDoc> groupDocs = solrDocList2IndexDoc(docs);
+            ArrayList<IndexDoc> groupDocs = SolrUtils.solrDocList2IndexDoc(docs);
             String source_file_path = groupDocs.get(0).getSource_file_path();
             ArcEntryDescriptor desc = new ArcEntryDescriptor();
             desc.setUrl(groupDocs.get(0).getUrl());
@@ -443,7 +444,7 @@ public class NetarchiveSolrClient {
             ArcEntryDescriptor videoDescriptor = new ArcEntryDescriptor();
 
             SolrDocument solrDoc = queryResults.get(0);
-            IndexDoc indexDoc = solrDocument2IndexDoc(solrDoc);
+            IndexDoc indexDoc = SolrUtils.solrDocument2IndexDoc(solrDoc);
 
             videoDescriptor.setUrl(indexDoc.getUrl());
             videoDescriptor.setUrl_norm(indexDoc.getUrl_norm());
@@ -545,7 +546,7 @@ public class NetarchiveSolrClient {
         setSolrParams(solrQuery);
         SolrDocumentList docs = rsp.getResults();
 
-        ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
+        ArrayList<IndexDoc> indexDocs = SolrUtils.solrDocList2IndexDoc(docs);
         return indexDocs;
     }
 
@@ -604,7 +605,7 @@ public class NetarchiveSolrClient {
             throw new Exception("Could not find arc entry in index:" + source_file_path + " offset:" + offset);
         }
 
-        ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
+        ArrayList<IndexDoc> indexDocs = SolrUtils.solrDocList2IndexDoc(docs);
 
         return indexDocs.get(0);
     }
@@ -669,7 +670,7 @@ public class NetarchiveSolrClient {
 
         // SolrDocumentList docs = rsp.getResults();
         SolrDocumentList docs = rsp.getGroupResponse().getValues().get(0).getValues().get(0).getResult();
-        ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
+        ArrayList<IndexDoc> indexDocs = SolrUtils.solrDocList2IndexDoc(docs);
 
         return indexDocs;
     }
@@ -691,7 +692,7 @@ public class NetarchiveSolrClient {
         SolrDocumentList docs = rsp.getResults();
 
         result.setNumberOfResults(docs.getNumFound());
-        ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
+        ArrayList<IndexDoc> indexDocs = SolrUtils.solrDocList2IndexDoc(docs);
         result.setResults(indexDocs);
         return result;
     }
@@ -734,7 +735,7 @@ public class NetarchiveSolrClient {
 
         ArrayList<IndexDocShort> allDocs = new ArrayList<IndexDocShort>(docs.size());
         for (SolrDocument current : docs) {
-            IndexDocShort groupDoc = solrDocument2IndexDocShort(current);
+            IndexDocShort groupDoc = SolrUtils.solrDocument2IndexDocShort(current);
             allDocs.add(groupDoc);
         }
 
@@ -746,7 +747,7 @@ public class NetarchiveSolrClient {
 
         ArrayList<IndexDoc> allDocs = new ArrayList<IndexDoc>(docs.size());
         for (SolrDocument current : docs) {
-            IndexDoc groupDoc = solrDocument2IndexDoc(current);
+            IndexDoc groupDoc = SolrUtils.solrDocument2IndexDoc(current);
             allDocs.add(groupDoc);
         }
 
@@ -897,7 +898,7 @@ public class NetarchiveSolrClient {
         if (docs == null || docs.size() == 0) {
             return null;
         }
-        ArrayList<IndexDoc> indexDocs = solrDocList2IndexDoc(docs);
+        ArrayList<IndexDoc> indexDocs = SolrUtils.solrDocList2IndexDoc(docs);
 
         // Return the one nearest
         int bestIndex = 0; // This would be correct if solr could sort correct.
@@ -999,7 +1000,7 @@ public class NetarchiveSolrClient {
             return null;
         }
 
-        IndexDoc indexDoc = solrDocument2IndexDoc(docs.get(0));
+        IndexDoc indexDoc = SolrUtils.solrDocument2IndexDoc(docs.get(0));
         return indexDoc;
     }
 
@@ -1076,7 +1077,7 @@ public class NetarchiveSolrClient {
         setSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = groupsToDoc(rsp);
-        return solrDocList2IndexDoc(docs);
+        return SolrUtils.solrDocList2IndexDoc(docs);
     }
 
     public String searchJsonResponseOnlyFacets(String query, List<String> fq, boolean revisits) throws Exception {
@@ -1347,84 +1348,6 @@ public class NetarchiveSolrClient {
         NamedList<Object> resp = solrServer.request(req);
         String jsonResponse = (String) resp.get("response");
         return jsonResponse;
-    }
-
-    private static ArrayList<IndexDoc> solrDocList2IndexDoc(SolrDocumentList docs) {
-        ArrayList<IndexDoc> earchives = new ArrayList<IndexDoc>();
-        for (SolrDocument current : docs) {
-            earchives.add(solrDocument2IndexDoc(current));
-        }
-        return earchives;
-    }
-
-    private static IndexDoc solrDocument2IndexDoc(SolrDocument doc) {
-        IndexDoc indexDoc = new IndexDoc();
-        indexDoc.setScore(Double.valueOf((float) doc.getFieldValue("score")));
-        indexDoc.setId((String) doc.get("id"));
-        indexDoc.setTitle((String) doc.get("title"));
-        indexDoc.setSource_file_path((String) doc.get("source_file_path"));
-        indexDoc.setResourceName((String) doc.get("resourcename"));
-        indexDoc.setDomain((String) doc.get("domain"));
-        indexDoc.setUrl((String) doc.get("url"));
-        indexDoc.setUrl_norm((String) doc.get("url_norm"));
-        indexDoc.setOffset(getOffset(doc));
-        // Cope with some minor schema variations:
-        if ( doc.get("content_type") instanceof ArrayList) {
-            ArrayList<String> types = (ArrayList<String>) doc.get("content_type");
-            indexDoc.setContentType(types.get(0));
-        } else {
-            indexDoc.setContentType((String) doc.get("content_type"));
-        }
-        indexDoc.setContentTypeNorm((String) doc.get("content_type_norm"));
-        indexDoc.setContentEncoding((String) doc.get("content_encoding"));
-        indexDoc.setType((String) doc.get("type"));
-        indexDoc.setExifLocation((String) doc.get("exif_location"));
-        indexDoc.setRedirectToNorm((String) doc.get("redirect_to_norm"));
-        indexDoc.setContent_type_full((String) doc.get("content_type_full"));
-        Date dateModified = (Date) doc.get("last_modified");
-        if (dateModified != null) {
-            indexDoc.setLastModifiedLong(dateModified.getTime());
-        }
-
-        Object statusCodeObj = doc.get("status_code");
-        if (statusCodeObj != null) {
-            indexDoc.setStatusCode((Integer) statusCodeObj);
-        }
-        String hash = (String) doc.get("hash");
-        indexDoc.setHash((String) hash);
-
-        Date date = (Date) doc.get("crawl_date");
-        indexDoc.setCrawlDateLong(date.getTime());
-        indexDoc.setCrawlDate(DateUtils.getSolrDate(date));
-
-        // Cope with some minor schema variations:
-        if ( doc.get("content_type") instanceof ArrayList) {
-            ArrayList<String> types = (ArrayList<String>) doc.get("content_type");
-            indexDoc.setMimeType(types.get(0));
-        } else {
-            indexDoc.setMimeType((String) doc.get("content_type"));
-        }
-
-        indexDoc.setOffset(getOffset(doc));
-
-        Object o = doc.getFieldValue("links_images");
-        if (o != null) {
-            indexDoc.setImageUrls((ArrayList<String>) o);
-        }
-
-        return indexDoc;
-    }
-
-    private static IndexDocShort solrDocument2IndexDocShort(SolrDocument doc) {
-        IndexDocShort indexDoc = new IndexDocShort();
-
-        indexDoc.setUrl((String) doc.get("url"));
-        indexDoc.setUrl_norm((String) doc.get("url_norm"));
-        indexDoc.setOffset(getOffset(doc));
-        indexDoc.setSource_file_path((String) doc.get("source_file_path"));
-        Date date = (Date) doc.get("crawl_date");
-        indexDoc.setCrawlDate(DateUtils.getSolrDate(date));
-        return indexDoc;
     }
 
     // TO, remove method and inline
