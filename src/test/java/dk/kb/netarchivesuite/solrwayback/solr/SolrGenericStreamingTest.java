@@ -276,6 +276,23 @@ public class SolrGenericStreamingTest {
                      jsons.get(0));
     }
 
+    /**
+     * Quite misplaced as it tests a {@link Facade} method. TODO: Consider creating a Facade test class.
+     */
+    @Test
+    public void testFacadeCSVExport() throws Exception {
+        List<String> cvs = IOUtils.readLines(
+                Facade.exportCvsStreaming("title:title_5", null, "url, links"),
+                "utf-8");
+        assertEquals("The right number of lines should be returned", 11, cvs.size()); // First line is header
+        assertEquals("The first line should be a header line as expected",
+                     "url,links",
+                     cvs.get(0));
+        assertEquals("The second line should be a data line as expected",
+                     "\"htts://example.COM/5\",\"http://example.com/everywhere\thttp://example.com/mod10_5\"",
+                     cvs.get(1));
+    }
+
     private static void fillSolr() throws SolrServerException, IOException {
         log.info("Filling embedded server with {} documents", TEST_DOCS);
         final Random r = new Random(87); // Random but not too random
