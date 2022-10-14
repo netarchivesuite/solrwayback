@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -118,6 +119,27 @@ public class SolrGenericStreamingTest {
         SolrDocument doc = docs.get(0);
         assertEquals("The returned crawl_date should be the nearest",
                      "Fri Mar 15 13:31:51 CET 2019", doc.get("crawl_date").toString());
+    }
+
+    /**
+     * Automatic batching of multiple queries.
+     */
+    @Test
+    public void multiQuery() {
+        List<SolrGenericStreaming> batchers = SolrGenericStreaming.multiQuery(
+                        SolrGenericStreaming.SRequest.builder().
+                                fields("id").
+                                timeProximityDeduplication("2019-04-15T12:31:51Z", "url"),
+                        Stream.of("title:title_5", "title:title_6", "title:title_7"),
+                        2).
+                collect(Collectors.toList());
+
+        assertEquals("There should be the right number of batch runners",
+                     2, batchers.size());
+
+        Set<SolrDocument> docs = batchers.stream().flatMap(SolrGenericStreaming::stream).collect(Collectors.toSet());
+        assertEquals("There should be the right number of total returned documents",
+                     3, docs.size());
     }
 
     /**

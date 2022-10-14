@@ -6,12 +6,14 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -195,5 +197,18 @@ public class SolrUtils {
         desc.setOffset(indexDoc.getOffset());
         desc.setContent_type(indexDoc.getMimeType());
         return desc;
+    }
+
+    /**
+     * Makes an independent copy of the given SolrQuery by deep-copying the {@code String[]} values.
+     * @param solrQuery any Solr query.
+     * @return an independent copy of the given Solr query.
+     */
+    public static SolrQuery deepCopy(SolrQuery solrQuery) {
+      SolrQuery qc = new SolrQuery();
+      solrQuery.getMap().entrySet().stream().
+              peek(entry -> entry.setValue(Arrays.copyOf(entry.getValue(), entry.getValue().length))).
+              forEach(entry -> qc.set(entry.getKey(), entry.getValue()));
+      return qc;
     }
 }
