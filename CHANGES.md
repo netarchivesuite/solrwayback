@@ -14,6 +14,7 @@ Fixed double calling of service metod when using url_search. (had to effect on u
 4.3.1
 -----
 New propety must be added to the solrwaybackweb.properties: 
+
 collection.text.file=/about_collection.txt
 
 Just as with the about-text this can be customized and point to a file on the local disk.
