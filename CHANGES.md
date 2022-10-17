@@ -10,8 +10,6 @@ solr.server.check.interval.seconds=60
 
 Fixed double calling of service metod when using url_search. (had to effect on users)  (github jira #258)
 
- Hope to hear f
- 
 
 4.3.1
 -----
