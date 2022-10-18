@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -454,7 +456,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     int initialSize = documents.size();
     for (int i = 0 ; i < initialSize ; i++) {
       if ("html".equals(documents.get(i).getFieldValue("content_type_norm"))) {
-        documents.addAll(getHTMLResources(documents.get(i)));
+        getHTMLResources(documents.get(i)).forEach(documents::add);
       }
     }
   }
@@ -465,19 +467,18 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * @param html a SolrDocument representing a HTML page.
    * @return the resources (images, CSS, JavaScript...) used by the page.
    */
-  private SolrDocumentList getHTMLResources(SolrDocument html) {
+  private Stream<SolrDocument> getHTMLResources(SolrDocument html) {
     try {
       String sourceFile = html.getFieldValue("source_file_path").toString();
       long offset = Long.parseLong(html.getFieldValue("source_file_offset").toString());
       ArcEntry arc= ArcParserFileResolver.getArcEntry(sourceFile, offset);
       HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
 
-      // This could technically be done with SolrGenericStreaming.timeProximity but findNearestDocuments is
-      // optimized towards many tiny lookups where each lookup yields at most 1 result.
-      return NetarchiveSolrClient.getInstance().findNearestDocuments(resources, arc.getCrawlDate(), join(adjustedFields, ","));
+      return NetarchiveSolrClient.getInstance().findNearestDocuments(
+              resources.stream(), arc.getCrawlDate(), join(adjustedFields, ","));
     } catch (Exception e) {
       log.warn("Unable to get resources for SolrDocument '" + html + "'", e);
-      return new SolrDocumentList();
+      return Stream.of();
     }
   }
 
