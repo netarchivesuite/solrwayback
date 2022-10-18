@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -210,5 +211,19 @@ public class SolrUtils {
               peek(entry -> entry.setValue(Arrays.copyOf(entry.getValue(), entry.getValue().length))).
               forEach(entry -> qc.set(entry.getKey(), entry.getValue()));
       return qc;
+    }
+
+    /**
+     * Sets properties-defined parameters.
+     * This should be called with ALL SolrQuery instances before issuing the query.
+     *
+     * The semantics of whether it should be called before or after setting method specific parameters is unclear.
+     * @param solrQuery a Solr query
+     */
+    public static void setSolrParams(SolrQuery solrQuery) {
+        HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
+        for (String key : SOLR_PARAMS_MAP.keySet()) {
+            solrQuery.set(key,SOLR_PARAMS_MAP.get(key));
+        }
     }
 }

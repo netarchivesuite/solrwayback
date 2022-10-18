@@ -138,7 +138,10 @@ public abstract class RewriterBase {
    		parseResult.addTiming("getContent", System.currentTimeMillis()-startgetContentMS);
 
 		replaceLinks(
-				content, arc.getUrl(), arc.getCrawlDate(), (urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFewFields(urls, timeStamp), parseResult, packaging
+				content, arc.getUrl(), arc.getCrawlDate(),
+				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().
+						findNearestHarvestTimeForMultipleUrlsFewFields(urls, timeStamp),
+				parseResult, packaging
 		);
 		log.info(String.format(
 				"replaceLinks.%s(<arc-entry of length %d bytes>, packaging=%s, base='%s', date=%s) completed: %s",
