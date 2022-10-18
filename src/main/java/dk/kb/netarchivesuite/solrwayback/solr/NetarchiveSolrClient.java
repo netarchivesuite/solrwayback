@@ -721,6 +721,9 @@ public class NetarchiveSolrClient {
     }
 
     public static void mergeInto(SolrDocumentList main, SolrDocumentList additional) {
+        if (additional == null) {
+            return;
+        }
         main.addAll(additional);
         if (additional.getMaxScore() != null) {
             main.setMaxScore(main.getMaxScore() == null ? additional.getMaxScore() : Math.max(main.getMaxScore(), additional.getMaxScore()));
