@@ -386,7 +386,7 @@ public class NetarchiveSolrClient {
                                               "image_size:[2000 TO *]").   // No small images. (fillers etc.)
                                 fields(SolrUtils.indexDocFieldList).
                                 timeProximityDeduplication(timeStamp, "url_norm").
-                                maxResults(50)
+                                maxResults(50) // TODO: Make this an argument instead
                 ).
                 stream().
                 map(SolrUtils::solrDocument2ArcEntryDescriptor).
@@ -702,7 +702,7 @@ public class NetarchiveSolrClient {
         Stream<String> urlQueries = urls.
                 filter(url -> !url.startsWith("data:")).
                 map(NetarchiveSolrClient::normalizeUrl).
-                map(NetarchiveSolrClient::createPhrase).
+                map(SolrUtils::createPhrase).
                 map(url -> "url_norm:" + url);
 
         return SolrGenericStreaming.multiQuery(baseRequest, urlQueries, chunkSize).
@@ -757,21 +757,11 @@ public class NetarchiveSolrClient {
                 sb.append(" ").append(operator).append(" ");
             }
             first = false;
-            sb.append(createPhrase(normalizeUrl(url)));
+            sb.append(SolrUtils.createPhrase(normalizeUrl(url)));
         }
         sb.append(")");
         return sb.toString();
     }
-
-     /**
-      * Quotes the given phrase and escapes characters that needs escaping (backslash and quote).
-      * {@code foo \bar "zoo} becomes {@code "foo \\bar \"zoo"}.
-      * @param phrase any phrase.
-      * @return the phrase quoted and escaped.
-      */
-     private static String createPhrase(String phrase) {
-         return "\"" + phrase.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
-     }
 
     /*
      * Notice here do we not fix url_norm

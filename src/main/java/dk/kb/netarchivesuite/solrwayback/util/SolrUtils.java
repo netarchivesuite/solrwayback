@@ -63,7 +63,7 @@ public class SolrUtils {
      */
     public static String createQueryStringForUrl(String url) {
         String canonicalizedUrl = Normalisation.canonicaliseURL(url);
-        return "url_norm:\"" + canonicalizedUrl + "\"";
+        return "url_norm:" + createPhrase(canonicalizedUrl);
     }
 
     /**
@@ -89,6 +89,7 @@ public class SolrUtils {
 
     /**
      * Convert the given {@link SolrDocument} to a {@link IndexDoc}.
+     * See {@link #indexDocFieldList} for Solr fields for the IndexDoc.
      *
      * Note that {@link IndexDoc}s only holds a subset of all possible fields from {@link SolrDocument}.
      * @param doc a document from a Solr search.
@@ -154,6 +155,7 @@ public class SolrUtils {
 
     /**
      * Convert the given {@link SolrDocument} to a {@link IndexDocShort}.
+     * See {@link #indexDocFieldListShort} for Solr fields for the IndexDocShort.
      *
      * Note that {@link IndexDocShort}s only holds a tiny subset of all possible fields from {@link SolrDocument}:
      * {@code url}, {@code url_norm}, {@code source_file_path}m {@code source_file_offset} and {@code crawl_date}.
@@ -225,5 +227,15 @@ public class SolrUtils {
         for (String key : SOLR_PARAMS_MAP.keySet()) {
             solrQuery.set(key,SOLR_PARAMS_MAP.get(key));
         }
+    }
+
+    /**
+     * Quotes the given phrase and escapes characters that needs escaping (backslash and quote).
+     * {@code foo \bar "zoo} becomes {@code "foo \\bar \"zoo"}.
+     * @param phrase any phrase.
+     * @return the phrase quoted and escaped.
+     */
+    public static String createPhrase(String phrase) {
+        return "\"" + phrase.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
 }
