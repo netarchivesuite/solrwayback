@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -26,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 public class ProcessingTest {
 
     @Test
-    public void testBatching() {
+    public void testBasicBatching() {
         List<Callable<Integer>> callables = new ArrayList<>();
         for (int i = 0 ; i < 100 ; i++) {
             final int value = i;
@@ -41,6 +42,15 @@ public class ProcessingTest {
             assertEquals("Result #" + i + " should be as expected",
                          Integer.valueOf(i), results.get((i)));
         }
+    }
 
+    @Test
+    public void testInfiniteInputStream() {
+        Stream<Callable<String>> callables = Stream.generate(() -> () -> "a"); // Infinite
+        long processed = Processing.batch(callables).
+                limit(5000).
+                count();
+        assertEquals("The number of processed jobs should match the limit",
+                     5000, processed);
     }
 }
