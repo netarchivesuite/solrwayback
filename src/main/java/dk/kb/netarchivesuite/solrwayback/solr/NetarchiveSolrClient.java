@@ -1290,4 +1290,25 @@ public class NetarchiveSolrClient {
         return rsp;
     }
 
+    /**
+     * Sets property defined query parameters with {@link SolrUtils#setSolrParams(SolrQuery)} and issues the query.
+     *
+     * Exceptions are caught and re-thrown as {@link RuntimeException}s.
+     * @param solrQuery any SolrQuery.
+     * @param useCachingClient if true, client side caching is used. If false, no client side caching is done.
+     * @return the result of issuing the query.
+     */
+    public static QueryResponse query(SolrQuery solrQuery, boolean useCachingClient) {
+        SolrUtils.setSolrParams(solrQuery);
+        try {
+            return useCachingClient ?
+                    solrServer.query(solrQuery, METHOD.POST) :
+                    noCacheSolrServer.query(solrQuery, METHOD.POST);
+        } catch (SolrServerException e) {
+            throw new RuntimeException("SolrServerException issuing query", e);
+        } catch (IOException e) {
+            throw new RuntimeException("IOException issuing query", e);
+        }
+    }
+
 }
