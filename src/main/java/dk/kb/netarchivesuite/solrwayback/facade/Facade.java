@@ -1,7 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.facade;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
-import dk.kb.netarchivesuite.solrwayback.export.GenerateCSV;
+import dk.kb.netarchivesuite.solrwayback.export.ContentStreams;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
@@ -40,9 +40,7 @@ import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
 import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
-import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
-import dk.kb.netarchivesuite.solrwayback.util.StreamBridge;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -67,9 +65,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -528,11 +524,6 @@ public class Facade {
     public static InputStream exportFields(String fields, boolean flatten, String format,
                                            String query, String... filterQueries)
             throws IOException, InvalidArgumentServiceException, SolrServerException {
-        String formatL = format.toLowerCase(Locale.ROOT);
-        if (!formatL.equals("json") && !formatL.equals("jsonl") && !formatL.equals("csv")) {
-            throw new InvalidArgumentServiceException(
-                    "The requested format was '" + format + "' where only 'json', 'jsonl' and 'csv' are accepted");
-        }
         // TODO check that only allowed fields are selected!
 
         // Validate result set size
@@ -542,80 +533,19 @@ public class Facade {
                     "Number of results for " + format + " export exceeds the configured limit: " +
                     PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
         }
+        // Setup request
+        SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+                query(query).
+                filterQueries(filterQueries).
+                fields(fields.split(", *"));
 
-        return StreamBridge.outputToInputSafe(out -> {
-            // Setup request
-            SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
-                    query(query).
-                    filterQueries(filterQueries).
-                    fields(fields.split(", *"));
+        // Initiate streaming
+        Stream<SolrDocument> docs = SolrGenericStreaming.create(request).stream().
+                flatMap(solrDoc -> flatten ? SolrGenericStreaming.flatten(solrDoc) : Stream.of(solrDoc));
 
-            // Initiate streaming
-            Stream<SolrDocument> docs = SolrGenericStreaming.create(request).stream().
-                    flatMap(solrDoc -> flatten ? SolrGenericStreaming.flatten(solrDoc) : Stream.of(solrDoc));
-
-            // Write results
-            switch (formatL) {
-                case "csv": {
-                    writeCSV(docs, fields, out);
-                    break;
-                }
-                case "json": {
-                    writeJSON(docs, out);
-                    break;
-                }
-                case "jsonl": {
-                    writeJSONLines(docs, out);
-                    break;
-                }
-                default:
-                    throw new UnsupportedOperationException("The format '" + format + "' is not supported");
-            }
-        });
+        return ContentStreams.deliver(docs, fields, format);
     }
 
-    /**
-     * Write the given SolrDocuments as <a href="https://jsonlines.org/">JSON-Lines</a>: One JSON block for each
-     * document, with one block per line.
-     * @param docs a Stream of Solr documents.
-     * @param out where to write the output.
-     */
-    private static void writeJSONLines(Stream<SolrDocument> docs, StreamBridge.SafeOutputStream out) {
-        docs.map(JsonUtils::toJSON).
-                forEach(out::writeln);
-    }
-
-    /**
-     * Write the given SolrDocuments as a single JSON array containing one JSON block for each document.
-     * @param docs a Stream of Solr documents.
-     * @param out where to write the output.
-     */
-    private static void writeJSON(Stream<SolrDocument> docs, StreamBridge.SafeOutputStream out) {
-        AtomicBoolean hasWritten = new AtomicBoolean(false);
-        out.writeln("[");
-        docs.map(JsonUtils::toJSON).
-                peek(json -> {
-                    if (!hasWritten.get()) {
-                        hasWritten.set(true);
-                    } else {
-                        out.writeln(",");
-                    }
-                }).
-                forEach(out::write);
-        out.writeln("\n]");
-    }
-
-    /**
-     * Write the given SolrDocuments as Comma Separated Values.
-     * First line acts as header and lists the field names.
-     * @param docs a Stream of Solr documents.
-     * @param out where to write the output.
-     */
-    private static void writeCSV(Stream<SolrDocument> docs, String fields, StreamBridge.SafeOutputStream out) {
-        GenerateCSV csvMapper = new GenerateCSV(fields.split(", *"));
-        docs.map(csvMapper::toCVSLine).
-                forEach(out::write);
-    }
 
     public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing, String dateStart, String dateEnd) throws Exception {
 
