@@ -239,4 +239,31 @@ public class SolrUtils {
     public static String createPhrase(String phrase) {
         return "\"" + phrase.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
+
+    /**
+     * Construct a new array from the given strArray and the additions.
+     * The result is guaranteed to be independent from the given strArray.
+     * @param strArray  any String array.
+     * @param additions 0 or more additions to the strArray.
+     * @return a concatenation of strArray and additions.
+     */
+    public static String[] extend(String[] strArray, String... additions) {
+        String[] extended = new String[strArray.length + additions.length];
+        System.arraycopy(strArray, 0, extended, 0, strArray.length);
+        System.arraycopy(additions, 0, extended, strArray.length, additions.length);
+        return extended;
+    }
+
+    /**
+     * Construct a String array from the given str and the additions.
+     * @param str any String.
+     * @param additions 0 or more additions to the str.
+     * @return a concatenation of str and additions.
+     */
+    public static String[] extend(String str, String... additions) {
+        String[] extended = new String[1 + additions.length];
+        extended[0] = str;
+        System.arraycopy(additions, 0, extended, 1, additions.length);
+        return extended;
+    }
 }

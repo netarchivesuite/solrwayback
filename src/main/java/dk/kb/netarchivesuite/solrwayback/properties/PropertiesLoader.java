@@ -128,8 +128,12 @@ public class PropertiesLoader {
 
             if (cachingStr != null && cachingStr.equalsIgnoreCase("true")) {
                 SOLR_SERVER_CACHING=true;
-                SOLR_SERVER_CACHING_AGE_SECONDS=Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY).trim());
-                SOLR_SERVER_CACHING_MAX_ENTRIES=Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY).trim());
+                if (serviceProperties.containsKey(SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY)) {
+                    SOLR_SERVER_CACHING_AGE_SECONDS = Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY).trim());
+                }
+                if (serviceProperties.containsKey(SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY)) {
+                    SOLR_SERVER_CACHING_MAX_ENTRIES = Integer.parseInt(serviceProperties.getProperty(SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY).trim());
+                }
             }
 
             SOLR_SERVER_CHECK_INTERVAL = Integer.parseInt(serviceProperties.getProperty(
