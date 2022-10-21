@@ -1319,20 +1319,48 @@ public class NetarchiveSolrClient {
     // returns JSON. Response not supported by SolrJ
     /*
      * Example query:
+     * by year
      * curl -s -d 'q=demokrati&rows=0&json.facet={domains:{type:terms,field:domain,limit:100 facet:{years:{type:range,field:crawl_year,start:2000,end:2020,gap:1}}}}' 'http://localhost:52300/solr/ns/select' > demokrati.json
-     *
+     * by month
+     * curl -s -d 'q=demokrati&rows=0&json.facet={domains:{type:terms,field:domain,limit:100 facet:{years:{type:range,field:crawl_date,start:'2000-01-01T00:00:00Z',end:'2001-01-01T00:00:00Z',gap:'+1MONTH'}}}}' 'http://localhost:52300/solr/ns/select' > demokrati.json
      */
-    public String domainStatisticsForQuery(String query, List<String> fq) throws Exception {
+    public String domainStatisticsForQuery(String query, List<String> fq, String startdate, String enddate, String scale) throws Exception {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
         solrQuery.setRows(0);
         solrQuery.set("facet", "false");
+        
+        if (scale == null || scale.isEmpty()) {
+            // default scale (by year)
+            int startYear = PropertiesLoaderWeb.ARCHIVE_START_YEAR;
+            int endYear = LocalDate.now().getYear() + 1; // add one since it is not incluced
 
-        int startYear = PropertiesLoaderWeb.ARCHIVE_START_YEAR;
-        int endYear = LocalDate.now().getYear() + 1; // add one since it is not incluced
-
-        solrQuery.setParam("json.facet",
+            solrQuery.setParam("json.facet",
                 "{domains:{type:terms,field:domain,limit:30,facet:{years:{type:range,field:crawl_year,start:" + startYear + ",end:" + endYear + ",gap:1}}}}");
+        } else {
+            // custom scale
+            String start = "'" + startdate + "T00:00:00Z'";
+            String end = "'" + enddate + "T00:00:00Z'";
+            String gap = "";
+            switch (scale) {
+                case "MONTH" :
+                    gap = "'+1MONTH'";
+                    break;
+                case "WEEK" :
+                    gap = "'+7DAYS'";
+                    break;
+                case "DAY" :
+                    gap = "'+1DAY'";
+                    break;
+                case "YEAR" :
+                default :
+                    gap = "'+1YEAR'";
+                    break;
+            }
+            solrQuery.setParam("json.facet",
+                "{domains:{type:terms,field:domain,limit:30,facet:{years:{type:range,field:crawl_date,start:"+ start + ",end:"+ end + ",gap:"+ gap + "}}}}");
+        }
+
 
         for (String filter : fq) {
             solrQuery.addFilterQuery(filter);

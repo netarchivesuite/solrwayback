@@ -8,6 +8,16 @@
       <p v-if="searchAppliedFacets.length > 0">
         filters: <span>{{ searchAppliedFacets.join('') }}</span>
       </p>
+      <div class="searchVisualizationSettings">
+        <time-period-refiner @startdate="(sdate) => startDate = sdate"
+                             @enddate="(edate) => endDate = edate" 
+                             @timescale="(ts) => timeScale = ts" />
+        <div class="generateButtonContainer contain">
+          <button class="searchVisualizationButton" @click.prevent="loadVisualisation()">
+            Generate
+          </button>
+        </div>
+      </div>
     </div>
     <div v-show="!loading" key="d3-viz" class="visualized" />
     <div v-if="loading" key="spinner-viz" class="spinner" />
@@ -19,11 +29,18 @@
 import { requestService } from '../../services/RequestService'
 import { mapState } from 'vuex'
 import Visualization from './Visualization'
+import TimePeriodRefiner from './../TimePeriodRefiner.vue'
 
 export default {
   name: 'SearchVisualization',
+  components: {
+    TimePeriodRefiner
+  },
   data: () => ({
-    loading:false
+    loading:false,
+    startDate:'',
+    endDate:'',
+    timeScale:''
   }),
   computed: {
     ...mapState({
@@ -40,9 +57,17 @@ export default {
   }, */
   mounted () {
     this.loading = true
-    Visualization.createVisualization(this.query, this.searchAppliedFacets, this.solrSettings).then(() =>{
+    Visualization.createVisualization(this.query, this.searchAppliedFacets, this.solrSettings, null, null, null).then(() =>{
     this.loading = false
     })
+  },
+  methods: {
+    loadVisualisation() {
+      this.loading = true
+      Visualization.createVisualization(this.query, this.searchAppliedFacets, this.solrSettings, this.startDate, this.endDate, this.timeScale) .then(() =>{
+      this.loading = false
+      })
+    }
   }
 }
 

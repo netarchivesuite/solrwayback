@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -24,11 +23,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.zookeeper.client.FourLetterWordMain;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +41,6 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
-import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreviewYearsInfo;
-import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.dto.WordCloudWordAndCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
@@ -139,9 +135,10 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("graph/domain_result")
     @Produces({ MediaType.TEXT_PLAIN})
-    public String domainResultGraph(@QueryParam("q") String q, @QueryParam("fq") List<String> fq ) throws SolrWaybackServiceException {
+    public String domainResultGraph(@QueryParam("q") String q, @QueryParam("fq") List<String> fq, @QueryParam("startdate") String startdate,
+            @QueryParam("enddate") String enddate, @QueryParam("scale") String scale) throws SolrWaybackServiceException {
      try {
-       return Facade.generateDomainResultGraph(q,fq);
+       return Facade.generateDomainResultGraph(q, fq, startdate ,enddate, scale);
       } catch (Exception e) {           
         throw handleServiceExceptions(e);
       }    

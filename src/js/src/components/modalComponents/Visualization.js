@@ -1,12 +1,16 @@
 import * as d3 from 'd3'
 
 export default {
-   async createVisualization(query, facets, options) {
+   async createVisualization(query, facets, options, startDate, endDate, timeScale) {
     
     let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
-    let dataUrl =  `services/frontend/graph/domain_result/?q=${query + facets.join('') + optionString}`
+    let settings = ''
+    if (timeScale != null && timeScale != '') {
+        settings = '&startdate=' + startDate +'&enddate='+ endDate + '&scale=' + timeScale
+    }
+    let dataUrl =  `services/frontend/graph/domain_result/?q=${query + facets.join('') + optionString + settings}`
     
-    var margin = {top: 20, right: 200, bottom: 50, left: 32},
+    var margin = {top: 20, right: 200, bottom: 70, left: 32},
     width = 1050 - margin.left - margin.right,
     height = 700 - margin.top - margin.bottom
 
@@ -67,6 +71,8 @@ export default {
     .scale(y)
     .orient('left')
     .tickFormat(d3.format('.2s'))
+
+    d3.select('svg').remove()
 
     var svg = d3.select('.visualized').append('svg')
     .attr('width', width + margin.left + margin.right)
