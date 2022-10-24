@@ -18,6 +18,7 @@ import com.google.common.base.Functions;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.Processing;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.solr.common.SolrDocument;
@@ -25,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
@@ -84,7 +86,7 @@ public class ContentStreams {
      * @return a callable that will result in at most maxImages images linked from the given htmlPage.
      */
     public static Callable<Stream<SolrDocument>> createHTMLImageCallback(SolrDocument htmlPage, int maxImages) {
-        String timestamp = htmlPage.get("crawl_date").toString();
+        String isotime = DateUtils.getSolrDate((Date) htmlPage.get("crawl_date"));
         Stream<String> urlQueries = ((List<String>)htmlPage.get("links_images")).stream().
                 distinct().
                 map(SolrUtils::createQueryStringForUrl);
@@ -95,7 +97,7 @@ public class ContentStreams {
                                       SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
                                       "image_size:[2000 TO *]").   // No small images. (fillers etc.)
                         fields(SolrUtils.arcEntryDescriptorFieldList).
-                        timeProximityDeduplication(timestamp, "url_norm").
+                        timeProximityDeduplication(isotime, "url_norm").
                         maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
 
         return () -> SolrGenericStreaming.multiQuery(baseRequest, urlQueries, 500).

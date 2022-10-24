@@ -15,6 +15,8 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -29,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -158,9 +161,9 @@ public class SolrGenericStreamingTest {
                 collect(Collectors.toList());
         assertTrue("Multiple results expected",
                      docs.size() > 1);
-        Set<Object> dates = new HashSet<>();
+        Set<Date> dates = new HashSet<>();
         for (SolrDocument doc: docs) {
-            dates.add(doc.get("crawl_date"));
+            dates.add((Date) doc.get("crawl_date"));
         }
         assertTrue("There should be more than 1 unique data in the time proximity result set",
                    dates.size() > 1);
@@ -282,7 +285,7 @@ public class SolrGenericStreamingTest {
         document.addField("source_file_path", "some.warc_" + id);
         document.addField("links", Arrays.asList("http://example.com/everywhere", "http://example.com/mod10_" + id%10));
         document.addField("status_code", "200");
-        document.setField("crawl_date", CRAWL_TIMES[r.nextInt(CRAWL_TIMES.length)]);
+        document.setField("crawl_date", DateUtils.solrTimestampToJavaDate(CRAWL_TIMES[r.nextInt(CRAWL_TIMES.length)]));
         embeddedServer.add(document);
     }
 
