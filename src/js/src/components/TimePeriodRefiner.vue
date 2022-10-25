@@ -49,6 +49,11 @@ export default {
     endDateInput:(new Date().getUTCFullYear() + 1) + '-01-01',
     timeScaleInput:'YEAR'
   }),
+  mounted() {
+    this.updateStartDate()
+    this.updateEndDate()
+    this.updateTimeScale()
+  },
   methods: {
     updateStartDate(){
       this.$emit('startdate', this.startDateInput)
