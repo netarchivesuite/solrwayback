@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.stubbing.OngoingStubbing;
 import org.slf4j.Logger;
@@ -20,6 +21,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
@@ -29,6 +32,11 @@ import static org.mockito.Mockito.when;
 
 public class TestExportWarcStreaming extends UnitTestUtils {
   private static final Logger log = LoggerFactory.getLogger(TestExportWarcStreaming.class);
+
+  @Before
+  public void setUpProperties()  throws Exception{
+      PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback.properties").getPath());
+  }
 
   @Test
   public void testSingleRecordStreamingExport() throws Exception {
@@ -257,7 +265,8 @@ public class TestExportWarcStreaming extends UnitTestUtils {
   // Returns 2 batches, each of size docCount
   private SolrGenericStreaming getMockedSolrStream(String WARC, long OFFSET, int docCount, int batches) throws Exception {
     SolrGenericStreaming mockedSolr = mock(SolrGenericStreaming.class);
-    OngoingStubbing<SolrDocumentList> stub = when(mockedSolr.nextDocuments());
+    OngoingStubbing<SolrDocumentList> nextDocsStub = when(mockedSolr.nextDocuments());
+    List<SolrDocument> allDocs = new ArrayList<>();
 
     for (int dl = 0 ; dl < batches ; dl++) {
       SolrDocumentList docs = new SolrDocumentList();
@@ -272,9 +281,13 @@ public class TestExportWarcStreaming extends UnitTestUtils {
         doc.addField("source_file_offset", OFFSET);
         docs.add(doc);
       }
-      stub = stub.thenReturn(docs);
+      nextDocsStub = nextDocsStub.thenReturn(docs);
+      allDocs.addAll(docs);
     }
-    stub.thenReturn(null);
+    nextDocsStub.thenReturn(null);
+    
+    // Also mock iterator
+    when(mockedSolr.iterator()).thenReturn(allDocs.iterator());
     return mockedSolr;
   }
 
@@ -299,6 +312,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
 
     when(mockedSolr.nextDocuments()).thenReturn(docs).thenReturn(null);
+    when(mockedSolr.iterator()).thenReturn(docs.iterator());
     return mockedSolr;
   }
 

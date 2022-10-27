@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.util.DelayedInputStream;
@@ -27,7 +28,8 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
   private static final Logger log = LoggerFactory.getLogger(StreamingSolrWarcExportBufferedInputStream.class);
 
-  private final SolrGenericStreaming solrClient;
+  //private final SolrGenericStreaming solrClient;
+  private final Iterator<SolrDocument> solrDocs;
   private final long maxRecords;
   private final boolean gzip;
   private final List<InputStream> entryStreams = new ArrayList<>(); // Ideally a FIFO buffer, but not worth the hassle
@@ -39,12 +41,27 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   /**
    * Create a stream with WARC-content from the records referenced by the solrClient.
    * The parts of the stream is lazy loaded and has no practical limit on sizes.
-   * @param solrClient delivers Solr documents specifying the records to stream.
+   * @param solrClient delivers Solr documents specifying the records to stream. The records MUST include the fields
+   *                   {@code source_file_path} and {@code source_file_offset}.
    * @param maxRecords the maximum number of records to deliver.
    * @param gzip if true, the WARC-records will be gzipped. If false, they will be delivered as-is.
    */
   public StreamingSolrWarcExportBufferedInputStream(SolrGenericStreaming solrClient, long maxRecords, boolean gzip) {
-    this.solrClient = solrClient;
+    this.solrDocs = solrClient.iterator();
+    this.maxRecords = maxRecords;
+    this.gzip = gzip;
+  }
+
+  /**
+   * Create a stream with WARC-content from the records in the solrDocs Stream.
+   * The parts of the stream is lazy loaded and has no practical limit on sizes.
+   * @param solrDocs   delivers Solr documents specifying the records to stream. The records MUST include the fields
+   *                   {@code source_file_path} and {@code source_file_offset}.
+   * @param maxRecords the maximum number of records to deliver.
+   * @param gzip if true, the WARC-records will be gzipped. If false, they will be delivered as-is.
+   */
+  public StreamingSolrWarcExportBufferedInputStream(Stream<SolrDocument> solrDocs, long maxRecords, boolean gzip) {
+    this.solrDocs = solrDocs.iterator();
     this.maxRecords = maxRecords;
     this.gzip = gzip;
   }
@@ -118,15 +135,14 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
         log.info("loadMore(): Max documents reached (" + maxRecords + "). Stopping loading of more documents");
         return;
       }
-      SolrDocumentList docs = solrClient.nextDocuments();
-      // log.debug("Got " + (docs == null ? 0 : docs.size()) + " Solr documents");
-      if (docs == null || docs.isEmpty()) {
-        log.info("loadMore(): No more documents available after " + (docsWarcRead+docsArcRead) + " docs read");
-        return;
+      while (solrDocs.hasNext() && entryStreams.isEmpty()) {
+        // We stream eventhough there is only 1 element in preparation of batching at a later time
+        addRecordsToStream(Stream.of(solrDocs.next()));
       }
-
-      addRecordsToStream(docs);
-
+      // log.debug("Got " + (docs == null ? 0 : docs.size()) + " Solr documents");
+      if (entryStreams.isEmpty()) {
+        log.info("loadMore(): No more documents available after " + (docsWarcRead+docsArcRead) + " docs read");
+      }
     } catch (Exception e) {
       log.error("Unhandled exception in loadMore", e);
     }
@@ -137,14 +153,16 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
    * send them to {@link #addRecordsToStream(List)}.
    * @param docs Solr documents with {@code source_file_path} and {@code source_file_offset} fields.
    */
-  private void addRecordsToStream(SolrDocumentList docs) throws IOException {
-    List<EntryAndHeaders> entriesAndHeaders = docs.stream()
+  private void addRecordsToStream(Stream<SolrDocument> docs) throws IOException {
+    AtomicInteger docCount = new AtomicInteger(0);
+    List<EntryAndHeaders> entriesAndHeaders = docs
+            .peek(doc -> docCount.incrementAndGet())
             .map(this::docToEntry)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
     if (entriesAndHeaders.isEmpty()) {
-      log.info("addRecordsToStream: No WARC records derived from " + docs.size() + " Solr documents");
+      log.info("addRecordsToStream: No WARC records derived from " + docCount.get() + " Solr documents");
       return;
     }
 

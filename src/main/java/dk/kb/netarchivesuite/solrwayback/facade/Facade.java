@@ -1,25 +1,13 @@
 package dk.kb.netarchivesuite.solrwayback.facade;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.IDN;
-import java.net.URL;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.imageio.ImageIO;
-import javax.ws.rs.QueryParam;
-
-import dk.kb.netarchivesuite.solrwayback.util.SolrQueryUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import dk.kb.netarchivesuite.solrwayback.parsers.*;
+import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
+import dk.kb.netarchivesuite.solrwayback.export.ContentStreams;
+import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
+import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
+import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
+import dk.kb.netarchivesuite.solrwayback.parsers.DomainStatisticsForDomainParser;
+import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.playback.CssPlayback;
 import dk.kb.netarchivesuite.solrwayback.playback.HtmlPlayback;
 import dk.kb.netarchivesuite.solrwayback.playback.JavascriptPlayback;
@@ -27,7 +15,17 @@ import dk.kb.netarchivesuite.solrwayback.playback.JodelPlayback;
 import dk.kb.netarchivesuite.solrwayback.playback.TwitterPlayback;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
-import dk.kb.netarchivesuite.solrwayback.service.dto.*;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
+import dk.kb.netarchivesuite.solrwayback.service.dto.FacetCount;
+import dk.kb.netarchivesuite.solrwayback.service.dto.HarvestDates;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
+import dk.kb.netarchivesuite.solrwayback.service.dto.PageResource;
+import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
+import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
+import dk.kb.netarchivesuite.solrwayback.service.dto.WordCloudWordAndCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
@@ -37,14 +35,39 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServic
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
-import dk.kb.netarchivesuite.solrwayback.solr.*;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
 import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
+import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
-import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
-import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
-import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
-import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
+import org.apache.solr.common.SolrDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.ws.rs.QueryParam;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.IDN;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
@@ -118,7 +141,22 @@ public class Facade {
         return matrix;
     }
 
-    public static ArrayList<ArcEntryDescriptor> findImages(String searchText) throws Exception {
+    /**
+     * Search images both directly and through webpages.
+     * Delegates to {@link ContentStreams#findImages(int, String, String...)}.
+     * @param query Solr query.
+     * @param filterQueries 0 or more Solr filter queries.
+     * @return up to 500 images matching the searchText.
+     * @see Facade#exportImages(boolean, boolean, String, String...)
+     */
+    public static ArrayList<ArcEntryDescriptor> findImages(String query, String... filterQueries) {
+        return ContentStreams.findImages(50, query, filterQueries).
+                limit(500).
+                map(SolrUtils::solrDocument2ArcEntryDescriptor).
+                collect(Collectors.toCollection(ArrayList::new));
+    }
+    
+    public static ArrayList<ArcEntryDescriptor> oldfindImages(String searchText) throws Exception {
         long start=System.currentTimeMillis();
         // only search these two types
         //Since the HTML boost split up in two searches to also get image hits. The image hits is a very fast search.
@@ -369,7 +407,7 @@ public class Facade {
         if (imageLinks.size() == 0) {
             return new ArrayList<>();
         }
-        String queryStr = SolrQueryUtils.createQueryStringForUrls(imageLinks);
+        String queryStr = SolrUtils.createQueryStringForUrls(imageLinks);
         ArrayList<ArcEntryDescriptor> imagesFromHtmlPage = NetarchiveSolrClient.getInstance().findImagesForTimestamp(queryStr, doc.getCrawlDate());
         return imagesFromHtmlPage;
     }
@@ -435,6 +473,29 @@ public class Facade {
         
         return ArcParserFileResolver.getArcEntry(source_file_path, offset, loadBinary);
     }
+
+    /**
+     * Search images both directly and through webpages. Export the result as WARC entries.
+     * @param avoidDuplicates if true, duplicates are removed.
+     *                        This requires holding a Set with all hashes from the result set in memory.
+     * @param gzip if true each entry in the WARC stream is GZIPped.
+     * @param query image search query.
+     * @param filterqueries Solr filter queries.
+     * @return an InputStream where the product is a WARC.
+     * @see ContentStreams#findImages(int, String, String...)
+     * @see Facade#findImages(String, String...)
+     */
+    public static InputStream exportImages(boolean avoidDuplicates, boolean gzip, String query, String... filterqueries) {
+        Stream<SolrDocument> imageDocs = ContentStreams.findImages(50, query, filterqueries);
+
+        if (avoidDuplicates) {
+            Set<Object> hashes = new HashSet<>();
+            imageDocs = imageDocs.filter(solrDoc -> hashes.add(solrDoc.getFieldValue("hash")));
+        }
+
+        return new StreamingSolrWarcExportBufferedInputStream(imageDocs, Integer.MAX_VALUE, gzip);
+    }
+
 
     public static InputStream exportWarcStreaming(boolean expandResources, boolean avoidDuplicates, boolean gzip, String query, String... filterqueries)  throws Exception{
 

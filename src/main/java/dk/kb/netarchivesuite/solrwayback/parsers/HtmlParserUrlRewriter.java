@@ -134,7 +134,8 @@ public class HtmlParserUrlRewriter {
 		final long startMS = System.currentTimeMillis();
 		return replaceLinks(
 				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getCrawlDate(),
-				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFewFields(urls, timeStamp),
+				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().
+						findNearestHarvestTimeForMultipleUrlsFewFields(urls, timeStamp),
 				startMS);
 	}
 
@@ -348,16 +349,16 @@ public class HtmlParserUrlRewriter {
            
       log.info("#unique urlset to resolve:"+urlSet.size());
 
-      ArrayList<IndexDocShort> docs = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFewFields(urlSet,arc.getCrawlDate());
 
       StringBuffer buf = new StringBuffer();
-      for (IndexDocShort indexDoc: docs){
-          buf.append("<part>\n");        
-          buf.append("urn:pwid:"+collectionName+":"+indexDoc.getCrawlDate()+":part:"+indexDoc.getUrl() +"\n");
-          buf.append("</part>\n");
-          //pwid:netarkivet.dk:time:part:url      
-      }
-     return buf.toString();
+	  NetarchiveSolrClient.getInstance().findNearestHarvestTimeForMultipleUrlsFewFields(urlSet,arc.getCrawlDate()).
+			  forEach(shortDoc -> {
+				  buf.append("<part>\n");
+				  buf.append("urn:pwid:"+collectionName+":"+shortDoc.getCrawlDate()+":part:"+shortDoc.getUrl() +"\n");
+				  buf.append("</part>\n");
+				  //pwid:netarkivet.dk:time:part:url
+			  });
+		return buf.toString();
 	}
 
   

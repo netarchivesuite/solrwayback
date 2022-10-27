@@ -4,6 +4,8 @@ import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
+import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
@@ -24,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -32,6 +36,7 @@ import static org.apache.commons.lang3.StringUtils.join;
 // TODO: Add support for redirects; needs to work with expandResources
 // TODO: Add support for revisits; needs (W)ARC lookup and needs to work with expandResources
 // TODO: Add optional graph traversal of JavaScript & CSS-includes with expandResources
+// TODO: Avoid extra paging request by looking at numFound and counting received documents
 
 /**
  * Cursormark based chunking search client allowing for arbitrary sized result sets.
@@ -163,6 +168,37 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   }
 
   /**
+   * Issues multiple queries as batch requests. The individual queries will be {@code OR}ed together:
+   *
+   * If {@code queries = Arrays.asList("url:http://example.com/foo", "url:http://example.com/bar").stream()},
+   * the batch request will be {@code "url:http://example.com/foo OR url:http://example.com/bar"}.
+   *
+   * Each batch request is independent from previous requests so de-duplication and uniqueness is not guaranteed to
+   * work well.
+   *
+   * Sample call: Get all SolrDocuments matching the queries {@code foo} and {@code bar}:
+   * <pre>
+   * Stream<SolrDocument> solrDocs =
+   *   multiQuery(SRequest.builder().fields("id"),
+   *              Stream.of("foo", "var"),
+   *              10).
+   *       flatMap(SolrGenericStreaming::stream);
+   * </pre>
+   * @param baseRequest the SRequest used as a base for each batch request: {@link SRequest#solrQuery} will be
+   *                    overridden with the batch queries constructed from queries.
+   * @param queries     the individual queries. These will be concatenated in batches with {@code " OR "} as separator.
+   * @param batchSize   the number of queries to use for each batch. Setting this above 1000 is not likely to work
+   *                    due to Solr's default of {@code maxBooleanClauses = 1024}.
+   * @return a stream of instances of {@link SolrGenericStreaming}.
+   */
+  public static Stream<SolrGenericStreaming> multiQuery(SRequest baseRequest, Stream<String> queries, int batchSize) {
+    return CollectionUtils.splitToLists(queries, batchSize).
+            map(batch -> "(" + String.join(") OR (", batch) + ")"). // 1 big OR query
+            map(query -> baseRequest.deepCopy().query(query)).
+            map(SolrGenericStreaming::create);
+  }
+
+  /**
    * Generic stream where all parts except {@link SRequest#query(String)} and {@link SRequest#fields(String...)}
    * are optional.
    *
@@ -210,6 +246,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     if (solrQuery.getBool(GroupParams.GROUP, false)) {
       throw new IllegalArgumentException("group==true is not compatible with cursorMark paging");
     }
+
+    // Properties defined parameters
+    SolrUtils.setSolrParams(solrQuery);
 
     // Set default values if not already set
     solrQuery.set(CommonParams.FL,
@@ -303,7 +342,41 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   }
 
   /**
+   * Stream the Solr response one document list at a time.
+   * @return a stream of lists of SolrDocuments.
+   */
+  public Stream<SolrDocumentList> streamList() {
+    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iteratorList(), 0), false);
+  }
+
+  /**
+   * @return an iterator of SolrDocumentLists.
+   */
+  public Iterator<SolrDocumentList> iteratorList() {
+    return new Iterator<SolrDocumentList>() {
+      @Override
+      public boolean hasNext() {
+        return !hasFinished();
+      }
+
+      @Override
+      public SolrDocumentList next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException("No more elements");
+        }
+        try {
+          return nextDocuments();
+        } catch (Exception e) {
+          throw new RuntimeException("Exception requesting next document list", e);
+        }
+      }
+    };
+
+  }
+
+  /**
    * @return at least 1 and at most {@link SRequest#pageSize} documents or null if there are no more documents.
+   *         Call {@link #hasFinished()} to see if more document lists are available.
    * @throws SolrServerException if Solr could not handle a request for new documents.
    * @throws IOException if general communication with Solr failed.
    */
@@ -386,7 +459,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     int initialSize = documents.size();
     for (int i = 0 ; i < initialSize ; i++) {
       if ("html".equals(documents.get(i).getFieldValue("content_type_norm"))) {
-        documents.addAll(getHTMLResources(documents.get(i)));
+        getHTMLResources(documents.get(i)).forEach(documents::add);
       }
     }
   }
@@ -397,19 +470,18 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * @param html a SolrDocument representing a HTML page.
    * @return the resources (images, CSS, JavaScript...) used by the page.
    */
-  private SolrDocumentList getHTMLResources(SolrDocument html) {
+  private Stream<SolrDocument> getHTMLResources(SolrDocument html) {
     try {
       String sourceFile = html.getFieldValue("source_file_path").toString();
       long offset = Long.parseLong(html.getFieldValue("source_file_offset").toString());
       ArcEntry arc= ArcParserFileResolver.getArcEntry(sourceFile, offset);
       HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
 
-      // This could technically be done with SolrGenericStreaming.timeProximity but findNearestDocuments is
-      // optimized towards many tiny lookups where each lookup yields at most 1 result.
-      return NetarchiveSolrClient.getInstance().findNearestDocuments(resources, arc.getCrawlDate(), join(adjustedFields, ","));
+      return NetarchiveSolrClient.getInstance().findNearestDocuments(
+              resources.stream(), arc.getCrawlDate(), join(adjustedFields, ","));
     } catch (Exception e) {
       log.warn("Unable to get resources for SolrDocument '" + html + "'", e);
-      return new SolrDocumentList();
+      return Stream.of();
     }
   }
 
@@ -780,7 +852,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
      * @return a SolrQuery ready for processing.
      */
     public SolrQuery getMergedSolrQuery() {
-      SolrQuery solrQuery = deepCopy(this.solrQuery);
+      SolrQuery solrQuery = SolrUtils.deepCopy(this.solrQuery);
       if (query != null) {
         solrQuery.setQuery(query);
       }
@@ -800,16 +872,31 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     }
 
     /**
-     * Makes an independent copy of the given SolrQuery by deep-copying the {@code String[]} values.
-     * @param solrQuery any Solr query.
-     * @return an independent copy of the given Solr query.
+     * @return a copy of this SRequest, as independent as possible: {@link #solrQuery} and Lists are deep-copied.
      */
-    private SolrQuery deepCopy(SolrQuery solrQuery) {
-      SolrQuery qc = new SolrQuery();
-      solrQuery.getMap().entrySet().stream().
-              peek(entry -> entry.setValue(Arrays.copyOf(entry.getValue(), entry.getValue().length))).
-              forEach(entry -> qc.set(entry.getKey(), entry.getValue()));
-      return qc;
+    public SRequest deepCopy() {
+      SRequest copy = new SRequest().
+              solrClient(solrClient).
+              solrQuery(solrQuery == null ? null : SolrUtils.deepCopy(solrQuery)).
+              expandResources(expandResources).
+              ensureUnique(ensureUnique).
+              maxUnique(maxUnique).
+              deduplicateField(deduplicateField).
+              fields(copy(fields)).
+              maxResults(maxResults).
+              sort(sort).
+              query(query).
+              filterQueries(copy(filterQueries)).
+              pageSize(pageSize);
+      copy.idealTime = idealTime;
+      return copy;
+    }
+
+    private List<String> copy(List<String> fields) {
+      if (fields == null) {
+        return null;
+      }
+      return new ArrayList<>(fields);
     }
   }
 
