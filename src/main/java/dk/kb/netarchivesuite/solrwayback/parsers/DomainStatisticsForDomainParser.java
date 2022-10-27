@@ -16,8 +16,8 @@ public class DomainStatisticsForDomainParser {
 
   
   
-  public static HashMap<Integer,List<FacetCount>> parseDomainStatisticsJson(String jsonString){       
-    HashMap<Integer,List<FacetCount>> yearFacetDomainCountMap = new HashMap<Integer,List<FacetCount>>();
+  public static HashMap<String,List<FacetCount>> parseDomainStatisticsJson(String jsonString, boolean fromCrawlYear){
+    HashMap<String,List<FacetCount>> yearFacetDomainCountMap = new HashMap<String,List<FacetCount>>();
     
     
     JSONObject json = new JSONObject(jsonString);
@@ -36,7 +36,13 @@ public class DomainStatisticsForDomainParser {
     
       for (int j =0;j<yearBuckets.length();j++) {
         JSONObject pair = (   JSONObject) yearBuckets.get(j);
-        int year =  pair.getInt("val");
+        String year;
+        if (fromCrawlYear) {
+            year = Integer.toString(pair.getInt("val"));
+        } else {
+            // format : YYYY-MM-DDT00:00:00Z -> YYYY-MM-DD
+            year =  pair.getString("val").substring(0, 10);
+        }
         long count = pair.getLong("count");
        
         //All info needed now
@@ -61,12 +67,12 @@ public class DomainStatisticsForDomainParser {
    * TODO specify format
    * 
    */  
-  public static String generateDomainQueryStatisticsString(HashMap<Integer, List<FacetCount>> domainStatisticsForQuery) {      
+  public static String generateDomainQueryStatisticsString(HashMap<String, List<FacetCount>> domainStatisticsForQuery) {
       StringBuilder matrix = new StringBuilder();
       
       //Logic to create to matrix.
       TreeSet<String> allValues = new TreeSet<String>(); //will be sorted 
-      for (int year : domainStatisticsForQuery.keySet()){                
+      for (String year : domainStatisticsForQuery.keySet()){
           List<FacetCount> list = domainStatisticsForQuery.get(year);
           for ( FacetCount facetCount : list) {
              allValues.add(facetCount.getValue());                       
@@ -84,10 +90,10 @@ public class DomainStatisticsForDomainParser {
             
             
       //Iterate over years and generate each line
-      TreeSet<Integer> yearsSorted = new TreeSet<Integer>();
+      TreeSet<String> yearsSorted = new TreeSet<String>();
       yearsSorted.addAll(domainStatisticsForQuery.keySet());
       
-      for (int year : yearsSorted) {
+      for (String year : yearsSorted) {
           joiner = new StringJoiner(",");
           joiner.add(""+year);    
           

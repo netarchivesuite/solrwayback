@@ -297,7 +297,8 @@ margin: 1em 0 0 0;
 .exportContent .downloadButton, 
 .wordcloudButton, 
 .domainContentContainer .domainStatsButton,
-.linkGraphContainer .linkGraphButton  {
+.linkGraphContainer .linkGraphButton,
+.searchVisualizationContainer .searchVisualizationButton {
   float:right;
   border:2px solid var(--secondary-bg-color);
   border-radius: 0;
@@ -316,7 +317,8 @@ margin: 1em 0 0 0;
 .exportContent .downloadButton:hover, 
 .wordcloudButton:hover, 
 .domainContentContainer .domainStatsButton:hover,
-.linkGraphContainer .linkGraphButton:hover {
+.linkGraphContainer .linkGraphButton:hover,
+.searchVisualizationContainer .searchVisualizationButton:hover {
   border:2px solid var(--secondary-bg-color);
   color:white;
   background-color:var(--secondary-bg-color);
@@ -1150,6 +1152,37 @@ margin-left:40px;
 .searchVisualizationHeadline span {
   font-weight: bold;
   color:var(--main-highlight-color);
+}
+
+.searchVisualizationSettings, .timePeriodRefinerSettings {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.searchVisualizationSettings {
+  margin-top:15px;
+}
+
+.timePeriodRefinerContainer .timePeriodRefinerPeriodContainer,
+.timePeriodRefinerContainer .timePeriodRefinerTimeScaleContainer,
+.searchVisualizationContainer .generateButtonContainer {
+  box-sizing: border-box;
+  height:40px;
+}
+
+.timePeriodRefinerContainer .timePeriodRefinerTimeScaleContainer,
+.searchVisualizationSettings .generateButtonContainer {
+  padding:0 10px;
+}
+
+.timePeriodRefinerLabel {
+  margin-right: 5px;
+}
+
+.timePeriodRefinerPeriodContainer input,
+.timePeriodRefinerTimeScaleContainer select {
+  width:150px;
+  margin: 0 5px;
 }
 
 .modalContainer .closeButton, .toolboxCloseButton {

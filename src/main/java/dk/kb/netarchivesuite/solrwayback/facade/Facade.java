@@ -111,9 +111,9 @@ public class Facade {
         return collectionText;
     }
 
-    public static String generateDomainResultGraph(@QueryParam("q") String q, @QueryParam("fq") List<String> fq) throws Exception {
-        String jsonStr = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq);
-        HashMap<Integer, List<FacetCount>> domainStatisticsForQuery = DomainStatisticsForDomainParser.parseDomainStatisticsJson(jsonStr);
+    public static String generateDomainResultGraph(String q, List<String> fq, String startdate, String enddate, String scale) throws Exception {
+        String jsonStr = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq, startdate , enddate, scale);
+        HashMap<String, List<FacetCount>> domainStatisticsForQuery = DomainStatisticsForDomainParser.parseDomainStatisticsJson(jsonStr, scale == null);
         String matrix = DomainStatisticsForDomainParser.generateDomainQueryStatisticsString(domainStatisticsForQuery);
         return matrix;
     }
