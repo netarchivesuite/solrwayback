@@ -768,11 +768,17 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     /**
      * @param fields           fields to export (fl). deduplicateField will be added to this is not already present.
      *                         This parameter has no default and must be defined.
+     *                         If only 1 field is specified and fields contains at least 1 comma, it will treated
+     *                         as a comma separated list of fields: {@code "foo,bar,zoo" == "foo", "bar", "zoo"}.
      * @return the SRequest adjusted with the provided value.
      * @see #fields(List)
      */
     public SRequest fields(String... fields) {
-      this.fields = Arrays.asList(fields);
+      if (fields.length == 1 && fields[0].contains(",")) {
+        this.fields = Arrays.asList(fields[0].split(", *"));
+      } else {
+        this.fields = Arrays.asList(fields);
+      }
       return this;
     }
 

@@ -264,7 +264,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeJSONLExport() throws SolrServerException, InvalidArgumentServiceException, IOException {
         List<String> jsons = IOUtils.readLines(
-                Facade.exportFields("url, links", false, "jsonl", "title:title_5"),
+                Facade.exportFields("url, links", null, false, "jsonl", "title:title_5"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 10, jsons.size());
         for (String line: jsons) {
@@ -282,7 +282,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeJSONExport() throws SolrServerException, InvalidArgumentServiceException, IOException {
         List<String> jsons = IOUtils.readLines(
-                Facade.exportFields("url, links", false, "json", "title:title_5"),
+                Facade.exportFields("url, links", null, false, "json", "title:title_5"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 12, jsons.size());
         assertEquals("The second line should be as expected",
@@ -298,7 +298,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeCSVExport() throws Exception {
         List<String> cvs = IOUtils.readLines(
-                Facade.exportFields("url, links", false, "csv", "title:title_5"),
+                Facade.exportFields("url, links", null, false, "csv", "title:title_5"),
                 //Facade.exportCvsStreaming("title:title_5", null, "url, links"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 11, cvs.size()); // First line is header
@@ -319,7 +319,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeCSVExportFlatten() throws Exception {
         List<String> cvs = IOUtils.readLines(
-                Facade.exportFields("url, links", true, "csv", "title:title_5"),
+                Facade.exportFields("url, links", null, true, "csv", "title:title_5"),
                 //Facade.exportCvsStreaming("title:title_5", null, "url, links"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 21, cvs.size()); // First line is header

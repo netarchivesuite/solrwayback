@@ -532,7 +532,7 @@ public class Facade {
     }
 
     /**
-     * @deprecated use {@link #exportFields(String, boolean, String, String, String...)} instead.
+     * @deprecated use {@link #exportFields(String, String, boolean, String, String, String...)} instead.
      */
     public static InputStream exportCvsStreaming(String q, String fq, String fields) throws Exception {
         // TODO test only allowed fields are selected!
@@ -550,8 +550,12 @@ public class Facade {
     /**
      * Export the search result for the given query and filterQuery as content for the requested fields.
      * @param fields        comma separated list of fields to export.
+     * @param groupField    if not null, documents will be grouped on the given field and only the first document
+     *                      will be exported in each group. This will change document order from score to groupField.
+     *                      This is implemented using {@link SolrGenericStreaming.SRequest#deduplicateField(String)}.
      * @param flatten       if true, {@link SolrGenericStreaming#flatten(SolrDocument)} will be called on each
      *                      SolrDocument to ensure that no field holds multiple values.
+     *                      Note: The current implementation only supports 1 multi-value field for flattening.
      * @param format        Valid formats are {@code json}, {@code jsonl} and {@code csv}.
      * @param query         a Solr query.
      * @param filterQueries optional Solr filter queries.
@@ -560,7 +564,7 @@ public class Facade {
      * @throws IOException if something went wrong during search or delivery.
      * @throws SolrServerException if the number of matches could not be requested from Solr.
      */
-    public static InputStream exportFields(String fields, boolean flatten, String format,
+    public static InputStream exportFields(String fields, String groupField, boolean flatten, String format,
                                            String query, String... filterQueries)
             throws IOException, InvalidArgumentServiceException, SolrServerException {
         // TODO check that only allowed fields are selected!
@@ -576,11 +580,16 @@ public class Facade {
         SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
                 query(query).
                 filterQueries(filterQueries).
-                fields(fields.split(", *"));
+                fields(fields);
+        if (groupField != null && !groupField.isEmpty()) {
+            request = request.deduplicateField(groupField);
+        }
 
-        // Initiate streaming
-        Stream<SolrDocument> docs = SolrGenericStreaming.create(request).stream().
-                flatMap(solrDoc -> flatten ? SolrGenericStreaming.flatten(solrDoc) : Stream.of(solrDoc));
+        // Create stream
+        Stream<SolrDocument> docs = SolrGenericStreaming.create(request).stream();
+        if (flatten) {
+            docs = docs.flatMap(SolrGenericStreaming::flatten);
+        }
 
         return ContentStreams.deliver(docs, fields, format);
     }

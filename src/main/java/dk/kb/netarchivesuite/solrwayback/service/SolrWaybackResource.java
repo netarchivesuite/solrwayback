@@ -382,7 +382,7 @@ public class SolrWaybackResource {
     }
     try {               
       log.debug("Csv export. Query:"+q +" filterquery:"+fq);
-      InputStream is = Facade.exportFields(fields, false, "csv", q, fq);
+      InputStream is = Facade.exportFields(fields, null, false, "csv", q, fq);
       return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_$DATETIME.csv")).build();
 
     } catch (Exception e) {
@@ -404,7 +404,7 @@ public class SolrWaybackResource {
     flatten = flatten != null && flatten;
     try {
       log.debug(format + "{} export. Query:'{}, filterquery:'{}'", format, q, fq);
-      InputStream is = Facade.exportFields(fields, flatten, format, q, fq);
+      InputStream is = Facade.exportFields(fields, null, flatten, format, q, fq);
       return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_$DATETIME." + format)).build();
 
     } catch (Exception e) {
