@@ -19,6 +19,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.Processing;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.StreamBridge;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -84,19 +86,12 @@ public class ContentStreams {
     }
 
     /**
-<<<<<<< HEAD
-     * Create a callable delivering up to maxImages {@link ArcEntryDescriptor}s for images listed in
-     * {@code links_images} for the given htmlPage. The images are searched using
-     * {@link SolrGenericStreaming.SRequest#timeProximityDeduplication(String, String)} meaning that only one
-     * instance of a given image URL is returned, with preference to the one nearest in time to the htmlPage.
-=======
      * Creates a callable delivering up to maxImages {@link SolrDocument}s for images listed in
      * {@code links_images} for the given htmlPage. The documents will contain the fields from
      * {@link SolrUtils#arcEntryDescriptorFieldList}.
      * The images are searched using {@link SolrGenericStreaming.SRequest#timeProximityDeduplication(String, String)}
      * meaning that only one instance of a given image URL is returned, with preference to the one nearest in time to
      * the htmlPage.
->>>>>>> streaming2
      *
      * Note: Small images (less than 2000 pixels) are ignored, as are revisits.
      * @param htmlPage  a representation of a HTML page with links to images.
@@ -105,7 +100,7 @@ public class ContentStreams {
      * @return a callable that will result in at most maxImages images linked from the given htmlPage.
      */
     public static Callable<Stream<SolrDocument>> createHTMLImageCallback(SolrDocument htmlPage, int maxImages) {
-        String timestamp = htmlPage.get("crawl_date").toString();
+        String isotime = DateUtils.getSolrDate((Date) htmlPage.get("crawl_date"));
         Stream<String> urlQueries = ((List<String>)htmlPage.get("links_images")).stream().
                 distinct().
                 map(SolrUtils::createQueryStringForUrl);
@@ -116,7 +111,7 @@ public class ContentStreams {
                                       SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
                                       "image_size:[2000 TO *]").   // No small images. (fillers etc.)
                         fields(SolrUtils.arcEntryDescriptorFieldList).
-                        timeProximityDeduplication(timestamp, "url_norm").
+                        timeProximityDeduplication(isotime, "url_norm").
                         maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
 
         return () -> SolrGenericStreaming.multiQuery(baseRequest, urlQueries, 500).

@@ -17,6 +17,7 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -161,9 +163,9 @@ public class SolrGenericStreamingTest {
                 collect(Collectors.toList());
         assertTrue("Multiple results expected",
                      docs.size() > 1);
-        Set<Object> dates = new HashSet<>();
+        Set<Date> dates = new HashSet<>();
         for (SolrDocument doc: docs) {
-            dates.add(doc.get("crawl_date"));
+            dates.add((Date) doc.get("crawl_date"));
         }
         assertTrue("There should be more than 1 unique data in the time proximity result set",
                    dates.size() > 1);
@@ -272,7 +274,7 @@ public class SolrGenericStreamingTest {
                        line.startsWith("{"));
         }
         assertEquals("The first line should be as expected",
-                     "{\"url\":\"htts://example.COM/5\",\"links\":[\"http://example.com/everywhere\",\"http://example.com/mod10_5\"]}",
+                     "{\"url\":\"https://example.COM/5\",\"links\":[\"http://example.com/everywhere\",\"http://example.com/mod10_5\"]}",
                      jsons.get(0));
     }
 
@@ -286,7 +288,7 @@ public class SolrGenericStreamingTest {
                 "utf-8");
         assertEquals("The right number of lines should be returned", 12, jsons.size());
         assertEquals("The second line should be as expected",
-                     "{\"url\":\"htts://example.COM/5\",\"links\":[\"http://example.com/everywhere\",\"http://example.com/mod10_5\"]},",
+                     "{\"url\":\"https://example.COM/5\",\"links\":[\"http://example.com/everywhere\",\"http://example.com/mod10_5\"]},",
                      jsons.get(1));
     }
 
@@ -306,7 +308,7 @@ public class SolrGenericStreamingTest {
                      "url,links",
                      cvs.get(0));
         assertEquals("The second line should be a data line as expected",
-                     "\"htts://example.COM/5\",\"http://example.com/everywhere\thttp://example.com/mod10_5\"",
+                     "\"https://example.COM/5\",\"http://example.com/everywhere\thttp://example.com/mod10_5\"",
                      cvs.get(1));
     }
 
@@ -327,10 +329,10 @@ public class SolrGenericStreamingTest {
                      "url,links",
                      cvs.get(0));
         assertEquals("The second line should be the first part of a flattened solr document",
-                     "\"htts://example.COM/5\",\"http://example.com/everywhere\"",
+                     "\"https://example.COM/5\",\"http://example.com/everywhere\"",
                      cvs.get(1));
         assertEquals("The third line should be the second part of a flattened solr document",
-                     "\"htts://example.COM/5\",\"http://example.com/mod10_5\"",
+                     "\"https://example.COM/5\",\"http://example.com/mod10_5\"",
                      cvs.get(2));
     }
 
@@ -355,13 +357,13 @@ public class SolrGenericStreamingTest {
         document.setField("id", "doc_" + id);
         document.addField("source_file_offset", id);
         document.addField("title", "title_" + id%10);
-        document.addField("url", "htts://example.COM/" + id%10); // %10 to get duplicates
+        document.addField("url", "https://example.COM/" + id%10); // %10 to get duplicates
         document.addField("url_norm", "http://example.com/" + id%10);
         document.addField("record_type","response");
         document.addField("source_file_path", "some.warc_" + id);
         document.addField("links", Arrays.asList("http://example.com/everywhere", "http://example.com/mod10_" + id%10));
         document.addField("status_code", "200");
-        document.setField("crawl_date", CRAWL_TIMES[r.nextInt(CRAWL_TIMES.length)]);
+        document.setField("crawl_date", DateUtils.solrTimestampToJavaDate(CRAWL_TIMES[r.nextInt(CRAWL_TIMES.length)]));
         embeddedServer.add(document);
     }
 
