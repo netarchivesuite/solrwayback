@@ -105,29 +105,29 @@ export default {
   methods: {
     exportToWARC() {
      return this.searchAppliedFacets ? 
-       this.returnExportUrl() + 'warc?query=' + this.query + this.searchAppliedFacets.join('') :
-       this.returnExportUrl() + 'warc?query=' + this.query
+      `${this.returnExportUrl()}warc?query=${encodeURIComponent(this.query + this.searchAppliedFacets.join(''))}` :
+      `${this.returnExportUrl()}warc?query=${encodeURIComponent(this.query)}`
     },
     exportToExtendedWARC() {
       return this.searchAppliedFacets ? 
-      this.returnExportUrl() + 'warcExpanded?query=' + this.query + this.searchAppliedFacets.join('') :
-      this.returnExportUrl() + 'warcExpanded?query=' + this.query
+      `${this.returnExportUrl()}warcExpanded?query=${encodeURIComponent(this.query + this.searchAppliedFacets.join(''))}` :
+      `${this.returnExportUrl()}warcExpanded?query=${encodeURIComponent(this.query)}`
     },
     exportToWARCGZ() {
       return this.searchAppliedFacets ? 
-      this.returnExportUrl() + 'warc?gzip=true&query=' + this.query + this.searchAppliedFacets.join('') :
-      this.returnExportUrl() + 'warc?gzip=true&query=' + this.query
+      `${this.returnExportUrl()}warc?gzip=true&query=${encodeURIComponent(this.query + this.searchAppliedFacets.join(''))}` :
+      `${this.returnExportUrl()}warc?gzip=true&query=${encodeURIComponent(this.query)}`
     },
     exportToExtendedWARCGZ() {
       return this.searchAppliedFacets ? 
-      this.returnExportUrl() + 'warcExpanded?gzip=true&query=' + this.query + this.searchAppliedFacets.join(''):
-      this.returnExportUrl() + 'warcExpanded?gzip=true&query=' + this.query
+      `${this.returnExportUrl()}warcExpanded?gzip=true&query=${encodeURIComponent(this.query + this.searchAppliedFacets.join(''))}`:
+      `${this.returnExportUrl()}warcExpanded?gzip=true&query=${encodeURIComponent(this.query)}`
     },
     exportToCSV() {
       let fields = this.selectedArray.join(',')
       return this.searchAppliedFacets ? 
-      this.returnExportUrl() + 'csv?query=' + this.query + this.searchAppliedFacets.join('') + '&fields=' + fields :
-      this.returnExportUrl() + 'csv?query=' + this.query + '&fields=' + fields
+      `${this.returnExportUrl()}csv?query=${encodeURIComponent(this.query + this.searchAppliedFacets.join(''))}&fields=${encodeURIComponent(fields)}` :
+      `${this.returnExportUrl()}csv?query=${encodeURIComponent(this.query)}&fields=${encodeURIComponent(fields)}`
     },
     returnExportUrl() {
       return this.configs.playbackConfig.solrwaybackBaseURL + 'services/export/'
