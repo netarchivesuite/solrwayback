@@ -62,38 +62,39 @@ import static org.apache.commons.lang3.StringUtils.join;
  *
  * Extract {@code id} for all documents matching a simple query
  * <pre>
- * List<String> ids = SolrGenericStreaming.create(
- *                 SolrGenericStreaming.SRequest.builder().
- *                         query("kittens").
- *                         fields("id")).
- *         stream().
- *         map(d -> d.getFieldValue("id").toString()).
- *         collect(Collectors.toList());
+ * SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+ *     query("kittens").
+ *     fields("id");
+ * List<String> ids = SolrGenericStreaming.create(request).stream().
+ *     map(d -> d.getFieldValue("id").toString()).
+ *     collect(Collectors.toList());
  * </pre>
  *
- * Get all source-path and offsets for images matching the query {@code kittens}, with de-duplication on {@code url}
- * and with the images closest to the time {@code 2019-04-15T12:31:51Z}:
+ * Request all source-path and offsets for images matching the query {@code kittens},
+ * with de-duplication on {@code url}and with the images closest to the time {@code 2019-04-15T12:31:51Z}:
  * <pre>
- * SolrGenericStreaming.create(SolrGenericStreaming.SRequest.builder().
+ * SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
  *     query("kitten").
  *     filterQueries("content_type_norm:image").
  *     fields("source_file_path", "source_file_offset").
- *     timeProximityDeduplication("2019-04-15T12:31:51Z", "url"))...
+ *     timeProximityDeduplication("2019-04-15T12:31:51Z", "url"));
+ * List<SolrDocument> sources = SolrGenericStreaming.create(request).stream().collect(Collectors.toList());
  * </pre>
  *
- * Get all url_norms, source-paths and offsets for all pages about {@code kittens}, including embedded images,
+ * Request all url_norms, source-paths and offsets for all pages about {@code kittens}, including embedded images,
  * JavaScript and CSS.
  * With de-duplication on page {@code url} and with the pages closest to the time {@code 2019-04-15T12:31:51Z}.
  * Furthermore ensure that all resources are unique. Note: The requirement for uniqueness imposes memory overhead and
- * a limit in result size.
+ * therefore a limit in result size.
  * <pre>
- *     SolrGenericStreaming.create(SolrGenericStreaming.SRequest.builder().
- *         query("kitten").
- *         filterQueries("content_type_norm:html").
- *         fields("url_norm", "source_file_path", "source_file_offset").
- *         timeProximityDeduplication("2019-04-15T12:31:51Z", "url").
- *         expandResources(true).
- *         ensureUnique(true))...
+ * SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+ *     query("kitten").
+ *     filterQueries("content_type_norm:html").
+ *     fields("url_norm", "source_file_path", "source_file_offset").
+ *     timeProximityDeduplication("2019-04-15T12:31:51Z", "url").
+ *     expandResources(true).
+ *     ensureUnique(true));
+ * List<SolrDocument> allUnique = SolrGenericStreaming.create(request).stream().collect(Collectors.toList());
  * </pre>
  */
 public class SolrGenericStreaming implements Iterable<SolrDocument> {
@@ -570,13 +571,17 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * Typically used for exporting to CSV where multi-value is not desirable.
    *
    * The following example delivers a list of documents with a single source and a single destination URL for each link
-   * on each unique page on the kb.dk domain:
+   * on each unique page on the kb.dk domain, where uniqueness is defined by hash:
    * <pre>
-   *   List<SolrDocument> docs = SolrGenericStreaming.timeProximity(
-   *       Arrays.asList("url", "links"), false, false, 0, "2019-04-15T12:31:51Z", "hash", "domain:kb.dk").
-   *       stream().
-   *       flatMap(SolrGenericStreaming::flatten).
-   *       collect(Collectors.toList());
+   * SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+   *     query("domain:kb").
+   *     filterQueries("content_type_norm:html").
+   *     fields("url", "links").
+   *     timeProximityDeduplication("2019-04-15T12:31:51Z", "hash");
+   *
+   * List<SolrDocument> docs = SolrGenericStreaming.create(request).stream().
+   *     flatMap(SolrGenericStreaming::flatten).
+   *     collect(Collectors.toList());
    * </pre>
    *
    * Note: With multiple multi-value fields, the number of produced documents grows multiplicatively.
