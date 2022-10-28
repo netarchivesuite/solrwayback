@@ -14,6 +14,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class JsonUtils {
+	static ObjectWriter jsonWriter;
+	static {
+		ObjectMapper mapper = JsonMapper.builder().build();
+		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+		jsonWriter = mapper.writer(new MinimalPrettyPrinter());
+	}
 
 	/*
 	 * Define the path down to the value to extract. Example of path: user.name
@@ -125,10 +131,13 @@ public class JsonUtils {
 		return element.endsWith("[]") ? element.substring(0, element.length() - 2) : element;
 	}
 
+	/**
+	 * Converts the given Object to a JSON String using the {@link MinimalPrettyPrinter}.
+	 * The result will be a single line of JSON.
+	 * @param o an Object parsable by the Jackson {@link ObjectMapper}.
+	 * @return the Object as JSON, represented as a String.
+	 */
 	public static String toJSON(Object o) {
-		ObjectMapper mapper = JsonMapper.builder().build();
-		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-		ObjectWriter jsonWriter = mapper.writer(new MinimalPrettyPrinter());
 		try {
 			return jsonWriter.writeValueAsString(o);
 		} catch (JsonProcessingException e) {
