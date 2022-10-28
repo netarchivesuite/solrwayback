@@ -229,6 +229,32 @@ public class SolrGenericStreamingTest {
     }
 
     /**
+     * Flatten record with two multi-value fields to single-value by producing multiple single-field records.
+     */
+    @Test
+    public void testFlattenDoubleMulti() {
+        SolrDocument multi = new SolrDocument();
+        multi.setField("id", "foo");
+        multi.setField("m1", Arrays.asList("bar", "zoo"));
+        multi.setField("m2", Arrays.asList("moo", "bam", "kaboom"));
+
+        List<SolrDocument> singles = SolrGenericStreaming.flatten(multi).collect(Collectors.toList());
+
+        assertEquals("There should be the expected number of single-value only documents",
+                     2*3, singles.size());
+        for (SolrDocument doc: singles) {
+            assertEquals("The 'm1' field should only contain a single value",
+                         1, doc.getFieldValues("m1").size());
+            assertEquals("The 'm2' field should only contain a single value",
+                         1, doc.getFieldValues("m2").size());
+        }
+        assertEquals("The first document should contain the expected 'm1'-value",
+                     "bar", singles.get(0).getFieldValue("m1"));
+        assertEquals("The second document should contain the expected 'm2'-value",
+                     "bam", singles.get(1).getFieldValue("m2"));
+    }
+
+    /**
      * Export records with a field ({@code links} that is multi-value.
      */
     @Test

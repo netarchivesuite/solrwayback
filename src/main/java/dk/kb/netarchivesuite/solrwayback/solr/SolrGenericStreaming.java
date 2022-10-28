@@ -24,10 +24,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.Spliterators;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -553,8 +564,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   }
 
   /**
-   * Takes a SolrDocument which has at most 1 multi-valued field and flattens that to multiple documents where the
-   * multi-valued field has been converted to single-valued.
+   * Takes a SolrDocument which has 0 or more multi-valued fields and flattens those fields to single value by creating
+   * multiple documents with all permutations of the values in the multi-valued fields converted to single-valued.
    *
    * Typically used for exporting to CSV where multi-value is not desirable.
    *
@@ -568,36 +579,26 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    *       collect(Collectors.toList());
    * </pre>
    *
+   * Note: With multiple multi-value fields, the number of produced documents grows multiplicatively.
+   *       As everything is streaming, this does not require excessive memory for flatten itself,
+   *       but the amount of produced SolrDocuments can present a problem for the caller.
    * @param doc a document with at most 1 multi-valued field.
    * @return the input document flattened to at least 1 documents holding only single-valued field.
    */
+  @SuppressWarnings({"OptionalIsPresent", "unchecked"})
   public static Stream<SolrDocument> flatten(SolrDocument doc) {
-    String multiField = null;
-    for  (String fieldName: doc.getFieldNames()) {
-      if (doc.getFieldValues(fieldName).size() > 1) {
-        if (multiField != null) {
-          throw new IllegalArgumentException(
-                  "There are at least 2 multi-value fields '" + multiField + "' and '" + fieldName +
-                  "' where at most 1 is allowed");
-        }
-        multiField = fieldName;
-      }
+    Optional<Map.Entry<String, Object>> firstMulti = doc.entrySet().stream().
+            filter(entry -> entry.getValue() instanceof Collection).findFirst();
+    if (!firstMulti.isPresent()) {
+       return Stream.of(doc);
     }
-
-    // If there are no multi-valued field, just return the input document
-    if (multiField == null) {
-      return Stream.of(doc);
-    }
-
-    final String mField = multiField; // lambda requires final
-    // Return a stream of documents where the multi-valued field has been flattened
-    return doc.getFieldValues(mField).stream().
+    return ((Collection<Object>)firstMulti.get().getValue()).stream().
             map(value -> {
-              SolrDocument newDoc = new SolrDocument(new LinkedHashMap<>(doc));
-              newDoc.setField(mField, value);
-              return newDoc;
-            });
-
+              LinkedHashMap<String, Object> extraMap = new LinkedHashMap<>(doc);
+              extraMap.put(firstMulti.get().getKey(), value);
+              return new SolrDocument(extraMap);
+            }).
+            flatMap(SolrGenericStreaming::flatten);
   }
 
   /**
@@ -846,10 +847,6 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     public SRequest pageSize(int pageSize) {
       this.pageSize = pageSize;
       return this;
-    }
-
-    public SolrQuery finalizeSolrQuery() {
-      throw new UnsupportedOperationException("Not implemented yet");
     }
 
     /**
