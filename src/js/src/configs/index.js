@@ -1,6 +1,6 @@
 export default {
   playbackConfig: { 
-      openwaybackBaseURL: '',
+      alternativePlaybackBaseURL: '',
       solrwaybackBaseURL:'',
       playbackDisabled:false
   },
@@ -18,6 +18,10 @@ export default {
 
   logo:{
     url: ''
+  },
+
+  collection:{
+   playback: new Map()  
   },
 
   search:{
