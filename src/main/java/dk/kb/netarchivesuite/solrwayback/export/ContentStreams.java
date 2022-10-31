@@ -16,6 +16,7 @@ package dk.kb.netarchivesuite.solrwayback.export;
 
 import com.google.common.base.Functions;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
+import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
@@ -89,7 +90,7 @@ public class ContentStreams {
      * Creates a callable delivering up to maxImages {@link SolrDocument}s for images listed in
      * {@code links_images} for the given htmlPage. The documents will contain the fields from
      * {@link SolrUtils#arcEntryDescriptorFieldList}.
-     * The images are searched using {@link SolrGenericStreaming.SRequest#timeProximityDeduplication(String, String)}
+     * The images are searched using {@link SRequest#timeProximityDeduplication(String, String)}
      * meaning that only one instance of a given image URL is returned, with preference to the one nearest in time to
      * the htmlPage.
      *
@@ -105,18 +106,17 @@ public class ContentStreams {
                 distinct().
                 map(SolrUtils::createQueryStringForUrl);
 
-        SolrGenericStreaming.SRequest baseRequest =
-                SolrGenericStreaming.SRequest.builder().
-                        filterQueries("content_type_norm:image",   // only images
-                                      SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
-                                      "image_size:[2000 TO *]").   // No small images. (fillers etc.)
-                        fields(SolrUtils.arcEntryDescriptorFieldList).
-                        timeProximityDeduplication(isotime, "url_norm").
-                        maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
+        SRequest request = SRequest.builder().
+                queries(urlQueries).
+                queryBatchSize(500). // URL-searches are single-clause queries, so we can use large batches
+                filterQueries("content_type_norm:image",   // only images
+                              SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
+                              "image_size:[2000 TO *]").   // No small images. (fillers etc.)
+                fields(SolrUtils.arcEntryDescriptorFieldList).
+                timeProximityDeduplication(isotime, "url_norm").
+                maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
 
-        return () -> SolrGenericStreaming.multiQuery(baseRequest, urlQueries, 500).
-                flatMap(SolrGenericStreaming::stream).
-                limit(maxImages);
+        return request::stream;
     }
 
     /**

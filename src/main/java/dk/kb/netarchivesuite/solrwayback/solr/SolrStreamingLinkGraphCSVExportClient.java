@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 
 public class SolrStreamingLinkGraphCSVExportClient implements SolrStreamingLineBasedExportClientInterface {
@@ -39,7 +38,7 @@ public class SolrStreamingLinkGraphCSVExportClient implements SolrStreamingLineB
     this.csvFieldsArray = csvFields.split(", *");
 
     inner = SolrGenericStreaming.create(
-            SolrGenericStreaming.SRequest.builder().
+            SRequest.builder().
                     solrClient(solrClient).
                     query(query).filterQueries(filters).
                     fields(solrFields).

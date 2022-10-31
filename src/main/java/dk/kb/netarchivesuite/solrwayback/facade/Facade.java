@@ -36,6 +36,7 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceExcept
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
@@ -49,7 +50,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import javax.ws.rs.QueryParam;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -516,7 +516,7 @@ public class Facade {
             }
         }
         SolrGenericStreaming solr = SolrGenericStreaming.create(
-                SolrGenericStreaming.SRequest.builder().
+                SRequest.builder().
                         query(query).filterQueries(filterqueries).
                         fields("source_file_path", "source_file_offset").
                         pageSize(100). // TODO: Why so low? The two fields are tiny and single-valued
@@ -552,7 +552,7 @@ public class Facade {
      * @param fields        comma separated list of fields to export.
      * @param groupField    if not null, documents will be grouped on the given field and only the first document
      *                      will be exported in each group. This will change document order from score to groupField.
-     *                      This is implemented using {@link SolrGenericStreaming.SRequest#deduplicateField(String)}.
+     *                      This is implemented using {@link SRequest#deduplicateField(String)}.
      * @param flatten       if true, {@link SolrGenericStreaming#flatten(SolrDocument)} will be called on each
      *                      SolrDocument to ensure that no field holds multiple values.
      *                      Note: The current implementation only supports 1 multi-value field for flattening.
@@ -577,7 +577,7 @@ public class Facade {
                     PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
         }
         // Setup request
-        SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+        SRequest request = SRequest.builder().
                 query(query).
                 filterQueries(filterQueries).
                 fields(fields);

@@ -87,7 +87,7 @@ public class SolrGenericStreamingTest {
     public void basicStreaming() {
         log.debug("Testing basic streaming");
         List<SolrDocument> docs = SolrGenericStreaming.create(
-                        SolrGenericStreaming.SRequest.builder().
+                        SRequest.builder().
                                 query("title:title_5").
                                 fields("id").
                                 pageSize(2)).
@@ -99,7 +99,7 @@ public class SolrGenericStreamingTest {
     public void getIDsStreaming() {
         log.debug("Extract IDs");
         List<String> ids = SolrGenericStreaming.create(
-                        SolrGenericStreaming.SRequest.builder().
+                        SRequest.builder().
                                 query("title:title_5").
                                 fields("id")).
                 stream().
@@ -114,7 +114,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void timeProximity() {
         List<SolrDocument> docs = SolrGenericStreaming.create(
-                        SolrGenericStreaming.SRequest.builder().
+                        SRequest.builder().
                                 query("title:title_5").
                                 fields("id", "crawl_date").
                                 timeProximityDeduplication("2019-04-15T12:31:51Z", "url")).
@@ -131,18 +131,12 @@ public class SolrGenericStreamingTest {
      */
     @Test
     public void multiQuery() {
-        List<SolrGenericStreaming> batchers = SolrGenericStreaming.multiQuery(
-                        SolrGenericStreaming.SRequest.builder().
-                                fields("id").
-                                timeProximityDeduplication("2019-04-15T12:31:51Z", "url"),
-                        Stream.of("title:title_5", "title:title_6", "title:title_7"),
-                        2).
-                collect(Collectors.toList());
+        SRequest request = SRequest.builder().
+                queries(Stream.of("title:title_5", "title:title_6", "title:title_7")).
+                fields("id").
+                timeProximityDeduplication("2019-04-15T12:31:51Z", "url");
 
-        assertEquals("There should be the right number of batch runners",
-                     2, batchers.size());
-
-        Set<SolrDocument> docs = batchers.stream().flatMap(SolrGenericStreaming::stream).collect(Collectors.toSet());
+        Set<SolrDocument> docs = request.stream().collect(Collectors.toSet());
         assertEquals("There should be the right number of total returned documents",
                      3, docs.size());
     }
@@ -154,13 +148,12 @@ public class SolrGenericStreamingTest {
      */
     @Test
     public void timeProximityMulti() {
-        List<SolrDocument> docs = SolrGenericStreaming.create(
-                        SolrGenericStreaming.SRequest.builder().
-                                query("*:*").
-                                fields("id", "crawl_date").
-                                timeProximityDeduplication("2019-04-15T12:31:51Z", "url")).
-                stream().
-                collect(Collectors.toList());
+        SRequest request = SRequest.builder().
+                query("*:*").
+                fields("id", "crawl_date").
+                timeProximityDeduplication("2019-04-15T12:31:51Z", "url");
+        
+        List<SolrDocument> docs = request.stream().collect(Collectors.toList());
         assertTrue("Multiple results expected",
                      docs.size() > 1);
         Set<Date> dates = new HashSet<>();
@@ -195,12 +188,12 @@ public class SolrGenericStreamingTest {
     public void testLimit() {
         assertEquals("Limiting maxResults should return the desired max number of documents",
                      7,
-                     SolrGenericStreaming.create(SolrGenericStreaming.SRequest.create(
+                     SolrGenericStreaming.create(SRequest.create(
                              "*:*", "url", "links").maxResults(7)).
                              stream().count());
         assertEquals("Having maxResults above the total number of documents should work",
                      100,
-                     SolrGenericStreaming.create(SolrGenericStreaming.SRequest.create(
+                     SolrGenericStreaming.create(SRequest.create(
                              "*:*", "url", "links").maxResults(100000)).
                              stream().count());
     }
@@ -259,7 +252,7 @@ public class SolrGenericStreamingTest {
      */
     @Test
     public void linksExportMulti() {
-        List<SolrDocument> docs = SolrGenericStreaming.create(SolrGenericStreaming.SRequest.builder().
+        List<SolrDocument> docs = SolrGenericStreaming.create(SRequest.builder().
                 query("*:*").fields("url", "links").deduplicateField("url_norm")).
                 stream().
                 collect(Collectors.toList());
@@ -275,7 +268,7 @@ public class SolrGenericStreamingTest {
      */
     @Test
     public void linksExportSingle() {
-        List<SolrDocument> docs = SolrGenericStreaming.create(SolrGenericStreaming.SRequest.builder().
+        List<SolrDocument> docs = SolrGenericStreaming.create(SRequest.builder().
                 query("*:*").fields("url", "links").deduplicateField("url_norm")).
                 stream().
                 flatMap(SolrGenericStreaming::flatten).

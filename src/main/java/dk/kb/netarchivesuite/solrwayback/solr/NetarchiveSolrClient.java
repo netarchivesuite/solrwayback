@@ -379,7 +379,7 @@ public class NetarchiveSolrClient {
      */
     public ArrayList<ArcEntryDescriptor> findImagesForTimestamp(String searchString, String timeStamp) {
         return SolrGenericStreaming.create(
-                        SolrGenericStreaming.SRequest.builder().
+                        SRequest.builder().
                                 query(searchString).
                                 filterQueries("content_type_norm:image",   // only images
                                               SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
@@ -694,10 +694,6 @@ public class NetarchiveSolrClient {
     public Stream<SolrDocument> findNearestDocuments(Stream<String> urls, String timeStamp, String fieldList) {
         final int chunkSize = 1000;
 
-        SolrGenericStreaming.SRequest baseRequest = SolrGenericStreaming.SRequest.builder().
-                filterQueries(SolrUtils.NO_REVISIT_FILTER). // No binary for revists
-                fields(fieldList).
-                timeProximityDeduplication(timeStamp, "url_norm");
 
         Stream<String> urlQueries = urls.
                 filter(url -> !url.startsWith("data:")).
@@ -705,8 +701,13 @@ public class NetarchiveSolrClient {
                 map(SolrUtils::createPhrase).
                 map(url -> "url_norm:" + url);
 
-        return SolrGenericStreaming.multiQuery(baseRequest, urlQueries, chunkSize).
-                flatMap(SolrGenericStreaming::stream);
+        return SRequest.builder().
+                queries(urlQueries).
+                queryBatchSize(chunkSize). // URL-searches are single-clause queries, so we can use large batches
+                filterQueries(SolrUtils.NO_REVISIT_FILTER). // No binary for revists
+                fields(fieldList).
+                timeProximityDeduplication(timeStamp, "url_norm").
+                stream();
     }
 
     public static void mergeInto(SolrDocumentList main, SolrDocumentList additional) {
