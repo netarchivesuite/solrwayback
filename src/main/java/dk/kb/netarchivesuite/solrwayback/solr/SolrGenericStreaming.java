@@ -60,7 +60,7 @@ import static org.apache.commons.lang3.StringUtils.join;
  *
  * Extract {@code id} for all documents matching a simple query
  * <pre>
- * SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+ * SRequest request = SRequest.builder().
  *     query("kittens").
  *     fields("id");
  * List<String> ids = SolrGenericStreaming.create(request).stream().
@@ -71,7 +71,7 @@ import static org.apache.commons.lang3.StringUtils.join;
  * Request all source-path and offsets for images matching the query {@code kittens},
  * with de-duplication on {@code url}and with the images closest to the time {@code 2019-04-15T12:31:51Z}:
  * <pre>
- * SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+ * SRequest request = SRequest.builder().
  *     query("kitten").
  *     filterQueries("content_type_norm:image").
  *     fields("source_file_path", "source_file_offset").
@@ -85,7 +85,7 @@ import static org.apache.commons.lang3.StringUtils.join;
  * Furthermore ensure that all resources are unique. Note: The requirement for uniqueness imposes memory overhead and
  * therefore a limit in result size.
  * <pre>
- * SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+ * SRequest request = SRequest.builder().
  *     query("kitten").
  *     filterQueries("content_type_norm:html").
  *     fields("url_norm", "source_file_path", "source_file_offset").
@@ -93,6 +93,12 @@ import static org.apache.commons.lang3.StringUtils.join;
  *     expandResources(true).
  *     ensureUnique(true));
  * List<SolrDocument> allUnique = SolrGenericStreaming.create(request).stream().collect(Collectors.toList());
+ * </pre>
+ * 
+ * For most use cases, the state of the {@code SolrGenericStreaming} instance is irrelevant. If the Stream of
+ * {@code Solrdocument}s is the only result needed, the {@link SRequest#stream()} shorthand can be used:
+ * <pre>
+ *     Stream<Solrdocuments> docs = SRequest.builder().query("foo").fields("url_norm).stream();
  * </pre>
  */
 public class SolrGenericStreaming implements Iterable<SolrDocument> {
@@ -549,7 +555,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * The following example delivers a list of documents with a single source and a single destination URL for each link
    * on each unique page on the kb.dk domain, where uniqueness is defined by hash:
    * <pre>
-   * SolrGenericStreaming.SRequest request = SolrGenericStreaming.SRequest.builder().
+   * SRequest request = SRequest.builder().
    *     query("domain:kb").
    *     filterQueries("content_type_norm:html").
    *     fields("url", "links").
