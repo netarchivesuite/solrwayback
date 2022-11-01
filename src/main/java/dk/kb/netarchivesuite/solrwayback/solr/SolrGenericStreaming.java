@@ -472,7 +472,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
 
       return NetarchiveSolrClient.getInstance().findNearestDocuments(
-              resources.stream(), arc.getCrawlDate(), join(adjustedFields, ","));
+              join(adjustedFields, ","), arc.getCrawlDate(),
+              resources.stream(), request.getExpandResourcesFilterQueries());
     } catch (Exception e) {
       log.warn("Unable to get resources for SolrDocument '" + html + "'", e);
       return Stream.of();

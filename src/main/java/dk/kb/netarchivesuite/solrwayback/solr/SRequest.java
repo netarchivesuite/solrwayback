@@ -61,6 +61,7 @@ public class SRequest {
     public SolrClient solrClient = SolrGenericStreaming.defaultSolrClient;
     public SolrQuery solrQuery = new SolrQuery();
     public boolean expandResources = false;
+    public List<String> expandResourcesFilterQueries;
     public boolean ensureUnique = false;
     public Integer maxUnique = DEFAULT_MAX_UNIQUE;
     private String idealTime; // If defined, a sort will be created as String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
@@ -312,7 +313,7 @@ public class SRequest {
      * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
      *                      If multiple filters are to be used, consider collapsing them into one:
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
-     *                      Note: This overrides any existing queries.
+     *                      Note: This overrides any existing filterQueries.
      * @return the SRequest adjusted with the provided value.
      * @see #filterQueries(String...)
      */
@@ -325,12 +326,41 @@ public class SRequest {
      * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
      *                      If multiple filters are to be used, consider collapsing them into one:
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
-     *                      Note: This overrides any existing queries.
+     *                      Note: This overrides any existing filterQueries.
      * @return the SRequest adjusted with the provided value.
      * @see #filterQueries(List)
      */
     public SRequest filterQueries(String... filterQueries) {
         this.filterQueries = Arrays.asList(filterQueries);
+        return this;
+    }
+
+    /**
+     * @param filterQueries optional Solr filter queries used when {@link #expandResources(Boolean)} is true.
+     *                      Only resources that satisfies these filters are exported.
+     *                      For performance, 0 or 1 filter query is recommended.
+     *                      If multiple filters are to be used, consider collapsing them into one:
+     *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      Note: This overrides any existing expandResourcesFilterQueries.
+     * @return the SRequest adjusted with the provided value.
+     * @see #filterQueries(String...)
+     */
+    public SRequest expandResourcesFilterQueries(List<String> filterQueries) {
+        this.expandResourcesFilterQueries = filterQueries;
+        return this;
+    }
+
+    /**
+     * @param filterQueries optional Solr filter queries used when {@link #expandResources(Boolean)} is true.
+     *                      Only resources that satisfies these filters are exported.
+     *                      If multiple filters are to be used, consider collapsing them into one:
+     *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      Note: This overrides any existing expandResourcesFilterQueries.
+     * @return the SRequest adjusted with the provided value.
+     * @see #filterQueries(List)
+     */
+    public SRequest expandResourcesFilterQueries(String... filterQueries) {
+        this.expandResourcesFilterQueries = Arrays.asList(filterQueries);
         return this;
     }
 
@@ -386,6 +416,15 @@ public class SRequest {
     }
 
     /**
+     * @return expandResourcesFilterQueries as an array. Empty if no filters has been assigned.
+     */
+    public String[] getExpandResourcesFilterQueries() {
+        return expandResourcesFilterQueries == null ?
+                new String[0] :
+                expandResourcesFilterQueries.toArray(new String[0]);
+    }
+
+    /**
      * @return true if there are multiple queries, i.e. {@link #query(String)} has been called.
      */
     public boolean isMultiQuery() {
@@ -410,6 +449,7 @@ public class SRequest {
                 query(query).
                 queries(queries).
                 filterQueries(copy(filterQueries)).
+                expandResourcesFilterQueries(copy(expandResourcesFilterQueries)).
                 pageSize(pageSize);
         copy.idealTime = idealTime;
         return copy;
