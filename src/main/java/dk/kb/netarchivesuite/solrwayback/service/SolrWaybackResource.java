@@ -413,9 +413,9 @@ public class SolrWaybackResource {
     }
     format = format == null ? "csv" : format;
     try {
-      log.debug("{} export. Query:'{}, filterquery:'{}', fields:'{}', expandResources:{}, ensureUnique:{}, flatten:{}",
+      log.debug("{} export. Query:'{}, filterquery:'{}', fields:'{}', expandResources:{}, ensureUnique:{}, flatten:{}, groupfield:{}",
                 format, q, fq, fields,
-                Boolean.TRUE.equals(expandResources), Boolean.TRUE.equals(ensureUnique), Boolean.TRUE.equals(flatten));
+                Boolean.TRUE.equals(expandResources), Boolean.TRUE.equals(ensureUnique), Boolean.TRUE.equals(flatten), groupField);
       InputStream is = Facade.exportFields(fields, expandResources, ensureUnique, groupField, flatten, format, q, fq);
       return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_$DATETIME." + format)).build();
 
