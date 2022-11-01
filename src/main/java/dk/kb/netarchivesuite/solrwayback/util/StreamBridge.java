@@ -146,6 +146,7 @@ public class StreamBridge {
     public static InputStream outputToInputSafe(Collection<Consumer<SafeOutputStream>> providers) throws IOException {
         PipedOutputStream out = new PipedOutputStream();
         PipedInputStream in = new PipedInputStream(out);
+        ExceptionCatchingInputStream ein = new ExceptionCatchingInputStream(in);
 
         List<Consumer<SafeOutputStream>> providerList = new ArrayList<>(providers);
         OutputStream noCloseOut = new NonClosingOutputStream(out); // The sub-streams are concatenated
@@ -158,10 +159,13 @@ public class StreamBridge {
                 try {
                     providerList.get(i).accept(safeOut);
                 } catch (Exception e) {
-                    log.warn(String.format(
-                            Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d. " +
-                                            "Switching to next sub-provider",
-                            i+1, providerList.size()), e);
+                    String message = String.format(
+                            Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d",
+                            i+1, providerList.size());
+                    log.warn(message, e);
+                    // Next read call on the returned InputStream will throw this Exception
+                    ein.setException(new IOException(message, e));
+                    break;
                 }
             }
             //providers.forEach(provider -> provider.accept(noCloseOut));
@@ -172,7 +176,72 @@ public class StreamBridge {
                 log.error("IOException closing piped stream", e);
             }
         });
-        return in;
+        return ein;
+    }
+
+    /**
+     * Wrapper that throws an assigned IOException on reads. Used to propagate Exceptions using {@link PipedInputStream}
+     * and {@link PipedOutputStream}.
+     */
+    @SuppressWarnings("NullableProblems")
+    private static final class ExceptionCatchingInputStream extends FilterInputStream {
+        private IOException e;
+        public ExceptionCatchingInputStream(InputStream inputStream) {
+            super(inputStream);
+        }
+
+        /**
+         * After setting an exception it will be thrown on calls to any read method.
+         * @param e an IOException to be propagated.
+         */
+        public void setException(IOException e) {
+            this.e = e;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int b = super.read();
+            if (e != null) { // This check must be after the call to super to ensure happens-before
+                throw e;
+            }
+            return b;
+        }
+
+        @Override
+        public int read(byte[] bytes) throws IOException {
+            int read = super.read(bytes);
+            if (e != null) { // This check must be after the call to super to ensure happens-before
+                throw e;
+            }
+            return read;
+        }
+
+        @Override
+        public int read(byte[] bytes, int i, int i1) throws IOException {
+            int read = super.read(bytes, i, i1);    // TODO: Implement this
+            if (e != null) { // This check must be after the call to super to ensure happens-before
+                throw e;
+            }
+            return read;
+        }
+
+        @Override
+        public long skip(long l) throws IOException {
+            long skipped = super.skip(l);
+            if (e != null) { // This check must be after the call to super to ensure happens-before
+                throw e;
+            }
+            return skipped;
+        }
+
+        @Override
+        public int available() throws IOException {
+            int available = super.available();
+            if (e != null) { // This check must be after the call to super to ensure happens-before
+                throw e;
+            }
+            return available;
+        }
     }
 
     /**

@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.hdfs.util.ByteBufferOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.manipulation.Filter;
@@ -9,6 +10,9 @@ import org.junit.runner.manipulation.Filter;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /*
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,15 +31,40 @@ import java.nio.file.Paths;
 public class StreamBridgeTest extends UnitTestUtils {
 
     @Test
+    public void testOutputToInputStream() throws IOException {
+        int result;
+        try (InputStream in = StreamBridge.outputToInputSafe(
+                (out) -> out.write(87))) {
+            result = in.read();
+        }
+        assertEquals(87, result);
+    }
+
+    @Test
+    public void testOutputToInputStreamFail() throws IOException {
+        try (InputStream in = StreamBridge.outputToInputSafe((out) -> {
+            throw new RuntimeException("Failing on purpose");
+        })) {
+            try {
+                int result = in.read();
+                fail("An exception should have been thrown");
+            } catch (Exception e) {
+                // Expected
+            }
+        }
+        ;
+    }
+
+    @Test
     public void testGuaranteedStreamMemory() throws IOException {
         File testFile = getFile("compressions_warc/transfer_compression_brotli.warc");
         long filesize = Files.size(Paths.get(testFile.getPath()));
         try (StatusInputStream guaranteed = StreamBridge.guaranteedStream(
                 new FileInputStream(testFile), (int) filesize)) {
-            Assert.assertEquals("The guaranteed resolved size should match the file size", filesize, guaranteed.size());
+            assertEquals("The guaranteed resolved size should match the file size", filesize, guaranteed.size());
 
             long delivered = IOUtils.skip(guaranteed, filesize*2);
-            Assert.assertEquals("The guaranteed delivered size should match the file size", filesize, delivered);
+            assertEquals("The guaranteed delivered size should match the file size", filesize, delivered);
         }
     }
 
@@ -45,10 +74,10 @@ public class StreamBridgeTest extends UnitTestUtils {
         long filesize = Files.size(Paths.get(testFile.getPath()));
         try (StatusInputStream guaranteed = StreamBridge.guaranteedStream(
                 new FileInputStream(testFile), (int) filesize/2)) {
-            Assert.assertEquals("The guaranteed resolved size should match the file size", filesize, guaranteed.size());
+            assertEquals("The guaranteed resolved size should match the file size", filesize, guaranteed.size());
 
             long delivered = IOUtils.skip(guaranteed, filesize*2);
-            Assert.assertEquals("The guaranteed delivered size should match the file size", filesize, delivered);
+            assertEquals("The guaranteed delivered size should match the file size", filesize, delivered);
         }
     }
 
@@ -58,7 +87,7 @@ public class StreamBridgeTest extends UnitTestUtils {
         long filesize = Files.size(Paths.get(testFile.getPath()));
         try (StatusInputStream guaranteed = StreamBridge.guaranteedStream(
                 new FailingStream(new FileInputStream(testFile), filesize / 2), (int) filesize)) {
-            Assert.assertEquals("The status of the guaranteed stream should be correct",
+            assertEquals("The status of the guaranteed stream should be correct",
                                 StatusInputStream.STATUS.exception, guaranteed.getStatus());
             Assert.assertNotSame("The guaranteed resolved size should not match the file size",
                                  filesize, guaranteed.size());
