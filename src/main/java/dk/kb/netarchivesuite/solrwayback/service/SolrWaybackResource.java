@@ -414,9 +414,10 @@ public class SolrWaybackResource {
     }
     format = format == null ? "csv" : format;
     try {
-      log.debug("{} export. Query:'{}, filterquery:'{}', fields:'{}', expandResources:{}, ensureUnique:{}, flatten:{}, groupfield:{}",
+      log.debug("{} export. Query:'{}, filterquery:'{}', fields:'{}', expandResources:{}, ensureUnique:{}, flatten:{}, groupfield:{}, gzip:{}",
                 format, q, fq, fields,
-                Boolean.TRUE.equals(expandResources), Boolean.TRUE.equals(ensureUnique), Boolean.TRUE.equals(flatten), groupField);
+                Boolean.TRUE.equals(expandResources), Boolean.TRUE.equals(ensureUnique), Boolean.TRUE.equals(flatten),
+                groupField, Boolean.TRUE.equals(gzip));
       InputStream is = Facade.exportFields(fields, expandResources, ensureUnique, groupField, flatten, format, gzip, q, fq);
       // TODO: Set MIME-type and compression flag
       String filenameTemplate = "solrwayback_$DATETIME." + format + (gzip ? ".gz" : "");
