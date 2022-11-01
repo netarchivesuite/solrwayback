@@ -372,8 +372,15 @@ public class SolrWaybackResource {
 
   
   
- 
-
+  /**
+   * 
+   * @deprecated
+   * This method is no longer acceptable to compute time between versions.
+   * Use '/export/fields' instead. 
+   * Have frontend switch to this method. 
+   *
+   */
+  @Deprecated   
   @GET
   @Path("/export/csv")    
   public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq,@QueryParam("fields") String fields) throws SolrWaybackServiceException {
