@@ -41,6 +41,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.*;
 
@@ -266,7 +267,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testExportGroupingFacade() throws SolrServerException, InvalidArgumentServiceException, IOException {
         String csv = Streams.asString(Facade.exportFields(
-                "url,source_file_offset", false, false, "url", false, "csv", "*:*"));
+                "url,source_file_offset", false, false, "url", false, "csv", false, "*:*"));
         assertEquals("There should be 10+1 CSV lines (10 unique URLs + header)",
                      11, csv.split("\n").length);
     }
@@ -309,7 +310,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeJSONLExport() throws SolrServerException, InvalidArgumentServiceException, IOException {
         List<String> jsons = IOUtils.readLines(
-                Facade.exportFields("url, links", false, false, null, false, "jsonl", "title:title_5"),
+                Facade.exportFields("url, links", false, false, null, false, "jsonl", false, "title:title_5"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 10, jsons.size());
         for (String line: jsons) {
@@ -327,7 +328,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeJSONExport() throws SolrServerException, InvalidArgumentServiceException, IOException {
         List<String> jsons = IOUtils.readLines(
-                Facade.exportFields("url, links", false, false, null, false, "json", "title:title_5"),
+                Facade.exportFields("url, links", false, false, null, false, "json", false, "title:title_5"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 12, jsons.size());
         assertEquals("The second line should be as expected",
@@ -343,7 +344,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeCSVExport() throws Exception {
         List<String> cvs = IOUtils.readLines(
-                Facade.exportFields("url, links", false, false, null, false, "csv", "title:title_5"),
+                Facade.exportFields("url, links", false, false, null, false, "csv", false, "title:title_5"),
                 //Facade.exportCvsStreaming("title:title_5", null, "url, links"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 11, cvs.size()); // First line is header
@@ -364,7 +365,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeCSVExportFlatten() throws Exception {
         List<String> cvs = IOUtils.readLines(
-                Facade.exportFields("url, links", false, false, null, true, "csv", "title:title_5"),
+                Facade.exportFields("url, links", false, false, null, true, "csv", false, "title:title_5"),
                 //Facade.exportCvsStreaming("title:title_5", null, "url, links"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 21, cvs.size()); // First line is header
@@ -377,6 +378,20 @@ public class SolrGenericStreamingTest {
         assertEquals("The third line should be the second part of a flattened solr document",
                      "\"https://example.COM/5\",\"http://example.com/mod10_5\"",
                      cvs.get(2));
+    }
+
+    /**
+     * Test of GZIP-compression of field export
+     * @throws Exception
+     */
+    @Test
+    public void testFacadefieldExportGZIP() throws Exception {
+        List<String> csv = IOUtils.readLines(new GZIPInputStream(
+                Facade.exportFields("url, links", false, false, null, true, "csv", true, "title:title_5")),
+                //Facade.exportCvsStreaming("title:title_5", null, "url, links"),
+                "utf-8");
+        System.out.println(csv);
+        assertEquals("The right number of lines should be returned", 21, csv.size()); // First line is header
     }
 
     private static void fillSolr() throws SolrServerException, IOException {

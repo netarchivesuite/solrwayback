@@ -532,7 +532,7 @@ public class Facade {
     }
 
     /**
-     * @deprecated use {@link #exportFields(String, String, boolean, String, String, String...)} instead.
+     * @deprecated use {@link #exportFields(String, Boolean, Boolean, String, Boolean, String, String, String...)}.
      */
     public static InputStream exportCvsStreaming(String q, String fq, String fields) throws Exception {
         // TODO test only allowed fields are selected!
@@ -564,7 +564,8 @@ public class Facade {
      *                      SolrDocument to ensure that no field holds multiple values.
      *                      Note: If there are multiple multi-value fields, this can result in a large amount of
      *                            flattened documents, as all permutations of values will be present.
-     * @param format        Valid formats are {@code json}, {@code jsonl} and {@code csv}.
+     * @param format        valid formats are {@code json}, {@code jsonl} and {@code csv}.
+     * @param gzip          if true, the output is GZIPpped.
      * @param query         a Solr query.
      * @param filterQueries optional Solr filter queries.
      * @return an InputStream delivering the result.
@@ -574,7 +575,7 @@ public class Facade {
      */
     public static InputStream exportFields(
             String fields, Boolean expandResources, Boolean ensureUnique,
-            String groupField, Boolean flatten, String format,
+            String groupField, Boolean flatten, String format, Boolean gzip,
             String query, String... filterQueries)
             throws IOException, InvalidArgumentServiceException, SolrServerException {
         // TODO check that only allowed fields are selected!
@@ -601,7 +602,7 @@ public class Facade {
             docs = docs.flatMap(SolrGenericStreaming::flatten);
         }
 
-        return ContentStreams.deliver(docs, fields, format);
+        return ContentStreams.deliver(docs, fields, format, gzip);
     }
 
 

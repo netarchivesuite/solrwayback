@@ -389,7 +389,7 @@ public class SolrWaybackResource {
     }
     try {               
       log.debug("Csv export. Query:"+q +" filterquery:"+fq);
-      InputStream is = Facade.exportFields(fields, false, false, null, false, "csv", q, fq);
+      InputStream is = Facade.exportFields(fields, false, false, null, false, "csv", false, q, fq);
       return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_$DATETIME.csv")).build();
 
     } catch (Exception e) {
@@ -407,7 +407,8 @@ public class SolrWaybackResource {
                                @QueryParam("ensureUnique") Boolean ensureUnique,
                                @QueryParam("groupfield") String groupField,
                                @QueryParam("flatten") Boolean flatten,
-                               @QueryParam("format") String format) throws SolrWaybackServiceException {
+                               @QueryParam("format") String format,
+                               @QueryParam("gzip") Boolean gzip) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){
       throw new InvalidArgumentServiceException("Export to fields not allowed!");
     }
@@ -416,8 +417,10 @@ public class SolrWaybackResource {
       log.debug("{} export. Query:'{}, filterquery:'{}', fields:'{}', expandResources:{}, ensureUnique:{}, flatten:{}",
                 format, q, fq, fields,
                 Boolean.TRUE.equals(expandResources), Boolean.TRUE.equals(ensureUnique), Boolean.TRUE.equals(flatten));
-      InputStream is = Facade.exportFields(fields, expandResources, ensureUnique, groupField, flatten, format, q, fq);
-      return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_$DATETIME." + format)).build();
+      InputStream is = Facade.exportFields(fields, expandResources, ensureUnique, groupField, flatten, format, gzip, q, fq);
+      // TODO: Set MIME-type and compression flag
+      String filenameTemplate = "solrwayback_$DATETIME." + format + (gzip ? ".gz" : "");
+      return Response.ok(is).header("Content-Disposition", getDisposition(filenameTemplate)).build();
 
     } catch (Exception e) {
       log.error("Error in export full",e);

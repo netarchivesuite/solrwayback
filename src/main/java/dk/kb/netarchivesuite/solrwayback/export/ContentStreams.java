@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Stream oriented content delivery, suitable for export as well as special searches such as image search.
@@ -127,28 +128,41 @@ public class ContentStreams {
      * @param docs   Solr documents with the stated {@code fields}.
      * @param fields the fields to write. Some {@code format}s ignore these and write all fields in the {@code docs}.
      * @param format the format to write the data. See {@link FORMAT}.
+     * @param gzip   if true, the output is GZIPped.
      * @throws IOException if the content could not be written.
      */
-    public static InputStream deliver(Stream<SolrDocument> docs, String fields, String format) throws IOException {
+    public static InputStream deliver(Stream<SolrDocument> docs, String fields, String format, Boolean gzip)
+            throws IOException {
         FORMAT realFormat = FORMAT.valueOf(format.toLowerCase(Locale.ROOT));
 
         return StreamBridge.outputToInputSafe(out -> {
+            StreamBridge.SafeOutputStream finalOut = out;
+            if (gzip) {
+                try {
+                    finalOut = new StreamBridge.SafeOutputStream(new GZIPOutputStream(out));
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to construct GZIPOutputStream");
+                }
+            }
+
             switch (realFormat) {
                 case csv: {
-                    writeCSV(docs, fields, out);
+                    writeCSV(docs, fields, finalOut);
                     break;
                 }
                 case json: {
-                    writeJSON(docs, out);
+                    writeJSON(docs, finalOut);
                     break;
                 }
                 case jsonl: {
-                    writeJSONLines(docs, out);
+                    writeJSONLines(docs, finalOut);
                     break;
                 }
                 default:
                     throw new UnsupportedOperationException("The format '" + format + "' is not supported");
             }
+            finalOut.flush();
+            finalOut.close();
         });
     }
 
