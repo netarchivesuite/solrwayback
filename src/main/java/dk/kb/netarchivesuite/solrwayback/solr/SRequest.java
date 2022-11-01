@@ -26,10 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Spliterators;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * Encapsulation of a request to SolrGenericStreaming. Care has been taken to ensure sane defaults;
@@ -139,8 +137,8 @@ public class SRequest {
      *                        Note: Indirect references (through JavaScript & CSS) are not followed.
      * @return the SRequest adjusted with the provided value.
      */
-    public SRequest expandResources(boolean expandResources) {
-        this.expandResources = expandResources;
+    public SRequest expandResources(Boolean expandResources) {
+        this.expandResources = Boolean.TRUE.equals(expandResources);
         return this;
     }
 
@@ -152,8 +150,8 @@ public class SRequest {
      * @return the SRequest adjusted with the provided value.
      * @see #maxUnique(Integer)
      */
-    public SRequest ensureUnique(boolean ensureUnique) {
-        this.ensureUnique = ensureUnique;
+    public SRequest ensureUnique(Boolean ensureUnique) {
+        this.ensureUnique = Boolean.TRUE.equals(ensureUnique);
         return this;
     }
 
@@ -162,7 +160,7 @@ public class SRequest {
      *                  If the number of uniques exceeds this limit, an exception will be thrown.
      *                  Default is {@link #DEFAULT_MAX_UNIQUE}.
      * @return the SRequest adjusted with the provided value.
-     * @see #ensureUnique(boolean)
+     * @see #ensureUnique(Boolean)
      */
     public SRequest maxUnique(Integer maxUnique) {
         this.maxUnique = maxUnique;
@@ -170,6 +168,7 @@ public class SRequest {
     }
 
     /**
+     * Note: This overrides any existing {@link #sort(String)}.
      * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
      *                         Default is null (no deduplication).
      *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
@@ -177,6 +176,9 @@ public class SRequest {
      * @return the SRequest adjusted with the provided value.
      */
     public SRequest deduplicateField(String deduplicateField) {
+        if (deduplicateField != null && deduplicateField.isEmpty()) {
+            throw new IllegalArgumentException("deduplicateField cannot be the empty String");
+        }
         this.deduplicateField = deduplicateField;
         return this;
     }
@@ -197,6 +199,9 @@ public class SRequest {
      * @return the SRequest adjusted with the provided values.
      */
     public SRequest timeProximityDeduplication(String idealTime, String deduplicateField) {
+        if (deduplicateField != null && deduplicateField.isEmpty()) {
+            throw new IllegalArgumentException("deduplicateField cannot be the empty String");
+        }
         String origo = idealTime;
         if ("newest".equals(idealTime)) {
             origo = "9999-12-31T23:59:59Z";
@@ -255,7 +260,8 @@ public class SRequest {
     }
 
     /**
-     * Note: {@link #timeProximityDeduplication(String, String)} takes precedence over sort.
+     * Note: {@link #timeProximityDeduplication(String, String)} and {@link #deduplicateField(String)} takes
+     * precedence over sort.
      *
      * @param sort standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
      *             by {@link SolrGenericStreaming#adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
@@ -290,7 +296,7 @@ public class SRequest {
      *                However, there is an upper limit to batching so multiple batches might be issued.
      *                This affects {@link #deduplicateField(String)} and {@link #timeProximityDeduplication(String, String)}
      *                as overall deduplication will not be guaranteed.
-     *                Use {@link #ensureUnique(boolean)} to force unique results, if needed.
+     *                Use {@link #ensureUnique(Boolean)} to force unique results, if needed.
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if {@link #query(String)} called before this.
      */
@@ -368,6 +374,8 @@ public class SRequest {
 
         if (idealTime != null) {
             sort = String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
+        } else if (deduplicateField != null) {
+            sort = String.format(Locale.ROOT, "%s asc", deduplicateField);
         }
         solrQuery.set(CommonParams.SORT, sort);
         if (fields != null) {
