@@ -705,9 +705,8 @@ public class NetarchiveSolrClient {
 
         return SRequest.builder().
                 queries(urlQueries).
-                filterQueries(filterQueries).
+                filterQueries(SolrUtils.extend(SolrUtils.NO_REVISIT_FILTER, filterQueries)). // No binary for revists
                 queryBatchSize(chunkSize). // URL-searches are single-clause queries, so we can use large batches
-                filterQueries(SolrUtils.NO_REVISIT_FILTER). // No binary for revists
                 fields(fieldList).
                 timeProximityDeduplication(timeStamp, "url_norm").
                 stream();
