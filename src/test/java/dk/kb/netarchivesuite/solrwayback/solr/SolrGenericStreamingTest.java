@@ -18,6 +18,7 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -109,7 +110,7 @@ public class SolrGenericStreamingTest {
     }
 
     /**
-     * De-duplicate the stream on field {@code url} and get the records closest to the time {@coe 2019-04-15T12:31:51Z}.
+     * De-duplicate the stream on field {@code url} and get the records closest to the time {@code 2019-04-15T12:31:51Z}.
      */
     @Test
     public void timeProximity() {
@@ -142,7 +143,7 @@ public class SolrGenericStreamingTest {
     }
 
     /**
-     * De-duplicate the stream on field {@code url} and get the records closest to the time {@coe 2019-04-15T12:31:51Z}.
+     * De-duplicate the stream on field {@code url} and get the records closest to the time {@code 2019-04-15T12:31:51Z}.
      *
      * Differs from {@link #timeProximity()} by having more than 1 result.
      */
@@ -247,6 +248,29 @@ public class SolrGenericStreamingTest {
                      "bam", singles.get(1).getFieldValue("m2"));
     }
 
+    @Test
+    public void testGrouping() {
+        List<SolrDocument> docs = SRequest.builder().
+                query("*:*").
+                fields("url", "source_file_offset").
+                deduplicateField("url").
+                stream().collect(Collectors.toList());
+
+        Set<String> urls = new HashSet<>();
+        for (SolrDocument doc: docs) {
+            String url = doc.getFieldValue("url").toString();
+            assertTrue("The URL '" + url + "' should not have been seen before", urls.add(url));
+        }
+    }
+
+    @Test
+    public void testExportGroupingFacade() throws SolrServerException, InvalidArgumentServiceException, IOException {
+        String csv = Streams.asString(Facade.exportFields(
+                "url,source_file_offset", false, false, "url", false, "csv", "*:*"));
+        assertEquals("There should be 10+1 CSV lines (10 unique URLs + header)",
+                     11, csv.split("\n").length);
+    }
+
     /**
      * Export records with a field ({@code links} that is multi-value.
      */
@@ -285,7 +309,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeJSONLExport() throws SolrServerException, InvalidArgumentServiceException, IOException {
         List<String> jsons = IOUtils.readLines(
-                Facade.exportFields("url, links", null, false, "jsonl", "title:title_5"),
+                Facade.exportFields("url, links", false, false, null, false, "jsonl", "title:title_5"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 10, jsons.size());
         for (String line: jsons) {
@@ -303,7 +327,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeJSONExport() throws SolrServerException, InvalidArgumentServiceException, IOException {
         List<String> jsons = IOUtils.readLines(
-                Facade.exportFields("url, links", null, false, "json", "title:title_5"),
+                Facade.exportFields("url, links", false, false, null, false, "json", "title:title_5"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 12, jsons.size());
         assertEquals("The second line should be as expected",
@@ -319,7 +343,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeCSVExport() throws Exception {
         List<String> cvs = IOUtils.readLines(
-                Facade.exportFields("url, links", null, false, "csv", "title:title_5"),
+                Facade.exportFields("url, links", false, false, null, false, "csv", "title:title_5"),
                 //Facade.exportCvsStreaming("title:title_5", null, "url, links"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 11, cvs.size()); // First line is header
@@ -340,7 +364,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void testFacadeCSVExportFlatten() throws Exception {
         List<String> cvs = IOUtils.readLines(
-                Facade.exportFields("url, links", null, true, "csv", "title:title_5"),
+                Facade.exportFields("url, links", false, false, null, true, "csv", "title:title_5"),
                 //Facade.exportCvsStreaming("title:title_5", null, "url, links"),
                 "utf-8");
         assertEquals("The right number of lines should be returned", 21, cvs.size()); // First line is header

@@ -382,7 +382,7 @@ public class SolrWaybackResource {
     }
     try {               
       log.debug("Csv export. Query:"+q +" filterquery:"+fq);
-      InputStream is = Facade.exportFields(fields, null, false, "csv", q, fq);
+      InputStream is = Facade.exportFields(fields, false, false, null, false, "csv", q, fq);
       return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_$DATETIME.csv")).build();
 
     } catch (Exception e) {
@@ -396,16 +396,19 @@ public class SolrWaybackResource {
   @Path("/export/fields")
   public Response exportFields(@QueryParam("query") String q, @QueryParam("fq") String fq,
                                @QueryParam("fields") String fields, @QueryParam("groupfield") String groupField,
+                               @QueryParam("expandResources") Boolean expandResources,
+                               @QueryParam("ensureUnique") Boolean ensureUnique,
                                @QueryParam("flatten") Boolean flatten,
                                @QueryParam("format") String format) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){
       throw new InvalidArgumentServiceException("Export to fields not allowed!");
     }
     format = format == null ? "csv" : format;
-    flatten = flatten != null && flatten;
     try {
-      log.debug(format + "{} export. Query:'{}, filterquery:'{}'", format, q, fq);
-      InputStream is = Facade.exportFields(fields, groupField, flatten, format, q, fq);
+      log.debug("{} export. Query:'{}, filterquery:'{}', fields:'{}', expandResources:{}, ensureUnique:{}, flatten:{}",
+                format, q, fq, fields,
+                Boolean.TRUE.equals(expandResources), Boolean.TRUE.equals(ensureUnique), Boolean.TRUE.equals(flatten));
+      InputStream is = Facade.exportFields(fields, expandResources, ensureUnique, groupField, flatten, format, q, fq);
       return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_$DATETIME." + format)).build();
 
     } catch (Exception e) {

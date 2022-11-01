@@ -498,7 +498,7 @@ public class Facade {
     }
 
 
-    public static InputStream exportWarcStreaming(boolean expandResources, boolean avoidDuplicates, boolean gzip, String query, String... filterqueries)  throws Exception{
+    public static InputStream exportWarcStreaming(boolean expandResources, boolean ensureUnique, boolean gzip, String query, String... filterqueries)  throws Exception{
 
         long max=0;
         //Check size
@@ -521,7 +521,7 @@ public class Facade {
                         fields("source_file_path", "source_file_offset").
                         pageSize(100). // TODO: Why so low? The two fields are tiny and single-valued
                         expandResources(expandResources).
-                        ensureUnique(avoidDuplicates));
+                        ensureUnique(ensureUnique));
 
         return new StreamingSolrWarcExportBufferedInputStream(solr, max, gzip); // Use maximum export results from property-file
     }
@@ -550,6 +550,13 @@ public class Facade {
     /**
      * Export the search result for the given query and filterQuery as content for the requested fields.
      * @param fields        comma separated list of fields to export.
+     * @param expandResources if true, resources used on webpages are resolved relative to the timestamp for the webpage.
+     *                        If false, no resource resolving is performed.
+     *                        Note: Expanded resources are not part of deduplication with groupField.
+     *                        Note 2: ensureUnique works fine with expandResources.
+     * @param ensureUnique  if true, uniqueness of the produced documents is ensured by tracking all documents.
+     *                      Note: This imposes a memory overhead and should not be used for result sets above 5 million.
+     *                      Note 2: This also works with expandResources.
      * @param groupField    if not null, documents will be grouped on the given field and only the first document
      *                      will be exported in each group. This will change document order from score to groupField.
      *                      This is implemented using {@link SRequest#deduplicateField(String)}.
@@ -565,8 +572,10 @@ public class Facade {
      * @throws IOException if something went wrong during search or delivery.
      * @throws SolrServerException if the number of matches could not be requested from Solr.
      */
-    public static InputStream exportFields(String fields, String groupField, boolean flatten, String format,
-                                           String query, String... filterQueries)
+    public static InputStream exportFields(
+            String fields, Boolean expandResources, Boolean ensureUnique,
+            String groupField, Boolean flatten, String format,
+            String query, String... filterQueries)
             throws IOException, InvalidArgumentServiceException, SolrServerException {
         // TODO check that only allowed fields are selected!
 
@@ -581,14 +590,14 @@ public class Facade {
         SRequest request = SRequest.builder().
                 query(query).
                 filterQueries(filterQueries).
-                fields(fields);
-        if (groupField != null && !groupField.isEmpty()) {
-            request = request.deduplicateField(groupField);
-        }
+                fields(fields).
+                expandResources(expandResources).
+                deduplicateField(groupField).
+                ensureUnique(ensureUnique);
 
         // Create stream
         Stream<SolrDocument> docs = SolrGenericStreaming.create(request).stream();
-        if (flatten) {
+        if (Boolean.TRUE.equals(flatten)) {
             docs = docs.flatMap(SolrGenericStreaming::flatten);
         }
 
