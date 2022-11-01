@@ -200,12 +200,12 @@
   font-size:130%;
 }
 
-.SingleEntryStandardInfo .openWaybackLink {
+.SingleEntryStandardInfo .alternativePlaybackLink {
 	display: inline-block;
 	padding-left: 8px;
 }
 
-.SingleEntryStandardInfo .openWaybackLink:after {
+.SingleEntryStandardInfo .alternativePlaybackLink:after {
     content: '';
     display: block;
     position: relative;
