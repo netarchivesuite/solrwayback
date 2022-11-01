@@ -395,7 +395,8 @@ public class SolrWaybackResource {
   @GET
   @Path("/export/fields")
   public Response exportFields(@QueryParam("query") String q, @QueryParam("fq") String fq,
-                               @QueryParam("fields") String fields, @QueryParam("flatten") Boolean flatten,
+                               @QueryParam("fields") String fields, @QueryParam("groupfield") String groupField,
+                               @QueryParam("flatten") Boolean flatten,
                                @QueryParam("format") String format) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){
       throw new InvalidArgumentServiceException("Export to fields not allowed!");
@@ -404,7 +405,7 @@ public class SolrWaybackResource {
     flatten = flatten != null && flatten;
     try {
       log.debug(format + "{} export. Query:'{}, filterquery:'{}'", format, q, fq);
-      InputStream is = Facade.exportFields(fields, null, flatten, format, q, fq);
+      InputStream is = Facade.exportFields(fields, groupField, flatten, format, q, fq);
       return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_$DATETIME." + format)).build();
 
     } catch (Exception e) {
