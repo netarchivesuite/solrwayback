@@ -555,7 +555,8 @@ public class Facade {
      *                      This is implemented using {@link SRequest#deduplicateField(String)}.
      * @param flatten       if true, {@link SolrGenericStreaming#flatten(SolrDocument)} will be called on each
      *                      SolrDocument to ensure that no field holds multiple values.
-     *                      Note: The current implementation only supports 1 multi-value field for flattening.
+     *                      Note: If there are multiple multi-value fields, this can result in a large amount of
+     *                            flattened documents, as all permutations of values will be present.
      * @param format        Valid formats are {@code json}, {@code jsonl} and {@code csv}.
      * @param query         a Solr query.
      * @param filterQueries optional Solr filter queries.
