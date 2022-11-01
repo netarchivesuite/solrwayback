@@ -226,9 +226,29 @@ public class SRequest {
      * @param fields fields to export (fl). deduplicateField will be added to this is not already present.
      *               This parameter has no default and must be defined.
      * @return the SRequest adjusted with the provided value.
+     * @throws IllegalStateException if fields has already been assigned.
      * @see #fields(String...)
+     * @see #forceFields(List) 
      */
     public SRequest fields(List<String> fields) {
+        if (this.fields != null) {
+            throw new IllegalStateException("fields already assigned. If overriding is intentional, use forceFields");
+        }
+        return forceFields(fields);
+    }
+    
+    /**
+     * This method overrides existing fields without warning or error.
+     * @param fields fields to export (fl). deduplicateField will be added to this is not already present.
+     *               This parameter has no default and must be defined.
+     * @return the SRequest adjusted with the provided value.
+     * @see #fields(String...)
+     * @see #fields(List) 
+     */
+    public SRequest forceFields(List<String> fields) {
+        if (this.fields != null) {
+            throw new IllegalStateException("fields already assigned. If overriding is intentional, use forceFields");
+        }
         this.fields = fields;
         return this;
     }
@@ -239,9 +259,28 @@ public class SRequest {
      *               If only 1 field is specified and fields contains at least 1 comma, it will treated
      *               as a comma separated list of fields: {@code "foo,bar,zoo" == "foo", "bar", "zoo"}.
      * @return the SRequest adjusted with the provided value.
+     * @throws IllegalStateException if fields has already been assigned.
      * @see #fields(List)
+     * @see #forceFields(String...)  
      */
     public SRequest fields(String... fields) {
+        if (this.fields != null) {
+            throw new IllegalStateException("fields already assigned. If overriding is intentional, use forceFields");
+        }
+        return forceFields(fields);
+    }
+
+    /**
+     * This method overrides existing fields without warning or error.
+     * @param fields fields to export (fl). deduplicateField will be added to this is not already present.
+     *               This parameter has no default and must be defined.
+     *               If only 1 field is specified and fields contains at least 1 comma, it will treated
+     *               as a comma separated list of fields: {@code "foo,bar,zoo" == "foo", "bar", "zoo"}.
+     * @return the SRequest adjusted with the provided value.
+     * @see #fields(List)
+     * @see #fields(String...) 
+     */
+    public SRequest forceFields(String... fields) {
         if (fields.length == 1 && fields[0].contains(",")) {
             this.fields = Arrays.asList(fields[0].split(", *"));
         } else {
@@ -268,8 +307,28 @@ public class SRequest {
      *             by {@link SolrGenericStreaming#adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
      *             Default is {@link #DEFAULT_SORT}.
      * @return the SRequest adjusted with the provided value.
+     * @throws IllegalStateException if sort has already been assigned.
+     * @see #forceSort(String)
      */
     public SRequest sort(String sort) {
+        if (!DEFAULT_SORT.equals(this.sort)) {
+            throw new IllegalStateException("sort already assigned. If overriding is intentional, use forceSort");
+        }
+        return forceSort(sort);
+    }
+
+    /**
+     * Note: {@link #timeProximityDeduplication(String, String)} and {@link #deduplicateField(String)} takes
+     * precedence over sort.
+     *
+     * This method overrides existing sort without warning or error.
+     * @param sort standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
+     *             by {@link SolrGenericStreaming#adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+     *             Default is {@link #DEFAULT_SORT}.
+     * @return the SRequest adjusted with the provided value.
+     * @see #sort(String)
+     */
+    public SRequest forceSort(String sort) {
         this.sort = sort;
         return this;
     }
@@ -279,13 +338,28 @@ public class SRequest {
      *              This parameter has no default and must be defined either directly or
      *              through {@link #solrQuery(SolrQuery)}.
      * @return the SRequest adjusted with the provided value.
-     * @throws IllegalStateException if {@link #queries(Stream)} called before this.
+     * @throws IllegalStateException if {@link #queries(Stream)} was called before this or the query was already set.
      */
     public SRequest query(String query) {
+        if (this.query != null) {
+            throw new IllegalStateException("query already assigned. If overriding is intentional, use forceQuery");
+        }
         if (queries != null) {
             throw new IllegalStateException("queries(Stream<String>) has already been called");
         }
+        return forceQuery(query);
+    }
+
+    /**
+     * This method overrides existing query and removes existing queries without warning or error.
+     * @param query standard Solr query.
+     *              This parameter has no default and must be defined either directly or
+     *              through {@link #solrQuery(SolrQuery)}.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest forceQuery(String query) {
         this.query = query;
+        this.queries = null;
         return this;
     }
 
@@ -299,13 +373,36 @@ public class SRequest {
      *                as overall deduplication will not be guaranteed.
      *                Use {@link #ensureUnique(Boolean)} to force unique results, if needed.
      * @return the SRequest adjusted with the provided value.
-     * @throws IllegalStateException if {@link #query(String)} called before this.
+     * @see #forceQueries(Stream)
+     * @throws IllegalStateException if {@link #query(String)} called before this or queries were already set.
      */
     public SRequest queries(Stream<String> queries) {
+        if (this.queries != null) {
+            throw new IllegalStateException(
+                    "queries(Stream<String>) has already been called. If overriding is intentional, use forceQueries");
+        }
         if (query != null) {
             throw new IllegalStateException("query(String) has already been called");
         }
+        return forceQueries(queries);
+    }
+
+    /**
+     * This method overrides existing queries and removes existing query without warning or error.
+     * @param queries standard Solr queries, where all queries will conceptually be issued one after another.
+     *                For performance reasons, queries will be batched with {@code OR} as modifier:
+     *                If {@code queries = Arrays.asList("url:http://example.com/foo", "url:http://example.com/bar").stream()},
+     *                the batch request will be {@code "url:http://example.com/foo OR url:http://example.com/bar"}.
+     *                However, there is an upper limit to batching so multiple batches might be issued.
+     *                This affects {@link #deduplicateField(String)} and {@link #timeProximityDeduplication(String, String)}
+     *                as overall deduplication will not be guaranteed.
+     *                Use {@link #ensureUnique(Boolean)} to force unique results, if needed.
+     * @return the SRequest adjusted with the provided value.
+     * @see #queries(Stream)
+     */
+    public SRequest forceQueries(Stream<String> queries) {
         this.queries = queries;
+        this.query = null;
         return this;
     }
 
@@ -315,9 +412,29 @@ public class SRequest {
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
      *                      Note: This overrides any existing filterQueries.
      * @return the SRequest adjusted with the provided value.
+     * @throws IllegalStateException if filterQueries were already set.
      * @see #filterQueries(String...)
+     * @see #forceFilterQueries(List)
      */
     public SRequest filterQueries(List<String> filterQueries) {
+        if (this.filterQueries != null) {
+            throw new IllegalStateException(
+                    "filterQueries(...) has already been called. If overriding is intentional, use forceFilterQueries");
+        }
+        return forceFilterQueries(filterQueries);
+    }
+
+    /**
+     * This method overrides existing filterQueries without warning or error.
+     * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+     *                      If multiple filters are to be used, consider collapsing them into one:
+     *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      Note: This overrides any existing filterQueries.
+     * @return the SRequest adjusted with the provided value.
+     * @see #filterQueries(String...)
+     * @see #filterQueries(List)
+     */
+    public SRequest forceFilterQueries(List<String> filterQueries) {
         this.filterQueries = filterQueries;
         return this;
     }
@@ -328,9 +445,28 @@ public class SRequest {
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
      *                      Note: This overrides any existing filterQueries.
      * @return the SRequest adjusted with the provided value.
+     * @throws IllegalStateException if filterQueries were already set.
      * @see #filterQueries(List)
+     * @see #forceFilterQueries(String...)
      */
     public SRequest filterQueries(String... filterQueries) {
+        if (this.filterQueries != null) {
+            throw new IllegalStateException(
+                    "filterQueries(...) has already been called. If overriding is intentional, use forceFilterQueries");
+        }
+        return forceFilterQueries(filterQueries);
+    }
+
+    /**
+     * This method overrides existing filterQueries without warning or error.
+     * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+     *                      If multiple filters are to be used, consider collapsing them into one:
+     *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      Note: This overrides any existing filterQueries.
+     * @return the SRequest adjusted with the provided value.
+     * @see #filterQueries(String...)
+     */
+    public SRequest forceFilterQueries(String... filterQueries) {
         this.filterQueries = Arrays.asList(filterQueries);
         return this;
     }
@@ -343,9 +479,31 @@ public class SRequest {
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
      *                      Note: This overrides any existing expandResourcesFilterQueries.
      * @return the SRequest adjusted with the provided value.
-     * @see #filterQueries(String...)
+     * @throws IllegalStateException if filterQueries were already set.
+     * @see #expandResourcesFilterQueries(String...)
+     * @see #forceExpandResourcesFilterQueries(List)
      */
     public SRequest expandResourcesFilterQueries(List<String> filterQueries) {
+        if (this.expandResourcesFilterQueries != null) {
+            throw new IllegalStateException(
+                    "expandResourceFilterQueries(...) has already been called. If overriding is intentional, " +
+                    "use forceExpandResourcesFilterQueries");
+        }
+        return forceExpandResourcesFilterQueries(filterQueries);
+    }
+
+    /**
+     * This method overrides existing filterQueries without warning or error.
+     * @param filterQueries optional Solr filter queries used when {@link #expandResources(Boolean)} is true.
+     *                      Only resources that satisfies these filters are exported.
+     *                      For performance, 0 or 1 filter query is recommended.
+     *                      If multiple filters are to be used, consider collapsing them into one:
+     *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      Note: This overrides any existing expandResourcesFilterQueries.
+     * @return the SRequest adjusted with the provided value.
+     * @see #expandResourcesFilterQueries(List)
+     */
+    public SRequest forceExpandResourcesFilterQueries(List<String> filterQueries) {
         this.expandResourcesFilterQueries = filterQueries;
         return this;
     }
@@ -357,9 +515,30 @@ public class SRequest {
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
      *                      Note: This overrides any existing expandResourcesFilterQueries.
      * @return the SRequest adjusted with the provided value.
-     * @see #filterQueries(List)
+     * @throws IllegalStateException if filterQueries were already set.
+     * @see #expandResourcesFilterQueries(List)
+     * @see #forceExpandResourcesFilterQueries(String...)
      */
     public SRequest expandResourcesFilterQueries(String... filterQueries) {
+        if (this.expandResourcesFilterQueries != null) {
+            throw new IllegalStateException(
+                    "expandResourceFilterQueries(...) has already been called. If overriding is intentional, " +
+                    "use forceExpandResourcesFilterQueries");
+        }
+        return forceExpandResourcesFilterQueries(filterQueries);
+    }
+
+    /**
+     * This method overrides existing filterQueries without warning or error.
+     * @param filterQueries optional Solr filter queries used when {@link #expandResources(Boolean)} is true.
+     *                      Only resources that satisfies these filters are exported.
+     *                      If multiple filters are to be used, consider collapsing them into one:
+     *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      Note: This overrides any existing expandResourcesFilterQueries.
+     * @return the SRequest adjusted with the provided value.
+     * @see #expandResourcesFilterQueries(String...)
+     */
+    public SRequest forceExpandResourcesFilterQueries(String... filterQueries) {
         this.expandResourcesFilterQueries = Arrays.asList(filterQueries);
         return this;
     }
