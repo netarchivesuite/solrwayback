@@ -402,9 +402,10 @@ public class SolrWaybackResource {
   @GET
   @Path("/export/fields")
   public Response exportFields(@QueryParam("query") String q, @QueryParam("fq") String fq,
-                               @QueryParam("fields") String fields, @QueryParam("groupfield") String groupField,
+                               @QueryParam("fields") String fields,
                                @QueryParam("expandResources") Boolean expandResources,
                                @QueryParam("ensureUnique") Boolean ensureUnique,
+                               @QueryParam("groupfield") String groupField,
                                @QueryParam("flatten") Boolean flatten,
                                @QueryParam("format") String format) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){
