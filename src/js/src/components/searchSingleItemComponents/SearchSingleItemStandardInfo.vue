@@ -84,11 +84,11 @@ export default {
 
     getAlternativePlaybackEngineLink(wayback_date, url, collection) {    
         //Test if collection specific playback is enabled. 
-        var collectionPlayback=configs.collection.playback.get('PLAYBACK_'+collection)
+        const collectionPlayback=configs.collection.playback.get('PLAYBACK_'+collection)
         if (collectionPlayback != null){ //Use default playback engine
-         //console.log('collection playback')
-         var collectionPlaybackLink = collectionPlayback+wayback_date+'/'+url                                                                    
-         return collectionPlaybackLink            
+          //console.log('collection playback')
+          const collectionPlaybackLink = collectionPlayback+wayback_date+'/'+url                                                                    
+          return collectionPlaybackLink            
         }
         else if(configs.playbackConfig.alternativePlaybackBaseURL != null){ //Alternative playback
           //console.log('alternative playback')
