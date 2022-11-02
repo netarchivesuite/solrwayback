@@ -91,5 +91,50 @@ public class UrlUtilsTest {
     url="test/images/horse.png"; // only a relative url
     assertFalse(UrlUtils.isUrlWithDomain(url));    
   }
-    
+
+  @Test
+  public void testLenientURLQueryNoArgs() {
+      assertEquals("url:\"http://example.com/\"^200 OR url_norm:\"http://example.com/\"^100",
+                   UrlUtils.lenientURLQuery("http://example.com/"));
+      assertEquals("url:\"https://www.EXAMPLE.com/\"^200 OR url_norm:\"http://example.com/\"^100",
+                   UrlUtils.lenientURLQuery("https://www.EXAMPLE.com/"));
+  }
+
+  @Test
+  public void testLenientURLQueryArgs() {
+      assertEquals(("url:\"http://example.com/IMAGES/search?q=horse&fq=animals&_=67890\"^200 OR " +
+                   "url_norm:\"http://example.com/images/search?q=horse&fq=animals&_=67890\"^100 OR (" +
+                   "host:\"example.com\" AND " +
+                   "url_search:\"images/search\" AND" +
+                   " (host:\"example.com\" OR" +
+                   " url_search:\"q=horse\"" +
+                   " OR url_search:\"fq=animals\"" +
+                   " OR url_search:\"_=67890\")" +
+                   ")").replace(" ", "\n"),
+                   UrlUtils.lenientURLQuery("http://example.com/IMAGES/search?q=horse&fq=animals&_=67890").replace(" ", "\n"));
+  }
+
+  @Test
+  public void testLenientURLQueryArgsHost() {
+      assertEquals(("url:\"http://hello.example.com/IMAGES/search?q=horse\"^200 OR " +
+                   "url_norm:\"http://hello.example.com/images/search?q=horse\"^100 OR (" +
+                   "host:\"hello.example.com\" AND " +
+                   "url_search:\"images/search\" AND" +
+                   " (host:\"hello.example.com\" OR" +
+                   " url_search:\"q=horse\")" +
+                   ")").replace(" ", "\n"),
+                   UrlUtils.lenientURLQuery("http://hello.example.com/IMAGES/search?q=horse").replace(" ", "\n"));
+  }
+
+  @Test
+  public void testLenientURLQueryArgsWWW() {
+      assertEquals(("url:\"https://www.example.com/IMAGES/search?q=horse\"^200 OR " +
+                   "url_norm:\"http://example.com/images/search?q=horse\"^100 OR (" +
+                   "host:\"example.com\" AND " +
+                   "url_search:\"images/search\" AND" +
+                   " (host:\"example.com\" OR" +
+                   " url_search:\"q=horse\")" +
+                   ")").replace(" ", "\n"),
+                   UrlUtils.lenientURLQuery("https://www.example.com/IMAGES/search?q=horse").replace(" ", "\n"));
+  }
 }

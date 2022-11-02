@@ -1,13 +1,16 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
+import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 
 import java.net.IDN;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class UrlUtils {
+
     public static void main(String[] args){
 
         //System.out.println(isUrlWithDomain("http://Portal_gfx/KL/farvepakker/topmenu/topmenu_markering_groen_mBo.gif"));
@@ -123,5 +126,88 @@ public class UrlUtils {
         String urlPuniedAndNormalized = Normalisation.canonicaliseURL(urlPunied);
         return urlPuniedAndNormalized;
     }
+
+    /**
+     * Constructs a Solr query for lenient HTTP URL resolving, where the leniency is that partial matching on arguments
+     * is allowed. Precise URL-matching has highest priority.
+     *
+     * Note: Lenient URL search is heavier than simple URL search. Consider using this only if a simple search fails.
+     *
+     * Sample input {@code http://example.com/IMAGES/search?q=horse&fq=animals&_=67890}
+     * will result in
+     * <pre>
+     * url:"http://example.com/IMAGES/search?q=horse&fq=animals&_=67890"^200
+     * OR
+     * url_norm:"http://example.com/images/search?q=horse&fq=animals&_=67890"^100
+     * OR
+     * (
+     *   host:"example.com"
+     *   AND
+     *   url_search:"example.com/images/search" )
+     *   AND (
+     *     host:"example.com"
+     *     OR
+     *     url_search:"q=horse"
+     *     OR
+     *     url_search:"fq=animals"
+     *     OR
+     *     url_search:"_=67890"
+     *   )
+     * )
+     * </pre>
+     * (without the newlines). The repetition of {@code host:"example.com"} is to ensure at least 1 match from
+     * the parenthesis with argument matchers.
+     *
+     * if the URL is {@code http://example.com/IMAGES/search} the output will be
+     * <pre>
+     * url:"http://example.com/IMAGES/search?q=horse&fq=animals&_=67890"^200
+     * OR
+     * url_norm:"http://example.com/images/search?q=horse&fq=animals&_=67890"^100
+     * </pre>
+     * (again without the newlines)
+     *
+     * If anything goes wrong during parsing and handling, a simple {@code url:"<url>"} query is returned.
+     *
+     * Note: As this produces a query with multiple elements, care should be taken to set
+     * {@link SRequest#queryBatchSize} fairly low, e.g. {@code 100}, if {@link SRequest#queries(Stream)}} is used with
+     * multiple queries from this method. If not, the default Solr limit of 1024 boolean clauses can easily be exceeded.
+     * @param url a HTTP-URL: Must start with {@code http://} or {@code https://}
+     * @return a Solr query for the URL that allows partial matching on arguments.
+     */
+    public static String lenientURLQuery(String url) {
+        String norm;
+        try {
+            norm = punyCodeAndNormaliseUrl(url);
+        } catch (Exception e) {
+            return "url:" + SolrUtils.createPhrase(url);
+        }
+
+        StringBuilder query = new StringBuilder();
+        query.append("url:").append(SolrUtils.createPhrase(url)).append("^200");
+        query.append(" OR ");
+        query.append("url_norm:").append(SolrUtils.createPhrase(norm)).append("^100");
+
+        Matcher argMatcher = ARG_URL.matcher(norm);
+
+        if (!argMatcher.matches()) { // No arguments
+            return query.toString();
+        }
+
+        String host = argMatcher.group(1);
+        String path = argMatcher.group(2);
+        String[] args = argMatcher.group(3).split("&");
+        query.append(" OR (");
+        query.append("host:").append(SolrUtils.createPhrase(host)).
+                append(" AND url_search:").append(SolrUtils.createPhrase(path));
+        query.append(" AND (");
+        query.append("host:").append(SolrUtils.createPhrase(host)); // Fallback if no arguments matches
+        for (String arg: args) {
+            query.append(" OR url_search:").append(SolrUtils.createPhrase(arg));
+        }
+        query.append(")");
+        query.append(")");
+        return query.toString();
+    }
+    private static final Pattern ARG_URL = Pattern.compile("https?://([^/]+)/([^?]*)[?](.+)");
 }
 
