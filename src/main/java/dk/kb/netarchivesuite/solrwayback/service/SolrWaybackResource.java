@@ -413,11 +413,12 @@ public class SolrWaybackResource {
       throw new InvalidArgumentServiceException("Export to fields not allowed!");
     }
     format = format == null ? "csv" : format;
+    gzip = Boolean.TRUE.equals(gzip); // Guard against NullPointerException later on
     try {
       log.debug("{} export. Query:'{}, filterquery:'{}', fields:'{}', expandResources:{}, ensureUnique:{}, flatten:{}, groupfield:{}, gzip:{}",
                 format, q, fq, fields,
                 Boolean.TRUE.equals(expandResources), Boolean.TRUE.equals(ensureUnique), Boolean.TRUE.equals(flatten),
-                groupField, Boolean.TRUE.equals(gzip));
+                groupField, gzip);
       InputStream is = Facade.exportFields(fields, expandResources, ensureUnique, groupField, flatten, format, gzip, q, fq);
       // TODO: Set MIME-type and compression flag
       String filenameTemplate = "solrwayback_$DATETIME." + format + (gzip ? ".gz" : "");
