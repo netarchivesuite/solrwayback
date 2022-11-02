@@ -379,7 +379,7 @@ public class NetarchiveSolrClient {
      */
     public ArrayList<ArcEntryDescriptor> findImagesForTimestamp(String searchString, String timeStamp) {
         return SolrGenericStreaming.create(
-                        SolrGenericStreaming.SRequest.builder().
+                        SRequest.builder().
                                 query(searchString).
                                 filterQueries("content_type_norm:image",   // only images
                                               SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
@@ -451,12 +451,12 @@ public class NetarchiveSolrClient {
     /*
      * Fast solr method that counts number of results
      */
-    public long countResults(String query, String[] filterQuery) throws Exception {
+    public long countResults(String query, String... filterQueries) throws SolrServerException, IOException {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery = new SolrQuery(query);
         solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
         solrQuery.add("fl", "id");
-        solrQuery.setFilterQueries(filterQuery);
+        solrQuery.setFilterQueries(filterQueries);
         solrQuery.setRows(0);
         SolrUtils.setSolrParams(solrQuery);
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
@@ -670,13 +670,13 @@ public class NetarchiveSolrClient {
     }
 
     public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrlsFullFields(Collection<String> urls, String timeStamp) {
-        return findNearestDocuments(urls.stream(), timeStamp, SolrUtils.indexDocFieldList).
+        return findNearestDocuments(SolrUtils.indexDocFieldList, timeStamp, urls.stream()).
                 map(SolrUtils::solrDocument2IndexDoc).
                 collect(Collectors.toCollection(ArrayList::new));
     }
 
     public ArrayList<IndexDocShort> findNearestHarvestTimeForMultipleUrlsFewFields(Collection<String> urls, String timeStamp){
-        return findNearestDocuments(urls.stream(), timeStamp, SolrUtils.indexDocFieldListShort).
+        return findNearestDocuments(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream()).
                 map(SolrUtils::solrDocument2IndexDocShort).
                 collect(Collectors.toCollection(ArrayList::new));
     }
@@ -684,20 +684,18 @@ public class NetarchiveSolrClient {
     /**
      * Perform searches for all given URLs, deduplicating on {@code url_norm} and prioritizing those closest to the
      * given timestamp. No practical limit on the number of URLs or the search result.
-     *
+     * <p>
      * Note: Revisits are not considered as candidates: See {@link SolrUtils#NO_REVISIT_FILTER}.
-     * @param urls 0 or more URLs, which will be normalised and searched with {@code url_norm:"normalized_url"}.
-     * @param timeStamp ISO-timestamp, Solr style: {@code 2011-10-14T14:44:00Z}.
+     *
      * @param fieldList the fields to return.
+     * @param timeStamp ISO-timestamp, Solr style: {@code 2011-10-14T14:44:00Z}.
+     * @param urls      0 or more URLs, which will be normalised and searched with {@code url_norm:"normalized_url"}.
+     * @param filterQueries 0 or more filterQueries for restring the URL search.
      * @return the documents with the given URLs.
      */
-    public Stream<SolrDocument> findNearestDocuments(Stream<String> urls, String timeStamp, String fieldList) {
+    public Stream<SolrDocument> findNearestDocuments(
+            String fieldList, String timeStamp, Stream<String> urls, String... filterQueries) {
         final int chunkSize = 1000;
-
-        SolrGenericStreaming.SRequest baseRequest = SolrGenericStreaming.SRequest.builder().
-                filterQueries(SolrUtils.NO_REVISIT_FILTER). // No binary for revists
-                fields(fieldList).
-                timeProximityDeduplication(timeStamp, "url_norm");
 
         Stream<String> urlQueries = urls.
                 filter(url -> !url.startsWith("data:")).
@@ -705,8 +703,13 @@ public class NetarchiveSolrClient {
                 map(SolrUtils::createPhrase).
                 map(url -> "url_norm:" + url);
 
-        return SolrGenericStreaming.multiQuery(baseRequest, urlQueries, chunkSize).
-                flatMap(SolrGenericStreaming::stream);
+        return SRequest.builder().
+                queries(urlQueries).
+                filterQueries(SolrUtils.extend(SolrUtils.NO_REVISIT_FILTER, filterQueries)). // No binary for revists
+                queryBatchSize(chunkSize). // URL-searches are single-clause queries, so we can use large batches
+                fields(fieldList).
+                timeProximityDeduplication(timeStamp, "url_norm").
+                stream();
     }
 
     public static void mergeInto(SolrDocumentList main, SolrDocumentList additional) {

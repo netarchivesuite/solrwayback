@@ -282,10 +282,8 @@ public class SolrWaybackResource {
     }        
     try {
       log.debug("Export linkgraph. query:"+q);
-      DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-      String dateStr = formatOut.format(new Date());
       InputStream is = Facade.exportLinkGraphStreaming(q);
-      return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_linkgraph_"+dateStr+".csv\"").build();
+      return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_linkgraph_$DATETIME.csv")).build();
     } catch (Exception e) {
       log.error("Error in export linkgraph",e);
       throw handleServiceExceptions(e);
@@ -331,12 +329,12 @@ public class SolrWaybackResource {
       String[] fqArray = fqList.stream().toArray(String[]::new);
       is = Facade.exportWarcStreaming(expandResources, avoidDuplicates, gzip,q, fqArray);
       
-      String filename="solrwayback_"+dateStr+".warc";
+      String template = "solrwayback_$DATETIME.warc";
       if (gzip) {
-          filename=filename+".gz";
+          template += ".gz";
       }
       
-      return Response.ok(is).header("Content-Disposition", "attachment; filename=\""+filename+"\"").build();
+      return Response.ok(is).header("Content-Disposition", getDisposition(template)).build();
 
     } catch (Exception e) {
       if (is != null) { // We cannot use the Closeable-feature as we return the stream(?)
@@ -374,8 +372,15 @@ public class SolrWaybackResource {
 
   
   
- 
-
+  /**
+   * 
+   * @deprecated
+   * This method is no longer acceptable to compute time between versions.
+   * Use '/export/fields' instead. 
+   * Have frontend switch to this method. 
+   *
+   */
+  @Deprecated   
   @GET
   @Path("/export/csv")    
   public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq,@QueryParam("fields") String fields) throws SolrWaybackServiceException {
@@ -384,13 +389,42 @@ public class SolrWaybackResource {
     }
     try {               
       log.debug("Csv export. Query:"+q +" filterquery:"+fq);
-      DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");                                                                                                                                                         
-      String dateStr = formatOut.format(new Date());                        
-      InputStream is = Facade.exportCvsStreaming(q, fq,fields);
-      return Response.ok(is).header("Content-Disposition", "attachment; filename=\"solrwayback_"+dateStr+".csv\"").build();
+      InputStream is = Facade.exportFields(fields, false, false, null, false, "csv", false, q, fq);
+      return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_$DATETIME.csv")).build();
 
     } catch (Exception e) {
       log.error("Error in export full",e);      
+      throw handleServiceExceptions(e);
+    }
+
+  }
+
+  @GET
+  @Path("/export/fields")
+  public Response exportFields(@QueryParam("query") String q, @QueryParam("fq") String fq,
+                               @QueryParam("fields") String fields,
+                               @QueryParam("expandResources") Boolean expandResources,
+                               @QueryParam("ensureUnique") Boolean ensureUnique,
+                               @QueryParam("groupfield") String groupField,
+                               @QueryParam("flatten") Boolean flatten,
+                               @QueryParam("format") String format,
+                               @QueryParam("gzip") Boolean gzip) throws SolrWaybackServiceException {
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){
+      throw new InvalidArgumentServiceException("Export to fields not allowed!");
+    }
+    format = format == null ? "csv" : format;
+    gzip = Boolean.TRUE.equals(gzip); // Guard against NullPointerException later on
+    try {
+      log.debug("{} export. Query:'{}, filterquery:'{}', fields:'{}', expandResources:{}, ensureUnique:{}, flatten:{}, groupfield:{}, gzip:{}",
+                format, q, fq, fields,
+                Boolean.TRUE.equals(expandResources), Boolean.TRUE.equals(ensureUnique), Boolean.TRUE.equals(flatten),
+                groupField, gzip);
+      InputStream is = Facade.exportFields(fields, expandResources, ensureUnique, groupField, flatten, format, gzip, q, fq);
+      // TODO: Set MIME-type and compression flag
+      String filenameTemplate = "solrwayback_$DATETIME." + format + (gzip ? ".gz" : "");
+      return Response.ok(is).header("Content-Disposition", getDisposition(filenameTemplate)).build();
+    } catch (Exception e) {
+      log.error("Error in export full",e);
       throw handleServiceExceptions(e);
     }
 
@@ -1006,6 +1040,29 @@ public class SolrWaybackResource {
     return response.build();
   }
 
+  /**
+   * Calls {@link #applyTemplate(String)} with the given template and uses the result to construct a HTTP
+   * Content-Disposition for downloading.
+   * {@code getDisposition("solrwayback_$DATETIME.warc")} might return
+   * {@code attachment; filename="solrwayback_2022-10-14_23-36-04.warc"}.
+   * @param template a template to expand. {code $DATETIME} will be replaced with a timestamp.
+   * @return a content disposition with filename information for browser download.
+   */
+  private String getDisposition(String template) {
+    return "attachment; filename=\"" + applyTemplate(template) + "\"";
+  }
+
+  /**
+   * Apply the given template. Currently only {@code $DATETIME} will be expanded to the current datetime:
+   * {@code applyTemplate("solrwayback_$DATETIME.warc")} might return {@code solrwayback_2022-10-14_23-36-04.warc}.
+   * @param template a template to expand. {code $DATETIME} will be replaced with a timestamp.
+   * @return the applied template.
+   */
+  private String applyTemplate(String template) {
+    DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    String dateStr = formatOut.format(new Date());
+    return template.replace("$DATETIME", dateStr);
+  }
   
   private SolrWaybackServiceException handleServiceExceptions(Exception e) {
     if (e instanceof SolrWaybackServiceException) {

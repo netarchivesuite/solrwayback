@@ -36,6 +36,7 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceExcept
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
@@ -43,12 +44,12 @@ import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import javax.ws.rs.QueryParam;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -497,7 +498,7 @@ public class Facade {
     }
 
 
-    public static InputStream exportWarcStreaming(boolean expandResources, boolean avoidDuplicates, boolean gzip, String query, String... filterqueries)  throws Exception{
+    public static InputStream exportWarcStreaming(boolean expandResources, boolean ensureUnique, boolean gzip, String query, String... filterqueries)  throws Exception{
 
         long max=0;
         //Check size
@@ -515,12 +516,12 @@ public class Facade {
             }
         }
         SolrGenericStreaming solr = SolrGenericStreaming.create(
-                SolrGenericStreaming.SRequest.builder().
+                SRequest.builder().
                         query(query).filterQueries(filterqueries).
                         fields("source_file_path", "source_file_offset").
                         pageSize(100). // TODO: Why so low? The two fields are tiny and single-valued
                         expandResources(expandResources).
-                        ensureUnique(avoidDuplicates));
+                        ensureUnique(ensureUnique));
 
         return new StreamingSolrWarcExportBufferedInputStream(solr, max, gzip); // Use maximum export results from property-file
     }
@@ -530,6 +531,9 @@ public class Facade {
         return new StreamingSolrExportBufferedInputStream(solr, 1000000); // 1 MIL
     }
 
+    /**
+     * @deprecated use {@link #exportFields(String, Boolean, Boolean, String, Boolean, String, String, String...)}.
+     */
     public static InputStream exportCvsStreaming(String q, String fq, String fields) throws Exception {
         // TODO test only allowed fields are selected!
 
@@ -542,6 +546,65 @@ public class Facade {
         SolrStreamingExportClient solr = SolrStreamingExportClient.createCvsExporter(null, q, fields, fq);
         return new StreamingSolrExportBufferedInputStream(solr, PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
     }
+
+    /**
+     * Export the search result for the given query and filterQuery as content for the requested fields.
+     * @param fields        comma separated list of fields to export.
+     * @param expandResources if true, resources used on webpages are resolved relative to the timestamp for the webpage.
+     *                        If false, no resource resolving is performed.
+     *                        Note: Expanded resources are not part of deduplication with groupField.
+     *                        Note 2: ensureUnique works fine with expandResources.
+     * @param ensureUnique  if true, uniqueness of the produced documents is ensured by tracking all documents.
+     *                      Note: This imposes a memory overhead and should not be used for result sets above 5 million.
+     *                      Note 2: This also works with expandResources.
+     * @param groupField    if not null, documents will be grouped on the given field and only the first document
+     *                      will be exported in each group. This will change document order from score to groupField.
+     *                      This is implemented using {@link SRequest#deduplicateField(String)}.
+     * @param flatten       if true, {@link SolrGenericStreaming#flatten(SolrDocument)} will be called on each
+     *                      SolrDocument to ensure that no field holds multiple values.
+     *                      Note: If there are multiple multi-value fields, this can result in a large amount of
+     *                            flattened documents, as all permutations of values will be present.
+     * @param format        valid formats are {@code json}, {@code jsonl} and {@code csv}.
+     * @param gzip          if true, the output is GZIPpped.
+     * @param query         a Solr query.
+     * @param filterQueries optional Solr filter queries.
+     * @return an InputStream delivering the result.
+     * @throws InvalidArgumentServiceException if the request was invalid.
+     * @throws IOException if something went wrong during search or delivery.
+     * @throws SolrServerException if the number of matches could not be requested from Solr.
+     */
+    public static InputStream exportFields(
+            String fields, Boolean expandResources, Boolean ensureUnique,
+            String groupField, Boolean flatten, String format, Boolean gzip,
+            String query, String... filterQueries)
+            throws IOException, InvalidArgumentServiceException, SolrServerException {
+        // TODO check that only allowed fields are selected!
+
+        // Validate result set size
+        long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
+        if (results > PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS) {
+            throw new InvalidArgumentServiceException(
+                    "Number of results for " + format + " export exceeds the configured limit: " +
+                    PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
+        }
+        // Setup request
+        SRequest request = SRequest.builder().
+                query(query).
+                filterQueries(filterQueries).
+                fields(fields).
+                expandResources(expandResources).
+                deduplicateField(groupField).
+                ensureUnique(ensureUnique);
+
+        // Create stream
+        Stream<SolrDocument> docs = SolrGenericStreaming.create(request).stream();
+        if (Boolean.TRUE.equals(flatten)) {
+            docs = docs.flatMap(SolrGenericStreaming::flatten);
+        }
+
+        return ContentStreams.deliver(docs, fields, format, gzip);
+    }
+
 
     public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing, String dateStart, String dateEnd) throws Exception {
 

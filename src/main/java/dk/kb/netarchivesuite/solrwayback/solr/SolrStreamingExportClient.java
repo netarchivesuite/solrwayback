@@ -8,8 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.export.GenerateCSV;
 
-import java.util.Arrays;
-
 public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportClientInterface{
 
   public static final String BRIEF_FL = "title,url,source_file_path,crawl_date,wayback_date";
@@ -40,7 +38,7 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
     this.solrFieldsArray = solrFields.split(", *");
     this.csvFieldsArray = csvFields.split(", *");
     inner = SolrGenericStreaming.create(
-            SolrGenericStreaming.SRequest.builder().
+            SRequest.builder().
                     solrClient(solrClient).
                     query(query).filterQueries(filterQueries).
                     fields(solrFieldsArray).
