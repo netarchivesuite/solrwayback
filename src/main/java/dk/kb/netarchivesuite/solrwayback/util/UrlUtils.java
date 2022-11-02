@@ -168,9 +168,9 @@ public class UrlUtils {
      *
      * If anything goes wrong during parsing and handling, a simple {@code url:"<url>"} query is returned.
      *
-     * Note: As this produces a query with multiple elements, care should be taken to set
-     * {@link SRequest#queryBatchSize} fairly low, e.g. {@code 100}, if {@link SRequest#queries(Stream)}} is used with
-     * multiple queries from this method. If not, the default Solr limit of 1024 boolean clauses can easily be exceeded.
+     * Note: This should normally NOT be used with {@link SRequest#queries(Stream)}} as it is likely to match multiple
+     * documents and give a lot of false positives. The typical use case would be for dedicated URL search with the
+     * returned documents either being showed in ranked order or pruned so that only the first document is used.
      * @param url a HTTP-URL: Must start with {@code http://} or {@code https://}
      * @return a Solr query for the URL that allows partial matching on arguments.
      */
