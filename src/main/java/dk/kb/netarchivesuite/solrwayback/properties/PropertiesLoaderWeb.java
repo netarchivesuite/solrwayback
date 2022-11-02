@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -26,6 +27,8 @@ public class PropertiesLoaderWeb {
     public static final String WEBAPP_PREFIX_PROPERTY="webapp.prefix";
     
     public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";	
+    public static final String ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING_PROPERTY="alternative.playback.collection.mapping";
+    
     public static final String FACETS_PROPERTY = "facets";	
     public static final String FIELDS_PROPERTY = "fields";
     public static final String MAPS_LATITUDE_PROPERTY = "maps.latitude";
@@ -51,6 +54,9 @@ public class PropertiesLoaderWeb {
     public static final String TOP_LEFT_LOGO_IMAGE_PROPERTY = "top.left.logo.image";
     public static final String TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY = "top.left.logo.image.link";
  
+    
+    
+    public static LinkedHashMap<String,String> ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING= new LinkedHashMap<String,String>(); 
     public static String SOLRWAYBACK_VERSION; //Will be set from initialcontext-listener
     public static String OPENWAYBACK_SERVER;
     public static int ARCHIVE_START_YEAR;
@@ -187,6 +193,15 @@ public class PropertiesLoaderWeb {
                 FIELDS=fieldsStr;                
             }
                         
+            
+            //Format is key1=value1,key2=value2
+            String mapping= serviceProperties.getProperty(ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING_PROPERTY);
+            if (mapping != null) {
+              buildPlaybackCollectionMapping(mapping);
+            }
+            else {
+             log.info("No collection playback mapping loaded.");   
+            }
             //Set max export sizes                                   
             log.info("Property:"+ WEBAPP_PREFIX_PROPERTY +" = " + WEBAPP_PREFIX);
             log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
@@ -212,6 +227,13 @@ public class PropertiesLoaderWeb {
             log.info("Property:"+ TOP_LEFT_LOGO_IMAGE_PROPERTY +" = " + TOP_LEFT_LOGO_IMAGE);
             log.info("Property:"+ TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY +" = " + TOP_LEFT_LOGO_IMAGE_LINK);
             
+            if (ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING.size() >0) {
+                for (String key : ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING.keySet())
+                {
+                    log.info("Collection playback mapping:"+ key +" = " + ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING.get(key));                
+                }                                
+            }
+            
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -227,4 +249,18 @@ public class PropertiesLoaderWeb {
         Object o = serviceProperties.getProperty(key);
         return o == null ? defaultValue : o.toString();
     }
+    
+    //Format is key1=value1,key2=value2
+    private static void buildPlaybackCollectionMapping(String mapping) {
+    
+        String[] params = mapping.split(";");
+        
+        for (String param : params) {
+            String[] keyVal=param.split("=");            
+            ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING.put(keyVal[0],keyVal[1]);            
+        }        
+    
+    }
+    
+    
 }

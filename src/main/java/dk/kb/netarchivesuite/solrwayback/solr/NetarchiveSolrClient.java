@@ -1096,7 +1096,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("rows", "20"); // Hardcoded pt.
         solrQuery.set("start", startStr);
         solrQuery.set("q", query);
-        solrQuery.set("fl", "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type");
+        solrQuery.set("fl", "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type, collection");
         solrQuery.set("wt", "json");
         solrQuery.set("hl", "on");
         solrQuery.set("q.op", "AND");

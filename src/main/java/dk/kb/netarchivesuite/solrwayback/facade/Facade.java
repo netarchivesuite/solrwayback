@@ -915,6 +915,15 @@ public class Facade {
             props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY,PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_LINK);
         }
 
+        if (PropertiesLoaderWeb.ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING.size() >0) {
+            props.put("COLLECTION_PLAYBACK","true");
+            for (String mapping: PropertiesLoaderWeb.ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING.keySet()) {
+               props.put("PLAYBACK_"+mapping,PropertiesLoaderWeb.ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING.get(mapping));                        
+            }            
+        }
+        
+        
+        
         return props;
     }
 
