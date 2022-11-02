@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -97,6 +98,7 @@ public class StreamBridge {
     public static InputStream outputToInput(Collection<Consumer<OutputStream>> providers) throws IOException {
         PipedOutputStream out = new PipedOutputStream();
         PipedInputStream in = new PipedInputStream(out);
+        ExceptionCatchingInputStream ein = new ExceptionCatchingInputStream(in);
 
         List<Consumer<OutputStream>> providerList = new ArrayList<>(providers);
         OutputStream noCloseOut = new NonClosingOutputStream(out); // The sub-streams are concatenated
@@ -108,10 +110,13 @@ public class StreamBridge {
                 try {
                     providerList.get(i).accept(noCloseOut);
                 } catch (Exception e) {
-                    log.warn(String.format(
-                            Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d. " +
-                                            "Switching to next sub-provider",
-                            i+1, providerList.size()), e);
+                    String message = String.format(
+                            Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d",
+                            i+1, providerList.size());
+                    log.warn(message, e);
+                    // Next read call on the returned InputStream will throw this Exception
+                    ein.setException(new IOException(message, e));
+                    break;
                 }
             }
             //providers.forEach(provider -> provider.accept(noCloseOut));
@@ -122,7 +127,7 @@ public class StreamBridge {
                 log.error("IOException closing piped stream", e);
             }
         });
-        return in;
+        return ein;
     }
 
     /**
@@ -144,39 +149,10 @@ public class StreamBridge {
      * @return an InputStream which will be populated with data from the provider.
      */
     public static InputStream outputToInputSafe(Collection<Consumer<SafeOutputStream>> providers) throws IOException {
-        PipedOutputStream out = new PipedOutputStream();
-        PipedInputStream in = new PipedInputStream(out);
-        ExceptionCatchingInputStream ein = new ExceptionCatchingInputStream(in);
-
-        List<Consumer<SafeOutputStream>> providerList = new ArrayList<>(providers);
-        OutputStream noCloseOut = new NonClosingOutputStream(out); // The sub-streams are concatenated
-        SafeOutputStream safeOut = new SafeOutputStream(noCloseOut);
-
-        // Iterate all providers, sending their content to the piped stream
-        // If a provider fails, the Exception is logged and processing continues with the next provider
-        executor.submit(() -> {
-            for (int i = 0 ; i < providerList.size() ; i++) {
-                try {
-                    providerList.get(i).accept(safeOut);
-                } catch (Exception e) {
-                    String message = String.format(
-                            Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d",
-                            i+1, providerList.size());
-                    log.warn(message, e);
-                    // Next read call on the returned InputStream will throw this Exception
-                    ein.setException(new IOException(message, e));
-                    break;
-                }
-            }
-            //providers.forEach(provider -> provider.accept(noCloseOut));
-            try {
-                out.flush();
-                out.close();
-            } catch (IOException e) {
-                log.error("IOException closing piped stream", e);
-            }
-        });
-        return ein;
+        Collection<Consumer<OutputStream>> unsafes = providers.stream().
+                map(SafeOutputStream::acceptUnsafe).
+                collect(Collectors.toList());
+        return outputToInput(unsafes);
     }
 
     /**
@@ -289,6 +265,15 @@ public class StreamBridge {
         }
         private static final byte[] LN = "\n".getBytes(StandardCharsets.UTF_8);
 
+        /**
+         * Wraps a consumer of {@code SafeOutputStream} so that it accepts a plain {@code InputStream}.
+         * @param safeConsumer any consumer of {@code SafeOutputStream}.
+         * @return a consumer of {@code InputStream} that calls {@code accept} on the provided safe consumer.
+         */
+        public static Consumer<OutputStream> acceptUnsafe(Consumer<SafeOutputStream> safeConsumer) {
+            return unsafe -> safeConsumer.accept(new SafeOutputStream(unsafe));
+        }
+
         @Override
         public void write(int b) {
             try {
@@ -396,10 +381,10 @@ public class StreamBridge {
     /**
      * Copies the content of {@code alreadyRead} into a temporary file, followed by the remaining content in {@code is}.
      * An InputStream is returned that delivers the bytes from {@code alreadyRead} + {@code is}.
-     * Any Exceptions encountered during the process are caught and stored in the returne StatusInputStream.
+     * Any Exceptions encountered during the process are caught and stored in the returned {@link StatusInputStream}.
      * @param is a potentially unreliable InputStream.
      * @param alreadyRead bytes already read. Can be null.
-     * @return
+     * @return an InputStream with status {@code ok, empty, exception}.
      */
     private static StatusInputStream guaranteedStream(InputStream is, byte[] alreadyRead) {
         if (alreadyRead == null) {
