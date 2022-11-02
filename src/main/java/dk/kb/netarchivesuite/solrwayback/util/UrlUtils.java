@@ -1,5 +1,9 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
+
+import java.net.IDN;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,6 +97,31 @@ public class UrlUtils {
         String[] tokens= url.split("/");
         return tokens[tokens.length-1];
 
+    }
+
+    public static String punyCodeAndNormaliseUrl(String url) throws Exception {
+        if (!(url.startsWith("http://") || url.startsWith("https://"))) {
+            throw new Exception("Url not starting with http:// or https://");
+        }
+
+        URL uri = new URL(url);
+        String hostName = uri.getHost();
+        String hostNameEncoded = IDN.toASCII(hostName);
+
+        String path = uri.getPath();
+        if ("".equals(path)) {
+            path = "/";
+        }
+        String urlQueryPath = uri.getQuery();
+        String urlPunied = null;
+        if (urlQueryPath == null) {
+             urlPunied = "http://" + hostNameEncoded + path;
+        }
+        else {
+            urlPunied = "http://" + hostNameEncoded + path +"?"+ urlQueryPath;
+        }
+        String urlPuniedAndNormalized = Normalisation.canonicaliseURL(urlPunied);
+        return urlPuniedAndNormalized;
     }
 }
 

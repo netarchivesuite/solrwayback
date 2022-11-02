@@ -4,7 +4,6 @@ import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.ContentStreams;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
-import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.DomainStatisticsForDomainParser;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
@@ -56,7 +55,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.IDN;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -369,31 +367,6 @@ public class Facade {
         ArrayList<ArcEntryDescriptor> arcs = getImagesForHtmlPageNewThreaded(source_file_path, offset);
 
         return arcEntrys2Images(arcs);
-    }
-
-    public static String punyCodeAndNormaliseUrl(String url) throws Exception {
-        if (!(url.startsWith("http://") || url.startsWith("https://"))) {
-            throw new Exception("Url not starting with http:// or https://");
-        }
-
-        URL uri = new URL(url);
-        String hostName = uri.getHost();
-        String hostNameEncoded = IDN.toASCII(hostName);
-        
-        String path = uri.getPath();
-        if ("".equals(path)) {
-            path = "/";
-        }
-        String urlQueryPath = uri.getQuery();
-        String urlPunied = null;
-        if (urlQueryPath == null) {
-             urlPunied = "http://" + hostNameEncoded + path;
-        }
-        else {
-            urlPunied = "http://" + hostNameEncoded + path +"?"+ urlQueryPath;            
-        }
-        String urlPuniedAndNormalized = Normalisation.canonicaliseURL(urlPunied);       
-        return urlPuniedAndNormalized;
     }
 
     /*
