@@ -7,7 +7,7 @@
 of only year. This is useful for recent collection that does not go back years. (Still 
 in progress, may also be implemented for wordcloud and domain statistics in the toolbox)   
 https://github.com/netarchivesuite/solrwayback/issues/270
-Thanks  Leslie Bellony from BnF for implementing this) 
+Thanks to Leslie Bellony from BnF for implementing this) 
 
 
 Support for multiple different(url)playback engines. This require the WARC files has been indexed 
