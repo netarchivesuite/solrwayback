@@ -38,7 +38,6 @@ Export results supports in format json and jsonl besides csv (not implemented in
 yet) 
 
 
-
 Improvemented expanded WARC-import. Redirects would sometime result in some required 
 resources  would not be included the WARC file.  
  
