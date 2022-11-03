@@ -71,10 +71,14 @@ public class Processing {
     public static <T> Stream<T> batch(Stream<Callable<T>> jobs, int batchSize) {
         return CollectionUtils.splitToLists(jobs, batchSize).
                 flatMap(batch -> {
+                    long startTime = System.currentTimeMillis();
                     try {
                         return executorService.invokeAll(batch).stream();
                     } catch (InterruptedException e) {
                         throw new RuntimeException("Iterrupted while waiting for batch processing", e);
+                    } finally {
+                        log.debug("Batch processed {} jobs in {} ms",
+                                  batch.size(), System.currentTimeMillis()-startTime);
                     }
                 }).
                 map(future -> {
