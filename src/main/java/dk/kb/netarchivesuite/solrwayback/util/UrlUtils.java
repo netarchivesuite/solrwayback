@@ -102,6 +102,19 @@ public class UrlUtils {
 
     }
 
+    /**
+     * Safe version of {@link #punyCodeAndNormaliseUrl(String)} where null is returned if an Exception is thrown.
+     * @param url any URL, but only HTTP and HTTPS are handled.
+     * @return the URL in punicode (if needed) form and normalised, null in case of Exceptions.
+     */
+    public static String punyCodeAndNormaliseUrlSafe(String url) {
+        try {
+            return punyCodeAndNormaliseUrl(url);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static String punyCodeAndNormaliseUrl(String url) throws Exception {
         if (!(url.startsWith("http://") || url.startsWith("https://"))) {
             throw new Exception("Url not starting with http:// or https://");
