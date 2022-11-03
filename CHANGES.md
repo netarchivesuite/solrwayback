@@ -2,13 +2,46 @@
 
 4.3.2
 -----
+
+'Visualization of search result by domain' can now be shown by day,week and month instead 
+of only year. This is useful for recent collection that does not go back years. (Still 
+in progress, may also be implemented for wordcloud and domain statistics in the toolbox)   
+https://github.com/netarchivesuite/solrwayback/issues/270
+Thanks  Leslie Bellony from BnF for implementing this) 
+
+
+Support for multiple different(url)playback engines. This require the WARC files has been indexed 
+with the collection parameter. Each collection that then be mapped to a playback engine 
+url. (Still in progress, more information will come)
+
 Cache invalidation based on background checks for index changes. Better solr-index caching implementation. Using a Solr query that detect changes that  
 can be defined to run at given interval. (see documentation in solrwayback.properties).
 The new property can be added to solrwayback.properties:
 
 solr.server.check.interval.seconds=60
 
-Fixed double calling of service metod when using url_search. (had to effect on users)  (github jira #258)
+Fixed double calling of service metod when using url_search. (had to effect on users)  (https://github.com/netarchivesuite/solrwayback/issues/258)
+
+Fixed frontend encoding bug for url-search. (https://github.com/netarchivesuite/solrwayback/issues/232)
+
+Fixed frontend encoding bug for exporting result. (https://github.com/netarchivesuite/solrwayback/issues/271)
+
+Fixed frontend encoding bug (https://github.com/netarchivesuite/solrwayback/issues/259)
+
+Fixed frontend redundant service call (https://github.com/netarchivesuite/solrwayback/issues/257)
+
+Major rewrite of all streaming logic that is used for the various export methods. There is support for export a group'ed search result and image search. 
+(Still needs to be implemented in frontend.). Thanks for Toke Eskildsen for this major improvement 
+and cleanup of the streaming logic. 
+
+Export results supports in format json and jsonl besides csv (not implemented in frontend  
+yet) 
+
+
+
+Improvemented expanded WARC-import. Redirects would sometime result in some required 
+resources  would not be included the WARC file.  
+ 
 
 
 4.3.1
@@ -27,7 +60,7 @@ Playback improvement. Fixed some redirect/url-parsing bugs in the ROOT.war (solr
  
 Playback improvement: Queries for page resource resolving are now properly quited, avoiding a scenario where resolving of all page resources failed. https://github.com/netarchivesuite/solrwayback/issues/230
 
-Playback improvement: data: URLs are now bypassed is resource URL rewriting and are thus supported for playback. https://github.com/netarchivesuite/solrwayback/issues/230
+Playback improvement: image data-src URLs are now bypassed is resource URL rewriting and are thus supported for playback. https://github.com/netarchivesuite/solrwayback/issues/230
 
 The SolrWaybackRootProxy (ROOT.war) in the Software bundle has been updated to fix rare playback issues.
 
