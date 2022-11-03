@@ -127,15 +127,16 @@ public class HtmlParserUrlRewriter {
 	 * Extracts the HTML from the ArcEntry and replaces links and other URLs with the archived versions that are
 	 * closest to the ArcEntry in time.
 	 * @param arc an arc-entry that is expected to be a HTML page.
+	 * @param lenient if true, lenient URL-matching is used.
+	 *                See {@link dk.kb.netarchivesuite.solrwayback.util.UrlUtils#lenientURLQuery(String)}.
 	 * @return the page with links to archived versions instead of live web version.
 	 * @throws Exception if link-resolving failed.
 	 */
-	public static ParseResult replaceLinks(ArcEntry arc) throws Exception{
+	public static ParseResult replaceLinks(ArcEntry arc, boolean lenient) throws Exception{
 		final long startMS = System.currentTimeMillis();
 		return replaceLinks(
 				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getCrawlDate(),
-				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().
-						findNearestHarvestTimeForMultipleUrlsFewFields(urls, timeStamp),
+				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestUrlsShort(urls, timeStamp, lenient),
 				startMS);
 	}
 

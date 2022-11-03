@@ -817,7 +817,9 @@ public class Facade {
     }
 
 
-    public static ArcEntry viewResource(String source_file_path, long offset, IndexDoc doc, Boolean showToolbar) throws Exception {
+    public static ArcEntry viewResource(
+            String source_file_path, long offset, IndexDoc doc, Boolean showToolbar, Boolean lenient) throws Exception {
+        lenient = Boolean.TRUE.equals(lenient);
         if (showToolbar == null) {
             showToolbar = false;
         }
@@ -838,22 +840,22 @@ public class Facade {
 
         if (doc.getType().equals("Twitter Tweet")) {
             TwitterPlayback twitterPlayback = new TwitterPlayback(arc, doc, showToolbar);
-            return twitterPlayback.playback();
+            return twitterPlayback.playback(lenient);
         } else if (doc.getType().equals("Jodel Post") || doc.getType().equals("Jodel Thread")) {
             JodelPlayback jodelPlayback = new JodelPlayback(arc, doc, showToolbar);
-            return jodelPlayback.playback();
+            return jodelPlayback.playback(lenient);
         } else if ("Web Page".equals(doc.getType())|| ((300 <= doc.getStatusCode() && arc.getContentType() != null && arc.getContentType().equals("text/html")))) {
 
             // We still want the toolbar to show for http moved (302 etc.)
             HtmlPlayback htmlPlayback = new HtmlPlayback(arc, doc, showToolbar);
-            return htmlPlayback.playback();
+            return htmlPlayback.playback(lenient);
         } else if ("text/css".equals(arc.getContentType()) ) {
             CssPlayback cssPlayback = new CssPlayback(arc, doc, showToolbar); // toolbar is never shown anyway.
-            return cssPlayback.playback();
+            return cssPlayback.playback(lenient);
         }
         else if ("text/javascript".equals(arc.getContentType()) ) {
             JavascriptPlayback javascriptPlayback = new JavascriptPlayback(arc, doc, showToolbar); // toolbar is never shown anyway.
-            return javascriptPlayback.playback();
+            return javascriptPlayback.playback(lenient);
         }
 
         else { // Serve as it is. (Javascript, images, pdfs etc.)

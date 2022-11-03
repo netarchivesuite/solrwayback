@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 
 import dk.kb.netarchivesuite.solrwayback.parsers.ParseResult;
-import dk.kb.netarchivesuite.solrwayback.parsers.Jodel2Html;
 import dk.kb.netarchivesuite.solrwayback.parsers.WaybackToolbarInjecter;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
@@ -22,7 +21,7 @@ public class JodelPlayback extends PlaybackHandler{
   }
 
   @Override
-  public ArcEntry playback() throws Exception{
+  public ArcEntry playback(boolean lenient) throws Exception{
     log.debug(" Generate Jodel post from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset());
     //Fake html into arc.
 
