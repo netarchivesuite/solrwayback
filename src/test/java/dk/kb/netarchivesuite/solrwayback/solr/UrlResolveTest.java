@@ -14,6 +14,8 @@
  */
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
+import dk.kb.netarchivesuite.solrwayback.parsers.ParseResult;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -90,7 +93,9 @@ public class UrlResolveTest {
                     "url_norm", "http example org foo bar hest zoo pling",
                     "url", "https://www.EXAMPLE.org/foo?bar=hest&zoo=pling",
                     "url_norm", "http://example.org/foo?bar=hest&zoo=pling",
-                    "record_type", "response"
+                    "record_type", "response",
+                    "source_file_path", "somepath",
+                    "source_file_offset", 87
         );
         solr.addDoc("id", "doc_2_old",
                     "host", "example.org",
@@ -98,7 +103,9 @@ public class UrlResolveTest {
                     "url_search", "http example org foo bar ged zoo ooling",
                     "url", "https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling",
                     "url_norm", "http://example.org/foo?bar=ged&zoo=ooling",
-                    "record_type", "response"
+                    "record_type", "response",
+                    "source_file_path", "somepath",
+                    "source_file_offset", 88
         );
         solr.addDoc("id", "doc_2_new",
                     "host", "example.org",
@@ -106,7 +113,9 @@ public class UrlResolveTest {
                     "url_search", "http example org foo bar ged zoo ooling",
                     "url", "https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling",
                     "url_norm", "http://example.org/foo?bar=ged&zoo=ooling",
-                    "record_type", "response"
+                    "record_type", "response",
+                    "source_file_path", "somepath",
+                    "source_file_offset", 80
         );
         solr.addDoc("id", "doc_3",
                     "host", "example.org",
@@ -114,7 +123,9 @@ public class UrlResolveTest {
                     "url_search", "http example org foo bar ged zoo ooling",
                     "url", "https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling",
                     "url_norm", "http://example.org/foo?bar=ged&zoo=ooling",
-                    "record_type", "response"
+                    "record_type", "response",
+                    "source_file_path", "somepath",
+                    "source_file_offset", 88
         );
 
         solr.commit();
@@ -262,6 +273,30 @@ public class UrlResolveTest {
         document.addField("status_code", "200");
         document.setField("crawl_date", DateUtils.solrTimestampToJavaDate(CRAWL_TIMES[r.nextInt(CRAWL_TIMES.length)]));
         solr.add(document);
+    }
+
+    @Test
+    public void testHTMLLinksReplace() throws Exception {
+        final String HTML =
+                "<html><head><title>Test</title></head>\n" +
+                "<body><p>\n" +
+                "<img src=\"https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling\"/> valid direct\n" +
+                "</p><p>\n" +
+                "<img src=\"https://www.EXAMPLE.org/foo?bar=ged&zoo=pling\"/> valid lenient\n" +
+                "</p><p>\n" +
+                "<img src=\"https://www.EXAMPLE.org/horse?bar=ged&zoo=pling\"/> invalid lenient\n" +
+                "</p>" +
+                "</body></html>";
+        ParseResult parseResult = HtmlParserUrlRewriter.replaceLinks(
+                HTML, "https://www.EXAMPLE.org/", "2022-11-04T16:12:00Z",
+                (urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestUrlsShort(urls, timeStamp, true));
+        assertTrue("The 'valid direct' image should be resolved in\n" + HTML,
+                   parseResult.getReplaced().contains("offset=88"));
+        assertTrue("The 'valid lenient' image should be resolved in\n" + HTML,
+                   parseResult.getReplaced().contains("offset=87"));
+        assertTrue("There should be a 'notfound' image in\n" + HTML,
+                   parseResult.getReplaced().contains("/notfound"));
+//        System.out.println(parseResult.getReplaced());
     }
 
     private static class ConvenientEmbeddedSolrServer extends EmbeddedSolrServer {
