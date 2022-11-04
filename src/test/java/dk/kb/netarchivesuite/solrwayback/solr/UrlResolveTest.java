@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
@@ -83,17 +84,37 @@ public class UrlResolveTest {
         log.info("Filling embedded server with documents");
         final Random r = new Random(87); // Random but not too random
 
-        solr.addDoc("id", "doc_1",
+        solr.addDoc("id", "doc_1_old",
                     "host", "example.org",
+                    "crawl_date", "2018-11-04T13:51:00Z",
                     "url_norm", "http example org foo bar hest zoo pling",
                     "url", "https://www.EXAMPLE.org/foo?bar=hest&zoo=pling",
-                    "url_norm", "http://example.org/foo?bar=hest&zoo=pling"
+                    "url_norm", "http://example.org/foo?bar=hest&zoo=pling",
+                    "record_type", "response"
         );
-        solr.addDoc("id", "doc_2",
+        solr.addDoc("id", "doc_2_old",
                     "host", "example.org",
+                    "crawl_date", "2019-11-04T13:51:00Z",
                     "url_search", "http example org foo bar ged zoo ooling",
                     "url", "https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling",
-                    "url_norm", "http://example.org/foo?bar=ged&zoo=ooling"
+                    "url_norm", "http://example.org/foo?bar=ged&zoo=ooling",
+                    "record_type", "response"
+        );
+        solr.addDoc("id", "doc_2_new",
+                    "host", "example.org",
+                    "crawl_date", "2022-11-04T11:51:00Z",
+                    "url_search", "http example org foo bar ged zoo ooling",
+                    "url", "https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling",
+                    "url_norm", "http://example.org/foo?bar=ged&zoo=ooling",
+                    "record_type", "response"
+        );
+        solr.addDoc("id", "doc_3",
+                    "host", "example.org",
+                    "crawl_date", "2022-11-04T13:51:00Z",
+                    "url_search", "http example org foo bar ged zoo ooling",
+                    "url", "https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling",
+                    "url_norm", "http://example.org/foo?bar=ged&zoo=ooling",
+                    "record_type", "response"
         );
 
         solr.commit();
@@ -102,7 +123,6 @@ public class UrlResolveTest {
     @Test
     public void testLenientNoTrigger() {
         final String URL_1 = "https://www.EXAMPLE.org/foo?bar=hest&zoo=pling";
-        final String URL_2_PARTIAL = "https://www.EXAMPLE.org/foo?bar=hest&zoo=ooling"; // hest is intentionally wrong
         final List<String> fields = Arrays.asList("id", "url", "url_norm");
 
         {
@@ -115,6 +135,74 @@ public class UrlResolveTest {
                          attempts, NetarchiveSolrClient.instance.getLenientAttempts());
             assertEquals("There should be a no change to the number of successful lenient attempts for matching search",
                          success, NetarchiveSolrClient.instance.getLenientSuccesses());
+        }
+    }
+
+    @Test
+    public void testTimeProximityNotLenient() {
+        final String URL_2 = "https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling";
+        final String URL_2_FAULTY = "https://www.EXAMPLE.org/foo?bar=hest&zoo=ooling";
+        final String FIELDS = "id, url, url_norm";
+
+        {
+            long attempts = NetarchiveSolrClient.instance.getLenientAttempts();
+            long success = NetarchiveSolrClient.instance.getLenientSuccesses();
+            Stream<SolrDocument> docs = NetarchiveSolrClient.getInstance().findNearestDocuments(
+                    FIELDS, "2022-11-02T13:54:00Z", Stream.of(URL_2));
+            long found = docs.count();
+            assertEquals("The right amount of documents should be located for a non-lenient search", 1, found);
+            assertEquals("There should be no change to the number of lenient attempts for lenient search",
+                         attempts, NetarchiveSolrClient.instance.getLenientAttempts());
+            assertEquals("There should be no change to the number of successful lenient attempts for lenient search",
+                         success, NetarchiveSolrClient.instance.getLenientSuccesses());
+        }
+
+        {
+            Stream<SolrDocument> docs = NetarchiveSolrClient.getInstance().findNearestDocuments(
+                    FIELDS, "2022-11-02T13:54:00Z", Stream.of(URL_2_FAULTY));
+            long found = docs.count();
+            assertEquals("The right amount of documents should be located for a non-lenient faulty search", 0, found);
+        }
+    }
+
+    @Test
+    public void testTimeProximityLenient() {
+        final String URL_2 = "https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling";
+        final String URL_2_FAULTY = "https://www.EXAMPLE.org/foo?bar=hest&zoo=ooling";
+        final String FIELDS = "id, url, url_norm";
+
+        {
+            long attempts = NetarchiveSolrClient.instance.getLenientAttempts();
+            long success = NetarchiveSolrClient.instance.getLenientSuccesses();
+            Stream<SolrDocument> docs = NetarchiveSolrClient.getInstance().findNearestDocumentsLenient(
+                    FIELDS, "2022-11-02T13:54:00Z", Stream.of(URL_2));
+            long found = docs.count();
+            assertEquals("The right amount of documents should be located for a lenient search", 1, found);
+            assertEquals("There should be no change to the number of lenient attempts for lenient search with" +
+                         " direct url_norm match",
+                         attempts, NetarchiveSolrClient.instance.getLenientAttempts());
+            assertEquals("There should be no change to the number of successful lenient attempts for lenient " +
+                         "search with direct url_norm match",
+                         success, NetarchiveSolrClient.instance.getLenientSuccesses());
+        }
+
+        {
+            long attempts = NetarchiveSolrClient.instance.getLenientAttempts();
+            long success = NetarchiveSolrClient.instance.getLenientSuccesses();
+            List<SolrDocument> docs = NetarchiveSolrClient.getInstance().findNearestDocumentsLenient(
+                    FIELDS, "2022-11-02T13:54:00Z", Stream.of(URL_2_FAULTY)).
+                    collect(Collectors.toList());
+
+            long found = docs.size();
+            assertEquals("The right amount of documents should be located for a lenient search", 1, found);
+            assertEquals("There should be a change to the number of lenient attempts for lenient search with" +
+                         " no direct url_norm match",
+                         attempts+1, NetarchiveSolrClient.instance.getLenientAttempts());
+            assertEquals("There should be a change to the number of successful lenient attempts for lenient " +
+                         "search with no direct url_norm match",
+                         success+1, NetarchiveSolrClient.instance.getLenientSuccesses());
+            assertEquals("The ID of the returned document should as expected (the one nearest in similarity)",
+                         "doc_1_old", docs.get(0).getFieldValue("id").toString());
         }
     }
 
