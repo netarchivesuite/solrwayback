@@ -45,7 +45,7 @@ import static org.junit.Assert.assertEquals;
 public class UrlResolveTest {
     private static final Logger log = LoggerFactory.getLogger(UrlResolveTest.class);
 
-    private static final String SOLR_HOME = "target/test-classes/solr";
+    private static final String SOLR_HOME = "target/test-classes/solr_url_resolve";
     private static CoreContainer coreContainer= null;
     private static ConvenientEmbeddedSolrServer solr = null;
 
