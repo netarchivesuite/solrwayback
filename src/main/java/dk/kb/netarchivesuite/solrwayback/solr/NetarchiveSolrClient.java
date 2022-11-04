@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,6 +58,8 @@ public class NetarchiveSolrClient {
     protected static NetarchiveSolrClient instance = null;
     protected static IndexWatcher indexWatcher = null;
     protected static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+");
+    private final AtomicLong lenientAttempts = new AtomicLong(0);
+    private final AtomicLong lenientSuccesses = new AtomicLong(0);
 
     protected Boolean solrAvailable = null;
 
@@ -554,8 +557,17 @@ public class NetarchiveSolrClient {
         // Run jobs and collect Map with [originalURL, SolrDocument]
         return Processing.batch(lenientJobs).
                 filter(jobPair -> Objects.nonNull(jobPair.second())).
-                peek(jobPair -> log.debug("Lenient resolved '{}' to '{}'",
-                                          jobPair.first(), jobPair.second().getFieldValue("url_norm"))).
+                peek(jobPair -> {
+                    String originalURL = jobPair.first();
+                    String normURL = Objects.toString(jobPair.second().getFieldValue("url_norm"));
+                    if (originalURL.equals(normURL)) {
+                        log.debug("Note: Lenient resolved '{}', but the url_norm was equal to the originalURL",
+                                  originalURL);
+                    } else {
+                        log.debug("Lenient resolved '{}' to '{}'", originalURL, normURL);
+                    }
+                    }
+                ).
                 collect(Collectors.toMap(Pair::first, Pair::second));
     }
 
@@ -579,7 +591,11 @@ public class NetarchiveSolrClient {
         SolrUtils.setSolrParams(solrQuery);
         QueryResponse response;
         try {
+            lenientAttempts.incrementAndGet();
             response = noCacheSolrServer.query(solrQuery);
+            if (response.getResults() != null && !response.getResults().isEmpty()) {
+                lenientSuccesses.incrementAndGet();
+            }
         } catch (Exception e) {
             throw new RuntimeException("Exception trying to resolve URL lenient for '" + url + "'", e);
         }
@@ -1683,4 +1699,17 @@ public class NetarchiveSolrClient {
         }
     }
 
+    /**
+     * @return the number of attempts for resolving an URL leniently with extended argument query.
+     */
+    public long getLenientAttempts() {
+        return lenientAttempts.get();
+    }
+    
+    /**
+     * @return the number of successful attempts for resolving an URL leniently with extended argument query.
+     */
+    public long getLenientSuccesses() {
+        return lenientSuccesses.get();
+    }
 }
