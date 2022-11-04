@@ -431,7 +431,7 @@ public class NetarchiveSolrClient {
      * resulting {@link SolrDocument} is passed on.
      * <p>
      * This implementation performs a full resolve of all URLs before delivery, which delays the time before first
-     * delivered {@code Solrdocument} and introduces a memory overhead: This method should only be called for a limited
+     * delivered {@code SolrDocument} and introduces a memory overhead: This method should only be called for a limited
      * amount of URLs, such as 1000-10,000.
      * <p>
      * All URLs without hits are resolved individually using {@link dk.kb.netarchivesuite.solrwayback.util.UrlUtils#lenientURLQuery(String)},
@@ -949,8 +949,8 @@ public class NetarchiveSolrClient {
      * <p>
      * If a document cannot be resolved using direct matching with {@code url_norm:<normURL>}, lenient matching is used.
      * Lenient first locates the {@code url_norm} closest to the original URL, then feeds that {@code url_norm} to
-     * time prioritized resolving. When producing {@link SolrDocument}s, the original URL is set as the document's
-     * {@code url} instead off the one originally returned by Solr.
+     * time prioritized resolving. When producing {@link SolrDocument}s, a normalised version of the original URL is
+     * set as the document's {@code url_norm} instead of the one originally returned by Solr.
      * <p>
      * Note: Revisits are not considered as candidates: See {@link SolrUtils#NO_REVISIT_FILTER}.
      *
@@ -981,8 +981,8 @@ public class NetarchiveSolrClient {
       <p>
      * If a document cannot be resolved using direct matching with {@code url_norm:<normURL>}, lenient matching is used.
      * Lenient first locates the {@code url_norm} closest to the original URL, then feeds that {@code url_norm} to
-     * time prioritized resolving. When producing {@link SolrDocument}s, the original URL is set as the document's
-     * {@code url} instead off the one originally returned by Solr.
+     * time prioritized resolving. When producing {@link SolrDocument}s, a normalised version of the original URL is
+     * set as the document's {@code url_norm} instead of the one originally returned by Solr.
      * <p>
      * Note: Revisits are not considered as candidates: See {@link SolrUtils#NO_REVISIT_FILTER}.
      *
@@ -1034,7 +1034,8 @@ public class NetarchiveSolrClient {
                 map(originalURL -> getValueFromMaps(originalURL, direct, lenient)).
                 filter(Objects::nonNull).
                 peek(resultPair -> resultPair.second().setField("originalURL", resultPair.first())).
-                peek(resultPair -> resultPair.second().setField("url", resultPair.first())).
+                peek(resultPair -> resultPair.second().setField(
+                        "url_norm", UrlUtils.punyCodeAndNormaliseUrlSafe(resultPair.first()))).
                 map(Pair::second);
     }
 
