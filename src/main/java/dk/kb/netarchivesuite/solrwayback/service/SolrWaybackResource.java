@@ -662,7 +662,7 @@ public class SolrWaybackResource {
            
       //log.debug("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
           
-      Response viewImpl = viewImpl(doc.getSource_file_path() , doc.getOffset(),true, null);
+      Response viewImpl = viewImpl(doc.getSource_file_path() , doc.getOffset(),true, lenient);
       
       return viewImpl;
     } catch (Exception e) {

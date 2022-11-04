@@ -23,6 +23,8 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.NodeConfig;
 import org.apache.solr.core.SolrCore;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -45,7 +47,7 @@ import static org.junit.Assert.assertEquals;
 public class UrlResolveTest {
     private static final Logger log = LoggerFactory.getLogger(UrlResolveTest.class);
 
-    private static final String SOLR_HOME = "target/test-classes/solr_url_resolve";
+    private static final String SOLR_HOME = "target/test-classes/solr";
     private static CoreContainer coreContainer= null;
     private static ConvenientEmbeddedSolrServer solr = null;
 
@@ -66,6 +68,15 @@ public class UrlResolveTest {
         fillSolr();
         SolrGenericStreaming.setDefaultSolrClient(solr);
         log.info("Embedded server ready");
+    }
+
+    /**
+     * @throws java.lang.Exception
+     */
+    @AfterClass
+    public static void tearDown() throws Exception {
+      coreContainer.shutdown();
+      solr.close();
     }
 
     private static void fillSolr() throws SolrServerException, IOException {
