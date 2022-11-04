@@ -904,8 +904,8 @@ public class NetarchiveSolrClient {
      */
     public ArrayList<IndexDocShort> findNearestUrlsShort(Collection<String> urls, String timeStamp, boolean lenient) {
         Stream<SolrDocument> docs = lenient ?
-                findNearestDocuments(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream()) :
-                findNearestDocumentsLenient(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream());
+                findNearestDocumentsLenient(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream()) :
+                findNearestDocuments(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream());
 
         return docs.
                 map(SolrUtils::solrDocument2IndexDocShort).
