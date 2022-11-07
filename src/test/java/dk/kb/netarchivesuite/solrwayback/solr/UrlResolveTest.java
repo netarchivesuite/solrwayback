@@ -128,6 +128,26 @@ public class UrlResolveTest {
                     "source_file_path", "somepath",
                     "source_file_offset", 90
         );
+        solr.addDoc("id", "doc_3_future_http",
+                    "host", "example.org",
+                    "crawl_date", "2040-11-04T13:50:00Z",
+                    "url_search", "http example org foo bar ged zoo ooling",
+                    "url", "http://www.EXAMPLE.org/foo?bar=three&zoo=ooling",
+                    "url_norm", "http://example.org/foo?bar=three&zoo=ooling",
+                    "record_type", "response",
+                    "source_file_path", "somepath",
+                    "source_file_offset", 91
+        );
+        solr.addDoc("id", "doc_4_future_https",
+                    "host", "example.org",
+                    "crawl_date", "2040-11-04T13:50:00Z",
+                    "url_search", "http example org foo bar ged zoo ooling",
+                    "url", "https://www.EXAMPLE.org/foo?bar=three&zoo=ooling",
+                    "url_norm", "http://example.org/foo?bar=three&zoo=ooling",
+                    "record_type", "response",
+                    "source_file_path", "somepath",
+                    "source_file_offset", 91
+        );
 
         solr.commit();
     }
@@ -153,6 +173,7 @@ public class UrlResolveTest {
     @Test
     public void testTimeProximityNotLenient() {
         final String URL_2 = "https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling";
+        final String URL_2_HTTP = "http://www.EXAMPLE.org/foo?bar=ged&zoo=ooling";
         final String URL_2_FAULTY = "https://www.EXAMPLE.org/foo?bar=hest&zoo=ooling";
         final String FIELDS = "id, url, url_norm";
 
@@ -174,6 +195,13 @@ public class UrlResolveTest {
                     FIELDS, "2022-11-02T13:54:00Z", Stream.of(URL_2_FAULTY));
             long found = docs.count();
             assertEquals("The right amount of documents should be located for a non-lenient faulty search", 0, found);
+        }
+
+        {
+            Stream<SolrDocument> docs = NetarchiveSolrClient.getInstance().findNearestDocuments(
+                    FIELDS, "2022-11-02T13:54:00Z", Stream.of(URL_2_HTTP));
+            long found = docs.count();
+            assertEquals("The right amount of documents should be located for a non-lenient HTTP search", 1, found);
         }
     }
 
@@ -292,6 +320,10 @@ public class UrlResolveTest {
                 "</p><p>\n" +
                 "<img src=\"https://www.EXAMPLE.org/foo?bar=ged&zoo=pling\"/> valid lenient\n" +
                 "</p><p>\n" +
+                "<img src=\"http://www.EXAMPLE.org/foo?bar=four&zoo=ooling\"/> valid direct HTTP-HTTPS\n" +
+                "</p><p>\n" +
+                "<img src=\"http://www.EXAMPLE.org/foo?bar=three&zoo=ooling\"/> valid direct HTTP-HTTP\n" +
+                "</p><p>\n" +
                 "<img src=\"https://www.EXAMPLE.org/horse?bar=ged&zoo=pling\"/> invalid lenient\n" +
                 "</p>" +
                 "</body></html>";
@@ -300,6 +332,10 @@ public class UrlResolveTest {
                 (urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestUrlsShort(urls, timeStamp, true));
         final String replaced = parseResult.getReplaced();
         assertTrue("The 'valid direct' image should be resolved with offset=89 in\n" + replaced,
+                   replaced.contains("offset=89"));
+        assertTrue("The 'valid direct HTTP-HTTP' image should be resolved with offset=91 in\n" + replaced,
+                   replaced.contains("offset=91"));
+        assertTrue("The 'valid direct HTTP-HTTPS' image should be resolved with offset=89 in\n" + replaced,
                    replaced.contains("offset=89"));
         assertTrue("The 'valid lenient' image should be resolved with offset=87 in\n" + replaced,
                    replaced.contains("offset=87"));
