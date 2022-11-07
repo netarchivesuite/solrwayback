@@ -364,14 +364,16 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       }
 
       SolrQuery solrRealQuery = solrQuery;
-      if (request.isMultiQuery() && solrBatchQuery == null) { // Multi-query
-        if (!queries.hasNext()) {
-          hasFinished = true;
-          return null;
+      if (request.isMultiQuery()) {   // Multi-query
+        if (solrBatchQuery == null) { // Move to next queri in multi-query
+          if (!queries.hasNext()) {
+            hasFinished = true;
+            return null;
+          }
+          solrBatchQuery = SolrUtils.deepCopy(solrQuery).setQuery(queries.next());
+          solrBatchQuery.set(CursorMarkParams.CURSOR_MARK_PARAM,
+                             solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START));
         }
-        solrBatchQuery = SolrUtils.deepCopy(solrQuery).setQuery(queries.next());
-        solrBatchQuery.set(CursorMarkParams.CURSOR_MARK_PARAM,
-                           solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START));
         solrRealQuery = solrBatchQuery;
       }
 
