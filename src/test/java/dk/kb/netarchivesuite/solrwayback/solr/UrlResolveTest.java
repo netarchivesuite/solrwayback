@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -98,6 +99,7 @@ public class UrlResolveTest {
                     "source_file_path", "somepath",
                     "source_file_offset", 87
         );
+
         solr.addDoc("id", "doc_2_old",
                     "host", "example.org",
                     "crawl_date", "2019-11-04T13:51:00Z",
@@ -128,6 +130,7 @@ public class UrlResolveTest {
                     "source_file_path", "somepath",
                     "source_file_offset", 90
         );
+
         solr.addDoc("id", "doc_3_future_http",
                     "host", "example.org",
                     "crawl_date", "2040-11-04T13:50:00Z",
@@ -138,6 +141,7 @@ public class UrlResolveTest {
                     "source_file_path", "somepath",
                     "source_file_offset", 91
         );
+
         solr.addDoc("id", "doc_4_future_https",
                     "host", "example.org",
                     "crawl_date", "2040-11-04T13:50:00Z",
@@ -147,6 +151,30 @@ public class UrlResolveTest {
                     "record_type", "response",
                     "source_file_path", "somepath",
                     "source_file_offset", 91
+        );
+
+        for (int i = 0 ; i < 1050 ; i++) {
+            solr.addDoc("id", "doc_5_many_" + i,
+                        "host", "example.org",
+                        "crawl_date", String.format(Locale.ROOT, "20%d2-11-04T13:50:00Z", i), // Hack the year
+                        "url_search", "http example org foo bar year",
+                        "url", "https://www.EXAMPLE.org/foo?bar=year",
+                        "url_norm", "http://example.org/foo?bar=year",
+                        "record_type", "response",
+                        "source_file_path", "somepath",
+                        "source_file_offset", "200" + i
+            );
+        }
+
+        solr.addDoc("id", "doc_5_after_many",
+                    "host", "example.org",
+                    "crawl_date", "2200-11-04T13:50:00Z",
+                    "url_search", "http example org foo bar after",
+                    "url", "https://www.EXAMPLE.org/foo?bar=yearafter",
+                    "url_norm", "http://example.org/foo?bar=yearafter",
+                    "record_type", "response",
+                    "source_file_path", "somepath",
+                    "source_file_offset", 50000
         );
 
         solr.commit();
@@ -308,11 +336,7 @@ public class UrlResolveTest {
      * 1 URL needs to be lenient resolved. This gives 3 hits, where the one nearest to the webpage crawl_date is chosen.
      */
     @Test
-    public void testHTMLLinksReplaceLenient() throws Exception {
-        SolrQuery q = new SolrQuery();
-        q.setQuery("*:*");
-        System.out.println(solr.query(q).getResults().get(0).getFieldValue("crawl_date").getClass());
-
+    public void testHTMLLinksReplaceMix() throws Exception {
         final String HTML =
                 "<html><head><title>Test</title></head>\n" +
                 "<body><p>\n" +
@@ -342,6 +366,25 @@ public class UrlResolveTest {
         assertTrue("There should be a 'notfound' image in\n" + replaced,
                    replaced.contains("/notfound"));
 //        System.out.println(parseResult.getReplaced());
+    }
+
+    @Test
+    public void testHTMLLinksReplaceMany() throws Exception {
+        final String HTML =
+                "<html><head><title>Test</title></head>\n" +
+                "<body><p>\n" +
+                "<img src=\"https://www.EXAMPLE.org/foo?bar=year\"/> valid direct\n" +
+                "</p><p>\n" +
+                "<img src=\"https://www.EXAMPLE.org/foo?bar=yearafter\"/> valid direct after\n" +
+                "</body></html>";
+        ParseResult parseResult = HtmlParserUrlRewriter.replaceLinks(
+                HTML, "https://www.EXAMPLE.org/", "2022-11-04T12:00:00Z",
+                (urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestUrlsShort(urls, timeStamp, false));
+        final String replaced = parseResult.getReplaced();
+        assertTrue("The 'valid direct' image should be resolved with offset=200... in\n" + replaced,
+                   replaced.contains("offset=200"));
+        assertTrue("The 'valid direct after' image should be resolved with offset=50000 in\n" + replaced,
+                   replaced.contains("offset=50000"));
     }
 
     private static class ConvenientEmbeddedSolrServer extends EmbeddedSolrServer {
