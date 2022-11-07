@@ -236,7 +236,7 @@ public class UrlResolveTest {
     @Test
     public void testTimeProximityLenient() {
         final String URL_2 = "https://www.EXAMPLE.org/foo?bar=ged&zoo=ooling";
-        final String URL_2_FAULTY = "https://www.EXAMPLE.org/foo?bar=hest&zoo=ooling";
+        final String URL_2_FAULTY = "https://www.EXAMPLE.org/foo?bar=hest&zoo=ooling"; // hest
         final String FIELDS = "id, url, url_norm";
 
         {
@@ -269,8 +269,9 @@ public class UrlResolveTest {
             assertEquals("There should be a change to the number of successful lenient attempts for lenient " +
                          "search with no direct url_norm match",
                          success+1, NetarchiveSolrClient.instance.getLenientSuccesses());
-            assertEquals("The ID of the returned document should as expected (the one nearest in similarity)",
-                         "doc_1_old", docs.get(0).getFieldValue("id").toString());
+            assertEquals("The ID of the returned document should as expected (the one nearest in URL similarity, " +
+                         "secondarily time)",
+                         "doc_2_new", docs.get(0).getFieldValue("id").toString());
         }
     }
 

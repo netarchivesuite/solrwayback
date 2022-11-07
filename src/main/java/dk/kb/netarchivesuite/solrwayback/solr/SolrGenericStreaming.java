@@ -181,6 +181,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     this.initialFields = Arrays.asList(solrQuery.getFields().split(","));
 
     adjustSolrQuery(solrQuery, request.expandResources, request.ensureUnique, request.deduplicateField);
+    optimizeSolrQuery(solrQuery, request);
     this.adjustedFields = Arrays.asList(solrQuery.getFields().split(","));
 
     this.uniqueTracker = request.ensureUnique ? new HashSet<>() : null;
@@ -263,6 +264,36 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     solrQuery.set(FacetParams.FACET, false);
     solrQuery.set(StatsParams.STATS, false);
     solrQuery.set(HighlightParams.HIGHLIGHT, false);
+  }
+
+  /**
+   * Optimizes the query for faster deduplication, is possible.
+   * Important: This must be called AFTER {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+   * @param solrQuery a Solrquery that has been through {@link #adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+   * @param request the request responsible for the solrQuery.
+   */
+  private void optimizeSolrQuery(SolrQuery solrQuery, SRequest request) {
+    if (!request.usePaging && request.deduplicateField != null) {
+      String cursorMark = solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
+      if (!CursorMarkParams.CURSOR_MARK_START.equals(cursorMark)) {
+        log.debug("Unable to enable group-based deduplication on '{}' as cursorMark is defined to '{}'",
+                  request.deduplicateField, cursorMark);
+        return;
+      }
+
+      log.debug("Enabling group-based deduplication on '{}' as usePaging==true", request.deduplicateField);
+      // group=true&group.field=url_norm&group.limit=1&group.format=simple&group.main=true
+      solrQuery.set(GroupParams.GROUP, true);
+      solrQuery.set(GroupParams.GROUP_FIELD, request.deduplicateField);
+      solrQuery.set(GroupParams.GROUP_LIMIT, 1);
+
+      // Make grouping return the first (and only) document from each group flattened as a standard search result
+      solrQuery.set(GroupParams.GROUP_FORMAT, "simple");
+      solrQuery.set(GroupParams.GROUP_MAIN, true);
+
+      // Remove cursorMark
+      solrQuery.remove(CursorMarkParams.CURSOR_MARK_PARAM);
+    }
   }
 
   /**
@@ -365,18 +396,20 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
       SolrQuery solrRealQuery = solrQuery;
       if (request.isMultiQuery()) {   // Multi-query
-        if (solrBatchQuery == null) { // Move to next queri in multi-query
+        if (solrBatchQuery == null) { // Move to next query in multi-query
           if (!queries.hasNext()) {
             hasFinished = true;
             return null;
           }
+          // TODO: Switch to only using 1 deep copy instead of one for each query
           solrBatchQuery = SolrUtils.deepCopy(solrQuery).setQuery(queries.next());
-          solrBatchQuery.set(CursorMarkParams.CURSOR_MARK_PARAM,
-                             solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START));
+          if (request.usePaging) {
+            solrBatchQuery.set(CursorMarkParams.CURSOR_MARK_PARAM,
+                               solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START));
+          }
         }
         solrRealQuery = solrBatchQuery;
       }
-
 
       String cursorMark = solrRealQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
 
@@ -392,7 +425,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       }
 
       // No more documents buffered, attempt to require new documents
-      solrRealQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
+      if (request.usePaging) {
+        solrRealQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
+      }
       QueryResponse rsp = request.solrClient.query(solrRealQuery, METHOD.POST);
       undelivered = rsp.getResults();
 
@@ -414,7 +449,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       undelivered.forEach(this::reduceAndSortFields);
 
       // Has the last page been reached?
-      String newCursormark = rsp.getNextCursorMark();
+      String newCursormark = request.usePaging ? rsp.getNextCursorMark() : cursorMark;
       if (newCursormark.equals(cursorMark)) { // No more documents
         cursorMark = STOP_PAGING;
       } else {

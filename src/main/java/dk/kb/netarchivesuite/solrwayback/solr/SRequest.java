@@ -77,6 +77,7 @@ public class SRequest {
     public Stream<String> queries = null;
     public List<String> filterQueries;
     public int pageSize = SolrGenericStreaming.DEFAULT_PAGESIZE;
+    public boolean usePaging = true;
     public int queryBatchSize = SolrGenericStreaming.DEFAULT_QUERY_BATCHSIZE;
 
     /**
@@ -175,6 +176,7 @@ public class SRequest {
      *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
      *                         if expandResources is true and uniqueness must also be guaranteed for resources.
      * @return the SRequest adjusted with the provided value.
+     * @see #usePaging(boolean) 
      */
     public SRequest deduplicateField(String deduplicateField) {
         if (deduplicateField != null && deduplicateField.isEmpty()) {
@@ -195,9 +197,11 @@ public class SRequest {
      *
      * @param idealTime        The time that the resources should be closest to, stated as a Solr timestamp
      *                         {@code YYYY-MM-DDTHH:mm:SSZ}.
+     *                         <p>
      *                         Also supports {@code oldest} and {@code newest} as values.
      * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
      * @return the SRequest adjusted with the provided values.
+     * @see #usePaging(boolean) 
      */
     public SRequest timeProximityDeduplication(String idealTime, String deduplicateField) {
         if (deduplicateField != null && deduplicateField.isEmpty()) {
@@ -274,6 +278,7 @@ public class SRequest {
      * This method overrides existing fields without warning or error.
      * @param fields fields to export (fl). deduplicateField will be added to this is not already present.
      *               This parameter has no default and must be defined.
+     *               <p>
      *               If only 1 field is specified and fields contains at least 1 comma, it will treated
      *               as a comma separated list of fields: {@code "foo,bar,zoo" == "foo", "bar", "zoo"}.
      * @return the SRequest adjusted with the provided value.
@@ -353,6 +358,7 @@ public class SRequest {
     /**
      * This method overrides existing query and removes existing queries without warning or error.
      * @param query standard Solr query.
+     *              <p>
      *              This parameter has no default and must be defined either directly or
      *              through {@link #solrQuery(SolrQuery)}.
      * @return the SRequest adjusted with the provided value.
@@ -390,12 +396,15 @@ public class SRequest {
     /**
      * This method overrides existing queries and removes existing query without warning or error.
      * @param queries standard Solr queries, where all queries will conceptually be issued one after another.
+     *                <p>
      *                For performance reasons, queries will be batched with {@code OR} as modifier:
      *                If {@code queries = Arrays.asList("url:http://example.com/foo", "url:http://example.com/bar").stream()},
      *                the batch request will be {@code "url:http://example.com/foo OR url:http://example.com/bar"}.
+     *                <p>
      *                However, there is an upper limit to batching so multiple batches might be issued.
      *                This affects {@link #deduplicateField(String)} and {@link #timeProximityDeduplication(String, String)}
      *                as overall deduplication will not be guaranteed.
+     *                <p>
      *                Use {@link #ensureUnique(Boolean)} to force unique results, if needed.
      * @return the SRequest adjusted with the provided value.
      * @see #queries(Stream)
@@ -427,8 +436,10 @@ public class SRequest {
     /**
      * This method overrides existing filterQueries without warning or error.
      * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+     *                      <p>
      *                      If multiple filters are to be used, consider collapsing them into one:
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      <p>
      *                      Note: This overrides any existing filterQueries.
      * @return the SRequest adjusted with the provided value.
      * @see #filterQueries(String...)
@@ -441,8 +452,10 @@ public class SRequest {
 
     /**
      * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+     *                      <p>
      *                      If multiple filters are to be used, consider collapsing them into one:
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      <p>
      *                      Note: This overrides any existing filterQueries.
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if filterQueries were already set.
@@ -462,6 +475,7 @@ public class SRequest {
      * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
      *                      If multiple filters are to be used, consider collapsing them into one:
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      <p>
      *                      Note: This overrides any existing filterQueries.
      * @return the SRequest adjusted with the provided value.
      * @see #filterQueries(String...)
@@ -474,9 +488,12 @@ public class SRequest {
     /**
      * @param filterQueries optional Solr filter queries used when {@link #expandResources(Boolean)} is true.
      *                      Only resources that satisfies these filters are exported.
+     *                      <p>
      *                      For performance, 0 or 1 filter query is recommended.
+     *                      <p>
      *                      If multiple filters are to be used, consider collapsing them into one:
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      <p>
      *                      Note: This overrides any existing expandResourcesFilterQueries.
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if filterQueries were already set.
@@ -495,10 +512,13 @@ public class SRequest {
     /**
      * This method overrides existing filterQueries without warning or error.
      * @param filterQueries optional Solr filter queries used when {@link #expandResources(Boolean)} is true.
+     *                      <p>
      *                      Only resources that satisfies these filters are exported.
+     *                      <p>
      *                      For performance, 0 or 1 filter query is recommended.
      *                      If multiple filters are to be used, consider collapsing them into one:
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      <p>
      *                      Note: This overrides any existing expandResourcesFilterQueries.
      * @return the SRequest adjusted with the provided value.
      * @see #expandResourcesFilterQueries(List)
@@ -511,8 +531,10 @@ public class SRequest {
     /**
      * @param filterQueries optional Solr filter queries used when {@link #expandResources(Boolean)} is true.
      *                      Only resources that satisfies these filters are exported.
+     *                      <p>
      *                      If multiple filters are to be used, consider collapsing them into one:
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      <p>
      *                      Note: This overrides any existing expandResourcesFilterQueries.
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if filterQueries were already set.
@@ -532,8 +554,10 @@ public class SRequest {
      * This method overrides existing filterQueries without warning or error.
      * @param filterQueries optional Solr filter queries used when {@link #expandResources(Boolean)} is true.
      *                      Only resources that satisfies these filters are exported.
+     *                      <p>
      *                      If multiple filters are to be used, consider collapsing them into one:
      *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+     *                      <p>
      *                      Note: This overrides any existing expandResourcesFilterQueries.
      * @return the SRequest adjusted with the provided value.
      * @see #expandResourcesFilterQueries(String...)
@@ -550,6 +574,29 @@ public class SRequest {
      */
     public SRequest pageSize(int pageSize) {
         this.pageSize = pageSize;
+        return this;
+    }
+
+    /**
+     * Disables paging through result sets, so that only {@link #pageSize(int)} results are processed.
+     * Disabling of paging allows for optimization of Solr queries when {@link #deduplicateField(String)} or
+     * {@link #timeProximityDeduplication(String, String)} are used.
+     * <p>
+     * Warning: Disabling paging means skipping results if there are more than pageSize hits for a query.
+     * This is typically used when the number of maximum hits is known beforehand and when {@link #pageSize(int)}
+     * is set to that number.
+     * <p>
+     * Prime example is URL-lookups using {@code url_norm} that are also deduplicated on {@code url_norm}.
+     * When {@code usePaging(false)} is specified this will be changed to a grouping Solr query internally.
+     * @param usePaging if true (the default), paging is used. If false, paging is not used and only the first
+     *                  {@link #pageSize(int)} documents are processed for each query.
+     * @return the SRequest adjusted with the provided value.
+     * @see #pageSize(int)
+     * @see #timeProximityDeduplication(String, String) 
+     * @see #deduplicateField(String) 
+     */
+    public SRequest usePaging(boolean usePaging) {
+        this.usePaging = usePaging;
         return this;
     }
 
@@ -650,4 +697,5 @@ public class SRequest {
     public Stream<SolrDocument> stream() {
         return SolrGenericStreaming.create(this).stream();
     }
+
 }
