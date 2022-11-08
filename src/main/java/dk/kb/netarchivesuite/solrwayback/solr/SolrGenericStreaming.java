@@ -32,11 +32,13 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterators;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -119,10 +121,15 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   public static final String STOP_PAGING = "___STOP_PAGING___";
 
+  static final AtomicLong solrRequests = new AtomicLong(0);
+
   private final SRequest request;
-  private final SolrQuery solrQuery; // Constructed from request. Used for single-query requests
-  private SolrQuery solrBatchQuery = null; // Used for multi-query requests
-  private final Iterator<String> queries; // Only defined if the request is multi-query
+  private final SolrQuery originalSolrQuery; // The original SolrQuery from the SRequest. Never modify this!
+  private SolrQuery solrQuery;               // Deep copy of originalSolrQuery. Potentially modified with e.g. q and cursorMark
+  private final Iterator<String> queries;    // Only defined if the request is multi-query
+  private boolean queryDepleted;             // Whether or not all documents has been resolved for the current q
+  private String lastDeduplicateValue = null; // Used for simulated cursorMark
+  private String userQuery = null;            // Used for simulated cursorMark
 
   private final List<String> initialFields;  // Caller provided fields
   private final List<String> adjustedFields; // Fields after adjusting for unique etc.
@@ -177,7 +184,10 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   public SolrGenericStreaming(SRequest request) {
     this.request = request;
-    solrQuery = request.getMergedSolrQuery();
+    originalSolrQuery = request.getMergedSolrQuery();
+    solrQuery = SolrUtils.deepCopy(originalSolrQuery);
+    queryDepleted = request.isMultiQuery(); // Single query starts assigned, multi are initialized later
+    userQuery = request.isMultiQuery() ? null : solrQuery.getQuery();
     this.initialFields = Arrays.asList(solrQuery.getFields().split(","));
 
     adjustSolrQuery(solrQuery, request.expandResources, request.ensureUnique, request.deduplicateField);
@@ -273,27 +283,31 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * @param request the request responsible for the solrQuery.
    */
   private void optimizeSolrQuery(SolrQuery solrQuery, SRequest request) {
-    if (!request.usePaging && request.deduplicateField != null) {
-      String cursorMark = solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
-      if (!CursorMarkParams.CURSOR_MARK_START.equals(cursorMark)) {
-        log.debug("Unable to enable group-based deduplication on '{}' as cursorMark is defined to '{}'",
-                  request.deduplicateField, cursorMark);
-        return;
-      }
-
-      log.debug("Enabling group-based deduplication on '{}' as usePaging==true", request.deduplicateField);
-      // group=true&group.field=url_norm&group.limit=1&group.format=simple&group.main=true
-      solrQuery.set(GroupParams.GROUP, true);
-      solrQuery.set(GroupParams.GROUP_FIELD, request.deduplicateField);
-      solrQuery.set(GroupParams.GROUP_LIMIT, 1);
-
-      // Make grouping return the first (and only) document from each group flattened as a standard search result
-      solrQuery.set(GroupParams.GROUP_FORMAT, "simple");
-      solrQuery.set(GroupParams.GROUP_MAIN, true);
-
-      // Remove cursorMark
-      solrQuery.remove(CursorMarkParams.CURSOR_MARK_PARAM);
+    if (request.deduplicateField == null) { // No need for grouping
+      return;
     }
+
+    // Check for already existing cursorMark
+    String cursorMark = solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
+    if (!CursorMarkParams.CURSOR_MARK_START.equals(cursorMark)) {
+      log.debug("Unable to enable group-based deduplication on '{}' as cursorMark is defined to '{}'",
+                request.deduplicateField, cursorMark);
+      // TODO: Should this throw an Exception instead?
+      return;
+    }
+
+    log.debug("Enabling group-based deduplication on '{}'", request.deduplicateField);
+    // group=true&group.field=url_norm&group.limit=1&group.format=simple&group.main=true
+    solrQuery.set(GroupParams.GROUP, true);
+    solrQuery.set(GroupParams.GROUP_FIELD, request.deduplicateField);
+    solrQuery.set(GroupParams.GROUP_LIMIT, 1);
+
+    // Make grouping return the first (and only) document from each group flattened as a standard search result
+    solrQuery.set(GroupParams.GROUP_FORMAT, "simple");
+    solrQuery.set(GroupParams.GROUP_MAIN, true);
+
+    // Remove cursorMark if it is present
+    solrQuery.remove(CursorMarkParams.CURSOR_MARK_PARAM);
   }
 
   /**
@@ -389,48 +403,60 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   public SolrDocumentList nextDocuments() throws SolrServerException, IOException {
     while (!hasFinished && delivered < request.maxResults) {
+
       // Return batch if undelivered contains any documents
       if (undelivered != null && undelivered.size() > 0) {
         return nextPageUndelivered();
       }
 
-      SolrQuery solrRealQuery = solrQuery;
-      if (request.isMultiQuery()) {   // Multi-query
-        if (solrBatchQuery == null) { // Move to next query in multi-query
-          if (!queries.hasNext()) {
-            hasFinished = true;
-            return null;
-          }
-          // TODO: Switch to only using 1 deep copy instead of one for each query
-          solrBatchQuery = SolrUtils.deepCopy(solrQuery).setQuery(queries.next());
+      // Move to next query is needed
+      if (queryDepleted) {
+        if (request.isMultiQuery() && queries.hasNext()) {
+          userQuery = queries.next();
+          solrQuery.setQuery(userQuery);
+          queryDepleted = false;
           if (request.usePaging) {
-            solrBatchQuery.set(CursorMarkParams.CURSOR_MARK_PARAM,
-                               solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START));
+            if (request.deduplicateField == null) { // Plain paging initialization
+              solrQuery.set(
+                      CursorMarkParams.CURSOR_MARK_PARAM,
+                      originalSolrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START));
+            } else { // Simulated cursorMark reset
+              lastStreamDeduplicateValue = null;
+            }
           }
+        } else {
+          hasFinished = true;
+          return null;
         }
-        solrRealQuery = solrBatchQuery;
       }
 
-      String cursorMark = solrRealQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
-
-      // Only page to next page if there are more pages
-      if (STOP_PAGING.equals(cursorMark)) {
-        if (request.isMultiQuery()) {
-          // Multi-query, so skip to next query
-          solrBatchQuery = null;
-          continue;
-        }
-        hasFinished = true;
-        return null;
-      }
-
-      // No more documents buffered, attempt to require new documents
+      // Handle påaging (cursorMark) setup
+      String cursorMark = solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
       if (request.usePaging) {
-        solrRealQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
+        if (request.deduplicateField == null) { // Plain cursorMark
+          solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
+        } else if (lastStreamDeduplicateValue == null) { // Simulated cursorMark initial call
+          solrQuery.setQuery(userQuery);
+        } else {  // Simulated cursorMark subsequent call
+          solrQuery.setQuery(String.format(
+                  Locale.ROOT, "(%s) AND %s:{%s TO *]", // Range query with non-inclusive start and open end
+                  userQuery, request.deduplicateField, SolrUtils.createPhrase(lastDeduplicateValue)));
+        }
       }
-      QueryResponse rsp = request.solrClient.query(solrRealQuery, METHOD.POST);
-      undelivered = rsp.getResults();
 
+      // Perform request and update depleted & paging variables
+      solrRequests.incrementAndGet();
+      QueryResponse rsp = request.solrClient.query(solrQuery, METHOD.POST);
+      undelivered = rsp.getResults();
+      if (undelivered.size() < solrQuery.getRows() || rsp.getResults().getNumFound() <= solrQuery.getRows()) {
+        queryDepleted = true;
+      }
+      if (request.usePaging && request.deduplicateField != null && !undelivered.isEmpty()) {
+        lastDeduplicateValue = SolrUtils.fieldValueToString(
+                undelivered.get(undelivered.size()-1).getFieldValue(request.deduplicateField));
+      }
+
+      // Expand or contract result set based on options
       if (request.deduplicateField != null) {
         streamDeduplicate(undelivered);
       }
@@ -445,17 +471,20 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
         undelivered.remove(undelivered.size()-1);
       }
 
-      // Only deliver the fields that were requested
+      // Reduce documents to contain requested fields only
       undelivered.forEach(this::reduceAndSortFields);
 
-      // Has the last page been reached?
-      String newCursormark = request.usePaging ? rsp.getNextCursorMark() : cursorMark;
-      if (newCursormark.equals(cursorMark)) { // No more documents
-        cursorMark = STOP_PAGING;
-      } else {
-        cursorMark = newCursormark;
-      }
-      solrRealQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
+      // Prepare for next page
+      if (!request.usePaging) { // No paging
+        queryDepleted = true;
+      } else if (request.deduplicateField == null) { // Plain cursorMark
+        String newCursormark = rsp.getNextCursorMark();
+        if (newCursormark.equals(cursorMark)) { // No more documents for this query
+          queryDepleted = true;
+        } else {
+          solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, newCursormark);
+        }
+      } // Simulated cursorMark is handled right after the raw response from the query
 
       // Loop as deduplication & unique might mean that the current batch is empty
     }

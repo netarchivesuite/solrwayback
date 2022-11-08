@@ -515,7 +515,7 @@ public class NetarchiveSolrClient {
         SRequest request = SRequest.builder().
                 queries(urlQueries).
                 queryBatchSize(1000). // Same as partitionSize in splitToStreams
-                usePaging(false). // Optimize Solr lookups
+                //usePaging(false). // Optimize Solr lookups (no longer needed)
                 fields(fields).
                 filterQueries(filterQueries);
         if (idealTime != null) {
@@ -945,7 +945,7 @@ public class NetarchiveSolrClient {
                 filterQueries(SolrUtils.extend(SolrUtils.NO_REVISIT_FILTER, filterQueries)). // No binary for revists
                 queryBatchSize(chunkSize). // URL-searches are single-clause queries, so we can use large batches
                 pageSize(chunkSize).
-                usePaging(false). // 1 URL = 1 hit as we deduplicate on url_norm
+                //usePaging(false). // 1 URL = 1 hit as we deduplicate on url_norm (no longer needed)
                 fields(fieldList).
                 timeProximityDeduplication(timeStamp, "url_norm").
                 stream();

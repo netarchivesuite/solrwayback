@@ -177,6 +177,20 @@ public class UrlResolveTest {
                     "source_file_offset", 50000
         );
 
+        for (int i = 0 ; i < 1050 ; i++) {
+            solr.addDoc("id", "doc_6_mixed_urls_" + i,
+                        "host", "example.org",
+                        "content_length", Integer.toString(i%10),
+                        "crawl_date", String.format(Locale.ROOT, "20%d2-11-04T13:50:00Z", i), // Hack the year
+                        "url_search", "http example org foo bar year mod10 " + (i%10),
+                        "url", "https://www.EXAMPLE.org/foo?bar=year&mod=" + (i%10),
+                        "url_norm", "http://example.org/foo?bar=year&mod=" + (i%10),
+                        "record_type", "response",
+                        "source_file_path", "somepath",
+                        "source_file_offset", "300" + i
+            );
+        }
+
         solr.commit();
     }
 
@@ -273,6 +287,79 @@ public class UrlResolveTest {
                          "secondarily time)",
                          "doc_2_new", docs.get(0).getFieldValue("id").toString());
         }
+    }
+
+    @Test
+    public void testGroupedPagingSingleQuery() {
+        long solrRequests = -SolrGenericStreaming.solrRequests.get();
+        List<String> urls = SRequest.builder().
+                query("url_search:mod10").
+                fields("url").
+                deduplicateField("url_norm").
+                pageSize(3).
+                stream().
+                map(solrDoc -> solrDoc.getFieldValue("url").toString()).
+                collect(Collectors.toList());
+        assertEquals("The right number of unique URLs should be delivered", 10, urls.size());
+        solrRequests += SolrGenericStreaming.solrRequests.get();
+
+        assertEquals("Only the expected number of Solr requests should be performed", 4, solrRequests);
+    }
+
+    @Test
+    public void testGroupedPagingTimestamp() {
+        long solrRequests = -SolrGenericStreaming.solrRequests.get();
+        List<String> urls = SRequest.builder().
+                query("url_search:mod10").
+                fields("url").
+                deduplicateField("crawl_date").
+                pageSize(3).
+                stream().
+                map(solrDoc -> solrDoc.getFieldValue("url").toString()).
+                collect(Collectors.toList());
+        assertEquals("The right number of unique URLs should be delivered", 1050, urls.size()); // All of them!
+        solrRequests += SolrGenericStreaming.solrRequests.get();
+
+        assertEquals("Only the expected number of Solr requests should be performed", 350, solrRequests);
+    }
+
+    @Test
+    public void testGroupedPagingMultiQuery() {
+        long solrRequests = -SolrGenericStreaming.solrRequests.get();
+        List<String> urls = SRequest.builder().
+                queries(Stream.of("content_length:0", "content_length:1", "content_length:[2 TO 8]")). // Intentional skip of mod:9
+                queryBatchSize(2).
+                fields("url").
+                deduplicateField("url_norm").
+                pageSize(3).
+                stream().
+                map(solrDoc -> solrDoc.getFieldValue("url").toString()).
+                collect(Collectors.toList());
+        assertEquals("The right number of unique URLs should be delivered", 9, urls.size());
+        solrRequests += SolrGenericStreaming.solrRequests.get();
+
+        // 1 from "[0, 1]" and 3 from "2 TO 8"
+        assertEquals("Only the expected number of Solr requests should be performed", 4, solrRequests);
+    }
+
+    @Test
+    public void testGroupedPagingMultiQueryMax() {
+        long solrRequests = -SolrGenericStreaming.solrRequests.get();
+        List<String> urls = SRequest.builder().
+                queries(Stream.of("content_length:0", "content_length:1", "content_length:[2 TO 8]")). // Range query should be ignored
+                queryBatchSize(2).
+                fields("url").
+                deduplicateField("url_norm").
+                pageSize(3). // > maxResults
+                maxResults(2).
+                stream().
+                map(solrDoc -> solrDoc.getFieldValue("url").toString()).
+                collect(Collectors.toList());
+        assertEquals("The right number of unique URLs should be delivered", 2, urls.size());
+        solrRequests += SolrGenericStreaming.solrRequests.get();
+
+        // 1 from "[0, 1]"
+        assertEquals("Only the expected number of Solr requests should be performed", 1, solrRequests);
     }
 
     @Test

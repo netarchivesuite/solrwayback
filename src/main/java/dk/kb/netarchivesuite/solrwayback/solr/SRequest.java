@@ -176,7 +176,6 @@ public class SRequest {
      *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
      *                         if expandResources is true and uniqueness must also be guaranteed for resources.
      * @return the SRequest adjusted with the provided value.
-     * @see #usePaging(boolean) 
      */
     public SRequest deduplicateField(String deduplicateField) {
         if (deduplicateField != null && deduplicateField.isEmpty()) {
@@ -201,7 +200,6 @@ public class SRequest {
      *                         Also supports {@code oldest} and {@code newest} as values.
      * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
      * @return the SRequest adjusted with the provided values.
-     * @see #usePaging(boolean) 
      */
     public SRequest timeProximityDeduplication(String idealTime, String deduplicateField) {
         if (deduplicateField != null && deduplicateField.isEmpty()) {
@@ -578,16 +576,14 @@ public class SRequest {
     }
 
     /**
-     * Disables paging through result sets, so that only {@link #pageSize(int)} results are processed.
-     * Disabling of paging allows for optimization of Solr queries when {@link #deduplicateField(String)} or
-     * {@link #timeProximityDeduplication(String, String)} are used.
+     * Disables paging through result sets, so that only {@link #pageSize(int)} results are processed for each query.
      * <p>
-     * Warning: Disabling paging means skipping results if there are more than pageSize hits for a query.
-     * This is typically used when the number of maximum hits is known beforehand and when {@link #pageSize(int)}
-     * is set to that number.
+     * Use case: Getting a limited number of results from each query when using {@link #queries}.
+     *           For that scenario, remember setting {@link #queryBatchSize(int)} to 1.
      * <p>
-     * Prime example is URL-lookups using {@code url_norm} that are also deduplicated on {@code url_norm}.
-     * When {@code usePaging(false)} is specified this will be changed to a grouping Solr query internally.
+     * Previously this was used for optimization of specific cases with {@link #deduplicateField(String)} and
+     * {@link #timeProximityDeduplication(String, String)} requests. This optimization is no longer needed.
+     * <p>
      * @param usePaging if true (the default), paging is used. If false, paging is not used and only the first
      *                  {@link #pageSize(int)} documents are processed for each query.
      * @return the SRequest adjusted with the provided value.
@@ -615,7 +611,7 @@ public class SRequest {
     /**
      * Copies {@link #solrQuery} and adjusts it with defined attributes from the SRequest, extending with needed
      * SolrRequest-attributes.
-     *
+     * <p>
      * Note: This does assign {@link #query}, but not {@link #queries}: They muct be handled explicitly.
      * @return a SolrQuery ready for processing.
      */

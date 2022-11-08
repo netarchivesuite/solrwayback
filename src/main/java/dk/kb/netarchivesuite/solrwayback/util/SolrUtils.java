@@ -14,9 +14,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class SolrUtils {
@@ -265,5 +267,28 @@ public class SolrUtils {
         extended[0] = str;
         System.arraycopy(additions, 0, extended, 1, additions.length);
         return extended;
+    }
+
+    /**
+     * Convert the given Solr field value to a String.
+     * <p>
+     * For most values this is a simple toString, but
+     * Dates are converted using {@link DateUtils#getSolrDateFull(Date)} and Collections are expanded.
+     * @param value a value from a Solr field.
+     * @return a String representation of the given Solr field value or null if the input was null;
+     */
+    public static String fieldValueToString(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Date) {
+            return DateUtils.getSolrDate((Date) value);
+        }
+        if (value instanceof Collection) {
+            return ((Collection<?>)value).stream().
+                    map(SolrUtils::fieldValueToString).
+                    collect(Collectors.joining(", ", "[", "]"));
+        }
+        return Objects.toString(value);
     }
 }
