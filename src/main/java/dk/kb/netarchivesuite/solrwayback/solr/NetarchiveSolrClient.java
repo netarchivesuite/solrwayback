@@ -557,6 +557,11 @@ public class NetarchiveSolrClient {
 
         // Run jobs and collect Map with [originalURL, SolrDocument]
         return Processing.batch(lenientJobs).
+                peek(jobPair -> {
+                    if (Objects.isNull(jobPair.second())) {
+                        log.debug("Unable to lenient resolve '{}'", jobPair.first());
+                    }
+                }).
                 filter(jobPair -> Objects.nonNull(jobPair.second())).
                 peek(jobPair -> {
                     String originalURL = jobPair.first();
