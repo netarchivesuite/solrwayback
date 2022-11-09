@@ -1,4 +1,3 @@
-
 package dk.kb.netarchivesuite.solrwayback.solr;
 
 import java.io.IOException;
@@ -6,11 +5,16 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
+import dk.kb.netarchivesuite.solrwayback.util.Processing;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
+import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 
@@ -23,8 +27,13 @@ import org.apache.solr.client.solrj.response.*;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.FacetParams;
+import org.apache.solr.common.params.GroupParams;
+import org.apache.solr.common.params.HighlightParams;
 import org.apache.solr.common.util.NamedList;
 
+import org.apache.solr.common.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +58,8 @@ public class NetarchiveSolrClient {
     protected static NetarchiveSolrClient instance = null;
     protected static IndexWatcher indexWatcher = null;
     protected static Pattern TAGS_VALID_PATTERN = Pattern.compile("[-_.a-zA-Z0-9Ã¦Ã¸Ã¥Ã†Ã˜Ã…]+");
+    private final AtomicLong lenientAttempts = new AtomicLong(0);
+    private final AtomicLong lenientSuccesses = new AtomicLong(0);
 
     protected Boolean solrAvailable = null;
 
@@ -394,6 +405,210 @@ public class NetarchiveSolrClient {
     }
 
     /**
+     * Calls {@link dk.kb.netarchivesuite.solrwayback.util.UrlUtils#punyCodeAndNormaliseUrl(String)} on each URL and
+     * attempts a {@code url_norm:"<url>"} search. Duplicates are removed and if there is a hit for the URL, the
+     * resulting {@link SolrDocument} is passed on. This step is done in batches.
+     * <p>
+     * All URLs without hits are resolved individually using {@link dk.kb.netarchivesuite.solrwayback.util.UrlUtils#lenientURLQuery(String)},
+     * where the document with the highest score is selected. If there are no hits for an URL after this step, it is
+     * discarded.
+     * <p>
+     * In both cases the {@link SolrDocument} is enriched with the original URL {@code originalURL:"<url>"}.
+     * @param fields the fields to return from the URLs. If not present, {@code url} and {@code url_norm} will be added.
+     * @param urls a Stream of URLs to resolve.
+     * @param filterQueries optional filter queries for resolving.
+     * @return a Stream of Solr documents with resolved {@code url}, {@code url_norm} plus the requested fields.
+     */
+    public Stream<SolrDocument> searchURLs(List<String> fields, Stream<String> urls, String... filterQueries) {
+        // Handle processing in batches of 1000 for low latency and low memory overhead
+        return CollectionUtils.splitToStreams(urls, 1000).
+                flatMap(batch -> searchURLsSingleTake(fields, batch, filterQueries));
+    }
+
+    /**
+     * Calls {@link dk.kb.netarchivesuite.solrwayback.util.UrlUtils#punyCodeAndNormaliseUrl(String)} on each URL and
+     * attempts a {@code url_norm:"<url>"} search. Duplicates are removed and if there is a hit for the URL, the
+     * resulting {@link SolrDocument} is passed on.
+     * <p>
+     * This implementation performs a full resolve of all URLs before delivery, which delays the time before first
+     * delivered {@code SolrDocument} and introduces a memory overhead: This method should only be called for a limited
+     * amount of URLs, such as 1000-10,000.
+     * <p>
+     * All URLs without hits are resolved individually using {@link dk.kb.netarchivesuite.solrwayback.util.UrlUtils#lenientURLQuery(String)},
+     * where the document with the highest score is selected. If there are no hits for an URL after this step, it is
+     * discarded.
+     * <p>
+     * In both cases the {@link SolrDocument} is enriched with the original URL {@code originalURL:"<url>"}.
+     * @param fields the fields to return from the URLs. If not present, {@code url} and {@code url_norm} will be added.
+     * @param urls a Stream of URLs to resolve.
+     * @param filterQueries optional filter queries for resolving.
+     * @return a Stream of Solr documents with resolved {@code url}, {@code url_norm} plus the requested fields.
+     */
+    private Stream<SolrDocument> searchURLsSingleTake(
+            List<String> fields, Stream<String> urls, String... filterQueries) {
+        ArrayList<String> allFields = new ArrayList<>(fields);
+        if (!fields.contains("url")) {
+            allFields.add("url");
+        }
+        if (!fields.contains("url_norm")) {
+            allFields.add("url_norm");
+        }
+
+        // Stream<String> of <= 1000 URLs
+
+        // Create list of [originalURL, normURL]
+        List<Pair<String, String>> urlPairs = getNormalisedURLs(urls);
+
+        // Try direct url_norm query resolving
+        Map<String, SolrDocument> direct = resolveURLsDirect(allFields, urlPairs, filterQueries);
+
+        // Use lenient resolving on the rest
+        Stream<Pair<String, String>> unresolved = urlPairs.stream().
+                filter(urlPair -> !direct.containsKey(urlPair.first()));
+
+        Map<String, SolrDocument> lenient = resolveURLsLenient(allFields, unresolved, filterQueries);
+
+        // Merge the results from direct and lenient and enrich with the SolrDocuments with originalURL
+        return urlPairs.stream().
+                map(Pair::first). // originalURL
+                        map(originalURL -> getValueFromMaps(originalURL, direct, lenient)).
+                filter(Objects::nonNull).
+                peek(resultPair -> resultPair.second().setField("originalURL", resultPair.first())).
+                map(Pair::second);
+    }
+
+    /**
+     * Perform direct {@code url_norm:<normURL>} searches in batches of 1000 and deliver the result as a
+     * {code Map<originalURL, SolrDocument>}. This is a fairly lightweight process.
+     * @param fields the fields to return in the SolrDocument. These <b>must</b> include {@code url_norm}.
+     * @param urlPairs pairs of {@code originalURL, normURL}.
+     * @param filterQueries 0 or more filters for the search.
+     * @return a {@code Map<originalURL, Solrdocument>} for all resolved URLs.
+     */
+    private Map<String, SolrDocument> resolveURLsDirect(
+            List<String> fields, List<Pair<String, String>> urlPairs, String... filterQueries) {
+        return resolveURLsDirect(fields, null, urlPairs, filterQueries);
+    }
+
+    /**
+     * Perform searches for all given URLs, deduplicating on {@code url_norm} and prioritizing those closest to the
+     * given timestamp if idealTime is not null. No practical limit on the number of URLs or the search result.
+     * The URL-requests are batched in groups of 1000 for performance.
+     * @param fields the fields to return in the SolrDocument. These <b>must</b> include {@code url_norm}.
+     * @param idealTime ISO-timestamp, Solr style: {@code 2011-10-14T14:44:00Z}.
+     * @param urlPairs pairs of {@code originalURL, normURL}.
+     * @param filterQueries 0 or more filters for the search.
+     * @return a {@code Map<originalURL, Solrdocument>} for all resolved URLs.
+     */
+    private Map<String, SolrDocument> resolveURLsDirect(
+            List<String> fields, String idealTime, List<Pair<String, String>> urlPairs, String... filterQueries) {
+        if (!fields.contains("url_norm")) {
+            throw new IllegalArgumentException("fields does not contain url_norm");
+        }
+
+        // Create list of url queries for the normURLs
+        Stream<String> urlQueries = urlPairs.stream().
+                map(Pair::second).
+                map(normURL -> "url_norm:" + SolrUtils.createPhrase(normURL));
+
+        // Resolve SolrDocuments using direct url_norm search and store them in a Map with url_norm as key
+        SRequest request = SRequest.builder().
+                queries(urlQueries).
+                queryBatchSize(1000). // Same as partitionSize in splitToStreams
+                //usePaging(false). // Optimize Solr lookups (no longer needed)
+                fields(fields).
+                filterQueries(filterQueries);
+        if (idealTime != null) {
+            request = request.timeProximityDeduplication(idealTime, "url_norm");
+        } else {
+            request = request.deduplicateField("url_norm");
+        }
+
+        Map<String, SolrDocument> normResolved = request.stream().
+                collect(Collectors.toMap(value -> Objects.toString(value.getFieldValue("url_norm")),
+                                         value -> value));
+
+        // Convert the Map of [url_norm, SolrDocument] to a Map of [originalURL, SolrDocument]
+        return urlPairs.stream().
+                map(urlPair -> new Pair<String, SolrDocument>(urlPair.first(), normResolved.get(urlPair.second()))).
+                filter(urlPair -> Objects.nonNull(urlPair.second())).
+                collect(Collectors.toMap(Pair::first, Pair::second));
+    }
+
+    /**
+     * Perform lenient resolving of originalURLs and deliver the result as a {code Map<originalURL, SolrDocument>}.
+     * The URLs are resolved individually but in parallel. This is a fairly heavy process.
+     * @param fields the fields to return in the SolrDocument. These <b>must</b> include {@code url_norm}.
+     * @param urlPairs pairs of {@code originalURL, normURL}.
+     * @param filterQueries 0 or more filters for the search.
+     * @return a {@code Map<originalURL, SolrDocument>} for all resolved URLs.
+     */
+    private Map<String, SolrDocument> resolveURLsLenient(
+            List<String> fields, Stream<Pair<String, String>> urlPairs, String[] filterQueries) {
+        if (!fields.contains("url_norm")) {
+            throw new IllegalStateException("fields does not contain 'url_norm'");
+        }
+        // Create jobs for unresolved originalURLs that delivers [originalURL, SolrDocument]
+        Stream<Callable<Pair<String, SolrDocument>>> lenientJobs = urlPairs.
+                map(Pair::first). // Only the originalURL is relevant when doing lenient resolving
+                map(originalURL -> () -> new Pair<>(
+                        originalURL,
+                        resolveURLLenient(fields, originalURL, filterQueries)));
+
+        // Run jobs and collect Map with [originalURL, SolrDocument]
+        return Processing.batch(lenientJobs).
+                peek(jobPair -> {
+                    if (Objects.isNull(jobPair.second())) {
+                        log.debug("Unable to lenient resolve '{}'", jobPair.first());
+                    }
+                }).
+                filter(jobPair -> Objects.nonNull(jobPair.second())).
+                peek(jobPair -> {
+                    String originalURL = jobPair.first();
+                    String normURL = Objects.toString(jobPair.second().getFieldValue("url_norm"));
+                    if (originalURL.equals(normURL)) {
+                        log.debug("Note: Lenient resolved '{}', but the url_norm was equal to the originalURL",
+                                  originalURL);
+                    } else {
+                        log.debug("Lenient resolved '{}' to '{}'", originalURL, normURL);
+                    }
+                    }
+                ).
+                collect(Collectors.toMap(Pair::first, Pair::second));
+    }
+
+    /**
+     * Perform lenient resolving of a single URL and deliver the first result, if any.
+     * This uses {@link UrlUtils#lenientURLQuery(String)} for constructing the query.
+     * @param fields the fields to return in the SolrDocument. These <b>must</b> include {@code url_norm}.
+     * @param url a raw URL.
+     * @param filterQueries 0 or more filters for the search.
+     * @return the first SolrDocument matching the lenient query or null if there were no matches.
+     */
+    public SolrDocument resolveURLLenient(List<String> fields, String url, String... filterQueries) {
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(UrlUtils.lenientURLQuery(url));
+        solrQuery.setFilterQueries(filterQueries);
+        solrQuery.set(CommonParams.ROWS, 1);
+        solrQuery.set(CommonParams.FL, String.join(",", fields));
+        solrQuery.set(HighlightParams.HIGHLIGHT, false);
+        solrQuery.set(FacetParams.FACET, false);
+        solrQuery.set(GroupParams.GROUP, false);
+        SolrUtils.setSolrParams(solrQuery);
+        QueryResponse response;
+        try {
+            lenientAttempts.incrementAndGet();
+            response = noCacheSolrServer.query(solrQuery);
+            if (response.getResults() != null && !response.getResults().isEmpty()) {
+                lenientSuccesses.incrementAndGet();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Exception trying to resolve URL lenient for '" + url + "'", e);
+        }
+        return response.getResults().isEmpty() ? null : response.getResults().get(0);
+    }
+
+    /**
      * Searches Solr for a video matching the given search string. If no indexed entry is found returns null.
      * @param videoQueryString String to query Solr for.
      * @return ArcEntryDescriptor containing info on first video found in search or null if no results found.
@@ -681,6 +896,28 @@ public class NetarchiveSolrClient {
                 collect(Collectors.toCollection(ArrayList::new));
     }
 
+
+    /**
+     * Resolves {@link IndexDocShort}s for the given URLs.
+     * If lenient is true, fuzzy matching is used for URLs that cannot be located through simple {@code url_norm} search.
+     * Lenient matching calls {@link IndexDocShort#setUrl(String)} with the original URL, instead of the URL returned
+     * in the {@link SolrDocument} from the search.
+     * @param urls      URLs for the resources to locate.
+     * @param timeStamp in case of multiple hits for a single URL, the resource with harvest time closest to this
+     *                  timestamp is preferred.
+     * @param lenient   if true, lenient matching is used for the resources that were not located using simple search.
+     * @return a list of {@link IndexDocShort} for the given URLs.
+     */
+    public ArrayList<IndexDocShort> findNearestUrlsShort(Collection<String> urls, String timeStamp, boolean lenient) {
+        Stream<SolrDocument> docs = lenient ?
+                findNearestDocumentsLenient(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream()) :
+                findNearestDocuments(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream());
+
+        return docs.
+                map(SolrUtils::solrDocument2IndexDocShort).
+                collect(Collectors.toCollection(ArrayList::new));
+    }
+
     /**
      * Perform searches for all given URLs, deduplicating on {@code url_norm} and prioritizing those closest to the
      * given timestamp. No practical limit on the number of URLs or the search result.
@@ -707,9 +944,138 @@ public class NetarchiveSolrClient {
                 queries(urlQueries).
                 filterQueries(SolrUtils.extend(SolrUtils.NO_REVISIT_FILTER, filterQueries)). // No binary for revists
                 queryBatchSize(chunkSize). // URL-searches are single-clause queries, so we can use large batches
+                pageSize(chunkSize).
+                //usePaging(false). // 1 URL = 1 hit as we deduplicate on url_norm (no longer needed)
                 fields(fieldList).
                 timeProximityDeduplication(timeStamp, "url_norm").
                 stream();
+    }
+
+    /**
+     * Perform searches for all given URLs, deduplicating on {@code url_norm} and prioritizing those closest to the
+     * given timestamp. No practical limit on the number of URLs or the search result.
+     * <p>
+     * If a document cannot be resolved using direct matching with {@code url_norm:<normURL>}, lenient matching is used.
+     * Lenient first locates the {@code url_norm} closest to the original URL, then feeds that {@code url_norm} to
+     * time prioritized resolving. When producing {@link SolrDocument}s, a normalised version of the original URL is
+     * set as the document's {@code url_norm} instead of the one originally returned by Solr.
+     * <p>
+     * Note: Revisits are not considered as candidates: See {@link SolrUtils#NO_REVISIT_FILTER}.
+     *
+     * @param fields the fields to return. If not present, {@code url} and {@code url_norm} will be added
+     * @param idealTime ISO-timestamp, Solr style: {@code 2011-10-14T14:44:00Z}.
+     * @param urls      0 or more URLs, which will be normalised and searched with {@code url_norm:"normalized_url"}.
+     * @param filterQueries 0 or more filterQueries for restring the URL search.
+     * @return the documents with the given URLs.
+     */
+    public Stream<SolrDocument> findNearestDocumentsLenient(
+            String fields, String idealTime, Stream<String> urls, String... filterQueries) {
+        final int chunkSize = 1000;
+        String[] extendedFilterQueries = SolrUtils.extend(SolrUtils.NO_REVISIT_FILTER, filterQueries);
+
+        // Handle processing in batches of 1000 for fast resolving
+        return CollectionUtils.splitToStreams(urls.filter(url -> !url.startsWith("data:")), chunkSize).
+                flatMap(batch -> findNearestDocumentLenientSingleTake(
+                        fields, idealTime, batch, extendedFilterQueries));
+    }
+
+    /**
+     * Perform searches for all given URLs, deduplicating on {@code url_norm} and prioritizing those closest to the
+     * given timestamp.
+     * <p> 
+     * This implementation performs a full resolve of all URLs before delivery, which delays the time before first
+     * delivered {@code Solrdocument} and introduces a memory overhead: This method should only be called for a limited
+     * amount of URLs, such as 1000-10,000.
+      <p>
+     * If a document cannot be resolved using direct matching with {@code url_norm:<normURL>}, lenient matching is used.
+     * Lenient first locates the {@code url_norm} closest to the original URL, then feeds that {@code url_norm} to
+     * time prioritized resolving. When producing {@link SolrDocument}s, a normalised version of the original URL is
+     * set as the document's {@code url_norm} instead of the one originally returned by Solr.
+     * <p>
+     * Note: Revisits are not considered as candidates: See {@link SolrUtils#NO_REVISIT_FILTER}.
+     *
+     * @param fields        the fields to return. If not present, {@code url} and {@code url_norm} will be added
+     * @param urls          0 or more URLs, which will be normalised and searched with {@code url_norm:"normalized_url"}.
+     * @param idealTime     ISO-timestamp, Solr style: {@code 2011-10-14T14:44:00Z}.
+     * @param filterQueries 0 or more filterQueries for restring the URL search.
+     * @return the documents with the given URLs.
+     */
+    private Stream<SolrDocument> findNearestDocumentLenientSingleTake(
+            String fields, String idealTime, Stream<String> urls, String[] filterQueries) {
+        // Ensure url & url_norm is returned
+        ArrayList<String> allFields = new ArrayList<>(Arrays.asList(fields.split(", *")));
+        if (!fields.contains("url")) {
+            allFields.add("url");
+        }
+        if (!fields.contains("url_norm")) {
+            allFields.add("url_norm");
+        }
+
+        // Stream<String> of <= 1000 URLs
+
+        // Create list of [originalURL, normURL]
+        List<Pair<String, String>> urlPairs = getNormalisedURLs(urls);
+
+        // Try direct url_norm query resolving
+        Map<String, SolrDocument> direct = resolveURLsDirect(allFields, idealTime, urlPairs, filterQueries);
+
+        // Use lenient resolving on the unresolved to get url_norm
+        Stream<Pair<String, String>> unresolved = urlPairs.stream().
+                filter(urlPair -> !direct.containsKey(urlPair.first()));
+
+        List<Pair<String, String>> lenientURLPairs = // [originalURL, lenientResolvedNormURL]
+                resolveURLsLenient(Collections.singletonList("url_norm"), unresolved, filterQueries).
+                        entrySet().stream().
+                        filter(entry -> entry.getValue().containsKey("url_norm")).
+                        map(entry -> new Pair<>(
+                                entry.getKey(),
+                                Objects.toString(entry.getValue().getFieldValue("url_norm")))).
+                        collect(Collectors.toList());
+
+        // Use the leniently resolved url_norm for time-proximity lookup
+        Map<String, SolrDocument> lenient =
+                resolveURLsDirect(allFields, idealTime, lenientURLPairs, filterQueries);
+
+        // Merge the results from direct and lenient and enrich with the SolrDocuments with originalURL
+        return urlPairs.stream().
+                map(Pair::first). // originalURL
+                map(originalURL -> getValueFromMaps(originalURL, direct, lenient)).
+                filter(Objects::nonNull).
+                peek(resultPair -> resultPair.second().setField("originalURL", resultPair.first())).
+                peek(resultPair -> resultPair.second().setField(
+                        "url_norm", UrlUtils.punyCodeAndNormaliseUrlSafe(resultPair.first()))).
+                map(Pair::second);
+    }
+
+    /**
+     * Ensures the given URLs are valid HTTP(S) URLs, normalises them and ensures distinct URLs.
+     * This holds the full result in memory before delivery.
+     * @param urls any URLs.
+     * @return a list of {@code [originalURL, normURL]}.
+     */
+    private List<Pair<String, String>> getNormalisedURLs(Stream<String> urls) {
+        return urls.
+                map(url -> new Pair<>(url, UrlUtils.punyCodeAndNormaliseUrlSafe(url))).
+                filter(urlPair -> Objects.nonNull(urlPair.second())).
+                distinct().
+                collect(Collectors.toList());
+    }
+
+    /**
+     * Iterate maps checking if there is a value for the given key. Upon firencounter, return that value.
+     * If no maps holds the value, null is returned.
+     * @param key  a key for the wanted value.
+     * @param maps 0 or more maps that might hold a value for the key.
+     * @return the value for the key if it exists in any map, else null.
+     */
+    @SafeVarargs
+    private static <T> Pair<String, T> getValueFromMaps(String key, Map<String, T>... maps) {
+        return Arrays.stream(maps).
+                map(map -> map.get(key)).
+                filter(Objects::nonNull).
+                map(map -> new Pair<>(key, map)).
+                findFirst().
+                orElse(null);
     }
 
     public static void mergeInto(SolrDocumentList main, SolrDocumentList additional) {
@@ -740,7 +1106,7 @@ public class NetarchiveSolrClient {
       * Creates a query for 1 or more URLs, taking care to quote URLs and escape characters where needed.
       * The result will be in the form {@code field:("url1" OR "url2")} or {@code field:("url1" AND "url2")}
       * depending on operator.
-      *
+      * <p>
       * Note: {@code data:}-URLs are ignored as they will never match.
       * @param field    the field to query. Typically {@code url} or {@code url_norm}.
       * @param operator {@code AND} or {@code OR}.
@@ -1166,7 +1532,7 @@ public class NetarchiveSolrClient {
     /*
      * Uses the stats component and hyperloglog for ultra fast performance instead
      * of grouping, which does not work well over many shards.
-     *
+     * <p>
      * Extract statistics for a given domain and year. Number of unique pages (very
      * precise due to hyperloglog) Number of ingoing links (very precise due to
      * hyperloglog) Total size (of the unique pages). (not so precise due, tests
@@ -1323,7 +1689,7 @@ public class NetarchiveSolrClient {
 
     /**
      * Sets property defined query parameters with {@link SolrUtils#setSolrParams(SolrQuery)} and issues the query.
-     *
+     * <p>
      * Exceptions are caught and re-thrown as {@link RuntimeException}s.
      * @param solrQuery any SolrQuery.
      * @param useCachingClient if true, client side caching is used. If false, no client side caching is done.
@@ -1342,4 +1708,17 @@ public class NetarchiveSolrClient {
         }
     }
 
+    /**
+     * @return the number of attempts for resolving an URL leniently with extended argument query.
+     */
+    public long getLenientAttempts() {
+        return lenientAttempts.get();
+    }
+    
+    /**
+     * @return the number of successful attempts for resolving an URL leniently with extended argument query.
+     */
+    public long getLenientSuccesses() {
+        return lenientSuccesses.get();
+    }
 }

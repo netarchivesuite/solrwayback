@@ -69,6 +69,7 @@ public class HtmlParserUrlRewriterTest {
 
     @Test
     public void testCSS2Rewriting() throws Exception {
+        // TODO: FIXME: This uses the port from ~/solrwayback.properties instead of port 0000 stated in @Before
         assertRewrite("css2", 3, 2);
     }
 
@@ -153,7 +154,7 @@ public class HtmlParserUrlRewriterTest {
                 input, "http://example.com/somefolder/", "2020-04-30T13:07:00",
                 RewriteTestHelper.createOXResolver(expectedNotFound >= 0));
 
-        assertEquals("The result should be as expected for test '" + testPrefix + "'",
+        assertEquals("The result should be as expected for test '" + testPrefix + "' ",
                      normalise(expected), normalise(rewritten.getReplaced()));
         assertEquals("The number of replaced links should be as expected",
                      expectedReplaced, rewritten.getNumberOfLinksReplaced());

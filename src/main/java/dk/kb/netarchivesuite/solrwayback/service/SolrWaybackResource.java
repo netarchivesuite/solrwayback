@@ -489,7 +489,7 @@ public class SolrWaybackResource {
       }
       //log.info("Found url with harvesttime:"+doc.getUrl() +" and arc:"+doc.getArc_full());        
       log.info("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
-      return viewImpl(doc.getSource_file_path() , doc.getOffset(),false); //NO TOOLBAR!        
+      return viewImpl(doc.getSource_file_path() , doc.getOffset(),false, null); //NO TOOLBAR!
       
                      
     } catch (Exception e) {
@@ -571,16 +571,34 @@ public class SolrWaybackResource {
    */
   @GET
   @Path("/web/{path:.+}")      
-  public Response waybackAPIResolver(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("path") String path) throws SolrWaybackServiceException {
-    try {        
+  public Response waybackAPIResolver(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest,
+                                     @PathParam("path") String path) throws SolrWaybackServiceException {
+    return waybackAPIResolverHelper("/web/", uriInfo, httpRequest, path, false);
+  }
+  /*
+   * Playback with lenient URL resolving.
+   * The last part of the path '/web/' is the same as wayback machine uses.
+   *
+   * Jersey syntax to match all after /lenient/web/.
+   */
+  @GET
+  @Path("/lenient/web/{path:.+}")
+  public Response waybackAPIResolverLenient(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest,
+                                     @PathParam("path") String path) throws SolrWaybackServiceException {
+    return waybackAPIResolverHelper("/lenient/web/", uriInfo, httpRequest, path, true);
+  }
+  private Response waybackAPIResolverHelper(
+          String basePath, // "/lenient/web/" or "/web/"
+          UriInfo uriInfo, HttpServletRequest httpRequest, String path, Boolean lenient) throws SolrWaybackServiceException {
+    try {
       //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
-      log.debug("/web/ called with data:"+path);
+      log.debug("{} called with data:{} lenient:{}", basePath, path, lenient);
       String fullUrl = uriInfo.getRequestUri().toString();
 //   log.info("full url:"+fullUrl);
      
-      int dataStart=fullUrl.indexOf("/web/");
+      int dataStart=fullUrl.indexOf(basePath);
       
-      String waybackDataObject = fullUrl.substring(dataStart+5);
+      String waybackDataObject = fullUrl.substring(dataStart+basePath.length());
       //log.info("Waybackdata object:"+waybackDataObject);
 
       int indexFirstSlash = waybackDataObject.indexOf("/");  
@@ -630,7 +648,7 @@ public class SolrWaybackResource {
        // html forward to a new request so date in url will show the true crawldate of the document. Avoid having 2020 in url with the page is from 2021 etc.      
       String htmlPageCrawlDate= DateUtils.convertUtcDate2WaybackDate(doc.getCrawlDate());
         if ("html".equalsIgnoreCase(doc.getContentTypeNorm()) &&  !htmlPageCrawlDate.equals(waybackDate)) {                         
-          String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+htmlPageCrawlDate+"/"+url;
+          String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services" + basePath + htmlPageCrawlDate+"/"+url;
           log.info("Forwarding html view to a url where crawldate matches html crawltime. url crawltime:"+htmlPageCrawlDate +" true crawl:"+htmlPageCrawlDate);
           newUrl = newUrl.replace("|", "%7C");//For some unknown reason Java does not accept |, must encode.
           newUrl = newUrl.replace("%2f", "/"); // or url will not match Rest pattern for method. (not clear why)
@@ -644,7 +662,7 @@ public class SolrWaybackResource {
            
       //log.debug("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
           
-      Response viewImpl = viewImpl(doc.getSource_file_path() , doc.getOffset(),true);                                   
+      Response viewImpl = viewImpl(doc.getSource_file_path() , doc.getOffset(),true, lenient);
       
       return viewImpl;
     } catch (Exception e) {
@@ -709,7 +727,7 @@ public class SolrWaybackResource {
          throw new NotFoundServiceException("URL:"+pwidUrl +" and time:"+onlyUTC + " is not found in collection:"+thisCollectionName);
        }
 
-      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true);                                   
+      return viewImpl(doc.getSource_file_path() , doc.getOffset(),true, null);
     } catch (Exception e) {
       throw handleServiceExceptions(e);
     }
@@ -762,7 +780,9 @@ public class SolrWaybackResource {
  */
   @GET
   @Path("/viewForward")
-  public Response viewForward(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws SolrWaybackServiceException {
+  public Response viewForward(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset,
+                              @QueryParam("showToolbar") Boolean showToolbar, @QueryParam("lenient") Boolean lenient)
+          throws SolrWaybackServiceException {
     try {
               
        if (PropertiesLoader.PLAYBACK_DISABLED) {            
@@ -776,7 +796,10 @@ public class SolrWaybackResource {
       String waybackDate = DateUtils.convertUtcDate2WaybackDate(crawlDate);      
                                              
      //Format is: /web/20080331193533/http://ekstrabladet.dk/112/article990050.ece 
-      String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+url;
+      String newUrl= Boolean.TRUE.equals(lenient) ?
+              PropertiesLoader.WAYBACK_BASEURL+"services/lenient/web/"+waybackDate+"/"+url :
+              PropertiesLoader.WAYBACK_BASEURL+"services/web/"+waybackDate+"/"+url;
+              
       newUrl = newUrl.replace("|", "%7C");//For some unknown reason Java does not accept |, must encode.
       newUrl = newUrl.replace("%2f", "/"); // or url will not rest Rest pattern for method. (not clear why)
       newUrl = newUrl.replace("%2F", "/"); // or url will not rest Rest pattern for method. (not clear why)
@@ -821,10 +844,12 @@ public class SolrWaybackResource {
   
   @GET
   @Path("/view") 
-  public Response view(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset, @QueryParam("showToolbar") Boolean showToolbar) throws SolrWaybackServiceException {
+  public Response view(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset,
+                       @QueryParam("showToolbar") Boolean showToolbar, @QueryParam("lenient") Boolean lenient)
+          throws SolrWaybackServiceException {
     try {
 
-      return viewImpl(source_file_path, offset,showToolbar);
+      return viewImpl(source_file_path, offset,showToolbar, lenient);
 
     } catch (Exception e) {
       throw handleServiceExceptions(e);
@@ -861,7 +886,7 @@ public class SolrWaybackResource {
   }
 */
 
-  private Response viewImpl(String source_file_path, long offset,Boolean showToolbar) throws Exception{    	    	
+  private Response viewImpl(String source_file_path, long offset,Boolean showToolbar, Boolean lenient) throws Exception{
     
       if (PropertiesLoader.PLAYBACK_DISABLED) {          
           throw new InvalidArgumentServiceException("Playback has been disabled in the configuration");
@@ -875,7 +900,7 @@ public class SolrWaybackResource {
       return redirect;
     }
     
-    ArcEntry arcEntry= Facade.viewResource(source_file_path, offset, doc, showToolbar);
+    ArcEntry arcEntry= Facade.viewResource(source_file_path, offset, doc, showToolbar, lenient);
     
     
     String contentType = arcEntry.getContentType();
@@ -929,7 +954,7 @@ public class SolrWaybackResource {
       }
 
       //log.debug("Closest harvest to: " +crawlDate +" is "+indexDoc.getCrawlDate());
-      return view(indexDoc.getSource_file_path(),indexDoc.getOffset(),showToolbar);
+      return view(indexDoc.getSource_file_path(),indexDoc.getOffset(),showToolbar, null);
 
     } catch (Exception e) {
       throw handleServiceExceptions(e);

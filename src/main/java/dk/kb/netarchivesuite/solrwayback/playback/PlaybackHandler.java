@@ -14,7 +14,14 @@ public abstract class PlaybackHandler {
     this.doc=doc;
     this.showToolbar=showToolbar;
   }
-    
-  public abstract ArcEntry playback() throws Exception;
+
+  /**
+   * Deliver a webpage for playback.
+   * @param lenient if true, lenient resource URL resolving is used.
+   *                If false, only {@code url_norm:"normURL"} is used.
+   * @return a webpage for playback.
+   * @throws Exception if the webpage could not be rendered.
+   */
+  public abstract ArcEntry playback(boolean lenient) throws Exception;
   
 }

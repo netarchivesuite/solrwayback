@@ -20,8 +20,9 @@ public class HtmlPlayback  extends PlaybackHandler{
   }
 
   @Override
-  public ArcEntry playback() throws Exception{    
-    log.debug(" Generate webpage from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset() +" content encoding:"+arc.getContentEncoding());
+  public ArcEntry playback(boolean lenient) throws Exception{
+    log.debug(" Generate webpage from FilePath:{} offset:{} content encoding:{} lenient:{}",
+              doc.getSource_file_path(), doc.getOffset(), arc.getContentEncoding(), lenient);
     long start = System.currentTimeMillis();
     
      String raw = arc.getBinaryContentAsStringUnCompressed();
@@ -35,7 +36,7 @@ public class HtmlPlayback  extends PlaybackHandler{
       arc.setBinary(raw.getBytes(Charset.forName(charset)));
          
     
-     ParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc);
+     ParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc, lenient);
       String textReplaced=htmlReplaced.getReplaced();
 
       boolean xhtml =doc.getContentType().toLowerCase().indexOf("application/xhtml") > -1;            

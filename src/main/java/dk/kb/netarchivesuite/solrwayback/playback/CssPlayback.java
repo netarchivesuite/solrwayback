@@ -16,8 +16,9 @@ public class CssPlayback  extends PlaybackHandler{
     super(arc,doc,showToolbar);
   }
 
+  // TODO: Enable propagation of lenient through HtmlParserUrlRewriter.replaceLinksCss(arc)
   @Override
-  public ArcEntry playback() throws Exception{    
+  public ArcEntry playback(boolean lenient) throws Exception{
     //Never show the toolbar.
       arc.setBinary(IOUtils.toByteArray(arc.getBinaryContentAsStringUnCompressed())); //TODO charset;          
       

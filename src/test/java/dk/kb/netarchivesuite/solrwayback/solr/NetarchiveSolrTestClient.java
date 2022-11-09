@@ -12,6 +12,7 @@ public class NetarchiveSolrTestClient extends NetarchiveSolrClient{
    */
   public static void initializeOverLoadUnitTest(EmbeddedSolrServer server) {
     solrServer=server;
+    noCacheSolrServer=server;
     instance = new NetarchiveSolrTestClient();
     log.info("SolrClient initialized with embedded solr for unittest");
   }

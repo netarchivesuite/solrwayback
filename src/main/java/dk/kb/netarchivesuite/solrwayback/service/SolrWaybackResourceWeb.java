@@ -26,6 +26,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
@@ -383,7 +384,7 @@ public class SolrWaybackResourceWeb {
       try{
        
         //also rewrite to puny code
-        String url_norm =  Facade.punyCodeAndNormaliseUrl(url);       
+        String url_norm =  UrlUtils.punyCodeAndNormaliseUrl(url);
         log.info("Normalize url:"+url +" -> " +  url_norm);        
         UrlWrapper wrapper = new UrlWrapper();
         wrapper.setUrl(url_norm);      

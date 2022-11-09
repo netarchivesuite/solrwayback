@@ -19,8 +19,9 @@ public class TwitterPlayback extends PlaybackHandler{
         super(arc,doc,showToolbar);
     }
 
+    // TODO: add support for lenient
     @Override
-    public ArcEntry playback() throws Exception{
+    public ArcEntry playback(boolean lenient) throws Exception{
 
         log.debug(" Generate twitter webpage from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset());
         // Fake html into arc.
