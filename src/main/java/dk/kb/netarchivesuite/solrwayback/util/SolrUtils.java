@@ -99,8 +99,13 @@ public class SolrUtils {
      * @return an index document.
      */
     public static IndexDoc solrDocument2IndexDoc(SolrDocument doc) {
+        if (doc == null) {
+            throw new NullPointerException("The input SolrDocument was null");
+        }
         IndexDoc indexDoc = new IndexDoc();
-        indexDoc.setScore(Double.valueOf((float) doc.getFieldValue("score")));
+        if (doc.containsKey("score")) { // Not an essential value
+            indexDoc.setScore(Double.valueOf((float) doc.getFieldValue("score")));
+        }
         indexDoc.setId((String) doc.get("id"));
         indexDoc.setTitle((String) doc.get("title"));
         indexDoc.setSource_file_path((String) doc.get("source_file_path"));
@@ -135,10 +140,14 @@ public class SolrUtils {
         indexDoc.setHash((String) hash);
 
         Date date = (Date) doc.get("crawl_date");
+        if (date == null) {
+            throw new IllegalArgumentException("Mandatory crawl_date not available in SolrDocument");
+        }
         indexDoc.setCrawlDateLong(date.getTime());
         indexDoc.setCrawlDate(DateUtils.getSolrDate(date));
 
         // Cope with some minor schema variations:
+
         if ( doc.get("content_type") instanceof ArrayList) {
             ArrayList<String> types = (ArrayList<String>) doc.get("content_type");
             indexDoc.setMimeType(types.get(0));
@@ -184,7 +193,35 @@ public class SolrUtils {
      * @return an ARC entry descriptor.
      */
     public static ArcEntryDescriptor solrDocument2ArcEntryDescriptor(SolrDocument solrDoc) {
-        return indexDoc2ArcEntryDescriptor(solrDocument2IndexDoc(solrDoc));
+//        return indexDoc2ArcEntryDescriptor(solrDocument2IndexDoc(solrDoc));
+        ArcEntryDescriptor desc = new ArcEntryDescriptor();
+        desc.setUrl((String) solrDoc.get("url"));
+        desc.setUrl_norm((String) solrDoc.get("url_norm"));
+        desc.setSource_file_path((String) solrDoc.get("source_file_path"));
+        desc.setOffset((Long) solrDoc.get("source_file_offset"));
+        desc.setHash((String) solrDoc.get("hash"));
+        desc.setContent_type(getSingleStringValue(solrDoc, "content_type"));
+        return desc;
+    }
+
+    /**
+     * If the content of the field is a list, {@code Objects.toString(...)} of the first element is returned.
+     * If the content of the field is a single value, {@code Objects.toString(...)} of the element is returned.
+     * @param solrDoc a SolrDocument.
+     * @param field the field to get the first value from.
+     * @return a String representation of the first value in the field.
+     * @throws ArrayIndexOutOfBoundsException if a value could not be extracted.
+     */
+    public static String getSingleStringValue(SolrDocument solrDoc, String field) {
+        if (!solrDoc.containsKey(field)) {
+            log.warn("The field '{}' was not available in the SolrDocument", field);
+            throw new NullPointerException("The field '" + field + "' was not available in the SolrDocument");
+        }
+        Object value = solrDoc.get(field);
+        if (value instanceof List) {
+            return Objects.toString(((List<?>) value).get(0));
+        }
+        return Objects.toString(value);
     }
 
     /**
@@ -195,6 +232,9 @@ public class SolrUtils {
      * @return an ARC entry descriptor.
      */
     public static ArcEntryDescriptor indexDoc2ArcEntryDescriptor(IndexDoc indexDoc) {
+        if (indexDoc == null) {
+            throw new NullPointerException("The IndexDoc was null");
+        }
         ArcEntryDescriptor desc = new ArcEntryDescriptor();
         desc.setUrl(indexDoc.getUrl());
         desc.setUrl_norm(indexDoc.getUrl_norm());
