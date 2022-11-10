@@ -18,6 +18,7 @@ import com.google.common.base.Functions;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.solr.UniqueFilter;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
@@ -57,19 +58,25 @@ public class ContentStreams {
      * Searches images and webpages matching the given searchText. For webpages, linked images are resolved and
      * returned. In the case of multiple hits for the same image URL, the one harvested closest to the webpage
      * in time will be delivered.
-     *
+     * <p>
+     * If attemptUnique is true, this search attempts to deliver unique images using the Solr field {@code hash},
+     * but does not guarantee it fully as {@link dk.kb.netarchivesuite.solrwayback.solr.UniqueFilter} is used with
+     * hashing to {@code int}. Requesting uniqueness limits the export size to 20 million.
+     * <p>
      * If the caller needs {@link ArcEntryDescriptor}, use the helpers method in SolrUtils as
      * {@code findImages(50, "kittens").map(SolrUtils::solrDocument2ArcEntryDescriptor)}.
+     * @param attemptUnique if true, uniqueness of results is attempted.
      * @param maxImagesPerPage maximum number of images to resolve for any single page.
      * @param query       a query for images.
      * @param filterQueries 0 or more Solr queries.
      * @return a stream of SolrDocuments representing images, containing the fields from
      *         {@link SolrUtils#arcEntryDescriptorFieldList}.
      */
-    public static Stream<SolrDocument> findImages(int maxImagesPerPage, String query, String... filterQueries) {
+    public static Stream<SolrDocument> findImages(
+            boolean attemptUnique, int maxImagesPerPage, String query, String... filterQueries) {
         Stream<SolrDocument> directImages =
                 SolrGenericStreaming.create(
-                                Arrays.asList(SolrUtils.arcEntryDescriptorFieldList.split(", *")),
+                                Arrays.asList(SolrUtils.arcEntryDescriptorFieldList.split(", *")), // Contains hash
                                 query, SolrUtils.extend("content_type_norm:image", filterQueries)).stream();
 
         Stream<SolrDocument> htmlPages = SolrGenericStreaming.create(
@@ -85,8 +92,13 @@ public class ContentStreams {
                 Processing.batch(htmlCallbacks).
                         flatMap(Functions.identity());
 
+        Stream<SolrDocument> merged =
+                CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1));
+        if (attemptUnique) {
+            merged = merged.filter(new UniqueFilter(true, 20_000_000, "hash"));
+        }
         // Mix the two streams, 4 direct images for each 1 image derived from a page
-        return CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1));
+        return merged;
     }
 
     /**
@@ -115,7 +127,7 @@ public class ContentStreams {
                 filterQueries("content_type_norm:image",   // only images
                               SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
                               "image_size:[2000 TO *]").   // No small images. (fillers etc.)
-                fields(SolrUtils.arcEntryDescriptorFieldList).
+                fields(SolrUtils.arcEntryDescriptorFieldList). // Contains hash used for uniqueness
                 timeProximityDeduplication(isotime, "url_norm").
                 maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
 

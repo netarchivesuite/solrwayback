@@ -149,7 +149,7 @@ public class Facade {
      * @see Facade#exportImages(boolean, boolean, String, String...)
      */
     public static ArrayList<ArcEntryDescriptor> findImages(String query, String... filterQueries) {
-        return ContentStreams.findImages(50, query, filterQueries).
+        return ContentStreams.findImages(true, 50, query, filterQueries).
                 limit(500).
                 map(SolrUtils::solrDocument2ArcEntryDescriptor).
                 collect(Collectors.toCollection(ArrayList::new));
@@ -456,11 +456,11 @@ public class Facade {
      * @param query image search query.
      * @param filterqueries Solr filter queries.
      * @return an InputStream where the product is a WARC.
-     * @see ContentStreams#findImages(int, String, String...)
+     * @see ContentStreams#findImages(boolean, int, String, String...) 
      * @see Facade#findImages(String, String...)
      */
     public static InputStream exportImages(boolean avoidDuplicates, boolean gzip, String query, String... filterqueries) {
-        Stream<SolrDocument> imageDocs = ContentStreams.findImages(50, query, filterqueries);
+        Stream<SolrDocument> imageDocs = ContentStreams.findImages(true,50, query, filterqueries);
 
         if (avoidDuplicates) {
             Set<Object> hashes = new HashSet<>();
@@ -505,7 +505,7 @@ public class Facade {
     }
 
     /**
-     * @deprecated use {@link #exportFields(String, Boolean, Boolean, String, Boolean, String, String, String...)}.
+     * @deprecated use {@link #exportFields(String, Boolean, Boolean, String, Boolean, String, Boolean, String, String...)}.
      */
     public static InputStream exportCvsStreaming(String q, String fq, String fields) throws Exception {
         // TODO test only allowed fields are selected!

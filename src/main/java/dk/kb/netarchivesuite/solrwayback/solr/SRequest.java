@@ -158,6 +158,8 @@ public class SRequest {
      *                     a memory overhead linear to the number of results.
      * @return the SRequest adjusted with the provided value.
      * @see #maxUnique(Integer)
+     * @see #ensureUnique(Boolean)
+     * @see #uniqueHashing(boolean)
      */
     public SRequest ensureUnique(Boolean ensureUnique) {
         this.ensureUnique = Boolean.TRUE.equals(ensureUnique);
@@ -170,6 +172,8 @@ public class SRequest {
      *                  Default is {@link #DEFAULT_MAX_UNIQUE}.
      * @return the SRequest adjusted with the provided value.
      * @see #ensureUnique(Boolean)
+     * @see #uniqueFields(String...)
+     * @see #maxUnique(Integer)
      */
     public SRequest maxUnique(Integer maxUnique) {
         this.maxUnique = maxUnique;
@@ -178,14 +182,20 @@ public class SRequest {
 
     /**
      * Used for determining uniqueness when {@link #ensureUnique(Boolean)} is true.
+     * <p>
+     * Setting this value automatically sets {@link #ensureUnique(Boolean)} to true.
      * @param fields the fields to use for uniqueness. Default is {@code id}.
      * @return the SRequest adjusted with the provided value.
+     * @see #ensureUnique(Boolean)
+     * @see #uniqueHashing(boolean)
+     * @see #maxUnique(Integer)
      */
     public SRequest uniqueFields(String... fields) {
         if (fields.length == 0) {
             throw new IllegalArgumentException("No fields provided");
         }
         uniqueFields = Arrays.asList(fields);
+        ensureUnique = true;
         return this;
     }
 
@@ -194,6 +204,9 @@ public class SRequest {
      * far lower memory impact (factor 10+), but with the possibility of hash collisions.
      * @param useHashing if true, hashing is used for determining uniqueness. Default is false.
      * @return the SRequest adjusted with the provided value.
+     * @see #ensureUnique(Boolean)
+     * @see #uniqueFields(String...)
+     * @see #maxUnique(Integer)
      */
     public SRequest uniqueHashing(boolean useHashing) {
         useHashingForUnique = useHashing;
