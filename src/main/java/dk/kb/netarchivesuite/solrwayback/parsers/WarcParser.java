@@ -1,23 +1,19 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import java.io.BufferedInputStream;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-
-import java.util.Locale;
-import java.util.zip.GZIPInputStream;
-
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry.TYPE;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.InputStreamUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry.TYPE;
-import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.Locale;
+import java.util.zip.GZIPInputStream;
 
 public class WarcParser extends  ArcWarcFileParserAbstract {
 

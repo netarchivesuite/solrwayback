@@ -77,10 +77,12 @@ public class ContentStreams {
                         query, SolrUtils.extend("content_type_norm:html", filterQueries)).stream().
                 filter(solrDoc -> solrDoc.containsKey("links_images") &&
                                   !solrDoc.getFieldValues("links_images").isEmpty());
+        Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
+                map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
 
         Stream<SolrDocument> htmlImages =
                 // TODO: Make the maxImages per page configurable
-                Processing.batch(htmlPages.map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage))).
+                Processing.batch(htmlCallbacks).
                         flatMap(Functions.identity());
 
         // Mix the two streams, 4 direct images for each 1 image derived from a page
