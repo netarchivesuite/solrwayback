@@ -133,7 +133,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   private final List<String> initialFields;  // Caller provided fields
   private final List<String> adjustedFields; // Fields after adjusting for unique etc.
 
-  private final Set<String> uniqueTracker;
+  private final UniqueFilter uniqueTracker;
   private int delivered = 0;
   private long duplicatesRemoved = 0;
   private SolrDocumentList undelivered = null; // Leftover form previous call to keep deliveries below pageSize
@@ -193,7 +193,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     optimizeSolrQuery(solrQuery, request);
     this.adjustedFields = Arrays.asList(solrQuery.getFields().split(","));
 
-    this.uniqueTracker = request.ensureUnique ? new HashSet<>() : null;
+    this.uniqueTracker = request.ensureUnique ?
+            new UniqueFilter(request.useHashingForUnique, request.maxUnique, request.uniqueFields) :
+            null;
     queries = request.queries == null ? null:
             CollectionUtils.splitToLists(request.queries, request.queryBatchSize).
                     map(batch -> "(" + String.join(") OR (", batch) + ")").
@@ -215,6 +217,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * If deduplicateField is specified and {@code fl} in solrQuery does not already contain the field it will be added.
    * If deduplicateField is specified and {@code sort} does not already have it as primary sort field it will be added.
    * {@code facets}, {@code stats} and {@code hl} will always be set to false, no matter their initial value.
+   * If uniqueFields are specified, they are added to fields.
    *
    * @param solrQuery a standard solrQuery.
    * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
@@ -558,17 +561,12 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
     // Important: We ensure that first version (in sort order) of duplicate entries win
     documents.forEach(doc -> {
-      if (uniqueTracker.add(getID(doc))) {
+      if (uniqueTracker.test(doc)) { // Throws exception if the limit is reached
         unique.add(doc);
       } else {
         duplicatesRemoved++;
       }
     });
-    if (uniqueTracker.size() > request.maxUnique) {
-      throw new ArrayIndexOutOfBoundsException(
-              "The number of elements in the unique tracker exceeded the limit " + request.maxUnique +
-              ". Processing has been stopped to avoid Out Of Memory errors");
-    }
     documents.clear();
     documents.addAll(unique);
   }
@@ -604,12 +602,6 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     }
     doc.clear();
     doc.putAll(entries);
-  }
-
-  private String getID(SolrDocument solrDocument) {
-    return solrDocument.getFieldValue("id").toString();
-    //return solrDocument.getFieldValue("source_file_path") + "@" +
-    //       solrDocument.getFieldValue("source_file_offset");
   }
 
   /**

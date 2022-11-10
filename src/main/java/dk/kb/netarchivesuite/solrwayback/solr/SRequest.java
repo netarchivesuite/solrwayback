@@ -24,8 +24,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -62,11 +65,15 @@ public class SRequest {
     public SolrQuery solrQuery = new SolrQuery();
     public boolean expandResources = false;
     public List<String> expandResourcesFilterQueries;
+
     public boolean ensureUnique = false;
     public Integer maxUnique = DEFAULT_MAX_UNIQUE;
+    public List<String> uniqueFields = Collections.singletonList("id");
+    public boolean useHashingForUnique = true;
+
     private String idealTime; // If defined, a sort will be created as String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
     public String deduplicateField = null;
-    List<String> fields;
+    public List<String> fields;
     public long maxResults = Long.MAX_VALUE;
     /**
      * Default sort used when exporting. Ends with tie breaking on id.
@@ -166,6 +173,30 @@ public class SRequest {
      */
     public SRequest maxUnique(Integer maxUnique) {
         this.maxUnique = maxUnique;
+        return this;
+    }
+
+    /**
+     * Used for determining uniqueness when {@link #ensureUnique(Boolean)} is true.
+     * @param fields the fields to use for uniqueness. Default is {@code id}.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest uniqueFields(String... fields) {
+        if (fields.length == 0) {
+            throw new IllegalArgumentException("No fields provided");
+        }
+        uniqueFields = Arrays.asList(fields);
+        return this;
+    }
+
+    /**
+     * Using the hash of {@link #uniqueFields(String...)} instead of the field content for tracking uniqueness has
+     * far lower memory impact (factor 10+), but with the possibility of hash collisions.
+     * @param useHashing if true, hashing is used for determining uniqueness. Default is false.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest uniqueHashing(boolean useHashing) {
+        useHashingForUnique = useHashing;
         return this;
     }
 
@@ -630,9 +661,18 @@ public class SRequest {
             sort = String.format(Locale.ROOT, "%s asc", deduplicateField);
         }
         solrQuery.set(CommonParams.SORT, sort);
+
+        Set<String> fl = new LinkedHashSet<>();
         if (fields != null) {
-            solrQuery.set(CommonParams.FL, String.join(",", fields));
+            fl.addAll(fields);
         }
+        if (uniqueFields != null) {
+            fl.addAll(uniqueFields);
+        }
+        if (!fl.isEmpty()) {
+            solrQuery.set(CommonParams.FL, String.join(",", fl));
+        }
+
         solrQuery.set(CommonParams.ROWS, (int) Math.min(maxResults, pageSize));
         return solrQuery;
     }
@@ -664,6 +704,8 @@ public class SRequest {
                 expandResources(expandResources).
                 ensureUnique(ensureUnique).
                 maxUnique(maxUnique).
+                uniqueFields(uniqueFields.toArray(new String[0])).
+                uniqueHashing(useHashingForUnique).
                 deduplicateField(deduplicateField).
                 fields(copy(fields)).
                 maxResults(maxResults).
