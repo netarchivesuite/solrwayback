@@ -450,7 +450,7 @@ public class Facade {
 
     /**
      * Search images both directly and through webpages. Export the result as WARC entries.
-     * @param avoidDuplicates if true, duplicates are removed.
+     * @param avoidDuplicates if true, duplicates are removed, based on image hash.
      *                        This requires holding a Set with all hashes from the result set in memory.
      * @param gzip if true each entry in the WARC stream is GZIPped.
      * @param query image search query.
@@ -460,12 +460,7 @@ public class Facade {
      * @see Facade#findImages(String, String...)
      */
     public static InputStream exportImages(boolean avoidDuplicates, boolean gzip, String query, String... filterqueries) {
-        Stream<SolrDocument> imageDocs = ContentStreams.findImages(true,50, query, filterqueries);
-
-        if (avoidDuplicates) {
-            Set<Object> hashes = new HashSet<>();
-            imageDocs = imageDocs.filter(solrDoc -> hashes.add(solrDoc.getFieldValue("hash")));
-        }
+        Stream<SolrDocument> imageDocs = ContentStreams.findImages(avoidDuplicates,50, query, filterqueries);
 
         return new StreamingSolrWarcExportBufferedInputStream(imageDocs, Integer.MAX_VALUE, gzip);
     }
