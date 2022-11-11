@@ -40,8 +40,8 @@ public class Processing {
         final AtomicInteger counter = new AtomicInteger(0);
         @Override
         public Thread newThread(Runnable runnable) {
-            Thread t = new Thread("processing_" +counter.getAndIncrement());
-            t.setDaemon(true);
+            Thread t = new Thread(runnable, "processing_" +counter.getAndIncrement());
+            t.setDaemon(false);
             return t;
         }
     });
