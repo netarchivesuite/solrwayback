@@ -94,6 +94,7 @@ public class Processing {
     private static <T> Stream<Future<T>> processBatch(List<Callable<T>> batch) {
         try {
             long startTime = System.currentTimeMillis();
+            log.debug("Starting batch of size {}", batch.size());
             List<Future<T>> results = executorService.invokeAll(batch);
             log.debug("Batch processed {} jobs in {} ms", batch.size(), System.currentTimeMillis() - startTime);
             return results.stream();

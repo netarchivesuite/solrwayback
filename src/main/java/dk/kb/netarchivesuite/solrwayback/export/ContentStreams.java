@@ -78,7 +78,8 @@ public class ContentStreams {
         Stream<SolrDocument> directImages =
                 SolrGenericStreaming.create(
                                 Arrays.asList(SolrUtils.arcEntryDescriptorFieldList.split(", *")), // Contains hash
-                                query, SolrUtils.extend("content_type_norm:image", filterQueries)).stream();
+                                query, SolrUtils.extend("content_type_norm:image", filterQueries)).stream().
+                        filter(new ThroughputTracker("direct:", "images", log, 10));
 
         Stream<SolrDocument> htmlPages = SolrGenericStreaming.create(
                         Arrays.asList("crawl_date", "links_images"),
@@ -89,15 +90,16 @@ public class ContentStreams {
         Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
                 map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
 
-        Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks).flatMap(Functions.identity());
+        Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks, 2).flatMap(Functions.identity());
 
         Stream<SolrDocument> merged =
                 CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1));
+        merged = merged.filter(new ThroughputTracker("beforeUnique:", "images", log, 100));
         if (hashUnique) {
             merged = merged.filter(new UniqueFilter(true, 20_000_000, "hash"));
         }
         // Mix the two streams, 4 direct images for each 1 image derived from a page
-        return merged.filter(new ThroughputTracker("findImages:", "images", log, 100));
+        return merged.filter(new ThroughputTracker("findImages:", "images", log, 10));
     }
 
     /**
@@ -129,8 +131,7 @@ public class ContentStreams {
                 fields(SolrUtils.arcEntryDescriptorFieldList). // Contains hash used for uniqueness
                 timeProximityDeduplication(isotime, "url_norm").
                 maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
-
-        return request::stream;
+        return () -> request.stream().filter(new ThroughputTracker( "htmlPageNearImages", "image", log, 10));
     }
 
     /**
