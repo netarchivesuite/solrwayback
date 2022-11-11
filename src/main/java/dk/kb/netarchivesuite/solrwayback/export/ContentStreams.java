@@ -75,11 +75,14 @@ public class ContentStreams {
      */
     public static Stream<SolrDocument> findImages(
             boolean hashUnique, int maxImagesPerPage, String query, String... filterQueries) {
-        Stream<SolrDocument> directImages =
-                SolrGenericStreaming.create(
-                                Arrays.asList(SolrUtils.arcEntryDescriptorFieldList.split(", *")), // Contains hash
-                                query, SolrUtils.extend("content_type_norm:image", filterQueries)).stream().
-                        filter(new ThroughputTracker("direct:", "images", log, 10));
+        SRequest imageRequest = SRequest.builder().
+                query(query).
+                filterQueries(SolrUtils.extend("content_type_norm:image", filterQueries)).
+                fields(SolrUtils.arcEntryDescriptorFieldList).
+                deduplicateField("hash").
+                maxResults(maxImagesPerPage);
+
+        Stream<SolrDocument> directImages = imageRequest.stream().filter(new ThroughputTracker("direct:", "images", log, 100));
 
         Stream<SolrDocument> htmlPages = SolrGenericStreaming.create(
                         Arrays.asList("crawl_date", "links_images"),
