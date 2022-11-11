@@ -91,7 +91,7 @@ public class ContentStreams {
 
         // Resolving images for a page is fairly heavy and tend to produce a lot of results.
         // As we prefer direct images (see the ration in "merged" below), it is likely that we don't need to
-        // process many htmlCallbacks before we have enough images from webpages, so we set the batch size very low.
+        // process many htmlCallbacks before we have enough images from webpages, so we set the batch size low.
         Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks, 5).flatMap(Functions.identity());
 
         Stream<SolrDocument> merged =
@@ -100,7 +100,7 @@ public class ContentStreams {
             merged = merged.filter(new UniqueFilter(true, 20_000_000, "hash"));
         }
         // Mix the two streams, 4 direct images for each 1 image derived from a page
-        return merged.filter(new ThroughputTracker("ImageSearch:", "solrDocs", log, 100));
+        return merged.filter(new ThroughputTracker("findImages:", "images", log, 100));
     }
 
     /**
