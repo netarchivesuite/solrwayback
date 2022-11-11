@@ -135,9 +135,13 @@ public class ContentStreams {
                 fields(SolrUtils.arcEntryDescriptorFieldList). // Contains hash used for uniqueness
                 timeProximityDeduplication(isotime, "url_norm").
                 maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
-        return () -> request.stream().
-                filter(new ThroughputTracker( "htmlPageNearImages", "image", log, 10)).
-                collect(Collectors.toList()).stream();
+        return () -> {
+            List<SolrDocument> result = request.stream().
+                    filter(new ThroughputTracker("htmlPageNearImages", "image", log, 10)).
+                    collect(Collectors.toList());
+            return result.stream();
+        }
+        }
     }
 
     /**
