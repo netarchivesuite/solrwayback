@@ -416,6 +416,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       if (queryDepleted) {
         if (request.isMultiQuery() && queries.hasNext()) {
           userQuery = queries.next();
+          if (userQuery.isEmpty()) {
+            continue;
+          }
           solrQuery.setQuery(userQuery);
           queryDepleted = false;
           if (request.usePaging) {

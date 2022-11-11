@@ -83,12 +83,15 @@ public class UniqueFilter implements Predicate<SolrDocument> {
 
     @Override
     public boolean test(SolrDocument solrDoc) {
+        return test(getUniqueValue(solrDoc));
+    }
+    public boolean test(String fieldValue) {
         tests++;
         boolean ok;
         if (uniqueValues != null) { // values
-            ok = uniqueValues.add(getUniqueValue(solrDoc));
+            ok = uniqueValues.add(fieldValue);
         } else {
-            ok = uniqueHashes.add(getUniqueValue(solrDoc).hashCode());
+            ok = uniqueHashes.add(fieldValue.hashCode());
         }
         if (uniqueCount() > maxUnique) {
             log.warn("Throwing ArrayIndexOutOfBoundsException as the unique limit of {} has been reached", maxUnique);

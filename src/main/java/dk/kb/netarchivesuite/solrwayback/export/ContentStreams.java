@@ -91,8 +91,10 @@ public class ContentStreams {
                 filter(solrDoc -> solrDoc.containsKey("links_images") &&
                                   !solrDoc.getFieldValues("links_images").isEmpty());
 
+        UniqueFilter urlUnique = new UniqueFilter(true, 20_000_000, "url_norm");
+
         Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
-                map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
+                map(htmlPage -> createHTMLImageCallback(htmlPage, urlUnique, maxImagesPerPage));
 
         Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks).flatMap(Functions.identity());
 
@@ -113,17 +115,19 @@ public class ContentStreams {
      * The images are searched using {@link SRequest#timeProximityDeduplication(String, String)}
      * meaning that only one instance of a given image URL is returned, with preference to the one nearest in time to
      * the htmlPage.
-     *
+     * <p>
      * Note: Small images (less than 2000 pixels) are ignored, as are revisits.
+     *
      * @param htmlPage  a representation of a HTML page with links to images.
      *                  Required fields are {@code crawl_date} and {@code links_images}.
+     * @param urlUnique
      * @param maxImages the maximum number of images to return.
      * @return a callable that will result in at most maxImages images linked from the given htmlPage.
      */
-    public static Callable<Stream<SolrDocument>> createHTMLImageCallback(SolrDocument htmlPage, int maxImages) {
+    public static Callable<Stream<SolrDocument>> createHTMLImageCallback(SolrDocument htmlPage, UniqueFilter uniqueFilter, int maxImages) {
         String isotime = DateUtils.getSolrDate((Date) htmlPage.get("crawl_date"));
         Stream<String> urlQueries = ((List<String>)htmlPage.get("links_images")).stream().
-                distinct().
+                filter(uniqueFilter::test).
                 map(SolrUtils::createQueryStringForUrl);
 
         SRequest request = SRequest.builder().
@@ -136,11 +140,10 @@ public class ContentStreams {
                 timeProximityDeduplication(isotime, "url_norm").
                 maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
         return () -> {
-            long startNS = System.nanoTime();
+//            long startNS = System.nanoTime();
             List<SolrDocument> result = request.stream().
-                    filter(new ThroughputTracker("htmlPageNearImages", "image", log, 10)).
+//                    filter(new ThroughputTracker("htmlPageNearImages", "image", log, 10)).
                     collect(Collectors.toList());
-            log.debug("html callback finished with " + result.size() + " results in " + (System.nanoTime()-startNS)/1000000 + "ms");
             return result.stream();
 
         };
