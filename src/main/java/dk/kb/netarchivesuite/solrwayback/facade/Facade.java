@@ -142,7 +142,7 @@ public class Facade {
 
     /**
      * Search images both directly and through webpages.
-     * Delegates to {@link ContentStreams#findImages(int, String, String...)}.
+     * Delegates to {@link ContentStreams#findImages(boolean, int, String, String...)}.
      * @param query Solr query.
      * @param filterQueries 0 or more Solr filter queries.
      * @return up to 500 images matching the searchText.

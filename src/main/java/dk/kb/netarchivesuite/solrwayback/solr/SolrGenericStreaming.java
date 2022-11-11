@@ -298,7 +298,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       return;
     }
 
-    log.debug("Enabling group-based deduplication on '{}'", request.deduplicateField);
+    //log.debug("Enabling group-based deduplication on '{}'", request.deduplicateField);
     // group=true&group.field=url_norm&group.limit=1&group.format=simple&group.main=true
     solrQuery.set(GroupParams.GROUP, true);
     solrQuery.set(GroupParams.GROUP_FIELD, request.deduplicateField);

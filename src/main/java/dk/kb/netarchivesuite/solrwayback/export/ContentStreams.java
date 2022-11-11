@@ -20,8 +20,8 @@ import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.solr.UniqueFilter;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
-import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.Processing;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.StreamBridge;
@@ -65,7 +65,7 @@ public class ContentStreams {
      * <p>
      * If the caller needs {@link ArcEntryDescriptor}, use the helpers method in SolrUtils as
      * {@code findImages(50, "kittens").map(SolrUtils::solrDocument2ArcEntryDescriptor)}.
-     * @param attemptUnique if true, uniqueness of results is attempted.
+     * @param hashUnique if true, uniqueness of results is attempted.
      * @param maxImagesPerPage maximum number of images to resolve for any single page.
      * @param query       a query for images.
      * @param filterQueries 0 or more Solr queries.
@@ -73,7 +73,7 @@ public class ContentStreams {
      *         {@link SolrUtils#arcEntryDescriptorFieldList}.
      */
     public static Stream<SolrDocument> findImages(
-            boolean attemptUnique, int maxImagesPerPage, String query, String... filterQueries) {
+            boolean hashUnique, int maxImagesPerPage, String query, String... filterQueries) {
         Stream<SolrDocument> directImages =
                 SolrGenericStreaming.create(
                                 Arrays.asList(SolrUtils.arcEntryDescriptorFieldList.split(", *")), // Contains hash
@@ -83,18 +83,18 @@ public class ContentStreams {
                         Arrays.asList("crawl_date", "links_images"),
                         query, SolrUtils.extend("content_type_norm:html", filterQueries)).stream().
                 filter(solrDoc -> solrDoc.containsKey("links_images") &&
-                                  !solrDoc.getFieldValues("links_images").isEmpty());
-        Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
-                map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
+                                  !solrDoc.getFieldValues("links_images").isEmpty()).
+                peek(s -> log.debug("htmlPage with links " + s.getFieldValue("url")));
 
-        Stream<SolrDocument> htmlImages =
-                // TODO: Make the maxImages per page configurable
-                Processing.batch(htmlCallbacks).
-                        flatMap(Functions.identity());
+        Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
+                map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage)).
+                peek(c -> log.debug("Created callable for HTML page with #links="));
+
+        Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks).flatMap(Functions.identity());
 
         Stream<SolrDocument> merged =
                 CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1));
-        if (attemptUnique) {
+        if (hashUnique) {
             merged = merged.filter(new UniqueFilter(true, 20_000_000, "hash"));
         }
         // Mix the two streams, 4 direct images for each 1 image derived from a page
