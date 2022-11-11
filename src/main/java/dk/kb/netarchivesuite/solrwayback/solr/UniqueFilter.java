@@ -91,7 +91,11 @@ public class UniqueFilter implements Predicate<SolrDocument> {
         if (uniqueValues != null) { // values
             ok = uniqueValues.add(fieldValue);
         } else {
-            ok = uniqueHashes.add(fieldValue.hashCode());
+            try {
+                ok = uniqueHashes.add(fieldValue.hashCode());
+            } catch (Exception e) {
+                throw new RuntimeException("Exception adding hash " + fieldValue.hashCode());
+            }
         }
         if (uniqueCount() > maxUnique) {
             log.warn("Throwing ArrayIndexOutOfBoundsException as the unique limit of {} has been reached", maxUnique);
