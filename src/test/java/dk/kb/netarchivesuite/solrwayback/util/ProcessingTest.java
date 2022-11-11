@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /*
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,6 +43,12 @@ public class ProcessingTest {
             assertEquals("Result #" + i + " should be as expected",
                          Integer.valueOf(i), results.get((i)));
         }
+    }
+
+    @Test
+    public void testFastSet() {
+        IntOpenHashSet set = new IntOpenHashSet();
+        assertTrue(set.add(-704855335));
     }
 
     @Test

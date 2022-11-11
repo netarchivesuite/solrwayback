@@ -94,7 +94,7 @@ public class UniqueFilter implements Predicate<SolrDocument> {
             try {
                 ok = uniqueHashes.add(fieldValue.hashCode());
             } catch (Exception e) {
-                throw new RuntimeException("Exception adding hash " + fieldValue.hashCode() + " for '" + fieldValue + "'" );
+                throw new RuntimeException("Exception adding hash " + fieldValue.hashCode() + " to set with " + uniqueHashes.size() + " elements for '" + fieldValue + "'", e);
             }
         }
         if (uniqueCount() > maxUnique) {
