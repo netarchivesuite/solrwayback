@@ -140,8 +140,8 @@ public class ContentStreams {
                     filter(new ThroughputTracker("htmlPageNearImages", "image", log, 10)).
                     collect(Collectors.toList());
             return result.stream();
-        }
-        }
+
+        };
     }
 
     /**
