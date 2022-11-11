@@ -80,7 +80,7 @@ public class ContentStreams {
                 query(query).
                 filterQueries(SolrUtils.extend("content_type_norm:image", filterQueries)).
                 fields(SolrUtils.arcEntryDescriptorFieldList).
-                deduplicateField("hash").
+                deduplicateField("url_norm").
                 maxResults(maxImagesPerPage);
 
         Stream<SolrDocument> directImages = imageRequest.stream().filter(new ThroughputTracker("direct:", "images", log, 100));
