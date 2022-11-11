@@ -136,9 +136,11 @@ public class ContentStreams {
                 timeProximityDeduplication(isotime, "url_norm").
                 maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
         return () -> {
+            long startNS = System.nanoTime();
             List<SolrDocument> result = request.stream().
                     filter(new ThroughputTracker("htmlPageNearImages", "image", log, 10)).
                     collect(Collectors.toList());
+            log.debug("html callback finished with " + result.size() + " results in " + (System.nanoTime()-startNS)/1000000 + "ms");
             return result.stream();
 
         };
