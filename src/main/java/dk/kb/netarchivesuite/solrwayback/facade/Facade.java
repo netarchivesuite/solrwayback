@@ -149,10 +149,15 @@ public class Facade {
      * @see Facade#exportImages(boolean, boolean, String, String...)
      */
     public static ArrayList<ArcEntryDescriptor> findImages(String query, String... filterQueries) {
-        return ContentStreams.findImages(true, 50, query, filterQueries).
-                limit(500).
-                map(SolrUtils::solrDocument2ArcEntryDescriptor).
-                collect(Collectors.toCollection(ArrayList::new));
+        long searchTimeMS = -System.currentTimeMillis();
+        ArrayList<ArcEntryDescriptor> images = ContentStreams.findImages(true, 50, query, filterQueries).
+                        limit(500).
+                        map(SolrUtils::solrDocument2ArcEntryDescriptor).
+                        collect(Collectors.toCollection(ArrayList::new));
+        searchTimeMS += System.currentTimeMillis();
+        log.debug("Found at least {} images in {}ms ({} images/second), searching for '{}'",
+                  images.size(), searchTimeMS, searchTimeMS == 0 ? "N/A" : (images.size()*1000/searchTimeMS), query);
+        return images;
     }
     
     public static ArrayList<ArcEntryDescriptor> oldfindImages(String searchText) throws Exception {

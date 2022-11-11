@@ -25,6 +25,7 @@ import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.Processing;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.StreamBridge;
+import dk.kb.netarchivesuite.solrwayback.util.ThroughputTracker;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,14 +84,15 @@ public class ContentStreams {
                         Arrays.asList("crawl_date", "links_images"),
                         query, SolrUtils.extend("content_type_norm:html", filterQueries)).stream().
                 filter(solrDoc -> solrDoc.containsKey("links_images") &&
-                                  !solrDoc.getFieldValues("links_images").isEmpty()).
-                peek(s -> log.debug("htmlPage with links " + s.getFieldValue("url")));
+                                  !solrDoc.getFieldValues("links_images").isEmpty());
 
         Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
-                map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage)).
-                peek(c -> log.debug("Created callable for HTML page with #links="));
+                map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
 
-        Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks).flatMap(Functions.identity());
+        // Resolving images for a page is fairly heavy and tend to produce a lot of results.
+        // As we prefer direct images (see the ration in "merged" below), it is likely that we don't need to
+        // process many htmlCallbacks before we have enough images from webpages, so we set the batch size very low.
+        Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks, 5).flatMap(Functions.identity());
 
         Stream<SolrDocument> merged =
                 CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1));
@@ -98,7 +100,7 @@ public class ContentStreams {
             merged = merged.filter(new UniqueFilter(true, 20_000_000, "hash"));
         }
         // Mix the two streams, 4 direct images for each 1 image derived from a page
-        return merged;
+        return merged.filter(new ThroughputTracker("ImageSearch:", "solrDocs", log, 100));
     }
 
     /**

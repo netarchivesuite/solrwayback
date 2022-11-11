@@ -16,7 +16,6 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +32,8 @@ import java.util.stream.Collectors;
  * This filter holds values for all unique encountered documents in memory and thus does not scale indefinitely.
  * When constructed, the maximum number of unique values to track is specified. If this limit is reached, an exception
  * is thrown.
+ * <p>
+ * This implementation is not thread safe.
  */
 public class UniqueFilter implements Predicate<SolrDocument> {
     private static final Logger log = LoggerFactory.getLogger(UniqueFilter.class);
@@ -41,6 +42,9 @@ public class UniqueFilter implements Predicate<SolrDocument> {
     private final int maxUnique;
     private final Set<String> uniqueValues;
     private final IntSet uniqueHashes;
+
+    public long tests = 0;
+    public long duplicates = 0;
 
     /**
      * @param useHashing true, hashes of the values from the given fields are used for tracking instead of the
@@ -79,6 +83,7 @@ public class UniqueFilter implements Predicate<SolrDocument> {
 
     @Override
     public boolean test(SolrDocument solrDoc) {
+        tests++;
         boolean ok;
         if (uniqueValues != null) { // values
             ok = uniqueValues.add(getUniqueValue(solrDoc));
@@ -95,13 +100,6 @@ public class UniqueFilter implements Predicate<SolrDocument> {
     }
 
     /**
-     * @return the number of unique values encountered.
-     */
-    public int uniqueCount() {
-        return uniqueValues != null ? uniqueValues.size() : uniqueHashes.size();
-    }
-
-    /**
      * Construct the value used to check for uniqueness by concatenating the content from Solr fields.
      * The fields used are defined as {@link #fields} when constructing the {@code Uniquefilter}.
      * @param solrDoc a solrDoc containing at least {@link #fields}.
@@ -113,4 +111,25 @@ public class UniqueFilter implements Predicate<SolrDocument> {
                 collect(Collectors.joining("_/_"));
     }
 
+    /**
+     * @return the number of unique values encountered.
+     */
+    public int uniqueCount() {
+        return uniqueValues != null ? uniqueValues.size() : uniqueHashes.size();
+    }
+
+
+    /**
+     * @return the number of uniqueness tests performed.
+     */
+    public long testCount() {
+        return tests;
+    }
+
+    /**
+     * @return the number of duplicates encountered.
+     */
+    public long duplicateCount() {
+        return duplicates;
+    }
 }

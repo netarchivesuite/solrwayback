@@ -17,14 +17,13 @@ package dk.kb.netarchivesuite.solrwayback.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -79,25 +78,39 @@ public class Processing {
      * @return the result of the jobs, in the same order as the jobs.
      */
     public static <T> Stream<T> batch(Stream<Callable<T>> jobs, int batchSize) {
-        return CollectionUtils.splitToLists(jobs, batchSize).
-                flatMap(batch -> {
-                    long startTime = System.currentTimeMillis();
-                    try {
-                        return executorService.invokeAll(batch).stream();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException("Iterrupted while waiting for batch processing", e);
-                    } finally {
-                        log.debug("Batch processed {} jobs in {} ms",
-                                  batch.size(), System.currentTimeMillis()-startTime);
-                    }
-                }).
-                map(future -> {
-                    try {
-                        return future.get();
-                    } catch (Exception e) {
-                        throw new RuntimeException("Exception while getting result from batch Future", e);
-                    }
-                });
+        return CollectionUtils.splitToLists(jobs, batchSize). // Make the batches
+                flatMap(Processing::processBatch). // Execute a batch
+                map(Processing::safeGet); //
+    }
+
+    /**
+     * Processes the full batch at once using the {@link #executorService}.
+     * Callers are advised to keep batches at a manageable size.
+     * <p>
+     * The returned {@link Future}s are guaranteed to be {@link Future#isDone()}.
+     * @param batch jobs.
+     * @return the {@link Future}s with the results from the batch jobs, in the same order as the batch jobs.
+     */
+    private static <T> Stream<Future<T>> processBatch(List<Callable<T>> batch) {
+        try {
+            long startTime = System.currentTimeMillis();
+            List<Future<T>> results = executorService.invokeAll(batch);
+            log.debug("Batch processed {} jobs in {} ms", batch.size(), System.currentTimeMillis() - startTime);
+            return results.stream();
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Iterrupted while waiting for batch processing", e);
+        }
+    }
+
+    /**
+     * Wraps {@code future.get()} so that Exceptions are rethrown as {@link RuntimeException}s.
+     */
+    private static <T> T safeGet(Future<T> future) {
+        try {
+            return future.get();
+        } catch (Exception e) {
+            throw new RuntimeException("Exception while getting result from batch Future", e);
+        }
     }
 
 }

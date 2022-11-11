@@ -121,6 +121,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   public static final String STOP_PAGING = "___STOP_PAGING___";
 
   static final AtomicLong solrRequests = new AtomicLong(0);
+  static final AtomicLong totalDelivered = new AtomicLong(0);
 
   private final SRequest request;
   private final SolrQuery originalSolrQuery; // The original SolrQuery from the SRequest. Never modify this!
@@ -432,7 +433,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
         }
       }
 
-      // Handle påaging (cursorMark) setup
+      // Handle paging (cursorMark) setup
       String cursorMark = solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
       if (request.usePaging) {
         if (request.deduplicateField == null) { // Plain cursorMark
@@ -450,6 +451,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       solrRequests.incrementAndGet();
       QueryResponse rsp = request.solrClient.query(solrQuery, METHOD.POST);
       undelivered = rsp.getResults();
+      totalDelivered.addAndGet(undelivered.size());
+      //log.debug("Got " + undelivered.size() + " hits with total delivered counter " + totalDelivered.get());
       if (undelivered.size() < solrQuery.getRows() || rsp.getResults().getNumFound() <= solrQuery.getRows()) {
         queryDepleted = true;
       }
