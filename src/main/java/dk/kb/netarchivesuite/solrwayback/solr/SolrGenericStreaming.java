@@ -451,8 +451,10 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       solrRequests.incrementAndGet();
       QueryResponse rsp = request.solrClient.query(solrQuery, METHOD.POST);
       undelivered = rsp.getResults();
+      long startTime = System.currentTimeMillis();
       totalDelivered.addAndGet(undelivered.size());
-      log.debug("Got " + undelivered.size() + " hits with total delivered counter " + totalDelivered.get() + " for query " + solrQuery.getQuery());
+      log.debug("Got " + undelivered.size() + " hits with total delivered counter " + totalDelivered.get() + " in " +
+                (System.currentTimeMillis()-startTime) + "ms for query " + solrQuery.getQuery());
       if (undelivered.size() < solrQuery.getRows() || rsp.getResults().getNumFound() <= solrQuery.getRows()) {
         queryDepleted = true;
       }
