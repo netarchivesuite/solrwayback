@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
@@ -93,7 +94,7 @@ public class ContentStreams {
         Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
                 map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
 
-        Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks, 2).flatMap(Functions.identity());
+        Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks).flatMap(Functions.identity());
 
         Stream<SolrDocument> merged =
                 CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1));
@@ -134,7 +135,9 @@ public class ContentStreams {
                 fields(SolrUtils.arcEntryDescriptorFieldList). // Contains hash used for uniqueness
                 timeProximityDeduplication(isotime, "url_norm").
                 maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
-        return () -> request.stream().filter(new ThroughputTracker( "htmlPageNearImages", "image", log, 10));
+        return () -> request.stream().
+                filter(new ThroughputTracker( "htmlPageNearImages", "image", log, 10)).
+                collect(Collectors.toList()).stream();
     }
 
     /**
