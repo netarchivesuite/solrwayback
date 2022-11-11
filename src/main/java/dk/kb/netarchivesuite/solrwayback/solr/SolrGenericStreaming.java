@@ -449,12 +449,12 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
       // Perform request and update depleted & paging variables
       solrRequests.incrementAndGet();
+      long startTimeNS = System.nanoTime();
       QueryResponse rsp = request.solrClient.query(solrQuery, METHOD.POST);
       undelivered = rsp.getResults();
-      long startTime = System.currentTimeMillis();
       totalDelivered.addAndGet(undelivered.size());
       log.debug("Got " + undelivered.size() + " hits with total delivered counter " + totalDelivered.get() + " in " +
-                (System.currentTimeMillis()-startTime) + "ms for query " + solrQuery.getQuery());
+                (System.nanoTime()-startTimeNS)/1000000 + "ms for query " + solrQuery.getQuery());
       if (undelivered.size() < solrQuery.getRows() || rsp.getResults().getNumFound() <= solrQuery.getRows()) {
         queryDepleted = true;
       }
