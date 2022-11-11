@@ -89,10 +89,7 @@ public class ContentStreams {
         Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
                 map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
 
-        // Resolving images for a page is fairly heavy and tend to produce a lot of results.
-        // As we prefer direct images (see the ration in "merged" below), it is likely that we don't need to
-        // process many htmlCallbacks before we have enough images from webpages, so we set the batch size low.
-        Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks, 5).flatMap(Functions.identity());
+        Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks).flatMap(Functions.identity());
 
         Stream<SolrDocument> merged =
                 CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1));

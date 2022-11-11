@@ -67,7 +67,7 @@ public class ThroughputTracker implements Predicate<Object> {
      */
     public void performLog() {
         long ms = System.currentTimeMillis()-startTime;
-        log.debug("{} {} {} encountered in {} ms: {} {}/s",
+        log.debug("{} {} {} in {} ms: {} {}/s",
                   prefix, callCounter, designation, ms, callCounter*1000/ms, designation);
     }
 }
