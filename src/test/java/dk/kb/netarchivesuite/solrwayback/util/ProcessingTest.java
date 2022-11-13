@@ -1,10 +1,13 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,6 +46,30 @@ public class ProcessingTest {
                          Integer.valueOf(i), results.get((i)));
         }
     }
+
+    @Test
+    public void testJustInTime() throws InterruptedException {
+
+        AtomicInteger counter = new AtomicInteger(0);
+        List<Callable<Integer>> callables = new ArrayList<>();
+        for (int i = 0 ; i < 100 ; i++) {
+            callables.add(counter::incrementAndGet);
+        }
+        Stream<Integer> results = Processing.batch(callables.stream(), 2);
+
+        Iterator<Integer> ires = results.iterator();
+        Thread.sleep(10);
+        assertEquals("Starting point should be 0", 0, counter.get());
+
+        ires.next();
+        Thread.sleep(10);
+        assertEquals("First pull should increment by batch size", 2, counter.get());
+
+        ires.next();
+        Thread.sleep(10);
+        assertEquals("First pull shouldn't increment", 2, counter.get());
+    }
+
 
     @Test
     public void testInfiniteInputStream() {

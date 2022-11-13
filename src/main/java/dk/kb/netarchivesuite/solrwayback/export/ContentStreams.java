@@ -75,24 +75,24 @@ public class ContentStreams {
      */
     public static Stream<SolrDocument> findImages(
             boolean hashUnique, int maxImagesPerPage, String query, String... filterQueries) {
-        Stream<SolrDocument> directImages =
-                SolrGenericStreaming.create(
-                                Arrays.asList(SolrUtils.arcEntryDescriptorFieldList.split(", *")), // Contains hash
-                                query, SolrUtils.extend("content_type_norm:image", filterQueries)).stream();
+        SRequest directImagesReq = SRequest.builder().
+                query(query).
+                filterQueries(SolrUtils.extend("content_type_norm:image", filterQueries)).
+                fields(SolrUtils.arcEntryDescriptorFieldList);
 
-        Stream<SolrDocument> htmlPages = SolrGenericStreaming.create(
-                        Arrays.asList("crawl_date", "links_images"),
-                        query, SolrUtils.extend("content_type_norm:html", filterQueries)).stream().
-                filter(solrDoc -> solrDoc.containsKey("links_images") &&
-                                  !solrDoc.getFieldValues("links_images").isEmpty());
+        SRequest htmlRequest = SRequest.builder().
+                query(query).
+                filterQueries(SolrUtils.extend("content_type_norm:html", filterQueries)).
+                fields("crawl_date, links_images");
 
+        Stream<SolrDocument> htmlPages = htmlRequest.stream().
+                filter(solrDoc -> solrDoc.containsKey("links_images"));
         Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
                 map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
-
         Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks).flatMap(Functions.identity());
 
         Stream<SolrDocument> merged =
-                CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1));
+                CollectionUtils.interleave(Arrays.asList(directImagesReq.stream(), htmlImages), Arrays.asList(4, 1));
         if (hashUnique) {
             merged = merged.filter(new UniqueFilter(true, 20_000_000, "hash"));
         }
@@ -107,7 +107,7 @@ public class ContentStreams {
      * The images are searched using {@link SRequest#timeProximityDeduplication(String, String)}
      * meaning that only one instance of a given image URL is returned, with preference to the one nearest in time to
      * the htmlPage.
-     *
+     * <p>
      * Note: Small images (less than 2000 pixels) are ignored, as are revisits.
      * @param htmlPage  a representation of a HTML page with links to images.
      *                  Required fields are {@code crawl_date} and {@code links_images}.
