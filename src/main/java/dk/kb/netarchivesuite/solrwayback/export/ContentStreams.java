@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
@@ -130,7 +131,10 @@ public class ContentStreams {
                 timeProximityDeduplication(isotime, "url_norm").
                 maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
 
-        return request::stream;
+        // The strange construction where the stream is collected and then re-streamed is to ensure that the
+        // resolving of all images happens at evaluation time of the lambda, i.e. by the executor service.
+        // If the stream is returned directly, the evaluation will happen in the calling thread.
+        return () ->  request.stream().collect(Collectors.toList()).stream();
     }
 
     /**
