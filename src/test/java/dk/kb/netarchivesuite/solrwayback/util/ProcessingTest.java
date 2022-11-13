@@ -1,17 +1,20 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterators;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /*
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,6 +48,65 @@ public class ProcessingTest {
             assertEquals("Result #" + i + " should be as expected",
                          Integer.valueOf(i), results.get((i)));
         }
+    }
+
+    @Test
+    public void triggerEvaluation1() throws InterruptedException {
+        AtomicInteger evaluations = new AtomicInteger(0);
+        Stream<Callable<Stream<Integer>>> callables =
+                IntStream.range(0, 10).boxed().
+                        map(i -> getCallback(evaluations));
+
+        Stream<Stream<Integer>> result = Processing.batch(callables, 3);
+        Thread.sleep(50);
+        assertEquals("The evaluation count should be zero when nothing has been pulled", 0, evaluations.get());
+
+        Iterator<Stream<Integer>> iResult = result.iterator();
+        Iterator<Integer> inner1 = iResult.next().iterator();
+        inner1.next();
+        Thread.sleep(50);
+        assertEquals("The evaluation count should be 1 when first value has been pulled directly",
+                     1, evaluations.get());
+    }
+
+    // Disabled as it does not pass. Why is the evaluation eager (6 evaluations instead of 1)?
+    public void triggerEvaluationFlatmap() throws InterruptedException {
+        AtomicInteger evaluations = new AtomicInteger(0);
+        Stream<Callable<Stream<Integer>>> callables =
+                IntStream.range(0, 10).boxed().
+                        map(i -> getCallback(evaluations));
+
+        Stream<Integer> result = Processing.batch(callables, 3).flatMap(Function.identity());
+        Thread.sleep(50);
+        assertEquals("The evaluation count should be zero when nothing has been pulled", 0, evaluations.get());
+
+        Iterator<Integer> iResults = result.iterator();
+        iResults.next();
+        Thread.sleep(50);
+        assertEquals("The evaluation count should be 1 when first value has been pulled from flatMapped",
+                     1, evaluations.get());
+    }
+
+    private Callable<Stream<Integer>> getCallback(AtomicInteger evaluations) {
+        return () -> streamTwo(evaluations);
+    }
+    // Only evaluates when the stream is pulled
+    private Stream<Integer> streamTwo(AtomicInteger evaluations) {
+        Iterator<Integer> iterator = new Iterator<Integer>() {
+            int delivered = 0;
+            @Override
+            public boolean hasNext() {
+                return delivered != 2;
+            }
+
+            @Override
+            public Integer next() {
+                delivered++;
+                return evaluations.incrementAndGet();
+            }
+        };
+
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, 0), false);
     }
 
     @Test
