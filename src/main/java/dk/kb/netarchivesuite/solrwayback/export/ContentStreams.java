@@ -91,8 +91,7 @@ public class ContentStreams {
         SRequest htmlRequest = SRequest.builder().
                 query(query).
                 filterQueries(SolrUtils.extend("content_type_norm:html", filterQueries)).
-                fields("crawl_date, links_images").
-                maxResults(100); // Temporary hack
+                fields("crawl_date, links_images");
 
         Stream<SolrDocument> htmlPages = htmlRequest.stream().
                 filter(solrDoc -> solrDoc.containsKey("links_images") &&
