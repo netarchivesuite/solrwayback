@@ -83,12 +83,22 @@ public class UniqueFilter implements Predicate<SolrDocument> {
 
     @Override
     public boolean test(SolrDocument solrDoc) {
+        return test(getUniqueValue(solrDoc));
+    }
+
+    /**
+     * Perform uniqueness test on the given {@code fieldValue}. This is called directly from {@link #test(SolrDocument)}
+     * but can also be used for special processing where the field value has already been determined.
+     * @param fieldValue a values presumable from the configured {@link #fields} in a {@code SolrDocument}.
+     * @return true if the values has not been encountered before.
+     */
+    public synchronized boolean test(String fieldValue) {
         tests++;
         boolean ok;
         if (uniqueValues != null) { // values
-            ok = uniqueValues.add(getUniqueValue(solrDoc));
+            ok = uniqueValues.add(fieldValue);
         } else {
-            ok = uniqueHashes.add(getUniqueValue(solrDoc).hashCode());
+            ok = uniqueHashes.add(fieldValue.hashCode());
         }
         if (uniqueCount() > maxUnique) {
             log.warn("Throwing ArrayIndexOutOfBoundsException as the unique limit of {} has been reached", maxUnique);
