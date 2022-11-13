@@ -85,7 +85,7 @@ public class UniqueFilter implements Predicate<SolrDocument> {
     public boolean test(SolrDocument solrDoc) {
         return test(getUniqueValue(solrDoc));
     }
-    public boolean test(String fieldValue) {
+    public synchronized boolean test(String fieldValue) {
         tests++;
         boolean ok;
         if (uniqueValues != null) { // values
