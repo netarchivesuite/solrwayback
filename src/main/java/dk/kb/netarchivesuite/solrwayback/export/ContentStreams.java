@@ -85,7 +85,7 @@ public class ContentStreams {
                 deduplicateField("url_norm");
 
         Stream<SolrDocument> directImages = imageRequest.stream().
-                filter(urlUnique). // To coordinate wih HTML
+                //filter(urlUnique). // To coordinate wih HTML
                 filter(new ThroughputTracker("direct:", "images", log, 100));
 
         SRequest htmlRequest = SRequest.builder().
