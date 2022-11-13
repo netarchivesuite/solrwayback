@@ -76,22 +76,27 @@ public class ContentStreams {
      */
     public static Stream<SolrDocument> findImages(
             boolean hashUnique, int maxImagesPerPage, String query, String... filterQueries) {
+        UniqueFilter urlUnique = new UniqueFilter(true, 20_000_000, "url_norm");
+
         SRequest imageRequest = SRequest.builder().
                 query(query).
                 filterQueries(SolrUtils.extend("content_type_norm:image", filterQueries)).
                 fields(SolrUtils.arcEntryDescriptorFieldList).
-                deduplicateField("url_norm").
-                maxResults(maxImagesPerPage);
+                deduplicateField("url_norm");
 
-        Stream<SolrDocument> directImages = imageRequest.stream().filter(new ThroughputTracker("direct:", "images", log, 100));
+        Stream<SolrDocument> directImages = imageRequest.stream().
+                filter(urlUnique). // To coordinate wih HTML
+                filter(new ThroughputTracker("direct:", "images", log, 100));
 
-        Stream<SolrDocument> htmlPages = SolrGenericStreaming.create(
-                        Arrays.asList("crawl_date", "links_images"),
-                        query, SolrUtils.extend("content_type_norm:html", filterQueries)).stream().
+        SRequest htmlRequest = SRequest.builder().
+                query(query).
+                filterQueries(SolrUtils.extend("content_type_norm:html", filterQueries)).
+                fields("crawl_date, links_images").
+                maxResults(100); // Temporary hack
+
+        Stream<SolrDocument> htmlPages = htmlRequest.stream().
                 filter(solrDoc -> solrDoc.containsKey("links_images") &&
                                   !solrDoc.getFieldValues("links_images").isEmpty());
-
-        UniqueFilter urlUnique = new UniqueFilter(true, 20_000_000, "url_norm");
 
         Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
                 map(htmlPage -> createHTMLImageCallback(htmlPage, urlUnique, maxImagesPerPage));
