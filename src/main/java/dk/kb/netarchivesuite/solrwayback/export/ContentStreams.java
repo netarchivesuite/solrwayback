@@ -117,13 +117,13 @@ public class ContentStreams {
                 query(query).
                 filterQueries(SolrUtils.extend("content_type_norm:html", filterQueries)).
                 fields("crawl_date, links_images").
-                pageSize(200); // The links-field can be heavy and we want low latency
+                pageSize(100); // The links-field can be heavy and we want low latency
         Stream<SolrDocument> htmlPages = htmlRequest.stream().
                 filter(solrDoc -> solrDoc.containsKey("links_images"));
 
         Stream<SolrDocument> htmlImages;
         if (goFast) {
-            htmlImages = resolveImagesFromPageRequest(htmlPages, sharedLinkPruner).
+            htmlImages = resolveImagesFromPageRequest(htmlPages, maxImagesPerPage, sharedLinkPruner).
                     useCachingClient(true).
                     stream();
         } else {
@@ -187,22 +187,25 @@ public class ContentStreams {
      * This method is fully streaming and supports processing of arbitrary size. Not that it does not guarantee that
      * the resolved images are unique!
      *
-     * @param htmlPages a stream of {@code SolrDocument}s representing HTML pages.
-     * @param linkPruner filters which links are considered. To disable pruning, use {@code link -> true}.
+     * @param htmlPages        a stream of {@code SolrDocument}s representing HTML pages.
+     * @param maxImagesPerPage the maximum number of image links to use per page.
+     * @param linkPruner       filters which links are considered. To disable pruning, use {@code link -> true}.
      * @return request for {@code SolrDocument}s representing images from the pages.
      */
     public static SRequest resolveImagesFromPageRequest(
-            Stream<SolrDocument> htmlPages, Predicate<String> linkPruner) {
+            Stream<SolrDocument> htmlPages, int maxImagesPerPage, Predicate<String> linkPruner) {
         Stream<String> urlQueries = htmlPages.
-                flatMap(page -> ((List<String>)page.get("links_images")).stream().filter(linkPruner)).
+                // Get maxImagesPerPage links from each page
+                flatMap(page -> ((List<String>)page.get("links_images")).stream().filter(linkPruner).limit(maxImagesPerPage)).
                 map(SolrUtils::createQueryStringForUrl);
         return SRequest.builder().
                 queries(urlQueries).
-                // We limit query batch size and page size for lower latency.
-                // Chances are we get all we need for interactive search with the first 100 pages
-                queryBatchSize(50).
-                pageSize(500).
-                usePaging(false). // TODO: For diversity and speed we limit the number of links from a single batch
+                // We limit query batch size for lower latency.
+
+                // TODO: Internal for kb.dk: Not setting queryBatchSize to 100 and exporting images for 'gedeost' throws
+                // org.apache.solr.client.solrj.impl.HttpSolrClient$RemoteSolrException: Error from server at http://localhost:52300/solr/ns: Expected mime type application/octet-stream but got text/html. <h1>Bad Message 414</h1><pre>reason: URI Too Long</pre>
+                // But the request uses POST!?
+                queryBatchSize(10). // Number of image links to resolve at once
                 filterQueries("content_type_norm:image",   // Only images
                               SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
                               "image_size:[2000 TO *]").   // No small images. (fillers etc.)

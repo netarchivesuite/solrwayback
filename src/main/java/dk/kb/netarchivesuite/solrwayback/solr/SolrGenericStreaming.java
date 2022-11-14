@@ -454,7 +454,14 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       // Perform request and update depleted & paging variables
       solrRequests.incrementAndGet();
       //log.debug("Issuing '{}'", SolrUtils.fieldValueToString(solrQuery));
-      QueryResponse rsp = request.solrClient.query(solrQuery, METHOD.POST);
+
+      QueryResponse rsp;
+      try {
+        rsp = request.solrClient.query(solrQuery, METHOD.POST);
+      } catch (HttpSolrClient.RemoteSolrException e) {
+        log.warn("RemoteSolrException for POST request '" + SolrUtils.fieldValueToString(solrQuery) + "'", e);
+        throw e;
+      }
       undelivered = rsp.getResults();
       totalDelivered.addAndGet(undelivered.size());
       //log.debug("Got " + undelivered.size() + " hits with total delivered counter " + totalDelivered.get());
