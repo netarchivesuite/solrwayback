@@ -17,7 +17,6 @@ package dk.kb.netarchivesuite.solrwayback.export;
 import com.google.common.base.Functions;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.solr.UniqueFilter;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
@@ -38,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
@@ -67,7 +67,10 @@ public class ContentStreams {
      * <p>
      * If the caller needs {@link ArcEntryDescriptor}, use the helpers method in SolrUtils as
      * {@code findImages(50, "kittens").map(SolrUtils::solrDocument2ArcEntryDescriptor)}.
-     * @param hashUnique if true, uniqueness of results is attempted.
+     * @param attemptUnique if true, uniqueness of results is attempted. This is based on Solr {@code hash}.
+     * @param goFast if true, images linked from webpages are not prioritised by time proximity to {@code crawl_date}
+     *               for the webpage. This is markedly faster, but might give false positives.
+     *               goFast also enables deduplication on {@code url_norm}.
      * @param maxImagesPerPage maximum number of images to resolve for any single page.
      * @param query       a query for images.
      * @param filterQueries 0 or more Solr queries.
@@ -75,28 +78,68 @@ public class ContentStreams {
      *         {@link SolrUtils#arcEntryDescriptorFieldList}.
      */
     public static Stream<SolrDocument> findImages(
-            boolean hashUnique, int maxImagesPerPage, String query, String... filterQueries) {
+            boolean attemptUnique, boolean goFast, int maxImagesPerPage, String query, String... filterQueries) {
+        log.debug("findImages(attemptUnique={}, goFast={}, maxImagesPerPage={}, query='{}', filterQueries='{}') called",
+                  attemptUnique, goFast, maxImagesPerPage, query, Arrays.asList(filterQueries));
+        // Pruners are shared between direct and webpage, but not for final pruning as that would give 0 results
+        final Predicate<SolrDocument> sharedHashPruner = attemptUnique ?
+                new UniqueFilter(true, 20_000_000, "hash") :
+                doc -> true;
+        final Predicate<SolrDocument> finalHashPruner = attemptUnique ?
+                new UniqueFilter(true, 20_000_000, "hash") :
+                doc -> true;
+        final Predicate<SolrDocument> sharedUrlPruner;
+        final Predicate<SolrDocument> finalUrlPruner;
+        final Predicate<String> sharedLinkPruner;
+        if (goFast) {
+            finalUrlPruner = new UniqueFilter(true, 20_000_000, "url_norm");
+            UniqueFilter uf = new UniqueFilter(true, 20_000_000, "url_norm");
+            sharedUrlPruner = uf;
+            sharedLinkPruner = uf::test;
+        } else {
+            finalUrlPruner = doc -> true;
+            sharedUrlPruner = doc -> true;
+            sharedLinkPruner = link -> true;
+        }
+
         SRequest directImagesReq = SRequest.builder().
                 query(query).
                 filterQueries(SolrUtils.extend("content_type_norm:image", filterQueries)).
                 fields(SolrUtils.arcEntryDescriptorFieldList);
+        if (goFast) { // TODO: Consider if this should be an explicit option instead
+            directImagesReq.useCachingClient(true);
+        }
+        Stream<SolrDocument> directImages = directImagesReq.stream().
+                filter(sharedHashPruner).
+                filter(sharedUrlPruner);
 
         SRequest htmlRequest = SRequest.builder().
                 query(query).
                 filterQueries(SolrUtils.extend("content_type_norm:html", filterQueries)).
-                fields("crawl_date, links_images");
-
+                fields("crawl_date, links_images").
+                pageSize(200); // The links-field can be heavy and we want low latency
         Stream<SolrDocument> htmlPages = htmlRequest.stream().
                 filter(solrDoc -> solrDoc.containsKey("links_images"));
-        Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
-                map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
-        Stream<SolrDocument> htmlImages = Processing.batch(htmlCallbacks).flatMap(Functions.identity());
+
+        Stream<SolrDocument> htmlImages;
+        if (goFast) {
+            htmlImages = resolveImagesFromPageRequest(htmlPages, sharedLinkPruner).
+                    useCachingClient(true).
+                    stream();
+        } else {
+            Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
+                    map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
+            htmlImages = Processing.batch(htmlCallbacks).
+                    flatMap(Functions.identity()).
+                    filter(sharedHashPruner).
+                    filter(sharedUrlPruner);
+        }
 
         Stream<SolrDocument> merged =
-                CollectionUtils.interleave(Arrays.asList(directImagesReq.stream(), htmlImages), Arrays.asList(4, 1));
-        if (hashUnique) {
-            merged = merged.filter(new UniqueFilter(true, 20_000_000, "hash"));
-        }
+                CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1)).
+                filter(finalHashPruner).
+                filter(finalUrlPruner);
+
         // Mix the two streams, 4 direct images for each 1 image derived from a page
         return merged.filter(new ThroughputTracker("findImages:", "images", log, 100));
     }
@@ -135,6 +178,36 @@ public class ContentStreams {
         // resolving of all images happens at evaluation time of the lambda, i.e. by the executor service.
         // If the stream is returned directly, the evaluation will happen in the calling thread.
         return () ->  request.stream().collect(Collectors.toList()).stream();
+    }
+
+    /**
+     * Extracts {@code links_images} from the given {@code SolrDocument}s with HTML pages and resolves them against
+     * the index. This DOES NOT perform time-proximity prioritisation of the images relative to the HMTL page!
+     * <p>
+     * This method is fully streaming and supports processing of arbitrary size. Not that it does not guarantee that
+     * the resolved images are unique!
+     *
+     * @param htmlPages a stream of {@code SolrDocument}s representing HTML pages.
+     * @param linkPruner filters which links are considered. To disable pruning, use {@code link -> true}.
+     * @return request for {@code SolrDocument}s representing images from the pages.
+     */
+    public static SRequest resolveImagesFromPageRequest(
+            Stream<SolrDocument> htmlPages, Predicate<String> linkPruner) {
+        Stream<String> urlQueries = htmlPages.
+                flatMap(page -> ((List<String>)page.get("links_images")).stream().filter(linkPruner)).
+                map(SolrUtils::createQueryStringForUrl);
+        return SRequest.builder().
+                queries(urlQueries).
+                // We limit query batch size and page size for lower latency.
+                // Chances are we get all we need for interactive search with the first 100 pages
+                queryBatchSize(50).
+                pageSize(500).
+                usePaging(false). // TODO: For diversity and speed we limit the number of links from a single batch
+                filterQueries("content_type_norm:image",   // Only images
+                              SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
+                              "image_size:[2000 TO *]").   // No small images. (fillers etc.)
+                fields(SolrUtils.arcEntryDescriptorFieldList). // Contains hash used for uniqueness
+                deduplicateField("url_norm");
     }
 
     /**
