@@ -9,6 +9,7 @@ import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -323,6 +325,36 @@ public class SolrUtils {
         }
         if (value instanceof Date) {
             return DateUtils.getSolrDate((Date) value);
+        }
+        if (value instanceof String[]) {
+            return Arrays.toString((String[])value);
+        }
+        if (value instanceof int[]) {
+            return Arrays.toString((int[])value);
+        }
+        if (value instanceof long[]) {
+            return Arrays.toString((int[])value);
+        }
+        if (value instanceof float[]) {
+            return Arrays.toString((float[])value);
+        }
+        if (value instanceof double[]) {
+            return Arrays.toString((double[])value);
+        }
+        if (value instanceof ModifiableSolrParams) {
+            return value.getClass().getSimpleName() +
+                   "(" + fieldValueToString(((ModifiableSolrParams)value).getMap()) + ")";
+        }
+        if (value instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>)value;
+            return map.entrySet().stream().
+                    map(SolrUtils::fieldValueToString).
+                    collect(Collectors.joining(", ", "{", "}"));
+        }
+        if (value instanceof Map.Entry) {
+            Map.Entry<?, ?> entry = (Map.Entry<?, ?>)value;
+            return fieldValueToString(entry.getKey()) + "=" +
+                   fieldValueToString(entry.getValue());
         }
         if (value instanceof Collection) {
             return ((Collection<?>)value).stream().

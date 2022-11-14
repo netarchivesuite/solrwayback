@@ -61,7 +61,7 @@ public class SRequest {
     private static final Pattern ISO_TIME = Pattern.compile(
             "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9][.]?[0-9]?[0-9]?[0-9]?Z");
 
-    public SolrClient solrClient = SolrGenericStreaming.defaultSolrClient;
+    public SolrClient solrClient = NetarchiveSolrClient.noCacheSolrServer;
     public SolrQuery solrQuery = new SolrQuery();
     public boolean expandResources = false;
     public List<String> expandResourcesFilterQueries;
@@ -116,8 +116,9 @@ public class SRequest {
 
     /**
      * @param solrClient used for issuing Solr requests.
-     *                   If not specified, {@link SolrGenericStreaming#defaultSolrClient} will be used.
+     *                   If not specified, {@link NetarchiveSolrClient#noCacheSolrServer} will be used.
      * @return the SRequest adjusted with the provided value.
+     * @see #useCachingClient(boolean) 
      */
     public SRequest solrClient(SolrClient solrClient) {
         if (solrClient == null) {
@@ -125,6 +126,21 @@ public class SRequest {
             return this;
         }
         this.solrClient = solrClient;
+        return this;
+    }
+
+    /**
+     * Whether or not a caching {@link SolrClient} is used. The client is shared with {@link NetarchiveSolrClient}.
+     * <p>
+     * The default is false (no caching). Set to true when used for limited result sets.
+     * @param useCaching if true, a locally caching Solrclient is used.
+     * @return the SRequest adjusted with the provided value.
+     * @see #solrClient(SolrClient) 
+     */
+    public SRequest useCachingClient(boolean useCaching) {
+        solrClient = useCaching ? 
+                NetarchiveSolrClient.solrServer :
+                NetarchiveSolrClient.noCacheSolrServer;
         return this;
     }
 
@@ -712,13 +728,15 @@ public class SRequest {
      */
     public SRequest deepCopy() {
         SRequest copy = new SRequest().
-                solrClient(solrClient).
+                solrClient(solrClient). // Implicitly handles useCachingClient
                 solrQuery(solrQuery == null ? null : SolrUtils.deepCopy(solrQuery)).
                 expandResources(expandResources).
+
                 ensureUnique(ensureUnique).
                 maxUnique(maxUnique).
                 uniqueFields(uniqueFields.toArray(new String[0])).
                 uniqueHashing(useHashingForUnique).
+
                 deduplicateField(deduplicateField).
                 fields(copy(fields)).
                 maxResults(maxResults).

@@ -145,8 +145,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
   /**
    * The default SolrClient is simple and non-caching as streaming exports typically makes unique requests.
+   * Shared with {@link NetarchiveSolrClient}.
    */
-  static SolrClient defaultSolrClient = new HttpSolrClient.Builder(PropertiesLoader.SOLR_SERVER).build();
+  static SolrClient defaultSolrClient = NetarchiveSolrClient.noCacheSolrServer;
 
 
   /**
@@ -452,6 +453,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
       // Perform request and update depleted & paging variables
       solrRequests.incrementAndGet();
+      //log.debug("Issuing '{}'", SolrUtils.fieldValueToString(solrQuery));
       QueryResponse rsp = request.solrClient.query(solrQuery, METHOD.POST);
       undelivered = rsp.getResults();
       totalDelivered.addAndGet(undelivered.size());

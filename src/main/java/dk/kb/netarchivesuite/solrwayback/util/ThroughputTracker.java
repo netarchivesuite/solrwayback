@@ -54,7 +54,7 @@ public class ThroughputTracker implements Predicate<Object> {
     }
 
     @Override
-    public boolean test(Object o) {
+    public synchronized boolean test(Object o) {
         if (++callCounter == nextLog) {
             performLog();
             nextLog += logInterval;
