@@ -23,7 +23,7 @@ export default {
                 },
                 {
                     data: ingoingLinks,
-                    label: 'Incoming links',
+                    label: 'Ingoing links',
                     fontColor: 'black',
                     yAxisID: 'links',
                     borderColor: '#009900',

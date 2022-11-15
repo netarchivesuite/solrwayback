@@ -10,6 +10,9 @@ import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,6 +44,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ImageUrl;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.TimestampsForPage;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -106,10 +110,22 @@ public class SolrWaybackResource {
   @GET
   @Path("statistics/domain")
   @Produces({ MediaType.APPLICATION_JSON})
-  public  ArrayList<DomainYearStatistics> statisticsDomain (@QueryParam("domain") String domain) throws SolrWaybackServiceException {
-      try {                                                                                                   
-        return Facade.statisticsDomain(domain);
-      } catch (Exception e) {         
+  public  List<DomainStatistics> statisticsDomain (@QueryParam("domain") String domain, @QueryParam("startdate") String startdate,
+          @QueryParam("enddate") String enddate, @QueryParam("scale") String scale) throws SolrWaybackServiceException {
+      int limit = 90;
+      LocalDate start = LocalDate.parse(startdate, DateTimeFormatter.ISO_DATE);
+      LocalDate end = LocalDate.parse(enddate, DateTimeFormatter.ISO_DATE);
+      
+      // If the period is too big for the scale, block the statistics
+      int buckets = calculateBucket(start, end, scale);
+      if (buckets > limit) {
+          String msg = "The defined period (" + buckets + ") is too large to match with the scale (limit: " + limit + " " + scale.toLowerCase() + "s)";
+          log.error(msg);
+          throw new InvalidArgumentServiceException(msg);
+      }
+      try {
+        return Facade.statisticsDomain(domain, start , end, scale);
+      } catch (Exception e) {
           throw handleServiceExceptions(e);
       }
   }
@@ -1087,6 +1103,36 @@ public class SolrWaybackResource {
     DateFormat formatOut= new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     String dateStr = formatOut.format(new Date());
     return template.replace("$DATETIME", dateStr);
+  }
+  
+
+  /**
+   * Calculate the period between start date and end date. The result is returned in the same unit
+   * as the scale
+   * @param start the start date
+   * @param end the end date
+   * @param scale the time scale (YEAR, MONTH, WEEK, DAY)
+   * @return the period between start date and end date
+   */
+  private int calculateBucket(LocalDate start, LocalDate end, String scale) {
+      Period period = Period.between(start, end);
+      int buckets = 0;
+      switch (scale) {
+          case "YEAR" :
+              buckets = period.getYears();
+              break;
+          case "MONTH" :
+              buckets = period.getYears() * 12 + period.getMonths();
+              break;
+          case "WEEK" :
+              buckets = period.getYears() * 52 + period.getMonths() * 4 + period.getDays() / 7;
+              break;
+          case "DAY" :
+          default :
+              buckets = period.getYears() * 365 + period.getMonths() * 30 + period.getDays();
+              break;
+      }
+      return buckets;
   }
   
   private SolrWaybackServiceException handleServiceExceptions(Exception e) {

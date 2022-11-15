@@ -29,7 +29,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
-import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
@@ -56,8 +56,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -171,16 +172,38 @@ public class Facade {
         return extractImages;
     }
 
-    public static ArrayList<DomainYearStatistics> statisticsDomain(String domain) throws Exception {
-        ArrayList<DomainYearStatistics> stats = new ArrayList<DomainYearStatistics>();
-        int year = Calendar.getInstance().get(Calendar.YEAR);
-        int startYear=PropertiesLoaderWeb.ARCHIVE_START_YEAR;
+    public static List<DomainStatistics> statisticsDomain(String domain, LocalDate start, LocalDate end, String scale) throws Exception {
+        List<DomainStatistics> stats = new ArrayList<>();
+        LocalDate date = start;
+        LocalDate nextDate = addScaleToDate(date, scale);
 
-        for (int i = startYear; i <= year; i++) {
-            DomainYearStatistics yearStat = NetarchiveSolrClient.getInstance().domainStatistics(domain, i);
-            stats.add(yearStat);
+        while (!nextDate.isAfter(end)) {
+            DomainStatistics stat = NetarchiveSolrClient.getInstance().domainStatistics(domain, date.format(DateTimeFormatter.ISO_DATE), nextDate.format(DateTimeFormatter.ISO_DATE));
+            stats.add(stat);
+            date = nextDate;
+            nextDate = addScaleToDate(date, scale);
         }
         return stats;
+    }
+
+    private static LocalDate addScaleToDate(LocalDate date, String scale) {
+        LocalDate nextDate;
+        switch (scale) {
+            case "MONTH" :
+                nextDate = date.plusMonths(1);
+                break;
+            case "WEEK" :
+                nextDate = date.plusWeeks(1);
+                break;
+            case "DAY" :
+                nextDate = date.plusDays(1);
+                break;
+            case "YEAR" :
+            default :
+                nextDate = date.plusYears(1);
+                break;
+        }
+        return nextDate;
     }
 
     public static ArrayList<ImageUrl> imagesLocationSearch(String searchText, String filter, String results, double latitude, double longitude, double radius,
