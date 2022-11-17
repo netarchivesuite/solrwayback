@@ -42,7 +42,7 @@ resources  would not be included the WARC file.
 Building the project can be done on Windows platform again. (https://github.com/netarchivesuite/solrwayback/issues/290)
 
 Lenient playback (still in testing/beta mode). This can tested by changing the playback url from '/web/' to '/lenient/web/'
-Lenient will playback match url's not found using url_norm with by allowed only a subset  
+Lenient playback will match url's not found using url_norm by allowed only a subset  
 of query param/values to match. This will solve the common playback issue with a dynamic 
 generated timestamp added as a parameter etc. This idea is similar to the prefix match configuration  
 in pywb.  
