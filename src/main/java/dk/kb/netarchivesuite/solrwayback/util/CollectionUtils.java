@@ -15,6 +15,8 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
 import com.google.common.collect.Iterators;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +30,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class CollectionUtils {
+    private static final Logger log = LoggerFactory.getLogger(CollectionUtils.class);
 
     /**
      * Interleave the given Streams, passing 1 element from each non-depleted stream then starting over until there

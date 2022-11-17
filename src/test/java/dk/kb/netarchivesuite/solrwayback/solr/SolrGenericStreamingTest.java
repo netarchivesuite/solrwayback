@@ -250,6 +250,23 @@ public class SolrGenericStreamingTest {
     }
 
     @Test
+    public void testUnique() {
+        SRequest request = SRequest.builder().
+                query("*:*").
+                fields("id").
+                ensureUnique(true).
+                uniqueFields("url");
+
+        assertEquals("The expected number of documents should be returned when enabling uniqueness on 'url'",
+                     10, request.stream().count());
+
+        assertEquals("The expected number of documents should be returned when using hashing",
+                     10, request.uniqueHashing(true).stream().count());
+
+
+    }
+
+    @Test
     public void testGrouping() {
         List<SolrDocument> docs = SRequest.builder().
                 query("*:*").

@@ -217,6 +217,11 @@
       <version>20180130</version>
     </dependency>
 
+    <dependency>
+        <groupId>it.unimi.dsi</groupId>
+        <artifactId>fastutil</artifactId>
+        <version>8.5.9</version>
+    </dependency>
 
     <dependency>
       <groupId>org.netpreserve.openwayback</groupId>

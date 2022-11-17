@@ -143,17 +143,23 @@ public class Facade {
 
     /**
      * Search images both directly and through webpages.
-     * Delegates to {@link ContentStreams#findImages(int, String, String...)}.
+     * Delegates to {@link ContentStreams#findImages(boolean, boolean, int, String, String...)}.
      * @param query Solr query.
      * @param filterQueries 0 or more Solr filter queries.
      * @return up to 500 images matching the searchText.
      * @see Facade#exportImages(boolean, boolean, String, String...)
      */
     public static ArrayList<ArcEntryDescriptor> findImages(String query, String... filterQueries) {
-        return ContentStreams.findImages(50, query, filterQueries).
-                limit(500).
-                map(SolrUtils::solrDocument2ArcEntryDescriptor).
-                collect(Collectors.toCollection(ArrayList::new));
+        long searchTimeMS = -System.currentTimeMillis();
+        // TODO: This has goFast and will not be accurate. Should it be an option?
+        ArrayList<ArcEntryDescriptor> images = ContentStreams.findImages(true, true, 50, query, filterQueries).
+                        limit(500).
+                        map(SolrUtils::solrDocument2ArcEntryDescriptor).
+                        collect(Collectors.toCollection(ArrayList::new));
+        searchTimeMS += System.currentTimeMillis();
+        log.debug("Found at least {} images in {}ms ({} images/second), searching for '{}'",
+                  images.size(), searchTimeMS, searchTimeMS == 0 ? "N/A" : (images.size()*1000/searchTimeMS), query);
+        return images;
     }
     
     public static ArrayList<ArcEntryDescriptor> oldfindImages(String searchText) throws Exception {
@@ -473,22 +479,18 @@ public class Facade {
 
     /**
      * Search images both directly and through webpages. Export the result as WARC entries.
-     * @param avoidDuplicates if true, duplicates are removed.
+     * @param avoidDuplicates if true, duplicates are removed, based on image hash.
      *                        This requires holding a Set with all hashes from the result set in memory.
      * @param gzip if true each entry in the WARC stream is GZIPped.
      * @param query image search query.
      * @param filterqueries Solr filter queries.
      * @return an InputStream where the product is a WARC.
-     * @see ContentStreams#findImages(int, String, String...)
+     * @see ContentStreams#findImages(boolean, boolean, int, String, String...)
      * @see Facade#findImages(String, String...)
      */
     public static InputStream exportImages(boolean avoidDuplicates, boolean gzip, String query, String... filterqueries) {
-        Stream<SolrDocument> imageDocs = ContentStreams.findImages(50, query, filterqueries);
-
-        if (avoidDuplicates) {
-            Set<Object> hashes = new HashSet<>();
-            imageDocs = imageDocs.filter(solrDoc -> hashes.add(solrDoc.getFieldValue("hash")));
-        }
+        // TODO: This has goFast==false and will be accurate but slow. Should it be an option?
+        Stream<SolrDocument> imageDocs = ContentStreams.findImages(avoidDuplicates, true,50, query, filterqueries);
 
         return new StreamingSolrWarcExportBufferedInputStream(imageDocs, Integer.MAX_VALUE, gzip);
     }
@@ -528,7 +530,7 @@ public class Facade {
     }
 
     /**
-     * @deprecated use {@link #exportFields(String, Boolean, Boolean, String, Boolean, String, String, String...)}.
+     * @deprecated use {@link #exportFields(String, Boolean, Boolean, String, Boolean, String, Boolean, String, String...)}.
      */
     public static InputStream exportCvsStreaming(String q, String fq, String fields) throws Exception {
         // TODO test only allowed fields are selected!

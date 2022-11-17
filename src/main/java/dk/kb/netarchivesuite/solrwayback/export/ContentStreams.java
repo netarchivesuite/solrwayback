@@ -17,13 +17,14 @@ package dk.kb.netarchivesuite.solrwayback.export;
 import com.google.common.base.Functions;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.solr.UniqueFilter;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
-import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.Processing;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.StreamBridge;
+import dk.kb.netarchivesuite.solrwayback.util.ThroughputTracker;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
@@ -57,36 +60,88 @@ public class ContentStreams {
      * Searches images and webpages matching the given searchText. For webpages, linked images are resolved and
      * returned. In the case of multiple hits for the same image URL, the one harvested closest to the webpage
      * in time will be delivered.
-     *
+     * <p>
+     * If attemptUnique is true, this search attempts to deliver unique images using the Solr field {@code hash},
+     * but does not guarantee it fully as {@link dk.kb.netarchivesuite.solrwayback.solr.UniqueFilter} is used with
+     * hashing to {@code int}. Requesting uniqueness limits the export size to 20 million.
+     * <p>
      * If the caller needs {@link ArcEntryDescriptor}, use the helpers method in SolrUtils as
      * {@code findImages(50, "kittens").map(SolrUtils::solrDocument2ArcEntryDescriptor)}.
+     * @param attemptUnique if true, uniqueness of results is attempted. This is based on Solr {@code hash}.
+     * @param goFast if true, images linked from webpages are not prioritised by time proximity to {@code crawl_date}
+     *               for the webpage. This is markedly faster, but might give false positives.
+     *               goFast also enables deduplication on {@code url_norm}.
      * @param maxImagesPerPage maximum number of images to resolve for any single page.
      * @param query       a query for images.
      * @param filterQueries 0 or more Solr queries.
      * @return a stream of SolrDocuments representing images, containing the fields from
      *         {@link SolrUtils#arcEntryDescriptorFieldList}.
      */
-    public static Stream<SolrDocument> findImages(int maxImagesPerPage, String query, String... filterQueries) {
-        Stream<SolrDocument> directImages =
-                SolrGenericStreaming.create(
-                                Arrays.asList(SolrUtils.arcEntryDescriptorFieldList.split(", *")),
-                                query, SolrUtils.extend("content_type_norm:image", filterQueries)).stream();
+    public static Stream<SolrDocument> findImages(
+            boolean attemptUnique, boolean goFast, int maxImagesPerPage, String query, String... filterQueries) {
+        log.debug("findImages(attemptUnique={}, goFast={}, maxImagesPerPage={}, query='{}', filterQueries='{}') called",
+                  attemptUnique, goFast, maxImagesPerPage, query, Arrays.asList(filterQueries));
+        // Pruners are shared between direct and webpage, but not for final pruning as that would give 0 results
+        final Predicate<SolrDocument> sharedHashPruner = attemptUnique ?
+                new UniqueFilter(true, 20_000_000, "hash") :
+                doc -> true;
+        final Predicate<SolrDocument> finalHashPruner = attemptUnique ?
+                new UniqueFilter(true, 20_000_000, "hash") :
+                doc -> true;
+        final Predicate<SolrDocument> sharedUrlPruner;
+        final Predicate<SolrDocument> finalUrlPruner;
+        final Predicate<String> sharedLinkPruner;
+        if (goFast) {
+            finalUrlPruner = new UniqueFilter(true, 20_000_000, "url_norm");
+            UniqueFilter uf = new UniqueFilter(true, 20_000_000, "url_norm");
+            sharedUrlPruner = uf;
+            sharedLinkPruner = uf::test;
+        } else {
+            finalUrlPruner = doc -> true;
+            sharedUrlPruner = doc -> true;
+            sharedLinkPruner = link -> true;
+        }
 
-        Stream<SolrDocument> htmlPages = SolrGenericStreaming.create(
-                        Arrays.asList("crawl_date", "links_images"),
-                        query, SolrUtils.extend("content_type_norm:html", filterQueries)).stream().
-                filter(solrDoc -> solrDoc.containsKey("links_images") &&
-                                  !solrDoc.getFieldValues("links_images").isEmpty());
-        Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
-                map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
+        SRequest directImagesReq = SRequest.builder().
+                query(query).
+                filterQueries(SolrUtils.extend("content_type_norm:image", filterQueries)).
+                fields(SolrUtils.arcEntryDescriptorFieldList);
+        if (goFast) { // TODO: Consider if this should be an explicit option instead
+            directImagesReq.useCachingClient(true);
+        }
+        Stream<SolrDocument> directImages = directImagesReq.stream().
+                filter(sharedHashPruner).
+                filter(sharedUrlPruner);
 
-        Stream<SolrDocument> htmlImages =
-                // TODO: Make the maxImages per page configurable
-                Processing.batch(htmlCallbacks).
-                        flatMap(Functions.identity());
+        SRequest htmlRequest = SRequest.builder().
+                query(query).
+                filterQueries(SolrUtils.extend("content_type_norm:html", filterQueries)).
+                fields("crawl_date, links_images").
+                pageSize(100); // The links-field can be heavy and we want low latency
+        Stream<SolrDocument> htmlPages = htmlRequest.stream().
+                filter(solrDoc -> solrDoc.containsKey("links_images"));
+
+        Stream<SolrDocument> htmlImages;
+        if (goFast) {
+            htmlImages = resolveImagesFromPageRequest(htmlPages, maxImagesPerPage, sharedLinkPruner).
+                    useCachingClient(true).
+                    stream();
+        } else {
+            Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
+                    map(htmlPage -> createHTMLImageCallback(htmlPage, maxImagesPerPage));
+            htmlImages = Processing.batch(htmlCallbacks).
+                    flatMap(Functions.identity()).
+                    filter(sharedHashPruner).
+                    filter(sharedUrlPruner);
+        }
+
+        Stream<SolrDocument> merged =
+                CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1)).
+                filter(finalHashPruner).
+                filter(finalUrlPruner);
 
         // Mix the two streams, 4 direct images for each 1 image derived from a page
-        return CollectionUtils.interleave(Arrays.asList(directImages, htmlImages), Arrays.asList(4, 1));
+        return merged.filter(new ThroughputTracker("findImages:", "images", log, 100));
     }
 
     /**
@@ -96,7 +151,7 @@ public class ContentStreams {
      * The images are searched using {@link SRequest#timeProximityDeduplication(String, String)}
      * meaning that only one instance of a given image URL is returned, with preference to the one nearest in time to
      * the htmlPage.
-     *
+     * <p>
      * Note: Small images (less than 2000 pixels) are ignored, as are revisits.
      * @param htmlPage  a representation of a HTML page with links to images.
      *                  Required fields are {@code crawl_date} and {@code links_images}.
@@ -115,11 +170,47 @@ public class ContentStreams {
                 filterQueries("content_type_norm:image",   // only images
                               SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
                               "image_size:[2000 TO *]").   // No small images. (fillers etc.)
-                fields(SolrUtils.arcEntryDescriptorFieldList).
+                fields(SolrUtils.arcEntryDescriptorFieldList). // Contains hash used for uniqueness
                 timeProximityDeduplication(isotime, "url_norm").
                 maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
 
-        return request::stream;
+        // The strange construction where the stream is collected and then re-streamed is to ensure that the
+        // resolving of all images happens at evaluation time of the lambda, i.e. by the executor service.
+        // If the stream is returned directly, the evaluation will happen in the calling thread.
+        return () ->  request.stream().collect(Collectors.toList()).stream();
+    }
+
+    /**
+     * Extracts {@code links_images} from the given {@code SolrDocument}s with HTML pages and resolves them against
+     * the index. This DOES NOT perform time-proximity prioritisation of the images relative to the HMTL page!
+     * <p>
+     * This method is fully streaming and supports processing of arbitrary size. Not that it does not guarantee that
+     * the resolved images are unique!
+     *
+     * @param htmlPages        a stream of {@code SolrDocument}s representing HTML pages.
+     * @param maxImagesPerPage the maximum number of image links to use per page.
+     * @param linkPruner       filters which links are considered. To disable pruning, use {@code link -> true}.
+     * @return request for {@code SolrDocument}s representing images from the pages.
+     */
+    public static SRequest resolveImagesFromPageRequest(
+            Stream<SolrDocument> htmlPages, int maxImagesPerPage, Predicate<String> linkPruner) {
+        Stream<String> urlQueries = htmlPages.
+                // Get maxImagesPerPage links from each page
+                flatMap(page -> ((List<String>)page.get("links_images")).stream().filter(linkPruner).limit(maxImagesPerPage)).
+                map(SolrUtils::createQueryStringForUrl);
+        return SRequest.builder().
+                queries(urlQueries).
+                // We limit query batch size for lower latency.
+
+                // TODO: Internal for kb.dk: Not setting queryBatchSize to 100 and exporting images for 'gedeost' throws
+                // org.apache.solr.client.solrj.impl.HttpSolrClient$RemoteSolrException: Error from server at http://localhost:52300/solr/ns: Expected mime type application/octet-stream but got text/html. <h1>Bad Message 414</h1><pre>reason: URI Too Long</pre>
+                // But the request uses POST!?
+                queryBatchSize(10). // Number of image links to resolve at once
+                filterQueries("content_type_norm:image",   // Only images
+                              SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
+                              "image_size:[2000 TO *]").   // No small images. (fillers etc.)
+                fields(SolrUtils.arcEntryDescriptorFieldList). // Contains hash used for uniqueness
+                deduplicateField("url_norm");
     }
 
     /**

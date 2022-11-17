@@ -24,8 +24,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -58,15 +61,19 @@ public class SRequest {
     private static final Pattern ISO_TIME = Pattern.compile(
             "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9][.]?[0-9]?[0-9]?[0-9]?Z");
 
-    public SolrClient solrClient = SolrGenericStreaming.defaultSolrClient;
+    public SolrClient solrClient = NetarchiveSolrClient.noCacheSolrServer;
     public SolrQuery solrQuery = new SolrQuery();
     public boolean expandResources = false;
     public List<String> expandResourcesFilterQueries;
+
     public boolean ensureUnique = false;
     public Integer maxUnique = DEFAULT_MAX_UNIQUE;
+    public List<String> uniqueFields = Collections.singletonList("id");
+    public boolean useHashingForUnique = true;
+
     private String idealTime; // If defined, a sort will be created as String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
     public String deduplicateField = null;
-    List<String> fields;
+    public List<String> fields;
     public long maxResults = Long.MAX_VALUE;
     /**
      * Default sort used when exporting. Ends with tie breaking on id.
@@ -109,8 +116,9 @@ public class SRequest {
 
     /**
      * @param solrClient used for issuing Solr requests.
-     *                   If not specified, {@link SolrGenericStreaming#defaultSolrClient} will be used.
+     *                   If not specified, {@link NetarchiveSolrClient#noCacheSolrServer} will be used.
      * @return the SRequest adjusted with the provided value.
+     * @see #useCachingClient(boolean) 
      */
     public SRequest solrClient(SolrClient solrClient) {
         if (solrClient == null) {
@@ -118,6 +126,21 @@ public class SRequest {
             return this;
         }
         this.solrClient = solrClient;
+        return this;
+    }
+
+    /**
+     * Whether or not a caching {@link SolrClient} is used. The client is shared with {@link NetarchiveSolrClient}.
+     * <p>
+     * The default is false (no caching). Set to true when used for limited result sets.
+     * @param useCaching if true, a locally caching Solrclient is used.
+     * @return the SRequest adjusted with the provided value.
+     * @see #solrClient(SolrClient) 
+     */
+    public SRequest useCachingClient(boolean useCaching) {
+        solrClient = useCaching ? 
+                NetarchiveSolrClient.solrServer :
+                NetarchiveSolrClient.noCacheSolrServer;
         return this;
     }
 
@@ -151,6 +174,8 @@ public class SRequest {
      *                     a memory overhead linear to the number of results.
      * @return the SRequest adjusted with the provided value.
      * @see #maxUnique(Integer)
+     * @see #ensureUnique(Boolean)
+     * @see #uniqueHashing(boolean)
      */
     public SRequest ensureUnique(Boolean ensureUnique) {
         this.ensureUnique = Boolean.TRUE.equals(ensureUnique);
@@ -163,9 +188,44 @@ public class SRequest {
      *                  Default is {@link #DEFAULT_MAX_UNIQUE}.
      * @return the SRequest adjusted with the provided value.
      * @see #ensureUnique(Boolean)
+     * @see #uniqueFields(String...)
+     * @see #maxUnique(Integer)
      */
     public SRequest maxUnique(Integer maxUnique) {
         this.maxUnique = maxUnique;
+        return this;
+    }
+
+    /**
+     * Used for determining uniqueness when {@link #ensureUnique(Boolean)} is true.
+     * <p>
+     * Setting this value automatically sets {@link #ensureUnique(Boolean)} to true.
+     * @param fields the fields to use for uniqueness. Default is {@code id}.
+     * @return the SRequest adjusted with the provided value.
+     * @see #ensureUnique(Boolean)
+     * @see #uniqueHashing(boolean)
+     * @see #maxUnique(Integer)
+     */
+    public SRequest uniqueFields(String... fields) {
+        if (fields.length == 0) {
+            throw new IllegalArgumentException("No fields provided");
+        }
+        uniqueFields = Arrays.asList(fields);
+        ensureUnique = true;
+        return this;
+    }
+
+    /**
+     * Using the hash of {@link #uniqueFields(String...)} instead of the field content for tracking uniqueness has
+     * far lower memory impact (factor 10+), but with the possibility of hash collisions.
+     * @param useHashing if true, hashing is used for determining uniqueness. Default is false.
+     * @return the SRequest adjusted with the provided value.
+     * @see #ensureUnique(Boolean)
+     * @see #uniqueFields(String...)
+     * @see #maxUnique(Integer)
+     */
+    public SRequest uniqueHashing(boolean useHashing) {
+        useHashingForUnique = useHashing;
         return this;
     }
 
@@ -630,9 +690,18 @@ public class SRequest {
             sort = String.format(Locale.ROOT, "%s asc", deduplicateField);
         }
         solrQuery.set(CommonParams.SORT, sort);
+
+        Set<String> fl = new LinkedHashSet<>();
         if (fields != null) {
-            solrQuery.set(CommonParams.FL, String.join(",", fields));
+            fl.addAll(fields);
         }
+        if (uniqueFields != null) {
+            fl.addAll(uniqueFields);
+        }
+        if (!fl.isEmpty()) {
+            solrQuery.set(CommonParams.FL, String.join(",", fl));
+        }
+
         solrQuery.set(CommonParams.ROWS, (int) Math.min(maxResults, pageSize));
         return solrQuery;
     }
@@ -659,11 +728,15 @@ public class SRequest {
      */
     public SRequest deepCopy() {
         SRequest copy = new SRequest().
-                solrClient(solrClient).
+                solrClient(solrClient). // Implicitly handles useCachingClient
                 solrQuery(solrQuery == null ? null : SolrUtils.deepCopy(solrQuery)).
                 expandResources(expandResources).
+
                 ensureUnique(ensureUnique).
                 maxUnique(maxUnique).
+                uniqueFields(uniqueFields.toArray(new String[0])).
+                uniqueHashing(useHashingForUnique).
+
                 deduplicateField(deduplicateField).
                 fields(copy(fields)).
                 maxResults(maxResults).

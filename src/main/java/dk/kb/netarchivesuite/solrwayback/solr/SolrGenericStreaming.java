@@ -121,6 +121,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   public static final String STOP_PAGING = "___STOP_PAGING___";
 
   static final AtomicLong solrRequests = new AtomicLong(0);
+  static final AtomicLong totalDelivered = new AtomicLong(0);
 
   private final SRequest request;
   private final SolrQuery originalSolrQuery; // The original SolrQuery from the SRequest. Never modify this!
@@ -133,7 +134,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   private final List<String> initialFields;  // Caller provided fields
   private final List<String> adjustedFields; // Fields after adjusting for unique etc.
 
-  private final Set<String> uniqueTracker;
+  private final UniqueFilter uniqueTracker;
   private int delivered = 0;
   private long duplicatesRemoved = 0;
   private SolrDocumentList undelivered = null; // Leftover form previous call to keep deliveries below pageSize
@@ -144,8 +145,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
   /**
    * The default SolrClient is simple and non-caching as streaming exports typically makes unique requests.
+   * Shared with {@link NetarchiveSolrClient}.
    */
-  static SolrClient defaultSolrClient = new HttpSolrClient.Builder(PropertiesLoader.SOLR_SERVER).build();
+  static SolrClient defaultSolrClient = NetarchiveSolrClient.noCacheSolrServer;
 
 
   /**
@@ -193,7 +195,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     optimizeSolrQuery(solrQuery, request);
     this.adjustedFields = Arrays.asList(solrQuery.getFields().split(","));
 
-    this.uniqueTracker = request.ensureUnique ? new HashSet<>() : null;
+    this.uniqueTracker = request.ensureUnique ?
+            new UniqueFilter(request.useHashingForUnique, request.maxUnique, request.uniqueFields) :
+            null;
     queries = request.queries == null ? null:
             CollectionUtils.splitToLists(request.queries, request.queryBatchSize).
                     map(batch -> "(" + String.join(") OR (", batch) + ")").
@@ -215,6 +219,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * If deduplicateField is specified and {@code fl} in solrQuery does not already contain the field it will be added.
    * If deduplicateField is specified and {@code sort} does not already have it as primary sort field it will be added.
    * {@code facets}, {@code stats} and {@code hl} will always be set to false, no matter their initial value.
+   * If uniqueFields are specified, they are added to fields.
    *
    * @param solrQuery a standard solrQuery.
    * @param expandResources  if true, embedded resources for HTML pages are extracted and added to the delivered
@@ -295,7 +300,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       return;
     }
 
-    log.debug("Enabling group-based deduplication on '{}'", request.deduplicateField);
+    //log.debug("Enabling group-based deduplication on '{}'", request.deduplicateField);
     // group=true&group.field=url_norm&group.limit=1&group.format=simple&group.main=true
     solrQuery.set(GroupParams.GROUP, true);
     solrQuery.set(GroupParams.GROUP_FIELD, request.deduplicateField);
@@ -412,6 +417,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       if (queryDepleted) {
         if (request.isMultiQuery() && queries.hasNext()) {
           userQuery = queries.next();
+          if (userQuery.isEmpty()) {
+            continue;
+          }
           solrQuery.setQuery(userQuery);
           queryDepleted = false;
           if (request.usePaging) {
@@ -429,7 +437,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
         }
       }
 
-      // Handle påaging (cursorMark) setup
+      // Handle paging (cursorMark) setup
       String cursorMark = solrQuery.get(CursorMarkParams.CURSOR_MARK_PARAM, CursorMarkParams.CURSOR_MARK_START);
       if (request.usePaging) {
         if (request.deduplicateField == null) { // Plain cursorMark
@@ -445,8 +453,18 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
       // Perform request and update depleted & paging variables
       solrRequests.incrementAndGet();
-      QueryResponse rsp = request.solrClient.query(solrQuery, METHOD.POST);
+      //log.debug("Issuing '{}'", SolrUtils.fieldValueToString(solrQuery));
+
+      QueryResponse rsp;
+      try {
+        rsp = request.solrClient.query(solrQuery, METHOD.POST);
+      } catch (HttpSolrClient.RemoteSolrException e) {
+        log.warn("RemoteSolrException for POST request '" + SolrUtils.fieldValueToString(solrQuery) + "'", e);
+        throw e;
+      }
       undelivered = rsp.getResults();
+      totalDelivered.addAndGet(undelivered.size());
+      //log.debug("Got " + undelivered.size() + " hits with total delivered counter " + totalDelivered.get());
       if (undelivered.size() < solrQuery.getRows() || rsp.getResults().getNumFound() <= solrQuery.getRows()) {
         queryDepleted = true;
       }
@@ -558,17 +576,12 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
     // Important: We ensure that first version (in sort order) of duplicate entries win
     documents.forEach(doc -> {
-      if (uniqueTracker.add(getID(doc))) {
+      if (uniqueTracker.test(doc)) { // Throws exception if the limit is reached
         unique.add(doc);
       } else {
         duplicatesRemoved++;
       }
     });
-    if (uniqueTracker.size() > request.maxUnique) {
-      throw new ArrayIndexOutOfBoundsException(
-              "The number of elements in the unique tracker exceeded the limit " + request.maxUnique +
-              ". Processing has been stopped to avoid Out Of Memory errors");
-    }
     documents.clear();
     documents.addAll(unique);
   }
@@ -604,12 +617,6 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     }
     doc.clear();
     doc.putAll(entries);
-  }
-
-  private String getID(SolrDocument solrDocument) {
-    return solrDocument.getFieldValue("id").toString();
-    //return solrDocument.getFieldValue("source_file_path") + "@" +
-    //       solrDocument.getFieldValue("source_file_offset");
   }
 
   /**
