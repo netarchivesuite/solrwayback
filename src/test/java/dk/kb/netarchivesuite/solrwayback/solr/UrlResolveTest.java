@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +64,7 @@ public class UrlResolveTest {
 
         PropertiesLoader.initProperties();
 
-        coreContainer = new CoreContainer(SOLR_HOME);
+        coreContainer = CoreContainer.createAndLoad(Paths.get(SOLR_HOME));
         coreContainer.load();
         solr = new ConvenientEmbeddedSolrServer(coreContainer, "netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(solr);

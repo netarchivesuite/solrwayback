@@ -2,10 +2,8 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.hdfs.util.ByteBufferOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.manipulation.Filter;
 
 import java.io.*;
 import java.nio.file.Files;
