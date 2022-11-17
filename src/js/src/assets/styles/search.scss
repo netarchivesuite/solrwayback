@@ -592,12 +592,18 @@ img.imageEntry.noPointer {
 .domainContentContainer {
   padding:5px 15px 5px 15px;
 }
-
-.domainContentContainer input {
-  width:300px;
+.domainContentSettings {
+  display:flex;
 }
 
-.domainContentContainer .domainStatsButton,
+.domainContentContainer input {
+  width:280px;
+}
+
+.refiner {
+  padding-left:5px;
+}
+
 .linkGraphContainer .linkGraphButton {
   float: unset !important;
 	position: relative;

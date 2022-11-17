@@ -1,14 +1,13 @@
 <template>
   <div class="timePeriodRefinerSettings">
     <div class="timePeriodRefinerPeriodContainer contain">
-      <label class="timePeriodRefinerLabel">Refine:</label>
       <label class="timePeriodRefinerLabel">Time frame:</label>
-      between
+      <span>between</span>
       <input v-model="startDateInput"
              placeholder="YYYY-MM-DD"
              :class="$_checkDate(startDateInput) ? '' : 'urlNotTrue'"
              @input="updateStartDate()">
-      and
+      <span>and</span>
       <input v-model="endDateInput" 
              placeholder="YYYY-MM-DD"
              :class="$_checkDate(endDateInput) ? '' : 'urlNotTrue'"

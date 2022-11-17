@@ -189,12 +189,16 @@ function getHarvestedPageResources(source_file_path, offset) {
   })
 }
 
-function getDomainStatistics(domain) {
-  const url = `services/statistics/domain/?domain=${domain}`
+function getDomainStatistics(domain, startDate, endDate, timeScale) {
+  let settings = ''
+  if (timeScale != null && timeScale != '') {
+      settings = '&startdate=' + startDate +'&enddate='+ endDate + '&scale=' + timeScale
+  }
+  const url = `services/statistics/domain/?domain=${domain + settings}`
   return axios.get(
     url).then(response => {
     return response.data
-  }).catch(error => {
+  }).catch((error) => {
     return Promise.reject(error)
   })
 }

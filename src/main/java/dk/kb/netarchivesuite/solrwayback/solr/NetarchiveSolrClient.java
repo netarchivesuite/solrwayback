@@ -45,7 +45,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
-import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainYearStatistics;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
@@ -1538,10 +1538,10 @@ public class NetarchiveSolrClient {
      * hyperloglog) Total size (of the unique pages). (not so precise due, tests
      * show max 10% error, less for if there are many pages)
      */
-    public DomainYearStatistics domainStatistics(String domain, int year) throws Exception {
+    public DomainStatistics domainStatistics(String domain, String startDate, String endDate) throws Exception {
 
-        DomainYearStatistics stats = new DomainYearStatistics();
-        stats.setYear(year);
+        DomainStatistics stats = new DomainStatistics();
+        stats.setDate(startDate);
         stats.setDomain(domain);
 
         String searchString = "domain:\"" + domain + "\"";
@@ -1551,7 +1551,7 @@ public class NetarchiveSolrClient {
         solrQuery.setQuery(searchString);
         solrQuery.set("facet", "false");
         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
-        solrQuery.addFilterQuery("crawl_year:" + year);
+        solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + "T00:00:00Z]");
         solrQuery.setRows(0);
         solrQuery.add("fl", "id");
         solrQuery.add("stats", "true");
@@ -1577,7 +1577,7 @@ public class NetarchiveSolrClient {
         solrQuery = new SolrQuery();
         solrQuery.setQuery("links_domains:\"" + domain + "\" -" + searchString); // links to, but not from same domain
         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
-        solrQuery.addFilterQuery("crawl_year:" + year);
+        solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + "T00:00:00Z]");
         solrQuery.setRows(0);
         solrQuery.add("stats", "true");
         solrQuery.add("fl", "id");
