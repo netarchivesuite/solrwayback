@@ -1,18 +1,17 @@
 # SolrWayback changelog
 
-4.3.2
+4.4.0
 -----
 
 'Visualization of search result by domain' can now be shown by day,week and month instead 
-of only year. This is useful for recent collection that does not go back years. (Still 
-in progress, may also be implemented for wordcloud and domain statistics in the toolbox)   
-https://github.com/netarchivesuite/solrwayback/issues/270
+of only year. Same goes for the domain statistics in the toolbar. This is useful for recent collection that does not go back years.   
+(see https://github.com/netarchivesuite/solrwayback/issues/270)
 Thanks to Leslie Bellony from BnF for implementing this) 
 
-
-Support for multiple different(url)playback engines. This require the WARC files has been indexed 
-with the collection parameter. Each collection that then be mapped to a playback engine 
-url. (Still in progress, more information will come)
+Support for multiple different(urls) playback engines. This require the WARC files has been indexed 
+with the collection or collection_id parameter. Each collection that then be mapped to a playback engine 
+url. It is possible to use a template pattern for collection or collection_id to avoid 
+creating multiple mappings. See documentation in solrwaybackweb.properties  
 
 Cache invalidation based on background checks for index changes. Better solr-index caching implementation. Using a Solr query that detect changes that  
 can be defined to run at given interval. (see documentation in solrwayback.properties).
@@ -20,7 +19,8 @@ The new property can be added to solrwayback.properties:
 
 solr.server.check.interval.seconds=60
 
-Fixed double calling of service metod when using url_search. (had to effect on users)  (https://github.com/netarchivesuite/solrwayback/issues/258)
+
+Fixed double calling of service metod when using url_search. (had no effect on users)  (https://github.com/netarchivesuite/solrwayback/issues/258)
 
 Fixed frontend encoding bug for url-search. (https://github.com/netarchivesuite/solrwayback/issues/232)
 
@@ -30,16 +30,25 @@ Fixed frontend encoding bug (https://github.com/netarchivesuite/solrwayback/issu
 
 Fixed frontend redundant service call (https://github.com/netarchivesuite/solrwayback/issues/257)
 
-Major rewrite of all streaming logic that is used for the various export methods. There is support for export a group'ed search result and image search. 
-(Still needs to be implemented in frontend.). Thanks for Toke Eskildsen for this major improvement 
-and cleanup of the streaming logic. 
+Major rewrite of all streaming logic that is used for the various export methods and 
+solr queries. There is now support for export a group'ed search result and image search.  (Still needs to be implemented in frontend.)
+Thanks for Toke Eskildsen for this major improvement and cleanup/refactoring of the streaming logic.
 
-Export results supports in format json and jsonl besides csv (not implemented in frontend  
-yet) 
-
+Export results supports in format json and jsonl besides csv (not implemented in frontend yet) 
 
 Improvemented expanded WARC-import. Redirects would sometime result in some required 
 resources  would not be included the WARC file.  
+ 
+Building the project can be done on Windows platform again. (https://github.com/netarchivesuite/solrwayback/issues/290)
+
+Lenient playback (still in testing/beta mode). This can tested by changing the playback url from '/web/' to '/lenient/web/'
+Lenient will playback match url's not found using url_norm with by allowed only a subset  
+of query param/values to match. This will solve the common playback issue with a dynamic 
+generated timestamp added as a parameter etc. This idea is similar to the prefix match configuration  
+in pywb.  
+  
+Frontend dependencies security updated (again...).
+
  
 
 
