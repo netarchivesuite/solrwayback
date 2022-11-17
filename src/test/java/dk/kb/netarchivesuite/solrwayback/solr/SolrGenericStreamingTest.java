@@ -262,8 +262,6 @@ public class SolrGenericStreamingTest {
 
         assertEquals("The expected number of documents should be returned when using hashing",
                      10, request.uniqueHashing(true).stream().count());
-
-
     }
 
     @Test

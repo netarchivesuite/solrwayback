@@ -2,7 +2,6 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
@@ -39,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -133,6 +133,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
 
   private final List<String> initialFields;  // Caller provided fields
   private final List<String> adjustedFields; // Fields after adjusting for unique etc.
+  private final Consumer<SolrDocument> adjustFields; // Prunes and sorts field to match initialFields
 
   private final UniqueFilter uniqueTracker;
   private int delivered = 0;
@@ -189,7 +190,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     solrQuery = SolrUtils.deepCopy(originalSolrQuery);
     queryDepleted = request.isMultiQuery(); // Single query starts assigned, multi are initialized later
     userQuery = request.isMultiQuery() ? null : solrQuery.getQuery();
-    this.initialFields = Arrays.asList(solrQuery.getFields().split(","));
+    this.initialFields = request.fields; //Arrays.asList(solrQuery.getFields().split(","));
+    adjustFields = SolrUtils.reduceAndSortFields(initialFields);
 
     adjustSolrQuery(solrQuery, request.expandResources, request.ensureUnique, request.deduplicateField);
     optimizeSolrQuery(solrQuery, request);
@@ -489,7 +491,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       }
 
       // Reduce documents to contain requested fields only
-      undelivered.forEach(this::reduceAndSortFields);
+      undelivered.forEach(adjustFields);
 
       // Prepare for next page
       if (!request.usePaging) { // No paging
@@ -602,21 +604,6 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     }
     documents.clear();
     documents.addAll(unique);
-  }
-
-  /**
-   * Remove all fields not explicitly requested by the caller and ensure the order matches the given field order.
-   * @param doc a Solrdocuments that potentially holds more fields that defined by the caller.
-   */
-  private void reduceAndSortFields(SolrDocument doc) {
-    Map<String, Object> entries = new LinkedHashMap<>(doc.size());
-    for (String fieldName: initialFields) {
-      if (doc.containsKey(fieldName)) {
-        entries.put(fieldName, doc.get(fieldName));
-      }
-    }
-    doc.clear();
-    doc.putAll(entries);
   }
 
   /**
