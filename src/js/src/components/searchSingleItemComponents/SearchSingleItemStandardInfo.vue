@@ -21,7 +21,7 @@
       </span>
 
       <a v-if="result.content_type_norm === 'html' && !playbackDisabled() && getAlternativePlaybackEngineLink(result.wayback_date, result.url, result.collection) !== null"
-         :href="getAlternativePlaybackEngineLink(result.wayback_date, result.url, result.collection)"
+         :href="getAlternativePlaybackEngineLink(result.wayback_date, result.url, result.collection, result.collection_id)"
          title="Alternative playback engine"
          class="alternativePlaybackLink"
          target="_blank" />
@@ -82,18 +82,41 @@ export default {
       return `${configs.playbackConfig.solrwaybackBaseURL}services/viewForward?source_file_path=${source_file_path}&offset=${source_file_offset}`    
     },
 
-    getAlternativePlaybackEngineLink(wayback_date, url, collection) {    
-        //Test if collection specific playback is enabled. 
+
+    //Return alternative playback link if configured.
+    //The alternative playback link can be one of the following
+    //1) Hardcoded  
+    //2) Defined for each collection. Example PLAYBACK_collection1 
+    //3) Template using {$collection}. Of form PLAYBACK_{$collection)
+    //4) Template using {$collection_id}. Of form PLAYBACK_{$collection_id)
+    //Test if collection specific playback is enabled.                                 
+    //First we see if template mapping is used. Look for  {$collection} or {$collection_id}
+    getAlternativePlaybackEngineLink(wayback_date, url, collection, collection_id) {               
+        
+        //See if {$collection} template is used.
+        const collectionTemplate = configs.collection.playback.get('PLAYBACK_{$collection}')
+        if (collectionTemplate != null){        
+          const link = collectionTemplate.replace('{$collection}',collection)
+          return link
+        }
+                
+        //See if {$collection_id} template is used.
+        const collectionIdTemplate = configs.collection.playback.get('PLAYBACK_{$collection_id}')
+        if (collectionIdTemplate != null){                 
+          const link = collectionTemplate.replace('{$collection_id}',collection_id)          
+          return link
+        }
+                
+        //See if collection specific playback is defined                
         const collectionPlayback=configs.collection.playback.get('PLAYBACK_'+collection)
         if (collectionPlayback != null){ //Use default playback engine
-          //console.log('collection playback')
           const collectionPlaybackLink = collectionPlayback+wayback_date+'/'+url                                                                    
           return collectionPlaybackLink            
         }
-        else if(configs.playbackConfig.alternativePlaybackBaseURL != null){ //Alternative playback
-          //console.log('alternative playback')
-          return `${configs.playbackConfig.alternativePlaybackBaseURL}${wayback_date}/${url}`
-                
+       
+       //Hardcoded value independant of collection or collection_id
+        if(configs.playbackConfig.alternativePlaybackBaseURL != null){ //Alternative playback          
+          return `${configs.playbackConfig.alternativePlaybackBaseURL}${wayback_date}/${url}`                
         }
         else{ //No alternative playback defined
           //console.log('no alternative playback')
