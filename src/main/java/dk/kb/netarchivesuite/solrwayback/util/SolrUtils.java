@@ -18,9 +18,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SolrUtils {
@@ -224,6 +227,58 @@ public class SolrUtils {
             return Objects.toString(((List<?>) value).get(0));
         }
         return Objects.toString(value);
+    }
+
+    /**
+     * Create a function, typically for use as a filter on a stream, that prunes the fields for a given Solr document
+     * down to the given list of fields and ensures that the order of the fields in the Solr document matches the
+     * order stated with {@code fields}.
+     * <p>
+     * Child document, if any, are copied as-is to the resulting Solr document.
+     * @param fields a list of Solr fields.
+     * @return a new SolrDocument, where the fields are pruned and sorted.
+     * @see #reduceAndSortFields(List)
+     */
+    public static Function<SolrDocument, SolrDocument> reduceAndSortFieldsFunction(List<String> fields) {
+        return doc -> {
+            Map<String, Object> entries = new LinkedHashMap<>(doc.size());
+            for (String fieldName: fields) {
+              if (doc.containsKey(fieldName)) {
+                entries.put(fieldName, doc.get(fieldName));
+              }
+            }
+            SolrDocument newDoc = new SolrDocument(entries);
+            if (doc.hasChildDocuments()) {
+                newDoc.addChildDocuments(doc.getChildDocuments());
+            }
+            return newDoc;
+        };
+    }
+
+    /**
+     * Create a consumer, typically for use in a forEach on a stream, that prunes the fields for a given Solr document
+     * down to the given list of fields and ensures that the order of the fields in the Solr document matches the
+     * order stated with {@code fields}.
+     * <p>
+     * Child documents are left untouched.
+     * @param fields a list of Solr fields.
+     * @see #reduceAndSortFieldsFunction(List)
+     */
+    public static Consumer<SolrDocument> reduceAndSortFields(List<String> fields) {
+        return doc -> {
+            Map<String, Object> entries = new LinkedHashMap<>(doc.size());
+            for (String fieldName: fields) {
+              if (doc.containsKey(fieldName)) {
+                entries.put(fieldName, doc.get(fieldName));
+              }
+            }
+            List<SolrDocument> children = doc.hasChildDocuments() ? new ArrayList<>(doc.getChildDocuments()) : null;
+            doc.clear();
+            doc.putAll(entries);
+            if (children != null) {
+                doc.addChildDocuments(children);
+            }
+        };
     }
 
     /**
