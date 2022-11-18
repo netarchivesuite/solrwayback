@@ -35,7 +35,7 @@ public class Tweet {
 
     private TweetUser user;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "EEE MMM dd kk:mm:ss Z yyyy") // "Thu Nov 04 23:37:36 +0000 2021"
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "EEE MMM dd kk:mm:ss Z yyyy",  locale = "Locale.ROOT") // "Thu Nov 04 23:37:36 +0000 2021"
     @JsonProperty("created_at")
     private Date creationDate;
 
