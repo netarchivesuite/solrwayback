@@ -20,7 +20,7 @@
         </span>
       </span>
 
-      <a v-if="result.content_type_norm === 'html' && !playbackDisabled() && getAlternativePlaybackEngineLink(result.wayback_date, result.url, result.collection) !== null"
+      <a v-if="result.content_type_norm === 'html' && !playbackDisabled() && getAlternativePlaybackEngineLink(result.wayback_date, result.url, result.collection, result.collection_id) !== null"
          :href="getAlternativePlaybackEngineLink(result.wayback_date, result.url, result.collection, result.collection_id)"
          title="Alternative playback engine"
          class="alternativePlaybackLink"
@@ -91,25 +91,28 @@ export default {
     //4) Template using {$collection_id}. Of form PLAYBACK_{$collection_id)
     //Test if collection specific playback is enabled.                                 
     //First we see if template mapping is used. Look for  {$collection} or {$collection_id}
+    
     getAlternativePlaybackEngineLink(wayback_date, url, collection, collection_id) {               
         
         //See if {$collection} template is used.
         const collectionTemplate = configs.collection.playback.get('PLAYBACK_{$collection}')
-        if (collectionTemplate != null){        
+        if (collectionTemplate != null & collection != null){        
           const link = collectionTemplate.replace('{$collection}',collection)
-          return link
+          const  collectionPlaybackLink=link+wayback_date+'/'+url
+          return collectionPlaybackLink 
         }
                 
         //See if {$collection_id} template is used.
         const collectionIdTemplate = configs.collection.playback.get('PLAYBACK_{$collection_id}')
-        if (collectionIdTemplate != null){                 
-          const link = collectionTemplate.replace('{$collection_id}',collection_id)          
-          return link
+        if (collectionIdTemplate != null && collection_id != null){                 
+          const link = collectionIdTemplate.replace('{$collection_id}',collection_id)          
+          const collectionPlaybackLink=link+wayback_date+'/'+url
+          return collectionPlaybackLink          
         }
                 
         //See if collection specific playback is defined                
         const collectionPlayback=configs.collection.playback.get('PLAYBACK_'+collection)
-        if (collectionPlayback != null){ //Use default playback engine
+        if (collectionPlayback != null && collection != null){ //Use default playback engine
           const collectionPlaybackLink = collectionPlayback+wayback_date+'/'+url                                                                    
           return collectionPlaybackLink            
         }
