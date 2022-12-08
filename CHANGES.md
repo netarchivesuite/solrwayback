@@ -46,8 +46,12 @@ Lenient playback will match url's not found using url_norm by allowed only a sub
 of query param/values to match. This will solve the common playback issue with a dynamic 
 generated timestamp added as a parameter etc. This idea is similar to the prefix match configuration  
 in pywb.  
-  
+
+Bug fix. Exporting resultset to WARC file now also works for WARC type 'resource'.   
+
 Frontend dependencies security updated (again...).
+
+
 
  
 
