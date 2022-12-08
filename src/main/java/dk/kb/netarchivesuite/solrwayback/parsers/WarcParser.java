@@ -119,9 +119,9 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
       }        
       warcEntry.setHeader(headerLinesBuffer.toString());
     }
-    else {
-      warcEntry.setHeader(""); //NONE for resource type
+    else {  //For type RESOURCE we fake http status.
       warcEntry.setStatus_code(200); //fake it . Warc-indexer does the same
+      warcEntry.setHeader(headerLinesBuffer.toString());
     }
 
     long totalSize= warcEntry.getWarcEntryContentLength();
