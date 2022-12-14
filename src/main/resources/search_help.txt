@@ -34,6 +34,7 @@ This can also return results where only the text 'amiga' is found.
 If you only want results for a given domain etc. you can define this is the query. Here are some examples: <br>
 <b>domain:testdomain.dk computer apple</b> (Same as domain:testdomain.dk AND computer AND apple)<br>
 <b>source_file_path:"/mount/files/test123.warc"</b> (here quotes are required due to special character /). Will only show results from that warc-file.<br>
+<b>source_file:"test123.warc"</b> Just the filename. Search is case-sensitive. <br>  
 <b>domain:testdomain.dk AND crawl_year:2002 </b><br>	
 
 <h3>Use quotes when required. This is called phrase search.</h3>
@@ -138,21 +139,21 @@ This is a description of some of the more important fields but does not include 
 <tr>
 <td>content_type_norm</td>
 <td>no</td>
-<td>String</td>
+<td>string</td>
 <td>Content type determined by Tika. Possible values: html,image,pdf,audio,video,word,powerpoint,excel,text,other</td>
 </tr>
 
 <tr>
 <td>type</td>
 <td>no</td>
-<td>String</td>
+<td>string</td>
 <td>Almost same content_type_norm. Just more human names and fewer values: Web Page, Image, Other, Document, Audio, Video, Presentation, Data</td>
 </tr>
 
 <tr>
 <td>hash</td>
 <td>no</td>
-<td>String</td>
+<td>string</td>
 <td>A hash value of the payload. Identical payload will have identical hash</td>
 </tr>
 
@@ -223,28 +224,28 @@ The public suffix of the url: Example: co.uk, dk, com </td>
 <tr>
 <td>links_images</td>
 <td>yes</td>
-<td>String</td>
+<td>string</td>
 <td> The links of all images tags on a HTML page.</td>
 </tr>
 
 <tr>
 <td>links</td>
 <td>yes</td>
-<td>String</td>
+<td>string</td>
 <td> The links of all  'a href' tags on an HTML page. Similar fields: links_domains,links_hosts</td>
 </tr>
 
 <tr>
 <td>links_norm</td>
 <td>yes</td>
-<td>String</td>
+<td>string</td>
 <td>Same as the links field except values are normalized</td>
 </tr>
 
 <tr>
 <td>server</td>
 <td>yes</td>
-<td>String</td>
+<td>string</td>
 <td>Value of the Server field in the HTTP header</td>
 </tr>
 
@@ -267,6 +268,14 @@ The public suffix of the url: Example: co.uk, dk, com </td>
 <td>no</td>
 <td>string</td>
 <td>Full path to the warc-file where the resource is from. The field source_file_offset gives the offset for the resource in that warc-file</td>
+</tr>
+
+
+<tr>
+<td>source_file</td>
+<td>no</td>
+<td>string</td>
+<td>The filename of the WARC-file without the absolute file path. Is case sensitive</td>
 </tr>
 
 </table>
