@@ -9,7 +9,7 @@ of only year. Same goes for the domain statistics in the toolbar. This is useful
 Thanks to Leslie Bellony from BnF for implementing this) 
 
 Support for multiple different(urls) playback engines. This require the WARC files has been indexed 
-with the collection or collection_id parameter. Each collection that then be mapped to a playback engine 
+with the collection or collection_id parameter. (See README.md). Each collection that then be mapped to a playback engine 
 url. It is possible to use a template pattern for collection or collection_id to avoid 
 creating multiple mappings. See documentation in solrwaybackweb.properties  
 
@@ -50,10 +50,6 @@ in pywb.
 Bug fix. Exporting resultset to WARC file now also works for WARC type 'resource'.   
 
 Frontend dependencies security updated (again...).
-
-
-
- 
 
 
 4.3.1
