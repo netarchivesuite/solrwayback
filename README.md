@@ -204,7 +204,7 @@ You can also populate the collection and collectionid field in Solr with custom 
 THREADS=6 INDEXER_CUSTOM="--collection_id  collection1 --collection corona2021" ./warc-indexer.sh warcs1/*
 ```
 
-You can then enable facetting on these values in solrwaybackweb.properties.
+You can then enable facetting on these fields in solrwaybackweb.properties.
 
 
 
