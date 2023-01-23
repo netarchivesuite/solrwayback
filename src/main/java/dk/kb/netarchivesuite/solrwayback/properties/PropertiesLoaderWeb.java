@@ -132,9 +132,9 @@ public class PropertiesLoaderWeb {
             SEARCH_UPLOADED_FILE_DISABLED = Boolean.parseBoolean(serviceProperties.getProperty(SEARCH_UPLOADED_FILE_DISABLED_PROPERTY));
             EXPORT_CSV_FIELDS = serviceProperties.getProperty(EXPORT_CSV_FIELDS_PROPERTY);
             
-            ABOUT_TEXT_FILE = serviceProperties.getProperty(ABOUT_TEXT_FILE_PROPERTY);
-            SEARCH_HELP_TEXT_FILE = serviceProperties.getProperty(SEARCH_HELP_FILE_PROPERTY);
-            COLLECTION_TEXT_FILE = serviceProperties.getProperty(COLLECTION_TEXT_FILE_PROPERTY);
+            ABOUT_TEXT_FILE = serviceProperties.getProperty(ABOUT_TEXT_FILE_PROPERTY).trim();
+            SEARCH_HELP_TEXT_FILE = serviceProperties.getProperty(SEARCH_HELP_FILE_PROPERTY).trim();
+            COLLECTION_TEXT_FILE = serviceProperties.getProperty(COLLECTION_TEXT_FILE_PROPERTY).trim();
 
             LEAFLET_SOURCE = serviceProperties.getProperty(LEAFLET_SOURCE_PROPERTY);
             LEAFLET_ATTRIBUTION = serviceProperties.getProperty(LEAFLET_ATTRIBUTION_PROPERTY);
