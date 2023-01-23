@@ -136,7 +136,7 @@ Absolute URL live-leaks (starting with http://domain...) will not be caught and 
 
 
 ## Build and test with Docker
-Currently disabled as has not been maintained. 
+Currently disabled as docker image has not been maintained. 
 
 ## Contact
 Thomas Egense (thomas.egense@gmail.com) 
