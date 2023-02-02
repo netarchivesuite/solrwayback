@@ -49,7 +49,7 @@ in pywb.
 
 Bug fix. Exporting resultset to WARC file now also works for WARC type 'resource'.   
 
-Precision for total number of hits when using grouped searc has been increased at a cost of slightly slower search time. Label text now also tell is it is an approximated number of results.
+Precision for total number of hits when using grouped search has been increased at a cost of slightly slower search time. Label text now also tell is it is an approximated number of results.
 
 Frontend dependencies security updated (again...).
 
