@@ -1474,7 +1474,7 @@ public class NetarchiveSolrClient {
             solrQuery.set("group", "true");
             solrQuery.set("group.field", "url");
             solrQuery.set("stats", "true");
-            solrQuery.set("stats.field", "{!cardinality=0.1}url");
+            solrQuery.set("stats.field", "{!cardinality=0.5}url");
             solrQuery.set("group.format", "simple");
             solrQuery.set("group.limit", "1");
         }

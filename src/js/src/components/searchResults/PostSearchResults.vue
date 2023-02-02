@@ -7,7 +7,7 @@
     <span v-if="results.cardinality">
       <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span> - <span class="highlightText">{{ solrSettings.offset + 20 > results.cardinality ? results.cardinality : solrSettings.offset + 20 }}</span> of </span>
       <span class="highlightText">{{ results.cardinality.toLocaleString("en") }}</span> unique entries matching query 
-      <span class="tonedDownText">(total hits: {{ results.numFound.toLocaleString("en") }})</span>.
+      <span class="tonedDownText">(total hits approximated: {{ results.numFound.toLocaleString("en") }})</span>.
     </span>
     <div v-if="results.cardinality !== 0 && results.numFound !== 0" class="pagingContainer">
       <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
