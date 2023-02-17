@@ -3,9 +3,15 @@ package dk.kb.netarchivesuite.solrwayback.util;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
+import org.apache.solr.common.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,6 +97,108 @@ public class DateUtils {
               throw new RuntimeException("Unable to parse '" + solrDate + "' as a Solr ISO timestamp");
           }
       }
+  }
+  
+  /**
+   * Add to the given date one time scale
+   * 
+   * @param date the start date
+   * @param scale the time scale (YEAR, MONTH, WEEK, DAY)
+   * @return the new date
+   */
+  public static LocalDate addScaleToDate(LocalDate date, String scale) {
+      LocalDate nextDate;
+      switch (scale) {
+          case "MONTH" :
+              nextDate = date.plusMonths(1);
+              break;
+          case "WEEK" :
+              nextDate = date.plusWeeks(1);
+              break;
+          case "DAY" :
+              nextDate = date.plusDays(1);
+              break;
+          case "YEAR" :
+          default :
+              nextDate = date.plusYears(1);
+              break;
+      }
+      return nextDate;
+  }
+  
+
+  /**
+   * Calculate the period between start date and end date. The result is returned in the same unit
+   * as the scale
+   * 
+   * @param start the start date
+   * @param end the end date
+   * @param scale the time scale (YEAR, MONTH, WEEK, DAY)
+   * @return the period between start date and end date
+   */
+  public static int calculateBucket(LocalDate start, LocalDate end, String scale) {
+      Period period = Period.between(start, end);
+      int buckets = 0;
+      switch (scale) {
+          case "YEAR" :
+              buckets = period.getYears();
+              break;
+          case "MONTH" :
+              buckets = period.getYears() * 12 + period.getMonths();
+              break;
+          case "WEEK" :
+              buckets = period.getYears() * 52 + period.getMonths() * 4 + period.getDays() / 7;
+              break;
+          case "DAY" :
+          default :
+              buckets = period.getYears() * 365 + period.getMonths() * 30 + period.getDays();
+              break;
+      }
+      return buckets;
+  }
+
+  /**
+   * Calculate the end date of a period to complete a calendar month or year
+   * 
+   * @param date the start date of the period
+   * @param scale the time scale
+   * @return the end date of the calendar period
+   */
+  public static LocalDate getEndOfFirstPeriod(LocalDate date, String scale) {
+      LocalDate nextDate = DateUtils.addScaleToDate(date, scale);
+      if ("MONTH".equals(scale)) {
+          nextDate = YearMonth.from(date).atEndOfMonth().plusDays(1);
+      } else if ("YEAR".equals(scale)) {
+          nextDate = LocalDate.of(date.getYear() + 1, 1, 1);
+      }
+      return nextDate;
+  }
+
+  /**
+   * Calculate all the periods between start date and end date
+   * 
+   * @param start the start date
+   * @param end the end date
+   * @param scale the time scale
+   * @return a list of pair of localdate (start of period, end of period)
+   */
+  public static List<Pair<LocalDate, LocalDate>> calculatePeriods(LocalDate start, LocalDate end, String scale){
+      List<Pair<LocalDate, LocalDate>> listPeriods = new ArrayList<>();
+      LocalDate startPeriod = start;
+      LocalDate endPeriod = getEndOfFirstPeriod(start, scale);
+      boolean endOfPeriod = false;
+      while (!endOfPeriod) {
+          if (endPeriod.isAfter(end)) {
+              endPeriod = end;
+              endOfPeriod = true;
+              listPeriods.add(new Pair<>(startPeriod, endPeriod));
+          } else {
+              listPeriods.add(new Pair<>(startPeriod, endPeriod.minusDays(1)));
+          }
+          startPeriod = endPeriod;
+          endPeriod = addScaleToDate(endPeriod, scale);
+      }
+      return listPeriods;
   }
 
 }

@@ -9,14 +9,14 @@ export default {
             datasets: [
                 {
                     data: sizeInKb,
-                    label: 'Size in Kilobytes',
+                    label: 'Size in kilobytes',
                     yAxisID: 'kilobytes',
                     borderColor: '#0066cc',
                     fill: false,
                 },
                 {
                     data: numberOfPages,
-                    label: 'Number of pages',
+                    label: 'Pages',
                     yAxisID: 'totalpages',
                     borderColor: '#cc0000',
                     fill: false

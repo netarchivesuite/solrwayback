@@ -1,4 +1,5 @@
 import * as d3 from 'd3'
+import StringManipulationUtils from './../../mixins/StringManipulationUtils'
 
 export default {
    async createVisualization(query, facets, options, startDate, endDate, timeScale) {
@@ -8,7 +9,7 @@ export default {
     if (timeScale != null && timeScale != '') {
         settings = '&startdate=' + startDate +'&enddate='+ endDate + '&scale=' + timeScale
     }
-    let dataUrl =  `services/frontend/graph/domain_result/?q=${query + facets.join('') + optionString + settings}`
+    let dataUrl =  `services/frontend/graph/domain_result/?q=${encodeURIComponent(query) + facets.join('') + optionString + settings}`
     
     var margin = {top: 20, right: 200, bottom: 70, left: 32},
     width = 1050 - margin.left - margin.right,
@@ -84,6 +85,14 @@ export default {
         d3.csv(dataUrl, function(error, data) {
             if(error) {
                reject(error)
+            } else if(data.length == 1) {
+               // data contains only the line "State"
+               svg.append('text')
+                .text('No data available')
+                .style('font-size', '20px')
+                .style('text-anchor', 'middle')
+                .style('dominant-baseline', 'middle')
+               resolve()
             } else {
               color.domain(d3.keys(data[0]).filter(function(key) { return key !== 'State' }))
 
@@ -93,7 +102,7 @@ export default {
               d.total = d.ages[d.ages.length - 1].y1
               })
           
-              x.domain(data.map(function(d) { return d.State }))
+              x.domain(data.map(function(d) { return StringManipulationUtils.methods.$_displayDate(d.State, timeScale)}))
               y.domain([0, d3.max(data, function(d) { return d.total })])
           
               // For rotated axis labels
@@ -122,7 +131,7 @@ export default {
                 .data(data)
               .enter().append('g')
                 .attr('class', 'g')
-                .attr('transform', function(d) { return 'translate(' + x(d.State) + ',0)' })
+                .attr('transform', function(d) { return 'translate(' + x(StringManipulationUtils.methods.$_displayDate(d.State, timeScale)) + ',0)' })
           
               state.selectAll('rect')
                 .data(function(d) { return d.ages })

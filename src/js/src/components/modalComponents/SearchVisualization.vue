@@ -26,7 +26,6 @@
 
 <script>
 
-import { requestService } from '../../services/RequestService'
 import { mapState } from 'vuex'
 import Visualization from './Visualization'
 import TimePeriodRefiner from './../TimePeriodRefiner.vue'
@@ -57,7 +56,7 @@ export default {
   }, */
   mounted () {
     this.loading = true
-    Visualization.createVisualization(this.query, this.searchAppliedFacets, this.solrSettings, null, null, null).then(() =>{
+    Visualization.createVisualization(this.query, this.searchAppliedFacets, this.solrSettings, this.startDate, this.endDate, this.timeScale).then(() =>{
     this.loading = false
     })
   },
