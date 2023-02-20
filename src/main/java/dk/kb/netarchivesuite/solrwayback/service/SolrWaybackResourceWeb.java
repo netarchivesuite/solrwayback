@@ -6,6 +6,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -45,7 +47,8 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.dto.WordCloudWordAndCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
-import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
+import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfBuckets;
+import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
@@ -106,13 +109,21 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("smurf/text")
     @Produces({ MediaType.APPLICATION_JSON})
-    public  SmurfYearBuckets smurfNetarchiveText( @QueryParam("q") String q , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
-        try {                                                                                                
-          if (startyear == null || startyear == 0){
-             startyear=PropertiesLoaderWeb.ARCHIVE_START_YEAR;
-          }
-          return Facade.generateNetarchiveTextSmurfData(q, filterQuery,startyear);                  
-        } catch (Exception e) {         
+    public  SmurfBuckets smurfNetarchiveText( @QueryParam("q") String q , @QueryParam("startdate") String startdate,
+            @QueryParam("enddate") String enddate, @QueryParam("scale") String scale) throws SolrWaybackServiceException {
+        try {
+            int limit = 90;
+            LocalDate start = LocalDate.parse(startdate, DateTimeFormatter.ISO_DATE);
+            LocalDate end = LocalDate.parse(enddate, DateTimeFormatter.ISO_DATE);
+            // If the period is too big for the scale then block
+            int buckets = DateUtils.calculateBucket(start, end, scale);
+            if (buckets > limit) {
+                String msg = "The defined period (" + buckets + ") is too large to match with the scale (limit: " + limit + " " + scale.toLowerCase() + "s)";
+                log.error(msg);
+                throw new InvalidArgumentServiceException(msg);
+            }
+          return Facade.generateNetarchiveTextSmurfData(q, start, end, scale);
+        } catch (Exception e) {
             throw handleServiceExceptions(e);
         }
     }
@@ -120,13 +131,20 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("smurf/tags")
     @Produces({ MediaType.APPLICATION_JSON})
-    public  SmurfYearBuckets smurfNetarchiveTags( @QueryParam("tag") String tag , @QueryParam("fq") String filterQuery,  @QueryParam("startyear") Integer startyear) throws SolrWaybackServiceException {
-        try {                                                                                      
-            
-         if (startyear == null  || startyear == 0){
-             startyear=PropertiesLoaderWeb.ARCHIVE_START_YEAR;             
-          }
-          return Facade.generateNetarchiveSmurfData(tag, filterQuery,startyear);                  
+    public  SmurfBuckets smurfNetarchiveTags( @QueryParam("tag") String tag , @QueryParam("startdate") String startdate,
+            @QueryParam("enddate") String enddate, @QueryParam("scale") String scale) throws SolrWaybackServiceException {
+        try {
+            int limit = 90;
+            LocalDate start = LocalDate.parse(startdate, DateTimeFormatter.ISO_DATE);
+            LocalDate end = LocalDate.parse(enddate, DateTimeFormatter.ISO_DATE);
+            // If the period is too big for the scale then block
+            int buckets = DateUtils.calculateBucket(start, end, scale);
+            if (buckets > limit) {
+                String msg = "The defined period (" + buckets + ") is too large to match with the scale (limit: " + limit + " " + scale.toLowerCase() + "s)";
+                log.error(msg);
+                throw new InvalidArgumentServiceException(msg);
+            }
+          return Facade.generateNetarchiveSmurfData(tag, start, end, scale);
         } catch (Exception e) {         
             throw handleServiceExceptions(e);
         }

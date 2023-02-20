@@ -29,7 +29,11 @@ export const requestService = {
 function fireSearchRequest (query, facets, options) {
   let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
   // Split url and move to config
-  const url = 'services/frontend/solr/search/results/' + `?query=${encodeURIComponent(query) + facets.join('') + optionString}`
+  let facetsStr = ''
+    for (const f of facets){
+      facetsStr = facetsStr + '&fq=' + encodeURIComponent(f.substring(4))
+    }
+  const url = 'services/frontend/solr/search/results/' + `?query=${encodeURIComponent(query) + facetsStr + optionString}`
   return axios.get(
     url, {
       transformResponse: [
@@ -71,7 +75,13 @@ function fireImageSearchRequest(query) {
 function fireFacetRequest (query, facets, options) {
   let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
   // Split url and move to config
-  const url = 'services/frontend/solr/search/facets/' + `?query=${encodeURIComponent(query) + facets.join('') + optionString}`
+  let facetsStr = ''
+  for (const f of facets){
+    // encoding the part after the =
+    facetsStr = facetsStr + '&fq=' + encodeURIComponent(f.substring(4))
+  }
+  // Split url and move to config
+  const url = 'services/frontend/solr/search/facets/' + `?query=${encodeURIComponent(query) + facetsStr + optionString}`
   return axios.get(
     url).then(response => {
     //console.log('facets', response.data.facet_counts)
@@ -205,10 +215,14 @@ function getDomainStatistics(domain, startDate, endDate, timeScale) {
 
 function getNgramNetarchive(params){
   let url
+  let settings = ''
+    if (params.timeScale != null && params.timeScale != '') {
+      settings = '&startdate=' + params.startDate +'&enddate=' + params.endDate + '&scale=' + params.timeScale
+  }
   params.searchType ==='tags' ? 
-  url = `services/frontend/smurf/tags/?tag=${encodeURIComponent(params.query)}&startyear=${APP_CONFIGS.visualizations.ngram.startYear}`
+  url = `services/frontend/smurf/tags/?tag=${encodeURIComponent(params.query) + settings}`
   :
-  url = `services/frontend/smurf/text/?q=${encodeURIComponent(params.query)}&startyear=${APP_CONFIGS.visualizations.ngram.startYear}`
+  url = `services/frontend/smurf/text/?q=${encodeURIComponent(params.query) + settings}`
   return axios.get(url).then(response => {
     return response.data
   }).catch(error => {

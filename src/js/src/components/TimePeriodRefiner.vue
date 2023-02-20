@@ -62,6 +62,14 @@ export default {
     },
     updateTimeScale(){
       this.$emit('timescale', this.timeScaleInput)
+    },
+    resetAll(){
+      this.startDateInput=configs.visualizations.ngram.startYear + '-01-01'
+      this.updateStartDate()
+      this.endDateInput=(new Date().getUTCFullYear() + 1) + '-01-01'
+      this.updateEndDate()
+      this.timeScaleInput='YEAR'
+      this.updateTimeScale()
     }
   }
 }

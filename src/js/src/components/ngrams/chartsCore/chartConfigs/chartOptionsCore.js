@@ -1,6 +1,5 @@
-import Config from '../../netarchive/configs'
 import SearchHelper from '../../searchHelper'
-import APP_CONFIGS from '../../../../configs'
+import StringManipulationUtils from './../../../../mixins/StringManipulationUtils'
 
 /**
  * Here we keep all the specific logic and options
@@ -12,29 +11,26 @@ export default {
   * Generate labels for chart.
   * 
   */
-  getChartLabels: () => {
-    let labels = []
-    let start = APP_CONFIGS.visualizations.ngram.startYear
-    const end = Config.END_YEAR
-      while (start < end) {
-        labels.push(start)
-        start++
-      }
-    return labels
+  getChartLabels: (labels, scale) => {
+    let labelsFormated = []
+    for (const label of labels) {
+      labelsFormated.push(StringManipulationUtils.methods.$_displayDate(label, scale))
+    }
+    return labelsFormated
   },
 
   /**
   * Generate options for chart.
   * 
   */
-  getChartOptions(searchType) {
+  getChartOptions(searchType, scale) {
     return {
      tooltips:this.getTooltipOptions(),
-     scales: this.getScalesOptions(),   
+     scales: this.getScalesOptions(scale),
      //responsive: true,
      maintainAspectRatio: true,
      onClick: (evt, chartObj) => {
-       this.getChartPointCallback(evt, chartObj, searchType)
+       this.getChartPointCallback(evt, chartObj, searchType, scale)
     }
    }
   },
@@ -46,7 +42,7 @@ export default {
    * Generates and executes a search (new tab) when user
    * clicks a a point    
    */
-  getChartPointCallback(evt, chartObj, searchType) {
+  getChartPointCallback(evt, chartObj, searchType, scale) {
     // We have to fetch the chart instance this way because direct 
     // access to the vue chart instance is out of scope here (resides LineChart.js).
     // If you try to go the "correct way" and enrich options on render in LineChart.js
@@ -55,9 +51,9 @@ export default {
     const chartInstance = chartObj[0]._chart
     const activeElement = chartInstance.getElementAtEvent(evt)
     if (activeElement.length > 0) {
-      const yearFromClick = activeElement[0]._xScale.ticks[activeElement[0]._index]
+      const dateFromClick = chartInstance.config.data.rawLabels[activeElement[0]._index]
       const queryFromClick = chartInstance.config.data.datasets[activeElement[0]._datasetIndex].label
-      SearchHelper.handleSearch(queryFromClick, yearFromClick, searchType)
+      SearchHelper.handleSearch(queryFromClick, dateFromClick, searchType, scale)
     }
   }
   },
@@ -73,7 +69,8 @@ export default {
         {
           label: val.query,
           data: val.percent,
-          data_abs: { count: val.count, total: val.total }
+          data_abs: { count: val.count, total: val.total },
+          date: val.label
         },
         this.getChartVisualDataPointConfig(i),
       )
@@ -96,18 +93,19 @@ export default {
     }
   },
 
-  getScalesOptions() {
+  getScalesOptions(scale='') {
     return {
       yAxes: [{
         scaleLabel: {
           display: true,
           labelString: 'No of hits in %'
-        }
+        },
+        ticks: { min: 0 }
       }],
       xAxes: [{
         scaleLabel: {
           display: true,
-          labelString: 'Year'
+          labelString: 'Time in ' + scale.toLowerCase() + 's'
         }
       }]
     }
@@ -186,7 +184,7 @@ export default {
   //Tooltip options callbacks title
   getTitleCallback(tooltipItems){
     // Pick first xLabel for now
-    return `Year: ${tooltipItems[0].xLabel}`
+    return  `Date: ${tooltipItems[0].xLabel}`
   },
 
   //Tooltip options callback for label color

@@ -1230,6 +1230,42 @@ public class NetarchiveSolrClient {
         return indexDocs.get(bestIndex);
     }
 
+    /**
+     * Build the query for ngram
+     */
+    public SolrQuery buildSolrQueryForPeriod(String query, String startDate, String endDate) {
+        log.info("query between " + startDate + "T00:00:00Z and " + endDate + "T23:59:59Z");
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(query); //Smurf labs forces text:query
+        solrQuery.setRows(0); // 1 page only
+        solrQuery.add("fl", "id");// rows are 0 anyway
+        solrQuery.add("fq","content_type_norm:html"); // only html pages
+        solrQuery.add("fq","crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + "T23:59:59Z]");
+        return solrQuery;
+    }
+
+    /**
+     * Returns the number of documents for the ngram
+     */
+    public Long countTextHtmlForPeriod(String query, String startDate, String endDate) throws Exception {
+        SolrQuery solrQuery = buildSolrQueryForPeriod(query, startDate, endDate);
+        solrQuery.add("fq", SolrUtils.NO_REVISIT_FILTER); // do not include record_type:revisit
+        SolrUtils.setSolrParams(solrQuery);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        return rsp.getResults().getNumFound();
+    }
+
+    public Long countTagHtmlForPeriod(String query, String startDate, String endDate) throws Exception {
+        if (!TAGS_VALID_PATTERN.matcher(query).matches()) {
+            throw new InvalidArgumentServiceException("Tag syntax not accepted:" + query);
+        }
+        SolrQuery solrQuery = buildSolrQueryForPeriod("elements_used:\"" + query + "\"", startDate, endDate);
+        SolrUtils.setSolrParams(solrQuery);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        return rsp.getResults().getNumFound();
+    }
+
+    // Not used anymore
     public HashMap<Integer, Long> getYearHtmlFacets(String query) throws Exception {
         // facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500
         if (!TAGS_VALID_PATTERN.matcher(query).matches()) {
@@ -1278,7 +1314,8 @@ public class NetarchiveSolrClient {
         IndexDoc indexDoc = SolrUtils.solrDocument2IndexDoc(docs.get(0));
         return indexDoc;
     }
-
+    
+    // Not used anymore
     public HashMap<Integer, Long> getYearFacetsHtmlAll() throws Exception {
         // facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500
 
@@ -1306,6 +1343,7 @@ public class NetarchiveSolrClient {
         return allCount;
     }
 
+    // Not used anymore
     public HashMap<Integer, Long> getYearTextHtmlFacets(String query) throws Exception {
         // facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500
 

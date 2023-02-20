@@ -3,13 +3,13 @@ package dk.kb.netarchivesuite.solrwayback.service.dto.smurf;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class YearCount {
+public class DateCount {
 
-  private int year;
+  private String date;
   private long count;
   private long total;
   
-  public YearCount(){    
+  public DateCount(){    
   }
 
   public long getCount() {
@@ -28,12 +28,12 @@ public class YearCount {
     this.total = total;
   }
 
-  public int getYear() {
-    return year;
+  public String getDate() {
+    return date;
   }
 
-  public void setYear(int year) {
-    this.year = year;
+  public void setDate(String date) {
+    this.date = date;
   }
   
 }

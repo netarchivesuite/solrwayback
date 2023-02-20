@@ -25,15 +25,17 @@
     data() {
       return {
         datacollection: {},
-        options: ChartHelpers.getChartOptions()
+        options: ChartHelpers.getChartOptions(null, this.scale)
        }
     },
 
     computed: {
     ...mapState({
       query: state => state.Ngram.query,
-     datasets: state => state.Ngram.datasets,
-     searchType:state => state.Ngram.searchType
+      datasets: state => state.Ngram.datasets,
+      searchType:state => state.Ngram.searchType,
+      labels: state => state.Ngram.labels,
+      scale: state => state.Ngram.timeScale
     })
     },
 
@@ -43,14 +45,18 @@
       },
       
       searchType: function (newVal) {
-        this.options = ChartHelpers.getChartOptions(newVal)
+        this.options = ChartHelpers.getChartOptions(newVal, this.scale)
+      },
+      scale: function (newVal) {
+        this.options = ChartHelpers.getChartOptions(this.searchType, this.scale)
       }
     },
     
     methods: {
       fillData () {
         this.datacollection = {
-          labels: ChartHelpers.getChartLabels(),
+          rawLabels: this.labels,
+          labels: ChartHelpers.getChartLabels(this.labels, this.scale),
           datasets: ChartHelpers.getChartDataSet(this.datasets)
         }
       }
