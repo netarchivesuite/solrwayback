@@ -7,7 +7,7 @@ Increased precision on estimated number of results when performing a grouped sea
 
 Clicking on SolrWayback logo will take you to the SolrWayback homepage(start page). 
 
-The result set can now be sorted on the crawl_date field ascending og descending. Ranking(score) is still the default.  (see https://github.com/netarchivesuite/solrwayback/issues/311).Thanks to Leslie Bellony from BnF for implementing this.
+The result set can now be sorted on the crawl_date field ascending or descending. Ranking(score) is still the default sort. (see https://github.com/netarchivesuite/solrwayback/issues/311).Thanks to Leslie Bellony from BnF for implementing this.
 
 The Ngram viewer in the toolbar can now also be refined by day,week and month. Thanks to Leslie Bellony from BnF for implementing this.
 
