@@ -1497,7 +1497,7 @@ public class NetarchiveSolrClient {
 
         // Build all query params in map
 
-        solrQuery.set("rows", "20"); // Hardcoded pt.
+        solrQuery.set("rows", PropertiesLoaderWeb.SEARCH_PAGINATION.toString());
         solrQuery.set("start", startStr);
         solrQuery.set("q", query);
         solrQuery.set("fl", "id,score,title,hash,source_file_path,source_file_offset,url,url_norm,wayback_date,domain,content_type,crawl_date,content_type_norm,type, collection,collection_id");

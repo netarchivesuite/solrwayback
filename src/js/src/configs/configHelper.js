@@ -5,6 +5,7 @@ export function setServerConfigInApp(configFromServer) {
         configs.playbackConfig.solrwaybackBaseURL = configFromServer['wayback.baseurl']
         configs.playbackConfig.playbackDisabled = configFromServer['playback.disabled']
         configs.search.uploadedFileDisabled = configFromServer['search.uploaded.file.disabled']
+        configs.search.pagination = configFromServer['search.pagination']
         configs.exportOptions.warcAllowed = configFromServer['allow.export.warc']
         configs.exportOptions.csvAllowed = configFromServer['allow.export.csv']
         configs.exportOptions.csvFields = configFromServer['export.csv.fields']
