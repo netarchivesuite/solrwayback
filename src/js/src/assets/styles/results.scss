@@ -1493,3 +1493,14 @@ flex-direction: row-reverse;
   background-color:var(--secondary-bg-color);
   color:white;
 }
+
+.postSearchContainer {
+  position: relative;
+}
+
+.sortContainer {
+  right: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}

@@ -61,6 +61,7 @@ export default {
       to.query.imgSearch === 'true' || to.query.imgSearch === true ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
       to.query.urlSearch === 'true' || to.query.urlSearch === true ? this.updateSolrSettingUrlSearch(true) : this.updateSolrSettingUrlSearch(false)
       to.query.offset ? this.updateSolrSettingOffset(Number(to.query.offset)) : this.updateSolrSettingOffset(0)
+          to.query.sort ? this.updateSolrSettingSort(to.query.sort) : this.updateSolrSettingSort('score desc')
       // Update our filers set from facets, if there are any. To avoid dublicated, we empty it first, then refill it.
       this.emptySearchAppliedFacets()
       if(to.query.facets) {
@@ -111,6 +112,7 @@ export default {
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
       updateSolrSettingOffset:'updateSolrSettingOffset',
+      updateSolrSettingSort:'updateSolrSettingSort'
     }),
     onScroll(e) {
     e.target.documentElement.scrollTop > 0 ? this.scrolledFromTop = true : this.scrolledFromTop = false
@@ -125,6 +127,7 @@ export default {
        to.query.imgSearch !== from.query.imgSerach ||
        to.query.urlSearch !== from.query.urlSearch ||
        to.query.grouping !== from.query.grouping ||
+       to.query.sort !== from.query.sort ||
        to.query.facets !== from.query.facets)
     },
     checkIfRoutingIsPageTurn(to, from) {
@@ -133,7 +136,8 @@ export default {
                   to.query.urlSearch === from.query.urlSearch && 
                   to.query.grouping === from.query.grouping &&
                   to.query.facets === from.query.facets &&
-                  to.query.offset !== from.query.offset
+                  to.query.offset !== from.query.offset &&
+                  to.query.sort !== from.query.sort
     }
   }
 }

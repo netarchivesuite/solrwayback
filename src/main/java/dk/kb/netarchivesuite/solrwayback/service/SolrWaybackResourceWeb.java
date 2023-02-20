@@ -448,9 +448,10 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("solr/search/results") 
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public String  solrSearchResults(@QueryParam("query") String query, @QueryParam("fq") List<String> fq ,  @QueryParam("grouping") boolean grouping,  @QueryParam("revisits") boolean revisits , @QueryParam("start") int start) throws SolrWaybackServiceException {
+    public String  solrSearchResults(@QueryParam("query") String query, @QueryParam("fq") List<String> fq , @QueryParam("grouping") boolean grouping, 
+            @QueryParam("revisits") boolean revisits , @QueryParam("start") int start, @QueryParam("sort") String sort) throws SolrWaybackServiceException {
       try {
-        String res = Facade.solrSearchNoFacets(query,fq, grouping, revisits, start);          
+          String res = Facade.solrSearchNoFacets(query,fq, grouping, revisits, start, sort);
         return res;
       } catch (Exception e) {
         throw handleServiceExceptions(e);

@@ -80,11 +80,11 @@ public class Facade {
         return result;
     }
 
-    public static String solrSearchNoFacets(String query, List<String> filterQueries, boolean grouping, boolean revisits, int start) throws Exception {
+    public static String solrSearchNoFacets(String query, List<String> filterQueries, boolean grouping, boolean revisits, int start, String sort) throws Exception {
         if (start >= 1001) {
             throw new InvalidArgumentServiceException("Pagination (start) must be less than 1001");
         }
-        return proxySolrNoFacets(query, filterQueries, grouping, revisits, start);
+        return proxySolrNoFacets(query, filterQueries, grouping, revisits, start, sort);
     }
 
     public static String solrSearchFacetsOnly(String query, List<String> filterQueries, boolean revisits) throws Exception {
@@ -965,8 +965,8 @@ public class Facade {
         return props;
     }
 
-    public static String proxySolrNoFacets(String query, List<String> fq, boolean grouping, boolean revisits, Integer start) throws Exception {
-        return NetarchiveSolrClient.getInstance().searchJsonResponseNoFacets(query, fq, grouping, revisits, start);
+    public static String proxySolrNoFacets(String query, List<String> fq, boolean grouping, boolean revisits, Integer start, String sort) throws Exception {
+        return NetarchiveSolrClient.getInstance().searchJsonResponseNoFacets(query, fq, grouping, revisits, start, sort);
     }
 
     public static String proxySolrOnlyFacets(String query, List<String> fq, boolean revisits) throws Exception {

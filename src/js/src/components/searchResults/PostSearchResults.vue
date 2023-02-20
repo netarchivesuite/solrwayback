@@ -9,6 +9,7 @@
       <span class="highlightText">{{ results.cardinality.toLocaleString("en") }}</span> unique entries matching query 
       <span class="tonedDownText">(total hits approximated: {{ results.numFound.toLocaleString("en") }})</span>.
     </span>
+    <div class="postSearchContainer">
     <div v-if="results.cardinality !== 0 && results.numFound !== 0" class="pagingContainer">
       <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
         Previous 20
@@ -16,6 +17,21 @@
       <button :disabled="results.cardinality ? solrSettings.offset + 20 >= results.cardinality : solrSettings.offset + 20 >= results.numFound" @click="getNextResults()">
         Next 20
       </button>
+    </div>
+      <div class="sortContainer">
+        <span>Sort by: </span>
+        <select id="sortSelect" v-model="sortInput" @change="getResultsWithSort($event)">
+          <option value="score desc">
+            score desc
+          </option>
+          <option value="crawl_date desc">
+            crawl_date desc
+          </option>
+          <option value="crawl_date asc">
+            crawl_date asc
+          </option>
+        </select>
+      </div>
     </div>
     <div v-if="results && results !== {}" class="results">
       <component :is="SingleEntryComponent(result.type)"
@@ -67,10 +83,19 @@ export default {
       results: state => state.Search.results,
       solrSettings: state => state.Search.solrSettings
     }),
+    sortInput: {
+      get () {
+        return this.$store.state.Search.solrSettings.sort
+      },
+      set (value) {
+        this.updateSolrSettingSort(value)
+      }
+    }
   },
   methods: {
     ...mapActions('Search', {
-      updateSolrSettingOffset:'updateSolrSettingOffset'
+      updateSolrSettingOffset:'updateSolrSettingOffset',
+      updateSolrSettingSort: 'updateSolrSettingSort'
     }),
     getNextResults() {
       this.updateSolrSettingOffset(this.solrSettings.offset + this.hitsPerPage)
@@ -78,6 +103,10 @@ export default {
     },
     getPreviousResults() {
       this.updateSolrSettingOffset(this.solrSettings.offset - this.hitsPerPage)
+      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+    },
+    getResultsWithSort(event) {
+      this.updateSolrSettingSort(event.target.value)
       this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
     },
     SingleEntryComponent(type) {

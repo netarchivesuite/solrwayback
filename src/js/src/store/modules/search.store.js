@@ -14,6 +14,7 @@ const initialState = () => ({
     offset:0,
     imgSearch:false,
     urlSearch:false,
+    sort:'score desc'
   },
   loading:false,
   facetLoading:false,
@@ -52,6 +53,9 @@ const actions = {
   },
   updateSolrSettingUrlSearch ( {commit}, param ) {
     commit('updateSolrSettingUrlSearchSuccess', param)
+  },
+  updateSolrSettingSort ( {commit}, param ) {
+    commit('updateSolrSettingSortSuccess', param)
   },
   addToSearchAppliedFacets ( {commit}, param ) {
     commit('addToSearchAppliedFacetsSuccess', param)
@@ -140,6 +144,9 @@ const mutations = {
   },
   updateSolrSettingUrlSearchSuccess(state, param) {
     state.solrSettings.urlSearch = param
+  },
+  updateSolrSettingSortSuccess(state, param) {
+    state.solrSettings.sort = param
   },
   addToSearchAppliedFacetsSuccess(state, param) {
     state.searchAppliedFacets.push(param)
