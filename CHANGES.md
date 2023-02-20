@@ -1,5 +1,14 @@
 # SolrWayback changelog
 
+
+4.4.1
+-----
+Increased precision on estimated number of results when performing a grouped search. This will come a small performance cost in search time.(SolrCloud only)
+
+Clicking on SolrWayback logo will take you to the SolrWayback homepage(start page). 
+
+
+
 4.4.0
 -----
 
