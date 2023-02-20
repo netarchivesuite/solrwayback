@@ -38,6 +38,7 @@ public class PropertiesLoaderWeb {
     public static final String ALLOW_EXPORT_CSV_PROPERTY = "allow.export.csv";
     public static final String WORDCLOUD_STOPWORDS_PROPERTY="wordcloud.stopwords";    
     public static final String SEARCH_UPLOADED_FILE_DISABLED_PROPERTY="search.uploaded.file.disabled";
+    public static final String SEARCH_PAGINATION_PROPERTY = "search.pagination";
     
     public static final String EXPORT_WARC_MAXRESULTS_PROPERTY = "export.warc.maxresults";
     public static final String EXPORT_CSV_MAXRESULTS_PROPERTY = "export.csv.maxresults";
@@ -74,6 +75,7 @@ public class PropertiesLoaderWeb {
     public static boolean ALLOW_EXPORT_CSV;
     public static String  EXPORT_CSV_FIELDS;;
     public static boolean SEARCH_UPLOADED_FILE_DISABLED;
+    public static Long SEARCH_PAGINATION = 20L; // 20 default
     
     public static String LEAFLET_SOURCE;
     public static String LEAFLET_ATTRIBUTION;
@@ -144,6 +146,7 @@ public class PropertiesLoaderWeb {
             String csv_max_results= serviceProperties.getProperty(EXPORT_CSV_MAXRESULTS_PROPERTY);
             String warc_max_results= serviceProperties.getProperty(EXPORT_WARC_MAXRESULTS_PROPERTY);
             String warc_expanded_max_results= serviceProperties.getProperty(EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY);
+            String search_pagination= serviceProperties.getProperty(SEARCH_PAGINATION_PROPERTY);
 
             if (csv_max_results != null) {
                 EXPORT_CSV_MAXRESULTS  = Long.parseLong(csv_max_results.trim());                
@@ -155,6 +158,10 @@ public class PropertiesLoaderWeb {
 
             if ( warc_expanded_max_results != null) {                
                 EXPORT_WARC_EXPANDED_MAXRESULTS  = Long.parseLong( warc_expanded_max_results.trim());               
+            }
+
+            if ( search_pagination != null) {
+                SEARCH_PAGINATION  = Long.parseLong(search_pagination.trim());
             }
 
             if (ABOUT_TEXT_FILE == null || ABOUT_TEXT_FILE.trim().isEmpty()) {
@@ -218,6 +225,7 @@ public class PropertiesLoaderWeb {
             log.info("Property:"+ FACETS_PROPERTY +" = " + FACETS);
             log.info("Property:"+ WORDCLOUD_STOPWORDS_PROPERTY +" = " + WORDCLOUD_STOPWORDS);        
             log.info("Property:"+ SEARCH_UPLOADED_FILE_DISABLED_PROPERTY+" = " +SEARCH_UPLOADED_FILE_DISABLED);            
+            log.info("Property:"+ SEARCH_PAGINATION_PROPERTY + " = " + SEARCH_PAGINATION);
             log.info("Property:"+ ABOUT_TEXT_FILE_PROPERTY +" = " + ABOUT_TEXT_FILE);
             log.info("Property:"+ SEARCH_HELP_FILE_PROPERTY +" = " + SEARCH_HELP_TEXT_FILE );
             log.info("Property:"+ COLLECTION_TEXT_FILE_PROPERTY +" = " + COLLECTION_TEXT_FILE );

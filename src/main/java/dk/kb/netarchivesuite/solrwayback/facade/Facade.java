@@ -945,6 +945,7 @@ public class Facade {
         props.put(PropertiesLoaderWeb.WORDCLOUD_STOPWORDS_PROPERTY, ""+PropertiesLoaderWeb.WORDCLOUD_STOPWORDS);
         props.put(PropertiesLoaderWeb.FACETS_PROPERTY, ""+PropertiesLoaderWeb.FACETS);
         props.put(PropertiesLoaderWeb.SEARCH_UPLOADED_FILE_DISABLED_PROPERTY, ""+PropertiesLoaderWeb.SEARCH_UPLOADED_FILE_DISABLED);
+        props.put(PropertiesLoaderWeb.SEARCH_PAGINATION_PROPERTY, "" + PropertiesLoaderWeb.SEARCH_PAGINATION);
         props.put(PropertiesLoader.PLAYBACK_DISABLED_PROPERTY, ""+""+PropertiesLoader.PLAYBACK_DISABLED);
         props.put("solrwayback.version",PropertiesLoaderWeb.SOLRWAYBACK_VERSION);
 

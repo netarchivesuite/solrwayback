@@ -1,23 +1,23 @@
 <template>
   <div>
     <span v-if="!results.cardinality">
-      <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span>  - <span class="highlightText">{{ solrSettings.offset + 20 > results.numFound ? results.numFound : solrSettings.offset + 20 }}</span> of </span>
+      <span>Showing <span class="highlightText">{{ results.numFound !== 0 ? solrSettings.offset + 1 : 0 }}</span>  - <span class="highlightText">{{ solrSettings.offset + hitsPerPage > results.numFound ? results.numFound : solrSettings.offset + hitsPerPage }}</span> of </span>
       <span class="highlightText">{{ results.numFound.toLocaleString("en") }}</span> entries matching query.
     </span>
     <span v-if="results.cardinality">
-      <span>Showing <span class="highlightText">{{ solrSettings.offset }}</span> - <span class="highlightText">{{ solrSettings.offset + 20 > results.cardinality ? results.cardinality : solrSettings.offset + 20 }}</span> of </span>
+      <span>Showing <span class="highlightText">{{ results.numFound !== 0 ? solrSettings.offset + 1 : 0 }}</span> - <span class="highlightText">{{ solrSettings.offset + hitsPerPage > results.cardinality ? results.cardinality : solrSettings.offset + hitsPerPage }}</span> of </span>
       <span class="highlightText">{{ results.cardinality.toLocaleString("en") }}</span> unique entries matching query 
       <span class="tonedDownText">(total hits approximated: {{ results.numFound.toLocaleString("en") }})</span>.
     </span>
     <div class="postSearchContainer">
-    <div v-if="results.cardinality !== 0 && results.numFound !== 0" class="pagingContainer">
-      <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
-        Previous 20
-      </button>
-      <button :disabled="results.cardinality ? solrSettings.offset + 20 >= results.cardinality : solrSettings.offset + 20 >= results.numFound" @click="getNextResults()">
-        Next 20
-      </button>
-    </div>
+      <div v-if="results.cardinality !== 0 && results.numFound !== 0" class="pagingContainer">
+        <button :disabled="solrSettings.offset < hitsPerPage" @click="getPreviousResults()">
+          Previous {{ hitsPerPage }}
+        </button>
+        <button :disabled="results.cardinality ? solrSettings.offset + hitsPerPage >= results.cardinality : solrSettings.offset + hitsPerPage >= results.numFound" @click="getNextResults()">
+          Next {{ hitsPerPage }}
+        </button>
+      </div>
       <div class="sortContainer">
         <span>Sort by: </span>
         <select id="sortSelect" v-model="sortInput" @change="getResultsWithSort($event)">
@@ -41,11 +41,11 @@
                  :rank-number="index" />
     </div>
     <div v-if="results.cardinality !== 0 && results.numFound !== 0" class="pagingContainer">
-      <button :disabled="solrSettings.offset < 20" @click="getPreviousResults()">
-        Previous 20
+      <button :disabled="solrSettings.offset < hitsPerPage" @click="getPreviousResults()">
+        Previous {{ hitsPerPage }}
       </button>
-      <button :disabled="results.cardinality ? solrSettings.offset + 20 >= results.cardinality : solrSettings.offset + 20 >= results.numFound" @click="getNextResults()">
-        Next 20
+      <button :disabled="results.cardinality ? solrSettings.offset + hitsPerPage >= results.cardinality : solrSettings.offset + hitsPerPage >= results.numFound" @click="getNextResults()">
+        Next {{ hitsPerPage }}
       </button>
     </div>
   </div>
@@ -56,6 +56,7 @@ import { mapState, mapActions } from 'vuex'
 import SearchFacetOptions from './../SearchFacetOptions.vue'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
 import ImageSearchResults from './ImageSearchResults'
+import configs from '../../configs'
 
 
 export default {
@@ -91,6 +92,9 @@ export default {
         this.updateSolrSettingSort(value)
       }
     }
+  },
+  mounted () {
+    this.hitsPerPage = parseInt(configs.search.pagination)
   },
   methods: {
     ...mapActions('Search', {

@@ -25,7 +25,8 @@ export default {
   },
 
   search:{
-    uploadedFileDisabled:false
+    uploadedFileDisabled:false,
+    pagination:20
   },
 
   leaflet: {
