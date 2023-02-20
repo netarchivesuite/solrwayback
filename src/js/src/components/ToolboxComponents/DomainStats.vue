@@ -9,10 +9,10 @@
                placeholder="Enter domain, like 'kb.dk'"
                :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
                @keyup.enter="loadGraphData(domain)">
-        <time-period-refiner class="refiner"
+        <time-period-refiner ref="refiner"
+                             class="refiner"
                              @startdate="(sdate) => startDate = sdate"
-                             @enddate="(edate) => endDate = edate" 
-                             @timescale="(ts) => timeScale = ts" />
+                             @enddate="(edate) => endDate = edate" />
         <div class="generateButtonContainer contain">
           <button :disabled="loading" class="domainStatsButton" @click.prevent="loadGraphData(domain)">
             Generate
@@ -32,19 +32,19 @@
             <tr>
               <th />
               <th v-for="(item, index) in rawData" :key="index">
-                {{ item.date }}
+                {{ $_displayDate(item.date, timeScale) }}
               </th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Size in KB</td>
+              <td>Size in kilobytes</td>
               <td v-for="(item, index) in rawData" :key="index">
                 {{ item.sizeInKb.toLocaleString("en") }}
               </td>
             </tr>
             <tr>
-              <td>Total pages</td>
+              <td>Pages</td>
               <td v-for="(item, index) in rawData" :key="index">
                 {{ item.totalPages.toLocaleString("en") }}
               </td>
@@ -106,6 +106,7 @@ export default {
       }
       this.rawData = null
       this.loading = true
+      this.timeScale = this.$refs.refiner.timeScaleInput
       requestService.getDomainStatistics(this.prepareDomainForGetRequest(),this.startDate, this.endDate, this.timeScale)
         .then(result => (this.sanitizeResponseDataAndDrawChart(result), this.rawData = result))
         .catch(error => {
@@ -114,7 +115,7 @@ export default {
                 title: 'We are so sorry!',
                 text: 'Search could not be performed.',
                 type: 'error',
-                srvMessage: error.response.data,
+                srvMessage: error.response != undefined ? error.response.data : error,
                 timeout: false
               })
             })
@@ -130,7 +131,7 @@ export default {
     },
     sanitizeResponseDataAndDrawChart(data) {
       for(let i = 0; i < data.length; i++){
-        this.graphData.chartLabels.push(data[i].date)
+        this.graphData.chartLabels.push(this.$_displayDate(data[i].date, this.timeScale))
         this.graphData.sizeInKb.push(data[i].sizeInKb)
         this.graphData.ingoingLinks.push(data[i].ingoingLinks)
         this.graphData.numberOfPages.push(data[i].totalPages)

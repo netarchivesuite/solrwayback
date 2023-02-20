@@ -39,12 +39,14 @@ import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +66,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -135,9 +138,33 @@ public class Facade {
     }
 
     public static String generateDomainResultGraph(String q, List<String> fq, String startdate, String enddate, String scale) throws Exception {
-        String jsonStr = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq, startdate , enddate, scale);
-        HashMap<String, List<FacetCount>> domainStatisticsForQuery = DomainStatisticsForDomainParser.parseDomainStatisticsJson(jsonStr, scale == null);
-        String matrix = DomainStatisticsForDomainParser.generateDomainQueryStatisticsString(domainStatisticsForQuery);
+        Map<String, List<FacetCount>> domainStatisticsForQuery;
+        LocalDate start = LocalDate.parse(startdate, DateTimeFormatter.ISO_DATE);
+        LocalDate end = LocalDate.parse(enddate, DateTimeFormatter.ISO_DATE);
+        LocalDate endOfFirstPeriod = DateUtils.getEndOfFirstPeriod(start, scale);
+        if (!endOfFirstPeriod.isBefore(end)) {
+            // only one query is needed
+            String json = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq, startdate, end.toString(), scale);
+            domainStatisticsForQuery = DomainStatisticsForDomainParser.parseDomainStatisticsJson(json);
+        } else {
+            // 2 queries : the first until the end of the month/year, the second for the rest of the period
+            // first period
+            String jsonFirstPeriod = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq, startdate, endOfFirstPeriod.minusDays(1).toString(), scale);
+            Map<String, List<FacetCount>> firstPeriodMap = DomainStatisticsForDomainParser.parseDomainStatisticsJson(jsonFirstPeriod);
+            // rest of the periods
+            String jsonStrRestOfPeriods = NetarchiveSolrClient.getInstance().domainStatisticsForQuery(q, fq, endOfFirstPeriod.toString(), enddate, scale);
+            Map<String, List<FacetCount>> restOfPeriodsMap = DomainStatisticsForDomainParser.parseDomainStatisticsJson(jsonStrRestOfPeriods);
+            
+            // merge the two stats
+            domainStatisticsForQuery = restOfPeriodsMap;
+            // firstPeriodMap has only one entry max
+            if (!firstPeriodMap.isEmpty()){
+                domainStatisticsForQuery.put(start.toString(), firstPeriodMap.get(startdate));
+            }
+        }
+        List<Pair<LocalDate, LocalDate>> periods = DateUtils.calculatePeriods(start, end, scale);
+        List<String> dates = periods.stream().map(p -> p.first().toString()).collect(Collectors.toList());
+        String matrix = DomainStatisticsForDomainParser.generateDomainQueryStatisticsString(domainStatisticsForQuery, dates);
         return matrix;
     }
 
@@ -179,37 +206,20 @@ public class Facade {
     }
 
     public static List<DomainStatistics> statisticsDomain(String domain, LocalDate start, LocalDate end, String scale) throws Exception {
-        List<DomainStatistics> stats = new ArrayList<>();
-        LocalDate date = start;
-        LocalDate nextDate = addScaleToDate(date, scale);
+        log.info("Statistics for domain: " + domain + ", startdate:" + start.toString() + ", enddate:" + end.toString() + ", timescale:" + scale);
 
-        while (!nextDate.isAfter(end)) {
-            DomainStatistics stat = NetarchiveSolrClient.getInstance().domainStatistics(domain, date.format(DateTimeFormatter.ISO_DATE), nextDate.format(DateTimeFormatter.ISO_DATE));
+        List<DomainStatistics> stats = new ArrayList<>();
+        String dateStr = "";
+        String nextDateStr = "";
+        List<Pair<LocalDate, LocalDate>> periods = DateUtils.calculatePeriods(start, end, scale);
+        for (Pair<LocalDate, LocalDate> period : periods) {
+            dateStr = period.first().format(DateTimeFormatter.ISO_DATE);
+            nextDateStr = period.second().format(DateTimeFormatter.ISO_DATE);
+            
+            DomainStatistics stat = NetarchiveSolrClient.getInstance().domainStatistics(domain, dateStr, nextDateStr);
             stats.add(stat);
-            date = nextDate;
-            nextDate = addScaleToDate(date, scale);
         }
         return stats;
-    }
-
-    private static LocalDate addScaleToDate(LocalDate date, String scale) {
-        LocalDate nextDate;
-        switch (scale) {
-            case "MONTH" :
-                nextDate = date.plusMonths(1);
-                break;
-            case "WEEK" :
-                nextDate = date.plusWeeks(1);
-                break;
-            case "DAY" :
-                nextDate = date.plusDays(1);
-                break;
-            case "YEAR" :
-            default :
-                nextDate = date.plusYears(1);
-                break;
-        }
-        return nextDate;
     }
 
     public static ArrayList<ImageUrl> imagesLocationSearch(String searchText, String filter, String results, double latitude, double longitude, double radius,
