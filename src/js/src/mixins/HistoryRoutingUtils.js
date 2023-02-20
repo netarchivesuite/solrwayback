@@ -8,7 +8,8 @@ export default {
                                                      imgSearch: solrSettings.imgSearch,
                                                      offset: solrSettings.imgSearch === true ? 0 : solrSettings.offset,
                                                      urlSearch: solrSettings.urlSearch,
-                                                     facets:appliedFacets.join('')
+                                                     facets:appliedFacets.join(''),
+                                                     sort:solrSettings.sort
                                                      } })
       }
     },
@@ -21,7 +22,8 @@ export default {
         currentParams.urlSearch !== solrSettings.urlSearch ||
         currentParams.imgSearch !== solrSettings.imgSearch ||
         currentParams.facets !== appliedFacets.join('') ||
-        currentParams.offset !== solrSettings.offset)
+        currentParams.offset !== solrSettings.offset ||
+        currentParams.sort !== solrSettings.sort)
     }
   },
 }

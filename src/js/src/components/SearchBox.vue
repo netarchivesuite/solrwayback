@@ -162,6 +162,7 @@ export default {
       routerQuery.imgSearch === 'true' || routerQuery.imgSearch === true ? this.updateSolrSettingImgSearch(true) : this.updateSolrSettingImgSearch(false)
       routerQuery.urlSearch === 'true' || routerQuery.urlSearch === true ? this.updateSolrSettingUrlSearch(true) : this.updateSolrSettingUrlSearch(false)
       routerQuery.offset ? this.updateSolrSettingOffset(Number(routerQuery.offset)) : this.updateSolrSettingOffset(0)
+          routerQuery.sort ? this.updateSolrSettingSort(routerQuery.sort) : this.updateSolrSettingSort('score desc')
       this.$_determineNewSearch(this.futureQuery, false)
       }
       else {
@@ -187,6 +188,7 @@ export default {
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
       updateSolrSettingOffset:'updateSolrSettingOffset',
+      updateSolrSettingSort:'updateSolrSettingSort',
       emptySearchAppliedFacets:'emptySearchAppliedFacets'
     }),
     ...mapActions('Modal', {
@@ -236,6 +238,7 @@ export default {
     launchNewSearch() {
       this.emptySearchAppliedFacets()
       this.updateSolrSettingOffset(0)
+      this.updateSolrSettingSort('score desc')
       this.$_pushSearchHistory('Search', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
     },
     openSelectedModal(modal) {

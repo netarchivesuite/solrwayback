@@ -27,7 +27,7 @@ export const requestService = {
 }
 
 function fireSearchRequest (query, facets, options) {
-  let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
+  let optionString = '&start=' + options.offset + '&grouping=' + options.grouping + '&sort=' + options.sort
   // Split url and move to config
   let facetsStr = ''
     for (const f of facets){

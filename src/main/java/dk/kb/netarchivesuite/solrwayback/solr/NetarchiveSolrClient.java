@@ -1485,7 +1485,7 @@ public class NetarchiveSolrClient {
         return jsonResponse;
     }
 
-    public String searchJsonResponseNoFacets(String query, List<String> fq, boolean grouping, boolean revisits, Integer start) throws Exception {
+    public String searchJsonResponseNoFacets(String query, List<String> fq, boolean grouping, boolean revisits, Integer start, String sort) throws Exception {
         log.info("SolrQuery (no facets):" + query + " grouping:" + grouping + " revisits:" + revisits + " start:" + start);
 
         String startStr = "0";
@@ -1506,6 +1506,9 @@ public class NetarchiveSolrClient {
         solrQuery.set("q.op", "AND");
         solrQuery.set("indent", "true");
         solrQuery.set("facet", "false"); // No facets!
+        if (sort != null && !"".equals(sort)) {
+            solrQuery.set("sort", sort);
+        }
 
         if (grouping) {
             // Both group and stats must be enabled at same time
