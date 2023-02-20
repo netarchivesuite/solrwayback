@@ -305,3 +305,8 @@ color:white;
   background-color:var(--secondary-highlight-color);
   padding:5px;
 }
+
+.noDecoration {
+  text-decoration: none;
+  color: var(--main-text-color);
+}

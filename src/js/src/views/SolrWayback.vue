@@ -13,7 +13,7 @@
         <loading-overlay />
       </transition>
       <notifications />
-      <h1>Solr<span>Wayback</span></h1>
+      <h1><a :href="baseUrl" class="noDecoration">Solr<span>Wayback</span></a></h1>
       <search-box />
       <all-search-results />
       <about-component />
@@ -86,7 +86,8 @@ export default {
   data: () => ({
         scrolledFromTop:false,
         logoUrl: Configs.logo.url,
-        logoLink: Configs.logo.link
+        logoLink: Configs.logo.link,
+        baseUrl: Configs.playbackConfig.solrwaybackBaseURL
   }),
   computed: {
     ...mapState({
