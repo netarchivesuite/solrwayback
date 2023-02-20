@@ -3,9 +3,13 @@
 
 4.4.1
 -----
-Increased precision on estimated number of results when performing a grouped search. This will come a small performance cost in search time.(SolrCloud only)
+Increased precision on estimated number of results when performing a grouped search. This will come with a  small performance cost in search time on SolrCloud.
 
 Clicking on SolrWayback logo will take you to the SolrWayback homepage(start page). 
+
+The result set can now be sorted on the crawl_date field ascending or descending. Ranking(score) is still the default sort. (see https://github.com/netarchivesuite/solrwayback/issues/311).Thanks to Leslie Bellony from BnF for implementing this.
+
+The Ngram viewer in the toolbar can now also be refined by day,week and month. Thanks to Leslie Bellony from BnF for implementing this.
 
 
 
