@@ -11,6 +11,10 @@ The result set can now be sorted on the crawl_date field ascending or descending
 
 The Ngram viewer in the toolbar can now also be refined by day,week and month. Thanks to Leslie Bellony from BnF for implementing this.
 
+The default number of 20 results on each page can be changed with this new property in solrwaybackweb.properties. (See https://github.com/netarchivesuite/solrwayback/issues/313). Thanks to Leslie Bellony from BnF for implementing this.
+
+search.pagination=20
+
 
 
 4.4.0
