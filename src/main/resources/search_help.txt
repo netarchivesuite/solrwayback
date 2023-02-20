@@ -25,8 +25,8 @@ The following 3 boolean operators are supported. They MUST be entered in upperca
 </tr>
 </table>
 
-<h3>Use brackets if mixing operators</h3>
-To avoid ambiguous interpretation of syntax always use brackets () if mixing operators.<br>
+<h3>Use  parentheses if mixing operators</h3>
+To avoid ambiguous interpretation of syntax always use  parentheses () if mixing operators.<br>
 Example:<b> (computer AND apple) OR (amiga)<br> </b>
 This can also return results where only the text 'amiga' is found.
 
