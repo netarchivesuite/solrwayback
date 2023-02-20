@@ -1177,6 +1177,17 @@ margin-left:40px;
 
 .timePeriodRefinerLabel {
   margin-right: 5px;
+  cursor: text !important;
+}
+
+.timePeriodRefinerPeriodContainer
+{
+  margin-bottom: 5px;
+}
+
+.exporterLink {
+  display:flex;
+flex-direction: row-reverse;
 }
 
 .timePeriodRefinerPeriodContainer input,

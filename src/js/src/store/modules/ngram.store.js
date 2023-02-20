@@ -5,12 +5,14 @@ import { requestService } from '../../services/RequestService'
 const initialState = () => ({
   query: '',
   loading:false,
-  yearCountPercent: [],
-  yearCountsTotal: [],
+  countPercent: [],
+  countsTotal: [],
   datasetQueries:[],
   datasets:[],
   emptyResult: false,
-  searchType:'text'
+  searchType:'text',
+  labels:[],
+  timeScale:''
 
 })
 
@@ -26,11 +28,14 @@ const actions = {
   updateQuery ( {commit}, param) {
     commit('updateQuerySuccess', param)
   },
+  setTimeScale( {commit}, param) {
+    commit('setTimeScale', param)
+  },
   doSearch ({ commit }, params) {
     this.dispatch('Search/setLoadingStatus', true)
    
     requestService.getNgramNetarchive(params)
-   .then(results => {this.dispatch('Ngram/updateQuery', params.query), commit('doSearchSuccess', results)}, error =>
+   .then(results => {this.dispatch('Ngram/updateQuery', params.query), this.dispatch('Ngram/setTimeScale', params.timeScale), commit('doSearchSuccess', results)}, error =>
    commit('doSearchError', error))
   },
   resetState({ commit }) {
@@ -59,15 +64,18 @@ const mutations = {
       state.datasets.pop()
   },
   doSearchSuccess(state, results) {
-      state.yearCountPercent = results.yearCountPercent
-      state.yearCountsTotal = results.yearCountsTotal
+      state.countPercent = results.countPercent
+      state.countsTotal = results.countsTotal
       state.emptyResult = results.emptyResult
       state.datasetQueries.push(state.query)
+      if (state.datasets.length == 0) {
+        state.labels = state.countsTotal.map(countTotal => countTotal.date)
+      }
       state.datasets.push({
         query: state.query,
-        count: state.yearCountsTotal.map(yearCountTotal => yearCountTotal.count),
-        total: state.yearCountsTotal.map(yearCountTotal => yearCountTotal.total),
-        percent: state.yearCountPercent
+        count: state.countsTotal.map(countTotal => countTotal.count),
+        total: state.countsTotal.map(countTotal => countTotal.total),
+        percent: state.countPercent
       })
     this.dispatch('Search/setLoadingStatus', false)
    
@@ -86,12 +94,12 @@ const mutations = {
     this.dispatch('Notifier/setNotification', {
         title: 'We are so sorry!',
         text: 'Something went wrong with your search - please try again',
-        srvMessage: message,
+        srvMessage: message.response.data,
         type: 'error',
         timeout: false
       })
     }
-      this.dispatch('Search/setLoadingStatus', false)
+    this.dispatch('Search/setLoadingStatus', false)
   },
 
   setLoadingStatus(state, status) {
@@ -101,7 +109,9 @@ const mutations = {
   setSearchType(state, type) {
     state.searchType = type
   },
-
+  setTimeScale(state, scale) {
+    state.timeScale = scale
+  },
   resetState(state) {
     const newState = initialState()
     Object.keys(newState).forEach(key => {

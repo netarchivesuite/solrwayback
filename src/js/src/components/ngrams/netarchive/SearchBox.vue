@@ -35,21 +35,27 @@
                  value="tags">
           <label class="label" for="searchTypeRadioTwo">HTML-tags in HTML-pages</label>
         </div>
-        <span v-show="datasets.length !== 0" class="exportModalTrigger" @click.prevent="toggleExporter()">
-          Export graph data
-        </span>
-      </div> 
+      </div>
+      <time-period-refiner ref="refiner"
+                           class="searchBoxRefiner"
+                           @startdate="(sdate) => startDate = sdate"
+                           @enddate="(edate) => endDate = edate" 
+                           @timescale="(ts) => timeScale = ts" />
     </form>
-    <exporter v-if="showExporter" @close-exporter="toggleExporter()" />
     <div v-if="searchQuery === '' || datasets.length === 0">
-      <h1><span class="ngramAboutHeaderStart">Visualization</span> of search query by year</h1>
+      <h1><span class="ngramAboutHeaderStart">Visualization</span> of search query overtime</h1>
 
       <p class="ngramAbout">
-        The graph shows how frequently the query appears in webpages in the corpus relative for each year. Mouse over on the graph will show number of hits and total number of documents for that year.
+        The graph shows how frequently the query appears in webpages in the corpus relative for the defined period and at a defined time scale.
+        Mouse over on the graph will show number of hits and total number of documents for a year, month, week or day.
       </p>
       <p class="ngramAbout">
-        Clicking on a year will open a search and show how the results found for that year.
-      </p> <p>The graph can show multiple queries at the same time for comparison.</p> 
+        Clicking on a point of the graph will open a search and show the matching results.
+      </p> 
+      <p class="ngramAbout">
+        It is possible to run multiple queries, one after the other, to compare results.
+        Changing between Text and HTML-tags in webpages or changing the time frame and time scale will reset the previous results.
+      </p> 
       <p class="ngramAbout">
         The data for the graph can be exported as a CSV file.
       </p>
@@ -59,19 +65,20 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import Exporter from '../exporterCSV/ExportData'
-
+import TimePeriodRefiner from './../../TimePeriodRefiner.vue'
 export default {
   name: 'SearchBox',
    components: {
-      Exporter
+      TimePeriodRefiner
   },
  
   data () {
     return {    
         searchQuery:'',
-        showExporter:false,
-        searchType:'text'
+        searchType:'text',
+        startDate:'',
+        endDate:'',
+        timeScale:'',
     }
   },
   
@@ -91,11 +98,14 @@ export default {
     },
     
     searchType: function (val){
-      this.resetSearchState()
+      this.resetState()
+      this.searchType  = val
       this.setSearchType(val)
-    }
+    },
+    startDate : function (){this.resetResults()},
+    endDate : function (){this.resetResults()},
+    timeScale : function (){this.resetResults()}
   },
-
   beforeDestroy() {
         this.resetSearchState()
   },
@@ -104,14 +114,13 @@ export default {
     ...mapActions('Ngram', {
       resetSearchState:'resetState',
       doSearch:'doSearch',
-      setSearchType:'setSearchType'
+      setSearchType:'setSearchType',
+      updateQuery:'updateQuery'
     }),
-
     ...mapActions('Notifier', {
       setNotification: 'setNotification'
      
     }),
-
     submitSearch() {
       if (this.datasetQueries.includes(this.searchQuery.toLowerCase())) {
          this.setNotification({
@@ -124,25 +133,27 @@ export default {
           if (this.searchType === 'tags') {
             this.rinseQuery()
           }
-          this.doSearch({query:this.searchQuery, searchType:this.searchType})
+          this.doSearch({query:this.searchQuery, searchType:this.searchType, startDate:this.startDate, endDate:this.endDate, timeScale:this.timeScale})
+          
       }
     },
-
     getPlaceholder() {
       return  this.searchType === 'tags' ? 'Search for a HTML tag without < >' : 'Enter search term'
     },
-
     resetState() {
       this.resetSearchState()
+      this.$refs.refiner.resetAll()
     },
-  
-    toggleExporter() {
-       this.showExporter = !this.showExporter
+    resetResults(){
+      var oldQuery = this.query
+      if (this.datasets.length != 0) {
+        this.resetSearchState()
+      }
+      this.updateQuery(oldQuery)
     },
     searcBoxClass() {
       return this.searchQuery.includes('<') || this.searchQuery.includes('>') ?  'urlNotTrue' : ''
     },
-
     rinseQuery() {
       this.searchQuery = this.searchQuery.replace(/[<>]/g, '')
 
@@ -151,7 +162,4 @@ export default {
   }
   
 }
-
 </script>
-
-    

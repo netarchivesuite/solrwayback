@@ -5,7 +5,8 @@ export default {
       return facet.replace('&fq=','').split(':')[0] + ': '
     },
     $_displayFacetValue(facet) {
-      return facet.split(':')[1].replace(/"/g,'')
+      let s = facet.split(':')
+      return s.slice(1, s.length).join(' ').replace(/"/g,'')
     },
     $_checkDomain(domain) {
       // Matches at least 1 dot in the string, and no spaces. 

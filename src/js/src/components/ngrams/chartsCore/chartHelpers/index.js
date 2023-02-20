@@ -11,16 +11,16 @@ export default {
   * Generate labels for chart.
   *  - Override with own label config as you see fit -
   */
-  getChartLabels: () => {
-   return  ChartOptionsCore.getChartLabels()
+  getChartLabels: (labels, scale) => {
+   return  ChartOptionsCore.getChartLabels(labels, scale)
   },
 
   /**
   * Generate options for chart.
   * - Override with own options config as you see fit -
   */
-  getChartOptions: (searchType) => {
-   return ChartOptionsCore.getChartOptions(searchType)
+  getChartOptions: (searchType, scale) => {
+   return ChartOptionsCore.getChartOptions(searchType, scale)
   },
 
   /**

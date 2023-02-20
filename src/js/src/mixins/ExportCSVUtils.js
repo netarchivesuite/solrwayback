@@ -4,13 +4,13 @@
  */
 
 import {mapActions, mapState} from 'vuex'
-import APP_CONFIGS from '../configs'
 
 
  export default {
   computed: {
     ...mapState({
-      datasets: state => state.Ngram.datasets
+      datasets: state => state.Ngram.datasets,
+      labels: state => state.Ngram.labels
      
     })
   },
@@ -18,11 +18,11 @@ import APP_CONFIGS from '../configs'
   
     $_doCSVExport() {
       //The arrays for constructing the dataset that's needed for the CSV engine
-      let yearCount = [], totalCount = []
-      let description = ['Year', 'Total_documents']
+      let dateCount = [], totalCount = []
+      let description = ['Date', 'Total_documents']
       
       //Populate the "total count of documents in index" (totalCount) array with a series of 
-      //total counts pr. year. We only need this series once because it is the same for all queries
+      //total counts pr. dates. We only need this series once because it is the same for all queries
       Object.keys(this.datasets[0])
       .filter(value => value === 'total')
       .map(e => totalCount.push(this.datasets[0][e]))
@@ -37,10 +37,10 @@ import APP_CONFIGS from '../configs'
       //Creates array with the count pr. year pr. query
       Object.keys(dataEntry)
       .filter(value => value === 'count')
-      .map(e => yearCount.push(dataEntry[e]))
+      .map(e => dateCount.push(dataEntry[e]))
       })
       
-      const finalDataset = this.createFinalDataSet(totalCount, yearCount, description)
+      const finalDataset = this.createFinalDataSet(totalCount, dateCount, description)
       const filename = this.getFileName()  
       this.exportToCSV(finalDataset, filename)
     },
@@ -52,24 +52,22 @@ import APP_CONFIGS from '../configs'
        return  `Netarchive-ngram-${date}-${time}.csv`
     },
 
-    createFinalDataSet(totalCount, yearCount, description){
+    createFinalDataSet(totalCount, dateCount, description){
       let finalDataset = []
        // We need to get the start year so we know how many 'year rows' to generate 
-      let startYear = APP_CONFIGS.visualizations.ngram.startYear
       // Push this first row to the final dataset (holds the queries)
       finalDataset.push(description)
       //Loop the total count pr. year and create all the rows with [year, total_count (for year), count for query, count for query...]
       totalCount[0].forEach((entry, i) => {
         let dataEntrySet = []
-        dataEntrySet.push(startYear)
+        dataEntrySet.push(this.labels[i])
         dataEntrySet.push(entry)
         //We loop year data for every query the user has sumbitted
-        yearCount.forEach((countEntry, j) => {
+        dateCount.forEach((countEntry, j) => {
           dataEntrySet.push(countEntry[i])
         })
         finalDataset.push(dataEntrySet)
         //Bump start year with one so we get year progression as loop continues
-        startYear++
     })
 
     return finalDataset

@@ -28,7 +28,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.WordCloudWordAndCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
-import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfYearBuckets;
+import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
@@ -233,19 +233,33 @@ public class Facade {
         return indexDoc2Images(docs);
     }
 
-    public static SmurfYearBuckets generateNetarchiveSmurfData(String tag, String filterQuery, int startyear) throws Exception {
+    public static SmurfBuckets generateNetarchiveSmurfData(String tag, LocalDate start, LocalDate end, String scale) throws Exception {
 
         if (tag == null || tag.length() == 0) {
             throw new InvalidArgumentServiceException("tag must not be empty");
         }
 
-        log.info("netarchive smurf tag query:" + tag + " for startyear:" + startyear);
+        log.info("netarchive smurf tag query:" + tag + " for startdate:" + start.toString() + ", enddate:" + end.toString() + " timescale:" + scale);
         try {
 
-            HashMap<Integer, Long> yearFacetsQuery = NetarchiveSolrClient.getInstance().getYearHtmlFacets(tag);
-            HashMap<Integer, Long> yearFacetsAll = NetarchiveYearCountCache.getYearFacetsAllQuery();
+            Map<LocalDate, Long> contentQuery = new HashMap<>();
+            Map<LocalDate, Long> facetsAll = new HashMap<>();
+            String dateStr = "";
+            String nextDateStr = "";
+            List<Pair<LocalDate, LocalDate>> periods = DateUtils.calculatePeriods(start, end, scale);
+            for (Pair<LocalDate, LocalDate> period : periods) {
+                LocalDate startP = period.first();
+                LocalDate endP = period.second();
+                dateStr = startP.format(DateTimeFormatter.ISO_DATE);
+                nextDateStr = endP.format(DateTimeFormatter.ISO_DATE);
+                
+                Long count = NetarchiveSolrClient.getInstance().countTagHtmlForPeriod(tag, dateStr, nextDateStr);
+                Long countAll = NetarchiveSolrClient.getInstance().countTextHtmlForPeriod("*:*", dateStr, nextDateStr);
+                contentQuery.put(startP, count);
+                facetsAll.put(startP, countAll);
+            }
 
-            SmurfYearBuckets buckets = SmurfUtil.generateYearBuckets(yearFacetsQuery, yearFacetsAll, startyear, null);
+            SmurfBuckets buckets = SmurfUtil.generateBuckets(contentQuery, facetsAll, periods);
             return buckets;
 
         } catch (Exception e) {
@@ -255,19 +269,33 @@ public class Facade {
 
     }
 
-    public static SmurfYearBuckets generateNetarchiveTextSmurfData(String query, String filterQuery, int startyear) throws Exception {
+    public static SmurfBuckets generateNetarchiveTextSmurfData(String query, LocalDate start, LocalDate end, String scale) throws Exception {
 
         if (query == null || query.length() == 0) {
             throw new InvalidArgumentServiceException("query must not be empty");
         }
 
-        log.info("netarchive content smurf query:" + query + " for startyear:" + startyear);
+        log.info("netarchive content smurf query:" + query + " for startdate:" + start.toString() + ", enddate:" + end.toString() + " timescale:" + scale);
         try {
 
-            HashMap<Integer, Long> yearContentQuery = NetarchiveSolrClient.getInstance().getYearTextHtmlFacets(query);
-            HashMap<Integer, Long> yearFacetsAll = NetarchiveYearCountCache.getYearFacetsAllQuery();
+            Map<LocalDate, Long> contentQuery = new HashMap<>();
+            Map<LocalDate, Long> facetsAll = new HashMap<>();
+            String dateStr = "";
+            String nextDateStr = "";
+            List<Pair<LocalDate, LocalDate>> periods = DateUtils.calculatePeriods(start, end, scale);
+            for (Pair<LocalDate, LocalDate> period : periods) {
+                LocalDate startP = period.first();
+                LocalDate endP = period.second();
+                dateStr = startP.format(DateTimeFormatter.ISO_DATE);
+                nextDateStr = endP.format(DateTimeFormatter.ISO_DATE);
+                
+                Long count = NetarchiveSolrClient.getInstance().countTextHtmlForPeriod(query, dateStr, nextDateStr);
+                Long countAll = NetarchiveSolrClient.getInstance().countTextHtmlForPeriod("*:*", dateStr, nextDateStr);
+                contentQuery.put(startP, count);
+                facetsAll.put(startP, countAll);
+            }
 
-            SmurfYearBuckets buckets = SmurfUtil.generateYearBuckets(yearContentQuery, yearFacetsAll, startyear, null);
+            SmurfBuckets buckets = SmurfUtil.generateBuckets(contentQuery, facetsAll, periods);
             return buckets;
 
         } catch (Exception e) {
