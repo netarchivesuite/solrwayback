@@ -204,6 +204,9 @@ export default {
       else if(selected === 'urlSearch') {
         this.updateSolrSettingUrlSearch(!this.solrSettings.urlSearch)
         this.updateSolrSettingImgSearch(false)
+        if (!this.$_validateUrlSearchPrefix(this.futureQuery)) {
+            this.futureQuery = 'http://' + this.futureQuery
+        }
       }
     },
     clearResultsAndSearch() {
