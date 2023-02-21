@@ -51,6 +51,14 @@ The Warc indexer is the indexing engine for documents in SolrWayback. It is main
 </p>
 
 <p align="center"> 
+   <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/domain_result_visualization.png?raw=true"/>
+</p>
+<p align="center">
+  Visualization of results by domain over time.
+</p>
+
+
+<p align="center"> 
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_playback.png?raw=true" />
 </p>
 <p align="center">
