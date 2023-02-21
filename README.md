@@ -209,7 +209,7 @@ The script keeps track of processed files by checking if a log from a previous a
 in the `status`-folder (this can be changed using the `STATUS_ROOT` variable). To re-index a WARC file, delete the
 corresponding log file.
 
-The script `warc-indexer.sh` is not available for Windows. For that platform only a more primitive script is provided that also works for Linux/MacOs.
+The script `warc-indexer.sh` is not available for Windows. For windows platform only a more primitive script is provided that also works for Linux/MacOs.
 1. Copy ARC/WARC files into folder: `indexing/warcs1`  
 2. Start indexing:  call `indexing/batch_warcs1_folder.sh` (or batch_warcs1_folder.bat for windows)
 
