@@ -34,9 +34,6 @@ https://webadmin.oszk.hu/solrwayback/
 Warc-indexer: https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer<br>
 The Warc indexer is the indexing engine for documents in SolrWayback. It is maintained by the British Library.
 
-Netsearch(Archon/Arctika): https://github.com/netarchivesuite/netsearch<br>
-Archon/Actika is a book keeping application for warc-files and can start multiple concurrent warc-indexer jobs for large scale netarchives. 
-
 ## SolrWayback Screenshots
 
 <p align="center"> 
