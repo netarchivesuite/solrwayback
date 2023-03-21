@@ -96,9 +96,11 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
       // There are streams. Read content from the first one
       int read = entryStreams.get(0).read(b, off, len);
       if (read == -1) { // The entryStream is empty. Remove it and go to the next
-        log.debug(String.format(Locale.ENGLISH, "Emptied entryStream #%d (contained %d bytes). " +
+        /* Too spammy
+          log.debug(String.format(Locale.ENGLISH, "Emptied entryStream #%d (contained %d bytes). " +
                                                 "Switching to next one or loadMore() if the buffer is empty",
                                 processedStreams+1, readFromCurrent));
+        */
         try {
           entryStreams.get(0).close();
           processedStreams++;
