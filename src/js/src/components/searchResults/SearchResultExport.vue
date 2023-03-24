@@ -104,28 +104,28 @@ export default {
   methods: {
     exportToWARC() {
      return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}warc?query=${encodeURIComponent(this.query)}${this.searchAppliedFacets.join('')}`:
+      `${this.returnExportUrl()}warc?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`:
       `${this.returnExportUrl()}warc?query=${encodeURIComponent(this.query)}`
     },
     exportToExtendedWARC() {
       return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}warcExpanded?query=${encodeURIComponent(this.query)}${this.searchAppliedFacets.join('')}`:
+      `${this.returnExportUrl()}warcExpanded?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`:
       `${this.returnExportUrl()}warcExpanded?query=${encodeURIComponent(this.query)}`
     },
     exportToWARCGZ() {
       return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}warc?gzip=true&query=${encodeURIComponent(this.query)}${this.searchAppliedFacets.join('')}` :
+      `${this.returnExportUrl()}warc?gzip=true&query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}` :
       `${this.returnExportUrl()}warc?gzip=true&query=${encodeURIComponent(this.query)}`
     },
     exportToExtendedWARCGZ() {
       return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}warcExpanded?gzip=true&query=${encodeURIComponent(this.query)}${this.searchAppliedFacets.join('')}`:
+      `${this.returnExportUrl()}warcExpanded?gzip=true&query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`:
       `${this.returnExportUrl()}warcExpanded?gzip=true&query=${encodeURIComponent(this.query)}`
     },
     exportToCSV() {
       let fields = this.selectedArray.join(',')
       return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}csv?query=${encodeURIComponent(this.query)}${this.searchAppliedFacets.join('')}&fields=${encodeURIComponent(fields)}` :
+      `${this.returnExportUrl()}csv?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}&fields=${encodeURIComponent(fields)}` :
       `${this.returnExportUrl()}csv?query=${encodeURIComponent(this.query)}&fields=${encodeURIComponent(fields)}`
     },
     returnExportUrl() {
@@ -164,6 +164,11 @@ export default {
       recipient === 'nonSelectedArray' ? toArray.push(item) : toArray.unshift(item)
       fromArray.splice(itemNumber,1)
 
+    },
+    getEncodedAppliedFacets(appliedFacets) {
+      return appliedFacets.map(facet => 
+     `&fq=${encodeURIComponent(facet.slice(facet.indexOf('=') + 1))}`
+     )
     }
   },
 }
