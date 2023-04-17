@@ -27,6 +27,7 @@ public class SolrStats {
      * @return all standard stats for all numeric fields from query as a JSON string.
      */
     public static String getStatsForMultipleNumericFields(String query, List<String> fields){
+        //TODO: Should contain a check, that the values are actually numeric and not anything else.
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 
@@ -47,6 +48,7 @@ public class SolrStats {
      * @return all standard stats for field as a JSON string.
      */
     public static String getStatsForSingleNumericField(String query, String field){
+        //TODO: Should contain a check, that the values are actually numeric and not anything else.
         SolrQuery solrQuery = new SolrQuery();
 
         // Get all stats for input field
@@ -74,7 +76,5 @@ public class SolrStats {
         String stats = gson.toJson(response.getFieldStatsInfo().values());
         return stats;
     }
-
-
 
 }
