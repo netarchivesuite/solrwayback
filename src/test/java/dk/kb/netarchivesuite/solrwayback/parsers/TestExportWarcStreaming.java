@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -68,54 +69,88 @@ public class TestExportWarcStreaming extends UnitTestUtils {
   }
 
   @Test
-  public void testGzipExport() throws Exception {
-    final String WARC = getFile("compressions_warc/transfer_compression_none.warc.gz").getCanonicalPath();
-    final long OFFSET = 881;
-    final int EXPECTED_CONTENT_LENGTH = 246;
-    final int EXPECTED_EXPORT_LENGTH = 1102;
-    final int batchSize = 30;
-    final int batches = 3;
+  public void testGzipExportSingle() throws Exception {
+      final String warc = getFile("compressions_warc/transfer_compression_none.warc.gz").getCanonicalPath();
+      final long offset = 881;
+      final int expectedContentLength = 246;
+      final int expectedExportLength = 1102;
+      final int batchSize = 1;
+      final int batches = 1;
 
-    final int EXPECTED_TOTAL_SIZE = EXPECTED_EXPORT_LENGTH*batchSize*batches;
-
-    byte[] upFrontBinary;
-    {
-      ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(WARC), OFFSET, true);
-      upFrontBinary = warcEntry.getBinary();
-      assertEquals("Length for up front load should be as expected", EXPECTED_CONTENT_LENGTH, upFrontBinary.length);
-    }
-
-    {
-      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, batchSize, batches);
-
-      StreamingSolrWarcExportBufferedInputStream exportStream = new
-              StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize*batches, true);
-      //GZIPInputStream gis = new GZIPInputStream(new BufferedInputStream(exportStream, 100)); // Fails after 6612
-      //GZIPInputStream gis = new GZIPInputStream(new BufferedInputStream(exportStream, 100000)); // Does not fail
-
-      // The build-in GZIPInputStream does not handle concatenated gzip-blocks well at all, if the inner stream
-      // does not deliver the maximum possible bytes from calls to read(buf, offset, length). Or something like that.
-      // Apache's GzipCompressorInputStream has explicit support for multi-block gzip-streams
-      GzipCompressorInputStream gis = new GzipCompressorInputStream(exportStream, true);
-
-      byte[] exportedBytes = new byte[EXPECTED_TOTAL_SIZE];
-
-      log.info("Attempting to read " + exportedBytes.length + " bytes from GZIPInputStream(exportStream)");
-      int exported = IOUtils.read(gis, exportedBytes);
-
-      log.info("Got " + exported + " bytes, checking for trailing bytes");
-      int extra = 0;
-      while (gis.read() != -1) {
-        extra++;
-      }
-      assertEquals("Expected the right number of bytes to be read", EXPECTED_TOTAL_SIZE, exported);
-      assertEquals("There should be no more content in the export stream", 0, extra);
-
-      assertBinaryEnding(upFrontBinary, exportedBytes);
-    }
+      gzipExportHelper(warc, offset, expectedContentLength, expectedExportLength, batchSize, batches);
   }
 
   @Test
+  public void testGzipExportFixed() throws Exception {
+      final String warc = getFile("compressions_warc/transfer_compression_none.warc.gz").getCanonicalPath();
+      final long offset = 881;
+      final int expectedContentLength = 246;
+      final int expectedExportLength = 1102;
+      final int batchSize = 30;
+      final int batches = 3;
+
+      gzipExportHelper(warc, offset, expectedContentLength, expectedExportLength, batchSize, batches);
+  }
+
+  @Test
+  public void testGzipExportMonkey() throws Exception {
+      final String warc = getFile("compressions_warc/transfer_compression_none.warc.gz").getCanonicalPath();
+      final long offset = 881;
+      final int expectedContentLength = 246;
+      final int expectedExportLength = 1102;
+
+      final int RUNS = 50;
+
+      Random r = new Random(87);
+      for (int run = 0 ; run < RUNS ; run++) {
+          int batchSize = r.nextInt(50)+1;
+          int batches = r.nextInt(10)+1;
+          gzipExportHelper(warc, offset, expectedContentLength, expectedExportLength, batchSize, batches);
+      }
+  }
+
+    private void gzipExportHelper(String warc, long offset, int expectedContentLength, int expectedExportLength,
+                                  int batchSize, int batches) throws Exception {
+        final int EXPECTED_TOTAL_SIZE = expectedExportLength * batchSize * batches;
+
+        byte[] upFrontBinary;
+        {
+          ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(warc), offset, true);
+          upFrontBinary = warcEntry.getBinary();
+          assertEquals("Length for up front load should be as expected", expectedContentLength, upFrontBinary.length);
+        }
+
+        {
+          SolrGenericStreaming mockedSolr = getMockedSolrStream(warc, offset, batchSize, batches);
+
+          StreamingSolrWarcExportBufferedInputStream exportStream = new
+                  StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize * batches, true);
+          //GZIPInputStream gis = new GZIPInputStream(new BufferedInputStream(exportStream, 100)); // Fails after 6612
+          //GZIPInputStream gis = new GZIPInputStream(new BufferedInputStream(exportStream, 100000)); // Does not fail
+
+          // The build-in GZIPInputStream does not handle concatenated gzip-blocks well at all, if the inner stream
+          // does not deliver the maximum possible bytes from calls to read(buf, offset, length). Or something like that.
+          // Apache's GzipCompressorInputStream has explicit support for multi-block gzip-streams
+          GzipCompressorInputStream gis = new GzipCompressorInputStream(exportStream, true);
+
+          byte[] exportedBytes = new byte[EXPECTED_TOTAL_SIZE];
+
+          log.info("Attempting to read " + exportedBytes.length + " bytes from GZIPInputStream(exportStream)");
+          int exported = IOUtils.read(gis, exportedBytes);
+
+          log.info("Got " + exported + " bytes, checking for trailing bytes");
+          int extra = 0;
+          while (gis.read() != -1) {
+            extra++;
+          }
+          assertEquals("Expected the right number of bytes to be read", EXPECTED_TOTAL_SIZE, exported);
+          assertEquals("There should be no more content in the export stream", 0, extra);
+
+          assertBinaryEnding(upFrontBinary, exportedBytes);
+        }
+    }
+
+    @Test
   public void testGzipExportTruncated() throws Exception {
     final String[][] ENTRIES = new String[][]{
             {"compressions_warc/transfer_compression_none_truncated.warc.gz", "881"},

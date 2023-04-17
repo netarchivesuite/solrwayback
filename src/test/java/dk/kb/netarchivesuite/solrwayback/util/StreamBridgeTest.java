@@ -1,6 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hdfs.util.ByteBufferOutputStream;
 import org.junit.Assert;
@@ -10,6 +11,10 @@ import org.junit.runner.manipulation.Filter;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -65,6 +70,44 @@ public class StreamBridgeTest extends UnitTestUtils {
 
             long delivered = IOUtils.skip(guaranteed, filesize*2);
             assertEquals("The guaranteed delivered size should match the file size", filesize, delivered);
+        }
+    }
+
+    // Light hammering of StreamBridge with gzipped content
+    @Test
+    public void testMonkeyGZipStream() throws IOException {
+        final int DUPLICATES = 10;
+        final int RUNS = 5;
+
+        File testFile = getFile("compressions_warc/transfer_compression_brotli.warc");
+        long filesize = Files.size(Paths.get(testFile.getPath()));
+
+        for (int run = 0 ; run < RUNS ; run++) {
+            List<Consumer<OutputStream>> providers = new ArrayList<>(3);
+            Consumer<OutputStream> zippedWARC = StreamBridge.gzip(out -> {
+                try (FileInputStream fis = new FileInputStream(testFile)) {
+                    IOUtils.copyLarge(fis, out);
+                } catch (IOException e) {
+                    throw new RuntimeException("IOException copying content", e);
+                }
+            });
+            for (int i = 0; i < DUPLICATES; i++) {
+                providers.add(zippedWARC);
+            }
+
+            Random r = new Random();
+            try (InputStream allIn = StreamBridge.outputToInput(providers);
+                 GzipCompressorInputStream gis = new GzipCompressorInputStream(allIn, true)) {
+                try {
+                    Thread.sleep(r.nextInt(100));
+                } catch (InterruptedException e) {
+                    // Do nothing
+                }
+                long delivered = IOUtils.skip(gis, filesize * (DUPLICATES + 1)); // +1 to be sure we read enough
+                assertEquals("The delivered size should match the file size " + filesize +
+                        " times DUPLICATES " + DUPLICATES + " for run " + run,
+                        filesize * DUPLICATES, delivered);
+            }
         }
     }
 
