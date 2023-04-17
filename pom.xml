@@ -370,7 +370,7 @@
         </executions>
       </plugin>
 
-      <!--     <plugin>
+        <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
@@ -406,7 +406,8 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.30.v20200611</version>  Java 8 
+        <version>10.0.12</version>
+        <!--<version>9.4.30.v20200611</version>-->
         <configuration>
           <useTestScope>true</useTestScope>
           <webApp>
@@ -414,7 +415,7 @@
             <descriptor>${project.basedir}/src/main/webapp/WEB-INF/web.xml</descriptor>
           </webApp>
         </configuration>
-      </plugin> -->
+      </plugin>
 
     </plugins>
 
