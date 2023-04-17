@@ -1,18 +1,10 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.request.LukeRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.util.NamedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Get stats through the solr <a href="https://solr.apache.org/guide/8_11/the-stats-component.html">stats component</a>.
@@ -27,11 +19,13 @@ public class SolrStats {
 
     /**
      * Get standard solr stats for all fields given
-     * @param query to generate stats for.
-     * @param fields to return stats for.
+     *
+     * @param query   to generate stats for.
+     * @param filters
+     * @param fields  to return stats for.
      * @return all standard stats for all fields from query as a JSON string.
      */
-    public static String getStatsForFields(String query, String... fields){
+    public static String getStatsForFields(String query, String[] filters, String... fields){
         //TODO: Should contain a check, that the values are actually numeric and not anything else.
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
