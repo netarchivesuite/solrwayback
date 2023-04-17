@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrTestClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStats;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
@@ -18,7 +17,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class SolrStatsTest {
@@ -98,7 +96,7 @@ public class SolrStatsTest {
     @Test
     public void singleNumericFieldStatTest(){
         // Testing with hardcoded documents above
-        String stats = SolrStats.getStatsForFields("*:*", "crawl_year");
+        String stats = SolrStats.getStatsForFields("*:*", null, "crawl_year");
 
         JsonObject entryAsJsonObject = extractJsonObjectFromJsonArrayString(stats);
 
@@ -114,7 +112,7 @@ public class SolrStatsTest {
     @Test
     public void multipleNumericFieldStatsTest(){
         // Testing with hardcoded documents above
-        String stats = SolrStats.getStatsForFields("*:*", SolrStats.interestingNumericFields);
+        String stats = SolrStats.getStatsForFields("*:*", null , SolrStats.interestingNumericFields);
 
         JsonObject entryAsJsonObject = extractJsonObjectFromJsonArrayString(stats);
 
@@ -130,7 +128,7 @@ public class SolrStatsTest {
     @Test
     public void singleTextFieldStatTest(){
         // Testing with hardcoded documents above
-        String stats = SolrStats.getStatsForFields("*:*", "domain");
+        String stats = SolrStats.getStatsForFields("*:*", null , "domain");
 
         JsonObject entryAsJsonObject = extractJsonObjectFromJsonArrayString(stats);
 
