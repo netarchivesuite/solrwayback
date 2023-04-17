@@ -140,11 +140,6 @@ public class SolrStatsTest {
         Assert.assertNull(entryAsJsonObject.get("mean"));
     }
 
-    @Test
-    public void testLukeRequest() throws SolrServerException, IOException {
-        SolrStats.sendLukeRequest();
-    }
-
     private JsonObject extractJsonObjectFromJsonArrayString(String string){
         JsonArray solrStats = new Gson().fromJson(string, JsonArray.class);
         JsonElement singleEntry = solrStats.get(0);

@@ -21,15 +21,15 @@ import java.util.List;
 public class SolrStats {
     private static final Logger log = LoggerFactory.getLogger(SolrStats.class);
     public static final String[] interestingNumericFields =  new String[]{"content_length", "crawl_year", "content_text_length", "image_height", "image_width", "image_size"};
-    final List<String> interestingTextFields = Arrays.asList("links", "domain", "elements_used", "content_type",
-                                                                "content_language", "links_images", "type");
-    final List<String> otherNumericFields = Arrays.asList("score", "status_code", "source_file_offset", "_version_", "wayback_date");
+    final String[] interestingTextFields = new String[]{"links", "domain", "elements_used", "content_type",
+                                                                "content_language", "links_images", "type"};
+    final String[] otherNumericFields = new String[]{"score", "status_code", "source_file_offset", "_version_", "wayback_date"};
 
     /**
-     * Get standard solr stats for all numeric fields given.
+     * Get standard solr stats for all fields given
      * @param query to generate stats for.
      * @param fields to return stats for.
-     * @return all standard stats for all numeric fields from query as a JSON string.
+     * @return all standard stats for all fields from query as a JSON string.
      */
     public static String getStatsForFields(String query, String... fields){
         //TODO: Should contain a check, that the values are actually numeric and not anything else.
@@ -44,18 +44,6 @@ public class SolrStats {
         Gson gson = new Gson();
         String stats = gson.toJson(response.getFieldStatsInfo().values());
         return stats;
-    }
-
-    public static void sendLukeRequest() throws SolrServerException, IOException {
-        LukeRequest lukeRequest = new LukeRequest();
-        lukeRequest.setShowSchema(true);
-        NamedList<Object> response = NetarchiveSolrClient.solrServer.request(lukeRequest);
-        Object schema = response.get("schema");
-
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String prettyJsonString = gson.toJson(schema);
-
-        System.out.println(prettyJsonString);
     }
 
 }
