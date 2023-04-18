@@ -548,7 +548,7 @@ public class Facade {
         else {
             max= PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS;;
             if (results > PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS) {
-                throw new InvalidArgumentServiceException("Number of results for warc expanded  export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
+                throw new InvalidArgumentServiceException("Number of results for warc expanded export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
             }
         }
         SolrGenericStreaming solr = SolrGenericStreaming.create(
