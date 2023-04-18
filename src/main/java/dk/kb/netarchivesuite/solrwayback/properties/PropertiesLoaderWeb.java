@@ -42,7 +42,7 @@ public class PropertiesLoaderWeb {
     
     public static final String EXPORT_WARC_MAXRESULTS_PROPERTY = "export.warc.maxresults";
     public static final String EXPORT_CSV_MAXRESULTS_PROPERTY = "export.csv.maxresults";
-    public static final String EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY = "export.warc.maxresults";
+    public static final String EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY = "export.warc.expanded.maxresults";
 
     public static final String EXPORT_CSV_FIELDS_PROPERTY = "export.csv.fields";
     public static final String ABOUT_TEXT_FILE_PROPERTY = "about.text.file";
