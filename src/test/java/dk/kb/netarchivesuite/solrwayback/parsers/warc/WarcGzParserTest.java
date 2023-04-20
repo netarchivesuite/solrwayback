@@ -15,11 +15,33 @@ import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcFileParserFactory;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 
 public class WarcGzParserTest  extends UnitTestUtils{
        
+    
+    @Test
+    public void testEvilWarcParser() throws Exception {                      
+        // The binary is not loaded, so content offsets in the WARC-File does not need match
+        // so the WARC file can be edited with further evil header entries.
+        File file = getFile("src/test/resources/example_warc/Evil-Warc-Headers.warc");
+        try {        
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 0,false);  //first entry, no WARC metadata header
+        
+        assertEquals("text/plain", arcEntry.getContentType());
+        assertEquals("robots.txt", arcEntry.getFileName());
+        assertEquals(6000, arcEntry.getWarcEntryContentLength());       
+        assertEquals(200,arcEntry.getStatus_code());
+        assertEquals(5155,arcEntry.getContentLength()); //This entry has a tab/multiple whitespace before size
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            fail();            
+        }                
+    }
+    
     @Test
     public void testWarcGzParser() throws Exception {
         
