@@ -25,7 +25,7 @@ public class SolrStats {
      * Get standard solr stats for all fields given.
      * The solr documentation defines the standard stats <a href="https://solr.apache.org/guide/8_11/the-stats-component.html">here</a>
      * @param query   to generate stats for.
-     * @param filters
+     * @param filters that are to be added to solr query.
      * @param fields  to return stats for.
      * @return all standard stats for all fields from query as a JSON string.
      */
@@ -36,9 +36,12 @@ public class SolrStats {
             SolrQuery solrQuery = new SolrQuery();
             solrQuery.setQuery(query);
 
-            for (String filter: filters) {
-                solrQuery.addFilterQuery(filter);
+            if (!(filters == null)){
+                for (String filter: filters) {
+                    solrQuery.addFilterQuery(filter);
+                }
             }
+
 
             for (String field: fields) {
                 if (PropertiesLoaderWeb.STATS.contains(field)){
