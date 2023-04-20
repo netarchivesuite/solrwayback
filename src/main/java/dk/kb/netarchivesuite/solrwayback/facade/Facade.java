@@ -95,9 +95,6 @@ public class Facade {
         return proxySolrOnlyFacetsLoadMore(query, filterQueries, facetField, revisits);
     }
 
-    
-    
-    
     /*
      * If fieldList is null all fields will be loaded
      * returns json
@@ -106,7 +103,6 @@ public class Facade {
         return NetarchiveSolrClient.getInstance().idLookupResponse(id,PropertiesLoaderWeb.FIELDS);
     }
 
-    
     /*
     //TODO limit fields allowed 
     public  static String getRawSolrQuery(String query,List<String> fq,String fieldList, int rows, int startRow, HashMap<String,String> rawQueryParams)  throws Exception{     
@@ -546,9 +542,9 @@ public class Facade {
             }
         }
         else {
-            max= PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS;;
+            max= PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS;
             if (results > PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS) {
-                throw new InvalidArgumentServiceException("Number of results for warc expanded  export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
+                throw new InvalidArgumentServiceException("Number of results for warc expanded export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
             }
         }
         SolrGenericStreaming solr = SolrGenericStreaming.create(

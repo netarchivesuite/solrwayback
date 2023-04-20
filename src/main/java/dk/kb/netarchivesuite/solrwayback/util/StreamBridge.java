@@ -111,8 +111,10 @@ public class StreamBridge {
                     providerList.get(i).accept(noCloseOut);
                 } catch (Exception e) {
                     String message = String.format(
-                            Locale.ENGLISH, "outputToInput: Exception calling accept on sub-provider #%d/%d",
-                            i+1, providerList.size());
+                            Locale.ENGLISH,
+                            // If the providerList contains NamedConsumers it will help debugging
+                            "outputToInput: Exception activating sub-provider #%d/%d in Thread %s for provider %s",
+                            i+1, providerList.size(), Thread.currentThread().getName(), providerList.get(i));
                     log.warn(message, e);
                     // Next read call on the returned InputStream will throw this Exception
                     ein.setException(new IOException(message, e));
@@ -371,6 +373,10 @@ public class StreamBridge {
                 // Fail read
                 log.info("guaranteedStream: Exception reading from input stream", e);
                 return new StatusInputStream(new ByteArrayInputStream(bos.toByteArray()), e, read);
+            } catch (OutOfMemoryError e) {
+                log.error("OutOfMemoryError while buffering stream to memory", e);
+                RuntimeException re = new RuntimeException("OutOfMemoryError while buffering stream to memory", e);
+                return new StatusInputStream(new ByteArrayInputStream(bos.toByteArray()), re, read);
             }
         }
 

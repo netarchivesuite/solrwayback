@@ -15,6 +15,7 @@ The default number of 20 results on each page can be changed with this new prope
 
 search.pagination=20
 
+Bugfix: The property key for expanded warc limit was the same as for non-expanded
 
 
 4.4.0

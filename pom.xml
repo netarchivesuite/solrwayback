@@ -406,7 +406,7 @@
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>10.0.12</version>
+        <version>9.4.51.v20230217</version>
         <!--<version>9.4.30.v20200611</version>-->
         <configuration>
           <useTestScope>true</useTestScope>
