@@ -78,4 +78,15 @@ public class SolrStats {
         return stats;
     }
 
+    /**
+     * Show which fields it is possible to extract stats for.
+     * @return a JSON array containing fields that can be queried for stats.
+     */
+    public static String getFieldsWithStatsEnabled(){
+        Gson gson = new Gson();
+        List<String> stats = PropertiesLoaderWeb.STATS;
+        String statsAsJson = gson.toJson(stats);
+        return statsAsJson;
+    }
+
 }
