@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrTestClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStats;
@@ -18,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class SolrStatsTest {
     private static final Logger log = LoggerFactory.getLogger(SolrStatsTest.class);
@@ -96,9 +99,10 @@ public class SolrStatsTest {
     @Test
     public void singleNumericFieldStatTest(){
         // Testing with hardcoded documents above
-        String stats = SolrStats.getStatsForFields("*:*", null, "crawl_year");
+        List<String> field = Collections.singletonList("crawl_year");
+        String stats = SolrStats.getStatsForFields("*:*", null, field);
 
-        JsonObject entryAsJsonObject = extractJsonObjectFromJsonArrayString(stats);
+        JsonObject entryAsJsonObject = extractFirstObjectFromJsonArrayString(stats);
 
         Assert.assertEquals("crawl_year", entryAsJsonObject.get("name").getAsString());
         Assert.assertEquals(2003.0, entryAsJsonObject.get("min").getAsDouble(), 0);
@@ -114,7 +118,7 @@ public class SolrStatsTest {
         // Testing with hardcoded documents above
         String stats = SolrStats.getStatsForFields("*:*", null , SolrStats.interestingNumericFields);
 
-        JsonObject entryAsJsonObject = extractJsonObjectFromJsonArrayString(stats);
+        JsonObject entryAsJsonObject = extractFirstObjectFromJsonArrayString(stats);
 
         Assert.assertEquals("content_length", entryAsJsonObject.get("name").getAsString());
         Assert.assertEquals(2.0, entryAsJsonObject.get("min").getAsDouble(), 0);
@@ -128,9 +132,10 @@ public class SolrStatsTest {
     @Test
     public void singleTextFieldStatTest(){
         // Testing with hardcoded documents above
-        String stats = SolrStats.getStatsForFields("*:*", null , "domain");
+        List<String> field = Collections.singletonList("domain");
+        String stats = SolrStats.getStatsForFields("*:*", null , field);
 
-        JsonObject entryAsJsonObject = extractJsonObjectFromJsonArrayString(stats);
+        JsonObject entryAsJsonObject = extractFirstObjectFromJsonArrayString(stats);
 
         Assert.assertEquals("domain", entryAsJsonObject.get("name").getAsString());
         Assert.assertEquals(9, entryAsJsonObject.get("count").getAsInt());
@@ -138,7 +143,16 @@ public class SolrStatsTest {
         Assert.assertNull(entryAsJsonObject.get("mean"));
     }
 
-    private JsonObject extractJsonObjectFromJsonArrayString(String string){
+
+    @Test
+    public void defaultFieldsTest(){
+        String stats = SolrStats.getStatsForFields("*:*", null, PropertiesLoaderWeb.STATS);
+        JsonArray solrStats = new Gson().fromJson(stats, JsonArray.class);
+
+        Assert.assertEquals(13, solrStats.size());
+    }
+    
+    private JsonObject extractFirstObjectFromJsonArrayString(String string){
         JsonArray solrStats = new Gson().fromJson(string, JsonArray.class);
         JsonElement singleEntry = solrStats.get(0);
         JsonObject entryAsJsonObject = singleEntry.getAsJsonObject();
