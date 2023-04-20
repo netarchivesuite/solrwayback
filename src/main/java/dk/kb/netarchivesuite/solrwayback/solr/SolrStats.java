@@ -67,31 +67,36 @@ public class SolrStats {
      * @return percentiles for specified fields as a JSON string.
      */
     public static String getPercentilesForFields(String query, List<String> percentiles, List<String> fields){
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery(query);
+        if (fields.isEmpty()) {
+            throw new IllegalArgumentException("No fields have been specified for stats component.");
+        } else {
+            SolrQuery solrQuery = new SolrQuery();
+            solrQuery.setQuery(query);
 
-        List<Double> parsedPercentiles = new ArrayList<>();
-        for (String percentile: percentiles) {
-            parsedPercentiles.add(Double.parseDouble(percentile));
-        }
-
-        String allPercentiles = StringUtils.join(parsedPercentiles, ",");
-        String percentileQuery = "{!percentiles='" + allPercentiles + "'}";
-
-        // When giving this a text field it calculates nothing. Should probably throw a warning or something like that
-        for (String field: fields) {
-            if (PropertiesLoaderWeb.STATS.contains(field)){
-                solrQuery.setGetFieldStatistics(percentileQuery + field);
-            } else {
-                log.error("Percentile stats can not be shown for field: " + field + " as it is not present in properties.");
+            List<Double> parsedPercentiles = new ArrayList<>();
+            for (String percentile : percentiles) {
+                parsedPercentiles.add(Double.parseDouble(percentile));
             }
+
+            String allPercentiles = StringUtils.join(parsedPercentiles, ",");
+            String percentileQuery = "{!percentiles='" + allPercentiles + "'}";
+
+            // When giving this a text field it calculates nothing. Should probably throw a warning or something like that
+            for (String field : fields) {
+                if (PropertiesLoaderWeb.STATS.contains(field)) {
+                    solrQuery.setGetFieldStatistics(percentileQuery + field);
+                } else {
+                    log.error("Percentiles can not be shown for field: " + field + " as it is not present in properties.");
+                    throw new IllegalArgumentException("Percentiles can not be shown for field: '" + field + "' as it is not present in properties.");
+                }
+            }
+
+            QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
+            Gson gson = new Gson();
+            String stats = gson.toJson(response.getFieldStatsInfo().values());
+
+            return stats;
         }
-
-        QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
-        Gson gson = new Gson();
-        String stats = gson.toJson(response.getFieldStatsInfo().values());
-
-        return stats;
     }
 
     /**
