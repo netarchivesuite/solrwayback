@@ -30,21 +30,26 @@ public class SolrStats {
      * @return all standard stats for all fields from query as a JSON string.
      */
     public static String getStatsForFields(String query, List<String> filters, List<String> fields){
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery(query);
+        if (fields.isEmpty()){
+            throw new IllegalArgumentException("No fields have been specified for stats component.");
+        } else {
+            SolrQuery solrQuery = new SolrQuery();
+            solrQuery.setQuery(query);
 
-        for (String field: fields) {
-            if (PropertiesLoaderWeb.STATS.contains(field)){
-                solrQuery.setGetFieldStatistics(field);
-            } else {
-                log.warn("Stats can not be shown for field: " + field + " as it is not present in properties.");
+            for (String field: fields) {
+                if (PropertiesLoaderWeb.STATS.contains(field)){
+                    solrQuery.setGetFieldStatistics(field);
+                } else {
+                    log.warn("Stats can not be shown for field: " + field + " as it is not present in properties.");
+                    throw new IllegalArgumentException("Stats can not be shown for field: '" + field + "' as it is not present in properties.");
+                }
             }
-        }
 
-        QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
-        Gson gson = new Gson();
-        String stats = gson.toJson(response.getFieldStatsInfo().values());
-        return stats;
+            QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
+            Gson gson = new Gson();
+            String stats = gson.toJson(response.getFieldStatsInfo().values());
+            return stats;
+        }
     }
 
     /**
