@@ -14,6 +14,25 @@
             <MaxFileSize>100MB</MaxFileSize>
         </triggeringPolicy>
     </appender>
+    
+     <appender name="E" class="ch.qos.logback.core.rolling.RollingFileAppender">
+         <File>${catalina.home}/logs/solrwayback_error.log</File>
+       <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+          <level>ERROR</level>
+       </filter>
+    
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger\(%file:%line\) - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <maxIndex>10</maxIndex>
+            <FileNamePattern>${catalina.home}/logs/solrwayback_error.log.%i</FileNamePattern>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>100MB</MaxFileSize>
+        </triggeringPolicy>
+    </appender>
+    
 
  <!--Shut them up-->    
     <logger name="org" level="WARN"/>
@@ -22,6 +41,7 @@
 
     <root level="debug">
         <appender-ref ref="R" />
+        <appender-ref ref="E" />
     </root>
 
 </configuration>
