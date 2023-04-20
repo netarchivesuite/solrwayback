@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.util.DelayedInputStream;
+import dk.kb.netarchivesuite.solrwayback.util.NamedConsumer;
 import dk.kb.netarchivesuite.solrwayback.util.StatusInputStream;
 import dk.kb.netarchivesuite.solrwayback.util.StreamBridge;
 import org.apache.commons.io.IOUtils;
@@ -105,6 +106,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
           entryStreams.get(0).close();
           processedStreams++;
         } catch (Exception e) {
+            log.debug("boo", e);
           log.warn("Error closing entryStream", e);
         }
         entryStreams.remove(0);
@@ -227,19 +229,22 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
     for (EntryAndHeaders entryAndHeader: entriesAndHeaders) {
       ArcEntry entry = entryAndHeader.entry;
       try {
-        providers.add(StreamBridge.gzip(out -> { // Add the lambda to the list for later activation
-          cLazy.incrementAndGet();
-          try {
-            IOUtils.copy(getWARCEntryStream(entryAndHeader), out);
-          } catch (Exception e) {
-            log.debug(String.format(
-                    Locale.ENGLISH, "Exception during copying of bytes from export lambda #%d with payload size %d bytes for URL '%s'",
-                    cLazy.get(), entry.getBinaryArraySize(), entry.getUrl()), e);
-          }
-        }));
+        providers.add(new NamedConsumer<>( // Wrapping in NamedConsumer for logging and debugging
+                StreamBridge.gzip(out -> { // Add the lambda to the list for later activation
+                    cLazy.incrementAndGet();
+                    try {
+                        IOUtils.copy(getWARCEntryStream(entryAndHeader), out);
+                    } catch (Exception e) {
+                        log.warn(String.format(
+                                Locale.ENGLISH, "Exception during copying of bytes from export lambda #%d " +
+                                        "with payload size %d bytes for URL '%s'",
+                                cLazy.get(), entry.getBinaryArraySize(), entry.getUrl()), e);
+                    }
+                }), "url='" + entry.getUrl()));
       } catch (Exception e) {
         log.error(String.format(
-                Locale.ENGLISH, "Exception getting delayed stream for export lambda #%d with payload size %d bytes for URL '%s'",
+                Locale.ENGLISH,
+                "Exception getting delayed stream for export lambda #%d with payload size %d bytes for URL '%s'",
                 c.incrementAndGet(), entry.getBinaryArraySize(), entry.getUrl()), e);
       }
     }
@@ -266,8 +271,8 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
               StreamBridge.guaranteedStream(entryAndHeaders.entry.getBinaryLazyLoad(), heapCache) :
               StreamBridge.guaranteedStream(new ByteArrayInputStream(new byte[0]), heapCache);
       if (payload.getStatus() == StatusInputStream.STATUS.exception) {
-        log.warn("getDelayedStream: Exception encountered while caching payload for '" + id +
-                 "'. Delivering partial content");
+        log.warn("getDelayedStream: Exception encountered while caching payload for '{}'. Delivering partial content",
+                id);
       }
 
       // Resolve the headers
