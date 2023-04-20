@@ -21,9 +21,10 @@ public class SolrStats {
     final List<String> interestingTextFields = Arrays.asList("links", "domain", "elements_used", "content_type",
                                                                 "content_language", "links_images", "type");
     final List<String> otherNumericFields = Arrays.asList("score", "status_code", "source_file_offset", "_version_", "wayback_date");
+
     /**
-     * Get standard solr stats for all fields given
-     *
+     * Get standard solr stats for all fields given.
+     * The solr documentation defines the standard stats <a href="https://solr.apache.org/guide/8_11/the-stats-component.html">here</a>
      * @param query   to generate stats for.
      * @param filters
      * @param fields  to return stats for.
@@ -47,6 +48,13 @@ public class SolrStats {
         return stats;
     }
 
+    /**
+     * Get percentiles for numeric fields
+     * @param query to generate stats for.
+     * @param percentiles to extract values for.
+     * @param fields to return percentiles for.
+     * @return percentiles for specified fields as a JSON string.
+     */
     public static String getPercentilesForFields(String query, List<String> percentiles, List<String> fields){
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
