@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback;
 
+import com.carrotsearch.randomizedtesting.annotations.TestMethodProviders;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -166,6 +167,14 @@ public class SolrStatsTest {
 
         JsonObject links = extractFirstObjectFromJsonArrayString(stats);
         Assert.assertNull(links.get("percentiles"));
+    }
+
+    @Test
+    public void availableFieldsTest(){
+        String fieldsAvailable = SolrStats.getFieldsWithStatsEnabled();
+
+        JsonArray availableFields = new Gson().fromJson(fieldsAvailable, JsonArray.class);
+        Assert.assertEquals(13, availableFields.size());
     }
     
     private JsonObject extractFirstObjectFromJsonArrayString(String string){
