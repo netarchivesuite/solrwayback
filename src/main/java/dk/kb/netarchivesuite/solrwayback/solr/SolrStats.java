@@ -54,17 +54,19 @@ public class SolrStats {
         String allPercentiles = StringUtils.join(percentiles, ",");
         String percentileQuery = "{!percentiles='" + allPercentiles + "'}";
 
+        // When giving this a text field it calculates nothing. Should probably throw a warning or something like that
         for (String field: fields) {
             if (PropertiesLoaderWeb.STATS.contains(field)){
                 solrQuery.setGetFieldStatistics(percentileQuery + field);
             } else {
-                log.warn("Percentile stats can not be shown for field: " + field + " as it is not present in properties.");
+                log.error("Percentile stats can not be shown for field: " + field + " as it is not present in properties.");
             }
         }
 
         QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
         Gson gson = new Gson();
         String stats = gson.toJson(response.getFieldStatsInfo().values());
+
         return stats;
     }
 

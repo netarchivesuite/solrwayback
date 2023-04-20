@@ -157,6 +157,16 @@ public class SolrStatsTest {
         JsonObject image_height = extractFirstObjectFromJsonArrayString(stats);
         Assert.assertEquals(800.0, image_height.getAsJsonObject("percentiles").get("25.0").getAsDouble(), 0);
     }
+
+    @Test
+    public void textPercentileTest(){
+        List<String> percentiles = Arrays.asList("25", "50", "75");
+        List<String> fields = Arrays.asList("links");
+        String stats = SolrStats.getPercentilesForFields("*:*", percentiles, fields);
+
+        JsonObject links = extractFirstObjectFromJsonArrayString(stats);
+        Assert.assertNull(links.get("percentiles"));
+    }
     
     private JsonObject extractFirstObjectFromJsonArrayString(String string){
         JsonArray solrStats = new Gson().fromJson(string, JsonArray.class);
