@@ -124,6 +124,7 @@ public class SolrStatsTest {
         for (JsonElement stat: solrStats) {
             Assert.assertFalse(stat.toString().isEmpty());
         }
+        Assert.assertEquals(SolrStats.interestingNumericFields.size(), solrStats.size());
     }
 
     @Test
