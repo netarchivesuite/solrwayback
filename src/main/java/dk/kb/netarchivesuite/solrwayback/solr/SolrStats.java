@@ -16,11 +16,9 @@ import java.util.List;
  * Methods in this class
  */
 public class SolrStats {
+    // TODO: Call all methods through facade.
     private static final Logger log = LoggerFactory.getLogger(SolrStats.class);
     public static final List<String> interestingNumericFields =  Arrays.asList("content_length", "crawl_year", "content_text_length", "image_height", "image_width", "image_size");
-    final List<String> interestingTextFields = Arrays.asList("links", "domain", "elements_used", "content_type",
-                                                                "content_language", "links_images", "type");
-    final List<String> otherNumericFields = Arrays.asList("score", "status_code", "source_file_offset", "_version_", "wayback_date");
 
     /**
      * Get standard solr stats for all fields given.
