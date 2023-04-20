@@ -61,13 +61,11 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     warcEntry.setFormat(ArcEntry.FORMAT.WARC);
     warcEntry.setSource(arcSource);
     warcEntry.setOffset(warcEntryPosition);
-
+    
     try (InputStream is = arcSource.get()) {
         InputStreamUtils.skipFully(is, warcEntryPosition);
-
         try (BufferedInputStream bis = new BufferedInputStream(is)) {
-            loadWarcHeader(bis, warcEntry);
-
+            loadWarcHeader(bis, warcEntry);            
             //log.debug("Arc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);
             if (loadBinary) {
                 loadBinary(bis, warcEntry);
@@ -254,7 +252,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
 
     }  //Content-Length: 31131
     else if (headerLine.toLowerCase().startsWith("content-length:")) {
-      String[] contentLine = headerLine.split(" ");
+      String[] contentLine = headerLine.split(":");
       long totalSize = Long.parseLong(contentLine[1].trim());               
       warcEntry.setContentLength(totalSize);                       
     }
@@ -267,7 +265,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     }
     else if (headerLine.toLowerCase().startsWith("transfer-encoding:")) {                                      
       String transferEncoding=headerLine.substring(18).trim();
-      log.debug("transfer-encoding:"+transferEncoding);
+      //log.debug("transfer-encoding:"+transferEncoding);
       if (transferEncoding.equalsIgnoreCase("chunked")) {
         warcEntry.setChunked(true);
       }
