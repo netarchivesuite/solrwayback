@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,11 +92,15 @@ public class SolrStats {
                 }
             }
 
-            QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
-            Gson gson = new Gson();
-            String stats = gson.toJson(response.getFieldStatsInfo().values());
+            try {
+                QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
+                Gson gson = new Gson();
+                String stats = gson.toJson(response.getFieldStatsInfo().values());
+                return stats;
+            } catch (Exception e){
+                throw new IllegalArgumentException("Percentiles have to be in range [0-100].");
+            }
 
-            return stats;
         }
     }
 
