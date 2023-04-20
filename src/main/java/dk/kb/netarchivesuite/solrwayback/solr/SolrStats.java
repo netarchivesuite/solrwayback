@@ -36,6 +36,10 @@ public class SolrStats {
             SolrQuery solrQuery = new SolrQuery();
             solrQuery.setQuery(query);
 
+            for (String filter: filters) {
+                solrQuery.addFilterQuery(filter);
+            }
+
             for (String field: fields) {
                 if (PropertiesLoaderWeb.STATS.contains(field)){
                     solrQuery.setGetFieldStatistics(field);
