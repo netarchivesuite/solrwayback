@@ -8,6 +8,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,7 +58,12 @@ public class SolrStats {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 
-        String allPercentiles = StringUtils.join(percentiles, ",");
+        List<Double> parsedPercentiles = new ArrayList<>();
+        for (String percentile: percentiles) {
+            parsedPercentiles.add(Double.parseDouble(percentile));
+        }
+
+        String allPercentiles = StringUtils.join(parsedPercentiles, ",");
         String percentileQuery = "{!percentiles='" + allPercentiles + "'}";
 
         // When giving this a text field it calculates nothing. Should probably throw a warning or something like that
