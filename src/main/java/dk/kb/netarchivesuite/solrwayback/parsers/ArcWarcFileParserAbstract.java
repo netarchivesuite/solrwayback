@@ -1,6 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import it.unimi.dsi.fastutil.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ public class ArcWarcFileParserAbstract {
   protected static void loadBinary(InputStream is, ArcEntry arcEntry) throws IOException {
       long binarySize = arcEntry.getBinaryArraySize();
 
-      if (binarySize > Integer.MAX_VALUE) {
+      if (binarySize > Arrays.MAX_ARRAY_SIZE) {
           String message = "Binary size too large for java byte[]. Size:" + binarySize +
                            ", source='" + arcEntry.getArcSource().getSource() + "'";
         log.error(message);
