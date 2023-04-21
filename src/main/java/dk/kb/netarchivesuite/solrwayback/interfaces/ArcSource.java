@@ -32,6 +32,9 @@ public class ArcSource implements Supplier<InputStream> {
     private final Supplier<InputStream> supplier;
 
     /**
+     * It is highly recommended to ensure that the {@link InputStream} delivered by the {@code supplier} handles
+     * {@link InputStream#skip(long)} effectively as the primary use case of {@code ArcSource} is to extract a single
+     * entry from a (W)ARC by skipping to entry start and reading forward from there.
      * @param source the source (URL, file path or similar) of the ArcData.
      * @return a Supplier that delivers an InputStream for the (w)arc file, positioned at the beginning.
      */
@@ -48,6 +51,9 @@ public class ArcSource implements Supplier<InputStream> {
         return source;
     }
 
+    /**
+     * @return a stream with the full content of an ARC or a WARC file.
+     */
     @Override
     public InputStream get() {
         return supplier.get();

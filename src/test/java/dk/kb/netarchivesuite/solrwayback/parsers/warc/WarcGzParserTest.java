@@ -4,9 +4,6 @@ import static org.junit.Assert.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -14,8 +11,6 @@ import org.junit.Test;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
-import dk.kb.netarchivesuite.solrwayback.parsers.ArcFileParserFactory;
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 
@@ -74,7 +69,7 @@ public class WarcGzParserTest  extends UnitTestUtils{
         assertNull(arcEntry.getBinary());
         arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777,true); //Image entry and load binary
         byte[] orgBinary = arcEntry.getBinary();        
-        try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
+        try (BufferedInputStream buf = arcEntry.getContentRaw()) {
 
             byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
             assertEquals("The expected number of bytes should be read from the lazy stream",

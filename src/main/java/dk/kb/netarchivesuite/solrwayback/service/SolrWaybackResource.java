@@ -11,7 +11,6 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -244,7 +243,7 @@ public class SolrWaybackResource {
         return responseRedirect;
       }
       
-      InputStream in = arcEntry.getBinaryLazyLoadNoChucking(); //Stream entry. Dechucking require as tomcat/apache also chunks.
+      InputStream in = arcEntry.getBinaryNoChucking(); //Stream entry. Dechucking require as tomcat/apache also chunks.
       
       ResponseBuilder response = null;
       try{        

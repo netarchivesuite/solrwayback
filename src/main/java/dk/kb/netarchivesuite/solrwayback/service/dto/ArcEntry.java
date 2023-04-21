@@ -5,6 +5,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.zip.GZIPInputStream;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -237,42 +238,54 @@ public  FORMAT getFormat() {
 public void setFormat(FORMAT format) {
     this.format = format;
 }
-/*
- * Will wrap the byte[] in a BufferedInputStream
- * 
- * It is up the caller to close the inputstream!
- * 
- */
-  public BufferedInputStream getBinaryLazyLoad() throws Exception{
-      if (format.equals(FORMAT.ARC)) {
-         return ArcParser.lazyLoadBinary(arcSource, offset);
-     }
-      else {
-          return WarcParser.lazyLoadBinary(arcSource, offset);
-      }            
-  }
-  
-  public InputStream getBinaryLazyLoadNoChucking() throws Exception{
-      if (format.equals(FORMAT.ARC)) {
-         BufferedInputStream is = ArcParser.lazyLoadBinary(arcSource, offset);
-         InputStream maybeDechunked = maybeDechunk(is);
-         //InputStream maybeUnziped = maybeUnzip(maybeDechunked);
-         InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeDechunked);
-         
-         return maybeBrotliDecoded;
+
+    /**
+     * Constructs an (W)ARC neutral {@code InputStream} that delivers the binary content for this (W)ARC entry.
+     * The content is the resource itself, sans HTTP headers or similar.
+     * <p>
+     * If the (W)ARC is marked as gzip-compressed, the content will be automatically gzip-uncompressed.
+     * <p>
+     * This method does not handle decompression or dechunking outside of basic (W)ARC compression.
+     * <p>
+     * This method does not cache the binary and the caller should take care to close the returned {@code InputStream}
+     * after use as failing to do so might cause resource leaks.
+     * @return a stream with the binary content from this (W)ARC entry.
+     * @throws IOException if the binary could not be read.
+     */
+  public BufferedInputStream getContentRaw() throws IOException {
+      switch (format) {
+          case ARC:
+              return ArcParser.lazyLoadContent(arcSource, offset);
+          case WARC:
+              return WarcParser.lazyLoadBinary(arcSource, offset);
+          default:
+              throw new UnsupportedOperationException(
+                      "Loading of binaries for the format '" + format + "' is unsupported. " +
+                              "Offending URL is '" + url + "'");
       }
-      else {
-           InputStream is = WarcParser.lazyLoadBinary(arcSource, offset);
-           InputStream maybeDechunked = maybeDechunk(is);
-           //InputStream maybeUnziped = maybeUnzip(maybeDechunked);
-           InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeDechunked);
-           return maybeBrotliDecoded;
-      }            
   }
-  
-  
-  
-  public InputStream getBinaryStreamNoEncoding() throws Exception {
+
+    /**
+     * De-chunks (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding#chunked_encoding) the
+     * binary delivered form {@link #getContentRaw()} but does not change anything else.
+     * <p>
+     * For web resources the binary contains both HTTP-headers and the content itself.
+     * @return a stream with the binary content from this (W)ARC entry, guaranteed not to be chunked.
+     * @throws IOException if the binary could not be read.
+     */
+  public InputStream getBinaryNoChucking() throws IOException {
+      return maybeDechunk(getContentRaw());
+  }
+
+
+    /**
+     * De-chunks (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding#chunked_encoding),
+     * un-zips and un-Brotlis the binary for the 
+     * binary delivered form {@link #getContentRaw()} but does not change anything else.
+     * @return a stream with the binary content from this (W)ARC entry, guaranteed not to be chunked.
+     * @throws IOException if the binary could not be read.
+     */
+  public InputStream getBinaryDecoded() throws Exception {
      
       //Chain the inputstreams in correct order.
       InputStream binaryStream = new ByteArrayInputStream(binary);      
@@ -314,9 +327,24 @@ public void setFormat(FORMAT format) {
           encoding = "UTF-8";
       }
       
-      
-      String uncomressed =IOUtils.toString(maybeBrotliDecoded, encoding);     
-      return uncomressed;
+      try {
+          return IOUtils.toString(maybeBrotliDecoded, encoding);
+      } catch (Exception e) {
+          String message = String.format(
+                  Locale.ROOT, "Exception while converting %.2fMB of binary for '%s' to String using charset '%s'",
+                  binary.length/1048576.0, getUrl(), encoding);
+          log.warn(message, e);
+          throw new Exception(message, e);
+      } catch (OutOfMemoryError e) {
+          String message = String.format(
+                  Locale.ROOT, "OutOfMemoryError while converting %.2fMB of binary for '%s' to String using charset '%s'",
+                  binary.length/1048576.0, getUrl(), encoding);
+          log.error(message, e);
+          OutOfMemoryError oome = new OutOfMemoryError(message);
+          oome.initCause(e);
+          // TODO: Consider downgrading this to a standard Exception as the OOM (hopefully) does not make the overall state inconsistent
+          throw oome;
+      }
       
      
      /*
@@ -393,7 +421,6 @@ public void setFormat(FORMAT format) {
    * Chunked streams must begin with {@code ^[0-9a-z]{1,8}(;.{0,1024})?\r\n}.
    * Note: Closing the returned stream will automatically close input.
    * @param input a stream with the response body from a HTTP-response.
-   * @param id the designation/name/id of the content. Only used for logging
    * @return the un-chunked content of the given stream.
    * @throws IOException if the stream could not be processed.
    * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding">Transfer-Encoding</a>

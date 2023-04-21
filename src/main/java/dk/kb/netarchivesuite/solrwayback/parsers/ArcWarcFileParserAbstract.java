@@ -20,6 +20,10 @@ public class ArcWarcFileParserAbstract {
     
   }
 
+    /**
+     * @deprecated on heap caching of full binary content should be avoided.
+     */
+  @Deprecated
   protected static void loadBinary(InputStream is, ArcEntry arcEntry) throws IOException {
       long binarySize = arcEntry.getBinaryArraySize();
 
@@ -27,7 +31,7 @@ public class ArcWarcFileParserAbstract {
           String message = "Binary size too large for java byte[]. Size:" + binarySize +
                            ", source='" + arcEntry.getArcSource().getSource() + "'";
         log.error(message);
-        throw new IllegalArgumentException(message);
+        throw new ArrayIndexOutOfBoundsException(message);
       }
 
       byte[] bytes = new byte[(int) binarySize];

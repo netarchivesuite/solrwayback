@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 import java.util.zip.GZIPInputStream;
@@ -81,7 +82,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
    * warcEntry will have binaryArraySize defined
    * 
    */
-  private static void loadWarcHeader(BufferedInputStream bis, ArcEntry warcEntry) throws Exception{
+  private static void loadWarcHeader(BufferedInputStream bis, ArcEntry warcEntry) throws IOException {
 
     StringBuffer headerLinesBuffer = new StringBuffer();
     String line = readLine(bis); // First line
@@ -159,7 +160,20 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
   }
 
 
-  public static BufferedInputStream lazyLoadBinary(ArcSource arcSource, long arcEntryPosition) throws Exception{
+    /**
+     * Constructs a (W)ARC neutral {@code InputStream} that delivers the binary content for a WARC entry.
+     * If the WARC is marked as gzip-compressed, the content will be automatically gzip-uncompressed.
+     * <p>
+     * This method does not handle decompression or dechunking outside of basic WARC compression.
+     * <p>
+     * This method does not cache the binary and the caller should take care to close the returned {@code InputStream}
+     * after use as failing to do so might cause resource leaks.
+     * @param arcSource        source of the raw WARC.
+     * @param arcEntryPosition where in the WARC the entry is positioned.
+     * @return a stream with the binary content from a WARC entry.
+     * @throws IOException if the binary could not be read.
+     */
+  public static BufferedInputStream lazyLoadBinary(ArcSource arcSource, long arcEntryPosition) throws IOException{
     ArcEntry arcEntry = new ArcEntry(); // We just throw away the header info anyway 
 
     InputStream is = arcSource.get();
@@ -276,7 +290,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
 
   }
 
-  public static String readLine(BufferedInputStream  bis) throws Exception{
+  public static String readLine(BufferedInputStream  bis) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     int current = 0; // CRLN || LN
     while ((current = bis.read()) != '\r' && current != '\n') {             
@@ -289,7 +303,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     return baos.toString(WARC_HEADER_ENCODING);
   }
 
-  public static LineAndByteCount readLineCount(BufferedInputStream  bis) throws Exception{
+  public static LineAndByteCount readLineCount(BufferedInputStream  bis) throws IOException {
     int count = 0;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 

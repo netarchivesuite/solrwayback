@@ -16,7 +16,6 @@ import dk.kb.netarchivesuite.solrwayback.util.StatusInputStream;
 import dk.kb.netarchivesuite.solrwayback.util.StreamBridge;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -268,7 +267,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
     try {
       // Retrieve the payload to local cache (heap or storage, depending on size)
       StatusInputStream payload = entryAndHeaders.entry.getBinaryArraySize() > 0 ?
-              StreamBridge.guaranteedStream(entryAndHeaders.entry.getBinaryLazyLoad(), heapCache) :
+              StreamBridge.guaranteedStream(entryAndHeaders.entry.getContentRaw(), heapCache) :
               StreamBridge.guaranteedStream(new ByteArrayInputStream(new byte[0]), heapCache);
       if (payload.getStatus() == StatusInputStream.STATUS.exception) {
         log.warn("getDelayedStream: Exception encountered while caching payload for '{}'. Delivering partial content",

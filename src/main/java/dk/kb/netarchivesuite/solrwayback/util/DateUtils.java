@@ -27,7 +27,7 @@ public class DateUtils {
     dateMillisecond.setTimeZone(TimeZone.getTimeZone("UTC"));
   }
 
-   public static String  convertWaybackDate2SolrDate(String waybackdate) throws Exception {
+   public static String  convertWaybackDate2SolrDate(String waybackdate) {
     
     SimpleDateFormat dForm = null;    
     DateFormat solrDateFormat =  new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
