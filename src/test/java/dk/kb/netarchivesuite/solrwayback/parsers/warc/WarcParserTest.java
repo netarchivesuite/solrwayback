@@ -62,7 +62,7 @@ public class WarcParserTest extends UnitTestUtils{
         assertNull(arcEntry.getBinary());
         arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688,true); //Image entry and load binary
         byte[] orgBinary = arcEntry.getBinary();        
-        try (BufferedInputStream buf = arcEntry.getContentRaw()) {
+        try (BufferedInputStream buf = arcEntry.getBinaryRaw()) {
             byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
             assertEquals("The expected number of bytes should be read from the lazy stream",
                          newBinary.length, IOUtils.read(buf, newBinary));

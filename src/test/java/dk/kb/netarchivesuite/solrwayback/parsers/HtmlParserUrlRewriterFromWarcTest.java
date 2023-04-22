@@ -16,7 +16,7 @@ public class HtmlParserUrlRewriterFromWarcTest {
         long offset=2691693;
         
         ArcEntry arc=ArcParserFileResolver.getArcEntry(warcFile, offset);
-        String html = arc.getBinaryContentAsStringUnCompressed();
+        String html = arc.getStringContentSafe();
                
         
         ParseResult rewritten = HtmlParserUrlRewriter.replaceLinks(

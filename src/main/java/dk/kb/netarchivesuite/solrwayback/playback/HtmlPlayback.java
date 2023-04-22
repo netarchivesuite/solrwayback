@@ -25,14 +25,14 @@ public class HtmlPlayback  extends PlaybackHandler{
               doc.getSource_file_path(), doc.getOffset(), arc.getContentEncoding(), lenient);
     long start = System.currentTimeMillis();
     
-     String raw = arc.getBinaryContentAsStringUnCompressed();
+     String raw = arc.getStringContentSafe();
     
       String charset = arc.getContentCharset();
       if (charset== null){
           charset="UTF-8";
           log.warn("no charset, default to UTF-8");
       }
-      
+      // TODO: What is the purpose of this round trip?
       arc.setBinary(raw.getBytes(Charset.forName(charset)));
          
     

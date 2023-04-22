@@ -243,7 +243,7 @@ public class SolrWaybackResource {
         return responseRedirect;
       }
       
-      InputStream in = arcEntry.getBinaryNoChucking(); //Stream entry. Dechucking require as tomcat/apache also chunks.
+      InputStream in = arcEntry.getBinaryNoChunking(); //Stream entry. Dechucking require as tomcat/apache also chunks.
       
       ResponseBuilder response = null;
       try{        

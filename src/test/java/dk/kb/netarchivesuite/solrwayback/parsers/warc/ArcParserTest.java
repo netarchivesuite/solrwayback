@@ -51,7 +51,7 @@ public class ArcParserTest extends UnitTestUtils{
         byte[] orgBinary = arcEntry.getBinary();
         assertTrue("The extracted binary size should be > 0 but was " + arcEntry.getBinaryArraySize(),
                    arcEntry.getBinaryArraySize() > 0);
-        try (BufferedInputStream buf = arcEntry.getContentRaw()) {
+        try (BufferedInputStream buf = arcEntry.getBinaryRaw()) {
             byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
             assertEquals("The expected number of bytes should be read from the lazy stream",
                          newBinary.length, IOUtils.read(buf, newBinary));

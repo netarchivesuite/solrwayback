@@ -20,7 +20,8 @@ public class CssPlayback  extends PlaybackHandler{
   @Override
   public ArcEntry playback(boolean lenient) throws Exception{
     //Never show the toolbar.
-      arc.setBinary(IOUtils.toByteArray(arc.getBinaryContentAsStringUnCompressed())); //TODO charset;          
+      // TODO: What is the purpose of this round trip?
+      arc.setBinary(IOUtils.toByteArray(arc.getStringContentSafe())); //TODO charset;
       
     String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);                
     if (!"gzip".equalsIgnoreCase(arc.getContentEncoding())){ 
