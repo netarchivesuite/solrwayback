@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,22 +44,31 @@ public class Twitter2Html {
     private final Tweet mainContentTweet;
 
     /**
-     * Constructor.
      * Parses the given Twitter JSON into a Tweet object and initializes commonly used variables from the tweet.
      * @param twitterJSON The JSON from Twitter.
      * @param crawlDate Date of the crawl - used for Solr searches.
      * @throws JsonProcessingException If Jackson fails to process the given json into a Tweet object.
      */
     public Twitter2Html(String twitterJSON, String crawlDate) throws JsonProcessingException {
-        this.crawlDate = crawlDate;
-        ObjectMapper mapper = new ObjectMapper();
+        this(strToTweet(twitterJSON), crawlDate);
+    }
 
-        // Ignore properties that are not found when parsing json - TODO consider worth using @JSONIgnore instead
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        tweet = mapper.readValue(twitterJSON, Tweet.class);
+    /**
+     * Parses the given Twitter JSON into a Tweet object and initializes commonly used variables from the tweet.
+     * @param twitterJSON The JSON from Twitter.
+     * @param crawlDate Date of the crawl - used for Solr searches.
+     * @throws IOException If Jackson fails to process the given json into a Tweet object or the Reader fails to
+     *         deliver the content.
+     */
+    public Twitter2Html(Reader twitterJSON, String crawlDate) throws IOException {
+        this(strToTweet(twitterJSON), crawlDate);
+    }
+
+    protected Twitter2Html(Tweet tweet, String crawlDate) {
+        this.tweet = tweet;
         mainUser = tweet.getUser();
         mainContentTweet = TwitterParsingUtils.getMainContentTweet(tweet);
+        this.crawlDate = crawlDate;
     }
 
     /**
@@ -637,4 +647,36 @@ public class Twitter2Html {
         }
         return foundRepliesLine;
     }
+
+    /**
+     * Parses the given {@code twitterJSON} and maps it to {@link Tweet}.
+     * @param twitterJSON JSON representation of a Tweet from Twitter API 1.1.
+     * @return the Tweet represented as an Object.
+     * @throws JsonProcessingException if parsing failed.
+     */
+    private static Tweet strToTweet(String twitterJSON) throws JsonProcessingException {
+        return getObjectMapper().readValue(twitterJSON, Tweet.class);
+     }
+
+    /**
+     * Parses the given {@code twitterJSON} and maps it to {@link Tweet}.
+     * @param twitterJSON JSON representation of a Tweet from Twitter API 1.1.
+     * @return the Tweet represented as an Object.
+     * @throws JsonProcessingException if parsing failed.
+     */
+    private static Tweet strToTweet(Reader twitterJSON) throws IOException {
+        return getObjectMapper().readValue(twitterJSON, Tweet.class);
+    }
+
+    // TODO: The ObjectMapper should be cached and re-used
+    private static ObjectMapper getObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // Ignore properties that are not found when parsing json - TODO consider worth using @JSONIgnore instead
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        return mapper;
+    }
+
+
 }
