@@ -23,7 +23,7 @@ public class WarcGzParserTest  extends UnitTestUtils{
         // so the WARC file can be edited with further evil header entries.
         File file = getFile("src/test/resources/example_warc/Evil-Warc-Headers.warc");
         try {        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 0,false);  //first entry, no WARC metadata header
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 0);  //first entry, no WARC metadata header
         
         assertEquals("text/plain", arcEntry.getContentType());
         assertEquals("robots.txt", arcEntry.getFileName());
@@ -42,7 +42,7 @@ public class WarcGzParserTest  extends UnitTestUtils{
         
         File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc.gz");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777,true); //Image entry. offsets can be seen in the cdx file
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777); //Image entry. offsets can be seen in the cdx file
         assertEquals("image/jpeg", arcEntry.getContentType());
         assertEquals("hewlett.jpg", arcEntry.getFileName());
         assertEquals(7812, arcEntry.getWarcEntryContentLength());

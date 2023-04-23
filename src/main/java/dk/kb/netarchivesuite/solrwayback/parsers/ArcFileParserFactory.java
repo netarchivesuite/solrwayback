@@ -12,9 +12,8 @@ public class ArcFileParserFactory {
    * 
    * @param file_path is the file location, the file location must be resolved first. 
    * @param offset offset in the warc file
-   * @param loadBinary will load the byte[] with the content. Do mot use for video/audio etc. Use the InputStream method for this
-   */  
-    public static ArcEntry getArcEntry(ArcSource arcSource, long offset, boolean loadBinary) throws Exception{
+   */
+    public static ArcEntry getArcEntry(ArcSource arcSource, long offset) throws Exception{
         
         if (arcSource == null ){
             throw new IllegalArgumentException("No arcSupplier provided");
@@ -25,11 +24,11 @@ public class ArcFileParserFactory {
 
 
         if (sourceLowercase.endsWith(".warc")  || sourceLowercase.endsWith(".warc.gz") ) {
-            arcEntry = WarcParser.getWarcEntry(arcSource, offset, loadBinary);
+            arcEntry = WarcParser.getWarcEntry(arcSource, offset);
         }
                         
         else if (sourceLowercase.endsWith(".arc") || sourceLowercase.endsWith("arc.gz")){
-            arcEntry = ArcParser.getArcEntry(arcSource, offset,loadBinary);
+            arcEntry = ArcParser.getArcEntry(arcSource, offset);
         }
         else{
             throw new IllegalArgumentException(

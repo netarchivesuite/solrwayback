@@ -48,7 +48,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
 
     byte[] upFrontBinary;
     {
-      ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(WARC), OFFSET, true);
+      ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(WARC), OFFSET);
       upFrontBinary = warcEntry.getBinaryDecodedBytes();
       assertEquals("Length for up front load should be as expected", EXPECTED_CONTENT_LENGTH, upFrontBinary.length);
     }
@@ -115,7 +115,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
 
         byte[] upFrontBinary;
         {
-          ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(warc), offset, true);
+          ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(warc), offset);
           upFrontBinary = warcEntry.getBinaryDecodedBytes();
           assertEquals("Length for up front load should be as expected", expectedContentLength, upFrontBinary.length);
         }
@@ -271,7 +271,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     PropertiesLoader.initProperties();
     String source_file_path="/home/teg/workspace/solrwayback/storedanske_export-00000.warc";
     int offset = 515818793;
-    ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(source_file_path),offset,true);
+    ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(source_file_path),offset);
     
     byte[] bytes = warcEntry.getBinaryDecodedBytes(); // <--------- The binary
     String fileFromBytes = "image1.jpg";

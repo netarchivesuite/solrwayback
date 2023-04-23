@@ -23,7 +23,7 @@ public class WarcParserTest extends UnitTestUtils{
         
         File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688,true); //Image entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688); //Image entry
         assertEquals("image/jpeg", arcEntry.getContentType());
         assertEquals("hewlett.jpg", arcEntry.getFileName());
         assertEquals(7812, arcEntry.getWarcEntryContentLength());
@@ -45,7 +45,7 @@ public class WarcParserTest extends UnitTestUtils{
 
         File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 216504,false); //Image entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 216504); //Image entry
 
         //System.out.println(arcEntry.getRedirectUrl());
         

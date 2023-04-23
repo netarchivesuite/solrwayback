@@ -23,7 +23,7 @@ public class ArcParserTest extends UnitTestUtils{
         
         File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767 ,true); //Image entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767); //Image entry
         assertEquals("image/jpeg", arcEntry.getContentType());
         assertEquals("hewlett.jpg", arcEntry.getFileName());
         assertEquals(7510, arcEntry.getContentLength());
@@ -45,7 +45,7 @@ public class ArcParserTest extends UnitTestUtils{
       
       File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc");
       
-      ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 280750 ,false); //redirect
+      ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 280750); //redirect
 
       
       String url=arcEntry.getUrl();

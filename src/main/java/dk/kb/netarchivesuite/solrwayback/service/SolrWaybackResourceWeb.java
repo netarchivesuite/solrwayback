@@ -623,7 +623,7 @@ public class SolrWaybackResourceWeb {
       try {
 
         log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
-        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,true);
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
         
         //Only solr lookup if redirect.
         if (arcEntry.getStatus_code() >= 300 &&  arcEntry.getStatus_code() <= 399 ){
@@ -636,6 +636,7 @@ public class SolrWaybackResourceWeb {
         //temp dirty hack to see if it fixes brotli
         InputStream in;
         if ("br".equalsIgnoreCase(arcEntry.getContentEncoding())){
+            // TODO: Shouldn't this be the NoChunking version?
         in = new BrotliInputStream(arcEntry.getBinaryRaw());
         arcEntry.setContentEncoding(null); //Clear encoding.
         arcEntry.setHasBeenDecompressed(true);

@@ -21,7 +21,7 @@ public class TestExportArc {
     
 
     
-    ArcEntry arcEntry = ArcParser.getArcEntry(ArcSource.fromFile(arcFile), offset, true);
+    ArcEntry arcEntry = ArcParser.getArcEntry(ArcSource.fromFile(arcFile), offset);
     
     String warcHeader = ArcHeader2WarcHeader.arcHeader2WarcHeader(arcEntry);
     

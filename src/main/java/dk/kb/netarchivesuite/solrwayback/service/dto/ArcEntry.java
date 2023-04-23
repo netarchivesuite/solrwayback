@@ -63,7 +63,6 @@ public class ArcEntry {
   private long offset;  
   private boolean hasBeenDecompressed=false;
   private boolean chunked=false;
-  private byte[] binary;
   private byte[] cachedBinary;
   private long binaryTrueSize;
   private int status_code;
@@ -97,16 +96,6 @@ public void setOffset(long offset) {
     this.offset = offset;
 }
 
-/*
- * Will only be loaded if specificed when constructed
- */
- public byte[] getBinaryDisabled() {
-    return binary;
-  }
-  public void setBinaryDisabled(byte[] binary) {
-    //very dirty hack for now.          
-    this.binary = binary;
-  }
   public long getContentLength() {
     return contentLength;
   }

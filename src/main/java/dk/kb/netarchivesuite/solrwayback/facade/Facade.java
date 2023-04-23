@@ -496,7 +496,7 @@ public class Facade {
     /**
     * Important to set the load binary flag to false if not used    
     */    
-    public static ArcEntry getArcEntry(String source_file_path, long offset, boolean loadBinary) throws Exception {      
+    public static ArcEntry getArcEntry(String source_file_path, long offset) throws Exception {
 
        //Validate WARC+offset has been indexed and in the collection.
        //This will prevent url hacking and accessing other WARC-files if you know location on filesystem.
@@ -508,7 +508,7 @@ public class Facade {
             NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); //Call Solr. Correct exception already thrown if not found
         }        
         
-        return ArcParserFileResolver.getArcEntry(source_file_path, offset, loadBinary);
+        return ArcParserFileResolver.getArcEntry(source_file_path, offset);
     }
 
     /**

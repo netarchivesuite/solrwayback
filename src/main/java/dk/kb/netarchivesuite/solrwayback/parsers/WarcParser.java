@@ -46,17 +46,17 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
    *Connection: close
    *Content-Length: 7178
    */
-  public static ArcEntry getWarcEntry(ArcSource arcSource, long warcEntryPosition, boolean loadBinary) throws Exception {
+  public static ArcEntry getWarcEntry(ArcSource arcSource, long warcEntryPosition) throws Exception {
 
     if (arcSource.getSource().toLowerCase(Locale.ROOT).endsWith(".gz")){ //It is zipped
-      return getWarcEntryZipped(arcSource, warcEntryPosition, loadBinary);
+      return getWarcEntryZipped(arcSource, warcEntryPosition);
     }
     else {
-      return getWarcEntryNotZipped(arcSource, warcEntryPosition, loadBinary);
+      return getWarcEntryNotZipped(arcSource, warcEntryPosition);
     }          
   }
 
-  public static ArcEntry getWarcEntryNotZipped(ArcSource arcSource, long warcEntryPosition,boolean loadBinary) throws Exception {
+  public static ArcEntry getWarcEntryNotZipped(ArcSource arcSource, long warcEntryPosition) throws Exception {
 
     ArcEntry warcEntry = new ArcEntry();
     warcEntry.setFormat(ArcEntry.FORMAT.WARC);
@@ -68,11 +68,6 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
         try (BufferedInputStream bis = new BufferedInputStream(is)) {
             loadWarcHeader(bis, warcEntry);            
             //log.debug("Arc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);
-            if (loadBinary) {
-                log.debug("loadBinary==true ignored for {}#{}", arcSource, warcEntryPosition);
-                // TODO: Remove the loadBinary parameter fully
-                //loadBinary(bis, warcEntry);
-            }
         }
         return warcEntry;
     }
@@ -131,7 +126,7 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
     warcEntry.setBinaryArraySize(binarySize);
   }
 
-  public static ArcEntry getWarcEntryZipped(ArcSource arcSource, long warcEntryPosition, boolean loadBinary) throws Exception {
+  public static ArcEntry getWarcEntryZipped(ArcSource arcSource, long warcEntryPosition) throws Exception {
 
     ArcEntry warcEntry = new ArcEntry();
     warcEntry.setFormat(ArcEntry.FORMAT.WARC);
@@ -148,11 +143,6 @@ public class WarcParser extends  ArcWarcFileParserAbstract {
             loadWarcHeader(bis, warcEntry);
 
             //System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);
-            if (loadBinary) {
-                log.debug("loadBinary==true ignored for {}#{}", arcSource, warcEntryPosition);
-                // TODO: Remove the loadBinary parameter fully
-                //loadBinary(bis, warcEntry);
-            }
         }
     }
     return warcEntry;

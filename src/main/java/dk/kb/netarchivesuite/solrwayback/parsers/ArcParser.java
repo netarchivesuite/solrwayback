@@ -33,16 +33,16 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
    *MicrosoftOfficeWebServer: 5.0_Pub
    *X-Powered-By: ASP.NET
    */
-  public static ArcEntry getArcEntry(ArcSource arcSource, long arcEntryPosition, boolean loadBinary) throws Exception {
+  public static ArcEntry getArcEntry(ArcSource arcSource, long arcEntryPosition) throws Exception {
       if (arcSource.getSource().toLowerCase(Locale.ROOT).endsWith(".gz")){ //It is zipped
-        return getArcEntryZipped(arcSource, arcEntryPosition, loadBinary);
+        return getArcEntryZipped(arcSource, arcEntryPosition);
       } else {
-          return getArcEntryNotZipped(arcSource, arcEntryPosition, loadBinary);
+          return getArcEntryNotZipped(arcSource, arcEntryPosition);
       }      
   }
 
   
-  public static ArcEntry getArcEntryNotZipped(ArcSource arcSource, long arcEntryPosition, boolean loadBinary) throws Exception {
+  public static ArcEntry getArcEntryNotZipped(ArcSource arcSource, long arcEntryPosition) throws Exception {
       ArcEntry arcEntry = new ArcEntry();
       arcEntry.setFormat(ArcEntry.FORMAT.ARC);
       arcEntry.setSource(arcSource);
@@ -55,17 +55,12 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
               loadArcHeader(bis, arcEntry);
 
               //log.debug("Arc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);
-              if (loadBinary) {
-                  log.debug("loadBinary==true ignored for {}#{}", arcSource, arcEntryPosition);
-                  // TODO: Remove the loadBinary parameter fully
-                  //loadBinary(bis, warcEntry);
-             }
           }
           return arcEntry;
       }
   }
 
-  public static ArcEntry getArcEntryZipped(ArcSource arcSource, long arcEntryPosition, boolean loadBinary) throws Exception {
+  public static ArcEntry getArcEntryZipped(ArcSource arcSource, long arcEntryPosition) throws Exception {
 
     ArcEntry arcEntry = new ArcEntry();
     arcEntry.setFormat(ArcEntry.FORMAT.ARC);
@@ -82,11 +77,6 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
             loadArcHeader(bis, arcEntry);
 
             //System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);
-            if (loadBinary) {
-                log.debug("loadBinary==true ignored for {}#{}", arcSource, arcEntryPosition);
-                // TODO: Remove the loadBinary parameter fully
-                //loadBinary(bis, warcEntry);
-            }
         }
     }
     return arcEntry;
