@@ -25,17 +25,7 @@ public class HtmlPlayback  extends PlaybackHandler{
               doc.getSource_file_path(), doc.getOffset(), arc.getContentEncoding(), lenient);
     long start = System.currentTimeMillis();
     
-     String raw = arc.getStringContentSafe();
-    
-      String charset = arc.getContentCharset();
-      if (charset== null){
-          charset="UTF-8";
-          log.warn("no charset, default to UTF-8");
-      }
-      // TODO: What is the purpose of this round trip?
-      arc.setBinary(raw.getBytes(Charset.forName(charset)));
-         
-    
+
      ParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc, lenient);
       String textReplaced=htmlReplaced.getReplaced();
 
@@ -44,20 +34,8 @@ public class HtmlPlayback  extends PlaybackHandler{
      if (showToolbar ){ //If true or null. 
         textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(doc.getSource_file_path(),doc.getOffset(),htmlReplaced , xhtml);
      }
-    
-     try{
-     if (!"gzip".equalsIgnoreCase(arc.getContentEncoding())){ //TODO x-gzip brotli
-       arc.setBinary(textReplaced.getBytes(arc.getContentCharset()));
-       }
-       else{
-        arc.setBinary(textReplaced.getBytes("UTF-8"));  
-       }
-      
-     }
-     catch(Exception e){       
-       log.warn("unknown encoding, defaulting to utf-8:'"+arc.getContentEncoding()+"' . file:"+doc.getSource_file_path() +" offset:"+doc.getOffset());
-       arc.setBinary(textReplaced.getBytes("UTF-8"));
-     }
+
+     arc.setStringContent(textReplaced);
 
      log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start) + " "+doc.getSource_file_path()+ " "+ doc.getOffset() +" "+arc.getUrl());
      arc.setHasBeenDecompressed(true);

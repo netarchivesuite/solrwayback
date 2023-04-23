@@ -49,7 +49,7 @@ public class WarcGzParserTest  extends UnitTestUtils{
         assertEquals(7510, arcEntry.getContentLength());
         assertEquals(200,arcEntry.getStatus_code());
         
-        BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
+        BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinaryDecoded());
         assertEquals(300,image.getWidth());
         assertEquals(116,image.getHeight());        
         assertEquals("http://www.archive.org/images/hewlett.jpg",arcEntry.getUrl());
@@ -59,28 +59,6 @@ public class WarcGzParserTest  extends UnitTestUtils{
     
     }
 
-    
-    @Test
-    public void testLazyLoadBinary() throws Exception {
-        
-        File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc.gz");        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777, false); //Image entry
-        
-        assertNull(arcEntry.getBinary());
-        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777,true); //Image entry and load binary
-        byte[] orgBinary = arcEntry.getBinary();        
-        try (BufferedInputStream buf = arcEntry.getBinaryRaw()) {
-
-            byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
-            assertEquals("The expected number of bytes should be read from the lazy stream",
-                         newBinary.length, IOUtils.read(buf, newBinary));
-            assertEquals(orgBinary.length, newBinary.length); //Same length
-            assertArrayEquals(orgBinary, newBinary); //Same binary
-            assertEquals("There should be no more content in the lazy loaded stream", -1, buf.read());
-        }
-    }
-
-    
     /* The warc file used for these tests below can not be shared.
    
      @Test

@@ -56,8 +56,10 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
 
               //log.debug("Arc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);
               if (loadBinary) {
-                  loadBinary(bis, arcEntry);
-              }
+                  log.debug("loadBinary==true ignored for {}#{}", arcSource, arcEntryPosition);
+                  // TODO: Remove the loadBinary parameter fully
+                  //loadBinary(bis, warcEntry);
+             }
           }
           return arcEntry;
       }
@@ -81,7 +83,9 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
 
             //System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);
             if (loadBinary) {
-                loadBinary(bis, arcEntry);
+                log.debug("loadBinary==true ignored for {}#{}", arcSource, arcEntryPosition);
+                // TODO: Remove the loadBinary parameter fully
+                //loadBinary(bis, warcEntry);
             }
         }
     }

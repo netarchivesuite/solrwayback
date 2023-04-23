@@ -134,7 +134,7 @@ public abstract class RewriterBase {
     	ParseResult parseResult = new ParseResult();
 
    		final long startgetContentMS = System.currentTimeMillis();
-   		String content = arc.getStringContentSafe();
+   		String content = arc.getStringContentAsStringSafe();
    		parseResult.addTiming("getContent", System.currentTimeMillis()-startgetContentMS);
 
 		replaceLinks(

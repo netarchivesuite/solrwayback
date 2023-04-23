@@ -636,12 +636,12 @@ public class SolrWaybackResourceWeb {
         //temp dirty hack to see if it fixes brotli
         InputStream in;
         if ("br".equalsIgnoreCase(arcEntry.getContentEncoding())){
-        in = new BrotliInputStream(new ByteArrayInputStream(arcEntry.getBinary()));
+        in = new BrotliInputStream(arcEntry.getBinaryRaw());
         arcEntry.setContentEncoding(null); //Clear encoding.
         arcEntry.setHasBeenDecompressed(true);
         }
         else{      
-         in = new ByteArrayInputStream(arcEntry.getBinary());
+         in = arcEntry.getBinaryRaw();
          
         }
         ResponseBuilder response = null;

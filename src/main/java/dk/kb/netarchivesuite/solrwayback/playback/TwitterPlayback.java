@@ -26,10 +26,8 @@ public class TwitterPlayback extends PlaybackHandler{
         log.debug(" Generate twitter webpage from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset());
         // Fake html into arc.
         String encoding = "UTF-8"; // Why does encoding say ISO ? This seems to fix the bug
-        String json = new String(arc.getBinary(), encoding);
-        Twitter2Html parser = new Twitter2Html(json, arc.getCrawlDate());
+        Twitter2Html parser = new Twitter2Html(arc.getStringContentSafe(), arc.getCrawlDate());
         String html = parser.getHtmlFromJson();
-        arc.setBinary(html.getBytes());
         arc.setContentType("text/html");
         ParseResult htmlReplaced = new ParseResult(); // Do not parse.
         htmlReplaced.setReplaced(html);
@@ -40,7 +38,7 @@ public class TwitterPlayback extends PlaybackHandler{
             textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(doc, htmlReplaced, false);
         }
         arc.setContentEncoding(encoding);
-        arc.setBinary(textReplaced.getBytes(encoding)); // Can give error. Uses UTF-8 (from index) instead of ISO-8859-1
+        arc.setStringContent(textReplaced);
 
         return arc;
     }

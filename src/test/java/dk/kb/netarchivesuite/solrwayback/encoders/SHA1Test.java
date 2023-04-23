@@ -36,7 +36,7 @@ public class SHA1Test extends UnitTestUtils{
   			  
   	        File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc");  	        
   	        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 181688,true); //Image entry  			      		
-  			byte[] bytes = arcEntry.getBinary();    			
+  			byte[] bytes = arcEntry.getBinaryDecodedBytes();
   		    InputStream is = new ByteArrayInputStream(bytes);                       
   		    String hash= Sha1Hash.createSha1(is);
             assertEquals("sha1:5NAYYF4QDMNTCMGOQUJ6DQTCEIB7QKFS", hash); //This is the sha1 value in the warc file. See warc header above     

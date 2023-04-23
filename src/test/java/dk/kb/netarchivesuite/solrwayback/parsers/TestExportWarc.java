@@ -64,8 +64,8 @@ public class TestExportWarc {
       }
       
       Files.write(exportPath, warcEntry.getHeader().getBytes(charset), StandardOpenOption.APPEND);           
-      System.out.println(warcEntry.getBinary().length);
-      Files.write(exportPath, warcEntry.getBinary(), StandardOpenOption.APPEND);
+      System.out.println(warcEntry.getBinaryDecodedBytes().length);
+      Files.write(exportPath, warcEntry.getBinaryDecodedBytes(), StandardOpenOption.APPEND);
       Files.write(exportPath, "\r\n\r\n".getBytes(WarcParser.WARC_HEADER_ENCODING), StandardOpenOption.APPEND); // separator
       
     }

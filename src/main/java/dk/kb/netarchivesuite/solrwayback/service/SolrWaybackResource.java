@@ -176,7 +176,8 @@ public class SolrWaybackResource {
 
       ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,true);
 
-      BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
+      // TODO: This is prone to OOM for large images. There should be a sanity check that checks width & height first
+      BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinaryRaw());
 
       if (image== null){
         // java does not support ico format. Just serve it RAW... 
@@ -935,8 +936,7 @@ public class SolrWaybackResource {
    //log.debug("setting contentype:"+contentType);
 //          
    
-   InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
-   ResponseBuilder response = Response.ok(in).type(contentType );                    
+   ResponseBuilder response = Response.ok(arcEntry.getBinaryRaw()).type(contentType );
 
    
     if (arcEntry.isHasBeenDecompressed()){     
