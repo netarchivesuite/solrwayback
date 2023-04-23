@@ -19,6 +19,8 @@ Bugfix: The property key for expanded warc limit was the same as for non-expande
 
 Default log configuration will create and addition log file called solrwayback_error.log. This will only contain log lines of severity 'error'.  
 
+Hardening against Out Of Memory in export and playback of very large webpages
+
 4.4.0
 -----
 
