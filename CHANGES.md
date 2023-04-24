@@ -23,6 +23,7 @@ Hardening against Out Of Memory in export and playback of very large webpages. A
 
 warc.entry.text.max.characters=100000000
 
+Search boost ranking for frontpages(url_type:slashpage^5) changed in SolrWayback bundle. Change in solrconfig.xml for existing indexes to enable this boost.
 
 
 4.4.0
