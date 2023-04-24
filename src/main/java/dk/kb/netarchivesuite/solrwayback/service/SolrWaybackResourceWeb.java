@@ -711,16 +711,6 @@ public class SolrWaybackResourceWeb {
         return percentileStats;
     }
 
-    @GET
-    @Path("statistics/enabledfields")
-    @Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
-    public String getStatsEnabledFields(){
-        String enabledFields = Facade.getStatsEnabledFields();
-        return enabledFields;
-    }
-
-   
-    
     private Response convertToPng(BufferedImage image)  throws Exception { 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ImageIO.write(image, "png", baos);

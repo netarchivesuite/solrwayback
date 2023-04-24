@@ -945,6 +945,7 @@ public class Facade {
         props.put(PropertiesLoaderWeb.SEARCH_PAGINATION_PROPERTY, "" + PropertiesLoaderWeb.SEARCH_PAGINATION);
         props.put(PropertiesLoader.PLAYBACK_DISABLED_PROPERTY, ""+""+PropertiesLoader.PLAYBACK_DISABLED);
         props.put("solrwayback.version",PropertiesLoaderWeb.SOLRWAYBACK_VERSION);
+        props.put("stats.enabled.fields", ""+PropertiesLoaderWeb.STATS);
 
         if (PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE != null && !"".equals(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE.trim())) {
             props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_PROPERTY,PropertiesLoader.WAYBACK_BASEURL + "services/frontend/images/logo");
@@ -1101,15 +1102,6 @@ public class Facade {
     public static String getPercentileStatsForFields(String query, List<String> percentiles, List<String> fields){
         String percentileStats = SolrStats.getPercentilesForFields(query, percentiles, fields);
         return percentileStats;
-    }
-
-    /**
-     * Show which fields it is possible to extract stats for.
-     * @return a JSON array containing fields that can be queried for stats.
-     */
-    public static String getStatsEnabledFields(){
-        String enabledFields = SolrStats.getFieldsWithStatsEnabled();
-        return enabledFields;
     }
 
     /*
