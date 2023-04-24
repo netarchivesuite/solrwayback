@@ -250,7 +250,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
 
     // All the providers are added in a single call, so that they will all be processed by the same thread.
     // If they are added one at a time, they will require a thread for each call.
-    log.debug("loadMore() adding " + providers.size() + " lazy resolved records");
+    //log.debug("loadMore() adding " + providers.size() + " lazy resolved records");
     entryStreams.add(StreamBridge.outputToInput(providers));
   }
 
