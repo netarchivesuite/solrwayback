@@ -371,7 +371,7 @@ public class StreamBridge {
                 read += r;
             } catch (IOException e) {
                 // Fail read
-                log.info("guaranteedStream: Exception reading from input stream", e);
+                log.warn("guaranteedStream: Exception reading from input stream", e);
                 return new StatusInputStream(new ByteArrayInputStream(bos.toByteArray()), e, read);
             } catch (OutOfMemoryError e) {
                 log.error("OutOfMemoryError while buffering stream to memory", e);

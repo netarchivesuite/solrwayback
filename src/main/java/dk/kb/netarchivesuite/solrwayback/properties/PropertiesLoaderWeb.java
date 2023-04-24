@@ -40,6 +40,8 @@ public class PropertiesLoaderWeb {
     public static final String SEARCH_UPLOADED_FILE_DISABLED_PROPERTY="search.uploaded.file.disabled";
     public static final String SEARCH_PAGINATION_PROPERTY = "search.pagination";
     
+    public static final String WARC_ENTRY_TEXT_MAX_CHARACTERS_PROPERTY = "warc.entry.text.max.characters";
+
     public static final String EXPORT_WARC_MAXRESULTS_PROPERTY = "export.warc.maxresults";
     public static final String EXPORT_CSV_MAXRESULTS_PROPERTY = "export.csv.maxresults";
     public static final String EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY = "export.warc.expanded.maxresults";
@@ -68,7 +70,9 @@ public class PropertiesLoaderWeb {
     public static String MAPS_LATITUDE;
     public static String MAPS_LONGITUDE;
     public static String MAPS_RADIUS;
-    
+
+    public static int WARC_ENTRY_TEXT_MAX_CHARACTERS = 100*1024*1024; // 100 MB
+
     public static long EXPORT_CSV_MAXRESULTS=10000000;// 10M default
     public static long EXPORT_WARC_MAXRESULTS=1000000; // 1M default
     public static long EXPORT_WARC_EXPANDED_MAXRESULTS=100000; // 500K default   
@@ -147,7 +151,9 @@ public class PropertiesLoaderWeb {
             LEAFLET_ATTRIBUTION = serviceProperties.getProperty(LEAFLET_ATTRIBUTION_PROPERTY);
             TOP_LEFT_LOGO_IMAGE = serviceProperties.getProperty(TOP_LEFT_LOGO_IMAGE_PROPERTY);
             TOP_LEFT_LOGO_IMAGE_LINK = serviceProperties.getProperty(TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY);
-                        
+
+            WARC_ENTRY_TEXT_MAX_CHARACTERS = getInt(WARC_ENTRY_TEXT_MAX_CHARACTERS_PROPERTY, WARC_ENTRY_TEXT_MAX_CHARACTERS);
+
             String csv_max_results= serviceProperties.getProperty(EXPORT_CSV_MAXRESULTS_PROPERTY);
             String warc_max_results= serviceProperties.getProperty(EXPORT_WARC_MAXRESULTS_PROPERTY);
             String warc_expanded_max_results= serviceProperties.getProperty(EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY);
@@ -219,6 +225,7 @@ public class PropertiesLoaderWeb {
             log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
             log.info("Property:"+ ALLOW_EXPORT_WARC_PROPERTY +" = " + ALLOW_EXPORT_WARC);
             log.info("Property:"+ ALLOW_EXPORT_CSV_PROPERTY +" = " + ALLOW_EXPORT_CSV);
+            log.info("Property:"+ WARC_ENTRY_TEXT_MAX_CHARACTERS_PROPERTY +" = " + WARC_ENTRY_TEXT_MAX_CHARACTERS);
             log.info("Property:"+ EXPORT_CSV_MAXRESULTS_PROPERTY +" = " + EXPORT_CSV_MAXRESULTS);
             log.info("Property:"+ EXPORT_WARC_MAXRESULTS_PROPERTY +" = " + EXPORT_WARC_MAXRESULTS);
             log.info("Property:"+ EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY +" = " + EXPORT_WARC_EXPANDED_MAXRESULTS);
@@ -254,6 +261,17 @@ public class PropertiesLoaderWeb {
             // TODO: This should be a catastrophic failure as the properties contains security oriented settings
         }
         
+    }
+
+    private static int getInt(String key, int defaultValue) {
+        if (serviceProperties == null) {
+            initProperties();
+        }
+        String raw = serviceProperties.getProperty(key);
+        if (raw == null || raw.isEmpty()) {
+            return defaultValue;
+        }
+        return Integer.parseInt(raw.trim());
     }
 
     public static String getProperty(String key, String defaultValue) {

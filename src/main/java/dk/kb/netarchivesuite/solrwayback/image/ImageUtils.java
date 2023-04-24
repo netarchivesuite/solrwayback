@@ -20,6 +20,13 @@ public class ImageUtils {
         return image;        
     }
     
+    public static BufferedImage getImageFromBinary(InputStream bytes) throws Exception{
+
+        InputStream maybeDecompress = InputStreamUtils.maybeDecompress(bytes);
+        BufferedImage image = ImageIO.read(maybeDecompress);
+        return image;
+    }
+
     //TODO not sure this is the best/fastest way to do this in Java. For animated images, this will only return the first image
    public static BufferedImage resizeImage(BufferedImage originalImage, int sourceWidth, int sourceHeight, int targetWidth, int targetHeight) {
         double scale = determineImageScale(sourceWidth, sourceHeight, targetWidth, targetHeight);

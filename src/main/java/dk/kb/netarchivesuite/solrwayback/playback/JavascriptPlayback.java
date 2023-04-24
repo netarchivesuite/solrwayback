@@ -20,17 +20,15 @@ public class JavascriptPlayback  extends PlaybackHandler{
   @Override
   public ArcEntry playback(boolean lenient) throws Exception{
     //Never show the toolbar.
-      arc.setBinary(IOUtils.toByteArray(arc.getBinaryContentAsStringUnCompressed())); //TODO charset;
+    // TODO: What was the purpose of this round trip? If re-enabled, please state why in a comment
+      //arc.setBinary(IOUtils.toByteArray(arc.getStringContentAsStringSafe())); //TODO charset;
       //log.debug("javascript playback");
       
       
-    String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);                
-    if (!"gzip".equalsIgnoreCase(arc.getContentEncoding())){ 
-      arc.setBinary(textReplaced.getBytes(arc.getContentCharset()));
-      }
-      else{
-       arc.setBinary(textReplaced.getBytes("UTF-8"));  
-      }    
+    String textReplaced = HtmlParserUrlRewriter.replaceLinksCss(arc);
+    // TODO: This logic was wrong. Content Encoding states compression and is independent of Content Charset
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
+    arc.setStringContent(textReplaced);
     return arc;
   }
   

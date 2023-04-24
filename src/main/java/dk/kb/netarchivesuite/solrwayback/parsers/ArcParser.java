@@ -1,18 +1,18 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import java.io.*;
-import java.util.Locale;
-import java.util.zip.GZIPInputStream;
-
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.InputStreamUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Locale;
+import java.util.zip.GZIPInputStream;
 
 public class ArcParser extends  ArcWarcFileParserAbstract{
 
@@ -33,16 +33,16 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
    *MicrosoftOfficeWebServer: 5.0_Pub
    *X-Powered-By: ASP.NET
    */
-  public static ArcEntry getArcEntry(ArcSource arcSource, long arcEntryPosition, boolean loadBinary) throws Exception {
+  public static ArcEntry getArcEntry(ArcSource arcSource, long arcEntryPosition) throws Exception {
       if (arcSource.getSource().toLowerCase(Locale.ROOT).endsWith(".gz")){ //It is zipped
-        return getArcEntryZipped(arcSource, arcEntryPosition, loadBinary);
+        return getArcEntryZipped(arcSource, arcEntryPosition);
       } else {
-          return getArcEntryNotZipped(arcSource, arcEntryPosition, loadBinary);
+          return getArcEntryNotZipped(arcSource, arcEntryPosition);
       }      
   }
 
   
-  public static ArcEntry getArcEntryNotZipped(ArcSource arcSource, long arcEntryPosition, boolean loadBinary) throws Exception {
+  public static ArcEntry getArcEntryNotZipped(ArcSource arcSource, long arcEntryPosition) throws Exception {
       ArcEntry arcEntry = new ArcEntry();
       arcEntry.setFormat(ArcEntry.FORMAT.ARC);
       arcEntry.setSource(arcSource);
@@ -55,15 +55,12 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
               loadArcHeader(bis, arcEntry);
 
               //log.debug("Arc entry : totalsize:"+totalSize +" headersize:"+headerSize+" binary size:"+binarySize);
-              if (loadBinary) {
-                  loadBinary(bis, arcEntry);
-              }
           }
           return arcEntry;
       }
   }
 
-  public static ArcEntry getArcEntryZipped(ArcSource arcSource, long arcEntryPosition, boolean loadBinary) throws Exception {
+  public static ArcEntry getArcEntryZipped(ArcSource arcSource, long arcEntryPosition) throws Exception {
 
     ArcEntry arcEntry = new ArcEntry();
     arcEntry.setFormat(ArcEntry.FORMAT.ARC);
@@ -80,23 +77,24 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
             loadArcHeader(bis, arcEntry);
 
             //System.out.println("Arc entry : totalsize:"+totalSize +" binary size:"+binarySize +" firstHeadersize:"+byteCount);
-            if (loadBinary) {
-                loadBinary(bis, arcEntry);
-            }
         }
     }
     return arcEntry;
   }
 
 
-  /*
-   * Will load the header information into the warcEntry
-   * warcEntry will have binaryArraySize defined
-   * 
+  /**
+   * ARC files does not have multiple ARC headers for entries.
+   * ARC entries start with {@code URL timestamp mime length} followed directly by HTTP-headers.
+   * <p>
+   * This method populated the given {@code arcEntry} with information from the single ARC-specific line as well
+   * as information from the HTTP-headers.
+   * @param bis stream positioned at the start of an ARC-entry. Afterwards it will be positioned at the start of content.
+   * @param arcEntry the ARC entry representation to populate.
    */
-  private static void loadArcHeader(BufferedInputStream bis, ArcEntry arcEntry) throws Exception{
+  private static void loadArcHeader(BufferedInputStream bis, ArcEntry arcEntry) throws IOException{
 
-    StringBuffer headerLinesBuffer = new StringBuffer();
+    StringBuilder headerLinesBuffer = new StringBuilder();
 
     String line = readLine(bis); // First line
     headerLinesBuffer.append(line+newLineChar);
@@ -112,6 +110,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
     arcEntry.setWaybackDate(waybackDate);
     arcEntry.setUrl(getArcUrl(line));
     arcEntry.setIp(getIp(line));            
+      System.out.println(line);
 
     String[] split = line.split(" ");
     int totalSize = Integer.parseInt(split[split.length - 1]);
@@ -121,11 +120,10 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
     LineAndByteCount lc =readLineCount(bis);
     line=lc.getLine();
     arcEntry.setStatus_code(getStatusCode(line));
-    
     headerLinesBuffer.append(line+newLineChar);
     byteCount +=lc.getByteCount();                    
 
-    while (!"".equals(line)) { // End of warc second header block is an empty line              
+    while (!"".equals(line)) { // End of warc second header block is an empty line
       lc =readLineCount(bis);
       line=lc.getLine();
       headerLinesBuffer.append(line+newLineChar);
@@ -139,9 +137,22 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
     arcEntry.setContentLength(binarySize); //trust the load, not the http-header for arc-files
     arcEntry.setBinaryArraySize(binarySize);      
   }
-  
 
-  public static BufferedInputStream lazyLoadBinary(ArcSource arcSource, long arcEntryPosition) throws Exception {
+
+    /**
+     * Constructs an ARC neutral {@code InputStream} that delivers the binary content for a ARC entry.
+     * If the ARC is marked as gzip-compressed, the content will be automatically gzip-uncompressed.
+     * <p>
+     * This method does not handle decompression or dechunking outside of basic ARC compression.
+     * <p>
+     * This method does not cache the binary and the caller should take care to close the returned {@code InputStream}
+     * after use as failing to do so might cause resource leaks.
+     * @param arcSource        source of the raw ARC.
+     * @param arcEntryPosition where in the ARC the entry is positioned.
+     * @return a stream with the binary content from a ARC entry.
+     * @throws IOException if the binary could not be read.
+     */
+  public static BufferedInputStream lazyLoadContent(ArcSource arcSource, long arcEntryPosition) throws IOException {
       ArcEntry arcEntry = new ArcEntry(); // We just throw away the header info anyway 
 
       InputStream is = arcSource.get();
@@ -165,7 +176,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
       
   }
 
-    public static String readLine(BufferedInputStream bis) throws Exception{
+    public static String readLine(BufferedInputStream bis) throws IOException{
       StringBuffer buf = new StringBuffer();
       int current = 0; // CRLN || LN
       while ((current = bis.read()) != '\r' && current != '\n') {
@@ -180,7 +191,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
 
     }
 
-    public static LineAndByteCount readLineCount(BufferedInputStream  bis) throws Exception{
+    public static LineAndByteCount readLineCount(BufferedInputStream  bis) throws IOException {
     int count = 0;
     StringBuffer buf = new StringBuffer();
     int current = 0; // CRLN || LN
@@ -226,7 +237,7 @@ public class ArcParser extends  ArcWarcFileParserAbstract{
     return split[1];
   }
 
-  private static String getWaybackDate(String arcHeaderLine) throws Exception {
+  private static String getWaybackDate(String arcHeaderLine) {
     String[] split = arcHeaderLine.split(" ");
     return split[2];                                
   }

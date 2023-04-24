@@ -25,10 +25,9 @@ public class JodelPlayback extends PlaybackHandler{
     log.debug(" Generate Jodel post from FilePath:" + doc.getSource_file_path() + " offset:" + doc.getOffset());
     //Fake html into arc.
 
-    String encoding=arc.getContentEncoding();
-    String json = new String(arc.getBinary(), encoding);
+    String json = arc.getStringContentAsStringSafe();
     String html = "TODO";//Jodel2Html.render(json, arc.getCrawlDate());
-    arc.setBinary(html.getBytes());        
+    arc.setStringContent(html);
     arc.setContentType("text/html");
     ParseResult htmlReplaced = new ParseResult(); //Do not parse.
     htmlReplaced.setReplaced(html);
@@ -38,9 +37,9 @@ public class JodelPlayback extends PlaybackHandler{
     if (showToolbar){ //If true or null.
        textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(doc,htmlReplaced, false);
     }
-    encoding="UTF-8"; // hack, since the HTML was generated as UTF-8.
+    String encoding="UTF-8"; // hack, since the HTML was generated as UTF-8.
     arc.setContentEncoding(encoding);
-    arc.setBinary(textReplaced.getBytes(encoding));  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
+    arc.setStringContent(textReplaced);  //can give error. uses UTF-8 (from index) instead of ISO-8859-1
     
     return arc;
   }

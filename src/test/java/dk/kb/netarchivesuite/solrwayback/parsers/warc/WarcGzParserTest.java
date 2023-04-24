@@ -4,9 +4,6 @@ import static org.junit.Assert.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -14,8 +11,6 @@ import org.junit.Test;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
-import dk.kb.netarchivesuite.solrwayback.parsers.ArcFileParserFactory;
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 
@@ -28,7 +23,7 @@ public class WarcGzParserTest  extends UnitTestUtils{
         // so the WARC file can be edited with further evil header entries.
         File file = getFile("src/test/resources/example_warc/Evil-Warc-Headers.warc");
         try {        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 0,false);  //first entry, no WARC metadata header
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 0);  //first entry, no WARC metadata header
         
         assertEquals("text/plain", arcEntry.getContentType());
         assertEquals("robots.txt", arcEntry.getFileName());
@@ -47,14 +42,14 @@ public class WarcGzParserTest  extends UnitTestUtils{
         
         File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc.gz");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777,true); //Image entry. offsets can be seen in the cdx file
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777); //Image entry. offsets can be seen in the cdx file
         assertEquals("image/jpeg", arcEntry.getContentType());
         assertEquals("hewlett.jpg", arcEntry.getFileName());
         assertEquals(7812, arcEntry.getWarcEntryContentLength());
         assertEquals(7510, arcEntry.getContentLength());
         assertEquals(200,arcEntry.getStatus_code());
         
-        BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
+        BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinaryDecoded());
         assertEquals(300,image.getWidth());
         assertEquals(116,image.getHeight());        
         assertEquals("http://www.archive.org/images/hewlett.jpg",arcEntry.getUrl());
@@ -64,28 +59,6 @@ public class WarcGzParserTest  extends UnitTestUtils{
     
     }
 
-    
-    @Test
-    public void testLazyLoadBinary() throws Exception {
-        
-        File file = getFile("src/test/resources/example_warc/IAH-20080430204825-00000-blackbook.warc.gz");        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777, false); //Image entry
-        
-        assertNull(arcEntry.getBinary());
-        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 48777,true); //Image entry and load binary
-        byte[] orgBinary = arcEntry.getBinary();        
-        try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
-
-            byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
-            assertEquals("The expected number of bytes should be read from the lazy stream",
-                         newBinary.length, IOUtils.read(buf, newBinary));
-            assertEquals(orgBinary.length, newBinary.length); //Same length
-            assertArrayEquals(orgBinary, newBinary); //Same binary
-            assertEquals("There should be no more content in the lazy loaded stream", -1, buf.read());
-        }
-    }
-
-    
     /* The warc file used for these tests below can not be shared.
    
      @Test

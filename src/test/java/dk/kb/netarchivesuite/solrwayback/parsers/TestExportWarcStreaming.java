@@ -48,8 +48,8 @@ public class TestExportWarcStreaming extends UnitTestUtils {
 
     byte[] upFrontBinary;
     {
-      ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(WARC), OFFSET, true);
-      upFrontBinary = warcEntry.getBinary();
+      ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(WARC), OFFSET);
+      upFrontBinary = warcEntry.getBinaryDecodedBytes();
       assertEquals("Length for up front load should be as expected", EXPECTED_CONTENT_LENGTH, upFrontBinary.length);
     }
 
@@ -115,8 +115,8 @@ public class TestExportWarcStreaming extends UnitTestUtils {
 
         byte[] upFrontBinary;
         {
-          ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(warc), offset, true);
-          upFrontBinary = warcEntry.getBinary();
+          ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(warc), offset);
+          upFrontBinary = warcEntry.getBinaryDecodedBytes();
           assertEquals("Length for up front load should be as expected", expectedContentLength, upFrontBinary.length);
         }
 
@@ -151,12 +151,20 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
 
     @Test
+  public void testNoCompressionTruncated() throws Exception {
+    final String[][] ENTRIES = new String[][]{
+            {"compressions_warc/transfer_compression_none_truncated.warc.gz", "881"} // Expected 856
+    };
+    assertExportSize(ENTRIES, 856, true);
+  }
+
+    @Test
   public void testGzipExportTruncated() throws Exception {
     final String[][] ENTRIES = new String[][]{
-            {"compressions_warc/transfer_compression_none_truncated.warc.gz", "881"},
-            {"compressions_warc/transfer_compression_none.warc.gz", "881"}
+            {"compressions_warc/transfer_compression_none_truncated.warc.gz", "881"}, // expected export 856
+            {"compressions_warc/transfer_compression_none.warc.gz", "881"} // expected export 1102
     };
-    assertExportSize(ENTRIES, 1102, true);
+    assertExportSize(ENTRIES, 856+1102, true);
   }
 
   @Test
@@ -263,9 +271,9 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     PropertiesLoader.initProperties();
     String source_file_path="/home/teg/workspace/solrwayback/storedanske_export-00000.warc";
     int offset = 515818793;
-    ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(source_file_path),offset,true);
+    ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(source_file_path),offset);
     
-    byte[] bytes = warcEntry.getBinary(); // <--------- The binary
+    byte[] bytes = warcEntry.getBinaryDecodedBytes(); // <--------- The binary
     String fileFromBytes = "image1.jpg";
     String fileFromBytesStream = "image2.jpg";
     String fileFromBytesWarcInputStream = "image3.jpg";

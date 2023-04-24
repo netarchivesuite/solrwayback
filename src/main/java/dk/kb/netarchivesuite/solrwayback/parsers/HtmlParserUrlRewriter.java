@@ -90,7 +90,7 @@ public class HtmlParserUrlRewriter {
 	public static String replaceLinksCss(ArcEntry arc) throws Exception{
 
 		String type="downloadRaw"; //not supporting nested @imports...        		
-		String css = arc.getBinaryContentAsStringUnCompressed();		
+		String css = arc.getStringContentAsStringSafe();
 		String url=arc.getUrl();
 
 		String[] result = css.split("\n", 100); //Doubt there will be more than 100 of these.
@@ -135,7 +135,7 @@ public class HtmlParserUrlRewriter {
 	public static ParseResult replaceLinks(ArcEntry arc, boolean lenient) throws Exception{
 		final long startMS = System.currentTimeMillis();
 		return replaceLinks(
-				arc.getBinaryContentAsStringUnCompressed(), arc.getUrl(), arc.getCrawlDate(),
+				arc.getStringContentAsStringSafe(), arc.getUrl(), arc.getCrawlDate(),
 				(urls, timeStamp) -> NetarchiveSolrClient.getInstance().findNearestUrlsShort(urls, timeStamp, lenient),
 				startMS);
 	}
@@ -339,13 +339,13 @@ public class HtmlParserUrlRewriter {
 	public static String generatePwid(ArcEntry arc) throws Exception{
 
       long start = System.currentTimeMillis();
-      String html = new String(arc.getBinary(),arc.getContentEncoding());
+      String html = arc.getStringContentAsStringSafe();
       String url=arc.getUrl();
 
        String collectionName = PropertiesLoader.PID_COLLECTION_NAME;
-      Document doc = Jsoup.parse(html,url);
+		// TODO: Switch to streaming based parsing with limit on input size
+      Document doc = Jsoup.parse(html, url);
 
-     
        HashSet<String> urlSet =  getUrlResourcesForHtmlPage(doc, url);
            
       log.info("#unique urlset to resolve:"+urlSet.size());
@@ -365,11 +365,11 @@ public class HtmlParserUrlRewriter {
   
 	public static HashSet<String> getResourceLinksForHtmlFromArc(ArcEntry arc) throws Exception{
 
-      String html = arc.getBinaryContentAsStringUnCompressed();
+      String html = arc.getStringContentAsStringSafe();
 
       String url=arc.getUrl();
 
-
+		// TODO: Switch to streaming based parsing with limit on input size
       Document doc = Jsoup.parse(html,url);
 
       

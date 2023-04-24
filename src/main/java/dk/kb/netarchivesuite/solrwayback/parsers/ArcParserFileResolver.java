@@ -38,24 +38,8 @@ public class ArcParserFileResolver {
    * first.
    * 
    * @param offset offset in the warc file
-   * 
-   * The binary will be loaded. If binary is not needed use the other method.
    */
-  public static ArcEntry getArcEntry(String source_file_path, long offset) throws Exception {
-    return getArcEntry(source_file_path, offset, true);
-  }
-
-  /*
-   * 
-   * @param file_path is the file location, the file location must be resolved
-   * first.
-   * 
-   * @param offset offset in the warc file
-   * 
-   * @param loadBinary will load the byte[] with the content. Do mot use for
-   * video/audio etc. Use the InputStream method for this
-   */
-  public static ArcEntry getArcEntry(String source_file_path_org, long offset, boolean loadBinary) throws Exception {
+  public static ArcEntry getArcEntry(String source_file_path_org, long offset) throws Exception {
 
     // Maybe this will stop code scan think parameter is used unvalidated.
     // It is validated later to be .warc/.warcs.gz/.arc/.arc.gz
@@ -69,7 +53,7 @@ public class ArcParserFileResolver {
         cache.put(source_file_path, arcSource);
       }
 
-      return ArcFileParserFactory.getArcEntry(arcSource, offset, loadBinary);
+      return ArcFileParserFactory.getArcEntry(arcSource, offset);
 
     } catch (Exception e) {
       // It CAN happen, but crazy unlikely, and not critical at all... (took 10

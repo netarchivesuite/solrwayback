@@ -48,7 +48,7 @@ public class InputStreamUtils {
 
     /**
      * Re-implementation of {@link org.apache.commons.io.IOUtils#skipFully} using {@link InputStream#skip} instead of
-     * {@link InputStream#skip} to allow for efficient skipping.
+     * {@link InputStream#read} to allow for efficient skipping.
      * @param input stream to skip.
      * @param toSkip the number of bytes to skip.
      * @return the number of bytes skipped. This will always be equal to toSkip as everything else raises an Exception.

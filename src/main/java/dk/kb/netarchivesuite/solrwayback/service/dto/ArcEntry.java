@@ -3,14 +3,27 @@ package dk.kb.netarchivesuite.solrwayback.service.dto;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+import dk.kb.netarchivesuite.solrwayback.util.LimitedReader;
+import it.unimi.dsi.fastutil.Arrays;
 import org.apache.commons.httpclient.ChunkedInputStream;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
@@ -43,7 +56,6 @@ public class ArcEntry {
     }
     
     
-    
   private FORMAT format;
     
   private static final Logger log = LoggerFactory.getLogger(ArcEntry.class);
@@ -51,7 +63,8 @@ public class ArcEntry {
   private long offset;  
   private boolean hasBeenDecompressed=false;
   private boolean chunked=false;
-  private byte[] binary;
+  private byte[] cachedBinary;
+  private long binaryTrueSize;
   private int status_code;
   private String header;//Both headers for WARC.
   private String ip;
@@ -59,7 +72,6 @@ public class ArcEntry {
   private String contentCharset;
   private long contentLength;
   private long warcEntryContentLength; //From warc header#1. This does not exist for arc files
-  private long binaryArraySize;
   private String contentType; //As returned by the webserver when harvested
   private TYPE type;  
   private String contentTypeExt; //As returned by the webserver when harvested
@@ -84,16 +96,6 @@ public void setOffset(long offset) {
     this.offset = offset;
 }
 
-/*
- * Will only be loaded if specificed when constructed
- */
- public byte[] getBinary() {
-    return binary;
-  }
-  public void setBinary(byte[] binary) {
-    //very dirty hack for now.          
-    this.binary = binary;
-  }
   public long getContentLength() {
     return contentLength;
   }
@@ -154,10 +156,10 @@ public void setOffset(long offset) {
   
   
   public long getBinaryArraySize() {
-    return binaryArraySize;
+    return binaryTrueSize;
 }
 public void setBinaryArraySize(long binaryArraySize) {
-    this.binaryArraySize = binaryArraySize;
+    this.binaryTrueSize = binaryArraySize;
 }
 /**
    * Lenient setter for content-encoding (compression).
@@ -237,128 +239,220 @@ public  FORMAT getFormat() {
 public void setFormat(FORMAT format) {
     this.format = format;
 }
-/*
- * Will wrap the byte[] in a BufferedInputStream
- * 
- * It is up the caller to close the inputstream!
- * 
- */
-  public BufferedInputStream getBinaryLazyLoad() throws Exception{
-      if (format.equals(FORMAT.ARC)) {
-         return ArcParser.lazyLoadBinary(arcSource, offset);
-     }
-      else {
-          return WarcParser.lazyLoadBinary(arcSource, offset);
-      }            
-  }
-  
-  public InputStream getBinaryLazyLoadNoChucking() throws Exception{
-      if (format.equals(FORMAT.ARC)) {
-         BufferedInputStream is = ArcParser.lazyLoadBinary(arcSource, offset);
-         InputStream maybeDechunked = maybeDechunk(is);
-         //InputStream maybeUnziped = maybeUnzip(maybeDechunked);
-         InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeDechunked);
-         
-         return maybeBrotliDecoded;
-      }
-      else {
-           InputStream is = WarcParser.lazyLoadBinary(arcSource, offset);
-           InputStream maybeDechunked = maybeDechunk(is);
-           //InputStream maybeUnziped = maybeUnzip(maybeDechunked);
-           InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeDechunked);
-           return maybeBrotliDecoded;
-      }            
-  }
-  
-  
-  
-  public InputStream getBinaryStreamNoEncoding() throws Exception {
-     
-      //Chain the inputstreams in correct order.
-      InputStream binaryStream = new ByteArrayInputStream(binary);      
-      InputStream maybeDechunked = maybeDechunk(binaryStream);
-      InputStream maybeUnziped = maybeUnzip(maybeDechunked);
-      InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeUnziped);
-      return  maybeBrotliDecoded;      
-  }
-  
 
-  /*
-   * Will dechunk, unzip  Brotli decode  if required (in that order)
-   */
-  public String getBinaryContentAsStringUnCompressed() throws Exception{
-    
-      
-      
-    
-      /*
-      InputStream binaryStream = new ByteArrayInputStream(binary);           
-      InputStream maybeBrotliDecoded = maybeBrotliDecode(binaryStream) ;
-      InputStream maybeDechunked = maybeDechunk(maybeBrotliDecoded);
-                 
-//      log.info(IOUtils.toString(maybeUnziped , "UTF-8"));      
-      //InputStream maybeDechunked = maybeDechunk(maybeUnziped);
- */
-                 
-      
-     
-      //Chain the inputstreams in correct order.
-      InputStream binaryStream = new ByteArrayInputStream(binary);      
-      InputStream maybeDechunked = maybeDechunk(binaryStream);
-      InputStream maybeUnziped = maybeUnzip(maybeDechunked);
-      InputStream maybeBrotliDecoded = maybeBrotliDecode(maybeUnziped);
-    
-      hasBeenDecompressed=true;
-      String encoding = this.getContentCharset();
-      if (encoding == null) {
-          encoding = "UTF-8";
-      }
-      
-      
-      String uncomressed =IOUtils.toString(maybeBrotliDecoded, encoding);     
-      return uncomressed;
-      
-     
-     /*
-      ((return IOUtils.toString(maybeBrotliDecoded, "UTF-8"); //READ below!                       
-                          
-      //IMPORTANT! If no encoding is applied , maybe replace UTF-8 with below
-      /*    
-        if (encoding == null || "utf-8".equals(encoding)){ // still check?
-      String content = IOUtils.toString(gzipStream, "UTF-8");
-    
-    
-      String encoding = this.getContentCharset();
-      if (encoding == null || "utf-8".equals(encoding)){
-        encoding ="UTF-8";   
-      }
-      
-      log.info("creating text string from encoding:"+encoding);
-      try {
-      String text = new String(this.getBinary(),encoding);
-      return text;
-      }
-      catch(Exception e){
-          log.warn("Encoding error for encoding:"+encoding);          
-      }
-      return new String(this.getBinary()); //UNKOWN ENCODING!
-      */
+    /**
+     * Constructs an (W)ARC neutral {@code InputStream} that delivers the binary content for this (W)ARC entry.
+     * The content is the resource itself, sans HTTP headers or similar.
+     * <p>
+     * If the (W)ARC is marked as gzip-compressed, the content will be automatically gzip-uncompressed.
+     * <p>
+     * This method does not handle decompression or dechunking outside of basic (W)ARC compression.
+     * <p>
+     * The caller should take care to close the returned {@code InputStream} after use as failing to do so
+     * might cause resource leaks.
+     * @return a stream with the binary content from this (W)ARC entry.
+     * @throws IOException if the binary could not be read.
+     * @see #getBinaryNoChunking()
+     * @see #getBinaryDecoded()
+     */
+    public BufferedInputStream getBinaryRaw() throws IOException {
+        if (cachedBinary != null) {
+            return new BufferedInputStream(new ByteArrayInputStream(cachedBinary));
+        }
+        // TODO: If binaryArraySize is "small" this should be cached
+        switch (format) {
+            case ARC:
+                return ArcParser.lazyLoadContent(arcSource, offset);
+            case WARC:
+                return WarcParser.lazyLoadBinary(arcSource, offset);
+            default:
+                throw new UnsupportedOperationException(
+                        "Loading of binaries for the format '" + format + "' is unsupported. " +
+                        "Offending URL is '" + url + "'");
+        }
+    }
 
-      
-  }
+    /**
+     * De-chunks (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding#chunked_encoding) the
+     * binary delivered form {@link #getBinaryRaw()} but does not change anything else.
+     * <p>
+     * Note that it is possible for the content to be compressed as it was delivered by the web server.
+     * In general this method is only used for proxying content from source (W)ARCs to new WARCs.
+     * <p>
+     * The content is the resource itself, sans HTTP headers or similar.
+     * @return a stream with the binary content from this (W)ARC entry, guaranteed not to be chunked.
+     * @throws IOException if the binary could not be read.
+     * @see #getBinaryRaw()
+     * @see #getBinaryDecoded()
+     */
+    public InputStream getBinaryNoChunking() throws IOException {
+        return maybeDechunk(getBinaryRaw());
+    }
 
-  private InputStream maybeBrotliDecode(InputStream before) throws Exception{
-      
-   
-      if ("br".equalsIgnoreCase(contentEncoding)){    
-          log.info("brotli decode");
-          InputStream brIs = new BrotliInputStream(before);
-          this.setContentEncoding("identity");
-          return brIs;                
-      }
-      else {
+    /**
+     * De-chunks (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding#chunked_encoding),
+     * un-zips and un-Brotlis the binary for the binary delivered form {@link #getBinaryRaw()} but does not change
+     * anything else.
+     * <p>
+     * In general this method is used for further processing of the content, such as determining image dimensions
+     * or extracting links from webpages.
+     * <p>
+     * The content is the resource itself, sans HTTP headers or similar.
+     * @return a stream with the binary content from this (W)ARC entry, guaranteed not to be chunked or compressed.
+     * @throws IOException if the binary could not be read.
+     * @see #getBinaryRaw()
+     * @see #getBinaryNoChunking()
+     */
+    public InputStream getBinaryDecoded() throws IOException {
+        //Chain the inputstreams in correct order.
+        InputStream maybeDechunked = getBinaryNoChunking();
+        InputStream maybeUnzipped = maybeUnzip(maybeDechunked);
+        return maybeBrotliDecode(maybeUnzipped);
+    }
+
+    /**
+     * Wrapper for {@link #getBinaryDecoded()} that delivers the full binary content as a {@code byte[]}.
+     * <p>
+     * Note: This method returns the full content which can lead to Out Of Memory.
+     *       This is the least recommended method for retrieving binaries from the entry.
+     * @return the full binary content.
+     * @see #getStringContentAsStringSafe()
+     */
+    public byte[] getBinaryDecodedBytes() throws IOException {
+        if (binaryTrueSize > Arrays.MAX_ARRAY_SIZE) {
+            String message = String.format(
+                    Locale.ROOT, "Binary size too large for java byte[]. Size: %d, source='%s', url='%s'",
+                    binaryTrueSize, getArcSource().getSource(), url);
+            log.error(message);
+            throw new ArrayIndexOutOfBoundsException(message);
+        }
+
+        byte[] bytes = new byte[(int) binaryTrueSize];
+
+        // we are not using IOUtils.readFully as we'd rather return non-complete data than nothing
+        int read = IOUtils.read(getBinaryDecoded(), bytes);
+        if (read == -1) {
+            log.warn("Attempted to load binary for {}#{} but got EOF immediately",
+                     getArcSource().getSource(), getOffset());
+        } else if (read < bytes.length) {
+            log.warn("Incomplete binary for {}#{}: {}/{} bytes read",
+                     getArcSource().getSource(), getOffset(), read, bytes.length);
+        }
+        return bytes;
+    }
+
+
+    /**
+     * Wrapper for {@link #getBinaryDecoded()} that converts the binary content to characters using the encoding
+     * in the HTTP headers or UTF-8 if no encoding has been provided.
+     * <p>
+     * Note: This method returns the full content which can lead to Out Of Memory if the output is stored on heap.
+     * Consider using {@link #getStringContentAsStringSafe()} or {@link #getStringContentAsStringSafe()} instead.
+     * @return the binary content as characters.
+     * @see #getStringContentAsStringSafe()
+     */
+    public Reader getStringContentFull() throws IOException {
+        return new InputStreamReader(getBinaryDecoded(), getCharsetSafe());
+    }
+
+    /**
+     * Wrapper for {@link #getStringContentFull()} that returns at most
+     * {@link PropertiesLoaderWeb#WARC_ENTRY_TEXT_MAX_CHARACTERS} characters. Excess characters are ignored.
+     * <p>
+     * This is a recommended method for retrieving textual content for further on-heap processing.
+     * @return at most {@link PropertiesLoaderWeb#WARC_ENTRY_TEXT_MAX_CHARACTERS} characters from
+     *         {@link #getStringContentFull()}.
+     * @see #getStringContentFull()
+     * @see #getStringContentAsStringSafe()
+     */
+    public Reader getStringContentSafe() throws IOException {
+        return new LimitedReader(getStringContentFull(), PropertiesLoaderWeb.WARC_ENTRY_TEXT_MAX_CHARACTERS);
+    }
+
+    /**
+     * Memory limited wrapper for {@link #getStringContentFull()} that returns at most
+     * {@link PropertiesLoaderWeb#WARC_ENTRY_TEXT_MAX_CHARACTERS} characters. Excess characters are ignored.
+     * <p>
+     * This is a recommended method for retrieving textual content for further on-heap processing.
+     * @return at most {@link PropertiesLoaderWeb#WARC_ENTRY_TEXT_MAX_CHARACTERS} characters from
+     *         {@link #getStringContentFull()}.
+     * @see #getStringContentSafe()
+     * @see #getStringContentFull()
+     */
+    public String getStringContentAsStringSafe() throws IOException {
+        int max = PropertiesLoaderWeb.WARC_ENTRY_TEXT_MAX_CHARACTERS;
+        StringWriter sw = new StringWriter();
+        long expected = Math.min(max, binaryTrueSize);
+        try {
+            long charCount = IOUtils.copyLarge(getStringContentFull(), sw, 0, max);
+            if (charCount == max) {
+                // #bytes != #characters, but this is acceptable for logging
+                log.debug("getStringContentSafe() skipped approximately {} trailing characters due to {}={} for '{}'",
+                          binaryTrueSize - max, PropertiesLoaderWeb.WARC_ENTRY_TEXT_MAX_CHARACTERS_PROPERTY,
+                          PropertiesLoaderWeb.WARC_ENTRY_TEXT_MAX_CHARACTERS, url);
+            }
+            return sw.toString();
+        } catch (Exception e) {
+            String message = String.format(
+                    Locale.ROOT, "Exception while converting %.2fMB of binary for '%s' to String using charset '%s'",
+                    expected/1048576.0, getUrl(), getCharsetSafe());
+            log.warn(message, e);
+            throw new IOException(message, e);
+        } catch (OutOfMemoryError e) {
+            String message = String.format(
+                    Locale.ROOT, "OutOfMemoryError while converting %.2fMB of binary for '%s' to String using charset '%s'",
+                    expected/1048576.0, getUrl(), getCharsetSafe());
+            log.error(message, e);
+            OutOfMemoryError oome = new OutOfMemoryError(message);
+            oome.initCause(e);
+            // TODO: Consider downgrading this to a standard Exception as the OOM (hopefully) does not make the overall state inconsistent
+            throw oome;
+        }
+    }
+
+    /**
+     * Sets the binary for this (W)ARC entry representation to the given content.
+     * The content will be converted to binary with respect to {@link #getContentCharset()} and potentially compressed,
+     * depending on {@link #getContentEncoding()}.
+     * <p>
+     * Warning: Although an attempt is made to keep the content representation synced to the original HTTP headers,
+     *          this is not guaranteed.
+     * @param content replacement for the existing binary.
+     */
+    public void setStringContent(String content) {
+        if (contentEncoding != null &&
+            !contentEncoding.equalsIgnoreCase("gzip") &&
+            !contentEncoding.equalsIgnoreCase("x-gzip")) {
+            log.debug("setStringContent(...) has to disable content-encoding as encoding of '{}' compression " +
+                      "is not supported", contentEncoding);
+            contentEncoding = null;
+            hasBeenDecompressed = true;
+        }
+
+        if ("gzip".equalsIgnoreCase(contentEncoding) || "x-gzip".equalsIgnoreCase(contentEncoding)) {
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream() ;
+                 GZIPOutputStream gout = new GZIPOutputStream(bos)) {
+                IOUtils.copy(new StringReader(content), gout, getCharsetSafe());
+                cachedBinary = bos.toByteArray();
+            } catch (IOException e) {
+                throw new RuntimeException("IOException while assigning content", e);
+            }
+        } else {
+            cachedBinary = content.getBytes(getCharsetSafe());
+        }
+        binaryTrueSize = cachedBinary.length;
+        setChunked(false);
+        // TODO: Mask the getter methods for binary
+    }
+
+  private InputStream maybeBrotliDecode(InputStream before) throws IOException {
+      if (!"br".equalsIgnoreCase(contentEncoding)) {
           return before;
-      }                
+      }
+      log.info("brotli decode");
+      InputStream brIs = new BrotliInputStream(before);
+      this.setContentEncoding("identity");
+      return brIs;
   }
 
   /* Will fail if stream is not chuncked, and it seems this can happen. (Do not trust http header)
@@ -377,23 +471,22 @@ public void setFormat(FORMAT format) {
   }
   */
   
-  private InputStream maybeUnzip(InputStream before) throws Exception{
+  private InputStream maybeUnzip(InputStream before) throws IOException {
       if ("gzip".equalsIgnoreCase(contentEncoding) || "x-gzip".equalsIgnoreCase(contentEncoding)) {
-          this.setContentEncoding("identity");          
+//          this.setContentEncoding("identity");
           return new GZIPInputStream(before);
-          
       }
       else {
           return before;
       }                
   }
+
   /**
    * Checks if an input stream seems to be chunked. If so, the stream content is de-chunked.
    * If not, the stream content is returned unmodified.
    * Chunked streams must begin with {@code ^[0-9a-z]{1,8}(;.{0,1024})?\r\n}.
    * Note: Closing the returned stream will automatically close input.
    * @param input a stream with the response body from a HTTP-response.
-   * @param id the designation/name/id of the content. Only used for logging
    * @return the un-chunked content of the given stream.
    * @throws IOException if the stream could not be processed.
    * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding">Transfer-Encoding</a>
@@ -504,5 +597,22 @@ public void setFormat(FORMAT format) {
       };
   }
 
-  
+    /**
+     * @return the charset from the HTTP header if possible, else {@code utf-8}.
+     */
+    private Charset getCharsetSafe() {
+        Charset charset;
+        String encoding = this.getContentCharset();
+        charset = StandardCharsets.UTF_8;
+        if (encoding == null) {
+            encoding = "UTF-8";
+        }
+        try {
+            charset = Charsets.toCharset(encoding);
+        } catch (Exception e) {
+            log.debug("The encoding '{}' for '{}' is not supported. Falling back to UTF-8", encoding, url);
+        }
+        return charset;
+    }
+
 }

@@ -11,7 +11,6 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,7 +69,7 @@ public class SolrWaybackResource {
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
   public ArcEntry getArcEntry(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
       try {                                                                                      
-        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,false);
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
         return arcEntry;                              
       } catch (Exception e) {         
           throw handleServiceExceptions(e);
@@ -83,7 +82,7 @@ public class SolrWaybackResource {
   @Produces({ MediaType.TEXT_PLAIN})
   public String getWarcHeader( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
       try {                                                                                      
-        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,false);
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
         return arcEntry.getHeader();                              
       } catch (Exception e) {         
           throw handleServiceExceptions(e);
@@ -95,7 +94,7 @@ public class SolrWaybackResource {
   @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
   public ArcEntry getWarcParsed( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
       try {                                                                                      
-        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,true);
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
          return arcEntry;                              
       } catch (Exception e) {         
           throw handleServiceExceptions(e);
@@ -175,9 +174,10 @@ public class SolrWaybackResource {
 
       //log.debug("Getting image from source_file_path:" + source_file_path + " offset:" + offset + " targetWidth:" + width + " targetHeight:" + height);
 
-      ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,true);
+      ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
 
-      BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
+      // TODO: This is prone to OOM for large images. There should be a sanity check of width & height first
+      BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinaryDecoded());
 
       if (image== null){
         // java does not support ico format. Just serve it RAW... 
@@ -234,7 +234,7 @@ public class SolrWaybackResource {
         }
         
   //  log.debug("Download from FilePath:" + source_file_path + " offset:" + offset);
-      ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset,false); //DO not load binary in memory
+      ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
       
       //Only solr lookup if redirect.
       if (arcEntry.getStatus_code() >= 300 &&  arcEntry.getStatus_code() <= 399 ){
@@ -244,7 +244,7 @@ public class SolrWaybackResource {
         return responseRedirect;
       }
       
-      InputStream in = arcEntry.getBinaryLazyLoadNoChucking(); //Stream entry. Dechucking require as tomcat/apache also chunks.
+      InputStream in = arcEntry.getBinaryNoChunking(); //Stream entry. Dechucking require as tomcat/apache also chunks.
       
       ResponseBuilder response = null;
       try{        
@@ -936,8 +936,7 @@ public class SolrWaybackResource {
    //log.debug("setting contentype:"+contentType);
 //          
    
-   InputStream in = new ByteArrayInputStream(arcEntry.getBinary());
-   ResponseBuilder response = Response.ok(in).type(contentType );                    
+   ResponseBuilder response = Response.ok(arcEntry.getBinaryRaw()).type(contentType );
 
    
     if (arcEntry.isHasBeenDecompressed()){     
@@ -1051,7 +1050,7 @@ public class SolrWaybackResource {
       ResponseBuilder response = Response.status(status);
       
       if(arc == null){
-        arc = Facade.getArcEntry(doc.getSource_file_path(), doc.getOffset(),false); //Do not load binary
+        arc = Facade.getArcEntry(doc.getSource_file_path(), doc.getOffset());
       }      
       response.status(status); // jersey require a legal status code.
 

@@ -5,9 +5,6 @@ import static org.junit.Assert.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -26,12 +23,12 @@ public class ArcParserTest extends UnitTestUtils{
         
         File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc");
         
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767 ,true); //Image entry
+        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767); //Image entry
         assertEquals("image/jpeg", arcEntry.getContentType());
         assertEquals("hewlett.jpg", arcEntry.getFileName());
         assertEquals(7510, arcEntry.getContentLength());
 
-        BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinary());
+        BufferedImage image = ImageUtils.getImageFromBinary(arcEntry.getBinaryDecoded());
         assertEquals(300,image.getWidth());
         assertEquals(116,image.getHeight());
         assertEquals(200,arcEntry.getStatus_code());        
@@ -41,39 +38,14 @@ public class ArcParserTest extends UnitTestUtils{
         System.out.println(arcEntry.getRedirectUrl());
                      
     }
-    
-    
-    @Test
-    public void testLazyLoadBinary() throws Exception {
-        
-        File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc");        
-        ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767, false); //Image entry
-        
-        assertNull(arcEntry.getBinary());
-        arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 136767,true); //Image entry and load binary
-        byte[] orgBinary = arcEntry.getBinary();
-        assertTrue("The extracted binary size should be > 0 but was " + arcEntry.getBinaryArraySize(),
-                   arcEntry.getBinaryArraySize() > 0);
-        try (BufferedInputStream buf = arcEntry.getBinaryLazyLoad()) {
-            byte[] newBinary = new byte[(int) arcEntry.getBinaryArraySize()];
-            assertEquals("The expected number of bytes should be read from the lazy stream",
-                         newBinary.length, IOUtils.read(buf, newBinary));
-            assertEquals(orgBinary.length, newBinary.length); //Same length
-            assertArrayEquals(orgBinary, newBinary); //Same binary
-            assertEquals("There should be no more content in the lazy loaded stream", -1, buf.read());
-        }
-    }
 
-    
-    
-    
-    
+
     @Test
     public void testArcParserRedirect() throws Exception {
       
       File file = getFile("src/test/resources/example_arc/IAH-20080430204825-00000-blackbook.arc");
       
-      ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 280750 ,false); //redirect
+      ArcEntry arcEntry = Facade.getArcEntry(file.getCanonicalPath(), 280750); //redirect
 
       
       String url=arcEntry.getUrl();
