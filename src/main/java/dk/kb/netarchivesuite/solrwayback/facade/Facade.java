@@ -37,6 +37,7 @@ import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStats;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
@@ -1076,6 +1077,39 @@ public class Facade {
             imageUrls.add(imageUrl);
         }
         return imageUrls;
+    }
+
+    /**
+     * Get standard solr stats for all fields given.
+     * @param query     to generate stats for.
+     * @param filters   that are to be added to solr query.
+     * @param fields    to return stats for.
+     * @return all standard stats for all fields from query as a JSON string.
+     */
+    public static String getQueryStats(String query, List<String> filters, List<String> fields){
+        String stats = SolrStats.getStatsForFields(query, filters, fields);
+        return stats;
+    }
+
+    /**
+     * Get percentiles for numeric fields
+     * @param query to generate stats for.
+     * @param percentiles to extract values for.
+     * @param fields to return percentiles for.
+     * @return percentiles for specified fields as a JSON string.
+     */
+    public static String getPercentileStatsForFields(String query, List<String> percentiles, List<String> fields){
+        String percentileStats = SolrStats.getPercentilesForFields(query, percentiles, fields);
+        return percentileStats;
+    }
+
+    /**
+     * Show which fields it is possible to extract stats for.
+     * @return a JSON array containing fields that can be queried for stats.
+     */
+    public static String getStatsEnabledFields(){
+        String enabledFields = SolrStats.getFieldsWithStatsEnabled();
+        return enabledFields;
     }
 
     /*
