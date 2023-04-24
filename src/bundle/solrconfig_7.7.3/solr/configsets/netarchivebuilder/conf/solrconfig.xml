@@ -847,6 +847,7 @@
         <!--  Boost status 200. Negative boost on other+text -->
         <str name="bq">status_code:200^20</str>               
  <!--   <str name="bq">content_type_norm:html^5</str>  include this if further html boost is desired -->
+        <str name="bq">url_type:slashpage^5</str>   <!--  Boost frontpages (slashpage)  -->
         <str name="bq">content_type_norm:other^-15</str>
         <str name="bq">content_type_norm:text^-15</str>
      
