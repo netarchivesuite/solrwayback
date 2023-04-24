@@ -694,6 +694,31 @@ public class SolrWaybackResourceWeb {
         throw handleServiceExceptions(e);
       }
     }
+
+    @GET
+    @Path("statistics/querystats")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public String queryStats(@QueryParam("query") String query, @QueryParam("filters") List<String> filters, @QueryParam("fields") List<String> fields){
+        String stats = Facade.getQueryStats(query, filters, fields);
+        return stats;
+    }
+
+    @GET
+    @Path("statistics/percentilestats")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public String percentileStats(@QueryParam("query") String query, @QueryParam("percentiles") List<String> percentiles, @QueryParam("fields") List<String> fields){
+        String percentileStats = Facade.getPercentileStatsForFields(query, percentiles, fields);
+        return percentileStats;
+    }
+
+    @GET
+    @Path("statistics/enabledfields")
+    @Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
+    public String getStatsEnabledFields(){
+        String enabledFields = Facade.getStatsEnabledFields();
+        return enabledFields;
+    }
+
    
     
     private Response convertToPng(BufferedImage image)  throws Exception { 
