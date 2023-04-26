@@ -174,7 +174,6 @@ export default {
     this.selectedArray = this.getSplitFieldsSelected(this.configs.exportOptions.csvFields)
     this.nonSelectedArray = this.getSplitFieldsNotSelected(this.configs.exportOptions.csvFields)
     this.cmpGrouping = this.solrSettings.grouping
-
   },
   methods: {
     exportToWARC() {
