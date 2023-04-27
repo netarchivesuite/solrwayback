@@ -57,6 +57,7 @@ public class SolrStats {
 
         QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
         Collection<FieldStatsInfo> fieldStatsInfos = response.getFieldStatsInfo().values();
+        fieldStatsInfos.stream().forEach(System.out::println);
 
         ArrayList<QueryStatistics> listOfStats = new ArrayList<>();
         for (FieldStatsInfo stat: fieldStatsInfos) {

@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.service.dto.statistics;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.QueryResponse;
 
@@ -9,14 +10,14 @@ import java.util.Collection;
 @XmlRootElement
 public class QueryStatistics {
     private String name;
-    private double min;
-    private double max;
-    private double sum;
-    private double count;
-    private double missing;
-    private double mean;
-    private double sumOfSquares;
-    private double stddev;
+    private Object min;
+    private Object max;
+    private Object sum;
+    private Long count;
+    private Long missing;
+    private Object mean;
+    private Double sumOfSquares;
+    private Double stddev;
 
     public QueryStatistics(){
     }
@@ -26,35 +27,35 @@ public class QueryStatistics {
         return name;
     }
 
-    public double getMin() {
+    public Object getMin() {
         return min;
     }
 
-    public double getMax() {
+    public Object getMax() {
         return max;
     }
 
-    public double getMean() {
+    public Object getMean() {
         return mean;
     }
 
-    public double getCount() {
+    public Long getCount() {
         return count;
     }
 
-    public double getSum() {
+    public Object getSum() {
         return sum;
     }
 
-    public double getMissing() {
+    public Long getMissing() {
         return missing;
     }
 
-    public double getStddev() {
+    public Double getStddev() {
         return stddev;
     }
 
-    public double getSumOfSquares() {
+    public Double getSumOfSquares() {
         return sumOfSquares;
     }
 
@@ -63,35 +64,35 @@ public class QueryStatistics {
         this.name = name;
     }
 
-    public void setMin(double min) {
+    public void setMin(Object min) {
         this.min = min;
     }
 
-    public void setMax(double max) {
+    public void setMax(Object max) {
         this.max = max;
     }
 
-    public void setSum(double sum) {
+    public void setSum(Object sum) {
         this.sum = sum;
     }
 
-    public void setCount(double count) {
+    public void setCount(Long count) {
         this.count = count;
     }
 
-    public void setMean(double mean) {
+    public void setMean(Object mean) {
         this.mean = mean;
     }
 
-    public void setMissing(double missing) {
+    public void setMissing(Long missing) {
         this.missing = missing;
     }
 
-    public void setStddev(double stddev) {
+    public void setStddev(Double stddev) {
         this.stddev = stddev;
     }
 
-    public void setSumOfSquares(double sumOfSquares) {
+    public void setSumOfSquares(Double sumOfSquares) {
         this.sumOfSquares = sumOfSquares;
     }
 
@@ -102,14 +103,15 @@ public class QueryStatistics {
      */
     public void setAllStandardValuesFromSolrFieldStatsInfo(FieldStatsInfo stat){
         this.name = stat.getName();
-        this.min = (double) stat.getMin();
-        this.max= (double) stat.getMax();
-        this.sum= (double) stat.getSum();
-        this.count= (double) stat.getCount();
-        this.missing= (double) stat.getMissing();
-        this.mean= (double) stat.getMean();
+        this.min = stat.getMin();
+        this.max= stat.getMax();
+        this.sum= stat.getSum();
+        this.count= stat.getCount().longValue();
+        this.missing= stat.getMissing().longValue();
+        this.mean= stat.getMean();
         this.sumOfSquares= stat.getSumOfSquares();
         this.stddev= stat.getStddev();
+
     }
 
 
