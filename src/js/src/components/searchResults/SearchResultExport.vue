@@ -98,6 +98,26 @@
             <label for="export-jsonl">JSONL</label>
           </div>
           <div class="csvExportOptionHeader">
+            <h4>Grouping</h4>
+          </div>
+          <div>
+            <div>
+              <select id="export-grouping" v-model="exportOptions.grouping">
+                <option value="none">
+                  No grouping
+                </option>
+                <option value="hash">
+                  hash
+                </option>
+                <option value="url_norm">
+                  url_norm
+                </option>
+              </select>
+              <span class="buttonExplanation" title="Documents will be grouped on the given field and only the first document will be exported in each group">  [ ? ]</span>
+            </div>
+          </div>
+          
+          <div class="csvExportOptionHeader">
             <h4>Other</h4>
           </div>
           <div>
@@ -107,15 +127,7 @@
                      type="checkbox"
                      true-value="true"
                      false-value="false">
-              <label for="export-gzip">gzip</label>
-            </div>
-            <div>
-              <input id="export-grouping"
-                     v-model="exportOptions.grouping"
-                     type="checkbox"
-                     true-value="true"
-                     false-value="false">
-              <label for="export-grouping">grouping</label>
+              <label for="export-gzip">Gzip</label>
             </div>
             <div>
               <input id="export-flatten"
@@ -123,7 +135,7 @@
                      type="checkbox"
                      true-value="true"
                      false-value="false">
-              <label for="export-flatten">Flatten</label>
+              <label for="export-flatten">Flatten <span class="buttonExplanation" title="Flatten will split multivalue fields into single values and add as many new lines to the export. Using with 'content' field selected can cause very large exports.">[ ? ]</span></label>
             </div>
           </div>
         </div>
@@ -148,7 +160,7 @@ export default {
       selectedArray:[],
       nonSelectedArray:[],
       exportOptions: {
-        grouping:false,
+        grouping:'none',
         flatten:false,
         format:'csv',
         gzip:false
@@ -173,7 +185,7 @@ export default {
   mounted () {
     this.selectedArray = this.getSplitFieldsSelected(this.configs.exportOptions.csvFields)
     this.nonSelectedArray = this.getSplitFieldsNotSelected(this.configs.exportOptions.csvFields)
-    this.cmpGrouping = this.solrSettings.grouping
+    //this.cmpGrouping = this.solrSettings.grouping
   },
   methods: {
     exportToWARC() {
@@ -199,8 +211,8 @@ export default {
     exportToCSV() {
       let fields = this.selectedArray.join(',')
       return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}&fields=${encodeURIComponent(fields)}&grouping=${this.exportOptions.grouping}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}` :
-      `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}&fields=${encodeURIComponent(fields)}&grouping=${this.exportOptions.grouping}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}`
+      `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}&fields=${encodeURIComponent(fields)}&groupfield=${this.exportOptions.grouping}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}` :
+      `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}&fields=${encodeURIComponent(fields)}&groupingfield=${this.exportOptions.grouping}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}`
     },
     returnExportUrl() {
       return this.configs.playbackConfig.solrwaybackBaseURL + 'services/export/'
