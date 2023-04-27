@@ -2,15 +2,18 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 
 import com.google.gson.Gson;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -30,7 +33,7 @@ public class SolrStats {
      * @param fields  to return stats for.
      * @return all standard stats for all fields from query as a JSON string.
      */
-    public static String getStatsForFields(String query, List<String> filters, List<String> fields){
+    public static ArrayList<QueryStatistics> getStatsForFields(String query, List<String> filters, List<String> fields){
         if (fields.isEmpty()){
             throw new IllegalArgumentException("No fields have been specified for stats component.");
         }
@@ -43,7 +46,6 @@ public class SolrStats {
             }
         }
 
-
         for (String field: fields) {
             if (PropertiesLoaderWeb.STATS.contains(field)){
                 solrQuery.setGetFieldStatistics(field);
@@ -54,9 +56,16 @@ public class SolrStats {
         }
 
         QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
-        Gson gson = new Gson();
-        String stats = gson.toJson(response.getFieldStatsInfo().values());
-        return stats;
+        Collection<FieldStatsInfo> fieldStatsInfos = response.getFieldStatsInfo().values();
+
+        ArrayList<QueryStatistics> listOfStats = new ArrayList<>();
+        for (FieldStatsInfo stat: fieldStatsInfos) {
+            QueryStatistics dtoStat = new QueryStatistics();
+            dtoStat.setAllStandardValuesFromSolrFieldStatsInfo(stat);
+            listOfStats.add(dtoStat);
+        }
+
+        return listOfStats;
 
     }
 

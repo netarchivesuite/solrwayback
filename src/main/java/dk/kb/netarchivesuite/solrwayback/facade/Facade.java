@@ -30,6 +30,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainStatistics;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
@@ -1087,9 +1088,9 @@ public class Facade {
      * @param fields    to return stats for.
      * @return all standard stats for all fields from query as a JSON string.
      */
-    public static String getQueryStats(String query, List<String> filters, List<String> fields){
-        String stats = SolrStats.getStatsForFields(query, filters, fields);
-        return stats;
+    public static ArrayList<QueryStatistics> getQueryStats(String query, List<String> filters, List<String> fields){
+        ArrayList<QueryStatistics> queryStats = SolrStats.getStatsForFields(query, filters, fields);
+        return queryStats;
     }
 
     /**
