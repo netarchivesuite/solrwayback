@@ -10,7 +10,9 @@ public class QueryPercentilesStatistics {
     private String name;
     private Map<Double, Double> percentiles;
 
-    public QueryPercentilesStatistics(){
+    public QueryPercentilesStatistics(FieldStatsInfo fieldStatsInfo){
+        this.name= fieldStatsInfo.getName();
+        this.percentiles= fieldStatsInfo.getPercentiles();
     }
 
     // Getters
@@ -29,10 +31,5 @@ public class QueryPercentilesStatistics {
 
     public void setPercentiles(Map<Double, Double> percentiles) {
         this.percentiles = percentiles;
-    }
-
-    public void setAllValuesFromFieldStatsInfo(FieldStatsInfo fieldStatsInfo){
-        this.name= fieldStatsInfo.getName();
-        this.percentiles= fieldStatsInfo.getPercentiles();
     }
 }

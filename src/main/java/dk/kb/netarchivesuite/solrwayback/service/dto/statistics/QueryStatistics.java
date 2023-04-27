@@ -19,7 +19,16 @@ public class QueryStatistics {
     private Double sumOfSquares;
     private Double stddev;
 
-    public QueryStatistics(){
+    public QueryStatistics(FieldStatsInfo fieldStatsInfo){
+        this.name = fieldStatsInfo.getName();
+        this.min = fieldStatsInfo.getMin();
+        this.max= fieldStatsInfo.getMax();
+        this.sum= fieldStatsInfo.getSum();
+        this.count= fieldStatsInfo.getCount().longValue();
+        this.missing= fieldStatsInfo.getMissing().longValue();
+        this.mean= fieldStatsInfo.getMean();
+        this.sumOfSquares= fieldStatsInfo.getSumOfSquares();
+        this.stddev= fieldStatsInfo.getStddev();
     }
 
     // Getters
@@ -95,24 +104,5 @@ public class QueryStatistics {
     public void setSumOfSquares(Double sumOfSquares) {
         this.sumOfSquares = sumOfSquares;
     }
-
-
-    /**
-     * Set all standard values from a FieldStatsInfo
-     * @param stat to convert to QueryStatistics DTO
-     */
-    public void setAllStandardValuesFromSolrFieldStatsInfo(FieldStatsInfo stat){
-        this.name = stat.getName();
-        this.min = stat.getMin();
-        this.max= stat.getMax();
-        this.sum= stat.getSum();
-        this.count= stat.getCount().longValue();
-        this.missing= stat.getMissing().longValue();
-        this.mean= stat.getMean();
-        this.sumOfSquares= stat.getSumOfSquares();
-        this.stddev= stat.getStddev();
-
-    }
-
 
 }

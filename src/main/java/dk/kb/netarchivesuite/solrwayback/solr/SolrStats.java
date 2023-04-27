@@ -59,8 +59,7 @@ public class SolrStats {
 
         ArrayList<QueryStatistics> listOfStats = new ArrayList<>();
         for (FieldStatsInfo stat: fieldStatsInfos) {
-            QueryStatistics dtoStat = new QueryStatistics();
-            dtoStat.setAllStandardValuesFromSolrFieldStatsInfo(stat);
+            QueryStatistics dtoStat = new QueryStatistics(stat);
             listOfStats.add(dtoStat);
         }
 
@@ -106,8 +105,7 @@ public class SolrStats {
             Collection<FieldStatsInfo> fieldStatsInfos = response.getFieldStatsInfo().values();
             ArrayList<QueryPercentilesStatistics> listOfPercentileStats = new ArrayList<>();
             for (FieldStatsInfo stat: fieldStatsInfos) {
-                QueryPercentilesStatistics dtoStat = new QueryPercentilesStatistics();
-                dtoStat.setAllValuesFromFieldStatsInfo(stat);
+                QueryPercentilesStatistics dtoStat = new QueryPercentilesStatistics(stat);
                 listOfPercentileStats.add(dtoStat);
             }
 
