@@ -74,20 +74,14 @@ public class SolrStats {
      * @param fields to return percentiles for.
      * @return percentiles for specified fields as a JSON string.
      */
-    public static ArrayList<QueryPercentilesStatistics> getPercentilesForFields(String query, List<String> percentiles, List<String> fields){
+    public static ArrayList<QueryPercentilesStatistics> getPercentilesForFields(String query, List<Double> percentiles, List<String> fields){
         if (fields.isEmpty()) {
             throw new IllegalArgumentException("No fields have been specified for stats component.");
         }
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 
-        List<Double> parsedPercentiles = new ArrayList<>();
-        for (String percentile : percentiles) {
-            parsedPercentiles.add(Double.parseDouble(percentile));
-        }
-
-        String allPercentiles = StringUtils.join(parsedPercentiles, ",");
-        String percentileQuery = "{!percentiles='" + allPercentiles + "'}";
+        String percentileQuery = "{!percentiles='" + percentiles + "'}";
 
         for (String field : fields) {
             if (PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(field)) {

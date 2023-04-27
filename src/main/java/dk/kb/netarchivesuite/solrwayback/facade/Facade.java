@@ -1117,7 +1117,15 @@ public class Facade {
         if (!checkListValues(fields, PropertiesLoaderWeb.STATS_NUMERIC_FIELDS)) {
             throw new InvalidArgumentServiceException("One or more of the values: '" + StringUtils.join(fields, ", ") + "' in parameter fields are not allowed.");
         }
-        ArrayList<QueryPercentilesStatistics> percentileStats = SolrStats.getPercentilesForFields(query, percentiles, fields);
+        List<Double> truePercentiles = new ArrayList<>();
+        try {
+            for (String percentile: percentiles) {
+                truePercentiles.add(Double.parseDouble(percentile));
+            }
+        } catch (NumberFormatException e){
+            throw new InvalidArgumentServiceException("Percentiles needs to be numbers");
+        }
+        ArrayList<QueryPercentilesStatistics> percentileStats = SolrStats.getPercentilesForFields(query, truePercentiles, fields);
         return percentileStats;
     }
 

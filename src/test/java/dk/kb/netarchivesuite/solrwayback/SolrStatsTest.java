@@ -154,7 +154,7 @@ public class SolrStatsTest {
 
     @Test
     public void percentileTest(){
-        List<String> percentiles = Arrays.asList("25", "50", "75");
+        List<Double> percentiles = Arrays.asList(25.0, 50.0, 75.0);
         List<String> fields = Arrays.asList("image_height", "image_width", "image_size");
         ArrayList<QueryPercentilesStatistics> listOfStats = SolrStats.getPercentilesForFields("*:*", percentiles, fields);
 
@@ -166,7 +166,7 @@ public class SolrStatsTest {
 
     @Test
     public void textPercentileTest(){
-        List<String> percentiles = Arrays.asList("25", "50", "75");
+        List<Double> percentiles = Arrays.asList(25.0, 50.0, 75.0);
         List<String> fields = Arrays.asList("links");
         ArrayList<QueryPercentilesStatistics> stats = SolrStats.getPercentilesForFields("*:*", percentiles, fields);
 
