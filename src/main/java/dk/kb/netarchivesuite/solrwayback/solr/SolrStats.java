@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 
 import com.google.gson.Gson;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentilesStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -57,7 +58,6 @@ public class SolrStats {
 
         QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
         Collection<FieldStatsInfo> fieldStatsInfos = response.getFieldStatsInfo().values();
-        fieldStatsInfos.stream().forEach(System.out::println);
 
         ArrayList<QueryStatistics> listOfStats = new ArrayList<>();
         for (FieldStatsInfo stat: fieldStatsInfos) {
@@ -77,7 +77,7 @@ public class SolrStats {
      * @param fields to return percentiles for.
      * @return percentiles for specified fields as a JSON string.
      */
-    public static String getPercentilesForFields(String query, List<String> percentiles, List<String> fields){
+    public static ArrayList<QueryPercentilesStatistics> getPercentilesForFields(String query, List<String> percentiles, List<String> fields){
         if (fields.isEmpty()) {
             throw new IllegalArgumentException("No fields have been specified for stats component.");
         }
@@ -104,9 +104,23 @@ public class SolrStats {
 
         try {
             QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
+
+            Collection<FieldStatsInfo> fieldStatsInfos = response.getFieldStatsInfo().values();
+            ArrayList<QueryPercentilesStatistics> listOfPercentileStats = new ArrayList<>();
+            for (FieldStatsInfo stat: fieldStatsInfos) {
+                QueryPercentilesStatistics dtoStat = new QueryPercentilesStatistics();
+                dtoStat.setAllValuesFromFieldStatsInfo(stat);
+                listOfPercentileStats.add(dtoStat);
+            }
+
+            return listOfPercentileStats;
+
+            /*
             Gson gson = new Gson();
             String stats = gson.toJson(response.getFieldStatsInfo().values());
             return stats;
+
+             */
         } catch (Exception e){
             throw new IllegalArgumentException("Percentiles have to be in range [0-100].");
         }

@@ -30,6 +30,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainStatistics;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentilesStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
@@ -1100,10 +1101,11 @@ public class Facade {
      * @param fields to return percentiles for.
      * @return percentiles for specified fields as a JSON string.
      */
-    public static String getPercentileStatsForFields(String query, List<String> percentiles, List<String> fields){
-        String percentileStats = SolrStats.getPercentilesForFields(query, percentiles, fields);
+    public static ArrayList<QueryPercentilesStatistics> getPercentileStatsForFields(String query, List<String> percentiles, List<String> fields){
+        ArrayList<QueryPercentilesStatistics> percentileStats = SolrStats.getPercentilesForFields(query, percentiles, fields);
         return percentileStats;
     }
+
 
     /*
      * Just show the most important

@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentilesStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrTestClient;
@@ -152,28 +153,29 @@ public class SolrStatsTest {
         Assert.assertEquals(13, stats.size());
     }
 
-    /*
+
     @Test
     public void percentileTest(){
         List<String> percentiles = Arrays.asList("25", "50", "75");
         List<String> fields = Arrays.asList("image_height", "image_width", "image_size");
-        String stats = SolrStats.getPercentilesForFields("*:*", percentiles, fields);
+        ArrayList<QueryPercentilesStatistics> listOfStats = SolrStats.getPercentilesForFields("*:*", percentiles, fields);
 
-        JsonObject image_height = extractFirstObjectFromJsonArrayString(stats);
-        Assert.assertEquals(800.0, image_height.getAsJsonObject("percentiles").get("25.0").getAsDouble(), 0);
+        QueryPercentilesStatistics percentilesStat = listOfStats.get(0);
+        Assert.assertEquals("image_height", percentilesStat.getName());
+        Assert.assertEquals(Double.valueOf(800.0), percentilesStat.getPercentiles().get(25.0));
     }
+
 
     @Test
     public void textPercentileTest(){
         List<String> percentiles = Arrays.asList("25", "50", "75");
         List<String> fields = Arrays.asList("links");
-        String stats = SolrStats.getPercentilesForFields("*:*", percentiles, fields);
+        ArrayList<QueryPercentilesStatistics> stats = SolrStats.getPercentilesForFields("*:*", percentiles, fields);
 
-        JsonObject links = extractFirstObjectFromJsonArrayString(stats);
-        Assert.assertNull(links.get("percentiles"));
+        QueryPercentilesStatistics linksStat = stats.get(0);
+        Assert.assertNull(linksStat.getPercentiles());
     }
 
-     */
     
     private JsonObject extractFirstObjectFromJsonArrayString(String string){
         JsonArray solrStats = new Gson().fromJson(string, JsonArray.class);

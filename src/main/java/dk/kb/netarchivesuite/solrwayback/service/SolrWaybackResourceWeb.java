@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentilesStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
@@ -707,8 +708,8 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("statistics/percentilestats")
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public String percentileStats(@QueryParam("query") String query, @QueryParam("percentiles") List<String> percentiles, @QueryParam("fields") List<String> fields){
-        String percentileStats = Facade.getPercentileStatsForFields(query, percentiles, fields);
+    public ArrayList<QueryPercentilesStatistics> percentileStats(@QueryParam("query") String query, @QueryParam("percentiles") List<String> percentiles, @QueryParam("fields") List<String> fields){
+        ArrayList<QueryPercentilesStatistics> percentileStats = Facade.getPercentileStatsForFields(query, percentiles, fields);
         return percentileStats;
     }
 
