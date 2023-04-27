@@ -34,7 +34,6 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentiles
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
-import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
@@ -70,7 +69,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -947,7 +945,8 @@ public class Facade {
         props.put(PropertiesLoaderWeb.SEARCH_PAGINATION_PROPERTY, "" + PropertiesLoaderWeb.SEARCH_PAGINATION);
         props.put(PropertiesLoader.PLAYBACK_DISABLED_PROPERTY, ""+""+PropertiesLoader.PLAYBACK_DISABLED);
         props.put("solrwayback.version",PropertiesLoaderWeb.SOLRWAYBACK_VERSION);
-        props.put("stats.enabled.fields", ""+PropertiesLoaderWeb.STATS);
+        props.put(PropertiesLoaderWeb.TEXT_STATS_PROPERTY, ""+PropertiesLoaderWeb.STATS_TEXT_FIELDS);
+        props.put(PropertiesLoaderWeb.NUMERIC_STATS_PROPERTY, ""+PropertiesLoaderWeb.STATS_TEXT_FIELDS);
 
         if (PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE != null && !"".equals(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE.trim())) {
             props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_PROPERTY,PropertiesLoader.WAYBACK_BASEURL + "services/frontend/images/logo");

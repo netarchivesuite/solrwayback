@@ -1,6 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback;
 
-import com.carrotsearch.randomizedtesting.annotations.TestMethodProviders;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -12,7 +11,6 @@ import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrTestClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStats;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
 import org.junit.After;
@@ -24,10 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class SolrStatsTest {
     private static final Logger log = LoggerFactory.getLogger(SolrStatsTest.class);
@@ -148,9 +144,11 @@ public class SolrStatsTest {
 
     @Test
     public void defaultFieldsTest(){
-        ArrayList<QueryStatistics> stats = SolrStats.getStatsForFields("*:*", null, PropertiesLoaderWeb.STATS);
+        ArrayList<QueryStatistics> textStats = SolrStats.getStatsForFields("*:*", null, PropertiesLoaderWeb.STATS_TEXT_FIELDS);
+        ArrayList<QueryStatistics> numericStats = SolrStats.getStatsForFields("*:*", null, PropertiesLoaderWeb.STATS_NUMERIC_FIELDS);
 
-        Assert.assertEquals(13, stats.size());
+        Assert.assertEquals(7, textStats.size());
+        Assert.assertEquals(6, numericStats.size());
     }
 
 

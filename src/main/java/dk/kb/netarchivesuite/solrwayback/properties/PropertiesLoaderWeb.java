@@ -54,7 +54,8 @@ public class PropertiesLoaderWeb {
     public static final String LEAFLET_ATTRIBUTION_PROPERTY = "leaflet.attribution";
     public static final String TOP_LEFT_LOGO_IMAGE_PROPERTY = "top.left.logo.image";
     public static final String TOP_LEFT_LOGO_IMAGE_LINK_PROPERTY = "top.left.logo.image.link";
-    public static final String STATS_PROPERTY = "stats.fields";
+    public static final String TEXT_STATS_PROPERTY = "stats.fields.text";
+    public static final String NUMERIC_STATS_PROPERTY = "stats.fields.numeric";
  
     
     
@@ -90,9 +91,9 @@ public class PropertiesLoaderWeb {
     //Default values.
     public static List<String> FACETS = Arrays.asList("domain", "content_type_norm", "type", "crawl_year", "status_code", "public_suffix");
     public static String FIELDS=null;
-    public static List<String> STATS = Arrays.asList("content_length", "crawl_year", "content_text_length", "image_height", "image_width", "image_size",
-                                                    "links", "domain", "elements_used", "content_type",
-                                                    "content_language", "links_images", "type");
+    public static List<String> STATS_TEXT_FIELDS = Arrays.asList( "links", "domain", "elements_used", "content_type",
+                                                                "content_language", "links_images", "type");
+    public static List<String> STATS_NUMERIC_FIELDS = Arrays.asList("content_length", "crawl_year", "content_text_length", "image_height", "image_width", "image_size" );
     
     //Default empty if not defined in properties
     public static  List<String> WORDCLOUD_STOPWORDS = new ArrayList<String>();
@@ -126,7 +127,8 @@ public class PropertiesLoaderWeb {
 
             WAYBACK_SERVER =serviceProperties.getProperty(WAYBACK_SERVER_PROPERTY);
             FACETS = Arrays.asList(getProperty(FACETS_PROPERTY, StringUtils.join(FACETS, ",")).split(", *"));
-            STATS = Arrays.asList(getProperty(STATS_PROPERTY, StringUtils.join(STATS, ",")).split(", *"));
+            STATS_TEXT_FIELDS = Arrays.asList(getProperty(TEXT_STATS_PROPERTY, StringUtils.join(STATS_TEXT_FIELDS, ",")).split(", *"));
+            STATS_NUMERIC_FIELDS = Arrays.asList(getProperty(NUMERIC_STATS_PROPERTY, StringUtils.join(STATS_NUMERIC_FIELDS, ",")).split(", *"));
             WORDCLOUD_STOPWORDS = Arrays.asList(getProperty(WORDCLOUD_STOPWORDS_PROPERTY, StringUtils.join(WORDCLOUD_STOPWORDS, ",")).split(", *"));
             WEBAPP_PREFIX = serviceProperties.getProperty(WEBAPP_PREFIX_PROPERTY,"/solrwayback/"); //Default to /solrwayback/ if not defined
             OPENWAYBACK_SERVER = serviceProperties.getProperty(OPENWAYBACK_SERVER_PROPERTY);

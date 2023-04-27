@@ -1,12 +1,10 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
-import com.google.gson.Gson;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentilesStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
@@ -48,7 +46,7 @@ public class SolrStats {
         }
 
         for (String field: fields) {
-            if (PropertiesLoaderWeb.STATS.contains(field)){
+            if (PropertiesLoaderWeb.STATS_TEXT_FIELDS.contains(field) || PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(field)){
                 solrQuery.setGetFieldStatistics(field);
             } else {
                 log.warn("Stats can not be shown for field: " + field + " as it is not present in properties.");
@@ -94,7 +92,7 @@ public class SolrStats {
 
         // When giving this a text field it calculates nothing. Should probably throw a warning or something like that
         for (String field : fields) {
-            if (PropertiesLoaderWeb.STATS.contains(field)) {
+            if (PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(field)) {
                 solrQuery.setGetFieldStatistics(percentileQuery + field);
             } else {
                 log.error("Percentiles can not be shown for field: " + field + " as it is not present in properties.");
