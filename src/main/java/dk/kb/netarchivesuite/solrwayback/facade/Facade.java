@@ -946,8 +946,8 @@ public class Facade {
         props.put(PropertiesLoaderWeb.SEARCH_PAGINATION_PROPERTY, "" + PropertiesLoaderWeb.SEARCH_PAGINATION);
         props.put(PropertiesLoader.PLAYBACK_DISABLED_PROPERTY, ""+""+PropertiesLoader.PLAYBACK_DISABLED);
         props.put("solrwayback.version",PropertiesLoaderWeb.SOLRWAYBACK_VERSION);
-        props.put(PropertiesLoaderWeb.TEXT_STATS_PROPERTY, ""+PropertiesLoaderWeb.STATS_TEXT_FIELDS);
-        props.put(PropertiesLoaderWeb.NUMERIC_STATS_PROPERTY, ""+PropertiesLoaderWeb.STATS_TEXT_FIELDS);
+        props.put(PropertiesLoaderWeb.TEXT_STATS_PROPERTY, ""+PropertiesLoaderWeb.STATS_ALL_FIELDS);
+        props.put(PropertiesLoaderWeb.NUMERIC_STATS_PROPERTY, ""+PropertiesLoaderWeb.STATS_ALL_FIELDS);
 
         if (PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE != null && !"".equals(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE.trim())) {
             props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_PROPERTY,PropertiesLoader.WAYBACK_BASEURL + "services/frontend/images/logo");
@@ -1093,7 +1093,7 @@ public class Facade {
         if (fields.isEmpty()){
             throw new InvalidArgumentServiceException("The fields parameter has to be set.");
         }
-        if (!PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(fields)|| !PropertiesLoaderWeb.STATS_TEXT_FIELDS.contains(fields)) {
+        if (!checkListValues(fields, PropertiesLoaderWeb.STATS_ALL_FIELDS)) {
             throw new InvalidArgumentServiceException("One or more of the values: '" + StringUtils.join(fields, ", ") + "' in parameter fields are not allowed.");
         }
         ArrayList<QueryStatistics> queryStats = SolrStats.getStatsForFields(query, filters, fields);
@@ -1114,7 +1114,7 @@ public class Facade {
         if (fields.isEmpty()){
             throw new InvalidArgumentServiceException("The fields parameter has to be set.");
         }
-        if (!PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(fields)) {
+        if (!checkListValues(fields, PropertiesLoaderWeb.STATS_NUMERIC_FIELDS)) {
             throw new InvalidArgumentServiceException("One or more of the values: '" + StringUtils.join(fields, ", ") + "' in parameter fields are not allowed.");
         }
         ArrayList<QueryPercentilesStatistics> percentileStats = SolrStats.getPercentilesForFields(query, percentiles, fields);
@@ -1147,6 +1147,23 @@ public class Facade {
 
         long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
         return sign + seconds + " seconds";
+    }
+
+    /**
+     * Check that input values from list are present in controllist.
+     * @param list to check for values in.
+     * @param controlList to check values against.
+     * @return a boolean.
+     */
+    private static boolean checkListValues(List<String> list, List<String> controlList){
+        boolean result = true;
+        for (String value: list) {
+            result = controlList.contains(value);
+            if(!result){
+                break;
+            }
+        }
+        return result;
     }
 
 }

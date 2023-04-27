@@ -46,7 +46,7 @@ public class SolrStats {
         }
 
         for (String field: fields) {
-            if (PropertiesLoaderWeb.STATS_TEXT_FIELDS.contains(field) || PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(field)){
+            if (PropertiesLoaderWeb.STATS_ALL_FIELDS.contains(field) || PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(field)){
                 solrQuery.setGetFieldStatistics(field);
             } else {
                 log.warn("Stats can not be shown for field: " + field + " as it is not present in properties.");

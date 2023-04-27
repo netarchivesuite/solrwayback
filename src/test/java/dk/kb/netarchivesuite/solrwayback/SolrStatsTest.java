@@ -144,7 +144,7 @@ public class SolrStatsTest {
 
     @Test
     public void defaultFieldsTest(){
-        ArrayList<QueryStatistics> textStats = SolrStats.getStatsForFields("*:*", null, PropertiesLoaderWeb.STATS_TEXT_FIELDS);
+        ArrayList<QueryStatistics> textStats = SolrStats.getStatsForFields("*:*", null, PropertiesLoaderWeb.STATS_ALL_FIELDS);
         ArrayList<QueryStatistics> numericStats = SolrStats.getStatsForFields("*:*", null, PropertiesLoaderWeb.STATS_NUMERIC_FIELDS);
 
         Assert.assertEquals(7, textStats.size());
