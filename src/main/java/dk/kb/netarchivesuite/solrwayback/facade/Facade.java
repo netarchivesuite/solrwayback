@@ -46,6 +46,7 @@ import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.util.Pair;
@@ -1088,7 +1089,13 @@ public class Facade {
      * @param fields    to return stats for.
      * @return all standard stats for all fields from query.
      */
-    public static ArrayList<QueryStatistics> getQueryStats(String query, List<String> filters, List<String> fields){
+    public static ArrayList<QueryStatistics> getQueryStats(String query, List<String> filters, List<String> fields) throws InvalidArgumentServiceException {
+        if (fields.isEmpty()){
+            throw new InvalidArgumentServiceException("The fields parameter has to be set.");
+        }
+        if (!PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(fields)|| !PropertiesLoaderWeb.STATS_TEXT_FIELDS.contains(fields)) {
+            throw new InvalidArgumentServiceException("One or more of the values: '" + StringUtils.join(fields, ", ") + "' in parameter fields are not allowed.");
+        }
         ArrayList<QueryStatistics> queryStats = SolrStats.getStatsForFields(query, filters, fields);
         return queryStats;
     }
@@ -1106,6 +1113,9 @@ public class Facade {
         }
         if (fields.isEmpty()){
             throw new InvalidArgumentServiceException("The fields parameter has to be set.");
+        }
+        if (!PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(fields)) {
+            throw new InvalidArgumentServiceException("One or more of the values: '" + StringUtils.join(fields, ", ") + "' in parameter fields are not allowed.");
         }
         ArrayList<QueryPercentilesStatistics> percentileStats = SolrStats.getPercentilesForFields(query, percentiles, fields);
         return percentileStats;

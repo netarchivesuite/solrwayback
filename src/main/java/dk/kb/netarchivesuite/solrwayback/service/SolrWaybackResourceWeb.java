@@ -700,7 +700,7 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("statistics/querystats")
     @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
-    public ArrayList<QueryStatistics> queryStats(@QueryParam("query") String query, @QueryParam("filters") List<String> filters, @QueryParam("fields") List<String> fields){
+    public ArrayList<QueryStatistics> queryStats(@QueryParam("query") String query, @QueryParam("filters") List<String> filters, @QueryParam("fields") List<String> fields) throws InvalidArgumentServiceException {
         ArrayList<QueryStatistics> stats = Facade.getQueryStats(query, filters, fields);
         return stats;
     }

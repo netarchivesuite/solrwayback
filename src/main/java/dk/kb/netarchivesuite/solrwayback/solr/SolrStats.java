@@ -95,8 +95,8 @@ public class SolrStats {
             if (PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(field)) {
                 solrQuery.setGetFieldStatistics(percentileQuery + field);
             } else {
-                log.error("Percentiles can not be shown for field: " + field + " as it is not present in properties.");
-                throw new IllegalArgumentException("Percentiles can not be shown for field: '" + field + "' as it is not present in properties.");
+                log.error("Percentiles can not be shown for field: " + field + " as it is not present in numeric properties.");
+                throw new IllegalArgumentException("Percentiles can not be shown for field: '" + field + "' as it is not present in numeric properties.");
             }
         }
 
