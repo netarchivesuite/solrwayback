@@ -1052,7 +1052,12 @@ margin-left:40px;
   overflow-y:scroll;
   background-color:white;
 	display: grid;
-	grid-template-columns: 10% 20% 30% 30% 10%;
+	grid-template-columns: 25% 30% 30% 20%;
+}
+
+.csvExportOptions .csvExportContent .csvExportOptionHeader {
+margin-top: 1rem; 
+padding:.5rem .5rem .5rem 0;
 }
 
 .csvExportContent .exportContent {

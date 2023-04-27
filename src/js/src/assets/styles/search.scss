@@ -144,7 +144,7 @@ color:var(--secondary-text-color);
 	z-index: 20;
 }
 
-.searchForm .buttonExplanation {
+.searchForm .buttonExplanation, .csvExportOptions .buttonExplanation {
   cursor:default;
   color:rgba(30,30,30,0.5)
 }
