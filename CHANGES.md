@@ -25,6 +25,8 @@ warc.entry.text.max.characters=100000000
 
 Search boost ranking for frontpages(url_type:slashpage^5) changed in SolrWayback bundle. Change in solrconfig.xml for existing indexes to enable this boost.
 
+Export fields improvement. Can now also export to JSON and JSONL besides CVS. Option to flatten fields. The grouping (url_norm) if selected in query will also be used in export. ( see https://github.com/netarchivesuite/solrwayback/issues/279)
+
 
 4.4.0
 -----
