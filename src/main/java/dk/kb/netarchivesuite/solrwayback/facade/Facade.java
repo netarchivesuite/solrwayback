@@ -1087,7 +1087,7 @@ public class Facade {
      * @param query     to generate stats for.
      * @param filters   that are to be added to solr query.
      * @param fields    to return stats for.
-     * @return all standard stats for all fields from query as a JSON string.
+     * @return all standard stats for all fields from query.
      */
     public static ArrayList<QueryStatistics> getQueryStats(String query, List<String> filters, List<String> fields){
         ArrayList<QueryStatistics> queryStats = SolrStats.getStatsForFields(query, filters, fields);
@@ -1099,7 +1099,7 @@ public class Facade {
      * @param query to generate stats for.
      * @param percentiles to extract values for.
      * @param fields to return percentiles for.
-     * @return percentiles for specified fields as a JSON string.
+     * @return percentiles for specified fields.
      */
     public static ArrayList<QueryPercentilesStatistics> getPercentileStatsForFields(String query, List<String> percentiles, List<String> fields){
         ArrayList<QueryPercentilesStatistics> percentileStats = SolrStats.getPercentilesForFields(query, percentiles, fields);
