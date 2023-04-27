@@ -89,7 +89,6 @@ public class SolrStats {
         String allPercentiles = StringUtils.join(parsedPercentiles, ",");
         String percentileQuery = "{!percentiles='" + allPercentiles + "'}";
 
-        // When giving this a text field it calculates nothing. Should probably throw a warning or something like that
         for (String field : fields) {
             if (PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(field)) {
                 solrQuery.setGetFieldStatistics(percentileQuery + field);
@@ -111,12 +110,6 @@ public class SolrStats {
 
             return listOfPercentileStats;
 
-            /*
-            Gson gson = new Gson();
-            String stats = gson.toJson(response.getFieldStatsInfo().values());
-            return stats;
-
-             */
         } catch (Exception e){
             throw new IllegalArgumentException("Percentiles have to be in range [0-100].");
         }
