@@ -1,6 +1,10 @@
 package dk.kb.netarchivesuite.solrwayback.service.dto.statistics;
 
+import org.apache.solr.client.solrj.response.FieldStatsInfo;
+import org.apache.solr.client.solrj.response.QueryResponse;
+
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Collection;
 
 @XmlRootElement
 public class QueryStatistics {
@@ -90,4 +94,23 @@ public class QueryStatistics {
     public void setSumOfSquares(double sumOfSquares) {
         this.sumOfSquares = sumOfSquares;
     }
+
+
+    /**
+     * Set all standard values from a FieldStatsInfo
+     * @param stat to convert to QueryStatistics DTO
+     */
+    public void setAllStandardValuesFromSolrFieldStatsInfo(FieldStatsInfo stat){
+        this.name = stat.getName();
+        this.min = (double) stat.getMin();
+        this.max= (double) stat.getMax();
+        this.sum= (double) stat.getSum();
+        this.count= (double) stat.getCount();
+        this.missing= (double) stat.getMissing();
+        this.mean= (double) stat.getMean();
+        this.sumOfSquares= stat.getSumOfSquares();
+        this.stddev= stat.getStddev();
+    }
+
+
 }
