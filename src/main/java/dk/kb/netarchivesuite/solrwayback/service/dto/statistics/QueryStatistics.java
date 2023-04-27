@@ -1,11 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.service.dto.statistics;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
-import org.apache.solr.client.solrj.response.QueryResponse;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collection;
 
 @XmlRootElement
 public class QueryStatistics {
