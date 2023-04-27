@@ -1101,7 +1101,13 @@ public class Facade {
      * @param fields to return percentiles for.
      * @return percentiles for specified fields.
      */
-    public static ArrayList<QueryPercentilesStatistics> getPercentileStatsForFields(String query, List<String> percentiles, List<String> fields){
+    public static ArrayList<QueryPercentilesStatistics> getPercentileStatsForFields(String query, List<String> percentiles, List<String> fields) throws InvalidArgumentServiceException {
+        if (percentiles.isEmpty()){
+            throw new InvalidArgumentServiceException("The percentiles parameter has to be set.");
+        }
+        if (fields.isEmpty()){
+            throw new InvalidArgumentServiceException("The fields parameter has to be set.");
+        }
         ArrayList<QueryPercentilesStatistics> percentileStats = SolrStats.getPercentilesForFields(query, percentiles, fields);
         return percentileStats;
     }
