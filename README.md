@@ -125,10 +125,10 @@ Absolute URL live-leaks (starting with http://domain...) will not be caught and 
  
 ## Requirements
  * Works on macOS/Linux/Windows.  
- * JDK 8/9/10/11 
+ * JDK 11/17 
  * A nice collection of ARC/WARC files or harvest your own with Heritrix, Webrecorder, Brozzler, Wget, etc. 
- * Tomcat 8+ or another J2EE server for deploying the WAR-file
- * A Solr 7.X server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT +
+ * Tomcat 9+ or another J2EE server for deploying the WAR-file
+ * A Solr 7+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT +
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage

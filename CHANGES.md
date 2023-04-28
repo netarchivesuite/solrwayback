@@ -25,6 +25,9 @@ warc.entry.text.max.characters=100000000
 
 Search boost ranking for frontpages(url_type:slashpage^5) changed in SolrWayback bundle. Change in solrconfig.xml for existing indexes to enable this boost.
 
+Upgrade to Java 11
+
+Upgrade to Tomcat 9 and Solr 9 in SolrWayback Bundle
 
 4.4.0
 -----
