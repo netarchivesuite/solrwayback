@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * Get stats through the solr <a href="https://solr.apache.org/guide/8_11/the-stats-component.html">stats component</a>.
@@ -81,7 +82,12 @@ public class SolrStats {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 
-        String percentileQuery = "{!percentiles='" + percentiles + "'}";
+        StringJoiner percentileJoiner = new StringJoiner(",");
+        for (Double percentile: percentiles) {
+            percentileJoiner.add(String.valueOf(percentile));
+        }
+
+        String percentileQuery = "{!percentiles='" + percentileJoiner.toString() + "'}";
 
         for (String field : fields) {
             if (PropertiesLoaderWeb.STATS_NUMERIC_FIELDS.contains(field)) {
@@ -92,7 +98,7 @@ public class SolrStats {
             }
         }
 
-        try {
+        // try {
             QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
 
             Collection<FieldStatsInfo> fieldStatsInfos = response.getFieldStatsInfo().values();
@@ -104,9 +110,13 @@ public class SolrStats {
 
             return listOfPercentileStats;
 
-        } catch (Exception e){
+        // }
+        /*
+        catch (Exception e){
             throw new IllegalArgumentException("Percentiles have to be in range [0-100].");
         }
+
+         */
 
 
     }
