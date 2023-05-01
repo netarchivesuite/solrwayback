@@ -3,7 +3,6 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentilesStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -21,7 +20,7 @@ import java.util.StringJoiner;
  * Methods in this class
  */
 public class SolrStats {
-    // TODO: Call all methods through facade.
+
     private static final Logger log = LoggerFactory.getLogger(SolrStats.class);
     public static final List<String> interestingNumericFields =  Arrays.asList("content_length", "crawl_year", "content_text_length", "image_height", "image_width", "image_size");
 
