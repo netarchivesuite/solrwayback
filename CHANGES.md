@@ -27,6 +27,9 @@ Search boost ranking for frontpages(url_type:slashpage^5) changed in SolrWayback
 
 Export fields improvement. Can now also export to JSON and JSONL besides CVS. Option to flatten fields. The grouping (url_norm) if selected in query will also be used in export. ( see https://github.com/netarchivesuite/solrwayback/issues/279)
 
+Added two new services methods to extract statistics about the collection (services/frontend/statistics/querystats and services/frontend/statistics/percentilestats). At a later point there will be added GUI support for these two methods.
+
+
 
 4.4.0
 -----
