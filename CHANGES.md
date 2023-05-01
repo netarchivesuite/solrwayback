@@ -33,7 +33,7 @@ Added two new services methods to extract statistics about the collection (servi
 
 The forced uppercase in titles for search results are instead using the original title case.
 
-
+Frontend dependencies security updated (again...).
 
 4.4.0
 -----
