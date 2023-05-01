@@ -1120,7 +1120,11 @@ public class Facade {
         List<Double> truePercentiles = new ArrayList<>();
         try {
             for (String percentile: percentiles) {
-                truePercentiles.add(Double.parseDouble(percentile));
+                double dbl = Double.parseDouble(percentile);
+                if ( !(dbl >= 0 && dbl <= 100)){
+                    throw new InvalidArgumentServiceException("Percentiles needs to be in range 0-100.");
+                }
+                truePercentiles.add(dbl);
             }
         } catch (NumberFormatException e){
             throw new InvalidArgumentServiceException("Percentiles needs to be numbers");

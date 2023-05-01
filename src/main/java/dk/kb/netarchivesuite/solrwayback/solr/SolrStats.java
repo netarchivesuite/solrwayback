@@ -98,7 +98,7 @@ public class SolrStats {
             }
         }
 
-        // try {
+        try {
             QueryResponse response = NetarchiveSolrClient.query(solrQuery, true);
 
             Collection<FieldStatsInfo> fieldStatsInfos = response.getFieldStatsInfo().values();
@@ -110,13 +110,10 @@ public class SolrStats {
 
             return listOfPercentileStats;
 
-        // }
-        /*
+        }
         catch (Exception e){
             throw new IllegalArgumentException("Percentiles have to be in range [0-100].");
         }
-
-         */
 
 
     }
