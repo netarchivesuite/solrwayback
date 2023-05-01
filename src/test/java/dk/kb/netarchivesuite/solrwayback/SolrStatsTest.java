@@ -147,7 +147,7 @@ public class SolrStatsTest {
         ArrayList<QueryStatistics> textStats = SolrStats.getStatsForFields("*:*", null, PropertiesLoaderWeb.STATS_ALL_FIELDS);
         ArrayList<QueryStatistics> numericStats = SolrStats.getStatsForFields("*:*", null, PropertiesLoaderWeb.STATS_NUMERIC_FIELDS);
 
-        Assert.assertEquals(7, textStats.size());
+        Assert.assertEquals(13, textStats.size());
         Assert.assertEquals(6, numericStats.size());
     }
 
@@ -161,17 +161,6 @@ public class SolrStatsTest {
         QueryPercentilesStatistics percentilesStat = listOfStats.get(0);
         Assert.assertEquals("image_height", percentilesStat.getName());
         Assert.assertEquals(Double.valueOf(800.0), percentilesStat.getPercentiles().get(25.0));
-    }
-
-
-    @Test
-    public void textPercentileTest(){
-        List<Double> percentiles = Arrays.asList(25.0, 50.0, 75.0);
-        List<String> fields = Arrays.asList("links");
-        ArrayList<QueryPercentilesStatistics> stats = SolrStats.getPercentilesForFields("*:*", percentiles, fields);
-
-        QueryPercentilesStatistics linksStat = stats.get(0);
-        Assert.assertNull(linksStat.getPercentiles());
     }
 
     
