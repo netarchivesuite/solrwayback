@@ -30,13 +30,15 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainStatistics;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentilesStatistics;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
-import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStats;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
@@ -44,6 +46,7 @@ import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.util.Pair;
@@ -67,7 +70,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -944,6 +946,8 @@ public class Facade {
         props.put(PropertiesLoaderWeb.SEARCH_PAGINATION_PROPERTY, "" + PropertiesLoaderWeb.SEARCH_PAGINATION);
         props.put(PropertiesLoader.PLAYBACK_DISABLED_PROPERTY, ""+""+PropertiesLoader.PLAYBACK_DISABLED);
         props.put("solrwayback.version",PropertiesLoaderWeb.SOLRWAYBACK_VERSION);
+        props.put(PropertiesLoaderWeb.TEXT_STATS_PROPERTY, ""+PropertiesLoaderWeb.STATS_ALL_FIELDS);
+        props.put(PropertiesLoaderWeb.NUMERIC_STATS_PROPERTY, ""+PropertiesLoaderWeb.STATS_ALL_FIELDS);
 
         if (PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE != null && !"".equals(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE.trim())) {
             props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_PROPERTY,PropertiesLoader.WAYBACK_BASEURL + "services/frontend/images/logo");
@@ -1078,6 +1082,58 @@ public class Facade {
         return imageUrls;
     }
 
+    /**
+     * Get standard solr stats for all fields given.
+     * @param query     to generate stats for.
+     * @param filters   that are to be added to solr query.
+     * @param fields    to return stats for.
+     * @return all standard stats for all fields from query.
+     */
+    public static ArrayList<QueryStatistics> getQueryStats(String query, List<String> filters, List<String> fields) throws InvalidArgumentServiceException {
+        if (fields.isEmpty()){
+            throw new InvalidArgumentServiceException("The fields parameter has to be set.");
+        }
+        if (!checkListValues(fields, PropertiesLoaderWeb.STATS_ALL_FIELDS)) {
+            throw new InvalidArgumentServiceException("One or more of the values: '" + StringUtils.join(fields, ", ") + "' in parameter fields are not allowed.");
+        }
+        ArrayList<QueryStatistics> queryStats = SolrStats.getStatsForFields(query, filters, fields);
+        return queryStats;
+    }
+
+    /**
+     * Get percentiles for numeric fields
+     * @param query to generate stats for.
+     * @param percentiles to extract values for.
+     * @param fields to return percentiles for.
+     * @return percentiles for specified fields.
+     */
+    public static ArrayList<QueryPercentilesStatistics> getPercentileStatsForFields(String query, List<String> percentiles, List<String> fields) throws InvalidArgumentServiceException {
+        if (percentiles.isEmpty()){
+            throw new InvalidArgumentServiceException("The percentiles parameter has to be set.");
+        }
+        if (fields.isEmpty()){
+            throw new InvalidArgumentServiceException("The fields parameter has to be set.");
+        }
+        if (!checkListValues(fields, PropertiesLoaderWeb.STATS_NUMERIC_FIELDS)) {
+            throw new InvalidArgumentServiceException("One or more of the values: '" + StringUtils.join(fields, ", ") + "' in parameter fields are not allowed.");
+        }
+        List<Double> truePercentiles = new ArrayList<>();
+        try {
+            for (String percentile: percentiles) {
+                double dbl = Double.parseDouble(percentile);
+                if ( !(dbl >= 0 && dbl <= 100)){
+                    throw new InvalidArgumentServiceException("Percentiles needs to be in range 0-100.");
+                }
+                truePercentiles.add(dbl);
+            }
+        } catch (NumberFormatException e){
+            throw new InvalidArgumentServiceException("Percentiles needs to be numbers");
+        }
+        ArrayList<QueryPercentilesStatistics> percentileStats = SolrStats.getPercentilesForFields(query, truePercentiles, fields);
+        return percentileStats;
+    }
+
+
     /*
      * Just show the most important
      */
@@ -1103,6 +1159,23 @@ public class Facade {
 
         long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
         return sign + seconds + " seconds";
+    }
+
+    /**
+     * Check that input values from list are present in controllist.
+     * @param list to check for values in.
+     * @param controlList to check values against.
+     * @return a boolean.
+     */
+    private static boolean checkListValues(List<String> list, List<String> controlList){
+        boolean result = true;
+        for (String value: list) {
+            result = controlList.contains(value);
+            if(!result){
+                break;
+            }
+        }
+        return result;
     }
 
 }
