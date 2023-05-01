@@ -29,6 +29,12 @@ Export fields improvement. Can now also export to JSON and JSONL besides CVS. Op
 
 Bugfix: Caching was effectively disabled when setting maxAgeSeconds to a year or more
 
+Added two new services methods to extract statistics about the collection (services/frontend/statistics/querystats and services/frontend/statistics/percentilestats). At a later point there will be added GUI support for these two methods.
+
+The forced uppercase in titles for search results are instead using the original title case.
+
+
+
 4.4.0
 -----
 
