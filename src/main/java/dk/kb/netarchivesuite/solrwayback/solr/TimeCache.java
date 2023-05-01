@@ -33,7 +33,7 @@ public class TimeCache<O> implements Map<String, O> {
 
     private final Map<String, TimeEntry<O>> inner;
     private final int maxCapacity;
-    private final long maxAge;
+    private final long maxAgeMS;
     private final AtomicLong calls = new AtomicLong(0);
     private final AtomicLong hits = new AtomicLong(0);
 
@@ -46,7 +46,7 @@ public class TimeCache<O> implements Map<String, O> {
     public TimeCache(int maxCapacity, long maxAgeMS) {
         super();
         this.maxCapacity = maxCapacity;
-        this.maxAge = maxAgeMS;
+        this.maxAgeMS = maxAgeMS;
         this.inner = Collections.synchronizedMap(new LinkedHashMap<String, TimeEntry<O>>() {
             @Override
             protected boolean removeEldestEntry(Map.Entry<String, TimeEntry<O>> eldest) {
@@ -63,7 +63,7 @@ public class TimeCache<O> implements Map<String, O> {
      * @return a new cache with limits (max count and age) shared with this cache.
      */
     public <T> TimeCache<T> createLinked() {
-        TimeCache<T> other = new TimeCache<T>(maxCapacity, maxAge);
+        TimeCache<T> other = new TimeCache<T>(maxCapacity, maxAgeMS);
         other.link(this);
         return other;
     }
@@ -152,8 +152,8 @@ public class TimeCache<O> implements Map<String, O> {
         return maxCapacity;
     }
 
-    public long getMaxAge() {
-        return maxAge;
+    public long getMaxAgeMS() {
+        return maxAgeMS;
     }
 
     @Override
@@ -253,7 +253,7 @@ public class TimeCache<O> implements Map<String, O> {
         }
 
         public boolean isTooOld() {
-            return getCreated().plus(maxAge, ChronoUnit.MILLIS).isBefore(Instant.now());
+            return getCreated().plus(maxAgeMS, ChronoUnit.MILLIS).isBefore(Instant.now());
         }
     }
 }
