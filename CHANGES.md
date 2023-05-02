@@ -17,7 +17,7 @@ search.pagination=20
 
 Bugfix: The property key for expanded warc limit was the same as for non-expanded
 
-Default log configuration will create and addition log file called solrwayback_error.log. This will only contain log lines of severity 'error'.  
+Default log configuration will create and additional log file called solrwayback_error.log. This will only contain log lines of severity 'error'.  
 
 Hardening against Out Of Memory in export and playback of very large webpages. Added new property for max size of HTML that are parsed for export in solrwaybackweb.properties:
 
