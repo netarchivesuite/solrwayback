@@ -1,7 +1,7 @@
 # SolrWayback
 
-## SolrWayback 4.4.0 software bundle has been released
-SolrWayback bundle release 4.4.0 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.4.0
+## SolrWayback 4.4.1 software bundle has been released
+SolrWayback bundle release 4.4.1 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.4.1
 
 ## About SolrWayback
 
