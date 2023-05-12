@@ -10,13 +10,66 @@ Familiarity with running the SolrWayback bundle in "standard" mode is presumed. 
 
 Solr requires Java and runs on at least MacOS, Linux and Windows. While this guide assumes Linux, it should be fairly easy to adapt to MacOS and Windows.
 
-## Basic Solr
+## Solr 9 single machine experimental setup
+
+Below follows 
+
+TODO: Multiple collections
+TODO: Explicit ZooKeeper
+
+Download Solr from the [Apache Solr homepage](https://solr.apache.org/downloads.html). As of 2024-05-12 the [webarchive-discovery](https://github.com/ukwa/webarchive-discovery) project has schemas for Solr 7 (deprecated) and Solr 9. When Solr 10 is released, it _might_ be able to use Solr 9 schemas. In this example we'll use the binary release of Solr 9.2.1.
+
+```
+wget 'https://www.apache.org/dyn/closer.lua/solr/solr/9.2.1/solr-9.2.1.tgz?action=download' -O solr-9.2.1.tgz
+```
+
+Unpack Solr, rename the folder
+```
+tar xovf solr-9.2.1.tgz
+mv solr-9.2.1 solr-9
+```
+
+Allow the Solr to be accessed from other machines than localhost by opening `solr-9/bin/solr.in.sh` (or `solr-9/bin/solr.in.cmd` if using Windows) and changing the line
+```
+#SOLR_JETTY_HOST="127.0.0.1"
+```
+to
+```
+SOLR_JETTY_HOST="0.0.0.0"
+```
+
+Start Solr in cloud mode (call `solr-9/bin/solr` without arguments for usage). See the [Solr Tutorials](https://solr.apache.org/guide/solr/latest/getting-started/tutorial-five-minutes.html) for more information
+```
+solr-9/bin/solr start -c -m 2g
+```
+Visit http://localhost:8983/solr to see if Solr is running.
+
+Upload the [webarchive-discovery Solr 9 configuration](https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer/src/main/solr/solr9) to the local Solr Cloud and create a collection with 2 shards. The files are also available in the SolrWayback bundle 
+```
+solr-9/bin/solr create_collection -c netarchivebuilder -d solr9/discovery/conf/ -n sw_conf1 -shards 2
+```
+Visit http://localhost:8983/solr/#/~cloud?view=graph to check that there is now a collection called `netarchivebuilder` with 2 active shards.
+
+### Solr tricks
+
+Delete all documents in the index:
+```
+curl 'http://localhost:8983/solr/netarchivebuilder/update?commit=true' -H 'Content-Type: text/xml' --data-binary '<delete><query>*:*</query></delete>'
+```
+
+TODO: Compact index
+
+TODO: Alias
+
+## Basic Solr notes
 
 Solr logistics can be seen as collections made up of shards having replicas. Updates and queries are directed to a collection and Solr takes care of routing.
 
 Solr is capable of running in two modes: Standalone and Cloud.
 
 Solr 7 Standalone was used in the previous SolrWayback Bundle and is a constrained setup with a single shard per collection. When running the Solrwayback bundle there is only a single collection `netarchivebuilder`. A single shard is fine for 100 million documents and can work for maybe 500 million documents. Beyond that is problematic because of internal Solr limits. Standalone does not support [streaming expressions](https://solr.apache.org/guide/8_7/streaming-expressions.html) and distributed setup.
+
+**However**, Solr 7 has a performance problem with large shards and certain mechanisms (sparse numerical doc values) used by SolrWayback via webarchive-discovery. For that reason alone it should be avoided for anything else than smaller scale experiments.
 
 Solr 9 Cloud is the new default for SolrWayback Bundle. It is installed with a single shard and only one replica, essentially the same as the old Solr 7 Standalone except for [streaming expressions](https://solr.apache.org/guide/solr/9_1/query-guide/streaming-expressions.html) being available. It can be [extended with more shards and replicas](https://solr.apache.org/guide/solr/9_1/deployment-guide/cluster-types.html) later on if needed.
 
