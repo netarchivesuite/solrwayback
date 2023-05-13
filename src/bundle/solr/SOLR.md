@@ -10,12 +10,11 @@ Familiarity with running the SolrWayback bundle in "standard" mode is presumed. 
 
 Solr requires Java and runs on at least MacOS, Linux and Windows. While this guide assumes Linux, it should be fairly easy to adapt to MacOS and Windows.
 
-## Solr 9 single machine experimental setup
+## Solr 9 Cloud mode single machine setup
 
-Below follows 
+How-to for setting up a mini-cloud with Solr 9. Meant for experimentation and as a starting point for creating a production setup. Base setup requires 2GB of RAM and not much else.
 
-TODO: Multiple collections
-TODO: Explicit ZooKeeper
+If installed on a machine with 64GB or RAM, 8+ CPUs and SSDs, this should be able to handle a few terabytes of WARCs. **Note** this setup does not use replicas: If the storage on the machine crashes, the index is lost.
 
 Download Solr from the [Apache Solr homepage](https://solr.apache.org/downloads.html). As of 2024-05-12 the [webarchive-discovery](https://github.com/ukwa/webarchive-discovery) project has schemas for Solr 7 (deprecated) and Solr 9. When Solr 10 is released, it _might_ be able to use Solr 9 schemas. In this example we'll use the binary release of Solr 9.2.1.
 
@@ -60,6 +59,12 @@ curl 'http://localhost:8983/solr/netarchivebuilder/update?commit=true' -H 'Conte
 TODO: Compact index
 
 TODO: Alias
+
+Below follows 
+
+TODO: Multiple collections
+
+TODO: Explicit ZooKeeper
 
 ## Basic Solr notes
 
