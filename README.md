@@ -197,16 +197,15 @@ indexed files, so the collection can be extended by adding more WARCs and runnin
 Call `indexing/warc-indexer.sh -h` for usage and how to adjust the number of processes to use for indexing.
 Example usage that will index all WARC-files in the warcs1 folder. 
 ```
-THREADS=6 ./warc-indexer.sh warcs1/*
+THREADS=2 ./warc-indexer.sh warcs1/*
 ```
 
-This will start indexing files from the warcs1 folder using 20 threads. Assigning a higher number of threads than CPU
-cores available will result in slower indexing.  Each indexing job require 1GB ram, so this can also be a limiting factor.
+This will start indexing files from the warcs1 folder using 2 threads. Assigning a higher number of threads than CPU cores available will result in slower indexing. Each indexing job require 1GB ram, so this can also be a limiting factor.
 
 
 You can also populate the collection and collectionid field in Solr with custom values:
 ```
-THREADS=6 INDEXER_CUSTOM="--collection_id  collection1 --collection corona2021" ./warc-indexer.sh warcs1/*
+THREADS=4 INDEXER_CUSTOM="--collection_id  collection1 --collection corona2021" ./warc-indexer.sh warcs1/*
 ```
 
 You can then enable facetting on these fields in solrwaybackweb.properties.
