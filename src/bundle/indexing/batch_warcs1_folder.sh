@@ -10,6 +10,6 @@ java -Xmx1024M -Djava.io.tmpdir=tika_tmp -jar warc-indexer-3.2.0-SNAPSHOT-jar-wi
 
 done
 
-wget  -qO- "http://localhost:8983/solr/netarchivebuilder/update?commit=true&openSearcher=true"  > /dev/null
+curl -s "http://localhost:8983/solr/netarchivebuilder/update?commit=true&openSearcher=true"  > /dev/null
 
 popd > /dev/null

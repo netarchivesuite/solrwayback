@@ -121,6 +121,16 @@ EOF
     exit $1
 }
 
+dump_parameters() {
+    echo " - Effective configuration:"
+    grep '^: ${' "${WI_HOME}/warc-indexer.sh" | \
+        grep -v '^: ${WARCS:' | \
+        sed 's/^: ${\([^:]*\).*/\1/' | \
+        while read -r CONF; do
+            echo "${CONF}=$(eval "echo "'$'"$CONF")"
+        done        
+}
+
 check_parameters() {
     if [[ "-h" == "$WARCS" ]]; then
         usage
@@ -209,7 +219,7 @@ index_warcs() {
     fi
     
     WARC_COUNT=$(wc -l < "$WARCS")
-    echo " - Processing $WARC_COUNT WARCs using $THREADS threads"
+    echo " - Processing $WARC_COUNT WARCs using $THREADS threads, logs in $STATUS_ROOT"
     # We need to export these as we call index_warc in new processes
     export INDEXER_JAR
     export INDEXER_MEM
@@ -246,7 +256,7 @@ check_solr() {
         return;
     fi
     echo " - Checking if Solr is running"
-    wget  -nv -O- "${SOLR_URL}/admin/ping" > /dev/null
+    curl  -s "${SOLR_URL}/admin/ping" > /dev/null
     if [[ $? -ne 0 ]]; then
         >&2 echo ""
         >&2 echo "Warning: Solr commit did not respond to ping request"
@@ -261,7 +271,7 @@ commit() {
         return;
     fi
     echo " -Triggering solr commit"
-    wget  -nv -O- "${SOLR_URL}/update?commit=true&openSearcher=true"  > /dev/null
+    curl  -s "${SOLR_URL}/update?commit=true&openSearcher=true" > /dev/null
     if [[ $? -ne 0 ]]; then
         >&2 echo "Warning: Solr commit did not respond with success. Inspect that Solr is running at ${SOLR_URL}"
     fi
