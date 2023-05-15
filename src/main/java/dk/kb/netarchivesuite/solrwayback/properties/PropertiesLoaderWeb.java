@@ -26,7 +26,9 @@ public class PropertiesLoaderWeb {
     public static final String WEBAPP_BASEURL_PROPERTY="webapp.baseurl";  //TODO DELETE WHEN FRONTEND HAS CHANGED NAME
     public static final String WEBAPP_PREFIX_PROPERTY="webapp.prefix";
     
-    public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";	
+    public static final String OPENWAYBACK_SERVER_PROPERTY="openwayback.baseurl";	//Backwards compatible. Use 'playback.primary.engine' and 'playback.alternative.engine'
+    public static final String PLAYBACK_PRIMARY_ENGINE_PROPERTY="playback.primary.engine"; 
+    
     public static final String ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING_PROPERTY="alternative.playback.collection.mapping";
     
     public static final String FACETS_PROPERTY = "facets";	
@@ -64,14 +66,15 @@ public class PropertiesLoaderWeb {
     public static LinkedHashMap<String,String> ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING= new LinkedHashMap<String,String>(); 
     public static String SOLRWAYBACK_VERSION; //Will be set from initialcontext-listener
     public static String OPENWAYBACK_SERVER;
+    public static String PLAYBACK_PRIMARY_ENGINE;
     public static int ARCHIVE_START_YEAR;
     public static String WAYBACK_SERVER = null;
     
     public static String WEBAPP_PREFIX = null;
     public static String MAPS_LATITUDE;
     public static String MAPS_LONGITUDE;
-    public static String MAPS_RADIUS;
-
+    public static String MAPS_RADIUS;   
+    
     public static int WARC_ENTRY_TEXT_MAX_CHARACTERS = 100*1024*1024; // 100 MB
 
     public static long EXPORT_CSV_MAXRESULTS=10000000;// 10M default
@@ -163,6 +166,13 @@ public class PropertiesLoaderWeb {
             String warc_expanded_max_results= serviceProperties.getProperty(EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY);
             String search_pagination= serviceProperties.getProperty(SEARCH_PAGINATION_PROPERTY);
 
+            PLAYBACK_PRIMARY_ENGINE = serviceProperties.getProperty(PLAYBACK_PRIMARY_ENGINE_PROPERTY);
+            if (PLAYBACK_PRIMARY_ENGINE == null) { //TODO delete after old variable has been deleted
+                
+                //PLAYBACK_PRIMARY_ENGINE=  serviceProperties.getProperty(PLAYBACK_PRIMARY_ENGINE);XXX
+            }
+            
+            
             if (csv_max_results != null) {
                 EXPORT_CSV_MAXRESULTS  = Long.parseLong(csv_max_results.trim());                
             }
@@ -227,6 +237,7 @@ public class PropertiesLoaderWeb {
             //Set max export sizes                                   
             log.info("Property:"+ WEBAPP_PREFIX_PROPERTY +" = " + WEBAPP_PREFIX);
             log.info("Property:"+ OPENWAYBACK_SERVER_PROPERTY +" = " + OPENWAYBACK_SERVER);
+            log.info("Property:"+ PLAYBACK_PRIMARY_ENGINE_PROPERTY +" = " + PLAYBACK_PRIMARY_ENGINE);            
             log.info("Property:"+ ALLOW_EXPORT_WARC_PROPERTY +" = " + ALLOW_EXPORT_WARC);
             log.info("Property:"+ ALLOW_EXPORT_CSV_PROPERTY +" = " + ALLOW_EXPORT_CSV);
             log.info("Property:"+ WARC_ENTRY_TEXT_MAX_CHARACTERS_PROPERTY +" = " + WARC_ENTRY_TEXT_MAX_CHARACTERS);
@@ -261,7 +272,7 @@ public class PropertiesLoaderWeb {
         }
         catch (Exception e) {
             e.printStackTrace();
-            log.error("Could not load property file:"+ propertyFile);
+            log.error("Could not load property file:"+ propertyFile,e);            
             // TODO: This should be a catastrophic failure as the properties contains security oriented settings
         }
         
