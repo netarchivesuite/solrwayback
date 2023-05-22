@@ -931,7 +931,7 @@ public class Facade {
         props.put(PropertiesLoaderWeb.WEBAPP_BASEURL_PROPERTY,PropertiesLoaderWeb.WEBAPP_PREFIX); //TODO change value name when frontend also switch
         props.put(PropertiesLoaderWeb.PLAYBACK_PRIMARY_ENGINE_PROPERTY, PropertiesLoaderWeb.PLAYBACK_PRIMARY_ENGINE);        
         props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY, PropertiesLoaderWeb.WAYBACK_SERVER);
-        props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY, PropertiesLoaderWeb.OPENWAYBACK_SERVER);
+        props.put(PropertiesLoaderWeb.PLAYBACK_ALTERNATIVE_ENGINE_PROPERTY, PropertiesLoaderWeb.PLAYBACK_ALTERNATIVE_ENGINE);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_CSV_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_CSV);
         props.put(PropertiesLoaderWeb.EXPORT_CSV_FIELDS_PROPERTY, PropertiesLoaderWeb.EXPORT_CSV_FIELDS);

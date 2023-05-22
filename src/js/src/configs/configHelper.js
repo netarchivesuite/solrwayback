@@ -1,7 +1,7 @@
 import configs from './index'
 
 export function setServerConfigInApp(configFromServer) {
-        configs.playbackConfig.alternativePlaybackBaseURL = configFromServer['openwayback.baseurl']
+        configs.playbackConfig.alternativePlaybackBaseURL = configFromServer['playback.alternative.engine']
         configs.playbackConfig.playbackPrimary = configFromServer['playback.primary.engine']        
         configs.playbackConfig.solrwaybackBaseURL = configFromServer['wayback.baseurl']
         configs.playbackConfig.playbackDisabled = configFromServer['playback.disabled']
