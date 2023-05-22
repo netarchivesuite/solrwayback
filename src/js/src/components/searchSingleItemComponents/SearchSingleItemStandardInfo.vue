@@ -14,7 +14,7 @@
           <span title="Playback has been disabled in the configuration">{{ result.title || `${result.content_type_norm} - no title` }}</span>
         </span>
         <span v-else>
-          <a :href="getPlaybackURL(result.source_file_path, result.source_file_offset)" target="_blank">
+          <a :href="getPlaybackURL(result.source_file_path, result.source_file_offset,result.wayback_date, result.url)" target="_blank">
             <span>{{ result.title || `${result.content_type_norm} - no title` }}</span>
           </a>
         </span>
@@ -78,7 +78,16 @@ export default {
       return date.substring(6,8) + '/' + date.substring(4,6) + '-' + date.substring(0,4)
     },
 
-    getPlaybackURL(source_file_path, source_file_offset) {
+    
+    //Check if primary playback engine has been set. If no primary playback is defined use the SolrWayback
+    getPlaybackURL(source_file_path, source_file_offset, wayback_date,url) {                      
+     const primaryPlaybackEngine = configs.playbackConfig.playbackPrimary
+     if (primaryPlaybackEngine  != null){
+       console.log('Primary playback engine:' + primaryPlaybackEngine)
+       const primaryPlaybackUrl =primaryPlaybackEngine+wayback_date+'/'+url                 
+       return primaryPlaybackUrl
+     }     
+      //Default SolrWayback playback. For performance it uses warc-file and offset instead of the /web/date/url syntax.
       return `${configs.playbackConfig.solrwaybackBaseURL}services/viewForward?source_file_path=${source_file_path}&offset=${source_file_offset}`    
     },
 

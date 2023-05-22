@@ -1,5 +1,15 @@
 # SolrWayback changelog
 
+4.4.2
+-----
+The SolrWayback default playback engine can be changed by defining a new property in solrwaybackweb.properties: playback.primary.engine
+Use if you have a PyWb playback engine etc.
+
+The property in solrwaybackweb.properties for alternative playback engine (icon next to title in search result) has been renamed to: playback.alternative.engine
+The old misleading name 'openwayback.baseurl' will still work, but will be removed in a future version. (Will give a WARN in log-file during restart of the Tomcat)
+
+
+
 
 4.4.1
 -----
