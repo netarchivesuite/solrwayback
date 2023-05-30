@@ -270,7 +270,7 @@ commit() {
     if [[ "$SOLR_COMMIT" == "false" ]]; then
         return;
     fi
-    echo " -Triggering solr commit"
+    echo " -Triggering solr flush. Documents will be visible after flush"
     curl  -s "${SOLR_URL}/update?commit=true&openSearcher=true" > /dev/null
     if [[ $? -ne 0 ]]; then
         >&2 echo "Warning: Solr commit did not respond with success. Inspect that Solr is running at ${SOLR_URL}"
