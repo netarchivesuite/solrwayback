@@ -12,6 +12,7 @@ The warc-indexer.sh script in the SolrWayback bundle will use 'curl' instead of 
 
 Playback fix for legacy warc-indexer (v3.0+v3.1). This is not relevant for anyone but Royal Danish Library.
 
+Fixed invalid SSL certificate for dependency. (https://maven.restlet.com -> https://maven.restlet.talend.com). Thanks to @fedorw 
 
 
 4.4.1
