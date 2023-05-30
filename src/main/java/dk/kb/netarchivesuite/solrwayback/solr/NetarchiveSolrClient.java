@@ -1146,12 +1146,10 @@ public class NetarchiveSolrClient {
         // normalize will remove last slash if not slashpage
         boolean slashLast = url.endsWith("/");
 
-        String url_norm_query = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);        
-        log.info("url norm query fixed by legacy fix:"+url_norm_query);
+        String urlNormQuery = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);                
         
-        String query = url_norm_query +" AND status_code:200"; // maybe add  AND (status_code:200 OR status_code:400 OR status_code:404) .         
+        String query = urlNormQuery +" AND status_code:200"; //Maybe also allow 400 and 404?: (status_code:200 OR status_code:400 OR status_code:404).          
         
-        //log.debug("query:" + query);
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 
