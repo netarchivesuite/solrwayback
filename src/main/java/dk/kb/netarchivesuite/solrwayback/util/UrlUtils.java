@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation.NormaliseType;
+import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 
 import java.net.IDN;
@@ -9,13 +11,81 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class UrlUtils {
 
-    public static void main(String[] args){
+    private static final Logger log = LoggerFactory.getLogger(UrlUtils.class);
+    
+    public static void main(String[] args) throws Exception{
 
         //System.out.println(isUrlWithDomain("http://Portal_gfx/KL/farvepakker/topmenu/topmenu_markering_groen_mBo.gif"));
         //System.out.println(getDomainFromWebApiParameters("http://teg-desktop.sb.statsbiblioteket.dk:8080/solrwayback/services/web/20071221033234/http://kl.dk/ncms.aspx?id=11fb172c-dbf2-4c58-bdf7-30f9cdfd4d95&menuid=361285"));
+
+        //Normalisation.setType(NormaliseType.LEGACY);
+        //System.out.println(fixLegacyNormaliseUrlErrorQuery("http://bt.dk/"));
+    
     }
+    
+
+    /**
+    //THis method will be removed at a later point when Royal Danish Library has re-indexed everything again using warc-indexer 3.2+
+    // For pure domain URL (no paths) such as 'http://abc.dk/' and 'http:///www.abc.dk/' , they are two different url_norm with the legacy normalizer.
+    // So in this case return both options:
+    // For non-legacy:   url_norm:"http://abc.dk/"
+    // For legacy:       url_norm:("http://abc.dk/" OR "http://www.abc.dk/")        
+    */
+    public static String fixLegacyNormaliseUrlErrorQuery(String url) throws Exception{
+        String urlNormFixed =  Normalisation.canonicaliseURL(url);
+        urlNormFixed = urlNormFixed.replace("\\", "\\\\"); // Solr encoded
+        
+        //This is default behavior.
+        if (!Normalisation.getType().equals(Normalisation.NormaliseType.LEGACY)){              
+            String query ="url_norm:\"" + urlNormFixed + "\"";
+            return query;            
+        }
+        
+        //Everything below here an be deleted when legacy normaliser is no longer supported                
+        URL javaURL = null;
+        try {
+           javaURL = new URL(url);
+                                                 
+        }
+        catch(Exception e) {
+           log.error("Error fixing legacy normalisation error for url:"+url +" error:"+e.getMessage());
+           throw new InvalidArgumentServiceException("Error fixing legacy normalisation error for url:"+url,e);
+           
+        }
+         
+        String path=javaURL.getPath();
+        if (path.length() > 1) { //This is not domain only, so still ok.
+            String query ="url_norm:\"" + urlNormFixed + "\"";
+            return query;              
+        }
+      
+        //In this case return both with and without www.
+        log.info("Fixing legacy normalisation for url:"+url);
+        
+        String urlAlternate;  //The other version with or without www
+        if (urlNormFixed.startsWith("http://www.")) {
+            urlAlternate= urlNormFixed.replaceAll("http://www.","http://");            
+        }
+        else {
+            urlAlternate= urlNormFixed.replaceAll("http://","http://www.");            
+        }
+               
+        String query ="url_norm:(\"" + urlNormFixed + "\" OR "+"\""+urlAlternate+"\")";        
+        log.info("Fixed url_norm query:"+query);
+        return query;
+            
+        
+        
+        
+    }
+    
+    
+    
     /*
      * Must start with http:// and have a domain(must have . as one of the characters)
      *
