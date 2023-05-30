@@ -8,6 +8,9 @@ Use if you have a PyWb playback engine etc.
 The property in solrwaybackweb.properties for alternative playback engine (icon next to title in search result) has been renamed to: playback.alternative.engine
 The old misleading name 'openwayback.baseurl' will still work, but will be removed in a future version. (Will give a WARN in log-file during restart of the Tomcat)
 
+The warc-indexer.sh script in the SolrWayback bundle will use 'curl' instead of 'wget'. This will always work on macOS that may not have 'wget' installed
+
+Playback fix for legacy warc-indexer (v3.0+v3.1). This is not relevant for anyone but Royal Danish Library.
 
 
 
