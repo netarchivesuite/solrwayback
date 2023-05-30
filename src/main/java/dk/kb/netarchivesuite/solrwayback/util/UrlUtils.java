@@ -30,11 +30,11 @@ public class UrlUtils {
     
 
     /**
-    //THis method will be removed at a later point when Royal Danish Library has re-indexed everything again using warc-indexer 3.2+
-    // For pure domain URL (no paths) such as 'http://abc.dk/' and 'http:///www.abc.dk/' , they are two different url_norm with the legacy normalizer.
-    // So in this case return both options:
-    // For non-legacy:   url_norm:"http://abc.dk/"
-    // For legacy:       url_norm:("http://abc.dk/" OR "http://www.abc.dk/")        
+    * THis method will be removed at a later point when Royal Danish Library has re-indexed everything again using warc-indexer 3.2+
+    * For pure domain URL (no paths) such as 'http://abc.dk/' and 'http:///www.abc.dk/' , they are two different url_norm with the legacy normalizer.
+    * So in this case return both options:
+    * For non-legacy:   url_norm:"http://abc.dk/"
+    * For legacy:       url_norm:("http://abc.dk/" OR "http://www.abc.dk/")        
     */
     public static String fixLegacyNormaliseUrlErrorQuery(String url) throws Exception{
         String urlNormFixed =  Normalisation.canonicaliseURL(url);
@@ -64,9 +64,7 @@ public class UrlUtils {
             return query;              
         }
       
-        //In this case return both with and without www.
-        log.info("Fixing legacy normalisation for url:"+url);
-        
+        //In this case return both with and without www.        
         String urlAlternate;  //The other version with or without www
         if (urlNormFixed.startsWith("http://www.")) {
             urlAlternate= urlNormFixed.replaceAll("http://www.","http://");            
@@ -76,7 +74,7 @@ public class UrlUtils {
         }
                
         String query ="url_norm:(\"" + urlNormFixed + "\" OR "+"\""+urlAlternate+"\")";        
-        log.info("Fixed url_norm query:"+query);
+        log.info("Fixed legacy url-normalisation from:"+url +" to query:"+query);
         return query;
             
         
