@@ -1,7 +1,7 @@
 # SolrWayback
 
-## SolrWayback 4.4.1 software bundle has been released
-SolrWayback bundle release 4.4.1 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.4.1
+## SolrWayback 4.4.2 software bundle has been released
+SolrWayback bundle release 4.4.2 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/4.4.2
 
 ## About SolrWayback
 
@@ -269,7 +269,7 @@ The toolbar icon opens a menu with the available tools.
 
 ### 5) CREATING YOUR OWN WARCS - HARVESTING WITH WGET  
 How to do your own web harvest websites (macOS/Linux only):  
-
+* macOS user may have to install in the wget command first (use Homebrew)
 * Using the wget command is an easy way to harvest web sites and create WARC files. The WARC files can then be indexed into SolrWayback.
 * Create a new folder, since there will be several files written in this folder. Navigate to that folder in a prompt.
 * Create a text file call `url_list.txt` with one URL per line in that folder.  
