@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 public class FileUtil {
 
     private static final Logger log = LoggerFactory.getLogger(FileUtil.class);
-    
-    
+
+
     /**
      * Retrieve the given resource as an UTF-8 String.
      * @param resource a class path entry or a file path.
@@ -38,7 +38,7 @@ public class FileUtil {
         }
         return IOUtils.toString(url, StandardCharsets.UTF_8);
     }
-    
+
     /**
      * 
      * @param resource a class path entry or a file path.
@@ -46,7 +46,7 @@ public class FileUtil {
      * @throws Exception if the resource could not be fetch
      */
     public static File fetchFile(String resource) throws Exception {
-        
+
         URL url = Thread.currentThread().getContextClassLoader().getResource(resource);
         if (url == null) {
             Path path = Paths.get(resource);
@@ -56,10 +56,39 @@ public class FileUtil {
             return new File(path.toUri());
         }
         else {
-        return new File(url.toURI());
+            return new File(url.toURI());
         }
-        
+
     }
     
     
+   /**
+    * 
+    * @param resource a class path entry or a file path.
+    * @return true if file exist and not directory
+    */
+    public static boolean validateFileExist(String file) {
+    
+        if (file == null) {
+          log.error("Can not validate file, file is null");
+          return false; 
+        }
+        
+        Path path = Paths.get(file);
+
+        boolean exists = Files.exists(path);
+
+        if (!exists) {
+            log.error("File does not exist:"+file);
+            return false;   
+        }
+
+        boolean directory = Files.isDirectory(path);        
+        if (directory) {
+            log.error("Expected file is a directory:"+file);
+            return false; 
+        }                
+        return true;        
+    }
+
 }

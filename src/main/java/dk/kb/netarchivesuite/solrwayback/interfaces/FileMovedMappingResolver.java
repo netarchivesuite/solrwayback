@@ -6,8 +6,12 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
+import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -58,6 +62,12 @@ public class FileMovedMappingResolver implements ArcFileLocationResolverInterfac
     public void initialize() {            
         log.info("Initialising FileMovedMappingResolver from file:"+mappingFile);
                 
+        //Validate is file
+        boolean isFile = FileUtil.validateFileExist(mappingFile);
+        if (!isFile) {
+            log.error("File defined in property: "+mappingFile +" does not exist or is a directory");
+            return;
+        }        
 
         //read file and parse each line 
         try (Stream<String> stream = Files.lines(Paths.get(mappingFile))) {
@@ -86,4 +96,6 @@ public class FileMovedMappingResolver implements ArcFileLocationResolverInterfac
 
         return ArcSource.fromFile(finalPath);
       }
+
+
 }
