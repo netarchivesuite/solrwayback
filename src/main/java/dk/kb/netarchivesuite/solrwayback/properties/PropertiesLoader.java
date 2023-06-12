@@ -187,20 +187,7 @@ public class PropertiesLoader {
         }        
     
     }
-    
-    
-    /**
-     * Add all properties that starts with {@link #WARC_FILE_RESOLVER_PARAMETERS_PROPERTY} to
-     * {@link #WARC_FILE_RESOLVER_PARAMETERS}, with {@link #WARC_FILE_RESOLVER_PARAMETERS_PROPERTY} removed from
-     * the key.
-     */
-       public boolean validateIsFile() {
-        
-        
-    }
-    
-    
-
+           
     /**
      * Add all properties that starts with {@link #WARC_FILE_RESOLVER_PARAMETERS_PROPERTY} to
      * {@link #WARC_FILE_RESOLVER_PARAMETERS}, with {@link #WARC_FILE_RESOLVER_PARAMETERS_PROPERTY} removed from
