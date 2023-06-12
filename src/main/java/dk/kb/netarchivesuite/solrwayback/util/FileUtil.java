@@ -65,7 +65,7 @@ public class FileUtil {
    /**
     * 
     * @param resource a class path entry or a file path.
-    * @return true if file exist and not directoru
+    * @return true if file exist and not directory
     */
     public static boolean validateFileExist(String file) {
     
