@@ -14,12 +14,8 @@
  */
 package dk.kb.netarchivesuite.solrwayback.interfaces;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Supplier;
