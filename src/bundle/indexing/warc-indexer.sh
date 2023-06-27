@@ -8,6 +8,8 @@
 #
 # 2021-06-07: Initial script
 # 2021-06-08: Status & tmp folder moved away from the WARC location
+# ... Missing updates
+# 2023-06-27: Both curl and wget can be used
 #
 
 ###############################################################################
@@ -160,6 +162,13 @@ check_parameters() {
     fi
 }
 
+# Either wget or curl must be present
+check_tools() {
+    if [[ -z $(which curl) && -z $(which wget) ]]; then
+        >&2 echo "Warning: Neither 'curl' nor 'wget' is present. ping and commit will be disabled"
+    fi
+}
+
 ################################################################################
 # FUNCTIONS
 ################################################################################
@@ -256,7 +265,15 @@ check_solr() {
         return;
     fi
     echo " - Checking if Solr is running"
-    curl  -s "${SOLR_URL}/admin/ping" > /dev/null
+
+    if [[ ! -z $(which curl) ]]; then
+        curl  -s "${SOLR_URL}/admin/ping" > /dev/null
+    elif [[ ! -z $(which wget) ]]; then
+        wget  -nv -O- "${SOLR_URL}/admin/ping" > /dev/null
+    else
+        >&2 echo "Warning: Unable to check for Solr availability as neither 'curl' nor 'wget' is present"
+    fi
+
     if [[ $? -ne 0 ]]; then
         >&2 echo ""
         >&2 echo "Warning: Solr commit did not respond to ping request"
@@ -271,7 +288,19 @@ commit() {
         return;
     fi
     echo " -Triggering solr flush. Documents will be visible after flush"
-    curl  -s "${SOLR_URL}/update?commit=true&openSearcher=true" > /dev/null
+    local COMMIT_URL="${SOLR_URL}/update?commit=true&openSearcher=true"
+    
+    if [[ ! -z $(which curl) ]]; then
+        curl  -s "$COMMIT_URL" > /dev/null
+    elif [[ ! -z $(which wget) ]]; then
+        wget  -nv -O- "$COMMIT_URL"  > /dev/null
+    else
+        >&2 echo "Warning: Unable to trigger Solr commit as neither 'curl' nor 'wget' is present"
+        >&2 echo "Either wait 10 minutes or visit the following URL in a browser to trigger commit:"
+        >&2 echo "$COMMIT_URL"
+        true
+    fi
+    
     if [[ $? -ne 0 ]]; then
         >&2 echo "Warning: Solr commit did not respond with success. Inspect that Solr is running at ${SOLR_URL}"
     fi
