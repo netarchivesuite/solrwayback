@@ -1,5 +1,9 @@
 # SolrWayback changelog
 
+4.4.3
+-----
+
+
 4.4.2
 -----
 The SolrWayback default playback engine can be changed by defining a new property in solrwaybackweb.properties: playback.primary.engine
