@@ -60,6 +60,21 @@ public class FileUtil {
         }
         
     }
-    
+
+    /**
+     * Converts sPath to a {@link Path} and checks that it is an accessible folder.
+     * @param sPath a file system path.
+     * @return a {@link Path} guaranteed to point to an accessible folder.
+     */
+    public static Path toExistingFolder(String sPath) {
+        Path path = Paths.get(sPath);
+        if (!Files.isReadable(path)) {
+            throw new IllegalStateException("Unable to access folder '" + sPath + "'");
+        }
+        if (!Files.isDirectory(path) {
+            throw new IllegalStateException("The path '" + sPath + "' is not a folder");
+        }
+        return path;
+    }
     
 }
