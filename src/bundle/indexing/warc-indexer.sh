@@ -312,6 +312,7 @@ commit() {
 ###############################################################################
 
 check_parameters "$@"
+check_tools
 check_solr
 index_all
 commit
