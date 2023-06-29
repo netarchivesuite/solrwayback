@@ -32,11 +32,12 @@ import java.util.regex.Pattern;
  warc.file.resolver.parameters.autoresolver.rescan.seconds=1200
  </pre>
  * Only the {@code roots} parameter is mandatory.
- * {@code pattern}, {@code rescan.enabled} and {@code rescan.seconds} had the
+ * {@code pattern}, {@code rescan.enabled} and {@code rescan.seconds} has the
  * defaults shown above
  */
-// TODO: Optional "scan on unknown file" trigger
 // TODO: Unit test (use the WARCs in test/resources)
+// TODO: Sample solrwayback.properties entries
+// TODO: Changelog update
 @SuppressWarnings("unused")
 public class AutoFileResolver implements ArcFileLocationResolverInterface, Runnable {
     private static final Logger log = LoggerFactory.getLogger(AutoFileResolver.class);
@@ -50,7 +51,13 @@ public class AutoFileResolver implements ArcFileLocationResolverInterface, Runna
     public static final String  RESCAN_SECONDS_KEY = "autoresolver.rescan.seconds";
     public static final long    RESCAN_SECONDS_DEFAULT = 60;
 
-    public enum STATE { initializing, scanning, dormant }
+    public enum STATE {
+        /** Initial scan is running: Lookups will lock until the scan has finished. */
+        initializing,
+        /** Subsequent scan is running: Lookups will use the map from the previous scan. */
+        scanning,
+        /** No scan is currently running: Lookups will use the current map. */
+        dormant }
 
     /**
      * Map from filename to path: {@code /a/b/c/test.warc} becomes {@code test.warc} -> {@code /a/b/c}.
@@ -60,7 +67,6 @@ public class AutoFileResolver implements ArcFileLocationResolverInterface, Runna
     private Pattern filePattern;
     private boolean rescanEnabled;
     private long rescanSeconds;
-    private Thread scanThread;
     private STATE state = STATE.initializing;
 
     /**
@@ -72,7 +78,7 @@ public class AutoFileResolver implements ArcFileLocationResolverInterface, Runna
     public AutoFileResolver() { }
 
     /**
-     *
+     * Configure the auto resolver. This method must be called before calling {@link #resolveArcFileLocation(String)}.
      * @param parameters a parameter map as resolved by {@code PropertiesLoader#loadArcResolverParameters(Properties)}.
      */
     @Override
@@ -110,14 +116,20 @@ public class AutoFileResolver implements ArcFileLocationResolverInterface, Runna
         log.info("Assigned parameters for {}", this);
     }
 
+    /**
+     * Create and start the Thread for background scanning.
+     */
     @Override
     public void initialize() {
         log.info("Creating and activating scan thread");
-        scanThread = new Thread(this, "AutoFileResolverThread");
+        Thread scanThread = new Thread(this, "AutoFileResolverThread");
         scanThread.setDaemon(true); // Shut down the Thread automatically on war redeploy
         scanThread.start();
     }
 
+    /**
+     * Perform 1 scan, then optionally perform subsequent scans with {@link #rescanSeconds} beween each rescan.
+     */
     @SuppressWarnings("BusyWait")
     @Override
     public void run() {
