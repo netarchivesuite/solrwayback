@@ -112,6 +112,8 @@ public class AutoFileResolver implements ArcFileLocationResolverInterface {
 
     private void scanRoot(Path path, Map<String, String> warcs) {
         final String location = path.toString(); // TODO: Check that it does not end in '/'
+        // Performance note: We do not use the more convenient Files.walk as we want to ensure that location is
+        // the same object for same path, in order to save heap space for the map
         try (DirectoryStream<Path> pathEntries = Files.newDirectoryStream(path)) {
             pathEntries.forEach(pathEntry -> {
                 if (Files.isDirectory(pathEntry)) {
