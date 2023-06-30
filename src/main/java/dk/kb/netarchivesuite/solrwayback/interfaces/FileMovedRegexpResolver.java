@@ -29,8 +29,8 @@ import java.util.regex.Pattern;
  * To handle the reorganization mentioned above, the configurations would be
  * <pre>
  warc.file.resolver.class=FileMovedRegexpResolver
- warc.file.resolver.filemovedregexpresolver.regexp=/home/harvest/(.*)
- warc.file.resolver.filemovedregexpresolver.replacement=/netarchive/$1
+ warc.file.resolver.path.regexp=/home/harvest/(.*)
+ warc.file.resolver.path.replacement=/netarchive/$1
  </pre>
  *
  * This resolver class will be activated by the InitialContextLoader
@@ -38,8 +38,8 @@ import java.util.regex.Pattern;
 public class FileMovedRegexpResolver implements ArcFileLocationResolverInterface {
     private static final Logger log = LoggerFactory.getLogger(FileMovedRegexpResolver.class);
 
-    public static final String REGEXP_KEY = "warc.file.resolver.filemovedregexpresolver.regexp";
-    public static final String REPLACEMENT_KEY = "warc.file.resolver.filemovedregexpresolver.replacement";
+    public static final String REGEXP_KEY = "warc.file.resolver.path.regexp";
+    public static final String REPLACEMENT_KEY = "warc.file.resolver.path.replacement";
 
     private Pattern regexp;
     private String replacement;
