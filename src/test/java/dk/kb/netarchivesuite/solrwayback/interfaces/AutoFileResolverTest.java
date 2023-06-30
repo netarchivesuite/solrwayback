@@ -64,11 +64,11 @@ public class AutoFileResolverTest {
 
         // Create 4 (W)ARCs, one of them in a subfolder
         Files.write(tmpdir.resolve("foo.warc"), "moo".getBytes(StandardCharsets.UTF_8));
-        Files.write(tmpdir.resolve("bar.warc.gz"), "moo".getBytes(StandardCharsets.UTF_8));
+        Files.write(tmpdir.resolve("bar.WARC.gz"), "moo".getBytes(StandardCharsets.UTF_8));
         Files.createDirectory(tmpdir.resolve("subfolder"));
         Files.write(tmpdir.resolve("subfolder").resolve("zoo.arc"), "moo".getBytes(StandardCharsets.UTF_8));
         Files.write(tmpdir.resolve("baz.arc.gz"), "moo".getBytes(StandardCharsets.UTF_8));
-        List<String> warcs = Arrays.asList("foo.warc", "bar.warc.gz", "zoo.arc", "baz.arc.gz");
+        List<String> warcs = Arrays.asList("foo.warc", "bar.WARC.gz", "zoo.arc", "baz.arc.gz");
 
         // Create an auto resolver
         Map<String, String> config = new HashMap<>();
