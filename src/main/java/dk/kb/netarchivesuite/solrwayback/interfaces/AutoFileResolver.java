@@ -178,18 +178,18 @@ public class AutoFileResolver implements ArcFileLocationResolverInterface, Runna
             pathEntries.forEach(pathEntry -> {
                 if (Files.isDirectory(pathEntry)) {
                     scanRoot(pathEntry, warcs);
-                } else {
-                    String filename = pathEntry.getFileName().toString();
-                    if (filePattern.matcher(filename).matches()) {
-                        if (warcs.containsKey(filename)) {
-                            log.warn("The WARC name '{}' in folder '{}' is already present in folder '{}'",
-                                     filename, location, warcs.get(filename));
-                        }
-                        warcs.put(filename, location);
-                    } else {
-                        log.debug("Scanner encountered non-matching file '{}'", filename);
-                    }
+                    return;
                 }
+                String filename = pathEntry.getFileName().toString();
+                if (!filePattern.matcher(filename).matches()) {
+                    log.debug("Scanner encountered non-matching file '{}'", filename);
+                    return;
+                }
+                if (warcs.containsKey(filename)) {
+                    log.warn("The WARC name '{}' in folder '{}' is already present in folder '{}'",
+                             filename, location, warcs.get(filename));
+                }
+                warcs.put(filename, location);
             });
         } catch (AccessDeniedException e) {
             log.debug("AccessDeniedException for path '{}'", path);

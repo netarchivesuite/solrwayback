@@ -76,7 +76,7 @@ public class FileUtil {
         if (!Files.isReadable(path)) {
             throw new IllegalStateException("Unable to access folder '" + sPath + "'");
         }
-        if (!Files.isDirectory(path) {
+        if (!Files.isDirectory(path)) {
             throw new IllegalStateException("The path '" + sPath + "' is not a folder");
         }
         return path;
