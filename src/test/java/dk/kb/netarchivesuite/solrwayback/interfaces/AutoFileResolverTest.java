@@ -58,7 +58,7 @@ public class AutoFileResolverTest {
 
     @Test
     public void testRescan() throws IOException, InterruptedException {
-        File tmpdirF = Files.createTempDirectory("tmpDirPrefix").toFile();
+        File tmpdirF = Files.createTempDirectory("autoresolver_").toFile();
         tmpdirF.deleteOnExit();
         Path tmpdir = tmpdirF.toPath();
 
@@ -68,7 +68,7 @@ public class AutoFileResolverTest {
         Files.createDirectory(tmpdir.resolve("subfolder"));
         Files.write(tmpdir.resolve("subfolder").resolve("zoo.arc"), "moo".getBytes(StandardCharsets.UTF_8));
         Files.write(tmpdir.resolve("baz.arc.gz"), "moo".getBytes(StandardCharsets.UTF_8));
-        List<String> warcs = Arrays.asList("foo.warc", "bar.warc.gz", "zoo.arc", "bac.arc.gz");
+        List<String> warcs = Arrays.asList("foo.warc", "bar.warc.gz", "zoo.arc", "baz.arc.gz");
 
         // Create an auto resolver
         Map<String, String> config = new HashMap<>();
