@@ -1,126 +1,27 @@
+/*
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
 package dk.kb.netarchivesuite.solrwayback.interfaces;
 
-import dk.kb.netarchivesuite.solrwayback.util.SkippingHTTPInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Locale;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
- * Adjusts the given input using regexp/pattern and expects the result to be a {@code HTTP} or {@code HTTPS} URL.
- * This implementation supports efficient skips, if the server has HTTP Range Request support for type {@code bytes}
- *
- * To activate it, set this in solrwayback.properties:
- *   {@code warc.file.resolver.class=ArcHTTPResolver}
- *   {@code warc.file.resolver.parameters.path.regexp=<regexp for the input>}
- *   {@code warc.file.resolver.parameters.path.replacement=<replacement definition for the regexp result>}
- *   {@code warc.file.resolver.parameters.readfallback=<true if servers without HTTP Range Request support are acceptable>}
- * The regexp and the pattern defaults to {@code .*} and {@code $0} respectively (the identity).
- *
- * Sample config for requesting the WARCs from a remote server by stripping the path and using the filename only:
- *   {@code warc.file.resolver.parameters.path.regexp=.*([^/]*)}
- *   {@code warc.file.resolver.parameters.path.replacement=http://example.com/warcstore/$1}
- *   {@code warc.file.resolver.parameters.readfallback=false}
- *
- * This resolver class will be activated by the InitialContextLoader.
- *
- * Note: In order for HTTP(S) to be efficient as a delivery mechanism for WARC content, the server must support
- * HTTP range requests: https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
- * It is not recommended to set readfallback to true as this will result is excessive overhead, unless the
- * backing WARC files are tiny (a few megabytes), if the server does not support range requests.
+ * This class is only kept for backwards compatibility.
+ * @deprecated use {@link RewriteLocationResolver} instead.
  */
-public class ArcHTTPResolver implements ArcFileLocationResolverInterface {
+public class ArcHTTPResolver extends RewriteLocationResolver {
     private static final Logger log = LoggerFactory.getLogger(ArcHTTPResolver.class);
 
-    public static final String REGEXP_KEY = "path.regexp";
-    public static final String REGEXP_DEFAULT = ".*";  // Match everything
-    public static final String REPLACEMENT_KEY = "path.replacement";
-    public static final String REPLACEMENT_DEFAULT = "$0"; // The full match
-    public static final String READ_FALLBACK_KEY = "readfallback";
-    public static final boolean READ_FALLBACK_DEFAULT = false;
-
-    private Pattern regexp = Pattern.compile(REGEXP_DEFAULT);
-    private String replacement = REPLACEMENT_DEFAULT;
-    private boolean readFallback = false;
-
-    public ArcHTTPResolver() { }
-
-    @Override
-    public void setParameters(Map<String, String> parameters) {
-        setPathPattern(parameters.getOrDefault(REGEXP_KEY, REGEXP_DEFAULT));
-        setPathReplacement(parameters.getOrDefault(REPLACEMENT_KEY, REPLACEMENT_DEFAULT));
-        setReadFallback(Boolean.parseBoolean(parameters.getOrDefault(READ_FALLBACK_KEY, Boolean.toString(READ_FALLBACK_DEFAULT))));
-    }
-
-    public void setPathPattern(String inputPattern) {
-        this.regexp = Pattern.compile(inputPattern);
-    }
-
-    public void setPathReplacement(String replacement) {
-        this.replacement = replacement;
-    }
-
-    public void setReadFallback(boolean readFallback) {
-        this.readFallback = readFallback;
-    }
-
-    @Override
-    public void initialize() {
-        log.info("Initialized " + this);
-    }
-  
-    @Override
-    public ArcSource resolveArcFileLocation(String source_file_path) {
-        Matcher m = regexp.matcher(source_file_path);
-        if (!m.matches()) {
-            throw new IllegalArgumentException(
-                    "Unable to match '" + source_file_path + "' against the pattern '" + regexp.pattern() + "'");
-        }
-        String rewritten = m.replaceFirst(replacement);
-        log.debug("Rewrote (W)ARCFileLocation '{}' to '{}'", source_file_path, rewritten);
-        if (!rewritten.startsWith("http")) {
-            throw new IllegalArgumentException(String.format(
-                    Locale.ROOT, "The (W)ARC location '%s' derived from '%s' using pattern '%s' with replacement '%s'" +
-                                 " is not a HTTP URL",
-                    rewritten, source_file_path, regexp.pattern(), replacement));
-        }
-        return makeHTTPSource(rewritten);
-    }
-
-    /**
-     * Parse the given urlString to an URL and deliver the content as a {@link SkippingHTTPInputStream}.
-     * @param urlString the URL to retrieve the content for.
-     * @return an InputStream for the resource that supports efficient skipping.
-     */
-    private ArcSource makeHTTPSource(String urlString) {
-        final URL url;
-        try {
-            url = new URL(urlString);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Unable to construct URL from '" + urlString + "'", e);
-        }
-
-        return new ArcSource(urlString, () -> {
-            try {
-                return new SkippingHTTPInputStream(url, readFallback);
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to open stream for '" + urlString + "'", e);
-            }
-        });
-    }
-
-    @Override
-    public String toString() {
-        return "ArcHTTPResolver(" +
-               "regexp=" + regexp +
-               ", replacement='" + replacement + '\'' +
-               ", readFallback=" + readFallback +
-               ')';
-    }
 }
