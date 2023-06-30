@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 import java.util.HashMap;
 
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
+import dk.kb.netarchivesuite.solrwayback.interfaces.RewriteLocationResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ public class ArcParserFileResolver {
 
   private static final HashMap<String, ArcSource> cache = new HashMap<>();
 
-  private static ArcFileLocationResolverInterface resolver = new IdentityArcFileResolver(); // Default
+  private static ArcFileLocationResolverInterface resolver = new RewriteLocationResolver(); // Default
   private static final Logger log = LoggerFactory.getLogger(ArcFileLocationResolverInterface.class);
 
   public static void setArcFileLocationResolver(ArcFileLocationResolverInterface resolverImpl) {
