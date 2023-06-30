@@ -2,7 +2,7 @@
 
 4.4.3
 -----
-
+Query hints fix (range queries). The search validation helper did like range queries and showed warning when they was correct. (github #380)
 
 4.4.2
 -----
