@@ -211,6 +211,7 @@ public class AutoFileResolver implements ArcFileLocationResolverInterface, Runna
             }
         }
 
+        // This apparent arbitrary file access is handled in the facade if warc.files.verify.collection==true
         String fileName = new File(source_file_path).getName();
         String value = WARCS.get(fileName);
 
