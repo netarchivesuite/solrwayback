@@ -18,8 +18,10 @@ import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,7 +57,43 @@ public class AutoFileResolverTest {
     }
 
     @Test
-    public void testRescan() {
-        throw new UnsupportedOperationException("Not implemented but needs to be tested");
+    public void testRescan() throws IOException, InterruptedException {
+        File tmpdirF = Files.createTempDirectory("autoresolver_").toFile();
+        tmpdirF.deleteOnExit();
+        Path tmpdir = tmpdirF.toPath();
+
+        // Create 4 (W)ARCs, one of them in a subfolder
+        Files.write(tmpdir.resolve("foo.warc"), "moo".getBytes(StandardCharsets.UTF_8));
+        Files.write(tmpdir.resolve("bar.WARC.gz"), "moo".getBytes(StandardCharsets.UTF_8));
+        Files.createDirectory(tmpdir.resolve("subfolder"));
+        Files.write(tmpdir.resolve("subfolder").resolve("zoo.arc"), "moo".getBytes(StandardCharsets.UTF_8));
+        Files.write(tmpdir.resolve("baz.arc.gz"), "moo".getBytes(StandardCharsets.UTF_8));
+        List<String> warcs = Arrays.asList("foo.warc", "bar.WARC.gz", "zoo.arc", "baz.arc.gz");
+
+        // Create an auto resolver
+        Map<String, String> config = new HashMap<>();
+        config.put(AutoFileResolver.ROOTS_KEY, tmpdir.toString());
+        config.put(AutoFileResolver.RESCAN_ENABLED_KEY, "true");
+        config.put(AutoFileResolver.RESCAN_SECONDS_KEY, "1");
+        AutoFileResolver resolver = new AutoFileResolver();
+        resolver.setParameters(config);
+        resolver.initialize();
+
+        // Verify existence
+        for (String warc: warcs) {
+            assertNotEquals("The (W)ARC '" + warc + "' should be resolvable",
+                            warc, resolver.resolveArcFileLocation(warc).getSource());
+        }
+        String newWarc = "new.warc";
+        assertEquals("The (W)ARC '" + newWarc + "' should not be resolvable",
+                        newWarc, resolver.resolveArcFileLocation(newWarc).getSource());
+
+        // Create new WARC and wait a bit
+        Files.write(tmpdir.resolve(newWarc), "moo".getBytes(StandardCharsets.UTF_8));
+        Thread.sleep(2000); // 1 second for timeout, 1 for scan time (to be sure)
+
+        // Check that the new WARC can be resolved
+        assertNotEquals("The (W)ARC '" + newWarc + "' should be resolvable after creation",
+                        newWarc, resolver.resolveArcFileLocation(newWarc).getSource());
     }
 }

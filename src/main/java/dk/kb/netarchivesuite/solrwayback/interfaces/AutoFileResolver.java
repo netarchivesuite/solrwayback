@@ -45,7 +45,7 @@ public class AutoFileResolver implements ArcFileLocationResolverInterface, Runna
     // Prefixed warc.file.resolver.parameters
     public static final String  ROOTS_KEY = "autoresolver.roots";
     public static final String  PATTERN_KEY = "autoresolver.pattern";
-    public static final String  PATTERN_DEFAULT = ".*[.]w?arc([.]gz)?";
+    public static final String  PATTERN_DEFAULT = ".*[.][wW]?[aA][rR][cC]([.][gG][zZ])?";
     public static final String  RESCAN_ENABLED_KEY = "autoresolver.rescan.enabled";
     public static final boolean RESCAN_ENABLED_DEFAULT = false;
     public static final String  RESCAN_SECONDS_KEY = "autoresolver.rescan.seconds";

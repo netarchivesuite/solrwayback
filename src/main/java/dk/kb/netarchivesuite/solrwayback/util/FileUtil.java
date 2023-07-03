@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -21,8 +20,8 @@ import org.slf4j.LoggerFactory;
 public class FileUtil {
 
     private static final Logger log = LoggerFactory.getLogger(FileUtil.class);
-    
-    
+
+
     /**
      * Retrieve the given resource as an UTF-8 String.
      * @param resource a class path entry or a file path.
@@ -65,7 +64,6 @@ public class FileUtil {
             throw new IOException("Unable to convert URL '" + url + "' to URI", e);
         }
     }
-
     /**
      * Converts sPath to a {@link Path} and checks that it is an accessible folder.
      * @param sPath a file system path.
@@ -82,4 +80,33 @@ public class FileUtil {
         return path;
     }
     
+   /**
+    * 
+    * @param resource a class path entry or a file path.
+    * @return true if file exist and not directory
+    */
+    public static boolean validateFileExist(String file) {
+    
+        if (file == null) {
+          log.error("Can not validate file, file is null");
+          return false; 
+        }
+        
+        Path path = Paths.get(file);
+
+        boolean exists = Files.exists(path);
+
+        if (!exists) {
+            log.error("File does not exist:"+file);
+            return false;   
+        }
+
+        boolean directory = Files.isDirectory(path);        
+        if (directory) {
+            log.error("Expected file is a directory:"+file);
+            return false; 
+        }                
+        return true;        
+    }
+
 }
