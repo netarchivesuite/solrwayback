@@ -6,9 +6,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 import java.util.*;
 
@@ -32,6 +30,9 @@ public class PropertiesLoader {
     private static final String SOLR_SERVER_PROPERTY="solr.server";
     private static final String WARC_FILE_RESOLVER_CLASS_PROPERTY="warc.file.resolver.class";
     private static final String WARC_FILE_RESOLVER_PARAMETERS_PROPERTY="warc.file.resolver.parameters";
+    private static final String WARC_SOURCE_HTTP_FALLBACK_PROPERTY = "warc.file.resolver.source.http.readfallback";
+    // The now deprecated ArcHTTPResolver used this property to specify readfallback
+    private static final String WARC_SOURCE_HTTP_FALLBACK_LEGACY_PROPERTY = "warc.file.resolver.parameters.readfallback";
     private static final String WAYBACK_BASEURL_PROPERTY="wayback.baseurl";
     private static final String CHROME_COMMAND_PROPERTY="chrome.command";
     private static final String SCREENSHOT_TEMP_IMAGEDIR_PROPERTY="screenshot.temp.imagedir";
@@ -60,6 +61,7 @@ public class PropertiesLoader {
     public static String SCREENSHOT_TEMP_IMAGEDIR = null;
     public static String WARC_FILE_RESOLVER_CLASS = null;
     public static Map<String, String> WARC_FILE_RESOLVER_PARAMETERS= new HashMap<>();
+    public static boolean WARC_SOURCE_HTTP_FALLBACK = false;
     public static String PID_COLLECTION_NAME = null;
     public static String WORDCLOUD_STOPWORDS;
     public static LinkedHashMap<String,String> SOLR_PARAMS_MAP= new LinkedHashMap<String,String>(); 
@@ -111,6 +113,9 @@ public class PropertiesLoader {
             CHROME_COMMAND = serviceProperties.getProperty(CHROME_COMMAND_PROPERTY);
             SCREENSHOT_TEMP_IMAGEDIR = serviceProperties.getProperty(SCREENSHOT_TEMP_IMAGEDIR_PROPERTY);
             WARC_FILE_RESOLVER_CLASS = serviceProperties.getProperty(WARC_FILE_RESOLVER_CLASS_PROPERTY);
+            // Legacy support
+            WARC_SOURCE_HTTP_FALLBACK = Boolean.parseBoolean(serviceProperties.getProperty(WARC_SOURCE_HTTP_FALLBACK_LEGACY_PROPERTY, "false"));
+            WARC_SOURCE_HTTP_FALLBACK = Boolean.parseBoolean(serviceProperties.getProperty(WARC_SOURCE_HTTP_FALLBACK_PROPERTY, Boolean.toString(WARC_SOURCE_HTTP_FALLBACK)));
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
             loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
@@ -160,6 +165,7 @@ public class PropertiesLoader {
             log.info("Property:"+ SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY +" = " +  SCREENSHOT_PREVIEW_TIMEOUT);
             log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);
             log.info("Property:"+ WARC_FILE_RESOLVER_PARAMETERS_PROPERTY +" = " + WARC_FILE_RESOLVER_PARAMETERS);
+            log.info("Property:"+ WARC_SOURCE_HTTP_FALLBACK_PROPERTY + " = " + WARC_SOURCE_HTTP_FALLBACK);
             log.info("Property:"+ URL_NORMALISER_PROPERTY +" = " +  URL_NORMALISER);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
             log.info("Property:"+ WARC_FILES_VERIFY_COLLECTION_PROPERTY  +" = " + WARC_FILES_VERIFY_COLLECTION);

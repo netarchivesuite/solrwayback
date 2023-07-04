@@ -3,6 +3,9 @@ package dk.kb.netarchivesuite.solrwayback.interfaces;
 
 import java.util.Map;
 
+/**
+ * @deprecated use {@link RewriteLocationResolver} instead. Its default behaviour works 100% as IdentityArcFileResolver.
+ */
 public class IdentityArcFileResolver implements ArcFileLocationResolverInterface {
   /*
    * This implementation just returns the same file location as output. Can be used if path to the arc-files is the same as 

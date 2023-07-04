@@ -16,22 +16,24 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-/*
+/**
  * Optional FileLocationResolver interface implementation.
  *  
- * This class takes an a text file as input. 
+ * This class takes a text file as input.
 
  * To activate it, set this in solrwayback.properties:
- *   warc.file.resolver.class= FileMovedMappingResolver
- *   warc.file.resolver.filemovemappingresolver=<mapping file location>
+ *   {@code warc.file.resolver.class= FileMovedMappingResolver}
+ *   {@code warc.file.resolver.filemovemappingresolver=<mapping file location>}
  *   
  * The filename must be defined in the warc.file.resolver.class property in solrwayback
  * Each line is the full location of the warc-file that has a new location after indexing
- * 
+ *
+ * Resolving to files and HTTP(S) URLs are supported.
+ *
  * This resolver class will be activated by the InitialContextLoader
  * 
  * The Solr index has the filename stored already, but the full path in solr can be changed since indexing.
- * If the filename is found the this list, the resolver will use this full path instead of the one stored in solr.
+ * If the filename is found the list, the resolver will use this full path instead of the one stored in solr.
  * 
  */
 public class FileMovedMappingResolver implements ArcFileLocationResolverInterface {
@@ -94,7 +96,7 @@ public class FileMovedMappingResolver implements ArcFileLocationResolverInterfac
 
         String finalPath = value == null ? source_file_path : value + "/" + fileName;
 
-        return ArcSource.fromFile(finalPath);
+        return ArcSource.create(finalPath);
       }
 
 
