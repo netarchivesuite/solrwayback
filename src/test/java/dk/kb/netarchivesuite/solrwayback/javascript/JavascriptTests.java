@@ -21,8 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- *  Unittest method to call the query parser defined in the VUE typescript. The method has been copied to a new file and is now pure javascript. 
- *  Remember to also make the changes in the checkQueryForBadSyntax.js when adding futher functionality and unittest 
+ *  Unittest method to call the query parser defined in the VUE typescript. The method has been copied to a new file and is now pure javascript.  
  *
  *  Note that for JAVA15+ this will not work since Nashorn is removed from the JDK, but can be added with a maven dependency 
  *
