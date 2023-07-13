@@ -55,6 +55,7 @@ public class PropertiesLoaderWeb {
     public static final String EXPORT_WARC_MAXRESULTS_PROPERTY = "export.warc.maxresults";
     public static final String EXPORT_CSV_MAXRESULTS_PROPERTY = "export.csv.maxresults";
     public static final String EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY = "export.warc.expanded.maxresults";
+    public static final String EXPORT_ZIP_MAXRESULTS_PROPERTY ="export.csv.maxresults";
 
     public static final String EXPORT_CSV_FIELDS_PROPERTY = "export.csv.fields";
     public static final String ABOUT_TEXT_FILE_PROPERTY = "about.text.file";
@@ -88,7 +89,8 @@ public class PropertiesLoaderWeb {
 
     public static long EXPORT_CSV_MAXRESULTS=10000000;// 10M default
     public static long EXPORT_WARC_MAXRESULTS=1000000; // 1M default
-    public static long EXPORT_WARC_EXPANDED_MAXRESULTS=100000; // 500K default   
+    public static long EXPORT_WARC_EXPANDED_MAXRESULTS=100000; // 500K default
+    public static long EXPORT_ZIP_MAXRESULTS=10000000; // 10M default
     public static boolean ALLOW_EXPORT_WARC;
     public static boolean ALLOW_EXPORT_CSV;
     public static boolean ALLOW_EXPORT_ZIP;
@@ -185,6 +187,7 @@ public class PropertiesLoaderWeb {
             String csv_max_results= serviceProperties.getProperty(EXPORT_CSV_MAXRESULTS_PROPERTY);
             String warc_max_results= serviceProperties.getProperty(EXPORT_WARC_MAXRESULTS_PROPERTY);
             String warc_expanded_max_results= serviceProperties.getProperty(EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY);
+            String zip_max_results= serviceProperties.getProperty(EXPORT_ZIP_MAXRESULTS_PROPERTY);
             String search_pagination= serviceProperties.getProperty(SEARCH_PAGINATION_PROPERTY);
 
             PLAYBACK_PRIMARY_ENGINE = serviceProperties.getProperty(PLAYBACK_PRIMARY_ENGINE_PROPERTY);
@@ -204,6 +207,10 @@ public class PropertiesLoaderWeb {
 
             if ( warc_expanded_max_results != null) {                
                 EXPORT_WARC_EXPANDED_MAXRESULTS  = Long.parseLong( warc_expanded_max_results.trim());               
+            }
+
+            if (zip_max_results != null) {
+                EXPORT_ZIP_MAXRESULTS = Long.parseLong(zip_max_results.trim());
             }
 
             if ( search_pagination != null) {
@@ -267,6 +274,7 @@ public class PropertiesLoaderWeb {
             log.info("Property:"+ EXPORT_CSV_MAXRESULTS_PROPERTY +" = " + EXPORT_CSV_MAXRESULTS);
             log.info("Property:"+ EXPORT_WARC_MAXRESULTS_PROPERTY +" = " + EXPORT_WARC_MAXRESULTS);
             log.info("Property:"+ EXPORT_WARC_EXPANDED_MAXRESULTS_PROPERTY +" = " + EXPORT_WARC_EXPANDED_MAXRESULTS);
+            log.info("Property:"+ EXPORT_ZIP_MAXRESULTS_PROPERTY + " = " + EXPORT_ZIP_MAXRESULTS);
             log.info("Property:"+ EXPORT_CSV_FIELDS_PROPERTY +" = " + EXPORT_CSV_FIELDS);
             log.info("Property:"+ WAYBACK_SERVER_PROPERTY +" = " + WAYBACK_SERVER);			
             log.info("Property:"+ MAPS_LATITUDE_PROPERTY+" = " +MAPS_LATITUDE);
