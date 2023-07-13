@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.facade;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.ContentStreams;
+import dk.kb.netarchivesuite.solrwayback.export.StreamingRawZipExport;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
@@ -54,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.ws.rs.core.StreamingOutput;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -637,6 +639,32 @@ public class Facade {
         }
 
         return ContentStreams.deliver(docs, fields, format, gzip);
+    }
+
+    /**
+     * TODO: JAVADOC
+     * @param query
+     * @param contentType
+     * @param filterQueries
+     * @return
+     * @throws SolrServerException
+     * @throws IOException
+     * @throws InvalidArgumentServiceException
+     */
+    public static StreamingOutput exportZipContent(String query, String contentType, String... filterQueries)
+            throws SolrServerException, IOException, InvalidArgumentServiceException {
+
+        // Validate result set size
+        long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
+        if (results > PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS) {
+            throw new InvalidArgumentServiceException(
+                    "Number of results for zip export exceeds the configured limit: " +
+                            PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS);
+        }
+
+        StreamingRawZipExport zipExporter = new StreamingRawZipExport();
+
+        return output -> zipExporter.getStreamingOutputWithZipOfContent(query, contentType, output);
     }
 
 

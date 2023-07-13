@@ -445,6 +445,24 @@ public class SolrWaybackResource {
 
   }
 
+  /**
+   * TODO: JAVADOC
+   * @param q
+   * @param fq
+   * @param format
+   * @return
+   */
+  @GET
+  @Path("/export/zip")
+  public Response exportZipContent(@QueryParam("query") String q, @QueryParam("fq") String fq, @QueryParam("format") String format)
+          throws InvalidArgumentServiceException {
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_ZIP){
+      throw new InvalidArgumentServiceException("Zip export is not allowed!");
+    }
+
+    return null;
+  }
+
   
 
 
