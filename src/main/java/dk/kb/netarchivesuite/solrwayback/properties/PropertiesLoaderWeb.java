@@ -45,6 +45,7 @@ public class PropertiesLoaderWeb {
     public static final String MAPS_RADIUS_PROPERTY = "maps.radius";
     public static final String ALLOW_EXPORT_WARC_PROPERTY = "allow.export.warc";
     public static final String ALLOW_EXPORT_CSV_PROPERTY = "allow.export.csv";
+    public static final String ALLOW_EXPORT_ZIP_PROPERTY ="allow.export.zip";
     public static final String WORDCLOUD_STOPWORDS_PROPERTY="wordcloud.stopwords";    
     public static final String SEARCH_UPLOADED_FILE_DISABLED_PROPERTY="search.uploaded.file.disabled";
     public static final String SEARCH_PAGINATION_PROPERTY = "search.pagination";
@@ -90,6 +91,7 @@ public class PropertiesLoaderWeb {
     public static long EXPORT_WARC_EXPANDED_MAXRESULTS=100000; // 500K default   
     public static boolean ALLOW_EXPORT_WARC;
     public static boolean ALLOW_EXPORT_CSV;
+    public static boolean ALLOW_EXPORT_ZIP;
     public static String  EXPORT_CSV_FIELDS;;
     public static boolean SEARCH_UPLOADED_FILE_DISABLED;
     public static Long SEARCH_PAGINATION = 20L; // 20 default
@@ -164,6 +166,7 @@ public class PropertiesLoaderWeb {
             MAPS_RADIUS = serviceProperties.getProperty(MAPS_RADIUS_PROPERTY);
             ALLOW_EXPORT_WARC = Boolean.parseBoolean(serviceProperties.getProperty(ALLOW_EXPORT_WARC_PROPERTY));
             ALLOW_EXPORT_CSV = Boolean.parseBoolean(serviceProperties.getProperty(ALLOW_EXPORT_CSV_PROPERTY));
+            ALLOW_EXPORT_ZIP = Boolean.parseBoolean(serviceProperties.getProperty(ALLOW_EXPORT_ZIP_PROPERTY));
             
             SEARCH_UPLOADED_FILE_DISABLED = Boolean.parseBoolean(serviceProperties.getProperty(SEARCH_UPLOADED_FILE_DISABLED_PROPERTY));
             EXPORT_CSV_FIELDS = serviceProperties.getProperty(EXPORT_CSV_FIELDS_PROPERTY);
@@ -259,6 +262,7 @@ public class PropertiesLoaderWeb {
             log.info("Property:"+ PLAYBACK_PRIMARY_ENGINE_PROPERTY +" = " + PLAYBACK_PRIMARY_ENGINE);            
             log.info("Property:"+ ALLOW_EXPORT_WARC_PROPERTY +" = " + ALLOW_EXPORT_WARC);
             log.info("Property:"+ ALLOW_EXPORT_CSV_PROPERTY +" = " + ALLOW_EXPORT_CSV);
+            log.info("Property:"+ ALLOW_EXPORT_ZIP_PROPERTY +" = " + ALLOW_EXPORT_ZIP);
             log.info("Property:"+ WARC_ENTRY_TEXT_MAX_CHARACTERS_PROPERTY +" = " + WARC_ENTRY_TEXT_MAX_CHARACTERS);
             log.info("Property:"+ EXPORT_CSV_MAXRESULTS_PROPERTY +" = " + EXPORT_CSV_MAXRESULTS);
             log.info("Property:"+ EXPORT_WARC_MAXRESULTS_PROPERTY +" = " + EXPORT_WARC_MAXRESULTS);
