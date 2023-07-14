@@ -552,10 +552,11 @@ public class Facade {
             }
         }
         SolrGenericStreaming solr = SolrGenericStreaming.create(
-                SRequest.builder().
-                        query(query).filterQueries(filterqueries).
-                        fields("source_file_path", "source_file_offset").
-                        pageSize(100). // TODO: Why so low? The two fields are tiny and single-valued
+                SRequest.builder()
+                                .query(query)
+                                .filterQueries(filterqueries)
+                                .fields("source_file_path", "source_file_offset")
+                                .pageSize(100). // TODO: Why so low? The two fields are tiny and single-valued
                         expandResources(expandResources).
                         ensureUnique(ensureUnique));
 
@@ -642,20 +643,18 @@ public class Facade {
     }
 
     /**
-     * TODO: JAVADOC
-     * @param query
-     * @param contentType
-     * @param filterQueries
-     * @return
-     * @throws SolrServerException
-     * @throws IOException
-     * @throws InvalidArgumentServiceException
+     * Export content from WARC files to zip that are present in solr query. Can be used to extract files such as HTML, images or PDFs.
+     * @param contentType   which determines the file type to export.
+     * @param query         used to query solr for warc entries to export.
+     * @param filterQueries appended to query.
+     * @return              a streaming output containing a zip of all exported files.
      */
-    public static StreamingOutput exportZipContent(String query, String contentType, String... filterQueries)
+    public static StreamingOutput exportZipContent(String contentType, String query, String... filterQueries)
             throws SolrServerException, IOException, InvalidArgumentServiceException {
 
         // Validate result set size
         long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
+        log.info("Found '{}' result for query: '{}', with filters '{}'.", results, query, filterQueries);
         if (results > PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS) {
             throw new InvalidArgumentServiceException(
                     "Number of results for zip export exceeds the configured limit: " +

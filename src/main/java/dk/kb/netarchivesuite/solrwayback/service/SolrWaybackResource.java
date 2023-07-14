@@ -29,8 +29,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -446,24 +448,27 @@ public class SolrWaybackResource {
   }
 
   /**
-   * TODO: JAVADOC
-   * @param q
-   * @param fq
-   * @param format
-   * @return
+   * Endpoint that delivers a zip file of content present in query of a specific content type.
+   * @param contentType to deliver WARC entries for.
+   * @param query       used to extract WARC entries from solr by.
+   * @param filters     appended to the solr query.
+   * @return            a zip file of the exported content.
    */
   @GET
   @Path("/export/zip")
-  public Response exportZipContent(@QueryParam("query") String q, @QueryParam("fq") String fq, @QueryParam("format") String format)
-          throws InvalidArgumentServiceException {
+  public Response exportZipContent(@QueryParam("contentType") String contentType, @QueryParam("query") String query, @QueryParam("fq") String... filters)
+          throws InvalidArgumentServiceException, SolrServerException, IOException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_ZIP){
       throw new InvalidArgumentServiceException("Zip export is not allowed!");
     }
 
-    return null;
-  }
+    StreamingOutput zip = Facade.exportZipContent(contentType, query, filters);
 
-  
+    return Response.ok(zip)
+            .header("Content-Disposition", "attachment; filename=test.zip")
+            .build();
+
+  }
 
 
   /*
