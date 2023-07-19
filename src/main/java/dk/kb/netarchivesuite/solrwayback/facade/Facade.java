@@ -660,10 +660,13 @@ public class Facade {
                     "Number of results for zip export exceeds the configured limit: " +
                             PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS);
         }
+        if (contentType == null || contentType.equals("")){
+            throw new InvalidArgumentServiceException("contentType needs to be specified to create a zip export.");
+        }
 
         StreamingRawZipExport zipExporter = new StreamingRawZipExport();
 
-        return output -> zipExporter.getStreamingOutputWithZipOfContent(query, contentType, output);
+        return output -> zipExporter.getStreamingOutputWithZipOfContent(query, contentType, output, filterQueries);
     }
 
 
@@ -961,6 +964,7 @@ public class Facade {
         props.put(PropertiesLoaderWeb.PLAYBACK_ALTERNATIVE_ENGINE_PROPERTY, PropertiesLoaderWeb.PLAYBACK_ALTERNATIVE_ENGINE);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_CSV_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_CSV);
+        props.put(PropertiesLoaderWeb.ALLOW_EXPORT_ZIP_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_ZIP);
         props.put(PropertiesLoaderWeb.EXPORT_CSV_FIELDS_PROPERTY, PropertiesLoaderWeb.EXPORT_CSV_FIELDS);
         props.put(PropertiesLoaderWeb.MAPS_LATITUDE_PROPERTY, PropertiesLoaderWeb.MAPS_LATITUDE);
         props.put(PropertiesLoaderWeb.MAPS_LONGITUDE_PROPERTY, PropertiesLoaderWeb.MAPS_LONGITUDE);

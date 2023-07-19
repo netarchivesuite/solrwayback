@@ -5,6 +5,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.WarcMetadataFromSolr;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
@@ -29,12 +30,14 @@ public class StreamingRawZipExport {
      * @param contentType defines which types of material to include in the zip file.
      * @param output      represents an output stream, where the zipped content gets delivered.
      */
-    public void getStreamingOutputWithZipOfContent(String query, String contentType, OutputStream output) throws IOException {
+    public void getStreamingOutputWithZipOfContent(String query, String contentType, OutputStream output, String... filterQueries) throws IOException {
+
+        String fullFilters = SolrUtils.combineFilterQueries("content_type", contentType, filterQueries);
 
         SRequest request = SRequest.builder()
                 .query(query)
-                .filterQueries("content_type_norm:" + contentType)
-                .fields("crawl_date", "source_file_path", "source_file_offset", "content_type_ext", "hash", "id");
+                .filterQueries(fullFilters)
+                .fields("crawl_date", "source_file_path", "source_file_offset", "content_type_ext", "content_type", "id");
 
         ZipOutputStream zos = new ZipOutputStream(output);
         WarcMetadataFromSolr warcMetadata = new WarcMetadataFromSolr();
@@ -50,9 +53,16 @@ public class StreamingRawZipExport {
         log.info("Streamed {} warc entries.", streamedDocs);
     }
 
+    /**
+     * Extract metadata for a WARC entry from a Solr Document.
+     * The method extracts, the ID, mimetype and fileextension for the WARC entry.
+     * @param doc           SolrDocument to retrieve the WARC metadata from.
+     * @param warcMetadata  Object to save metadata information to.
+     * @return              The input SolrDocument is returned, which makes this method stream compliant.
+     */
     private SolrDocument extractMetadata(SolrDocument doc, WarcMetadataFromSolr warcMetadata) {
         warcMetadata.setFileExtension((String) doc.getFieldValue("content_type_ext"));
-        warcMetadata.setHash((String) doc.getFieldValue("hash"));
+        warcMetadata.setMimetype((String) doc.getFieldValue("content_type"));
         warcMetadata.setId((String) doc.getFieldValue("id"));
 
         return doc;
@@ -78,7 +88,6 @@ public class StreamingRawZipExport {
      * @return      the input arc/warc entry, for further use in a stream.
      */
     private ArcEntry addArcEntryToZip(ArcEntry entry, ZipOutputStream zos, String contentType, WarcMetadataFromSolr warcMetadata) {
-        // TODO: Do some smart naming. Some files have content_type_ext, others have content_type_norm, if non maybe do .dat?
         // TODO: Look at naming from Tokes GH issue: https://github.com/netarchivesuite/solrwayback/issues/382
         String filename = createFilename(contentType, warcMetadata);
         ZipEntry zipArcEntry = new ZipEntry(filename);
@@ -103,8 +112,10 @@ public class StreamingRawZipExport {
      */
     private String createFilename(String contentType, WarcMetadataFromSolr warcMetadata) {
         String filename;
-        if (contentType.equals("html")){
-            filename = warcMetadata.getId() + "." + contentType;
+        if (contentType.equals("text/html")){
+            filename = warcMetadata.getId() + ".html";
+        } else if (warcMetadata.getMimetype().contains("text/html")) {
+            filename = warcMetadata.getId() + ".html";
         } else {
             if (warcMetadata.getFileExtension() == null){
                 filename = warcMetadata.getId() + ".dat";
