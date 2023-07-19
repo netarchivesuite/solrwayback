@@ -91,7 +91,6 @@ public class StreamingRawZipExport {
      * @return      the input arc/warc entry, for further use in a stream.
      */
     private ArcEntry addArcEntryToZip(ArcEntry entry, ZipOutputStream zos, String contentType, WarcMetadataFromSolr warcMetadata) {
-        // TODO: Look at naming from Tokes GH issue: https://github.com/netarchivesuite/solrwayback/issues/382
         String filename = createFilename(contentType, warcMetadata);
         ZipEntry zipArcEntry = new ZipEntry(filename);
 
@@ -109,11 +108,14 @@ public class StreamingRawZipExport {
 
     /**
      * Create unique filename for zip entries from metadata from solr.
+     * Files in the zip entry gets named by the following structure: waybackdate_id_originalUrlStrippedForNonASCIIChars.extension.
      * @param contentType   is used to choose how the filename is created.
-     * @param warcMetadata  contains the timestamp, id and file extension, which is used to create the filename.
-     * @return              a string in the format timestamp_id.extension.
+     * @param warcMetadata  contains the timestamp, id, originalUrl and file extension, which is used to create the filename.
+     * @return              a string in the format timestamp_id_originalUrlStrippedForNonASCIIChars.extension.
      */
     private String createFilename(String contentType, WarcMetadataFromSolr warcMetadata) {
+        // TODO: Look at naming from Tokes GH issue: https://github.com/netarchivesuite/solrwayback/issues/382
+
         String filename;
         if (contentType.equals("text/html")){
             filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".html";
