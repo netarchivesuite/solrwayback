@@ -30,14 +30,16 @@ public class StreamingRawZipExport {
      * @param contentType defines which types of material to include in the zip file.
      * @param output      represents an output stream, where the zipped content gets delivered.
      */
-    public void getStreamingOutputWithZipOfContent(String query, String contentType, OutputStream output, String... filterQueries) throws IOException {
+    public void getStreamingOutputWithZipOfContent(String query, String contentType,
+                                                   OutputStream output, String... filterQueries) throws IOException {
 
         String fullFilters = SolrUtils.combineFilterQueries("content_type", contentType, filterQueries);
 
         SRequest request = SRequest.builder()
                 .query(query)
                 .filterQueries(fullFilters)
-                .fields("crawl_date", "source_file_path", "source_file_offset", "content_type_ext", "content_type", "id");
+                .fields("crawl_date", "source_file_path", "source_file_offset",
+                        "content_type_ext", "content_type", "id", "url");
 
         ZipOutputStream zos = new ZipOutputStream(output);
         WarcMetadataFromSolr warcMetadata = new WarcMetadataFromSolr();
@@ -50,7 +52,7 @@ public class StreamingRawZipExport {
 
         zos.close();
         output.close();
-        log.info("Streamed {} warc entries.", streamedDocs);
+        log.info("Streamed {} warc entries with the contentType: '{}'.", streamedDocs, contentType);
     }
 
     /**
@@ -64,6 +66,7 @@ public class StreamingRawZipExport {
         warcMetadata.setFileExtension((String) doc.getFieldValue("content_type_ext"));
         warcMetadata.setMimetype((String) doc.getFieldValue("content_type"));
         warcMetadata.setId((String) doc.getFieldValue("id"));
+        warcMetadata.setUrl((String) doc.getFieldValue("url"));
 
         return doc;
     }
@@ -113,14 +116,14 @@ public class StreamingRawZipExport {
     private String createFilename(String contentType, WarcMetadataFromSolr warcMetadata) {
         String filename;
         if (contentType.equals("text/html")){
-            filename = warcMetadata.getId() + ".html";
+            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".html";
         } else if (warcMetadata.getMimetype().contains("text/html")) {
-            filename = warcMetadata.getId() + ".html";
+            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".html";
         } else {
             if (warcMetadata.getFileExtension() == null){
-                filename = warcMetadata.getId() + ".dat";
+                filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".dat";
             } else {
-                filename = warcMetadata.getId() + "." + warcMetadata.getFileExtension();
+                filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + "." + warcMetadata.getFileExtension();
             }
         }
 

@@ -644,7 +644,7 @@ public class Facade {
 
     /**
      * Export content from WARC files to zip that are present in solr query. Can be used to extract files such as HTML, images or PDFs.
-     * @param contentType   which determines the file type to export.
+     * @param contentType   which determines the file type to export. This should be a mimetype e.g. text/plain.
      * @param query         used to query solr for warc entries to export.
      * @param filterQueries appended to query.
      * @return              a streaming output containing a zip of all exported files.
@@ -652,16 +652,17 @@ public class Facade {
     public static StreamingOutput exportZipContent(String contentType, String query, String... filterQueries)
             throws SolrServerException, IOException, InvalidArgumentServiceException {
 
+        if (contentType == null || contentType.equals("")){
+            throw new InvalidArgumentServiceException("contentType needs to be specified to create a zip export.");
+        }
+
         // Validate result set size
         long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
-        log.info("Found '{}' result for query: '{}', with filters '{}'.", results, query, filterQueries);
+        log.info("Found '{}' results for query: '{}', with filters '{}'.", results, query, filterQueries);
         if (results > PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS) {
             throw new InvalidArgumentServiceException(
                     "Number of results for zip export exceeds the configured limit: " +
                             PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS);
-        }
-        if (contentType == null || contentType.equals("")){
-            throw new InvalidArgumentServiceException("contentType needs to be specified to create a zip export.");
         }
 
         StreamingRawZipExport zipExporter = new StreamingRawZipExport();

@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.service.dto;
 
 import java.io.OutputStream;
+import java.text.Normalizer;
+
 import dk.kb.netarchivesuite.solrwayback.export.StreamingRawZipExport;
 
 /**
@@ -16,11 +18,11 @@ public class WarcMetadataFromSolr {
     private String mimetype;
     private String fileExtension;
     private String hash;
+    private String url;
 
     public String getFileExtension() {
         return fileExtension;
     }
-
     public void setFileExtension(String fileExtension) {
         this.fileExtension = fileExtension;
     }
@@ -28,7 +30,6 @@ public class WarcMetadataFromSolr {
     public String getHash() {
         return hash;
     }
-
     public void setHash(String hash){
         this.hash = hash;
     }
@@ -36,7 +37,6 @@ public class WarcMetadataFromSolr {
     public String getId(){
         return id;
     }
-
     public void setId(String id) {
         id = id.replace("==", "");
         this.id = id.replace("/", "_");
@@ -45,9 +45,15 @@ public class WarcMetadataFromSolr {
     public String getMimetype() {
         return mimetype;
     }
-
     public void setMimetype(String mimetype) {
         this.mimetype = mimetype;
+    }
+
+    public String getUrl() {return url;}
+    public void setUrl(String url) {
+        url = Normalizer.normalize(url, Normalizer.Form.NFD);
+        url = url.replaceAll("[^\\x00-\\x7F]", "");
+        this.url = url.replaceAll("/", "_");
     }
 
     public WarcMetadataFromSolr(String fileExtension, String hash){
