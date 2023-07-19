@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="configs.exportOptions.warcAllowed === 'true' || configs.exportOptions.csvAllowed === 'true'" class="downloadSearchResultDropdown">
+    <div v-if="configs.exportOptions.warcAllowed === 'true' || configs.exportOptions.csvAllowed === 'true' || configs.exportOptions.zipAllowed === 'true'" class="downloadSearchResultDropdown">
       <div class="downloadSearchResultButton">
         See available export options
       </div>
@@ -19,10 +19,9 @@
       <button v-if="configs.exportOptions.csvAllowed === 'true'" class="exportButton" @click="toggleCsvExportOptions()">
         CSV export
       </button>
-      <button class="exportButton">
+      <button v-if="configs.exportOptions.zipAllowed === 'true'" class="exportButton" @click="toggleZipExportOptions()">
         Batch content export
       </button>
-      
     </div>
     <div v-if="csvExportOpen" class="csvExportOptions">
       <div class="csvExportContent">
@@ -125,6 +124,87 @@
         </div>
       </div>
     </div>
+
+
+    <div v-if="zipExportOpen" class="zipExportOptions">
+      <div class="zipExportContent">
+      <div></div>
+      <div>
+        <button class="closeButton" @click="toggleZipExportOptions()">
+          ✕ 
+        </button>
+       
+       
+        <div class="exportContent">
+          <h2>ZIP EXPORT</h2>
+          <p>Select the type of content that you want to have exported in a zip file.</p><br>
+          
+        </div>
+        <div class="exportContent">
+          <div>
+            <h4>Format</h4>
+          </div>
+          <div>
+            <div>
+              <input id="export-html"
+                     v-model="zipContentAsString"
+                     type="radio"
+                     value="text/html">
+              <label for="export-html">HTML</label>
+            </div>
+            <div>
+              <input id="export-image"
+                     v-model="zipContentAsString"
+                     type="radio"
+                     value="image/*">
+              <label for="export-image">Images</label>
+            </div>
+            <div>  
+              <input id="export-pdf"
+                    v-model="zipContentAsString"
+                    type="radio"
+                    value="application/pdf">
+              <label for="export-pdf">PDFs</label>
+            </div>
+            <div>
+              <input id="export-css"
+                    v-model="zipContentAsString"
+                    type="radio"
+                    value="text/css">
+              <label for="export-pdf">CSS</label>
+            </div>
+            <div>
+              <input id="export-js"
+                    v-model="zipContentAsString"
+                    type="radio"
+                    value="*/javascript">
+              <label for="export-pdf">JavaScript</label>
+            </div>
+            <div>
+              <label for="export-other">Other: </label>  
+              <input id="export-other" 
+                      v-model="zipContentAsString"
+                      name="other" 
+                      value=""
+                      placeholder="mimetype">     
+            </div>
+          </div>
+          <div>
+            <br>
+            <p>To export multiple filetypes at once use the 'Other field' and construct the query in the following way: 'text/plain OR image/png'.</p>
+            <br>
+            <p>When you're done, press the download button.</p><p>
+              <br>
+              <a :href="exportToZip()" class="downloadButton">
+                Download
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div></div>
+    </div>
+    </div>
   </div>
 </template>
 <script>
@@ -140,6 +220,7 @@ export default {
   },
   data () {
     return {  
+      zipExportOpen:false,
       csvExportOpen:false,
       selectedArray:[],
       nonSelectedArray:[],
@@ -148,7 +229,8 @@ export default {
         flatten:false,
         format:'csv',
         gzip:false
-      }
+      },
+      zipContentAsString:''
     }
   },
   computed: {
@@ -191,6 +273,11 @@ export default {
       `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}` :
       `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}`
     },
+    exportToZip() {
+         return this.searchAppliedFacets ?
+          `${this.returnExportUrl()}zip?contentType=${encodeURIComponent(this.zipContentAsString)}&query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`:
+          `${this.returnExportUrl()}zip?contentType=${encodeURIComponent(this.zipContentAsString)}&query=${encodeURIComponent(this.query)}`
+    },
     returnExportUrl() {
       return this.configs.playbackConfig.solrwaybackBaseURL + 'services/export/'
     },
@@ -212,8 +299,6 @@ export default {
       let newArray = fields.replace(/ /g, '').split(',')
       return newArray.slice(9,newArray.length)
     },
-
-
     moveItemInArray(array, direction, itemNumber, item) {
       if(itemNumber >= 0 && itemNumber < array.length) {
       direction === 'up'
@@ -227,6 +312,11 @@ export default {
       recipient === 'nonSelectedArray' ? toArray.push(item) : toArray.unshift(item)
       fromArray.splice(itemNumber,1)
 
+    },
+    toggleZipExportOptions() {
+      this.zipExportOpen = !this.zipExportOpen
+      if(this.zipExportOpen === false) {
+      }
     },
     getEncodedAppliedFacets(appliedFacets) {
       return appliedFacets.map(facet => 
