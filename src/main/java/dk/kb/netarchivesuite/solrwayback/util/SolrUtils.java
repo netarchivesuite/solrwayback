@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SolrUtils {
     public static final Logger log = LoggerFactory.getLogger(SolrUtils.class);
@@ -417,5 +418,20 @@ public class SolrUtils {
                     collect(Collectors.joining(", ", "[", "]"));
         }
         return Objects.toString(value);
+    }
+
+    /**
+     * Combine a predefined filter query, with filters applied in the frontend.
+     *
+     * @param predefinedFilterField specifies which field the predefined filter applies to.
+     * @param predefinedFilterValue is the value given to the predefined field.
+     * @param filterQueries         contains all filters that have been applied to the query in the frontend.
+     * @return                      a single string containing all filterqueries that are to be applied.
+     */
+    public static String combineFilterQueries(String predefinedFilterField, String predefinedFilterValue, String[] filterQueries) {
+        Stream<String> filtersStream = Stream.of(filterQueries);
+        Stream<String> fullFiltersStream =Stream.concat(Stream.of(predefinedFilterField + ":(" + predefinedFilterValue + ")"), filtersStream);
+        return fullFiltersStream
+                .collect(Collectors.joining(" AND ", "(", ")"));
     }
 }
