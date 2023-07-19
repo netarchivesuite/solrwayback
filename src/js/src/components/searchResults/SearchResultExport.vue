@@ -138,7 +138,13 @@
         <div class="exportContent">
           <h2>ZIP EXPORT</h2>
           <p>Select the type of content that you want to have exported in a zip file.</p><br>
+
+          <p>To export files of a different type, than the ones mentioned here, you can specify a mimetype
+             (e.g. text/plain or image/jpeg) in the 'Other' field.</p><br>
           
+          <p>To export multiple filetypes at once use the 'Other' field and construct the query
+             in the following way: 'text/plain OR image/png'.</p><br>
+  
         </div>
         <div class="exportContent">
           <div>
@@ -184,14 +190,13 @@
               <label for="export-other">Other: </label>  
               <input id="export-other" 
                       v-model="zipContentAsString"
-                      name="other" 
+                      name="other"
+                      size="12" 
                       value=""
                       placeholder="mimetype">     
             </div>
           </div>
           <div>
-            <br>
-            <p>To export multiple filetypes at once use the 'Other field' and construct the query in the following way: 'text/plain OR image/png'.</p>
             <br>
             <p>When you're done, press the download button.</p><p>
               <br>
