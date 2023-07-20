@@ -482,8 +482,9 @@ public class SolrWaybackResource {
     Date date = new Date() ;
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
-    String filename = dateFormat.format(date) + "_" + contentType.replaceAll(" ", "")
-                                    .replaceAll("/", "_") + "_export.zip";
+    String filename = dateFormat.format(date) + "_" + contentType.replaceAll(" OR ", "_or_")
+                                                      .replaceAll(" ", "")
+                                                      .replaceAll("/", "_") + "_export.zip";
     filename = Normalizer.normalize(filename, Normalizer.Form.NFD);
 
     return filename.replaceAll("[^\\x00-\\x7F]", "");
