@@ -126,7 +126,6 @@ public class StreamingRawZipExport {
      * @return              a string in the format timestamp_id_originalUrlStrippedForNonASCIIChars.extension.
      */
     private String createFilename(String contentType, WarcMetadataFromSolr warcMetadata) {
-        // TODO: Look at naming from Tokes GH issue: https://github.com/netarchivesuite/solrwayback/issues/382
 
         String filename;
         if (contentType.equals("text/html")){
