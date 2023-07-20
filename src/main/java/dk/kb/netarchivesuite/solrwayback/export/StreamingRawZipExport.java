@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.Normalizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -33,7 +34,8 @@ public class StreamingRawZipExport {
     public void getStreamingOutputWithZipOfContent(String query, String contentType,
                                                    OutputStream output, String... filterQueries) throws IOException {
 
-        String fullFilters = SolrUtils.combineFilterQueries("content_type", contentType, filterQueries);
+        String normalizedContentType = normalizeContentType(contentType);
+        String fullFilters = SolrUtils.combineFilterQueries("content_type", normalizedContentType, filterQueries);
 
         SRequest request = SRequest.builder()
                 .query(query)
@@ -47,12 +49,22 @@ public class StreamingRawZipExport {
         long streamedDocs = SolrGenericStreaming.create(request).stream()
                 .map(doc -> extractMetadata(doc, warcMetadata))
                 .map(StreamingRawZipExport::safeGetArcEntry)
-                .map(entry -> addArcEntryToZip(entry, zos, contentType, warcMetadata))
+                .map(entry -> addArcEntryToZip(entry, zos, normalizedContentType, warcMetadata))
                 .count();
 
         zos.close();
         output.close();
-        log.info("Streamed {} warc entries with the contentType: '{}'.", streamedDocs, contentType);
+        log.info("Streamed {} warc entries with the contentType: '{}'.", streamedDocs, normalizedContentType);
+    }
+
+    /**
+     * Normalize content type.
+     * @param contentType string to normalize.
+     * @return            normalized contentType string.
+     */
+    private String normalizeContentType(String contentType) {
+        String normalizedContentType = Normalizer.normalize(contentType, Normalizer.Form.NFD);
+        return normalizedContentType.replaceAll("[^\\x00-\\x7F]", "");
     }
 
     /**

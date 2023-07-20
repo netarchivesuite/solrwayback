@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -481,8 +482,11 @@ public class SolrWaybackResource {
     Date date = new Date() ;
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
-    return  dateFormat.format(date) + "_" + contentType.replaceAll(" ", "")
-            .replaceAll("/", "_") + "_export.zip";
+    String filename = dateFormat.format(date) + "_" + contentType.replaceAll(" ", "")
+                                    .replaceAll("/", "_") + "_export.zip";
+    filename = Normalizer.normalize(filename, Normalizer.Form.NFD);
+
+    return filename.replaceAll("[^\\x00-\\x7F]", "");
   }
 
 
