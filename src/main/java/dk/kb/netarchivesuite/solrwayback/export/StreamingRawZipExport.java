@@ -5,7 +5,6 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.WarcMetadataFromSolr;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
-import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -55,16 +53,6 @@ public class StreamingRawZipExport {
         zos.close();
         output.close();
         log.info("Zip export has completed. {} warc entries with the contentType: '{}' have been streamed, zipped and delivered.", streamedDocs, contentType);
-    }
-
-    /**
-     * Normalize content type.
-     * @param contentType string to normalize.
-     * @return            normalized contentType string.
-     */
-    private String normalizeContentType(String contentType) {
-        String normalizedContentType = Normalizer.normalize(contentType, Normalizer.Form.NFD);
-        return normalizedContentType.replaceAll("[^\\x00-\\x7F]", "");
     }
 
     /**
