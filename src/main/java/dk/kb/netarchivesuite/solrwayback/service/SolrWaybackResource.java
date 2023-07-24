@@ -450,22 +450,21 @@ public class SolrWaybackResource {
 
   /**
    * Endpoint that delivers a zip file of content present in query of a specific content type.
-   * @param contentType to deliver WARC entries for.
    * @param query       used to extract WARC entries from solr by.
    * @param filters     appended to the solr query.
    * @return            a zip file of the exported content.
    */
   @GET
   @Path("/export/zip")
-  public Response exportZipContent(@QueryParam("contentType") String contentType, @QueryParam("query") String query, @QueryParam("fq") String... filters)
+  public Response exportZipContent(@QueryParam("query") String query, @QueryParam("fq") String... filters)
           throws InvalidArgumentServiceException, SolrServerException, IOException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_ZIP){
       throw new InvalidArgumentServiceException("Zip export is not allowed!");
     }
 
-    StreamingOutput zip = Facade.exportZipContent(contentType, query, filters);
+    StreamingOutput zip = Facade.exportZipContent(query, filters);
 
-    String filename = createZipFilename(contentType);
+    String filename = createZipFilename();
 
     return Response.ok(zip)
             .header("Content-Disposition", "attachment; filename=" + filename)
@@ -475,19 +474,13 @@ public class SolrWaybackResource {
 
   /**
    * Create name for zip file. The name includes information on the exported mimetype and the time for the export.
-   * @param contentType to create filename from.
-   * @return            the filename in the format datetime_contentType_export.zip
+   * @return            the filename in the format datetime_export.zip
    */
-  private String createZipFilename(String contentType) {
+  private String createZipFilename() {
     Date date = new Date() ;
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
-    String filename = dateFormat.format(date) + "_" + contentType.replaceAll(" OR ", "_or_")
-                                                      .replaceAll(" ", "")
-                                                      .replaceAll("/", "_") + "_export.zip";
-    filename = Normalizer.normalize(filename, Normalizer.Form.NFD);
-
-    return filename.replaceAll("[^\\x00-\\x7F]", "");
+    return dateFormat.format(date) + "_export.zip";
   }
 
 

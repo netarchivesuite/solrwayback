@@ -137,67 +137,13 @@
        
         <div class="exportContent">
           <h2>ZIP EXPORT</h2>
-          <p>Select the type of content that you want to have exported in a zip file.</p><br>
+          <p>When pressing download a zip file of the resultset from your query will begin downloading.</p><br>
 
-          <p>To export files of a different type, than the ones mentioned here, you can specify a mimetype
-             (e.g. text/plain or image/jpeg) in the 'Other' field.</p><br>
-          
-          <p>To export multiple filetypes at once use the 'Other' field and construct the query
-             in the following way: 'text/plain OR image/png'.</p><br>
+          <p>To filter on specific types of content, please facet your query with the content_type_norm filter.</p>
   
         </div>
         <div class="exportContent">
           <div>
-            <h4>Format</h4>
-          </div>
-          <div>
-            <div>
-              <input id="export-html"
-                     v-model="zipContentAsString"
-                     type="radio"
-                     value="text/html">
-              <label for="export-html">HTML</label>
-            </div>
-            <div>
-              <input id="export-image"
-                     v-model="zipContentAsString"
-                     type="radio"
-                     value="image/*">
-              <label for="export-image">Images</label>
-            </div>
-            <div>  
-              <input id="export-pdf"
-                    v-model="zipContentAsString"
-                    type="radio"
-                    value="application/pdf">
-              <label for="export-pdf">PDFs</label>
-            </div>
-            <div>
-              <input id="export-css"
-                    v-model="zipContentAsString"
-                    type="radio"
-                    value="text/css">
-              <label for="export-pdf">CSS</label>
-            </div>
-            <div>
-              <input id="export-js"
-                    v-model="zipContentAsString"
-                    type="radio"
-                    value="*/javascript">
-              <label for="export-pdf">JavaScript</label>
-            </div>
-            <div>
-              <label for="export-other">Other: </label>  
-              <input id="export-other" 
-                      v-model="zipContentAsString"
-                      name="other"
-                      size="12" 
-                      value=""
-                      placeholder="mimetype">     
-            </div>
-          </div>
-          <div>
-            <br>
             <p>When you're done, press the download button.</p>
             <br>
             <p>NB: Currently it isn't possible to get an estimate on the size of the export. Have patience and wait for the file to download.</p>
@@ -282,9 +228,7 @@ export default {
       `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}`
     },
     exportToZip() {
-         return this.searchAppliedFacets ?
-          `${this.returnExportUrl()}zip?contentType=${encodeURIComponent(this.zipContentAsString)}&query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`:
-          `${this.returnExportUrl()}zip?contentType=${encodeURIComponent(this.zipContentAsString)}&query=${encodeURIComponent(this.query)}`
+         return `${this.returnExportUrl()}zip?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`
     },
     returnExportUrl() {
       return this.configs.playbackConfig.solrwaybackBaseURL + 'services/export/'

@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.Normalizer;
+import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -28,18 +29,17 @@ public class StreamingRawZipExport {
     /**
      * Streams content of specific type (e.g. HTML, images, PDF.) to a zip file.
      * @param query       for solr to extract content from.
-     * @param contentType defines which types of material to include in the zip file.
      * @param output      represents an output stream, where the zipped content gets delivered.
      */
-    public void getStreamingOutputWithZipOfContent(String query, String contentType,
+    public void getStreamingOutputWithZipOfContent(String query,
                                                    OutputStream output, String... filterQueries) throws IOException {
 
-        String normalizedContentType = normalizeContentType(contentType);
-        String fullFilters = SolrUtils.combineFilterQueries("content_type", normalizedContentType, filterQueries);
+        String contentType = Arrays.stream(filterQueries)
+                .filter(fq -> fq.startsWith("content_type_norm")).toString();
 
         SRequest request = SRequest.builder()
                 .query(query)
-                .filterQueries(fullFilters)
+                .filterQueries(filterQueries)
                 .fields("crawl_date", "source_file_path", "source_file_offset",
                         "content_type_ext", "content_type", "id", "url");
 
@@ -49,12 +49,12 @@ public class StreamingRawZipExport {
         long streamedDocs = SolrGenericStreaming.create(request).stream()
                 .map(doc -> extractMetadata(doc, warcMetadata))
                 .map(StreamingRawZipExport::safeGetArcEntry)
-                .map(entry -> addArcEntryToZip(entry, zos, normalizedContentType, warcMetadata))
+                .map(entry -> addArcEntryToZip(entry, zos, contentType, warcMetadata))
                 .count();
 
         zos.close();
         output.close();
-        log.info("Streamed {} warc entries with the contentType: '{}'.", streamedDocs, normalizedContentType);
+        log.info("Streamed {} warc entries with the contentType: '{}'.", streamedDocs, contentType);
     }
 
     /**

@@ -66,6 +66,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,6 +74,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -644,17 +646,17 @@ public class Facade {
 
     /**
      * Export content from WARC files to zip that are present in solr query. Can be used to extract files such as HTML, images or PDFs.
-     * @param contentType   which determines the file type to export. This should be a mimetype e.g. text/plain.
      * @param query         used to query solr for warc entries to export.
      * @param filterQueries appended to query.
      * @return              a streaming output containing a zip of all exported files.
      */
-    public static StreamingOutput exportZipContent(String contentType, String query, String... filterQueries)
+    public static StreamingOutput exportZipContent(String query, String... filterQueries)
             throws SolrServerException, IOException, InvalidArgumentServiceException {
 
-        if (contentType == null || contentType.equals("")){
-            throw new InvalidArgumentServiceException("contentType needs to be specified to create a zip export.");
+        if (Arrays.stream(filterQueries).noneMatch(filter -> filter.contains("content_type_norm"))){
+            throw new InvalidArgumentServiceException("A filter query for content_type_norm needs to be applied.");
         }
+
 
         // Validate result set size
         long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
@@ -667,7 +669,7 @@ public class Facade {
 
         StreamingRawZipExport zipExporter = new StreamingRawZipExport();
 
-        return output -> zipExporter.getStreamingOutputWithZipOfContent(query, contentType, output, filterQueries);
+        return output -> zipExporter.getStreamingOutputWithZipOfContent(query, output, filterQueries);
     }
 
 
