@@ -11,8 +11,12 @@ public class TimeMap {
             case "application/link-format":
                 return  getTimeMapAsLinkFormat(originalResource);
             case "application/json":
-                return response -> getTimeMapAsJson(originalResource, response);
+                return getTimeMapAsJson(originalResource);
         }
+        return null;
+    }
+
+    private static Response getTimeMapAsJson(String originalResource) {
         return null;
     }
 
