@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -109,7 +108,7 @@ public class StreamingRawZipExport {
      * @param warcMetadata  contains the timestamp, id, originalUrl and file extension, which is used to create the filename.
      * @return              a string in the format timestamp_id_originalUrlStrippedForNonASCIIChars.extension.
      */
-    private String createFilename(WarcMetadataFromSolr warcMetadata) {
+     private String createFilename(WarcMetadataFromSolr warcMetadata) {
 
         String filename;
         if (warcMetadata.getMimetype().contains("text/html")) {
@@ -123,7 +122,17 @@ public class StreamingRawZipExport {
         }
 
         // Remove everything non-alphanumerical or underscore
-        filename = filename.replaceAll("[^A-Za-z0-9_]", "");
+         return normalizeFilename(filename);
+     }
+
+    public static String normalizeFilename(String filename) {
+        filename = filename.replaceAll("[^A-Za-z0-9_.]", "");
+
+        // Remove all but last dot
+        filename = filename.substring(0, filename.lastIndexOf(".")).replaceAll("\\." , "").concat(filename.substring(filename.lastIndexOf(".")));
+
+        //Remove trailing underscore
+        filename = filename.replaceAll("_\\.", ".");
         // Remove two or more consecutive underscores
         filename = filename.replaceAll("_{2,}", "_");
 
