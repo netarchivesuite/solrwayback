@@ -19,9 +19,9 @@
       <button v-if="configs.exportOptions.csvAllowed === 'true'" class="exportButton" @click="toggleCsvExportOptions()">
         CSV export
       </button>
-      <button v-if="configs.exportOptions.zipAllowed === 'true'" class="exportButton" @click="toggleZipExportOptions()">
+      <a v-if="configs.exportOptions.zipAllowed === 'true'" class="exportButton" :href="exportToZip()">
         Batch content export
-      </button>
+      </a>
     </div>
     <div v-if="csvExportOpen" class="csvExportOptions">
       <div class="csvExportContent">
