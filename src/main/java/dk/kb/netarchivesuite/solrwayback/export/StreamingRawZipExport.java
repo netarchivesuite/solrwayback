@@ -54,7 +54,7 @@ public class StreamingRawZipExport {
 
         zos.close();
         output.close();
-        log.info("Streamed {} warc entries with the contentType: '{}'.", streamedDocs, contentType);
+        log.info("Zip export has completed. {} warc entries with the contentType: '{}' have been streamed, zipped and delivered.", streamedDocs, contentType);
     }
 
     /**
@@ -128,18 +128,33 @@ public class StreamingRawZipExport {
     private String createFilename(String contentType, WarcMetadataFromSolr warcMetadata) {
 
         String filename;
+        String fileExt;
         if (contentType.equals("text/html")){
-            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".html";
+            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl();
+            fileExt = ".html";
         } else if (warcMetadata.getMimetype().contains("text/html")) {
-            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".html";
+            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl();
+            fileExt = ".html";
         } else {
             if (warcMetadata.getFileExtension() == null){
-                filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".dat";
+                filename = warcMetadata.getId() + "_" + warcMetadata.getUrl();
+                fileExt = ".dat";
             } else {
-                filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + "." + warcMetadata.getFileExtension();
+                filename = warcMetadata.getId() + "_" + warcMetadata.getUrl();
+                fileExt = "." + warcMetadata.getFileExtension();
             }
         }
 
-        return filename;
+        // Remove everything non-alphanumerical or underscore
+        filename = filename.replaceAll("[^A-Za-z0-9_]", "");
+        // Remove two or more consecutive underscores
+        filename = filename.replaceAll("_{2,}", "_");
+
+        // Check filename length and make sure there is room for file extension
+        if (filename.length() > 250){
+            filename = filename.substring(0, 250);
+        }
+
+        return filename + fileExt;
     }
 }
