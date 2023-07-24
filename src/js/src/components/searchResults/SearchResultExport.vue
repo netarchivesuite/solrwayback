@@ -124,41 +124,6 @@
         </div>
       </div>
     </div>
-
-
-    <div v-if="zipExportOpen" class="zipExportOptions">
-      <div class="zipExportContent">
-      <div></div>
-      <div>
-        <button class="closeButton" @click="toggleZipExportOptions()">
-          ✕ 
-        </button>
-       
-       
-        <div class="exportContent">
-          <h2>ZIP EXPORT</h2>
-          <p>When pressing download a zip file of the resultset from your query will begin downloading.</p><br>
-
-          <p>To filter on specific types of content, please facet your query with the content_type_norm filter.</p>
-  
-        </div>
-        <div class="exportContent">
-          <div>
-            <p>When you're done, press the download button.</p>
-            <br>
-            <p>NB: Currently it isn't possible to get an estimate on the size of the export. Have patience and wait for the file to download.</p>
-            <p>
-              <br>
-              <a :href="exportToZip()" class="downloadButton">
-                Download
-              </a>
-            </p>
-          </div>
-        </div>
-      </div>
-      <div></div>
-    </div>
-    </div>
   </div>
 </template>
 <script>
@@ -183,8 +148,7 @@ export default {
         flatten:false,
         format:'csv',
         gzip:false
-      },
-      zipContentAsString:''
+      }
     }
   },
   computed: {
