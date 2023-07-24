@@ -653,11 +653,6 @@ public class Facade {
     public static StreamingOutput exportZipContent(String query, String... filterQueries)
             throws SolrServerException, IOException, InvalidArgumentServiceException {
 
-        if (Arrays.stream(filterQueries).noneMatch(filter -> filter.contains("content_type_norm"))){
-            throw new InvalidArgumentServiceException("A filter query for content_type_norm needs to be applied.");
-        }
-
-
         // Validate result set size
         long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
         log.info("Found '{}' results for query: '{}', with filters '{}'.", results, query, filterQueries);
