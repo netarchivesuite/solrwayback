@@ -32,9 +32,6 @@ public class StreamingRawZipExport {
     public void getStreamingOutputWithZipOfContent(String query,
                                                    OutputStream output, String... filterQueries) throws IOException {
 
-        String contentType = Arrays.stream(filterQueries)
-                .filter(fq -> fq.startsWith("content_type_norm")).toString();
-
         SRequest request = SRequest.builder()
                 .query(query)
                 .filterQueries(filterQueries)
@@ -47,12 +44,12 @@ public class StreamingRawZipExport {
         long streamedDocs = SolrGenericStreaming.create(request).stream()
                 .map(doc -> extractMetadata(doc, warcMetadata))
                 .map(StreamingRawZipExport::safeGetArcEntry)
-                .map(entry -> addArcEntryToZip(entry, zos, contentType, warcMetadata))
+                .map(entry -> addArcEntryToZip(entry, zos, warcMetadata))
                 .count();
 
         zos.close();
         output.close();
-        log.info("Zip export has completed. {} warc entries with the contentType: '{}' have been streamed, zipped and delivered.", streamedDocs, contentType);
+        log.info("Zip export has completed. {} warc entries with the contentType: '{}' have been streamed, zipped and delivered.", streamedDocs, warcMetadata.getMimetype());
     }
 
     /**
@@ -90,8 +87,8 @@ public class StreamingRawZipExport {
      * @param zos   which entries gets added to.
      * @return      the input arc/warc entry, for further use in a stream.
      */
-    private ArcEntry addArcEntryToZip(ArcEntry entry, ZipOutputStream zos, String contentType, WarcMetadataFromSolr warcMetadata) {
-        String filename = createFilename(contentType, warcMetadata);
+    private ArcEntry addArcEntryToZip(ArcEntry entry, ZipOutputStream zos, WarcMetadataFromSolr warcMetadata) {
+        String filename = createFilename(warcMetadata);
         ZipEntry zipArcEntry = new ZipEntry(filename);
 
         try {
@@ -109,16 +106,13 @@ public class StreamingRawZipExport {
     /**
      * Create unique filename for zip entries from metadata from solr.
      * Files in the zip entry gets named by the following structure: waybackdate_id_originalUrlStrippedForNonASCIIChars.extension.
-     * @param contentType   is used to choose how the filename is created.
      * @param warcMetadata  contains the timestamp, id, originalUrl and file extension, which is used to create the filename.
      * @return              a string in the format timestamp_id_originalUrlStrippedForNonASCIIChars.extension.
      */
-    private String createFilename(String contentType, WarcMetadataFromSolr warcMetadata) {
+    private String createFilename(WarcMetadataFromSolr warcMetadata) {
 
         String filename;
-        if (contentType.equals("text/html")){
-            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".html";
-        } else if (warcMetadata.getMimetype().contains("text/html")) {
+        if (warcMetadata.getMimetype().contains("text/html")) {
             filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".html";
         } else {
             if (warcMetadata.getFileExtension() == null){
