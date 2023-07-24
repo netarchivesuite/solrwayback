@@ -652,7 +652,9 @@ public class Facade {
      */
     public static StreamingOutput exportZipContent(String query, String... filterQueries)
             throws SolrServerException, IOException, InvalidArgumentServiceException {
-
+        if (!PropertiesLoaderWeb.ALLOW_EXPORT_ZIP){
+            throw new InvalidArgumentServiceException("Zip export is not allowed.");
+        }
         // Validate result set size
         long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
         log.info("Found '{}' results for query: '{}', with filters '{}'.", results, query, filterQueries);
