@@ -198,7 +198,10 @@
           </div>
           <div>
             <br>
-            <p>When you're done, press the download button.</p><p>
+            <p>When you're done, press the download button.</p>
+            <br>
+            <p>NB: Currently it isn't possible to get an estimate on the size of the export. Have patience and wait for the file to download.</p>
+            <p>
               <br>
               <a :href="exportToZip()" class="downloadButton">
                 Download
