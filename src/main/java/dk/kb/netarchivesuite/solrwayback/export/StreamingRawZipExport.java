@@ -2,7 +2,6 @@ package dk.kb.netarchivesuite.solrwayback.export;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-import dk.kb.netarchivesuite.solrwayback.service.dto.WarcMetadataFromSolr;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import org.apache.cxf.helpers.IOUtils;
