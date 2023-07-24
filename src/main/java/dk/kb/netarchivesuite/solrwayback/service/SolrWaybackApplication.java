@@ -18,6 +18,7 @@ public class SolrWaybackApplication extends Application {
             JacksonJsonProvider.class,
             SolrWaybackResource.class,
             SolrWaybackResourceWeb.class,
+            SolrWaybackMementoAPI.class,
             ServiceExceptionMapper.class
             ));
     }

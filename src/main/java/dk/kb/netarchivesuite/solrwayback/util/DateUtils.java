@@ -9,6 +9,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.solr.common.util.Pair;
@@ -48,6 +49,27 @@ public class DateUtils {
       catch(Exception e){        
           throw new RuntimeException("Could not parse waybackdate from:"+waybackdate,e);
       }
+  }
+
+    /**
+     * Converts the content of an Accept-DateTime Header to a waybackdate.
+     * @param acceptDateTime header value.
+     * @return              the waybackdate representation for the given RFC1123 date.
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc1123">RFC1123</a> for the dateformat in memento headers.
+     */
+  public static Long convertMementoAcceptDateTime2waybackdate(String acceptDateTime) throws ParseException {
+      DateFormat mementoFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+      mementoFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+      DateFormat waybackdateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+      waybackdateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+      Date d = mementoFormat.parse(acceptDateTime);
+
+      String format = waybackdateFormat.format(d);
+      Long waybackDate = Long.parseLong(format);
+      log.info("Constructed this waybackdate from Accept-Datetime header: '{}'", format);
+      return waybackDate;
   }
   
   

@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import static org.junit.Assert.*;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -34,6 +35,15 @@ public class DateUtilsTest {
     
     
     assertEquals("20071221033234", waybackDate);      
+  }
+
+  @Test
+  public void testMemento2SolrDate() throws ParseException {
+      String mementoDate = "Thu, 23 Mar 2023 14:05:57 GMT";
+      Long waybackDate = DateUtils.convertMementoAcceptDateTime2waybackdate(mementoDate);
+
+      Long correctDate= 20230323140557L;
+      assertEquals(correctDate, waybackDate);
   }
   
 
