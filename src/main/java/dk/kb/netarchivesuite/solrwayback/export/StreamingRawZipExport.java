@@ -128,20 +128,15 @@ public class StreamingRawZipExport {
     private String createFilename(String contentType, WarcMetadataFromSolr warcMetadata) {
 
         String filename;
-        String fileExt;
         if (contentType.equals("text/html")){
-            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl();
-            fileExt = ".html";
+            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".html";
         } else if (warcMetadata.getMimetype().contains("text/html")) {
-            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl();
-            fileExt = ".html";
+            filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".html";
         } else {
             if (warcMetadata.getFileExtension() == null){
-                filename = warcMetadata.getId() + "_" + warcMetadata.getUrl();
-                fileExt = ".dat";
+                filename = warcMetadata.getId() + "_" + warcMetadata.getUrl() + ".dat";
             } else {
-                filename = warcMetadata.getId() + "_" + warcMetadata.getUrl();
-                fileExt = "." + warcMetadata.getFileExtension();
+                filename = warcMetadata.getId() + "_" + warcMetadata.getUrl()+"." + warcMetadata.getFileExtension();
             }
         }
 
@@ -150,11 +145,13 @@ public class StreamingRawZipExport {
         // Remove two or more consecutive underscores
         filename = filename.replaceAll("_{2,}", "_");
 
-        // Check filename length and make sure there is room for file extension
-        if (filename.length() > 250){
-            filename = filename.substring(0, 250);
+        // Check filename length and make sure not to long
+        if (filename.length() > 255){
+            int charsToRemove = filename.length() - 255;
+            String correctFilename = filename.substring(0,130) + filename.substring(130+charsToRemove);
+            return correctFilename;
         }
 
-        return filename + fileExt;
+        return filename;
     }
 }
