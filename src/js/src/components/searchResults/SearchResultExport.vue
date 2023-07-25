@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="configs.exportOptions.warcAllowed === 'true' || configs.exportOptions.csvAllowed === 'true'" class="downloadSearchResultDropdown">
+    <div v-if="configs.exportOptions.warcAllowed === 'true' || configs.exportOptions.csvAllowed === 'true' || configs.exportOptions.zipAllowed === 'true'" class="downloadSearchResultDropdown">
       <div class="downloadSearchResultButton">
         See available export options
       </div>
@@ -19,6 +19,9 @@
       <button v-if="configs.exportOptions.csvAllowed === 'true'" class="exportButton" @click="toggleCsvExportOptions()">
         CSV export
       </button>
+      <a v-if="configs.exportOptions.zipAllowed === 'true'" class="exportButton" :href="exportToZip()">
+        Zip content export
+      </a>
     </div>
     <div v-if="csvExportOpen" class="csvExportOptions">
       <div class="csvExportContent">
@@ -136,6 +139,7 @@ export default {
   },
   data () {
     return {  
+      zipExportOpen:false,
       csvExportOpen:false,
       selectedArray:[],
       nonSelectedArray:[],
@@ -187,6 +191,9 @@ export default {
       `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}` :
       `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}`
     },
+    exportToZip() {
+         return `${this.returnExportUrl()}zip?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`
+    },
     returnExportUrl() {
       return this.configs.playbackConfig.solrwaybackBaseURL + 'services/export/'
     },
@@ -208,8 +215,6 @@ export default {
       let newArray = fields.replace(/ /g, '').split(',')
       return newArray.slice(9,newArray.length)
     },
-
-
     moveItemInArray(array, direction, itemNumber, item) {
       if(itemNumber >= 0 && itemNumber < array.length) {
       direction === 'up'
@@ -223,6 +228,11 @@ export default {
       recipient === 'nonSelectedArray' ? toArray.push(item) : toArray.unshift(item)
       fromArray.splice(itemNumber,1)
 
+    },
+    toggleZipExportOptions() {
+      this.zipExportOpen = !this.zipExportOpen
+      if(this.zipExportOpen === false) {
+      }
     },
     getEncodedAppliedFacets(appliedFacets) {
       return appliedFacets.map(facet => 

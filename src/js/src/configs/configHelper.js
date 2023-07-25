@@ -9,6 +9,7 @@ export function setServerConfigInApp(configFromServer) {
         configs.search.pagination = configFromServer['search.pagination']
         configs.exportOptions.warcAllowed = configFromServer['allow.export.warc']
         configs.exportOptions.csvAllowed = configFromServer['allow.export.csv']
+        configs.exportOptions.zipAllowed = configFromServer['allow.export.zip']
         configs.exportOptions.csvFields = configFromServer['export.csv.fields']
         configs.leaflet.attribution = configFromServer['leaflet.attribution']
         configs.leaflet.source = configFromServer['leaflet.source']
