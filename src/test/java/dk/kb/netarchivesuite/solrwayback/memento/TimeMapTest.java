@@ -10,8 +10,8 @@ public class TimeMapTest {
 
     @Test
     public void testLinkMapConstruction(){
-        PropertiesLoader.initProperties();
         NetarchiveSolrClient.initialize("http://localhost:8983/solr/netarchivebuilder/");
+        PropertiesLoader.initProperties();
 
         Response response = TimeMap.getTimeMap("http://www.kb.dk", "application/link-format");
 

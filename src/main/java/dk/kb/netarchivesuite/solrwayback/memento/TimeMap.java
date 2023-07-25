@@ -40,7 +40,7 @@ public class TimeMap {
                 "<"+ PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY +"memento/timegate/" + originalResource + ">\n" +
                 "; rel=\"timegate\",\n";
 
-        Stream<String> mementos = SRequest.builder().query("url:"+originalResource)
+        Stream<String> mementos = SRequest.builder().query("url_norm:\""+originalResource + "\"")
                 .fields("url", "url_norm", "waybackdate")
                 .stream()
                 .map(TimeMap::createMementoInLinkFormat);
