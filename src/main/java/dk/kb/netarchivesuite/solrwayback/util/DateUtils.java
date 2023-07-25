@@ -57,7 +57,7 @@ public class DateUtils {
      * @return              the waybackdate representation for the given RFC1123 date.
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc1123">RFC1123</a> for the dateformat in memento headers.
      */
-  public static Long convertMementoAcceptDateTime2waybackdate(String acceptDateTime) throws ParseException {
+  public static Long convertMementoAcceptDateTime2Waybackdate(String acceptDateTime) throws ParseException {
       DateFormat mementoFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
       mementoFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -70,6 +70,17 @@ public class DateUtils {
       Long waybackDate = Long.parseLong(format);
       log.info("Constructed this waybackdate from Accept-Datetime header: '{}'", format);
       return waybackDate;
+  }
+
+  public static String convertWaybackdate2Mementodate(Long waybackdate) throws ParseException {
+      DateFormat waybackdateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+      waybackdateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+      DateFormat mementoFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+      mementoFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+      Date d = waybackdateFormat.parse(String.valueOf(waybackdate));
+      String mementoDate = mementoFormat.format(d);
+      return mementoDate;
   }
   
   

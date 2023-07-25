@@ -3,16 +3,12 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -29,7 +25,7 @@ public class DatetimeNegotiation {
      * @param host a URI-R to fetch URI-M for.
      */
     public static Response redirectToDistinctMemento(String url, String host, String acceptDatetime) throws Exception {
-        Long waybackdate = DateUtils.convertMementoAcceptDateTime2waybackdate(acceptDatetime);
+        Long waybackdate = DateUtils.convertMementoAcceptDateTime2Waybackdate(acceptDatetime);
 
         log.info("Extracted host: '{}' and accept-datetime '{}' headers from http request",
                     host, acceptDatetime);

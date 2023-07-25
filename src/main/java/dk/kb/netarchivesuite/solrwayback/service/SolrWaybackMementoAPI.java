@@ -12,6 +12,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
+import java.text.ParseException;
+
 import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getTimeMap;
 
 @Path("/memento/")
@@ -20,7 +22,7 @@ public class SolrWaybackMementoAPI {
 
     @GET
     @Path("timemap/{url}")
-    public Response timeMap(@PathParam("url") String url, @HeaderParam("Accept") String responseFormat){
+    public Response timeMap(@PathParam("url") String url, @HeaderParam("Accept") String responseFormat) throws ParseException {
         log.info("Calling timemap with url: '{}'.", url);
 
         getTimeMap(url, responseFormat);

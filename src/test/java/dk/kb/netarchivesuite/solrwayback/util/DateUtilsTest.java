@@ -40,7 +40,7 @@ public class DateUtilsTest {
   @Test
   public void testMemento2SolrDate() throws ParseException {
       String mementoDate = "Thu, 23 Mar 2023 14:05:57 GMT";
-      Long waybackDate = DateUtils.convertMementoAcceptDateTime2waybackdate(mementoDate);
+      Long waybackDate = DateUtils.convertMementoAcceptDateTime2Waybackdate(mementoDate);
 
       Long correctDate= 20230323140557L;
       assertEquals(correctDate, waybackDate);
