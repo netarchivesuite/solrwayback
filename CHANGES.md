@@ -4,6 +4,8 @@
 -----
 Query hints fix (range queries). The search validation helper did like range queries and showed warning when they was correct. (github #380)
 
+Add Zip Export feature. It is now possible to extract raw files from SolrWayback in a combined zip file. This could be used to extract all HTML content or images from a search result.
+
 4.4.2
 -----
 The SolrWayback default playback engine can be changed by defining a new property in solrwaybackweb.properties: playback.primary.engine

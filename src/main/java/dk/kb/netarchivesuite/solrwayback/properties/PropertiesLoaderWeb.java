@@ -90,7 +90,7 @@ public class PropertiesLoaderWeb {
     public static long EXPORT_CSV_MAXRESULTS=10000000;// 10M default
     public static long EXPORT_WARC_MAXRESULTS=1000000; // 1M default
     public static long EXPORT_WARC_EXPANDED_MAXRESULTS=100000; // 500K default
-    public static long EXPORT_ZIP_MAXRESULTS=10000000; // 10M default
+    public static long EXPORT_ZIP_MAXRESULTS=1000000; // 1M default
     public static boolean ALLOW_EXPORT_WARC;
     public static boolean ALLOW_EXPORT_CSV;
     public static boolean ALLOW_EXPORT_ZIP;
