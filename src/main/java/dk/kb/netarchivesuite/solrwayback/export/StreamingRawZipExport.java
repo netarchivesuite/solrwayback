@@ -31,14 +31,11 @@ public class StreamingRawZipExport {
     public void getStreamingOutputWithZipOfContent(String query,
                                                    OutputStream output, String... filterQueries) throws IOException {
 
-        // Add filter for content length < 0 to filter out redirects.
-        String combinedFilters = SolrUtils.combineFilterQueries("content_length", "[1 TO *]", filterQueries);
         SRequest request = SRequest.builder()
                 .query(query)
-                .filterQueries(combinedFilters)
+                .filterQueries(filterQueries)
                 .fields("crawl_date", "source_file_path", "source_file_offset",
                         "content_type_ext", "content_type", "id", "url");
-        log.info("Queried Solr with query: '{}' and filterqueries: '{}' for Zip Content Export.", query, combinedFilters);
 
         ZipOutputStream zos = new ZipOutputStream(output);
         WarcMetadataFromSolr warcMetadata = new WarcMetadataFromSolr();
@@ -128,6 +125,12 @@ public class StreamingRawZipExport {
          return normalizeFilename(filename);
      }
 
+    /**
+     * Create a safe filename from string. Removes everything non-alphanumerical or underscore.
+     * Keeps last .
+     * @param filename
+     * @return
+     */
     public static String normalizeFilename(String filename) {
         filename = filename.replaceAll("[^A-Za-z0-9_.]", "");
 

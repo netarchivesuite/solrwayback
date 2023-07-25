@@ -8,7 +8,7 @@ import dk.kb.netarchivesuite.solrwayback.export.StreamingRawZipExport;
 /**
  * Object used to store metadata for a WARC entry from a SolrDocument.
  * Variables in the object are used for constructing filenames for
- * {@link StreamingRawZipExport#getStreamingOutputWithZipOfContent(String, String, OutputStream, String...)
+ * {@link StreamingRawZipExport#getStreamingOutputWithZipOfContent(String, OutputStream, String...)
  * ZIP export}.
  *
  */
