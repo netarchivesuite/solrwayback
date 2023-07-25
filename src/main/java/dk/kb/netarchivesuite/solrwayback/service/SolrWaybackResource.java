@@ -1063,9 +1063,13 @@ public class SolrWaybackResource {
       String[] params = url.split("&");
     
       for (String param : params)
-      {       
-         String name = param.split("=")[0];
-         String value = param.split("=")[1];
+      {                   
+          String[] keyVal=param.split("=");
+          String name = keyVal[0];  
+          String value="";
+           if(keyVal.length >1) { //Value can be empty: key1=value1&key2=
+            value =  keyVal[1];
+           }
          map.put(name, value);
       }
       return map;
