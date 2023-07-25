@@ -4,7 +4,7 @@
 -----
 Query hints fix (range queries). The search validation helper did like range queries and showed warning when they was correct. (github #380)
 
-Add Zip Export feature. It is now possible to extract raw files from SolrWayback in a combined zip file. This could for example be used to extract all HTML content, images, video etc. from a search result.
+Add Zip Export feature. It is now possible to extract raw files from SolrWayback in a combined zip file. This could for example be used to extract all HTML content, images, video etc. from a search result. (github #382 and #245)
 
 4.4.2
 -----
