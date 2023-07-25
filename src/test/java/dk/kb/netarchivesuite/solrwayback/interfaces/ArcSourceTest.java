@@ -25,6 +25,30 @@ import static org.junit.Assert.assertTrue;
  */
 public class ArcSourceTest {
 
+    
+    /*
+     * These tests depend on external resource and one of them is not on net anymore.
+     * The two test has been changed into a manual integration test.
+     * 
+     */
+    public static void main(String[] args) {
+      try {
+        testHTTPSURL();
+        testHTTSURL();
+        
+      }
+      catch(Exception e) {
+          System.out.println("Integration test error for testHTTPSURL() or testHTTSURL()");
+          e.printStackTrace();
+          
+      }
+      
+        
+    }
+    
+    
+    
+    
     @Test
     public void testPath() throws IOException {
         String known = Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResource("logback-test.xml")).getPath();
@@ -46,8 +70,8 @@ public class ArcSourceTest {
         assertTrue("Getting file system content from '" + known + " should work", content.startsWith("<?xml"));
     }
 
-    @Test
-    public void testHTTSURL() throws IOException {
+
+    public static void testHTTSURL() throws IOException {
         String known = "http://bash.org/";
 
         ArcSource source = ArcSource.create(known);
@@ -56,8 +80,8 @@ public class ArcSourceTest {
         assertTrue("Getting file system content from '" + known + " should work", content.contains("<html"));
     }
 
-    @Test
-    public void testHTTPSURL() throws IOException {
+
+    public static void testHTTPSURL() throws IOException {
         String known = "https://www.kb.dk/";
 
         ArcSource source = ArcSource.create(known);

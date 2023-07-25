@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.facade;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.ContentStreams;
+import dk.kb.netarchivesuite.solrwayback.export.StreamingRawZipExport;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
@@ -54,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.ws.rs.core.StreamingOutput;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -64,6 +66,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -71,6 +74,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -550,10 +554,11 @@ public class Facade {
             }
         }
         SolrGenericStreaming solr = SolrGenericStreaming.create(
-                SRequest.builder().
-                        query(query).filterQueries(filterqueries).
-                        fields("source_file_path", "source_file_offset").
-                        pageSize(100). // TODO: Why so low? The two fields are tiny and single-valued
+                SRequest.builder()
+                                .query(query)
+                                .filterQueries(filterqueries)
+                                .fields("source_file_path", "source_file_offset")
+                                .pageSize(100). // TODO: Why so low? The two fields are tiny and single-valued
                         expandResources(expandResources).
                         ensureUnique(ensureUnique));
 
@@ -637,6 +642,35 @@ public class Facade {
         }
 
         return ContentStreams.deliver(docs, fields, format, gzip);
+    }
+
+    /**
+     * Export content from WARC files to zip that are present in solr query. Can be used to extract files such as HTML, images or PDFs.
+     * @param query         used to query solr for warc entries to export.
+     * @param filterQueries appended to query.
+     * @return              a streaming output containing a zip of all exported files.
+     */
+    public static StreamingOutput exportZipContent(String query, String... filterQueries)
+            throws SolrServerException, IOException, InvalidArgumentServiceException {
+        if (!PropertiesLoaderWeb.ALLOW_EXPORT_ZIP){
+            throw new InvalidArgumentServiceException("Zip export is not allowed.");
+        }
+
+        // Add filter for content length < 0 to filter out redirects.
+        String combinedFilters = SolrUtils.combineFilterQueries("content_length", "[1 TO *]", filterQueries);
+        // Validate result set size
+        long results = NetarchiveSolrClient.getInstance().countResults(query, combinedFilters);
+        log.info("Started Zip Content Export for query: '{}', with the following filter queries: '{}'. Found '{}' entries for export.",
+                query, combinedFilters, results);
+        if (results > PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS) {
+            throw new InvalidArgumentServiceException(
+                    "Number of results for zip export exceeds the configured limit: " +
+                            PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS);
+        }
+
+        StreamingRawZipExport zipExporter = new StreamingRawZipExport();
+
+        return output -> zipExporter.getStreamingOutputWithZipOfContent(query, output, filterQueries);
     }
 
 
@@ -934,6 +968,7 @@ public class Facade {
         props.put(PropertiesLoaderWeb.PLAYBACK_ALTERNATIVE_ENGINE_PROPERTY, PropertiesLoaderWeb.PLAYBACK_ALTERNATIVE_ENGINE);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_CSV_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_CSV);
+        props.put(PropertiesLoaderWeb.ALLOW_EXPORT_ZIP_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_ZIP);
         props.put(PropertiesLoaderWeb.EXPORT_CSV_FIELDS_PROPERTY, PropertiesLoaderWeb.EXPORT_CSV_FIELDS);
         props.put(PropertiesLoaderWeb.MAPS_LATITUDE_PROPERTY, PropertiesLoaderWeb.MAPS_LATITUDE);
         props.put(PropertiesLoaderWeb.MAPS_LONGITUDE_PROPERTY, PropertiesLoaderWeb.MAPS_LONGITUDE);
