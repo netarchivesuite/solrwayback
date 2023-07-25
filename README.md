@@ -15,7 +15,7 @@ SolrWayback comes with multiple features:
 * Free text search in **all** resources (HTML pages, PDFs, metadata for different media types, URLs, etc.)
 * Interactive link graph (ingoing/outgoing) for domains.
 * Export of search results to a WARC file through streaming download, which means that there is no limit to the size of the resultset.
-* Zip export of files from search result (e.g. export of HTML or image content in native formats).  
+* Zip export of files from search result (e.g. export of HTML, image content, video etc. in native formats).  
 * CSV text export of search result with custom field selection.
 * Wordcloud generation for domain.
 * N-gram search visualisation.
