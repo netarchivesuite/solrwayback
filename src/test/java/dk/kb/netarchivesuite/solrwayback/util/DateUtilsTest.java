@@ -38,13 +38,23 @@ public class DateUtilsTest {
   }
 
   @Test
-  public void testMemento2SolrDate() throws ParseException {
+  public void testMemento2waybackDate() throws ParseException {
       String mementoDate = "Thu, 23 Mar 2023 14:05:57 GMT";
       Long waybackDate = DateUtils.convertMementoAcceptDateTime2Waybackdate(mementoDate);
 
       Long correctDate= 20230323140557L;
       assertEquals(correctDate, waybackDate);
   }
+
+  @Test
+  public void testWaybackDate2MementoDate() throws ParseException {
+      Long waybackDate = 20230323140557L;
+      String correctMementoDate = "Thu, 23 Mar 2023 14:05:57 GMT";
+
+      String convertedDate = DateUtils.convertWaybackdate2Mementodate(waybackDate);
+      assertEquals(correctMementoDate, convertedDate);
+  }
+
   
 
 }

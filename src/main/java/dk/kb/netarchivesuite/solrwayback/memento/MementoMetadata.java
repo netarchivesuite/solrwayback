@@ -7,8 +7,8 @@ import java.text.ParseException;
 public class MementoMetadata {
     private String firstMemento;
     private String lastMemento;
-    private long firstWaybackDate;
-    private long lastWaybackDate;
+    private long firstWaybackDate = 99999999999999L;
+    private long lastWaybackDate = 19500101010000L;
 
     public MementoMetadata(){}
     public String getFirstMemento() {
