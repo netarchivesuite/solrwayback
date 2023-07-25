@@ -20,7 +20,7 @@
         CSV export
       </button>
       <a v-if="configs.exportOptions.zipAllowed === 'true'" class="exportButton" :href="exportToZip()">
-        Batch content export
+        Zip content export
       </a>
     </div>
     <div v-if="csvExportOpen" class="csvExportOptions">
