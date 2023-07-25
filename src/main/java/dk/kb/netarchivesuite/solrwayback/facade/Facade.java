@@ -655,6 +655,7 @@ public class Facade {
         if (!PropertiesLoaderWeb.ALLOW_EXPORT_ZIP){
             throw new InvalidArgumentServiceException("Zip export is not allowed.");
         }
+        log.info("Started Zip Content Export for query: '{}', with the following filter queries: '{}'",query, filterQueries);
         // Validate result set size
         long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
         log.info("Found '{}' results for query: '{}', with filters '{}'.", results, query, filterQueries);

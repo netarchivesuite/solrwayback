@@ -4,6 +4,7 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
@@ -30,11 +31,14 @@ public class StreamingRawZipExport {
     public void getStreamingOutputWithZipOfContent(String query,
                                                    OutputStream output, String... filterQueries) throws IOException {
 
+        // Add filter for content length < 0 to filter out redirects.
+        String combinedFilters = SolrUtils.combineFilterQueries("content_length", "[1 TO *]", filterQueries);
         SRequest request = SRequest.builder()
                 .query(query)
-                .filterQueries(filterQueries)
+                .filterQueries(combinedFilters)
                 .fields("crawl_date", "source_file_path", "source_file_offset",
                         "content_type_ext", "content_type", "id", "url");
+        log.info("Queried Solr with query: '{}' and filterqueries: '{}' for Zip Content Export.", query, combinedFilters);
 
         ZipOutputStream zos = new ZipOutputStream(output);
         WarcMetadataFromSolr warcMetadata = new WarcMetadataFromSolr();
@@ -47,7 +51,7 @@ public class StreamingRawZipExport {
 
         zos.close();
         output.close();
-        log.info("Zip export has completed. {} warc entries with the contentType: '{}' have been streamed, zipped and delivered.", streamedDocs, warcMetadata.getMimetype());
+        log.info("Zip export has completed. {} warc entries have been streamed, zipped and delivered.", streamedDocs);
     }
 
     /**
