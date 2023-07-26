@@ -5,12 +5,30 @@ import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 
-import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getTimeMap;
+import static org.junit.Assert.assertEquals;
 
 public class TimeMapTest {
+    final String testTimeMap = "<http://kb.dk/>;rel=\"original\",\n" +
+            "<http://localhost:8080/solrwayback/memento/timemap/http://kb.dk/>\n" +
+            "; rel=\"self\";type=\"application/link-format\"\n" +
+            "; from\"Thu, 23 Mar 2023 14:05:57 GMT\"\n" +
+            "; until\"Fri, 21 Jul 2023 06:45:04 GMT\",\n" +
+            "<http://localhost:8080/solrwayback/memento/timegate/http://kb.dk/>\n" +
+            "; rel=\"timegate\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230323140557/https://www.kb.dk/>\n" +
+            "; rel=\"memento\"; datetime=\"Thu, 23 Mar 2023 14:05:57 GMT\"\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230323140557/http://www.kb.dk/>\n" +
+            "; rel=\"memento\"; datetime=\"Thu, 23 Mar 2023 14:05:57 GMT\"\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230721064503/http://www.kb.dk/>\n" +
+            "; rel=\"memento\"; datetime=\"Fri, 21 Jul 2023 06:45:03 GMT\"\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230721064504/https://www.kb.dk/>\n" +
+            "; rel=\"memento\"; datetime=\"Fri, 21 Jul 2023 06:45:04 GMT\"\n";
 
     @Before
     public void setUp(){
@@ -19,9 +37,13 @@ public class TimeMapTest {
     }
 
     @Test
-    public void testTimeMapLinkConstruction() throws ParseException {
-        Response response = getTimeMap("http://kb.dk/", "application/link-format");
+    public void testTimeMapLinkConstruction() throws ParseException, IOException {
+        StreamingOutput timeMap = TimeMap.getTimeMap("http://kb.dk/", "application/link-format");
 
-        System.out.println(response.getEntity().toString());
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        timeMap.write(output);
+        String timeMapString = new String(output.toByteArray(), StandardCharsets.UTF_8);
+
+        assertEquals(testTimeMap, timeMapString);
     }
 }

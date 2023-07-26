@@ -1,10 +1,13 @@
 package dk.kb.netarchivesuite.solrwayback.memento;
 
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
 import java.text.ParseException;
 
 public class MementoMetadata {
+
+    private String timeMapHead;
     private String firstMemento;
     private String lastMemento;
     private long firstWaybackDate = 99999999999999L;
@@ -25,6 +28,10 @@ public class MementoMetadata {
 
     public long getLastWaybackDate(){
         return lastWaybackDate;
+    }
+
+    public String getTimeMapHead() {
+        return timeMapHead;
     }
 
     public void setFirstMemento(String firstMemento) {
@@ -57,5 +64,15 @@ public class MementoMetadata {
 
     public void setLastWaybackDate(long lastWaybackDate) {
         this.lastWaybackDate = lastWaybackDate;
+    }
+
+    public void setTimeMapHead(String originalResource) {
+        this.timeMapHead = "<" + originalResource + ">;rel=\"original\",\n" +
+               "<"+ PropertiesLoaderWeb.WAYBACK_SERVER + "memento/timemap/" + originalResource + ">\n" +
+               "; rel=\"self\";type=\"application/link-format\"\n" +
+               "; from\"" + this.getFirstMemento() + "\"\n" +
+               "; until\"" + this.getLastMemento() + "\",\n" +
+               "<"+ PropertiesLoaderWeb.WAYBACK_SERVER +"memento/timegate/" + originalResource + ">\n" +
+               "; rel=\"timegate\",\n";
     }
 }
