@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.memento;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.common.SolrDocument;
@@ -8,8 +10,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+
+// TODO: Not sure that Host header is used correctly. It should point to the archive that hosts the material, not the original host of the website.
 
 /**
  * This class implements the Datetime Negotiation of the Memento Framework
@@ -20,8 +30,9 @@ public class DatetimeNegotiation {
     private static final Logger log = LoggerFactory.getLogger(DatetimeNegotiation.class);
 
     /**
-     * Implements Pattern 1.1 of the memento framework, where the URI-R represents its own URI-R and delivers the URI-M
-     * through a 302 Found HTTP status code.
+     * Implements Pattern 1.1 of the memento framework, where the URI-R represents its own URI-G and delivers the URI-M
+     * through a 302 Found HTTP status code. This is only usefull if the URI-R resides at the same server as the URI-M.
+     * This is not the case for webarchives.
      * @param host a URI-R to fetch URI-M for.
      */
     public static Response redirectToDistinctMemento(String url, String host, String acceptDatetime) throws Exception {
@@ -41,6 +52,27 @@ public class DatetimeNegotiation {
                 .header("Location", PropertiesLoader.WAYBACK_BASEURL + "services/web/" + waybackdate + "/" + url)
                 .header("Vary", acceptDatetime)
                 .header("Link", "<"+url+">; rel=\"original timegate\"")
+                .build();
+    }
+
+    /**
+     * Implements Pattern 2.2 of the memento framework.
+     * @param url
+     * @param host
+     * @param acceptDatetime
+     * @return
+     * @throws ParseException
+     */
+    public static Response remoteTimeGateForOriginalResource(String url, String host, String acceptDatetime) throws ParseException {
+        //TODO: Create an actual memento2solrdate converter and vice-versa
+        Long waybackdate = DateUtils.convertMementoAcceptDateTime2Waybackdate(acceptDatetime);
+        String solrDate = DateUtils.convertWaybackDate2SolrDate(String.valueOf(waybackdate));
+        log.info("Extracted host: '{}' and accept-datetime '{}' headers from http request",
+                host, acceptDatetime);
+
+        Stream<IndexDocShort> result = NetarchiveSolrClient.getInstance().findNearestHarvestTimeForSingleUrlFewFields(url, solrDate);
+        return Response.status(200)
+                .entity(result)
                 .build();
     }
 
