@@ -897,6 +897,11 @@ public class NetarchiveSolrClient {
                 collect(Collectors.toCollection(ArrayList::new));
     }
 
+    public Stream<IndexDocShort> findNearestHarvestTimeForSingleUrlFewFields(String url, String timeStamp){
+        return findNearestDocuments(SolrUtils.indexDocFieldListShort, timeStamp, Stream.of(url))
+                .map(SolrUtils::solrDocument2IndexDocShort);
+    }
+
 
     /**
      * Resolves {@link IndexDocShort}s for the given URLs.
