@@ -18,17 +18,21 @@ public class TimeMapTest {
             "<http://localhost:8080/solrwayback/memento/timemap/http://kb.dk/>\n" +
             "; rel=\"self\";type=\"application/link-format\"\n" +
             "; from\"Thu, 23 Mar 2023 14:05:57 GMT\"\n" +
-            "; until\"Fri, 21 Jul 2023 06:45:04 GMT\",\n" +
+            "; until\"Wed, 26 Jul 2023 09:53:12 GMT\",\n" +
             "<http://localhost:8080/solrwayback/memento/timegate/http://kb.dk/>\n" +
             "; rel=\"timegate\",\n" +
             "<http://localhost:8080/solrwayback/services/web/20230323140557/https://www.kb.dk/>\n" +
-            "; rel=\"memento\"; datetime=\"Thu, 23 Mar 2023 14:05:57 GMT\"\n" +
+            "; rel=\"first memento\"; datetime=\"Thu, 23 Mar 2023 14:05:57 GMT\"\n" +
             "<http://localhost:8080/solrwayback/services/web/20230323140557/http://www.kb.dk/>\n" +
             "; rel=\"memento\"; datetime=\"Thu, 23 Mar 2023 14:05:57 GMT\"\n" +
             "<http://localhost:8080/solrwayback/services/web/20230721064503/http://www.kb.dk/>\n" +
             "; rel=\"memento\"; datetime=\"Fri, 21 Jul 2023 06:45:03 GMT\"\n" +
             "<http://localhost:8080/solrwayback/services/web/20230721064504/https://www.kb.dk/>\n" +
-            "; rel=\"memento\"; datetime=\"Fri, 21 Jul 2023 06:45:04 GMT\"\n";
+            "; rel=\"memento\"; datetime=\"Fri, 21 Jul 2023 06:45:04 GMT\"\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230726095312/https://www.kb.dk/>\n" +
+            "; rel=\"memento\"; datetime=\"Wed, 26 Jul 2023 09:53:12 GMT\"\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230726095312/http://www.kb.dk/>\n" +
+            "; rel=\"last memento\"; datetime=\"Wed, 26 Jul 2023 09:53:12 GMT\"\n";
 
     @Before
     public void setUp(){

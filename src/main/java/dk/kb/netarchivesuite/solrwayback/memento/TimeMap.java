@@ -1,27 +1,17 @@
 package dk.kb.netarchivesuite.solrwayback.memento;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
-import dk.kb.netarchivesuite.solrwayback.service.SolrWaybackMementoAPI;
-import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
-import org.apache.cxf.helpers.IOUtils;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.ParseException;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class TimeMap {
 
@@ -63,11 +53,12 @@ public class TimeMap {
 
         output.write(metadata.getTimeMapHead().getBytes());
 
+        AtomicLong iterator = new AtomicLong(1);
         SRequest.builder().query("url_norm:\""+ originalResource + "\"")
                 .fields("url", "url_norm", "wayback_date")
                 .sort("id asc")
                 .stream()
-                .map(TimeMap::createMementoInLinkFormat)
+                .map(doc -> createMementoInLinkFormat(doc, iterator, count))
                 .forEach(s -> writeStringSafe(s, output));
     }
 
@@ -113,20 +104,34 @@ public class TimeMap {
 
     /**
      * Create an application/link-format compliant memento representation of an archived resource from solr.
-     * @param doc   The solr document, that contains information on the individual harvested resource.
-     * @return      The memento as a string, ready to be concatenated to a memento timemap.
+     *
+     * @param doc             The solr document, that contains information on the individual harvested resource.
+     * @param iterator
+     * @param countOfMementos
+     * @return The memento as a string, ready to be concatenated to a memento timemap.
      */
-    private static String createMementoInLinkFormat(SolrDocument doc) {
+    private static String createMementoInLinkFormat(SolrDocument doc, AtomicLong iterator, Long countOfMementos) {
         String memento = "";
         try {
-            memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
+            if (iterator.longValue() == 1L){
+                memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
+                        doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">\n" +
+                        "; rel=\"first memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"\n";
+                iterator.getAndIncrement();
+            } else if (iterator.longValue() == countOfMementos) {
+                memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
+                        doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">\n" +
+                        "; rel=\"last memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"\n";
+                iterator.getAndIncrement();
+            } else {
+                memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
                         doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">\n" +
                         "; rel=\"memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"\n";
+                iterator.getAndIncrement();
+            }
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-
-        // TODO: add relations, first memento, last memento
         // TODO: Add license
         return memento;
     }
