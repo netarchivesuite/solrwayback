@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 
+import javax.ws.rs.core.MultivaluedMap;
 import java.text.ParseException;
 
 public class MementoMetadata {
@@ -12,6 +13,8 @@ public class MementoMetadata {
     private String lastMemento;
     private long firstWaybackDate = 99999999999999L;
     private long lastWaybackDate = 19500101010000L;
+    
+    private MultivaluedMap<String, Object> httpHeaders;
 
     public MementoMetadata(){}
     public String getFirstMemento() {
@@ -32,6 +35,10 @@ public class MementoMetadata {
 
     public String getTimeMapHead() {
         return timeMapHead;
+    }
+
+    public MultivaluedMap<String, Object> getHttpHeaders() {
+        return httpHeaders;
     }
 
     public void setFirstMemento(String firstMemento) {
@@ -74,5 +81,9 @@ public class MementoMetadata {
                "; until\"" + this.getLastMemento() + "\",\n" +
                "<"+ PropertiesLoaderWeb.WAYBACK_SERVER +"memento/timegate/" + originalResource + ">\n" +
                "; rel=\"timegate\",\n";
+    }
+
+    public void setHttpHeaders(MultivaluedMap<String, Object> httpHeaders) {
+        this.httpHeaders = httpHeaders;
     }
 }

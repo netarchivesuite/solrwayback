@@ -7,9 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -30,7 +32,7 @@ public class SolrWaybackMementoAPI {
 
         StreamingOutput timemap = getTimeMap(url, responseFormat);
 
-        return Response.ok(url).build();
+        return Response.ok(timemap).build();
     }
 
     @GET
@@ -39,11 +41,15 @@ public class SolrWaybackMementoAPI {
         //TODO: Introduce property that decides which return version to use as PyWb does. https://pywb.readthedocs.io/en/latest/manual/memento.html#redirecting-timegate-memento-pattern-2-3
         String returnFormat = "200";
 
-        if (returnFormat.equals("302")){
-            return DatetimeNegotiation.redirectToDistinctMemento(url, host, acceptDatetime);
+        Response timeGate = DatetimeNegotiation.getMemento(url, host, acceptDatetime, returnFormat);
 
-        } else {
-            return DatetimeNegotiation.remoteTimeGateForOriginalResource(url, host, acceptDatetime);
-        }
+        return timeGate;
     }
+
+    @HEAD
+    @Path("{url}")
+    public Response headTimeGate(@PathParam("url") String url, @HeaderParam("Accept-Datetime") String acceptDatetime){
+        return Response.ok().build();
+    }
+
 }

@@ -8,8 +8,10 @@ public class MementoDoc {
     private String crawlDate; // format 2009-12-09T05:32:50Z
     private String url;
     private String url_norm;
-    private Long content_length;
+    private int content_length;
     private Long wayback_date;
+
+    private String content_type;
 
     //url,url_norm,content_length,crawl_date
 
@@ -40,11 +42,15 @@ public class MementoDoc {
         this.crawlDate = crawlDate;
     }
 
-    public Long getContent_length() {return content_length;}
+    public int getContent_length() {return content_length;}
 
-    public void setContent_length(Long content_length) {this.content_length = content_length;}
+    public void setContent_length(int content_length) {this.content_length = content_length;}
 
     public Long getWayback_date() {return wayback_date;}
 
     public void setWayback_date(Long wayback_date) {this.wayback_date = wayback_date;}
+
+    public String getContent_type() {return content_type;}
+
+    public void setContent_type(String content_type) {this.content_type = content_type;}
 }

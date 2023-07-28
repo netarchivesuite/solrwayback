@@ -18,7 +18,7 @@ public class TimeMap {
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
 
 
-    public static StreamingOutput getTimeMap(String originalResource, String responseFormat) throws ParseException {
+    public static StreamingOutput getTimeMap(String originalResource, String responseFormat) {
 
         switch (responseFormat){
             case "application/link-format":
