@@ -47,7 +47,6 @@ public class DatetimeNegotiationTest {
     public void testMultipleHeadersCreation() throws Exception {
         Response timeGate = DatetimeNegotiation.getMemento("http://kb.dk/", "archive.xxx", "Thu, 23 Mar 2019 14:05:57 GMT", "200"  );
 
-
         System.out.println(timeGate.getHeaders());
     }
 }

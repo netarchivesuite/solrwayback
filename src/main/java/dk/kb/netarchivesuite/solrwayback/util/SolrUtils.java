@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
@@ -34,7 +35,7 @@ public class SolrUtils {
     public static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_full,content_type_norm,hash,type,crawl_date,content_encoding,exif_location,status_code,last_modified,redirect_to_norm";
     public static String indexDocFieldListShort = "url,url_norm,source_file_path,source_file,source_file_offset,crawl_date";
     public static String arcEntryDescriptorFieldList = "url,url_norm,source_file_path,source_file_offset,hash,content_type";
-    public static String mementoDocFieldList = "url,url_norm,content_length,wayback_date,content_type_served";
+    public static String mementoDocFieldList = "url,url_norm,content_length,wayback_date,content_type_served,source_file_path,source_file,source_file_offset";
 
     /**
      * Normalizes a given list of urls and makes a Solr search string from the result.
@@ -212,6 +213,9 @@ public class SolrUtils {
         mementoDoc.setWayback_date((Long) doc.get("wayback_date"));
         mementoDoc.setUrl_norm((String) doc.get("url_norm"));
         mementoDoc.setContent_type((String) doc.get("content_type_served"));
+        mementoDoc.setSource_file_path((String) doc.get("source_file_path"));
+        mementoDoc.setSource_file_offset((long) doc.get("source_file_offset"));
+
         return mementoDoc;
     }
 
