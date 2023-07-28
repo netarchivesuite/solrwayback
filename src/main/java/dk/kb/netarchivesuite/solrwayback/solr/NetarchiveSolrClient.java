@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.Processing;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
@@ -897,9 +898,10 @@ public class NetarchiveSolrClient {
                 collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public Stream<IndexDocShort> findNearestHarvestTimeForSingleUrlFewFields(String url, String timeStamp){
-        return findNearestDocuments(SolrUtils.indexDocFieldListShort, timeStamp, Stream.of(url))
-                .map(SolrUtils::solrDocument2IndexDocShort);
+    // TODO: Rewrite method to return the IndexDocShort
+    public Stream<MementoDoc> findNearestHarvestTimeForSingleUrlFewFields(String url, String timeStamp){
+        return findNearestDocuments(SolrUtils.mementoDocFieldList, timeStamp, Stream.of(url))
+                .map(SolrUtils::solrDocument2MementoDoc);
     }
 
 
