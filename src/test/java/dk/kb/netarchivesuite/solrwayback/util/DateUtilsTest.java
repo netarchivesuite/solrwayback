@@ -46,6 +46,15 @@ public class DateUtilsTest {
       assertEquals(correctDate, waybackDate);
   }
 
+
+    @Test
+    public void testAnotherMemento2waybackDate() throws ParseException {
+        String mementoDate = "Thu, 01 Mar 2002 14:05:57 GMT";
+        Long waybackDate = DateUtils.convertMementoAcceptDateTime2Waybackdate(mementoDate);
+
+        Long correctDate= 20020301140557L;
+        assertEquals(correctDate, waybackDate);
+    }
   @Test
   public void testWaybackDate2MementoDate() throws ParseException {
       Long waybackDate = 20230323140557L;

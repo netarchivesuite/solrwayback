@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
@@ -14,9 +15,14 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Optional;
 
 
 // TODO: Not sure that Host header is used correctly. It should point to the archive that hosts the material, not the original host of the website.
@@ -28,13 +34,9 @@ import java.time.format.DateTimeFormatter;
 public class DatetimeNegotiation {
     private static final Logger log = LoggerFactory.getLogger(DatetimeNegotiation.class);
 
-    public static Response getMemento(String url, String host, String acceptDatetime, String returnFormat) throws Exception {
+    public static Response getMemento(String url, String acceptDatetime, String returnFormat) throws Exception {
         //TODO: use property instead of string
         // Check that host is correct.
-        if (!host.equals(PropertiesLoaderWeb.WAYBACK_SERVER)) {
-            log.warn("Incorrect host header: '{}'. Has been corrected to: '{}'", host, PropertiesLoaderWeb.WAYBACK_SERVER);
-            host = PropertiesLoaderWeb.WAYBACK_SERVER;
-        }
 
         if (returnFormat.equals("302")) {
             //TODO: Implement Memento pattern 2.3 here and make it toggleable by a property.
@@ -56,25 +58,25 @@ public class DatetimeNegotiation {
      * @throws ParseException
      */
     public static Response nonRedirectingTimeGate(String url,
-                                                  String acceptDatetime) throws ParseException {
+                                                  String acceptDatetime) throws Exception {
 
         MementoMetadata metadata = new MementoMetadata();
-        OutputStream outputStream = new ByteArrayOutputStream();
+
         //TODO: Create an actual memento2solrdate converter and vice-versa
         Long waybackdate = DateUtils.convertMementoAcceptDateTime2Waybackdate(acceptDatetime);
         String solrDate = DateUtils.convertWaybackDate2SolrDate(String.valueOf(waybackdate));
+        log.info("Converted RFC1123 date to solrdate: '{}'", solrDate);
         log.info("Extracted accept-datetime '{}' header from http-request",
                 acceptDatetime);
 
         // Create response through streaming of a single SolrDocument.
-        Response response = NetarchiveSolrClient.getInstance()
+        Optional<Response> responseOpt = NetarchiveSolrClient.getInstance()
                 .findNearestHarvestTimeForSingleUrlFewFields(url, solrDate)
                 .map(doc -> addHeadersToMetadataObject(doc, metadata))
-                .map(doc -> streamMementoFromTimeGate(doc, metadata, outputStream))
-                // The iterator can be called here to extract the single response that have been created.
-                .iterator().next();
+                .map(doc -> streamMementoFromTimeGate(doc, metadata))
+                .reduce((first, second) -> first);;
 
-        return response;
+        return responseOpt.orElseGet(() -> Response.status(404).build());
     }
 
     /**
@@ -115,19 +117,14 @@ public class DatetimeNegotiation {
      * Streams the memento found for the timegate.
      * @param doc           containing data from solr for accessing the memento in the WARC files.
      * @param metadata      object which contains metadata on the memento. Including headers.
-     * @param outputStream  that the memento is delivered to. This is then combined with the headers from the metadata
-     *                      object in the returned response
      * @return              a response containing correct memento headers and the memento as the response entity.
      */
-    private static Response streamMementoFromTimeGate(MementoDoc doc, MementoMetadata metadata, OutputStream outputStream) {
+    private static Response streamMementoFromTimeGate(MementoDoc doc, MementoMetadata metadata) {
         try {
             ArcEntry mementoEntity =  Facade.getArcEntry(doc.getSource_file_path(), doc.getSource_file_offset());
-            IOUtils.copy(mementoEntity.getBinaryRaw(),outputStream);
-            outputStream.flush();
+            return Response.ok(mementoEntity.getBinaryRaw()).replaceAll(metadata.getHttpHeaders()).build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        return Response.ok(outputStream).replaceAll(metadata.getHttpHeaders()).build();
     }
 }
