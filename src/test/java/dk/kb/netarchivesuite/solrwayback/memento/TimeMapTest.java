@@ -8,6 +8,8 @@ import org.junit.Test;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 
@@ -40,9 +42,10 @@ public class TimeMapTest {
         PropertiesLoaderWeb.initProperties();
     }
 
+
     @Test
-    public void testTimeMapLinkConstruction() throws ParseException, IOException {
-        StreamingOutput timeMap = TimeMap.getTimeMap("http://kb.dk/", "application/link-format");
+    public void testTimeMapLinkConstruction() throws IOException, URISyntaxException {
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format");
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         timeMap.write(output);

@@ -8,8 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.StreamingOutput;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.text.ParseException;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -18,24 +21,24 @@ public class TimeMap {
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
 
 
-    public static StreamingOutput getTimeMap(String originalResource, String responseFormat) {
+    public static StreamingOutput getTimeMap(URI originalResource, String responseFormat) {
 
-        switch (responseFormat){
-            case "application/link-format":
-                return  output -> {
-                    getTimeMapAsLinkFormat(originalResource, output);
-                };
-            case "application/json":
-                return  output -> getTimeMapAsJson(originalResource, output);
+        if (responseFormat.equals("application/json")){
+            return  output -> {
+                getTimeMapAsJson(originalResource, output);
+            };
+        } else {
+            return output -> {
+                getTimeMapAsLinkFormat(originalResource, output);
+            };
         }
-        return null;
     }
 
-    private static void getTimeMapAsJson(String originalResource, OutputStream output) {
+    private static void getTimeMapAsJson(URI originalResource, OutputStream output) {
 
     }
 
-    private static void getTimeMapAsLinkFormat(String originalResource, OutputStream output) throws IOException {
+    private static void getTimeMapAsLinkFormat(URI originalResource, OutputStream output) throws IOException {
         MementoMetadata metadata = new MementoMetadata();
 
         // Sadly we need to do two Solr calls as it doesn't seem possible to calculate the dates for the header,
@@ -45,7 +48,7 @@ public class TimeMap {
                 .sort("id asc")
                 .stream()
                 .map(doc -> saveFirstAndLastDate(doc, metadata))
-                .map(doc -> updateTimeMapHead(doc, metadata, originalResource))
+                .map(doc -> updateTimeMapHead(doc, metadata, originalResource.toString()))
                 .count();
 
         log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
@@ -146,7 +149,6 @@ public class TimeMap {
             outputStream.write(string.getBytes());
         } catch (RuntimeException | IOException e){
             throw new RuntimeException();
-
         }
     }
 
