@@ -8,6 +8,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import org.archive.wayback.util.url.AggressiveUrlCanonicalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,13 +20,15 @@ import java.net.URISyntaxException;
 
 public class PathResolver {
     private static final Logger log = LoggerFactory.getLogger(PathResolver.class);
+    private static AggressiveUrlCanonicalizer canon = new AggressiveUrlCanonicalizer();
 
-    public static URI mementoAPIResolver(String basePath, //should be: "/memento/"
+    public static URI mementoAPIResolver(String basePath, //should be: "/memento/" or "/timemap/"
                                               UriInfo uriInfo, HttpServletRequest httpRequest,
                                               String path ) throws URISyntaxException {
 
         log.debug("{} called with data:{}", basePath, path);
         String fullUrl = uriInfo.getRequestUri().toString();
+        //log.info("Accept header: '{}'", httpRequest.getHeader("Accept"));
         log.info("fullUrl: '{}'", fullUrl);
 
         int dataStart = fullUrl.indexOf(basePath);
@@ -34,8 +37,10 @@ public class PathResolver {
 
         url = checkForSingleSlash(url);
         String newUrl = replaceEncoding(url);
+        newUrl = checkForNoHttpButPresentWWW(newUrl);
 
         String finalUrl = Normalisation.canonicaliseURL(newUrl);
+
         URI uri = new URI(finalUrl);
         log.info("new url:" + finalUrl);
 
@@ -138,6 +143,20 @@ public class PathResolver {
         }
         if (url.startsWith("https:/") && !url.startsWith("https://")) {
             url = url.replaceFirst("https:/", "https://");
+        }
+        return url;
+    }
+
+    private static String checkForNoHttpButPresentWWW(String url){
+        if (url.startsWith("www.")){
+            url = url.replaceFirst("www.", "http://");
+        }
+        return url;
+    }
+
+    private static String checkForHttp(String url) {
+        if (!url.startsWith("http://")) {
+            url = "http://" + url;
         }
         return url;
     }

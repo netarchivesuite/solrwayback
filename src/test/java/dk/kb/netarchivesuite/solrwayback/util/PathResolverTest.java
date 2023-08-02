@@ -16,7 +16,7 @@ public class PathResolverTest {
 
 
     @Test
-    public void testMementoResolving() throws URISyntaxException {
+    public void testMementoResolvingHttpsAndSingleSlashc() throws URISyntaxException {
         UriInfo uriInfo = Mockito.mock(UriInfo.class);
         Mockito.when(uriInfo.getRequestUri())
                 .thenReturn(URI.create("http://localhost:8080/services/memento/https:/kb.dk/"));
@@ -25,5 +25,30 @@ public class PathResolverTest {
 
         assertEquals("http://kb.dk/", result.toString());
     }
+
+    //TODO: Add tests for no prefixes at all
+    @Test
+    public void testMementoResolvingWWW() throws URISyntaxException {
+        UriInfo uriInfo = Mockito.mock(UriInfo.class);
+        Mockito.when(uriInfo.getRequestUri())
+                .thenReturn(URI.create("http://localhost:8080/services/memento/www.kb.dk/"));
+
+        URI result = PathResolver.mementoAPIResolver("/memento/", uriInfo, null, "www.kb.dk/");
+
+        assertEquals("http://kb.dk/", result.toString());
+    }
+
+    @Test
+    public void testMementoResolvingNoHttpOrWWW() throws URISyntaxException {
+        UriInfo uriInfo = Mockito.mock(UriInfo.class);
+        Mockito.when(uriInfo.getRequestUri())
+                .thenReturn(URI.create("http://localhost:8080/services/memento/kb.dk/"));
+
+        URI result = PathResolver.mementoAPIResolver("/memento/", uriInfo, null, "kb.dk/");
+
+        assertEquals("http://kb.dk/", result.toString());
+    }
+
+
 
 }
