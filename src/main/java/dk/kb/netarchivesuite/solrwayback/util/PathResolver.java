@@ -22,9 +22,16 @@ public class PathResolver {
     private static final Logger log = LoggerFactory.getLogger(PathResolver.class);
     private static AggressiveUrlCanonicalizer canon = new AggressiveUrlCanonicalizer();
 
+    /**
+     * Resolves the URL of an original resource to fetch mementos for through SolrWayback.
+     * The URL is given as a path parameter, so some resolving and normalising has to be done.
+     * @param basePath  contains the last part of the path, before the URI-R begins.
+     * @param uriInfo   contains information of the full URI requested from browser.
+     * @param path      which represents the URL-R
+     * @return          a normalised uri ready for lookup in SolrWayback.
+     */
     public static URI mementoAPIResolver(String basePath, //should be: "/memento/" or "/timemap/"
-                                              UriInfo uriInfo, HttpServletRequest httpRequest,
-                                              String path ) throws URISyntaxException {
+                                         UriInfo uriInfo, String path ) throws URISyntaxException {
 
         log.debug("{} called with data:{}", basePath, path);
         String fullUrl = uriInfo.getRequestUri().toString();
@@ -121,8 +128,8 @@ public class PathResolver {
 
     /**
      * Replace some encoding in URL.
-     * @param url to replace encoding in.
-     * @return the correct URL.
+     * @param url   to replace encoding in.
+     * @return      the correct URL.
      */
     private static String replaceEncoding(String url) {
         url = url.replace("|", "%7C");//For some unknown reason Java does not accept |, must encode.
@@ -133,8 +140,8 @@ public class PathResolver {
 
     /**
      * Checks for missing slash in http:// declaration.
-     * @param url to check for slash.
-     * @return url with correct number of slashes.
+     * @param url   to check for slash.
+     * @return      url with correct number of slashes.
      */
     private static String checkForSingleSlash(String url) {
         //Stupid fix, some webservices makes parameter http:// into http:/  ( removes a slash)
@@ -147,16 +154,12 @@ public class PathResolver {
         return url;
     }
 
+    /**
+     * If input url starts with www., change it to http:// as this is part of SolrWayback normalised urls.
+     */
     private static String checkForNoHttpButPresentWWW(String url){
         if (url.startsWith("www.")){
             url = url.replaceFirst("www.", "http://");
-        }
-        return url;
-    }
-
-    private static String checkForHttp(String url) {
-        if (!url.startsWith("http://")) {
-            url = "http://" + url;
         }
         return url;
     }
