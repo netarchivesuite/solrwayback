@@ -86,14 +86,28 @@ public class SolrWaybackMementoAPI {
 
         URI uri =  PathResolver.mementoAPIResolver("/timemap/", uriInfo, url);
         StreamingOutput timemap = getTimeMap(uri, responseFormat);
+        String fileType = fileEndingFromAcceptHeader(responseFormat);
 
         return Response.ok().type(responseFormat)
                 .entity(timemap)
-                // TODO: Change filetype based on header. this is not correct for JSON
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap.wlnk\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap"+ fileType + "\"")
                 .build();
     }
 
+
+    /**
+     * Define a string containing a filetype extension for the timemap from the given accept-header
+     * @param responseFormat header containing mimetype for request.
+     * @return filetype for response.
+     */
+    private String fileEndingFromAcceptHeader(String responseFormat) {
+        log.info("accept header is: " + responseFormat);
+        if (responseFormat.equals("application/json")){
+            return ".json";
+        } else {
+            return ".wlnk";
+        }
+    }
 
 
     @GET
