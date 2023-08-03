@@ -21,7 +21,13 @@ public class TimeMap {
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
 
 
-    //TODO: JAVADOC
+    /**
+     * Get timemap for specified URI-R. Timemap contains all captured mementos for the given resource.
+     * @param originalResource  URI-R to fetch timemap for.
+     * @param responseFormat    Mimetype which specifies how the response is to be delivered.
+     *                          Defaults to application/link-type.
+     * @return                  The timemap in the specified format.
+     */
     public static StreamingOutput getTimeMap(URI originalResource, String responseFormat) {
 
         if (responseFormat.equals("application/json")){
@@ -40,12 +46,16 @@ public class TimeMap {
 
     }
 
-    //TODO: JAVADOC
+    /**
+     * Writes a timemap (URI-T) for a URI-R to an outputstream in the link-type format.
+     * @param originalResource  URI-R to create URI-T from.
+     * @param output            Stream which the output is delivered to.
+     */
     private static void getTimeMapAsLinkFormat(URI originalResource, OutputStream output) throws IOException {
         MementoMetadata metadata = new MementoMetadata();
 
         // Sadly we need to do two Solr calls as it doesn't seem possible to calculate the dates for the header,
-        // in the second stream and add it to the output as the first thing.
+        // in the second stream and add it to the output as the first thing. Please correct me if im wrong.
         long count = SRequest.builder().query("url_norm:\""+ originalResource + "\"")
                 .fields("wayback_date")
                 .sort("id asc")
@@ -111,10 +121,10 @@ public class TimeMap {
     /**
      * Create an application/link-format compliant memento representation of an archived resource from solr.
      *
-     * @param doc             The solr document, that contains information on the individual harvested resource.
-     * @param iterator
-     * @param countOfMementos
-     * @return The memento as a string, ready to be concatenated to a memento timemap.
+     * @param doc               The solr document, that contains information on the individual harvested resource.
+     * @param iterator          Used define the relations 'first memento' and 'last memento'
+     * @param countOfMementos   Used define the relations 'first memento' and 'last memento'
+     * @return                  The memento as a string, ready to be concatenated to a memento timemap.
      */
     private static String createMementoInLinkFormat(SolrDocument doc, AtomicLong iterator, Long countOfMementos) {
         String memento = "";
