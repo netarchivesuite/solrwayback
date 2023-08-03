@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 public class DatetimeNegotiationTest {
     private static final Logger log = LoggerFactory.getLogger(DatetimeNegotiationTest.class);
 
-    //TODO: Mock method getMemento() to check header constructions.
 
     @Before
     public void setup() throws SolrServerException, IOException {
