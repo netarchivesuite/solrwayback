@@ -53,26 +53,20 @@ public class DatetimeNegotiation {
      * @param acceptDatetime the datetime that the enduser wants to obtain a memento for. SolrWayback delivers
      *                       the closest possible memento.
      * @return an HTTP 200 response with memento headers and the memento as the entity.
-     * @throws ParseException
      */
     public static Response nonRedirectingTimeGate(String url,
                                                   String acceptDatetime) throws Exception {
 
         MementoMetadata metadata = new MementoMetadata();
-
-        //TODO: Create an actual memento2solrdate converter and vice-versa
-        Long waybackdate = DateUtils.convertMementoAcceptDateTime2Waybackdate(acceptDatetime);
-        String solrDate = DateUtils.convertWaybackDate2SolrDate(String.valueOf(waybackdate));
+        String solrDate = DateUtils.convertMementodate2Solrdate(acceptDatetime);
         log.info("Converted RFC1123 date to solrdate: '{}'", solrDate);
-        log.info("Extracted accept-datetime '{}' header from http-request",
-                acceptDatetime);
 
         // Create response through streaming of a single SolrDocument.
         Optional<Response> responseOpt = NetarchiveSolrClient.getInstance()
                 .findNearestHarvestTimeForSingleUrlFewFields(url, solrDate)
                 .map(doc -> addHeadersToMetadataObject(doc, metadata))
                 .map(doc -> streamMementoFromTimeGate(doc, metadata))
-                .reduce((first, second) -> first);;
+                .reduce((first, second) -> first);
 
         return responseOpt.orElseGet(() -> Response.status(404).build());
     }
