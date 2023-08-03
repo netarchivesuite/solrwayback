@@ -898,13 +898,10 @@ public class NetarchiveSolrClient {
                 collect(Collectors.toCollection(ArrayList::new));
     }
 
-    // TODO: Rewrite method to return the IndexDocShort
     public Stream<MementoDoc> findNearestHarvestTimeForSingleUrlFewFields(String url, String timeStamp){
-        return findNearestDocuments(SolrUtils.mementoDocFieldList, timeStamp, Stream.of(url))
+        return findNearestDocuments(SolrUtils.indexDocFieldList + "," +SolrUtils.mementoDocFieldList, timeStamp, Stream.of(url))
                 .map(SolrUtils::solrDocument2MementoDoc);
-                //.collect(Collectors.toCollection(ArrayList::new));
     }
-
 
     /**
      * Resolves {@link IndexDocShort}s for the given URLs.
