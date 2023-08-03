@@ -50,4 +50,18 @@ public class DatetimeNegotiationTest {
         assertEquals("text/html; charset=UTF-8", headers.get("Content-Type").get(0));
 
     }
+
+    @Test
+    public void testPatternTwoPointOneHeaderConstruction() throws Exception {
+        Response timeGate = DatetimeNegotiation.getMemento("http://kb.dk/", "Thu, 23 Mar 2019 14:05:57 GMT", "302");
+        MultivaluedMap<String, Object> headers = timeGate.getHeaders();
+
+        assertEquals("accept-datetime", headers.get("Vary").get(0));
+        assertFalse(headers.get("Location").isEmpty());
+        assertFalse(headers.containsKey("Memento-Datetime"));
+        assertTrue(headers.get("Link").get(0).toString().contains("rel=\"original\""));
+        assertEquals(0, headers.get("Content-Length").get(0));
+        assertEquals("text/html; charset=UTF-8", headers.get("Content-Type").get(0));
+
+    }
 }
