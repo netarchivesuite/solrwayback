@@ -81,6 +81,35 @@ public class DateUtils {
       String mementoDate = mementoFormat.format(d);
       return mementoDate;
   }
+
+  public static String convertMementodate2Solrdate(String mementoDate) throws ParseException {
+      DateFormat mementoFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+      mementoFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+
+      DateFormat solrDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new
+      solrDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+      Date d = mementoFormat.parse(mementoDate);
+      String solrDate = solrDateFormat.format(d) + "Z";
+
+      return solrDate;
+  }
+
+  public static String convertSolrdate2Mementodate(String solrDate) throws ParseException {
+      DateFormat solrDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new
+      solrDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+      DateFormat mementoFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+      mementoFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+
+
+      Date d = solrDateFormat.parse(solrDate);
+      String mementoDate = mementoFormat.format(d);
+
+      return mementoDate;
+  }
   
   
     /**
