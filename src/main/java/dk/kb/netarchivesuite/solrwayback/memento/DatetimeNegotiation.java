@@ -3,7 +3,9 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+import dk.kb.netarchivesuite.solrwayback.service.SolrWaybackResource;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
@@ -27,11 +29,8 @@ public class DatetimeNegotiation {
     private static final Logger log = LoggerFactory.getLogger(DatetimeNegotiation.class);
 
     public static Response getMemento(String url, String acceptDatetime) throws Exception {
-        //TODO: use property instead of string
-
         if (PropertiesLoader.MEMENTO_REDIRECT) {
             return redirectingTimegate(url, acceptDatetime);
-
         } else {
             return nonRedirectingTimeGate(url, acceptDatetime);
         }
@@ -155,8 +154,9 @@ public class DatetimeNegotiation {
      */
     private static Response streamMementoFromNonRedirectingTimeGate(MementoDoc doc, MementoMetadata metadata) {
         try {
-            ArcEntry mementoEntity =  Facade.getArcEntry(doc.getSource_file_path(), doc.getSource_file_offset());
-            return Response.ok(mementoEntity.getBinaryRaw()).replaceAll(metadata.getHttpHeaders()).build();
+            SolrWaybackResource resource = new SolrWaybackResource();
+            Response resp = resource.viewImpl(doc.getSource_file_path(), doc.getSource_file_offset(), true, true);
+            return Response.fromResponse(resp).replaceAll(metadata.getHttpHeaders()).build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

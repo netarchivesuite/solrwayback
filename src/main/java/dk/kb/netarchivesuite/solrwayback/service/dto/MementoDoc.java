@@ -3,7 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.service.dto;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class MementoDoc {
+public class MementoDoc extends IndexDoc{
 
     private String crawlDate; // format 2009-12-09T05:32:50Z
     private String url;

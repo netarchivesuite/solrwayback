@@ -120,8 +120,6 @@ public class SolrWaybackMementoAPI {
             acceptDatetime = DateUtils.formatDate(new Date(System.currentTimeMillis()));
         }
 
-        //TODO: Introduce property that decides which return version to use as PyWb does. https://pywb.readthedocs.io/en/latest/manual/memento.html#redirecting-timegate-memento-pattern-2-3
-
         URI uri =  PathResolver.mementoAPIResolver("/memento/", uriInfo, url);
         Response timeGate = DatetimeNegotiation.getMemento(String.valueOf(uri), acceptDatetime);
 
