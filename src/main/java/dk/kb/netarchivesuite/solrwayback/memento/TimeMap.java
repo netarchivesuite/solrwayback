@@ -21,6 +21,7 @@ public class TimeMap {
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
 
 
+    //TODO: JAVADOC
     public static StreamingOutput getTimeMap(URI originalResource, String responseFormat) {
 
         if (responseFormat.equals("application/json")){
@@ -34,10 +35,12 @@ public class TimeMap {
         }
     }
 
+    //TODO: Implement JSON response
     private static void getTimeMapAsJson(URI originalResource, OutputStream output) {
 
     }
 
+    //TODO: JAVADOC
     private static void getTimeMapAsLinkFormat(URI originalResource, OutputStream output) throws IOException {
         MementoMetadata metadata = new MementoMetadata();
 

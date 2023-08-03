@@ -1,6 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
-
 import dk.kb.netarchivesuite.solrwayback.memento.DatetimeNegotiation;
 import dk.kb.netarchivesuite.solrwayback.util.PathResolver;
 import org.apache.http.client.utils.DateUtils;
@@ -88,6 +87,7 @@ public class SolrWaybackMementoAPI {
         StreamingOutput timemap = getTimeMap(uri, responseFormat);
         String fileType = fileEndingFromAcceptHeader(responseFormat);
 
+        // TODO: Fresh eyes on http headers for timemap
         return Response.ok().type(responseFormat)
                 .entity(timemap)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap"+ fileType + "\"")

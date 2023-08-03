@@ -6,6 +6,9 @@ import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import javax.ws.rs.core.MultivaluedMap;
 import java.text.ParseException;
 
+/**
+ * Object which contains metadata about a single original resource, used to produce correct mementos.
+ */
 public class MementoMetadata {
 
     private String timeMapHead;

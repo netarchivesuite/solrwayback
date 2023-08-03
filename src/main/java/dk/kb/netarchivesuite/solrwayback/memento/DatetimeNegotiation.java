@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.Optional;
 
 
-// TODO: Not sure that Host header is used correctly. It should point to the archive that hosts the material, not the original host of the website.
 
 /**
  * This class implements the Datetime Negotiation of the Memento Framework
@@ -36,7 +35,6 @@ public class DatetimeNegotiation {
 
     public static Response getMemento(String url, String acceptDatetime, String returnFormat) throws Exception {
         //TODO: use property instead of string
-        // Check that host is correct.
 
         if (returnFormat.equals("302")) {
             //TODO: Implement Memento pattern 2.3 here and make it toggleable by a property.
@@ -97,7 +95,7 @@ public class DatetimeNegotiation {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-        String linkString = "<" + doc.getUrl() + "; rel=\"original\",\n" +
+        String linkString = "<" + doc.getUrl() + ">; rel=\"original\"," +
                 "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + doc.getUrl() + ">" +
                 "; rel=\"timemap\"; type=\"application/link-format\"," +
                 "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timegate/" + doc.getUrl() + ">" +
