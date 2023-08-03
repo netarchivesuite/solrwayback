@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.memento;
 
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import org.apache.http.HttpRequest;
@@ -39,7 +40,7 @@ public class DatetimeNegotiationTest {
 
     @Test
     public void testPatternTwoPointTwoHeaderConstruction() throws Exception {
-        Response timeGate = DatetimeNegotiation.getMemento("http://kb.dk/", "Thu, 23 Mar 2019 14:05:57 GMT", "200");
+        Response timeGate = DatetimeNegotiation.getMemento("http://kb.dk/", "Thu, 23 Mar 2019 14:05:57 GMT");
         MultivaluedMap<String, Object> headers = timeGate.getHeaders();
 
         assertEquals("accept-datetime", headers.get("Vary").get(0));
@@ -53,7 +54,8 @@ public class DatetimeNegotiationTest {
 
     @Test
     public void testPatternTwoPointOneHeaderConstruction() throws Exception {
-        Response timeGate = DatetimeNegotiation.getMemento("http://kb.dk/", "Thu, 23 Mar 2019 14:05:57 GMT", "302");
+        PropertiesLoader.MEMENTO_REDIRECT = true;
+        Response timeGate = DatetimeNegotiation.getMemento("http://kb.dk/", "Thu, 23 Mar 2019 14:05:57 GMT");
         MultivaluedMap<String, Object> headers = timeGate.getHeaders();
 
         assertEquals("accept-datetime", headers.get("Vary").get(0));

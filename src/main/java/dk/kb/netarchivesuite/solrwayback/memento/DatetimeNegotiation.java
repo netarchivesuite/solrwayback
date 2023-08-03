@@ -1,6 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.memento;
 
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
@@ -25,16 +26,14 @@ import java.util.Optional;
 public class DatetimeNegotiation {
     private static final Logger log = LoggerFactory.getLogger(DatetimeNegotiation.class);
 
-    public static Response getMemento(String url, String acceptDatetime, String returnFormat) throws Exception {
+    public static Response getMemento(String url, String acceptDatetime) throws Exception {
         //TODO: use property instead of string
 
-        if (returnFormat.equals("302")) {
-            //TODO: Implement Memento pattern 2.3 here and make it toggleable by a property.
+        if (PropertiesLoader.MEMENTO_REDIRECT) {
             return redirectingTimegate(url, acceptDatetime);
 
-
         } else {
-            return DatetimeNegotiation.nonRedirectingTimeGate(url, acceptDatetime);
+            return nonRedirectingTimeGate(url, acceptDatetime);
         }
     }
 
