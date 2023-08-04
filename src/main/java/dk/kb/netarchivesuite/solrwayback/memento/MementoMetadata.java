@@ -76,7 +76,7 @@ public class MementoMetadata {
         this.lastWaybackDate = lastWaybackDate;
     }
 
-    public void setTimeMapHead(String originalResource) {
+    public void setTimeMapHeadForLinkFormat(String originalResource) {
         this.timeMapHead = "<" + originalResource + ">;rel=\"original\",\n" +
                "<"+ PropertiesLoaderWeb.WAYBACK_SERVER + "memento/timemap/" + originalResource + ">\n" +
                "; rel=\"self\";type=\"application/link-format\"\n" +
