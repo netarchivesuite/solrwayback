@@ -69,6 +69,11 @@ public class SolrWaybackMementoAPI {
         return "You have reached the endpoint for timemaps and requested: '" + url + "'";
     }
 
+
+    //TODO: How should we let users choose mimetypes?
+    // PyWB does it by a path argument: https://pywb.readthedocs.io/en/latest/manual/memento.html#timegate-api
+    // This makes totally sense and is also described here: http://mementoweb.org/guide/timemap-json/#basic
+    // However the RFC 7089 only mentions the support for multiple mimetypes through the HTTP accept header: https://datatracker.ietf.org/doc/html/rfc7089#section-5
     @GET
     @Path("timemap/{url:.+}")
     public Response timeMap(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest,
@@ -95,21 +100,6 @@ public class SolrWaybackMementoAPI {
     }
 
 
-    /**
-     * Define a string containing a filetype extension for the timemap from the given accept-header
-     * @param responseFormat header containing mimetype for request.
-     * @return filetype for response.
-     */
-    private String fileEndingFromAcceptHeader(String responseFormat) {
-        log.info("accept header is: " + responseFormat);
-        if (responseFormat.equals("application/json")){
-            return ".json";
-        } else {
-            return ".wlnk";
-        }
-    }
-
-
     @GET
     @Path("/{url:.+}")
     public Response getResolvedTimeGate(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest,
@@ -124,6 +114,20 @@ public class SolrWaybackMementoAPI {
         Response timeGate = DatetimeNegotiation.getMemento(String.valueOf(uri), acceptDatetime);
 
         return timeGate;
+    }
+
+    /**
+     * Define a string containing a filetype extension for the timemap from the given accept-header
+     * @param responseFormat header containing mimetype for request.
+     * @return filetype for response.
+     */
+    private String fileEndingFromAcceptHeader(String responseFormat) {
+        log.info("accept header is: " + responseFormat);
+        if (responseFormat.equals("application/json")){
+            return ".json";
+        } else {
+            return ".wlnk";
+        }
     }
 
 
