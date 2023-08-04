@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
-import dk.kb.netarchivesuite.solrwayback.service.dto.TimeMapJSON;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.common.SolrDocument;
@@ -45,21 +44,23 @@ public class TimeMap {
         }
     }
 
-    //TODO: javadoc
+    /**
+     * Creates a timemap (URI-T) for a URI-R as JSON.
+     * @param originalResource  URI-R to create URI-T from.
+     * @return                  A json representation of the timemap ready for streaming.
+     */
     private static StreamingOutput getTimeMapAsJson(URI originalResource) {
         MementoMetadata metadata = new MementoMetadata();
-        TimeMapJSON timeMapJSON = new TimeMapJSON();
         // Sadly we need to do two Solr calls as it doesn't seem possible to calculate the dates for the header,
         // in the second stream and add it to the output as the first thing. Please correct me if im wrong.
         long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
-                .map(doc -> updateTimeMapHeadJSON(doc, metadata, originalResource.toString(), timeMapJSON))
                 .count();
         log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
                 count, metadata.getFirstMemento(), metadata.getLastMemento());
 
         Stream<SolrDocument> mementoStream = getMementoStream(originalResource);
 
-        return getJSONStreamingOutput(originalResource, metadata, timeMapJSON, mementoStream);
+        return getJSONStreamingOutput(originalResource, metadata, mementoStream);
     }
 
     /**
@@ -88,7 +89,12 @@ public class TimeMap {
     }
 
 
-    // TODO: javadoc
+    /**
+     * Stream solrdocuments containing metadata used to create memento entries for a timemap.
+     * Sorting on ID to easier find first and last mementos.
+     * @param originalResource  to create timemap for
+     * @return                  A stream of solr documents. Containing all harvests of given url.
+     */
     private static Stream<SolrDocument> getMementoStream(URI originalResource) {
         return SRequest.builder().query("url_norm:\"" + originalResource + "\"")
                 .fields("url", "url_norm", "wayback_date")
@@ -96,8 +102,14 @@ public class TimeMap {
                 .stream();
     }
 
-    //TODO: javadoc
-    private static StreamingOutput getJSONStreamingOutput(URI originalResource, MementoMetadata metadata, TimeMapJSON timeMapJSON, Stream<SolrDocument> mementoStream) {
+    /**
+     * Create a JSON representation of a timemap for an original resource and return it as a streaming output.
+     * @param originalResource  to create timemap of.
+     * @param metadata          object containing different metatdata extracted from solr, used to create the timemap.
+     * @param mementoStream     Stream of solr documents containing all mementos of the given original resource.
+     * @return                  A JSON timemap for the input original resource.
+     */
+    private static StreamingOutput getJSONStreamingOutput(URI originalResource, MementoMetadata metadata, Stream<SolrDocument> mementoStream) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         return os -> {
@@ -105,16 +117,16 @@ public class TimeMap {
 
             jg.writeStartObject(); // timemap start
             jg.writeFieldName("original_uri");
-            jg.writeString(timeMapJSON.getOriginal_uri());
+            jg.writeString(originalResource.toString());
             jg.writeFieldName("timegate_uri");
-            jg.writeString(timeMapJSON.getTimegate_uri());
+            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/" + originalResource);
 
             jg.writeFieldName("timemap_uri");
             jg.writeStartObject(); //timemap_uri start
             jg.writeFieldName("link_format");
-            jg.writeString(timeMapJSON.getTimemap_uri().get("link_format"));
+            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + originalResource);
             jg.writeFieldName("json_format");
-            jg.writeString(timeMapJSON.getTimemap_uri().get("json"));
+            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + originalResource);
             jg.writeEndObject(); //timemap_uri end
 
             jg.writeFieldName("mementos");
@@ -150,23 +162,41 @@ public class TimeMap {
     }
 
 
-    //TODO: Javadoc
-    private static SolrDocument addMementoToTimeMapObject(SolrDocument doc, JsonGenerator jg, URI originalResource) {
+    /**
+     * Method used as an intermediate operation on a stream of SolrDocuments.
+     * Adds the individual memento from the stream to the JsonGenerator, which is producing the timemap in JSON.
+     * @param solrDoc               containing metadata on a single memento.
+     * @param jsonGenerator     generating the full timemap for the original resource. This generator already contains
+     *                          the first part of the timemap, is now ready to generate the JSON representation of the
+     *                          individual mementos.
+     * @param originalResource  contains the URI of the original resource.
+     * @return                  The inputted SolrDocument for further use in the stream.
+     */
+    private static SolrDocument addMementoToTimeMapObject(SolrDocument solrDoc, JsonGenerator jsonGenerator, URI originalResource) {
         try {
-            jg.writeStartObject(); // listentry start
-            jg.writeFieldName("datetime");
-            jg.writeString(DateUtils.convertWaybackdate2Mementodate((long) doc.get("wayback_date")));
-            jg.writeFieldName("uri");
-            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" + doc.get("wayback_date") + "/" + originalResource);
-            jg.writeEndObject(); // listentry end
+            jsonGenerator.writeStartObject(); // listEntry start
+            jsonGenerator.writeFieldName("datetime");
+            jsonGenerator.writeString(DateUtils.convertWaybackdate2Mementodate((long) solrDoc.get("wayback_date")));
+            jsonGenerator.writeFieldName("uri");
+            jsonGenerator.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" + solrDoc.get("wayback_date") + "/" + originalResource);
+            jsonGenerator.writeEndObject(); // listEntry end
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
 
-        return doc;
+        return solrDoc;
     }
 
-    //TODO: Javadoc
+
+    /**
+     * Method used as an intermediate operation on a stream of SolrDocuments.
+     * This method sorts the mementos and saves the earliest and latest version
+     * of dates to the given MementoMetadata object.
+     * Remember that streams are lazy and only fired when a terminal operation is issued.
+     * @param originalResource  to query solr with.
+     * @param metadata          object that earliest and latest dates gets contained in.
+     * @return                  the created stream of SolrDocuments for further use.
+     */
     private static Stream<SolrDocument> getDocStreamAndUpdateDatesForFirstAndLastMemento(URI originalResource, MementoMetadata metadata) {
         return SRequest.builder().query("url_norm:\"" + originalResource + "\"")
                 .fields("wayback_date")
@@ -210,27 +240,6 @@ public class TimeMap {
      */
     private static SolrDocument updateTimeMapHeadForLinkFormat(SolrDocument doc, MementoMetadata metadata, String originalResource) {
         metadata.setTimeMapHeadForLinkFormat(originalResource);
-        return doc;
-    }
-
-    //TODO: JAVADOC
-    private static SolrDocument updateTimeMapHeadJSON(SolrDocument doc, MementoMetadata metadata, String originalResource, TimeMapJSON timeMapJSON) {
-        timeMapJSON.setOriginal_uri(originalResource);
-        timeMapJSON.setTimegate_uri(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/" + originalResource);
-
-        Map<String, String> timemap_uri = new HashMap<>();
-        timemap_uri.put("link_format", PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + originalResource);
-        timemap_uri.put("json", PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + originalResource);
-        timeMapJSON.setTimemap_uri(timemap_uri);
-
-        Map<String, Map<String, String>> mementos = new HashMap<>();
-        Map<String, String> first = new HashMap<>();
-        first.put("datetime", metadata.getFirstMemento());
-        first.put("uri", PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" + metadata.getFirstMemento() + "/" + originalResource);
-        Map<String, String> last = new HashMap<>();
-        mementos.put("first", first);
-
-        timeMapJSON.setMementos(mementos);
         return doc;
     }
 
