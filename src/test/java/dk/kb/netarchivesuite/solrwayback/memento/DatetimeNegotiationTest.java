@@ -4,8 +4,6 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -13,6 +11,7 @@ import javax.ws.rs.core.Response;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 
 public class DatetimeNegotiationTest {
 
