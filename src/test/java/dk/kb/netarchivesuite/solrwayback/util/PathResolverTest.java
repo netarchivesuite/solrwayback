@@ -45,6 +45,17 @@ public class PathResolverTest {
         assertEquals("http://kb.dk/", result.toString());
     }
 
+    @Test
+    public void testPagedTimemap() throws URISyntaxException {
+        UriInfo uriInfo = Mockito.mock(UriInfo.class);
+        Mockito.when(uriInfo.getRequestUri())
+                .thenReturn(URI.create("http://localhost:8080/services/memento/timemap/2/json/kb.dk/"));
+
+        URI result = PathResolver.mementoAPIResolver("/timemap/2/json/", uriInfo, "kb.dk/");
+
+        assertEquals("http://kb.dk/", result.toString());
+    }
+
 
 
 }
