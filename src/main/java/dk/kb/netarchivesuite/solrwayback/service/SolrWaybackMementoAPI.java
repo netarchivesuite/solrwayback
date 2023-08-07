@@ -106,8 +106,9 @@ public class SolrWaybackMementoAPI {
                                         @PathParam("url") String url,
                                         @HeaderParam("Accept-Datetime") String acceptDatetime) throws Exception {
 
-        if (acceptDatetime == null){
+        if (acceptDatetime == null || acceptDatetime.isEmpty()){
             acceptDatetime = DateUtils.formatDate(new Date(System.currentTimeMillis()));
+            log.warn("Requested memento without accept-datetime header. The newest memento is returned.");
         }
 
         URI uri =  PathResolver.mementoAPIResolver("/memento/", uriInfo, url);
