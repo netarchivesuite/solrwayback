@@ -35,12 +35,9 @@ public class PathResolver {
 
         log.debug("{} called with data:{}", basePath, path);
         String fullUrl = uriInfo.getRequestUri().toString();
-        //log.info("Accept header: '{}'", httpRequest.getHeader("Accept"));
-        log.info("fullUrl: '{}'", fullUrl);
 
         int dataStart = fullUrl.indexOf(basePath);
         String url = fullUrl.substring(dataStart + basePath.length());
-        log.info("url: " + url);
 
         url = checkForSingleSlash(url);
         String newUrl = replaceEncoding(url);
@@ -49,7 +46,7 @@ public class PathResolver {
         String finalUrl = Normalisation.canonicaliseURL(newUrl);
 
         URI uri = new URI(finalUrl);
-        log.info("new url:" + finalUrl);
+        log.debug("new url:" + finalUrl);
 
         return uri;
     }
