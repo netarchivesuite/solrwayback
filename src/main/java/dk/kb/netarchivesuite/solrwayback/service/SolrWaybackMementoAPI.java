@@ -75,27 +75,61 @@ public class SolrWaybackMementoAPI {
     // This makes totally sense and is also described here: http://mementoweb.org/guide/timemap-json/#basic
     // However the RFC 7089 only mentions the support for multiple mimetypes through the HTTP accept header: https://datatracker.ietf.org/doc/html/rfc7089#section-5
     @GET
-    @Path("timemap/{url:.+}")
+    @Path("timemap/{type}/{url:.+}")
     public Response timeMap(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest,
-                            @PathParam("url") String url, @HeaderParam("Accept") String responseFormat)
+                            @PathParam("url") String url, @HeaderParam("Accept") String acceptHeader,
+                            @PathParam("type") String type)
                             throws URISyntaxException {
+
+        String mimeTypeForResponse = acceptHeader;
+
+        if (type.equals("json")){
+            mimeTypeForResponse = "application/json";
+        } else if (type.equals("link")) {
+            mimeTypeForResponse = "application/link-format";
+        }
 
         // When Accept header is not specified Chrome and Firefox applies a comma separated list of multiple
         // headers, this should be replaced by the link-format mimetype.
-        if (responseFormat == null || responseFormat.isEmpty() || responseFormat.contains(",")){
-
-            responseFormat = "application/link-format";
+        if (mimeTypeForResponse.isEmpty()){
+            mimeTypeForResponse = "application/link-format";
             log.info("Accept header not included. Returning application/link-format.");
         }
 
-        URI uri =  PathResolver.mementoAPIResolver("/timemap/", uriInfo, url);
-        StreamingOutput timemap = getTimeMap(uri, responseFormat);
-        String fileType = fileEndingFromAcceptHeader(responseFormat);
+        URI uri =  PathResolver.mementoAPIResolver("/timemap/" + type + "/", uriInfo, url);
+        StreamingOutput timemap = getTimeMap(uri, mimeTypeForResponse, null);
+        String fileType = fileEndingFromAcceptHeader(mimeTypeForResponse);
 
         // TODO: Fresh eyes on http headers for timemap
-        return Response.ok().type(responseFormat)
+        return Response.ok().type(mimeTypeForResponse)
                 .entity(timemap)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap"+ fileType + "\"")
+                .build();
+    }
+
+    @GET
+    @Path("timemap/{page:\\d+}/{type}/{url:.+}")
+    public Response timeMapPaged(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest,
+                            @PathParam("url") String url, @HeaderParam("Accept") String acceptHeader,
+                            @PathParam("page") String page, @PathParam("type") String type)
+            throws URISyntaxException {
+
+        String mimeTypeForResponse = acceptHeader;
+
+        if (type.equals("json")){
+            mimeTypeForResponse = "application/json";
+        } else if (type.equals("link")) {
+            mimeTypeForResponse = "application/link-format";
+        }
+
+        URI uri =  PathResolver.mementoAPIResolver("/timemap/" + page + "/" + type + "/", uriInfo, url);
+        StreamingOutput timemap = getTimeMap(uri, mimeTypeForResponse, Integer.valueOf(page));
+        String fileType = fileEndingFromAcceptHeader(mimeTypeForResponse);
+
+        // TODO: Fresh eyes on http headers for timemap
+        return Response.ok().type(mimeTypeForResponse)
+                .entity(timemap)
+                //.header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap"+ fileType + "\"")
                 .build();
     }
 

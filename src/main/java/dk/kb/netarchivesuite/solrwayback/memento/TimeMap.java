@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 public class TimeMap {
     private static final int RESULTS_PER_PAGE = 2;
+    private static final int PAGING_LIMIT = 2;
 
 
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
@@ -37,9 +38,7 @@ public class TimeMap {
         if (responseFormat.equals("application/json")){
             return getTimeMapAsJson(originalResource, pageNumber);
         } else {
-            return output -> {
-                getTimeMapAsLinkFormat(originalResource, output);
-            };
+            return output -> getTimeMapAsLinkFormat(originalResource, output, pageNumber);
         }
     }
 
@@ -53,7 +52,7 @@ public class TimeMap {
 
         long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
                 .count();
-        if (count < 2){ //TODO: Set this through a property.
+        if (count < PAGING_LIMIT){
             log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
 
@@ -75,24 +74,62 @@ public class TimeMap {
      * @param originalResource  URI-R to create URI-T from.
      * @param output            Stream which the output is delivered to.
      */
-    private static void getTimeMapAsLinkFormat(URI originalResource, OutputStream output) throws IOException {
+    private static void getTimeMapAsLinkFormat(URI originalResource, OutputStream output, Integer pageNumber) throws IOException {
         MementoMetadata metadata = new MementoMetadata();
 
-        // Sadly we need to do two Solr calls as it doesn't seem possible to calculate the dates for the header,
-        // in the second stream and add it to the output as the first thing. Please correct me if im wrong.
         long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
                 .map(doc1 -> updateTimeMapHeadForLinkFormat(doc1, metadata, originalResource.toString()))
                 .count();
 
-        log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
-                count, metadata.getFirstMemento(), metadata.getLastMemento());
+        if (count < PAGING_LIMIT){
+            log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}' in JSON format.",
+                    count, metadata.getFirstMemento(), metadata.getLastMemento());
 
+            output.write(metadata.getTimeMapHead().getBytes());
+
+            AtomicLong iterator = new AtomicLong(1);
+            getMementoStream(originalResource)
+                    .map(doc -> createMementoInLinkFormat(doc, iterator, count))
+                    .forEach(s -> writeStringSafe(s, output));
+        } else {
+            log.info("Creating paged timemaps of '{}' entries, with dates in range from '{}' to '{}' in link-format.",
+                    count, metadata.getFirstMemento(), metadata.getLastMemento());
+            // TODO: implement paging for link-format here
+            Stream<SolrDocument> mementoStream = getMementoStream(originalResource);
+
+            getLinkFormatPagedStreamingOutput(originalResource, metadata, mementoStream, count, pageNumber, output);
+        }
+
+    }
+
+    private static void getLinkFormatPagedStreamingOutput(URI originalResource, MementoMetadata metadata,
+                                                          Stream<SolrDocument> mementoStream, long count,
+                                                          Integer pageNumber, OutputStream output) throws IOException {
+
+        if (pageNumber == null || (long) RESULTS_PER_PAGE * pageNumber > count){
+            pageNumber = (int) (count/RESULTS_PER_PAGE);
+            log.info("Set page number to: " + pageNumber);
+        }
+
+        //Page response
+        int finalPageNumber = pageNumber;
+        Page<SolrDocument> pageOfResults = getPage(mementoStream, pageNumber, count);
+
+        //TODO: Check that this head contains the correct link for timemap
+        //Write head/first part of response
         output.write(metadata.getTimeMapHead().getBytes());
 
         AtomicLong iterator = new AtomicLong(1);
-        getMementoStream(originalResource)
-                .map(doc -> createMementoInLinkFormat(doc, iterator, count))
+        pageOfResults.items
+                .map(doc -> createMementoInLinkFormat(doc, iterator, count) )
                 .forEach(s -> writeStringSafe(s, output));
+
+
+
+
+        //TODO: Deliver paged results
+        //TODO: Write pages overview
+
     }
 
     /**
@@ -137,9 +174,9 @@ public class TimeMap {
             log.info("Set page number to: " + pageNumber);
         }
 
+        int finalPageNumber = pageNumber;
         Page<SolrDocument> pageOfResults = getPage(mementoStream, pageNumber, count);
 
-        int finalPageNumber = pageNumber;
         return os -> createPagedJsonTimemap(originalResource, metadata, count, finalPageNumber, pageOfResults, os);
     }
 
