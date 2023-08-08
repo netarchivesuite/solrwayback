@@ -17,7 +17,7 @@
         expanded WARC.GZ export
       </a>
       <button v-if="configs.exportOptions.csvAllowed === 'true'" class="exportButton" @click="toggleCsvExportOptions()">
-        CSV export
+        CSV/JSON/JSONL export
       </button>
       <a v-if="configs.exportOptions.zipAllowed === 'true'" class="exportButton" :href="exportToZip()">
         Zip content export
@@ -31,7 +31,7 @@
        
        
         <div class="exportContent">
-          <h2>CSV EXPORT</h2>
+          <h2>CSV/JSON/JSONL EXPORT</h2>
           <p>Select the fields of the posts in your search result, that you wish to have in the exported csv file.</p><br>
           <p>
             You can also rank them in the order that you wish to have them in, should you desire so. Simply hover over the item you wish to move 
