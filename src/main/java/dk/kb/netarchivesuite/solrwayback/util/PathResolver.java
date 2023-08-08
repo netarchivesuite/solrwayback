@@ -20,7 +20,6 @@ import java.net.URISyntaxException;
 
 public class PathResolver {
     private static final Logger log = LoggerFactory.getLogger(PathResolver.class);
-    private static AggressiveUrlCanonicalizer canon = new AggressiveUrlCanonicalizer();
 
     /**
      * Resolves the URL of an original resource to fetch mementos for through SolrWayback.
