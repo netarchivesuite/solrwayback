@@ -17,11 +17,11 @@ import static org.junit.Assert.assertEquals;
 
 public class TimeMapTest {
     final String testTimeMap = "<http://kb.dk/>;rel=\"original\",\n" +
-            "<http://localhost:8080/solrwayback/memento/timemap/http://kb.dk/>\n" +
+            "<http://localhost:8080/solrwayback/services/memento/timemap/link/http://kb.dk/>\n" +
             "; rel=\"self\";type=\"application/link-format\"\n" +
-            "; from\"Thu, 23 Mar 2023 14:05:57 GMT\"\n" +
-            "; until\"Wed, 26 Jul 2023 09:53:12 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/memento/http://kb.dk/>\n" +
+            "; from=\"Thu, 23 Mar 2023 14:05:57 GMT\"\n" +
+            "; until=\"Wed, 26 Jul 2023 09:53:12 GMT\",\n" +
+            "<http://localhost:8080/solrwayback/services/memento/http://kb.dk/>\n" +
             "; rel=\"timegate\",\n" +
             "<http://localhost:8080/solrwayback/services/web/20230323140557/https://www.kb.dk/>\n" +
             "; rel=\"first memento\"; datetime=\"Thu, 23 Mar 2023 14:05:57 GMT\"\n" +
