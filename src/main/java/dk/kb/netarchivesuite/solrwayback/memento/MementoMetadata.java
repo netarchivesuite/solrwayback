@@ -76,12 +76,19 @@ public class MementoMetadata {
         this.lastWaybackDate = lastWaybackDate;
     }
 
-    public void setTimeMapHeadForLinkFormat(String originalResource) {
+    public void setTimeMapHeadForLinkFormat(String originalResource, Integer pageNumber) {
+        String timemapLink = "";
+        if (pageNumber == null || pageNumber == 0){
+             timemapLink = PropertiesLoaderWeb.WAYBACK_SERVER + "memento/timemap/link" + originalResource;
+        } else {
+            timemapLink = PropertiesLoaderWeb.WAYBACK_SERVER + "memento/timemap/"+pageNumber+"/link" + originalResource;
+        }
+
         this.timeMapHead = "<" + originalResource + ">;rel=\"original\",\n" +
-               "<"+ PropertiesLoaderWeb.WAYBACK_SERVER + "memento/timemap/" + originalResource + ">\n" +
+               "<"+ timemapLink + ">\n" +
                "; rel=\"self\";type=\"application/link-format\"\n" +
-               "; from\"" + this.getFirstMemento() + "\"\n" +
-               "; until\"" + this.getLastMemento() + "\",\n" +
+               "; from=\"" + this.getFirstMemento() + "\"\n" +
+               "; until=\"" + this.getLastMemento() + "\",\n" +
                "<"+ PropertiesLoaderWeb.WAYBACK_SERVER +"memento/timegate/" + originalResource + ">\n" +
                "; rel=\"timegate\",\n";
     }
