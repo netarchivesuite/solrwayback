@@ -9,6 +9,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +19,6 @@ import javax.ws.rs.core.Response;
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-
-
 
 /**
  * This class implements the Datetime Negotiation of the Memento Framework
@@ -79,11 +78,29 @@ public class DatetimeNegotiation {
         // Create response through streaming of a single SolrDocument.
         Optional<Response> responseOpt = NetarchiveSolrClient.getInstance()
                 .findNearestHarvestTimeForSingleUrlFewFields(url, solrDate)
+                .map(doc -> saveFirstAndLastDate(doc, metadata))
                 .map(doc -> addHeadersToMetadataObjectForRedirectingTimegate(doc, metadata))
                 .map(doc -> streamMementoFromRedirectingTimeGate(doc, metadata))
                 .reduce((first, second) -> first);
 
         return responseOpt.orElseGet(() -> Response.status(404).build());
+    }
+
+    private static MementoDoc saveFirstAndLastDate(MementoDoc doc, MementoMetadata metadata) {
+        if (doc.getWayback_date() < metadata.getFirstWaybackDate()){
+            metadata.setFirstWaybackDate(doc.getWayback_date());
+        }
+        if (doc.getWayback_date() > metadata.getLastWaybackDate()){
+            metadata.setLastWaybackDate(doc.getWayback_date());
+        }
+        try{
+            metadata.setFirstMementoFromFirstWaybackDate();
+            metadata.setLastMementoFromLastWaybackDate();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        return doc;
+
     }
 
     /**
@@ -134,7 +151,9 @@ public class DatetimeNegotiation {
                 doc.getWayback_date() + "/" + doc.getUrl());
         String linkString = "<" + doc.getUrl() + ">; rel=\"original\"," +
                 "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + doc.getUrl() + ">" +
-                "; rel=\"timemap\"; type=\"application/link-format\""; //TODO: Missing from and until in timemap
+                "; rel=\"timemap\"; type=\"application/link-format\"\n" +
+                "; from=\"" + metadata.getFirstMemento() + "\"\n" +
+                "; until=\"" + metadata.getLastMemento() + "\"";
         headers.add("Link", linkString);
         headers.add("Content-Length", 0);
         headers.add("Content-Type", doc.getContent_type());

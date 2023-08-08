@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 public class TimeMap {
     private static final int RESULTS_PER_PAGE = 2;
-    private static final int PAGING_LIMIT = 2;
+    private static final int PAGING_LIMIT = 3;
 
 
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
