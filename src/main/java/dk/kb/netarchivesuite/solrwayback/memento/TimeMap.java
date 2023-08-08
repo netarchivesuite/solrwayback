@@ -102,34 +102,72 @@ public class TimeMap {
 
     }
 
+    /**
+     * Creates a paged timemap formatted as application/link-type and writes it to the outputstream given to the method.
+     * @param originalResource  URI-R to write timemap for.
+     * @param metadata          object containing the beginning of the timemap.
+     * @param mementoStream     stream containing all mementos from solr for given resource.
+     * @param countOfMementos   total amount of mementos for resource.
+     * @param pageNumber        the given page to return.
+     * @param output            outputstream, which the result is written to.
+     */
     private static void getLinkFormatPagedStreamingOutput(URI originalResource, MementoMetadata metadata,
-                                                          Stream<SolrDocument> mementoStream, long count,
+                                                          Stream<SolrDocument> mementoStream, long countOfMementos,
                                                           Integer pageNumber, OutputStream output) throws IOException {
 
-        if (pageNumber == null || (long) RESULTS_PER_PAGE * pageNumber > count){
-            pageNumber = (int) (count/RESULTS_PER_PAGE);
+        if (pageNumber == null || (long) RESULTS_PER_PAGE * pageNumber > countOfMementos){
+            pageNumber = (int) (countOfMementos/RESULTS_PER_PAGE);
             log.info("Set page number to: " + pageNumber);
         }
 
         //Page response
-        int finalPageNumber = pageNumber;
-        Page<SolrDocument> pageOfResults = getPage(mementoStream, pageNumber, count);
+        Page<SolrDocument> pageOfResults = getPage(mementoStream, pageNumber, countOfMementos);
 
         //TODO: Check that this head contains the correct link for timemap
-        //Write head/first part of response
         output.write(metadata.getTimeMapHead().getBytes());
 
-        AtomicLong iterator = new AtomicLong(1);
+        AtomicLong iterator = new AtomicLong((pageNumber * RESULTS_PER_PAGE - 1) );
         pageOfResults.items
-                .map(doc -> createMementoInLinkFormat(doc, iterator, count) )
+                .map(doc -> createMementoInLinkFormat(doc, iterator, countOfMementos) )
                 .forEach(s -> writeStringSafe(s, output));
 
+        if (pageNumber - 1 != 0 ) {
+            writeLinkTypePreviousPage(originalResource, output, pageNumber);
+        }
+        if ((long) RESULTS_PER_PAGE * pageNumber < countOfMementos) {
+            writeLinkTypeNextPage(originalResource, output, pageNumber);
+        }
+    }
 
+    /**
+     * Create a link to the page before the current in a paged timemap series.
+     * @param originalResource  which this timemap is about.
+     * @param output            outputstream already containing information on the given URI-R and some links to
+     *                          mementos for the resource.
+     * @param pageNumber        the page of the paged timemap.
+     */
+    private static void writeLinkTypePreviousPage(URI originalResource, OutputStream output, Integer pageNumber) throws IOException {
+        String previousPageLink = "<" +  PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" +
+                (pageNumber - 1) + "/link/" + originalResource + ">\n" +
+                "; rel=\"prev\"; type=\"application/link-format\"\n";
 
+        output.write(previousPageLink.getBytes());
+    }
 
-        //TODO: Deliver paged results
-        //TODO: Write pages overview
+    /**
+     * Create a link to the page after the current in a paged timemap series.
+     * @param originalResource  which this timemap is about.
+     * @param output            outputstream already containing information on the given URI-R and some links to
+     *                          mementos for the resource.
+     *                          Would also contain a link to the previous page, if such exists.
+     * @param pageNumber        the page of the paged timemap.
+     */
+    private static void writeLinkTypeNextPage(URI originalResource, OutputStream output, Integer pageNumber) throws IOException {
+        String nextPageLink = "<" +  PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" +
+                (pageNumber + 1) + "/link/" + originalResource + ">\n" +
+                "; rel=\"next\"; type=\"application/link-format\"\n";
 
+        output.write(nextPageLink.getBytes());
     }
 
     /**
@@ -252,6 +290,7 @@ public class TimeMap {
 
         jg.writeFieldName("pages");
         jg.writeStartObject();//pages start
+        //TODO: Does this give a prev page for page 1
         if (pageNumber - 1 != 0) {
             jg.writeFieldName("prev");
             jg.writeStartObject(); //pages.prev start
