@@ -3,7 +3,6 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
@@ -11,18 +10,17 @@ import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class TimeMap {
+    private static final int RESULTS_PER_PAGE = 2;
+
 
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
     //TODO: Implement Paged TimeMaps (Can maybe be done through the count of the first query)
@@ -33,10 +31,10 @@ public class TimeMap {
      *                          Defaults to application/link-type.
      * @return                  The timemap in the specified format.
      */
-    public static StreamingOutput getTimeMap(URI originalResource, String responseFormat) {
+    public static StreamingOutput getTimeMap(URI originalResource, String responseFormat, Integer pageNumber) {
 
         if (responseFormat.equals("application/json")){
-            return getTimeMapAsJson(originalResource);
+            return getTimeMapAsJson(originalResource, pageNumber);
         } else {
             return output -> {
                 getTimeMapAsLinkFormat(originalResource, output);
@@ -49,18 +47,127 @@ public class TimeMap {
      * @param originalResource  URI-R to create URI-T from.
      * @return                  A json representation of the timemap ready for streaming.
      */
-    private static StreamingOutput getTimeMapAsJson(URI originalResource) {
+    private static StreamingOutput getTimeMapAsJson(URI originalResource, int pageNumber) {
         MementoMetadata metadata = new MementoMetadata();
-        // Sadly we need to do two Solr calls as it doesn't seem possible to calculate the dates for the header,
-        // in the second stream and add it to the output as the first thing. Please correct me if im wrong.
+
         long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
                 .count();
-        log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
-                count, metadata.getFirstMemento(), metadata.getLastMemento());
+        if (count < 2){ //TODO: Set this through a property.
+            log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
+                    count, metadata.getFirstMemento(), metadata.getLastMemento());
 
-        Stream<SolrDocument> mementoStream = getMementoStream(originalResource);
+            Stream<SolrDocument> mementoStream = getMementoStream(originalResource);
 
-        return getJSONStreamingOutput(originalResource, metadata, mementoStream);
+            return getJSONStreamingOutput(originalResource, metadata, mementoStream);
+        } else {
+            log.info("Creating paged timemaps of '{}' entries, with dates in range from '{}' to '{}'.",
+                    count, metadata.getFirstMemento(), metadata.getLastMemento());
+
+            Stream<SolrDocument> mementoStream = getMementoStream(originalResource);
+
+            return getJSONPagedStreamingOutput(originalResource, metadata, mementoStream, count, pageNumber);
+        }
+    }
+
+    /**
+     * Return the requested timemap as a paged result.
+     * @param originalResource  which the timemap is fetched for.
+     * @param metadata          containing information on the mementos of the original resource.
+     * @param mementoStream     containing all mementos, ready for being paged.
+     * @param count             total amount of mementos.
+     * @return                  A paged JSON timemap ready for streaming.
+     */
+    private static StreamingOutput getJSONPagedStreamingOutput(URI originalResource, MementoMetadata metadata,
+                                                               Stream<SolrDocument> mementoStream,
+                                                               long count, int pageNumber) {
+
+        Page<SolrDocument> pageOfResults = getPage(mementoStream, pageNumber, count);
+        if ((long) RESULTS_PER_PAGE * pageNumber > count){
+            throw new IllegalArgumentException("The requested page does not exist. The last page for this memento is: '"
+                                                + count/RESULTS_PER_PAGE + "'.");
+        }
+
+        return os -> {
+            JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os);
+
+            jg.writeFieldName("list");
+            jg.writeStartArray(); //list start
+            long processedMementoCount = pageOfResults.getItems()
+                    .map(doc -> addMementoToTimeMapObject(doc, jg, originalResource))
+                    .count();
+            log.info("processedMementoCount is: " + processedMementoCount);
+            log.info("Wrote '{}' mementos to JSON timemap.", processedMementoCount);
+            jg.writeEndArray(); //list end
+            jg.writeEndObject(); //mementos end
+
+            jg.writeFieldName("pages");
+            jg.writeStartObject();//pages start
+            if (pageNumber - 1 != 0) {
+                jg.writeFieldName("prev");
+                jg.writeStartObject(); //pages.prev start
+                jg.writeFieldName("uri");
+                jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" +
+                        (pageNumber - 1) + "/json/" + originalResource);
+                jg.writeEndObject();//pages.prev end
+            }
+            if ((long) RESULTS_PER_PAGE * pageNumber < count){
+                jg.writeFieldName("next");
+                jg.writeStartObject(); //pages.next start
+                jg.writeFieldName("uri");
+                jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" +
+                        (pageNumber + 1) + "/json/" + originalResource);
+                jg.writeEndObject(); //pages.next end
+            }
+            jg.writeEndObject(); //pages end
+            jg.writeEndObject(); //timemap end
+            jg.flush();
+            jg.close();
+        };
+    }
+
+    /**
+     * Create the beginning of a JSON timemap. Containing original URI, timegate URI, timemap URI and information on first and last memento.
+     * @param originalResource  to create timemap for.
+     * @param metadata          object which contains data used for constructing mementos.
+     * @param os                outputstream to write JSON to.
+     * @return                  the JSON generator with the beginning of the timemap written to it.
+     */
+    private static JsonGenerator getStartOfJsonTimeMap(URI originalResource, MementoMetadata metadata, OutputStream os) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonGenerator jg = objectMapper.getFactory().createGenerator(os, JsonEncoding.UTF8);
+
+        jg.writeStartObject(); // timemap start
+        jg.writeFieldName("original_uri");
+        jg.writeString(originalResource.toString());
+        jg.writeFieldName("timegate_uri");
+        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/" + originalResource);
+
+        jg.writeFieldName("timemap_uri");
+        jg.writeStartObject(); //timemap_uri start
+        jg.writeFieldName("link_format");
+        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + originalResource);
+        jg.writeFieldName("json_format");
+        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + originalResource);
+        jg.writeEndObject(); //timemap_uri end
+
+        jg.writeFieldName("mementos");
+        jg.writeStartObject(); //mementos start
+        jg.writeFieldName("first");
+        jg.writeStartObject(); //first start
+        jg.writeFieldName("datetime");
+        jg.writeString(metadata.getFirstMemento());
+        jg.writeFieldName("uri");
+        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + metadata.getFirstWaybackDate() + "/" + originalResource);
+        jg.writeEndObject(); //first end
+
+        jg.writeFieldName("last");
+        jg.writeStartObject(); //last start
+        jg.writeFieldName("datetime");
+        jg.writeString(metadata.getLastMemento());
+        jg.writeFieldName("uri");
+        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + metadata.getLastWaybackDate() + "/" + originalResource);
+        jg.writeEndObject(); //last end
+        return jg;
     }
 
     /**
@@ -110,43 +217,9 @@ public class TimeMap {
      * @return                  A JSON timemap for the input original resource.
      */
     private static StreamingOutput getJSONStreamingOutput(URI originalResource, MementoMetadata metadata, Stream<SolrDocument> mementoStream) {
-        ObjectMapper objectMapper = new ObjectMapper();
 
         return os -> {
-            JsonGenerator jg = objectMapper.getFactory().createGenerator(os, JsonEncoding.UTF8);
-
-            jg.writeStartObject(); // timemap start
-            jg.writeFieldName("original_uri");
-            jg.writeString(originalResource.toString());
-            jg.writeFieldName("timegate_uri");
-            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/" + originalResource);
-
-            jg.writeFieldName("timemap_uri");
-            jg.writeStartObject(); //timemap_uri start
-            jg.writeFieldName("link_format");
-            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + originalResource);
-            jg.writeFieldName("json_format");
-            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + originalResource);
-            jg.writeEndObject(); //timemap_uri end
-
-            jg.writeFieldName("mementos");
-            jg.writeStartObject(); //mementos start
-            jg.writeFieldName("first");
-            jg.writeStartObject(); //first start
-            jg.writeFieldName("datetime");
-            jg.writeString(metadata.getFirstMemento());
-            jg.writeFieldName("uri");
-            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + metadata.getFirstWaybackDate() + "/" + originalResource);
-            jg.writeEndObject(); //first end
-
-            jg.writeFieldName("last");
-            jg.writeStartObject(); //last start
-            jg.writeFieldName("datetime");
-            jg.writeString(metadata.getLastMemento());
-            jg.writeFieldName("uri");
-            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + metadata.getLastWaybackDate() + "/" + originalResource);
-            jg.writeEndObject(); //last end
-
+            JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os);
             jg.writeFieldName("list");
             jg.writeStartArray(); //list start
             long processedMementoCount = mementoStream
@@ -225,7 +298,6 @@ public class TimeMap {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-
         return doc;
     }
 
@@ -291,4 +363,74 @@ public class TimeMap {
         }
     }
 
+    // PAGING METHOD AND HELPER CLASS
+
+    /**
+     * Method to divide a stream of SolrDocuments into pages of streams.
+     * @param streamOfDocs          original stream, which pages are created from.
+     * @param pageNumber            of the page to retrieve.
+     * @param numberOfDocsInStream  amount of total documents in the main stream.
+     * @return                      a page of solr documents.
+     */
+    private static Page<SolrDocument> getPage(Stream<SolrDocument> streamOfDocs, int pageNumber, long numberOfDocsInStream) {
+        int skipCount = (pageNumber - 1) * RESULTS_PER_PAGE;
+
+        Stream<SolrDocument> solrDocs = streamOfDocs
+                                        .skip(skipCount)
+                                        .limit(RESULTS_PER_PAGE);
+
+        Page<SolrDocument> page = new Page<>(pageNumber, numberOfDocsInStream, solrDocs);
+
+        return page;
+    }
+
+
+    /**
+     * Class that implements a paging mechanism for streams.
+     * @param <T> the type of objects in the stream, that is to be paged.
+     */
+    private static class Page<T> {
+        private Integer pageNumber;
+        private Integer resultsPerPage;
+        private Long totalResults;
+        private Stream<T> items;
+
+        /**
+         * Standard constructor for a page.
+         * @param pageNumber    to retrieve.
+         * @param totalResults  the size of the original stream.
+         * @param items         to include on the page.
+         */
+        public Page(Integer pageNumber, Long totalResults, Stream<T> items) {
+            this.pageNumber = pageNumber;
+            this.resultsPerPage = RESULTS_PER_PAGE;
+            this.totalResults = totalResults;
+            this.items = items;
+        }
+
+        public Integer getPageNumber() {
+            return pageNumber;
+        }
+        public void setPageNumber(Integer pageNumber) {
+            this.pageNumber = pageNumber;
+        }
+        public Integer getResultsPerPage() {
+            return resultsPerPage;
+        }
+        public void setResultsPerPage(Integer resultsPerPage) {
+            this.resultsPerPage = resultsPerPage;
+        }
+        public Stream<T> getItems() {
+            return items;
+        }
+        public void setItems(Stream<T> items) {
+            this.items = items;
+        }
+        public Long getTotalResults() {
+            return totalResults;
+        }
+        public void setTotalResults(Long totalResults) {
+            this.totalResults = totalResults;
+        }
+    }
 }
