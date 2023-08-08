@@ -45,7 +45,7 @@ public class TimeMapTest {
 
     @Test
     public void testTimeMapLinkConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format");
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", null);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         timeMap.write(output);

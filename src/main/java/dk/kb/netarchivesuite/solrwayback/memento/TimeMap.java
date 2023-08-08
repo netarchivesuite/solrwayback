@@ -7,6 +7,7 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.common.SolrDocument;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,7 @@ public class TimeMap {
      * @param originalResource  URI-R to create URI-T from.
      * @return                  A json representation of the timemap ready for streaming.
      */
-    private static StreamingOutput getTimeMapAsJson(URI originalResource, int pageNumber) {
+    private static StreamingOutput getTimeMapAsJson(URI originalResource, Integer pageNumber) {
         MementoMetadata metadata = new MementoMetadata();
 
         long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
@@ -70,6 +71,56 @@ public class TimeMap {
     }
 
     /**
+     * Writes a timemap (URI-T) for a URI-R to an outputstream in the link-type format.
+     * @param originalResource  URI-R to create URI-T from.
+     * @param output            Stream which the output is delivered to.
+     */
+    private static void getTimeMapAsLinkFormat(URI originalResource, OutputStream output) throws IOException {
+        MementoMetadata metadata = new MementoMetadata();
+
+        // Sadly we need to do two Solr calls as it doesn't seem possible to calculate the dates for the header,
+        // in the second stream and add it to the output as the first thing. Please correct me if im wrong.
+        long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
+                .map(doc1 -> updateTimeMapHeadForLinkFormat(doc1, metadata, originalResource.toString()))
+                .count();
+
+        log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
+                count, metadata.getFirstMemento(), metadata.getLastMemento());
+
+        output.write(metadata.getTimeMapHead().getBytes());
+
+        AtomicLong iterator = new AtomicLong(1);
+        getMementoStream(originalResource)
+                .map(doc -> createMementoInLinkFormat(doc, iterator, count))
+                .forEach(s -> writeStringSafe(s, output));
+    }
+
+    /**
+     * Create a JSON representation of a timemap for an original resource and return it as a streaming output.
+     * @param originalResource  to create timemap of.
+     * @param metadata          object containing different metatdata extracted from solr, used to create the timemap.
+     * @param mementoStream     Stream of solr documents containing all mementos of the given original resource.
+     * @return                  A JSON timemap for the input original resource.
+     */
+    private static StreamingOutput getJSONStreamingOutput(URI originalResource, MementoMetadata metadata, Stream<SolrDocument> mementoStream) {
+
+        return os -> {
+            JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os);
+            jg.writeFieldName("list");
+            jg.writeStartArray(); //list start
+            long processedMementoCount = mementoStream
+                    .map(doc -> addMementoToTimeMapObject(doc, jg, originalResource))
+                    .count();
+            log.info("Wrote '{}' mementos to JSON timemap.", processedMementoCount);
+            jg.writeEndArray(); //list end
+            jg.writeEndObject(); //mementos end
+            jg.writeEndObject(); //timemap end
+            jg.flush();
+            jg.close();
+        };
+    }
+
+    /**
      * Return the requested timemap as a paged result.
      * @param originalResource  which the timemap is fetched for.
      * @param metadata          containing information on the mementos of the original resource.
@@ -79,50 +130,17 @@ public class TimeMap {
      */
     private static StreamingOutput getJSONPagedStreamingOutput(URI originalResource, MementoMetadata metadata,
                                                                Stream<SolrDocument> mementoStream,
-                                                               long count, int pageNumber) {
+                                                               long count, Integer pageNumber) {
 
-        Page<SolrDocument> pageOfResults = getPage(mementoStream, pageNumber, count);
-        if ((long) RESULTS_PER_PAGE * pageNumber > count){
-            throw new IllegalArgumentException("The requested page does not exist. The last page for this memento is: '"
-                                                + count/RESULTS_PER_PAGE + "'.");
+        if (pageNumber == null || (long) RESULTS_PER_PAGE * pageNumber > count){
+            pageNumber = (int) (count/RESULTS_PER_PAGE);
+            log.info("Set page number to: " + pageNumber);
         }
 
-        return os -> {
-            JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os);
+        Page<SolrDocument> pageOfResults = getPage(mementoStream, pageNumber, count);
 
-            jg.writeFieldName("list");
-            jg.writeStartArray(); //list start
-            long processedMementoCount = pageOfResults.getItems()
-                    .map(doc -> addMementoToTimeMapObject(doc, jg, originalResource))
-                    .count();
-            log.info("processedMementoCount is: " + processedMementoCount);
-            log.info("Wrote '{}' mementos to JSON timemap.", processedMementoCount);
-            jg.writeEndArray(); //list end
-            jg.writeEndObject(); //mementos end
-
-            jg.writeFieldName("pages");
-            jg.writeStartObject();//pages start
-            if (pageNumber - 1 != 0) {
-                jg.writeFieldName("prev");
-                jg.writeStartObject(); //pages.prev start
-                jg.writeFieldName("uri");
-                jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" +
-                        (pageNumber - 1) + "/json/" + originalResource);
-                jg.writeEndObject();//pages.prev end
-            }
-            if ((long) RESULTS_PER_PAGE * pageNumber < count){
-                jg.writeFieldName("next");
-                jg.writeStartObject(); //pages.next start
-                jg.writeFieldName("uri");
-                jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" +
-                        (pageNumber + 1) + "/json/" + originalResource);
-                jg.writeEndObject(); //pages.next end
-            }
-            jg.writeEndObject(); //pages end
-            jg.writeEndObject(); //timemap end
-            jg.flush();
-            jg.close();
-        };
+        int finalPageNumber = pageNumber;
+        return os -> createPagedJsonTimemap(originalResource, metadata, count, finalPageNumber, pageOfResults, os);
     }
 
     /**
@@ -142,6 +160,7 @@ public class TimeMap {
         jg.writeFieldName("timegate_uri");
         jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/" + originalResource);
 
+        // TODO: Add page numbers if they are present.
         jg.writeFieldName("timemap_uri");
         jg.writeStartObject(); //timemap_uri start
         jg.writeFieldName("link_format");
@@ -171,28 +190,51 @@ public class TimeMap {
     }
 
     /**
-     * Writes a timemap (URI-T) for a URI-R to an outputstream in the link-type format.
-     * @param originalResource  URI-R to create URI-T from.
-     * @param output            Stream which the output is delivered to.
+     * Create a paged JSON timemap for the original resource.
+     * @param originalResource          to create timemap for.
+     * @param metadata                  about the mementos for the original resource. Used to create the timemap.
+     * @param totalMementosForResource  amount of mementos for the given resource. Used for creating pages.
+     * @param pageNumber                of the page to retrieve.
+     * @param pageOfResults             a page containing SolrDocuments that are to be written as a paged timemap.
      */
-    private static void getTimeMapAsLinkFormat(URI originalResource, OutputStream output) throws IOException {
-        MementoMetadata metadata = new MementoMetadata();
+    private static void createPagedJsonTimemap(URI originalResource, MementoMetadata metadata, long totalMementosForResource,
+                                               int pageNumber, Page<SolrDocument> pageOfResults, OutputStream os)
+                                               throws IOException {
 
-        // Sadly we need to do two Solr calls as it doesn't seem possible to calculate the dates for the header,
-        // in the second stream and add it to the output as the first thing. Please correct me if im wrong.
-        long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
-                .map(doc1 -> updateTimeMapHeadForLinkFormat(doc1, metadata, originalResource.toString()))
+        JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os);
+
+        jg.writeFieldName("list");
+        jg.writeStartArray(); //list start
+        long processedMementoCount = pageOfResults.getItems()
+                .map(doc -> addMementoToTimeMapObject(doc, jg, originalResource))
                 .count();
+        log.info("processedMementoCount is: " + processedMementoCount);
+        log.info("Wrote '{}' mementos to JSON timemap.", processedMementoCount);
+        jg.writeEndArray(); //list end
+        jg.writeEndObject(); //mementos end
 
-        log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
-                count, metadata.getFirstMemento(), metadata.getLastMemento());
-
-        output.write(metadata.getTimeMapHead().getBytes());
-
-        AtomicLong iterator = new AtomicLong(1);
-        getMementoStream(originalResource)
-                .map(doc -> createMementoInLinkFormat(doc, iterator, count))
-                .forEach(s -> writeStringSafe(s, output));
+        jg.writeFieldName("pages");
+        jg.writeStartObject();//pages start
+        if (pageNumber - 1 != 0) {
+            jg.writeFieldName("prev");
+            jg.writeStartObject(); //pages.prev start
+            jg.writeFieldName("uri");
+            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" +
+                    (pageNumber - 1) + "/json/" + originalResource);
+            jg.writeEndObject();//pages.prev end
+        }
+        if ((long) RESULTS_PER_PAGE * pageNumber < totalMementosForResource){
+            jg.writeFieldName("next");
+            jg.writeStartObject(); //pages.next start
+            jg.writeFieldName("uri");
+            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" +
+                    (pageNumber + 1) + "/json/" + originalResource);
+            jg.writeEndObject(); //pages.next end
+        }
+        jg.writeEndObject(); //pages end
+        jg.writeEndObject(); //timemap end
+        jg.flush();
+        jg.close();
     }
 
 
@@ -208,32 +250,6 @@ public class TimeMap {
                 .sort("id asc")
                 .stream();
     }
-
-    /**
-     * Create a JSON representation of a timemap for an original resource and return it as a streaming output.
-     * @param originalResource  to create timemap of.
-     * @param metadata          object containing different metatdata extracted from solr, used to create the timemap.
-     * @param mementoStream     Stream of solr documents containing all mementos of the given original resource.
-     * @return                  A JSON timemap for the input original resource.
-     */
-    private static StreamingOutput getJSONStreamingOutput(URI originalResource, MementoMetadata metadata, Stream<SolrDocument> mementoStream) {
-
-        return os -> {
-            JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os);
-            jg.writeFieldName("list");
-            jg.writeStartArray(); //list start
-            long processedMementoCount = mementoStream
-                    .map(doc -> addMementoToTimeMapObject(doc, jg, originalResource))
-                    .count();
-            log.info("Wrote '{}' mementos to JSON timemap.", processedMementoCount);
-            jg.writeEndArray(); //list end
-            jg.writeEndObject(); //mementos end
-            jg.writeEndObject(); //timemap end
-            jg.flush();
-            jg.close();
-        };
-    }
-
 
     /**
      * Method used as an intermediate operation on a stream of SolrDocuments.
