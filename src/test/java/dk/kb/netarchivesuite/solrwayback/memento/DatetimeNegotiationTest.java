@@ -21,7 +21,7 @@ public class DatetimeNegotiationTest {
             negotiation.when(() -> DatetimeNegotiation.getMemento("http://kb.dk/", "Thu, 23 Mar 2019 14:05:57 GMT"))
                     .thenReturn(Response.noContent()
                             .header("Vary", "accept-datetime")
-                            .header("Link", "<https://www.kb.dk/>; rel=\"original\",<http://localhost:8080/solrwayback/services/memento/timemap/https://www.kb.dk/>; rel=\"timemap\"; type=\"application/link-format\",<http://localhost:8080/solrwayback/services/memento/timegate/https://www.kb.dk/>; rel=\"timegate\"")
+                            .header("Link", "<https://www.kb.dk/>; rel=\"original\",<http://localhost:8080/solrwayback/services/memento/timemap/https://www.kb.dk/>; rel=\"timemap\"; type=\"application/link-format\",<http://localhost:8080/solrwayback/services/memento/https://www.kb.dk/>; rel=\"timegate\"")
                             .header("Memento-Datetime", "Wed, 26 Jul 2023 09:53:12 GMT")
                             .header("Content-Length", 133114)
                             .header("Content-Type", "text/html;charset=UTF-8")
