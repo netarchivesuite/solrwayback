@@ -107,7 +107,7 @@ public class DatetimeNegotiation {
         String linkString = "<" + doc.getUrl() + ">; rel=\"original\"," +
                 "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + doc.getUrl() + ">" +
                 "; rel=\"timemap\"; type=\"application/link-format\"," +
-                "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timegate/" + doc.getUrl() + ">" +
+                "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/" + doc.getUrl() + ">" +
                 "; rel=\"timegate\"";
         headers.add("Link", linkString);
         headers.add("Content-Length", doc.getContent_length());

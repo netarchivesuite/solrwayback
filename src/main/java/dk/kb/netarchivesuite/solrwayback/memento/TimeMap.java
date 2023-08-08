@@ -25,7 +25,6 @@ public class TimeMap {
 
 
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
-    //TODO: Implement Paged TimeMaps (Can maybe be done through the count of the first query)
     /**
      * Get timemap for specified URI-R. Timemap contains all captured mementos for the given resource.
      * @param originalResource  URI-R to fetch timemap for.
@@ -78,7 +77,7 @@ public class TimeMap {
         MementoMetadata metadata = new MementoMetadata();
 
         long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
-                .map(doc1 -> updateTimeMapHeadForLinkFormat(doc1, metadata, originalResource.toString()))
+                .map(doc1 -> updateTimeMapHeadForLinkFormat(doc1, metadata, originalResource.toString(), pageNumber))
                 .count();
 
         if (count < PAGING_LIMIT){
@@ -94,7 +93,6 @@ public class TimeMap {
         } else {
             log.info("Creating paged timemaps of '{}' entries, with dates in range from '{}' to '{}' in link-format.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
-            // TODO: implement paging for link-format here
             Stream<SolrDocument> mementoStream = getMementoStream(originalResource);
 
             getLinkFormatPagedStreamingOutput(originalResource, metadata, mementoStream, count, pageNumber, output);
@@ -123,7 +121,6 @@ public class TimeMap {
         //Page response
         Page<SolrDocument> pageOfResults = getPage(mementoStream, pageNumber, countOfMementos);
 
-        //TODO: Check that this head contains the correct link for timemap
         output.write(metadata.getTimeMapHead().getBytes());
 
         AtomicLong iterator = new AtomicLong((pageNumber * RESULTS_PER_PAGE - 1) );
@@ -180,7 +177,7 @@ public class TimeMap {
     private static StreamingOutput getJSONStreamingOutput(URI originalResource, MementoMetadata metadata, Stream<SolrDocument> mementoStream) {
 
         return os -> {
-            JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os);
+            JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os, null);
             jg.writeFieldName("list");
             jg.writeStartArray(); //list start
             long processedMementoCount = mementoStream
@@ -225,7 +222,7 @@ public class TimeMap {
      * @param os                outputstream to write JSON to.
      * @return                  the JSON generator with the beginning of the timemap written to it.
      */
-    private static JsonGenerator getStartOfJsonTimeMap(URI originalResource, MementoMetadata metadata, OutputStream os) throws IOException {
+    private static JsonGenerator getStartOfJsonTimeMap(URI originalResource, MementoMetadata metadata, OutputStream os, Integer pageNumber) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonGenerator jg = objectMapper.getFactory().createGenerator(os, JsonEncoding.UTF8);
 
@@ -235,14 +232,24 @@ public class TimeMap {
         jg.writeFieldName("timegate_uri");
         jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/" + originalResource);
 
-        // TODO: Add page numbers if they are present.
         jg.writeFieldName("timemap_uri");
-        jg.writeStartObject(); //timemap_uri start
-        jg.writeFieldName("link_format");
-        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + originalResource);
-        jg.writeFieldName("json_format");
-        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" + originalResource);
-        jg.writeEndObject(); //timemap_uri end
+        if (pageNumber == null || pageNumber == 0) {
+            jg.writeStartObject(); //timemap_uri start
+            jg.writeFieldName("link_format");
+            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/link/" + originalResource);
+            jg.writeFieldName("json_format");
+            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/json/" + originalResource);
+            jg.writeEndObject(); //timemap_uri end
+        } else {
+            jg.writeStartObject(); //timemap_uri start
+            jg.writeFieldName("link_format");
+            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/"+
+                                pageNumber + "/link/" + originalResource);
+            jg.writeFieldName("json_format");
+            jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/"+
+                                pageNumber + "/json/" + originalResource);
+            jg.writeEndObject(); //timemap_uri end
+        }
 
         jg.writeFieldName("mementos");
         jg.writeStartObject(); //mementos start
@@ -251,7 +258,7 @@ public class TimeMap {
         jg.writeFieldName("datetime");
         jg.writeString(metadata.getFirstMemento());
         jg.writeFieldName("uri");
-        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + metadata.getFirstWaybackDate() + "/" + originalResource);
+        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" + metadata.getFirstWaybackDate() + "/" + originalResource);
         jg.writeEndObject(); //first end
 
         jg.writeFieldName("last");
@@ -259,7 +266,7 @@ public class TimeMap {
         jg.writeFieldName("datetime");
         jg.writeString(metadata.getLastMemento());
         jg.writeFieldName("uri");
-        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + metadata.getLastWaybackDate() + "/" + originalResource);
+        jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" + metadata.getLastWaybackDate() + "/" + originalResource);
         jg.writeEndObject(); //last end
         return jg;
     }
@@ -276,7 +283,7 @@ public class TimeMap {
                                                int pageNumber, Page<SolrDocument> pageOfResults, OutputStream os)
                                                throws IOException {
 
-        JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os);
+        JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os, pageNumber);
 
         jg.writeFieldName("list");
         jg.writeStartArray(); //list start
@@ -290,7 +297,6 @@ public class TimeMap {
 
         jg.writeFieldName("pages");
         jg.writeStartObject();//pages start
-        //TODO: Does this give a prev page for page 1
         if (pageNumber - 1 != 0) {
             jg.writeFieldName("prev");
             jg.writeStartObject(); //pages.prev start
@@ -402,8 +408,8 @@ public class TimeMap {
      * @param originalResource  url of the original resource (URI-R). The URI-R is used in the header.
      * @return                  the original solr document for further streaming.
      */
-    private static SolrDocument updateTimeMapHeadForLinkFormat(SolrDocument doc, MementoMetadata metadata, String originalResource) {
-        metadata.setTimeMapHeadForLinkFormat(originalResource);
+    private static SolrDocument updateTimeMapHeadForLinkFormat(SolrDocument doc, MementoMetadata metadata, String originalResource, Integer pageNumber) {
+        metadata.setTimeMapHeadForLinkFormat(originalResource, pageNumber);
         return doc;
     }
 
