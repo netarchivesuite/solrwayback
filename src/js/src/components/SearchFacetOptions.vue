@@ -83,7 +83,7 @@ export default {
       this.searchAppliedFacets.forEach((facet) => {
         facet === newFacet ? facetAllreadyApplied = true : null
       })
-      if(!facetAllreadyApplied === true) {
+      if(!facetAllreadyApplied) {
         this.updateSolrSettingOffset(0)
         this.addToSearchAppliedFacets(newFacet)
         this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
