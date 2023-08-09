@@ -71,7 +71,7 @@ public class TimeMapAsLink extends TimeMap {
 
         output.write(metadata.getTimeMapHead().getBytes());
 
-        AtomicLong iterator = new AtomicLong((pageNumber * TimeMap.RESULTS_PER_PAGE - 1) );
+        AtomicLong iterator = new AtomicLong(((long) pageNumber * TimeMap.RESULTS_PER_PAGE - 1) );
         pageOfResults.items
                 .map(doc -> createMementoInLinkFormat(doc, iterator, countOfMementos) )
                 .forEach(s -> writeStringSafe(s, output));
@@ -93,7 +93,7 @@ public class TimeMapAsLink extends TimeMap {
      */
     private static void writeLinkTypePreviousPage(URI originalResource, OutputStream output, Integer pageNumber) throws IOException {
         String previousPageLink = "<" +  PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" +
-                (pageNumber - 1) + "/link/" + originalResource + ">\n" +
+                (pageNumber - 1) + "/link/" + originalResource + ">" +
                 "; rel=\"prev\"; type=\"application/link-format\"\n";
 
         output.write(previousPageLink.getBytes());
@@ -109,7 +109,7 @@ public class TimeMapAsLink extends TimeMap {
      */
     private static void writeLinkTypeNextPage(URI originalResource, OutputStream output, Integer pageNumber) throws IOException {
         String nextPageLink = "<" +  PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/" +
-                (pageNumber + 1) + "/link/" + originalResource + ">\n" +
+                (pageNumber + 1) + "/link/" + originalResource + ">" +
                 "; rel=\"next\"; type=\"application/link-format\"\n";
 
         output.write(nextPageLink.getBytes());
@@ -142,17 +142,17 @@ public class TimeMapAsLink extends TimeMap {
         try {
             if (iterator.longValue() == 1L){
                 memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
-                        doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">\n" +
+                        doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">" +
                         "; rel=\"first memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"\n";
                 iterator.getAndIncrement();
             } else if (iterator.longValue() == countOfMementos) {
                 memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
-                        doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">\n" +
+                        doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">" +
                         "; rel=\"last memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"\n";
                 iterator.getAndIncrement();
             } else {
                 memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
-                        doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">\n" +
+                        doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">" +
                         "; rel=\"memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"\n";
                 iterator.getAndIncrement();
             }

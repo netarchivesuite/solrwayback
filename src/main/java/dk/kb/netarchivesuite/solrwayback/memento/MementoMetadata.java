@@ -86,10 +86,10 @@ public class MementoMetadata {
 
         this.timeMapHead = "<" + originalResource + ">;rel=\"original\",\n" +
                "<"+ timemapLink + ">\n" +
-               "; rel=\"self\";type=\"application/link-format\"\n" +
-               "; from=\"" + this.getFirstMemento() + "\"\n" +
+               "; rel=\"self\";type=\"application/link-format\"" +
+               "; from=\"" + this.getFirstMemento() + "\"" +
                "; until=\"" + this.getLastMemento() + "\",\n" +
-               "<"+ PropertiesLoaderWeb.WAYBACK_SERVER +"services/memento/" + originalResource + ">\n" +
+               "<"+ PropertiesLoaderWeb.WAYBACK_SERVER +"services/memento/" + originalResource + ">" +
                "; rel=\"timegate\",\n";
     }
 

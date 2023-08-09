@@ -93,7 +93,6 @@ public class SolrWaybackMementoAPI {
         String fileType = fileEndingFromAcceptHeader(mimeTypeForResponse);
 
         // TODO: Fresh eyes on http headers for timemap
-        // TODO: fix filename construction for linktype
         return Response.ok().type(mimeTypeForResponse)
                 .entity(timemap)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap"+ fileType + "\"")
@@ -122,7 +121,7 @@ public class SolrWaybackMementoAPI {
         // TODO: Fresh eyes on http headers for timemap
         return Response.ok().type(mimeTypeForResponse)
                 .entity(timemap)
-                //.header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap"+ fileType + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap"+ fileType + "\"")
                 .build();
     }
 
