@@ -2,14 +2,18 @@ package dk.kb.netarchivesuite.solrwayback.properties;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.*;
 
+import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,21 +92,19 @@ public class PropertiesLoader {
     }
 
     public static void initProperties(String propertyFile) {
+        Path propertyPath = null;
         try {
+            log.info("Initializing solrwayback-properties using property resource '" + propertyFile + "'");
 
-            log.info("Initializing solrwayback-properties using property file '" + propertyFile + "'");
-            String user_home=System.getProperty("user.home");
-
-            File f = new File(propertyFile);
-            if (!f.exists()) { // Fallback to looking in the user home folder
-                f = new File(user_home, propertyFile);
+            try {
+                propertyPath = FileUtil.resolveContainerResource(propertyFile, DEFAULT_PROPERTY_FILE);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(
+                        "Unable to resolve both primary '" + propertyFile +
+                                "' and secondary '" + DEFAULT_PROPERTY_FILE + "' property");
             }
-            if (!f.exists()) {
-                log.info("Could not find contextroot specific propertyfile:"+propertyFile +". Using default:"+DEFAULT_PROPERTY_FILE);
-                f = new File(user_home, DEFAULT_PROPERTY_FILE);
-            }
-            log.info("Load backend-properties: Using user.home folder:" + user_home +" and propertyFile:"+propertyFile);
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
+            log.info("Loading backend-properties '" + propertyPath + "'");
+            InputStreamReader isr = new InputStreamReader(Files.newInputStream(propertyPath), StandardCharsets.UTF_8);
 
             serviceProperties = new Properties();
             serviceProperties.load(isr);
@@ -174,11 +176,9 @@ public class PropertiesLoader {
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);
             log.info("Property:"+ SOLR_SERVER_CHECK_INTERVAL_PROPERTY +" = " +  SOLR_SERVER_CHECK_INTERVAL);
             log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            log.error("Could not load property file:"+propertyFile,e);
-            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace(); // Acceptable as this is catastrophic
+            log.error("Could not load property file '" + propertyPath + "'",e);
         }
     }
 
