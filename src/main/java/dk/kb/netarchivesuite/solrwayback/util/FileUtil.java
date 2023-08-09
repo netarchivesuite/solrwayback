@@ -70,11 +70,12 @@ public class FileUtil {
      * Specialized resolver that operates on the file system. Attempts to locate the given resources in order
      * <ul>
      *     <li>Directly as file</li>
-     *     <li>As {@code $CATALINA_BASE/resource}, {@code $CATALINA_BASE/../resource} etc</li>
-     *     <li>As {@code $CATALINA_HOME/resource}, {@code $CATALINA_HOME/../resource} etc</li>
+     *     <li>As {@code env:catalina.base/resource}, {@code env:catalina.base/../resource} etc</li>
+     *     <li>As {@code env:catalina.home/resource}, {@code env:catalina.home/../resource} etc</li>
      *     <li>As {@code env:user.dir/resource}, {@code env:user.dir/../resource} etc</li>
      *     <li>As {@code env:user.home/resource}</li>
      * </ul>
+     * When running under Tomcat, {@code catalina.home} is guaranteed to be set and {@code catalina.home} might be set.
      * @param resources one or more resources to look for. First file system match is returned.
      * @return a Path to an existing file, found using the priorities stated above.
      * @throws FileNotFoundException if none of the resources could be found.
@@ -83,7 +84,8 @@ public class FileUtil {
         Set<Path> candidates = Arrays.stream(resources).
                 flatMap(FileUtil::getContainerCandidates).
                 collect(Collectors.toCollection(LinkedHashSet::new));
-        
+
+        // We print all potential paths to show people reading logs where the resources can be
         log.info("Resolving resource in order {}", candidates);
 
         return candidates.stream().
@@ -101,6 +103,7 @@ public class FileUtil {
      *     <li>As {@code env:user.dir/resource}, {@code env:user.dir/../resource} etc</li>
      *     <li>As {@code env:user.home/resource}</li>
      * </ul>
+     * When running under Tomcat, {@code catalina.home} is guaranteed to be set and {@code catalina.home} might be set.
      * @param resource a resource to look for.
      * @return a stream with Paths to check for existence of the given resource, in order of priority as listed above.
      */
@@ -114,7 +117,7 @@ public class FileUtil {
     }
 
     /**
-     * Expand the given path to a Stream of the path itselv, followed by all its parents.
+     * Expand the given path to a Stream of the path itself, followed by all its parents.
      * @param path any path.
      * @return a stream of the path followed by all parents.
      */
