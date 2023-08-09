@@ -122,12 +122,9 @@ public class FileUtil {
      * @return a stream of the path followed by all parents.
      */
     private static Stream<Path> allLevels(Path path) {
-        List<Path> levels = new ArrayList<>();
-        levels.add(path);
-        while ((path = path.getParent()) != null) {
-            levels.add(path);
-        }
-        return levels.stream();
+        return path.getParent() != null ?
+                Stream.concat(Stream.of(path), allLevels(path.getParent())) :
+                Stream.of(path);
     }
 
     /**
