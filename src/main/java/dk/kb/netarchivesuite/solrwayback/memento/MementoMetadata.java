@@ -85,8 +85,8 @@ public class MementoMetadata {
         }
 
         this.timeMapHead = "<" + originalResource + ">;rel=\"original\",\n" +
-               "<"+ timemapLink + ">\n" +
-               "; rel=\"self\";type=\"application/link-format\"" +
+               "<"+ timemapLink + ">" +
+               "; rel=\"self\"; type=\"application/link-format\"" +
                "; from=\"" + this.getFirstMemento() + "\"" +
                "; until=\"" + this.getLastMemento() + "\",\n" +
                "<"+ PropertiesLoaderWeb.WAYBACK_SERVER +"services/memento/" + originalResource + ">" +

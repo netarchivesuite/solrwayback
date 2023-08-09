@@ -14,9 +14,7 @@ import java.util.stream.Stream;
 public class TimeMap {
 
     static final int RESULTS_PER_PAGE = PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE;
-
-    //TODO: Convert to property
-    static final int PAGING_LIMIT = 2;
+    static final int PAGING_LIMIT = PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT;
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
 
     /**

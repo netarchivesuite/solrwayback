@@ -143,17 +143,17 @@ public class TimeMapAsLink extends TimeMap {
             if (iterator.longValue() == 1L){
                 memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
                         doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">" +
-                        "; rel=\"first memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"\n";
+                        "; rel=\"first memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\",\n";
                 iterator.getAndIncrement();
             } else if (iterator.longValue() == countOfMementos) {
                 memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
                         doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">" +
-                        "; rel=\"last memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"\n";
+                        "; rel=\"last memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\",\n";
                 iterator.getAndIncrement();
             } else {
                 memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
                         doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">" +
-                        "; rel=\"memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"\n";
+                        "; rel=\"memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\",\n";
                 iterator.getAndIncrement();
             }
         } catch (ParseException e) {
