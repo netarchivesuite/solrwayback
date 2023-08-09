@@ -430,8 +430,8 @@ public class SolrUtils {
      */
     public static String combineFilterQueries(String predefinedFilterField, String predefinedFilterValue, String[] filterQueries) {
         Stream<String> filtersStream = Stream.of(filterQueries);
-        Stream<String> fullFiltersStream =Stream.concat(Stream.of(predefinedFilterField + ":(" + predefinedFilterValue + ")"), filtersStream);
+        Stream<String> fullFiltersStream =Stream.concat(Stream.of(predefinedFilterField + ":" + predefinedFilterValue), filtersStream);
         return fullFiltersStream
-                .collect(Collectors.joining(" AND ", "(", ")"));
+                .collect(Collectors.joining(") AND (", "(", ")"));
     }
 }
