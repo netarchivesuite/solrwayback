@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.memento;
 
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
@@ -11,8 +12,11 @@ import java.text.ParseException;
 import java.util.stream.Stream;
 
 public class TimeMap {
-    static final int RESULTS_PER_PAGE = 2;
-    static final int PAGING_LIMIT = 3;
+
+    static final int RESULTS_PER_PAGE = PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE;
+
+    //TODO: Convert to property
+    static final int PAGING_LIMIT = 2;
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
 
     /**

@@ -63,17 +63,11 @@ import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getTimeMap;
 public class SolrWaybackMementoAPI {
     private static final Logger log = LoggerFactory.getLogger(SolrWaybackMementoAPI.class);
 
-    @GET
-    @Path("timemap/test/{url}")
-    public String timemapExists(@PathParam("url") String url){
-        return "You have reached the endpoint for timemaps and requested: '" + url + "'";
-    }
-
-
-    //TODO: How should we let users choose mimetypes?
+    // Different methods exists for choosing returntype.
     // PyWB does it by a path argument: https://pywb.readthedocs.io/en/latest/manual/memento.html#timegate-api
-    // This makes totally sense and is also described here: http://mementoweb.org/guide/timemap-json/#basic
-    // However the RFC 7089 only mentions the support for multiple mimetypes through the HTTP accept header: https://datatracker.ietf.org/doc/html/rfc7089#section-5
+    // This makes totally sense and is also described here from 2016: http://mementoweb.org/guide/timemap-json/#basic
+    // However the RFC 7089 from 2013 only mentions the support for multiple mimetypes through the HTTP accept header: https://datatracker.ietf.org/doc/html/rfc7089#section-5
+    // specifying it as a path argument is the "modern" way.
     @GET
     @Path("timemap/{type}/{url:.+}")
     public Response timeMap(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest,
@@ -87,13 +81,11 @@ public class SolrWaybackMementoAPI {
             mimeTypeForResponse = "application/json";
         } else if (type.equals("link")) {
             mimeTypeForResponse = "application/link-format";
-        }
-
-        // When Accept header is not specified Chrome and Firefox applies a comma separated list of multiple
-        // headers, this should be replaced by the link-format mimetype.
-        if (mimeTypeForResponse.isEmpty()){
-            mimeTypeForResponse = "application/link-format";
-            log.info("Accept header not included. Returning application/link-format.");
+        } else {
+            if (mimeTypeForResponse.isEmpty()) {
+                mimeTypeForResponse = "application/link-format";
+            }
+            log.info("Accept header not specified in path. Returning: " + mimeTypeForResponse);
         }
 
         URI uri =  PathResolver.mementoAPIResolver("/timemap/" + type + "/", uriInfo, url);
@@ -101,6 +93,7 @@ public class SolrWaybackMementoAPI {
         String fileType = fileEndingFromAcceptHeader(mimeTypeForResponse);
 
         // TODO: Fresh eyes on http headers for timemap
+        // TODO: fix filename construction for linktype
         return Response.ok().type(mimeTypeForResponse)
                 .entity(timemap)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap"+ fileType + "\"")

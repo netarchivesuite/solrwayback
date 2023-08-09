@@ -50,6 +50,8 @@ public class PropertiesLoader {
     public static final String PLAYBACK_DISABLED_PROPERTY="playback.disabled";
     private static final String SOLR_SEARCH_PARAMS_PROPERTY="solr.search.params";
     private static final String MEMENTO_REDIRECT_PROPERTY="memento.redirect";
+    private static final String MEMENTO_TIMEMAP_PAGESIZE_PROPERTY="memento.timemap.pagesize";
+    private static final String MEMENTO_TIMEMAP_PAGINGLIMIT_PROPERTY="memento.timemap.paginglimit";
     
     
     private static Properties serviceProperties = null;
@@ -65,6 +67,8 @@ public class PropertiesLoader {
     public static boolean WARC_SOURCE_HTTP_FALLBACK = false;
     public static String PID_COLLECTION_NAME = null;
     public static boolean MEMENTO_REDIRECT = false;
+    public static int MEMENTO_TIMEMAP_PAGESIZE = 2;
+    public static int MEMENTO_TIMEMAP_PAGINGLIMIT = 5;
     public static String WORDCLOUD_STOPWORDS;
     public static LinkedHashMap<String,String> SOLR_PARAMS_MAP= new LinkedHashMap<String,String>(); 
 
@@ -120,6 +124,8 @@ public class PropertiesLoader {
             WARC_SOURCE_HTTP_FALLBACK = Boolean.parseBoolean(serviceProperties.getProperty(WARC_SOURCE_HTTP_FALLBACK_PROPERTY, Boolean.toString(WARC_SOURCE_HTTP_FALLBACK)));
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
             MEMENTO_REDIRECT = Boolean.parseBoolean(serviceProperties.getProperty(MEMENTO_REDIRECT_PROPERTY));
+            MEMENTO_TIMEMAP_PAGESIZE = Integer.parseInt(serviceProperties.getProperty(MEMENTO_TIMEMAP_PAGESIZE_PROPERTY));
+            MEMENTO_TIMEMAP_PAGINGLIMIT = Integer.parseInt(serviceProperties.getProperty(MEMENTO_TIMEMAP_PAGINGLIMIT_PROPERTY));
             loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
             URL_NORMALISER  = serviceProperties.getProperty(URL_NORMALISER_PROPERTY,"normal");
@@ -173,6 +179,8 @@ public class PropertiesLoader {
             log.info("Property:"+ URL_NORMALISER_PROPERTY +" = " +  URL_NORMALISER);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
             log.info("Property:"+ MEMENTO_REDIRECT_PROPERTY +" = "+ MEMENTO_REDIRECT);
+            log.info("Property:"+ MEMENTO_TIMEMAP_PAGESIZE_PROPERTY+" = "+ MEMENTO_TIMEMAP_PAGESIZE);
+            log.info("Property:"+ MEMENTO_TIMEMAP_PAGINGLIMIT_PROPERTY + " = "+ MEMENTO_TIMEMAP_PAGINGLIMIT);
             log.info("Property:"+ WARC_FILES_VERIFY_COLLECTION_PROPERTY  +" = " + WARC_FILES_VERIFY_COLLECTION);
             log.info("Property:"+ SOLR_SERVER_CACHING_PROPERTY +" = " +  SOLR_SERVER_CACHING);
             log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);

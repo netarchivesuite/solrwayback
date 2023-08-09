@@ -13,9 +13,8 @@ import java.text.ParseException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-public class TimeMapAsLink {
+public class TimeMapAsLink extends TimeMap {
     private static final Logger log = LoggerFactory.getLogger(TimeMapAsLink.class);
-
 
     /**
      * Writes a timemap (URI-T) for a URI-R to an outputstream in the link-type format.
