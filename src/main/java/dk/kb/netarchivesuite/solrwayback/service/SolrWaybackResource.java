@@ -465,7 +465,7 @@ public class SolrWaybackResource {
     StreamingOutput zip = Facade.exportZipContent(query, filters);
 
     return Response.ok(zip)
-            .header("Content-Disposition", getDisposition("solrwayback_$DATETIME_export.zip"))
+            .header("Content-Disposition", getDisposition("solrwayback_$DATETIME.zip"))
             .build();
 
   }
