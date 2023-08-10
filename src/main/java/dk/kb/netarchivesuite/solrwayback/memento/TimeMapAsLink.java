@@ -29,7 +29,7 @@ public class TimeMapAsLink extends TimeMap {
                 .count();
 
         if (count < TimeMap.PAGING_LIMIT){
-            log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}' in JSON format.",
+            log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}' in link-format.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
 
             output.write(metadata.getTimeMapHead().getBytes());
