@@ -4,9 +4,6 @@
       Ngram Netarchive
     </h2>
     <div class="contentContainer">
-      <transition name="loading-overlay">
-        <loading-overlay />
-      </transition>
       <search-box />
       <netarchive-chart />
     </div>
@@ -17,15 +14,12 @@
 
 import NetarchiveChart from '@/components/ngrams/netarchive/NetarchiveChart.vue'
 import SearchBox from '@/components/ngrams/netarchive/SearchBox.vue'
-import LoadingOverlay from '@/components/LoadingOverlay'
-
 
 
 export default {
   name: 'NgramNetarchive',
   components: {
    NetarchiveChart,
-  LoadingOverlay, 
    SearchBox,
   }
 

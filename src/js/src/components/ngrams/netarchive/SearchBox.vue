@@ -1,5 +1,8 @@
 <template>
   <div class="searchBoxContainer">
+    <transition name="loading-overlay">
+      <div v-if="loading" class="spinner" />
+    </transition>
     <div v-if="searcBoxClass() === 'urlNotTrue' && searchType === 'tags'" class="badTagQueryNotice">
       You don't need <span v-if="searchQuery.includes('<')" class="queryErrorColor">&lt;</span><span v-if="searchQuery.includes('>')" class="queryErrorColor">&gt;</span> when searching for tags
     </div>
