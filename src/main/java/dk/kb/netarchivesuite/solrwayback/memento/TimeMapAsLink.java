@@ -28,6 +28,8 @@ public class TimeMapAsLink extends TimeMap {
                 .map(doc1 -> updateTimeMapHeadForLinkFormat(doc1, metadata, originalResource.toString(), pageNumber))
                 .count();
 
+        log.info("First stream has been consumed. '{}' documents have been streamed.", count);
+
         if (count < TimeMap.PAGING_LIMIT){
             log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}' in link-format.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
@@ -71,7 +73,7 @@ public class TimeMapAsLink extends TimeMap {
 
         output.write(metadata.getTimeMapHead().getBytes());
 
-        AtomicLong iterator = new AtomicLong(((long) pageNumber * TimeMap.RESULTS_PER_PAGE - 1) );
+        AtomicLong iterator = new AtomicLong(((long) pageNumber * TimeMap.RESULTS_PER_PAGE - TimeMap.RESULTS_PER_PAGE + 1) );
         pageOfResults.items
                 .map(doc -> createMementoInLinkFormat(doc, iterator, countOfMementos) )
                 .forEach(s -> writeStringSafe(s, output));
