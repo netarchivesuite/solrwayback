@@ -98,6 +98,18 @@ public class TimeMapTest {
         assertEquals(testTimeMapLinkFormat, timeMapString);
     }
 
+    @Test
+    public void testTimeMapJsonConstruction() throws IOException, URISyntaxException {
+        // Set very high to disable paging
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", null);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        timeMap.write(output);
+        String timeMapString = new String(output.toByteArray(), StandardCharsets.UTF_8);
+
+        assertEquals(testTimeMapJSON, timeMapString);
+    }
+
     public static void fillSolr() throws SolrServerException, IOException {
         log.info("Filling embedded server with {} documents", TEST_DOCS);
         final Random r = new Random(87); // Random but not too random
@@ -132,6 +144,31 @@ public class TimeMapTest {
         embeddedServer.add(document);
     }
 
+    final String testTimeMapJSON = "{\"original_uri\":\"http://kb.dk/\",\"timegate_uri\":\"http://localhost:8080/solrwayback/services/memento/http://kb.dk/\"," +
+            "\"timemap_uri\":{\"link_format\":\"http://localhost:8080/solrwayback/services/memento/timemap/link/http://kb.dk/\"," +
+            "\"json_format\":\"http://localhost:8080/solrwayback/services/memento/timemap/json/http://kb.dk/\"}," +
+            "\"mementos\":{\"first\":{\"datetime\":\"Tue, 15 Mar 2005 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20050315123151/http://kb.dk/\"}," +
+            "\"last\":{\"datetime\":\"Wed, 15 Mar 2023 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20230315123151/http://kb.dk/\"}" +
+            ",\"list\":[{\"datetime\":\"Tue, 15 Mar 2005 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20050315123151/http://kb.dk/\"}" +
+            ",{\"datetime\":\"Tue, 15 Mar 2005 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20050315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Tue, 15 Mar 2005 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20050315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Tue, 15 Mar 2005 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20050315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Thu, 15 Mar 2012 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20120315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Thu, 15 Mar 2012 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20120315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Thu, 15 Mar 2012 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20120315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Thu, 15 Mar 2012 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20120315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Thu, 15 Mar 2012 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20120315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Thu, 15 Mar 2012 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20120315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Thu, 15 Mar 2012 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20120315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Sun, 15 Mar 2020 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20200315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Sun, 15 Mar 2020 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20200315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Sun, 15 Mar 2020 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20200315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Sun, 15 Mar 2020 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20200315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Sun, 15 Mar 2020 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20200315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Sun, 15 Mar 2020 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20200315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Wed, 15 Mar 2023 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20230315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Wed, 15 Mar 2023 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20230315123151/http://kb.dk/\"}," +
+            "{\"datetime\":\"Wed, 15 Mar 2023 12:31:51 GMT\",\"uri\":\"http://localhost:8080/solrwayback/services/web/20230315123151/http://kb.dk/\"}]}}";
     final String testTimeMapLinkFormat = "<http://kb.dk/>;rel=\"original\",\n" +
             "<http://localhost:8080/solrwayback/services/memento/timemap/link/http://kb.dk/>" +
             "; rel=\"self\"; type=\"application/link-format\"" +
