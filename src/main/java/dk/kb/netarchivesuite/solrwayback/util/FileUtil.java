@@ -75,7 +75,7 @@ public class FileUtil {
      *     <li>As {@code env:user.dir/resource}, {@code env:user.dir/../resource} etc</li>
      *     <li>As {@code env:user.home/resource}</li>
      * </ul>
-     * When running under Tomcat, {@code catalina.home} is guaranteed to be set and {@code catalina.home} might be set.
+     * When running under Tomcat, {@code catalina.home} is guaranteed to be set and {@code catalina.base} might be set.
      * @param resources one or more resources to look for. First file system match is returned.
      * @return a Path to an existing file, found using the priorities stated above.
      * @throws FileNotFoundException if none of the resources could be found.
@@ -103,7 +103,7 @@ public class FileUtil {
      *     <li>As {@code env:user.dir/resource}, {@code env:user.dir/../resource} etc</li>
      *     <li>As {@code env:user.home/resource}</li>
      * </ul>
-     * When running under Tomcat, {@code catalina.home} is guaranteed to be set and {@code catalina.home} might be set.
+     * When running under Tomcat, {@code catalina.home} is guaranteed to be set and {@code catalina.base} might be set.
      * @param resource a resource to look for.
      * @return a stream with Paths to check for existence of the given resource, in order of priority as listed above.
      */
