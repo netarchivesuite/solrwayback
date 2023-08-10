@@ -2,8 +2,11 @@ package dk.kb.netarchivesuite.solrwayback.properties;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +15,7 @@ import java.util.List;
 import java.util.Properties;
 
 
+import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,23 +128,20 @@ public class PropertiesLoaderWeb {
     }        
 
     public static void initProperties(String propertyFile) {
+        Path propertyPath = null;
         try {
 
-            log.info("Initializing solrwaybackweb-properties using property file '" + propertyFile + "'");
-            String user_home=System.getProperty("user.home");
+            log.info("Initializing solrwaybackweb-properties using property resource '" + propertyFile + "'");
 
-            File f = new File(propertyFile);
-            if (!f.exists()) { // Fallback to looking in the user home folder
-                f = new File(user_home, propertyFile);
+            try {
+                propertyPath = FileUtil.resolveContainerResource(propertyFile, DEFAULT_PROPERTY_WEB_FILE);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(
+                        "Unable to resolve both primary '" + propertyFile +
+                                "' and secondary '" + DEFAULT_PROPERTY_WEB_FILE + "' property");
             }
-            if (!f.exists()) {
-                log.info("Could not find contextroot specific propertyfile:"+propertyFile +". Using default:"+DEFAULT_PROPERTY_WEB_FILE);
-                f = new File(user_home, DEFAULT_PROPERTY_WEB_FILE);
-            }
-            log.info("Load web-properties: Using user.home folder:" + user_home +" and propertyFile:"+propertyFile);
-
-
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
+            log.info("Loading web-properties '" + propertyPath + "'");
+            InputStreamReader isr = new InputStreamReader(Files.newInputStream(propertyPath), StandardCharsets.UTF_8);
 
             serviceProperties = new Properties();
             serviceProperties.load(isr);
@@ -300,10 +301,9 @@ public class PropertiesLoaderWeb {
                 }                                
             }
             
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            log.error("Could not load property file:"+ propertyFile,e);            
+        } catch (Exception e) {
+            e.printStackTrace(); // Acceptable as this is catastrophic
+            log.error("Could not load property file '"+ propertyPath + "'", e);
             // TODO: This should be a catastrophic failure as the properties contains security oriented settings
         }
         

@@ -464,23 +464,10 @@ public class SolrWaybackResource {
 
     StreamingOutput zip = Facade.exportZipContent(query, filters);
 
-    String filename = createZipFilename();
-
     return Response.ok(zip)
-            .header("Content-Disposition", "attachment; filename=" + filename)
+            .header("Content-Disposition", getDisposition("solrwayback_$DATETIME.zip"))
             .build();
 
-  }
-
-  /**
-   * Create name for zip file. The name includes information on the exported mimetype and the time for the export.
-   * @return            the filename in the format datetime_export.zip
-   */
-  private String createZipFilename() {
-    Date date = new Date() ;
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-
-    return dateFormat.format(date) + "_export.zip";
   }
 
 
