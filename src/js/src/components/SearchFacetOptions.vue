@@ -84,12 +84,11 @@ export default {
         facet === newFacet ? facetAllreadyApplied = true : null
       })
       if(!facetAllreadyApplied) {
-          if(event.ctrlKey === true) {
+        if(event.ctrlKey || event.metaKey) {
             const localSolrSettings = JSON.parse(JSON.stringify(this.solrSettings))
             const localFacets = [...this.searchAppliedFacets]
             localFacets.push(newFacet)
             localSolrSettings.offset = 0
-            console.log(this.$_getResolvedUrl('Search', this.query, localFacets, localSolrSettings))
             window.open(this.$_getResolvedUrl('Search', this.query, localFacets, localSolrSettings).href, '_blank')
           }
           else {
@@ -98,7 +97,8 @@ export default {
             this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
         }
       }
-      else if(facetAllreadyApplied && event.ctrlKey === true) {
+      else if(facetAllreadyApplied && event.ctrlKey ||
+              facetAllReadyApplied && event.metaKey) {
         window.open(this.$_getResolvedUrl('Search', this.query, this.searchAppliedFacets, this.solrSettings).href, '_blank')
       }
     },
