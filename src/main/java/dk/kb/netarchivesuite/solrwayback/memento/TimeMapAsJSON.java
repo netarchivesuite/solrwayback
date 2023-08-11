@@ -85,7 +85,7 @@ public class TimeMapAsJSON extends TimeMap{
                                                                long count, Integer pageNumber) {
 
         if (pageNumber == null || (long) RESULTS_PER_PAGE * pageNumber > count){
-            pageNumber = (int) (count/RESULTS_PER_PAGE);
+            pageNumber = 1;
             log.info("Set page number to: " + pageNumber);
         }
 

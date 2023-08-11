@@ -89,13 +89,21 @@ public class PagedTimeMapTest {
 
     @Test
     public void testTimeMapLinkLastConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", null);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 20);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
 
         assertEquals(testPagedTimeMapLinkLastPage, timeMapString);
     }
 
+    @Test
+    public void testTimeMapLinkNoPageConstruction() throws IOException, URISyntaxException {
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", null);
+
+        String timeMapString = convertStreamingTimeMapToString(timeMap);
+
+        assertEquals(testPagedTimeMapLinkFirstPage, timeMapString);
+    }
     @Test
     public void testTimeMapLinkFirstConstruction() throws IOException, URISyntaxException {
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 1);
@@ -143,6 +151,14 @@ public class PagedTimeMapTest {
     }
     // TODO: Tests for first page and a random middle page for json
 
+    @Test
+    public void testPagedTimeMapNoPageJSONConstruction() throws IOException, URISyntaxException {
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", null);
+
+        String timeMapString = convertStreamingTimeMapToString(timeMap);
+
+        assertEquals(testPagedTimeMapJSONFirstPage, timeMapString);
+    }
 
     private static String convertStreamingTimeMapToString(StreamingOutput timeMap) throws IOException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -215,7 +231,7 @@ public class PagedTimeMapTest {
             "<http://localhost:8080/solrwayback/services/memento/timemap/4/link/http://kb.dk/>; rel=\"prev\"; type=\"application/link-format\"\n" +
             "<http://localhost:8080/solrwayback/services/memento/timemap/6/link/http://kb.dk/>; rel=\"next\"; type=\"application/link-format\"\n";
     final String testPagedTimeMapLinkLastPage = "<http://kb.dk/>;rel=\"original\",\n" +
-            "<http://localhost:8080/solrwayback/services/memento/timemap/link/http://kb.dk/>; rel=\"self\"; type=\"application/link-format\"; from=\"Tue, 15 Mar 2005 12:31:51 GMT\"; until=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n"+
+            "<http://localhost:8080/solrwayback/services/memento/timemap/20/link/http://kb.dk/>; rel=\"self\"; type=\"application/link-format\"; from=\"Tue, 15 Mar 2005 12:31:51 GMT\"; until=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n"+
             "<http://localhost:8080/solrwayback/services/memento/http://kb.dk/>; rel=\"timegate\",\n" +
             "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n" +
             "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n" +

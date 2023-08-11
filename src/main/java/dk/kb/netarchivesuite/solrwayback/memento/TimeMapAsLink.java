@@ -25,12 +25,11 @@ public class TimeMapAsLink extends TimeMap {
         MementoMetadata metadata = new MementoMetadata();
 
         long count = TimeMap.getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
-                .map(doc1 -> updateTimeMapHeadForLinkFormat(doc1, metadata, originalResource.toString(), pageNumber))
                 .count();
-
         log.info("First stream has been consumed. '{}' documents have been streamed.", count);
 
         if (count < TimeMap.PAGING_LIMIT){
+            metadata.setTimeMapHeadForLinkFormat(originalResource.toString(), pageNumber);
             log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}' in link-format.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
 
@@ -41,6 +40,11 @@ public class TimeMapAsLink extends TimeMap {
                     .map(doc -> createMementoInLinkFormat(doc, iterator, count))
                     .forEach(s -> writeStringSafe(s, output));
         } else {
+            if (pageNumber == null || (long) TimeMap.RESULTS_PER_PAGE * pageNumber > count){
+                pageNumber = 1;
+                log.info("Set page number to: " + pageNumber);
+            }
+            metadata.setTimeMapHeadForLinkFormat(originalResource.toString(), pageNumber);
             log.info("Creating paged timemaps of '{}' entries, with dates in range from '{}' to '{}' in link-format.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
             Stream<SolrDocument> mementoStream = TimeMap.getMementoStream(originalResource);
@@ -62,11 +66,6 @@ public class TimeMapAsLink extends TimeMap {
     private static void getLinkFormatPagedStreamingOutput(URI originalResource, MementoMetadata metadata,
                                                           Stream<SolrDocument> mementoStream, long countOfMementos,
                                                           Integer pageNumber, OutputStream output) throws IOException {
-
-        if (pageNumber == null || (long) TimeMap.RESULTS_PER_PAGE * pageNumber > countOfMementos){
-            pageNumber = (int) (countOfMementos/ TimeMap.RESULTS_PER_PAGE);
-            log.info("Set page number to: " + pageNumber);
-        }
 
         //Page response
         TimeMap.Page<SolrDocument> pageOfResults = TimeMap.getPage(mementoStream, pageNumber, countOfMementos);
