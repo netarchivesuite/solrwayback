@@ -165,11 +165,13 @@ Unzip and follow the instructions below.
 ## Installation instructions
 
 ### 1) INITIAL SETUP
-* **Setup:** Copy the two property files: `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to your HOME folder (or the home-folder for Tomcat user).
+
 * **Optional:** For screenshot previews to work you may have to edit the file `solrwayback.properties` and change the value of the last two properties : `chrome.command`  and `screenshot.temp.imagedir`.
   Chrome(Chromium) must be installed for preview of images to work.
 
 If you encounter any errors when running a script during installation or setup, try change the permissions for the file (`startup.sh` etc.). On Linux and mac, this can be done with the following command: `chmod +x filename.sh`
+
+**Note:** Previous versions of the SolrWayback bundle expected the property files to be located at the root of the home folder of the user. If this is preferable, move the two property files `solrwayback.properties` and `solrwaybackweb.properties` from the bundle folder to the root of the home folder of the user.
 
 ### 2) STARTING SOLRWAYBACK
 SolrWayback requires both Solr and Tomcat to be running. These processes are started and stopped separately with the following commands:
