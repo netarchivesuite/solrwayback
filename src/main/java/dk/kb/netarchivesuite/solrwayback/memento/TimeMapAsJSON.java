@@ -16,7 +16,13 @@ import java.net.URI;
 import java.text.ParseException;
 import java.util.stream.Stream;
 
-public class TimeMapAsJSON extends TimeMap{
+import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.PAGING_LIMIT;
+import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.RESULTS_PER_PAGE;
+import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getDocStreamAndUpdateDatesForFirstAndLastMemento;
+import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getMementoStream;
+import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getPage;
+
+public class TimeMapAsJSON {
     private static final Logger log = LoggerFactory.getLogger(TimeMapAsJSON.class);
 
 
@@ -30,6 +36,7 @@ public class TimeMapAsJSON extends TimeMap{
 
         long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
                 .count();
+        log.info("Original resource has been harvested '{}' times.",count);
         if (count < PAGING_LIMIT){
             log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
@@ -57,7 +64,7 @@ public class TimeMapAsJSON extends TimeMap{
     private static StreamingOutput getJSONStreamingOutput(URI originalResource, MementoMetadata metadata, Stream<SolrDocument> mementoStream) {
 
         return os -> {
-            JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os, null);
+            JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os, 0);
             jg.writeFieldName("list");
             jg.writeStartArray(); //list start
             long processedMementoCount = mementoStream
@@ -90,7 +97,7 @@ public class TimeMapAsJSON extends TimeMap{
         }
 
         int finalPageNumber = pageNumber;
-        Page<SolrDocument> pageOfResults = getPage(mementoStream, pageNumber, count);
+        TimeMap.Page<SolrDocument> pageOfResults = getPage(mementoStream, pageNumber, count);
 
         return os -> createPagedJsonTimemap(originalResource, metadata, count, finalPageNumber, pageOfResults, os);
     }
@@ -113,7 +120,7 @@ public class TimeMapAsJSON extends TimeMap{
         jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/" + originalResource);
 
         jg.writeFieldName("timemap_uri");
-        if (pageNumber == null || pageNumber == 0) {
+        if (pageNumber == null || pageNumber.equals(0)) {
             jg.writeStartObject(); //timemap_uri start
             jg.writeFieldName("link_format");
             jg.writeString(PropertiesLoaderWeb.WAYBACK_SERVER + "services/memento/timemap/link/" + originalResource);
@@ -160,7 +167,7 @@ public class TimeMapAsJSON extends TimeMap{
      * @param pageOfResults             a page containing SolrDocuments that are to be written as a paged timemap.
      */
     private static void createPagedJsonTimemap(URI originalResource, MementoMetadata metadata, long totalMementosForResource,
-                                               int pageNumber, Page<SolrDocument> pageOfResults, OutputStream os)
+                                               int pageNumber, TimeMap.Page<SolrDocument> pageOfResults, OutputStream os)
                                                throws IOException {
 
         JsonGenerator jg = getStartOfJsonTimeMap(originalResource, metadata, os, pageNumber);

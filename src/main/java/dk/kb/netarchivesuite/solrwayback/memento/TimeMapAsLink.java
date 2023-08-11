@@ -13,7 +13,7 @@ import java.text.ParseException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-public class TimeMapAsLink extends TimeMap {
+public class TimeMapAsLink {
     private static final Logger log = LoggerFactory.getLogger(TimeMapAsLink.class);
 
     /**
@@ -29,7 +29,7 @@ public class TimeMapAsLink extends TimeMap {
         log.info("First stream has been consumed. '{}' documents have been streamed.", count);
 
         if (count < TimeMap.PAGING_LIMIT){
-            metadata.setTimeMapHeadForLinkFormat(originalResource.toString(), pageNumber);
+            metadata.setTimeMapHeadForLinkFormat(originalResource.toString(), 0);
             log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}' in link-format.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
 

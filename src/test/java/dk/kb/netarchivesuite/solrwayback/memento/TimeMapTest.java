@@ -43,6 +43,8 @@ public class TimeMapTest {
     @BeforeClass
     public static void setUp() throws Exception {
         log.info("Setting up embedded server");
+        PropertiesLoader.initProperties();
+        PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE = 10;
         PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT = 10000;
         PropertiesLoaderWeb.initProperties();
 
@@ -89,7 +91,7 @@ public class TimeMapTest {
     @Test
     public void testTimeMapLinkConstruction() throws IOException, URISyntaxException {
         // Set very high to disable paging
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", null);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 0);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         timeMap.write(output);
@@ -101,7 +103,7 @@ public class TimeMapTest {
     @Test
     public void testTimeMapJsonConstruction() throws IOException, URISyntaxException {
         // Set very high to disable paging
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", null);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", 0);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         timeMap.write(output);

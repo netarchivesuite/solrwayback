@@ -101,6 +101,11 @@ public class TimeMap {
     static Page<SolrDocument> getPage(Stream<SolrDocument> streamOfDocs, int pageNumber, long numberOfDocsInStream) {
         int skipCount = (pageNumber - 1) * RESULTS_PER_PAGE;
 
+        //TODO: something smells
+        if (pageNumber == 0){
+            skipCount = 0;
+        }
+
         Stream<SolrDocument> solrDocs = streamOfDocs
                                         .skip(skipCount)
                                         .limit(RESULTS_PER_PAGE);
