@@ -41,6 +41,7 @@ THREADS_DEFAULT="2"
 : ${TMP_ROOT:="${STATUS_ROOT}/tmp"}
 : ${SOLR_CHECK:="true"}
 : ${SOLR_COMMIT:="true"}
+
 popd > /dev/null
 
 function usage() {
@@ -198,10 +199,10 @@ index_warc() {
 
     echo "   - Indexing $WARC"
     mkdir "$WARC_TMP"
-    local CALL="java -Xmx1024M -Djava.io.tmpdir=\"$WARC_TMP\" -jar \"$INDEXER_JAR\" -c \"$INDEXER_CONFIG\" $INDEXER_CUSTOM -s  \"$SOLR_URL\"  \"$WARC\" &> \"$WARC_LOG\""
+    local CALL="java -Dfile.encoding=UTF-8 -Xmx1024M -Djava.io.tmpdir=\"$WARC_TMP\" -jar \"$INDEXER_JAR\" -c \"$INDEXER_CONFIG\" $INDEXER_CUSTOM -s  \"$SOLR_URL\"  \"$WARC\" &> \"$WARC_LOG\""
     echo "$CALL" >> "$WARC_LOG"
     # Using  >> "$WARC_LOG" 2>&1 instead of &>> to be able to run on machines with bash version 3. Most Macs come with some version of bash 3.
-    java -Xmx1024M -Djava.io.tmpdir="$WARC_TMP" -jar "$INDEXER_JAR" -c "$INDEXER_CONFIG" $INDEXER_CUSTOM -s  "$SOLR_URL"  "$WARC" >> "$WARC_LOG" 2>&1
+    java -Dfile.encoding=UTF-8 -Xmx1024M -Djava.io.tmpdir="$WARC_TMP" -jar "$INDEXER_JAR" -c "$INDEXER_CONFIG" $INDEXER_CUSTOM -s  "$SOLR_URL"  "$WARC" >> "$WARC_LOG" 2>&1
     local RC=$?
     if [[ $(wc -l < "$WARC_LOG") -eq 1 ]]; then
         mv "$WARC_LOG" "$WARC_FAILED"
