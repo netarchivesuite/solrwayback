@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="configs.exportOptions.warcAllowed === 'true' || configs.exportOptions.csvAllowed === 'true'" class="downloadSearchResultDropdown">
+    <div v-if="configs.exportOptions.warcAllowed === 'true' || configs.exportOptions.csvAllowed === 'true' || configs.exportOptions.zipAllowed === 'true'" class="downloadSearchResultDropdown">
       <div class="downloadSearchResultButton">
         See available export options
       </div>
@@ -17,17 +17,21 @@
         expanded WARC.GZ export
       </a>
       <button v-if="configs.exportOptions.csvAllowed === 'true'" class="exportButton" @click="toggleCsvExportOptions()">
-        CSV export
+        CSV/JSON/JSONL export
       </button>
+      <a v-if="configs.exportOptions.zipAllowed === 'true'" class="exportButton" :href="exportToZip()">
+        Zip content export
+      </a>
     </div>
     <div v-if="csvExportOpen" class="csvExportOptions">
       <div class="csvExportContent">
         <button class="closeButton" @click="toggleCsvExportOptions()">
           ✕ 
         </button>
-        <div class="exportContent" />
+       
+       
         <div class="exportContent">
-          <h2>CSV EXPORT</h2>
+          <h2>CSV/JSON/JSONL EXPORT</h2>
           <p>Select the fields of the posts in your search result, that you wish to have in the exported csv file.</p><br>
           <p>
             You can also rank them in the order that you wish to have them in, should you desire so. Simply hover over the item you wish to move 
@@ -40,6 +44,7 @@
             </a>
           </p>
         </div>
+        
         <div class="exportContent">
           <h2>Selected</h2>
           <div v-for="(item, index) in selectedArray" :key="'selected' + index" class="fieldItem">
@@ -68,7 +73,55 @@
             </div>
           </div>
         </div>
-        <div class="exportContent" />
+        <div class="exportContent">
+          <h2>Options</h2>
+          <div class="csvExportOptionHeader">
+            <h4>Format</h4>
+          </div>
+          <div>
+            <div>
+              <input id="export-csv"
+                     v-model="exportOptions.format"
+                     type="radio"
+                     value="csv">
+              <label for="export-csv">CSV</label>
+            </div>
+            <div>
+              <input id="export-json"
+                     v-model="exportOptions.format"
+                     type="radio"
+                     value="json">
+              <label for="export-json">JSON</label>
+            </div>
+          
+            <input id="export-jsonl"
+                   v-model="exportOptions.format"
+                   type="radio"
+                   value="jsonl">
+            <label for="export-jsonl">JSONL</label>
+          </div>
+          <div class="csvExportOptionHeader">
+            <h4>Other</h4>
+          </div>
+          <div>
+            <div>
+              <input id="export-gzip"
+                     v-model="exportOptions.gzip"
+                     type="checkbox"
+                     true-value="true"
+                     false-value="false">
+              <label for="export-gzip">Gzip</label>
+            </div>
+            <div>
+              <input id="export-flatten"
+                     v-model="exportOptions.flatten" 
+                     type="checkbox"
+                     true-value="true"
+                     false-value="false">
+              <label for="export-flatten">Flatten <span class="buttonExplanation" title="Flatten will split multivalue fields into single values and add as many new lines to the export. Using with 'content' field selected can cause very large exports.">[ ? ]</span></label>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -86,20 +139,29 @@ export default {
   },
   data () {
     return {  
+      zipExportOpen:false,
       csvExportOpen:false,
       selectedArray:[],
-      nonSelectedArray:[]
+      nonSelectedArray:[],
+      exportOptions: {
+        grouping:'',
+        flatten:false,
+        format:'csv',
+        gzip:false
+      }
     }
   },
   computed: {
     ...mapState({
       query: state => state.Search.query,
       searchAppliedFacets: state => state.Search.searchAppliedFacets,
-    }),
+      solrSettings: state => state.Search.solrSettings
+    })
   },
   mounted () {
     this.selectedArray = this.getSplitFieldsSelected(this.configs.exportOptions.csvFields)
     this.nonSelectedArray = this.getSplitFieldsNotSelected(this.configs.exportOptions.csvFields)
+    this.exportOptions.grouping = this.solrSettings.grouping ? 'url_norm' : this.solrSettings.grouping
   },
   methods: {
     exportToWARC() {
@@ -124,9 +186,13 @@ export default {
     },
     exportToCSV() {
       let fields = this.selectedArray.join(',')
+      const groupFieldParam =  this.exportOptions.grouping ? `&groupfield=${this.exportOptions.grouping}` : ''
       return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}csv?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}&fields=${encodeURIComponent(fields)}` :
-      `${this.returnExportUrl()}csv?query=${encodeURIComponent(this.query)}&fields=${encodeURIComponent(fields)}`
+      `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}` :
+      `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}`
+    },
+    exportToZip() {
+         return `${this.returnExportUrl()}zip?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`
     },
     returnExportUrl() {
       return this.configs.playbackConfig.solrwaybackBaseURL + 'services/export/'
@@ -149,8 +215,6 @@ export default {
       let newArray = fields.replace(/ /g, '').split(',')
       return newArray.slice(9,newArray.length)
     },
-
-
     moveItemInArray(array, direction, itemNumber, item) {
       if(itemNumber >= 0 && itemNumber < array.length) {
       direction === 'up'
@@ -164,6 +228,11 @@ export default {
       recipient === 'nonSelectedArray' ? toArray.push(item) : toArray.unshift(item)
       fromArray.splice(itemNumber,1)
 
+    },
+    toggleZipExportOptions() {
+      this.zipExportOpen = !this.zipExportOpen
+      if(this.zipExportOpen === false) {
+      }
     },
     getEncodedAppliedFacets(appliedFacets) {
       return appliedFacets.map(facet => 

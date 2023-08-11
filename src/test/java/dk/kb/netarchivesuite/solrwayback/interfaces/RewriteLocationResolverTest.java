@@ -22,21 +22,18 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
-
 /**
  * Piggy backs on {@link dk.kb.netarchivesuite.solrwayback.util.SkippingHTTPInputStreamTest}.
  */
-public class ArcHTTPResolverTest {
+public class RewriteLocationResolverTest {
     public static final String ADAMS_FILE = "foo/18068_Adams_Illustrated_Panorama_of_History_1878_size_104345x11288.tif";
 
     @Test
     public void testSkip() throws IOException {
         Map<String, String> skipParams = new HashMap<>();
-        skipParams.put(ArcHTTPResolver.REGEXP_KEY, ".*/([^/]*)");
-        skipParams.put(ArcHTTPResolver.REPLACEMENT_KEY, "https://labs.statsbiblioteket.dk/anskuelse/adams_history/$1");
-        skipParams.put(ArcHTTPResolver.READ_FALLBACK_KEY, "false");
-        ArcHTTPResolver resolver = new ArcHTTPResolver();
+        skipParams.put(RewriteLocationResolver.REGEXP_KEY, ".*/([^/]*)");
+        skipParams.put(RewriteLocationResolver.REPLACEMENT_KEY, "https://labs.statsbiblioteket.dk/anskuelse/adams_history/$1");
+        RewriteLocationResolver resolver = new RewriteLocationResolver();
         resolver.setParameters(skipParams);
         resolver.initialize();
 

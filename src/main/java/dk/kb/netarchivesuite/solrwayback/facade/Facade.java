@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.facade;
 
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.ContentStreams;
+import dk.kb.netarchivesuite.solrwayback.export.StreamingRawZipExport;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
@@ -30,13 +31,15 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Link;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.Node;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.DomainStatistics;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentilesStatistics;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
-import dk.kb.netarchivesuite.solrwayback.smurf.NetarchiveYearCountCache;
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStats;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
@@ -44,6 +47,7 @@ import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import dk.kb.netarchivesuite.solrwayback.wordcloud.WordCloudImageGenerator;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.util.Pair;
@@ -51,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.ws.rs.core.StreamingOutput;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,14 +66,15 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -548,10 +554,11 @@ public class Facade {
             }
         }
         SolrGenericStreaming solr = SolrGenericStreaming.create(
-                SRequest.builder().
-                        query(query).filterQueries(filterqueries).
-                        fields("source_file_path", "source_file_offset").
-                        pageSize(100). // TODO: Why so low? The two fields are tiny and single-valued
+                SRequest.builder()
+                                .query(query)
+                                .filterQueries(filterqueries)
+                                .fields("source_file_path", "source_file_offset")
+                                .pageSize(100). // TODO: Why so low? The two fields are tiny and single-valued
                         expandResources(expandResources).
                         ensureUnique(ensureUnique));
 
@@ -635,6 +642,35 @@ public class Facade {
         }
 
         return ContentStreams.deliver(docs, fields, format, gzip);
+    }
+
+    /**
+     * Export content from WARC files to zip that are present in solr query. Can be used to extract files such as HTML, images or PDFs.
+     * @param query         used to query solr for warc entries to export.
+     * @param filterQueries appended to query.
+     * @return              a streaming output containing a zip of all exported files.
+     */
+    public static StreamingOutput exportZipContent(String query, String... filterQueries)
+            throws SolrServerException, IOException, InvalidArgumentServiceException {
+        if (!PropertiesLoaderWeb.ALLOW_EXPORT_ZIP){
+            throw new InvalidArgumentServiceException("Zip export is not allowed.");
+        }
+
+        // Add filter for content length < 0 to filter out redirects.
+        String combinedFilters = SolrUtils.combineFilterQueries("content_length", "[1 TO *]", filterQueries);
+        // Validate result set size
+        long results = NetarchiveSolrClient.getInstance().countResults(query, combinedFilters);
+        log.info("Started Zip Content Export for query: '{}', with the following filter queries: '{}'. Found '{}' entries for export.",
+                query, combinedFilters, results);
+        if (results > PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS) {
+            throw new InvalidArgumentServiceException(
+                    "Number of results for zip export exceeds the configured limit: " +
+                            PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS);
+        }
+
+        StreamingRawZipExport zipExporter = new StreamingRawZipExport();
+
+        return output -> zipExporter.getStreamingOutputWithZipOfContent(query, output, filterQueries);
     }
 
 
@@ -927,10 +963,12 @@ public class Facade {
     public static HashMap<String, String> getPropertiesWeb() throws Exception {
         HashMap<String, String> props = new HashMap<String, String>();
         props.put(PropertiesLoaderWeb.WEBAPP_BASEURL_PROPERTY,PropertiesLoaderWeb.WEBAPP_PREFIX); //TODO change value name when frontend also switch
+        props.put(PropertiesLoaderWeb.PLAYBACK_PRIMARY_ENGINE_PROPERTY, PropertiesLoaderWeb.PLAYBACK_PRIMARY_ENGINE);        
         props.put(PropertiesLoaderWeb.WAYBACK_SERVER_PROPERTY, PropertiesLoaderWeb.WAYBACK_SERVER);
-        props.put(PropertiesLoaderWeb.OPENWAYBACK_SERVER_PROPERTY, PropertiesLoaderWeb.OPENWAYBACK_SERVER);
+        props.put(PropertiesLoaderWeb.PLAYBACK_ALTERNATIVE_ENGINE_PROPERTY, PropertiesLoaderWeb.PLAYBACK_ALTERNATIVE_ENGINE);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_WARC_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_WARC);
         props.put(PropertiesLoaderWeb.ALLOW_EXPORT_CSV_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_CSV);
+        props.put(PropertiesLoaderWeb.ALLOW_EXPORT_ZIP_PROPERTY, "" + PropertiesLoaderWeb.ALLOW_EXPORT_ZIP);
         props.put(PropertiesLoaderWeb.EXPORT_CSV_FIELDS_PROPERTY, PropertiesLoaderWeb.EXPORT_CSV_FIELDS);
         props.put(PropertiesLoaderWeb.MAPS_LATITUDE_PROPERTY, PropertiesLoaderWeb.MAPS_LATITUDE);
         props.put(PropertiesLoaderWeb.MAPS_LONGITUDE_PROPERTY, PropertiesLoaderWeb.MAPS_LONGITUDE);
@@ -944,6 +982,8 @@ public class Facade {
         props.put(PropertiesLoaderWeb.SEARCH_PAGINATION_PROPERTY, "" + PropertiesLoaderWeb.SEARCH_PAGINATION);
         props.put(PropertiesLoader.PLAYBACK_DISABLED_PROPERTY, ""+""+PropertiesLoader.PLAYBACK_DISABLED);
         props.put("solrwayback.version",PropertiesLoaderWeb.SOLRWAYBACK_VERSION);
+        props.put(PropertiesLoaderWeb.TEXT_STATS_PROPERTY, ""+PropertiesLoaderWeb.STATS_ALL_FIELDS);
+        props.put(PropertiesLoaderWeb.NUMERIC_STATS_PROPERTY, ""+PropertiesLoaderWeb.STATS_ALL_FIELDS);
 
         if (PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE != null && !"".equals(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE.trim())) {
             props.put(PropertiesLoaderWeb.TOP_LEFT_LOGO_IMAGE_PROPERTY,PropertiesLoader.WAYBACK_BASEURL + "services/frontend/images/logo");
@@ -1078,6 +1118,58 @@ public class Facade {
         return imageUrls;
     }
 
+    /**
+     * Get standard solr stats for all fields given.
+     * @param query     to generate stats for.
+     * @param filters   that are to be added to solr query.
+     * @param fields    to return stats for.
+     * @return all standard stats for all fields from query.
+     */
+    public static ArrayList<QueryStatistics> getQueryStats(String query, List<String> filters, List<String> fields) throws InvalidArgumentServiceException {
+        if (fields.isEmpty()){
+            throw new InvalidArgumentServiceException("The fields parameter has to be set.");
+        }
+        if (!checkListValues(fields, PropertiesLoaderWeb.STATS_ALL_FIELDS)) {
+            throw new InvalidArgumentServiceException("One or more of the values: '" + StringUtils.join(fields, ", ") + "' in parameter fields are not allowed.");
+        }
+        ArrayList<QueryStatistics> queryStats = SolrStats.getStatsForFields(query, filters, fields);
+        return queryStats;
+    }
+
+    /**
+     * Get percentiles for numeric fields
+     * @param query to generate stats for.
+     * @param percentiles to extract values for.
+     * @param fields to return percentiles for.
+     * @return percentiles for specified fields.
+     */
+    public static ArrayList<QueryPercentilesStatistics> getPercentileStatsForFields(String query, List<String> percentiles, List<String> fields) throws InvalidArgumentServiceException {
+        if (percentiles.isEmpty()){
+            throw new InvalidArgumentServiceException("The percentiles parameter has to be set.");
+        }
+        if (fields.isEmpty()){
+            throw new InvalidArgumentServiceException("The fields parameter has to be set.");
+        }
+        if (!checkListValues(fields, PropertiesLoaderWeb.STATS_NUMERIC_FIELDS)) {
+            throw new InvalidArgumentServiceException("One or more of the values: '" + StringUtils.join(fields, ", ") + "' in parameter fields are not allowed.");
+        }
+        List<Double> truePercentiles = new ArrayList<>();
+        try {
+            for (String percentile: percentiles) {
+                double dbl = Double.parseDouble(percentile);
+                if ( !(dbl >= 0 && dbl <= 100)){
+                    throw new InvalidArgumentServiceException("Percentiles needs to be in range 0-100.");
+                }
+                truePercentiles.add(dbl);
+            }
+        } catch (NumberFormatException e){
+            throw new InvalidArgumentServiceException("Percentiles needs to be numbers");
+        }
+        ArrayList<QueryPercentilesStatistics> percentileStats = SolrStats.getPercentilesForFields(query, truePercentiles, fields);
+        return percentileStats;
+    }
+
+
     /*
      * Just show the most important
      */
@@ -1103,6 +1195,23 @@ public class Facade {
 
         long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
         return sign + seconds + " seconds";
+    }
+
+    /**
+     * Check that input values from list are present in controllist.
+     * @param list to check for values in.
+     * @param controlList to check values against.
+     * @return a boolean.
+     */
+    private static boolean checkListValues(List<String> list, List<String> controlList){
+        boolean result = true;
+        for (String value: list) {
+            result = controlList.contains(value);
+            if(!result){
+                break;
+            }
+        }
+        return result;
     }
 
 }

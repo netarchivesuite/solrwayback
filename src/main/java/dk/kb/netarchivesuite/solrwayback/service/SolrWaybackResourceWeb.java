@@ -28,6 +28,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentilesStatistics;
+import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
 import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.brotli.dec.BrotliInputStream;
@@ -47,7 +49,6 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.PagePreview;
 import dk.kb.netarchivesuite.solrwayback.service.dto.UrlWrapper;
 import dk.kb.netarchivesuite.solrwayback.service.dto.WordCloudWordAndCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.graph.D3Graph;
-import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.dto.smurf.SmurfBuckets;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -695,8 +696,23 @@ public class SolrWaybackResourceWeb {
         throw handleServiceExceptions(e);
       }
     }
-   
-    
+
+    @GET
+    @Path("statistics/querystats")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public ArrayList<QueryStatistics> queryStats(@QueryParam("query") String query, @QueryParam("filters") List<String> filters, @QueryParam("fields") List<String> fields) throws InvalidArgumentServiceException {
+        ArrayList<QueryStatistics> stats = Facade.getQueryStats(query, filters, fields);
+        return stats;
+    }
+
+    @GET
+    @Path("statistics/percentilestats")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public ArrayList<QueryPercentilesStatistics> percentileStats(@QueryParam("query") String query, @QueryParam("percentiles") List<String> percentiles, @QueryParam("fields") List<String> fields) throws InvalidArgumentServiceException {
+        ArrayList<QueryPercentilesStatistics> percentileStats = Facade.getPercentileStatsForFields(query, percentiles, fields);
+        return percentileStats;
+    }
+
     private Response convertToPng(BufferedImage image)  throws Exception { 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ImageIO.write(image, "png", baos);

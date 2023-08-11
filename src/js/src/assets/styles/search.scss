@@ -75,6 +75,18 @@ color:var(--secondary-text-color);
 	margin-right: auto;
 }
 
+@media screen and (min-width: 1721px) {
+  .searchForm {
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 1050px;
+    margin-left: auto;
+    margin-right: 7%;
+  }
+}
+
 .searchForm #query {
   margin: 0px;
   padding-top: 12px;
@@ -144,7 +156,7 @@ color:var(--secondary-text-color);
 	z-index: 20;
 }
 
-.searchForm .buttonExplanation {
+.searchForm .buttonExplanation, .csvExportOptions .buttonExplanation, .zipExportOptions .buttonExplanation {
   cursor:default;
   color:rgba(30,30,30,0.5)
 }
@@ -1023,6 +1035,13 @@ img.imageEntry.noPointer {
   border:1px dashed var(--main-highlight-color);
   padding: .2rem 0.2rem .2rem 1rem;
   margin:2.2rem 0 0 .5rem;
+}
+
+@media screen and (min-width: 1721px) {
+  .searchHints {
+    width: 17vw;
+    margin: left 0.2em;
+    }
 }
 
 @media all and (max-width: 1720px) {

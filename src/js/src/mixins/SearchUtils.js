@@ -131,7 +131,9 @@ export default {
           responses.push('Smart quotes. When quoting, use simple quote signs " - ' +  q.replace(/[`‘’'„“‟”❝❞]/ + '"'))
         }
 
-        if (q.match(/[^:"]*:[^:" ]*[^\\]:[^" ]( ?.*)$/)) {
+        // Remove all 'f:[something TO somethingelse] to avoid colon warnings for crawl_date:[2023-12-99T12:34:56Z TO *]
+        let qfold = q.replace(/[^\\]: *\[ *[^ ]+ * TO  *[^ ]+ *]/g, '')
+        if (qfold.match(/[^:"]+:[^:" ]*[^\\]:[^" ]( ?.*)$/)) {
           responses.push('Two colons without quote signs. When a qualified search is performed, consider quoting the value - ' + q.replace(/([^:"]*:)([^:" ]*[^\\]:[^" ]*)( ?.*)$/, '$1"$2"$3'))
         }
 

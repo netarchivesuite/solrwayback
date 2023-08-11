@@ -99,7 +99,12 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
       log.info("wayback tool injected. xhtml:"+xhtml);
       
       Elements head = doc.select("head"); //Also inject as soon as possible to get referer. Also injected in wayback toolbar
-      head.prepend(" <meta name=\"referrer\" content=\"unsafe-url\">");
+      head.prepend(" <meta name=\"referrer\" content=\"unsafe-url\">\n");      
+            
+      //Below will improve playback IF solrwayback is running https. If running http (localhost), it will make playback worse
+      //head.prepend("<meta http-equiv=\"Content-Security-Policy\" content=\"upgrade-insecure-requests\">"); 
+      
+      
     return doc.toString();    
   }
   

@@ -1,5 +1,26 @@
 # SolrWayback changelog
 
+4.4.3
+-----
+Query hints fix (range queries). The search validation helper did like range queries and showed warning when they was correct. (github #380)
+
+Add Zip Export feature. It is now possible to extract raw files from SolrWayback in a combined zip file. This could for example be used to extract all HTML content, images, video etc. from a search result. (github #382 and #245). Add additional property in solrwaybackweb.properties to increase the default max file limit: export.zip.maxresults=1000000
+
+
+4.4.2
+-----
+The SolrWayback default playback engine can be changed by defining a new property in solrwaybackweb.properties: playback.primary.engine
+Use if you have a PyWb playback engine etc.
+
+The property in solrwaybackweb.properties for alternative playback engine (icon next to title in search result) has been renamed to: playback.alternative.engine
+The old misleading name 'openwayback.baseurl' will still work, but will be removed in a future version. (Will give a WARN in log-file during restart of the Tomcat)
+
+The warc-indexer.sh script in the SolrWayback bundle will use 'curl' instead of 'wget'. This will always work on macOS that may not have 'wget' installed
+
+Playback fix for legacy warc-indexer (v3.0+v3.1). This is not relevant for anyone but Royal Danish Library.
+
+Fixed invalid SSL certificate for dependency. (https://maven.restlet.com -> https://maven.restlet.talend.com). Thanks to @fedorw 
+
 
 4.4.1
 -----
@@ -17,7 +38,7 @@ search.pagination=20
 
 Bugfix: The property key for expanded warc limit was the same as for non-expanded
 
-Default log configuration will create and addition log file called solrwayback_error.log. This will only contain log lines of severity 'error'.  
+Default log configuration will create and additional log file called solrwayback_error.log. This will only contain log lines of severity 'error'.  
 
 Hardening against Out Of Memory in export and playback of very large webpages. Added new property for max size of HTML that are parsed for export in solrwaybackweb.properties:
 
@@ -25,9 +46,15 @@ warc.entry.text.max.characters=100000000
 
 Search boost ranking for frontpages(url_type:slashpage^5) changed in SolrWayback bundle. Change in solrconfig.xml for existing indexes to enable this boost.
 
-Upgrade to Java 11
+Export fields improvement. Can now also export to JSON and JSONL besides CVS. Option to flatten fields. The grouping (url_norm) if selected in query will also be used in export. ( see https://github.com/netarchivesuite/solrwayback/issues/279)
 
-Upgrade to Tomcat 9 and Solr 9 in SolrWayback Bundle
+Bugfix: Caching was effectively disabled when setting maxAgeSeconds to a year or more
+
+Added two new services methods to extract statistics about the collection (services/frontend/statistics/querystats and services/frontend/statistics/percentilestats). At a later point there will be added GUI support for these two methods.
+
+The forced uppercase in titles for search results are instead using the original title case.
+
+Frontend dependencies security updated (again...).
 
 4.4.0
 -----

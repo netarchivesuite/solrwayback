@@ -32,7 +32,7 @@ const actions = {
     commit('setTimeScale', param)
   },
   doSearch ({ commit }, params) {
-    this.dispatch('Search/setLoadingStatus', true)
+    this.dispatch('Ngram/setLoadingStatus', true)
    
     requestService.getNgramNetarchive(params)
    .then(results => {this.dispatch('Ngram/updateQuery', params.query), this.dispatch('Ngram/setTimeScale', params.timeScale), commit('doSearchSuccess', results)}, error =>
@@ -77,8 +77,7 @@ const mutations = {
         total: state.countsTotal.map(countTotal => countTotal.total),
         percent: state.countPercent
       })
-    this.dispatch('Search/setLoadingStatus', false)
-   
+    this.dispatch('Ngram/setLoadingStatus', false) 
   },
 
   doSearchError(state, message) {

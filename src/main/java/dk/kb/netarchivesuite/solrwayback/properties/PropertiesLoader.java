@@ -2,16 +2,18 @@ package dk.kb.netarchivesuite.solrwayback.properties;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 import java.util.*;
 
+import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +34,9 @@ public class PropertiesLoader {
     private static final String SOLR_SERVER_PROPERTY="solr.server";
     private static final String WARC_FILE_RESOLVER_CLASS_PROPERTY="warc.file.resolver.class";
     private static final String WARC_FILE_RESOLVER_PARAMETERS_PROPERTY="warc.file.resolver.parameters";
+    private static final String WARC_SOURCE_HTTP_FALLBACK_PROPERTY = "warc.file.resolver.source.http.readfallback";
+    // The now deprecated ArcHTTPResolver used this property to specify readfallback
+    private static final String WARC_SOURCE_HTTP_FALLBACK_LEGACY_PROPERTY = "warc.file.resolver.parameters.readfallback";
     private static final String WAYBACK_BASEURL_PROPERTY="wayback.baseurl";
     private static final String CHROME_COMMAND_PROPERTY="chrome.command";
     private static final String SCREENSHOT_TEMP_IMAGEDIR_PROPERTY="screenshot.temp.imagedir";
@@ -60,6 +65,7 @@ public class PropertiesLoader {
     public static String SCREENSHOT_TEMP_IMAGEDIR = null;
     public static String WARC_FILE_RESOLVER_CLASS = null;
     public static Map<String, String> WARC_FILE_RESOLVER_PARAMETERS= new HashMap<>();
+    public static boolean WARC_SOURCE_HTTP_FALLBACK = false;
     public static String PID_COLLECTION_NAME = null;
     public static String WORDCLOUD_STOPWORDS;
     public static LinkedHashMap<String,String> SOLR_PARAMS_MAP= new LinkedHashMap<String,String>(); 
@@ -86,21 +92,19 @@ public class PropertiesLoader {
     }
 
     public static void initProperties(String propertyFile) {
+        Path propertyPath = null;
         try {
+            log.info("Initializing solrwayback-properties using property resource '" + propertyFile + "'");
 
-            log.info("Initializing solrwayback-properties using property file '" + propertyFile + "'");
-            String user_home=System.getProperty("user.home");
-
-            File f = new File(propertyFile);
-            if (!f.exists()) { // Fallback to looking in the user home folder
-                f = new File(user_home, propertyFile);
+            try {
+                propertyPath = FileUtil.resolveContainerResource(propertyFile, DEFAULT_PROPERTY_FILE);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(
+                        "Unable to resolve both primary '" + propertyFile +
+                                "' and secondary '" + DEFAULT_PROPERTY_FILE + "' property");
             }
-            if (!f.exists()) {
-                log.info("Could not find contextroot specific propertyfile:"+propertyFile +". Using default:"+DEFAULT_PROPERTY_FILE);
-                f = new File(user_home, DEFAULT_PROPERTY_FILE);
-            }
-            log.info("Load backend-properties: Using user.home folder:" + user_home +" and propertyFile:"+propertyFile);
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
+            log.info("Loading backend-properties '" + propertyPath + "'");
+            InputStreamReader isr = new InputStreamReader(Files.newInputStream(propertyPath), StandardCharsets.UTF_8);
 
             serviceProperties = new Properties();
             serviceProperties.load(isr);
@@ -111,6 +115,9 @@ public class PropertiesLoader {
             CHROME_COMMAND = serviceProperties.getProperty(CHROME_COMMAND_PROPERTY);
             SCREENSHOT_TEMP_IMAGEDIR = serviceProperties.getProperty(SCREENSHOT_TEMP_IMAGEDIR_PROPERTY);
             WARC_FILE_RESOLVER_CLASS = serviceProperties.getProperty(WARC_FILE_RESOLVER_CLASS_PROPERTY);
+            // Legacy support
+            WARC_SOURCE_HTTP_FALLBACK = Boolean.parseBoolean(serviceProperties.getProperty(WARC_SOURCE_HTTP_FALLBACK_LEGACY_PROPERTY, "false"));
+            WARC_SOURCE_HTTP_FALLBACK = Boolean.parseBoolean(serviceProperties.getProperty(WARC_SOURCE_HTTP_FALLBACK_PROPERTY, Boolean.toString(WARC_SOURCE_HTTP_FALLBACK)));
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
             loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
@@ -160,6 +167,7 @@ public class PropertiesLoader {
             log.info("Property:"+ SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY +" = " +  SCREENSHOT_PREVIEW_TIMEOUT);
             log.info("Property:"+ WARC_FILE_RESOLVER_CLASS_PROPERTY +" = " + WARC_FILE_RESOLVER_CLASS);
             log.info("Property:"+ WARC_FILE_RESOLVER_PARAMETERS_PROPERTY +" = " + WARC_FILE_RESOLVER_PARAMETERS);
+            log.info("Property:"+ WARC_SOURCE_HTTP_FALLBACK_PROPERTY + " = " + WARC_SOURCE_HTTP_FALLBACK);
             log.info("Property:"+ URL_NORMALISER_PROPERTY +" = " +  URL_NORMALISER);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
             log.info("Property:"+ WARC_FILES_VERIFY_COLLECTION_PROPERTY  +" = " + WARC_FILES_VERIFY_COLLECTION);
@@ -168,11 +176,9 @@ public class PropertiesLoader {
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);
             log.info("Property:"+ SOLR_SERVER_CHECK_INTERVAL_PROPERTY +" = " +  SOLR_SERVER_CHECK_INTERVAL);
             log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            log.error("Could not load property file:"+propertyFile,e);
-            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace(); // Acceptable as this is catastrophic
+            log.error("Could not load property file '" + propertyPath + "'",e);
         }
     }
 
@@ -187,8 +193,7 @@ public class PropertiesLoader {
         }        
     
     }
-    
-
+           
     /**
      * Add all properties that starts with {@link #WARC_FILE_RESOLVER_PARAMETERS_PROPERTY} to
      * {@link #WARC_FILE_RESOLVER_PARAMETERS}, with {@link #WARC_FILE_RESOLVER_PARAMETERS_PROPERTY} removed from
