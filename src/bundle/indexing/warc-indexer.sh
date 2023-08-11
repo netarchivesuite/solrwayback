@@ -237,7 +237,7 @@ index_warcs() {
     export SOLR_URL
     export STATUS_ROOT
     export TMP_ROOT
-    cat "$WARCS" | xargs -P "$THREADS" -n 1 -I "{}" bash -c 'index_warc "{}"'
+    cat "$WARCS" | xargs -P "$THREADS" -I "{}" bash -c 'index_warc "{}"'
 }
 
 index_all() {
