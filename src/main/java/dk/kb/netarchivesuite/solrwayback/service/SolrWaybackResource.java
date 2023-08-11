@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -29,8 +30,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -445,7 +448,27 @@ public class SolrWaybackResource {
 
   }
 
-  
+  /**
+   * Endpoint that delivers a zip file of content present in query of a specific content type.
+   * @param query       used to extract WARC entries from solr by.
+   * @param filters     appended to the solr query.
+   * @return            a zip file of the exported content.
+   */
+  @GET
+  @Path("/export/zip")
+  public Response exportZipContent(@QueryParam("query") String query, @QueryParam("fq") String... filters)
+          throws InvalidArgumentServiceException, SolrServerException, IOException {
+    if (!PropertiesLoaderWeb.ALLOW_EXPORT_ZIP){
+      throw new InvalidArgumentServiceException("Zip export is not allowed!");
+    }
+
+    StreamingOutput zip = Facade.exportZipContent(query, filters);
+
+    return Response.ok(zip)
+            .header("Content-Disposition", getDisposition("solrwayback_$DATETIME.zip"))
+            .build();
+
+  }
 
 
   /*
@@ -1027,9 +1050,13 @@ public class SolrWaybackResource {
       String[] params = url.split("&");
     
       for (String param : params)
-      {       
-         String name = param.split("=")[0];
-         String value = param.split("=")[1];
+      {                   
+          String[] keyVal=param.split("=");
+          String name = keyVal[0];  
+          String value="";
+           if(keyVal.length >1) { //Value can be empty: key1=value1&key2=
+            value =  keyVal[1];
+           }
          map.put(name, value);
       }
       return map;

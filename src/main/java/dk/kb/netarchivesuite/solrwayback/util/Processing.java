@@ -95,7 +95,8 @@ public class Processing {
         try {
             long startTime = System.currentTimeMillis();
             List<Future<T>> results = executorService.invokeAll(batch);
-            log.debug("Batch processed {} jobs in {} ms", batch.size(), System.currentTimeMillis() - startTime);
+            //The following log is too spammy even for debug. 
+            // log.debug("Batch processed {} jobs in {} ms", batch.size(), System.currentTimeMillis() - startTime);
             return results.stream();
         } catch (InterruptedException e) {
             throw new RuntimeException("Iterrupted while waiting for batch processing", e);

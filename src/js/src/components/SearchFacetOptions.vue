@@ -78,10 +78,16 @@ export default {
       this.addSpecificRequestedFacets({facet:facetArea, query:structuredQuery, appliedFacets:appliedFacets})
     },
     applyFacet(facetCategory, facet) {
+      let facetAllreadyApplied = false
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
-      this.updateSolrSettingOffset(0)
-      this.addToSearchAppliedFacets(newFacet)
-      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.searchAppliedFacets.forEach((facet) => {
+        facet === newFacet ? facetAllreadyApplied = true : null
+      })
+      if(!facetAllreadyApplied) {
+        this.updateSolrSettingOffset(0)
+        this.addToSearchAppliedFacets(newFacet)
+        this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+    }
     },
     checkForFacets(facets) {
     //we test if the variable exists first - can cause problems if it's not set yet.

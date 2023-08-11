@@ -645,9 +645,10 @@ public class NetarchiveSolrClient {
 
     public ArrayList<Date> getHarvestTimesForUrl(String url) throws Exception {
         ArrayList<Date> dates = new ArrayList<Date>();
-        String urlNormFixed = normalizeUrl(url);
+        
+        String query=UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery = new SolrQuery("url_norm:\"" + urlNormFixed + "\"");
+        solrQuery = new SolrQuery(query);
         solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
         solrQuery.add("fl", "id,crawl_date");
         solrQuery.setRows(1000000);
@@ -1132,6 +1133,7 @@ public class NetarchiveSolrClient {
         return sb.toString();
     }
 
+    
     /*
      * Notice here do we not fix url_norm
      */
@@ -1144,11 +1146,10 @@ public class NetarchiveSolrClient {
         // normalize will remove last slash if not slashpage
         boolean slashLast = url.endsWith("/");
 
-        String urlNormFixed = normalizeUrl(url);
-        urlNormFixed = urlNormFixed.replace("\\", "\\\\"); // Solr encoded
-        //String query = "url_norm:\"" + urlNormFixed + "\" AND (status_code:200 OR status_code:400 OR status_code:404)"; //Need testing to see if this breaks something
-        String query = "url_norm:\"" + urlNormFixed + "\" AND status_code:200";
-        //log.debug("query:" + query);
+        String urlNormQuery = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);                
+        
+        String query = urlNormQuery +" AND status_code:200"; //Maybe also allow 400 and 404?: (status_code:200 OR status_code:400 OR status_code:404).          
+        
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 

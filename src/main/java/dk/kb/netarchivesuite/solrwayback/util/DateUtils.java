@@ -34,7 +34,6 @@ public class DateUtils {
      //Legacy format for arc-files can have waybackdate without seconds. (before year 2003. Example: 200102050709 )
     if (waybackdate.length()== 12 ){
       dForm = new SimpleDateFormat("yyyyMMddHHmm");            
-      log.debug("legacy arc waybackdate:"+waybackdate);
     }
     else{
        dForm = new SimpleDateFormat("yyyyMMddHHmmss");    

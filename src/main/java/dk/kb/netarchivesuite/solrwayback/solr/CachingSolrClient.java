@@ -64,12 +64,12 @@ public class CachingSolrClient extends SolrClient {
     public CachingSolrClient(SolrClient inner,
                              int maxCachedEntries, int maxCacheTimeSeconds, int maxConcurrentConnections) {
         this.inner = inner;
-        queryCache = new TimeCache<>(maxCachedEntries == -1 ? Integer.MAX_VALUE : maxCachedEntries,
-                                    maxCacheTimeSeconds == -1 ? Integer.MAX_VALUE / 4 : maxCacheTimeSeconds * 1000);
+        int maxCapacity = maxCachedEntries == -1 ? Integer.MAX_VALUE : maxCachedEntries;
+        long maxAgeMS= maxCacheTimeSeconds == -1 ? Integer.MAX_VALUE / 4 : maxCacheTimeSeconds * 1000L;        
+        queryCache = new TimeCache<>(maxCapacity,maxAgeMS);
         namedCache = queryCache.createLinked();
         this.maxConnections = maxConcurrentConnections;
-        connection = new Semaphore(maxConcurrentConnections == -1 ? Integer.MAX_VALUE : maxConcurrentConnections,
-                                   true);
+        connection = new Semaphore(maxConcurrentConnections == -1 ? Integer.MAX_VALUE : maxConcurrentConnections, true);
     }
 
     /**
@@ -140,7 +140,7 @@ public class CachingSolrClient extends SolrClient {
         return "CachingSolrClient{" +
                "maxConnections=" + maxConnections +
                ", size/capacity=" + size() + "/" + queryCache.capacity() +
-               ", maxAgeSeconds=" + queryCache.getMaxAge()/1000 +
+               ", maxAgeSeconds=" + queryCache.getMaxAgeMS()/1000 +
                ", hits/calls=" + getHits() + "/" + getCalls() +
                '}';
     }

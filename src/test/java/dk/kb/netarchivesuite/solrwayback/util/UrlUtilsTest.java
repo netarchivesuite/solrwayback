@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -96,8 +97,8 @@ public class UrlUtilsTest {
   public void testLenientURLQueryNoArgs() {
       assertEquals("url:\"http://example.com/\"^200 OR url_norm:\"http://example.com/\"^100",
                    UrlUtils.lenientURLQuery("http://example.com/"));
-      assertEquals("url:\"https://www.EXAMPLE.com/\"^200 OR url_norm:\"http://example.com/\"^100",
-                   UrlUtils.lenientURLQuery("https://www.EXAMPLE.com/"));
+      assertEquals("url:\"https://EXAMPLE.com/\"^200 OR url_norm:\"http://example.com/\"^100",
+                   UrlUtils.lenientURLQuery("https://EXAMPLE.com/"));
   }
 
   @Test

@@ -8,6 +8,8 @@
 #
 # 2021-06-07: Initial script
 # 2021-06-08: Status & tmp folder moved away from the WARC location
+# ... Missing updates
+# 2023-06-27: Both curl and wget can be used
 #
 
 ###############################################################################
@@ -121,6 +123,16 @@ EOF
     exit $1
 }
 
+dump_parameters() {
+    echo " - Effective configuration:"
+    grep '^: ${' "${WI_HOME}/warc-indexer.sh" | \
+        grep -v '^: ${WARCS:' | \
+        sed 's/^: ${\([^:]*\).*/\1/' | \
+        while read -r CONF; do
+            echo "${CONF}=$(eval "echo "'$'"$CONF")"
+        done        
+}
+
 check_parameters() {
     if [[ "-h" == "$WARCS" ]]; then
         usage
@@ -147,6 +159,13 @@ check_parameters() {
     if [[ ! -d "$TMP_ROOT" ]]; then
         >&2 echo "Error: The folder '$TMP_ROOT' defined by TMP_ROOT could not be created. This folder holds temporary files for running jobs and the script does not work without it"
         usage 6
+    fi
+}
+
+# Either wget or curl must be present
+check_tools() {
+    if [[ -z $(which curl) && -z $(which wget) ]]; then
+        >&2 echo "Warning: Neither 'curl' nor 'wget' is present. ping and commit will be disabled"
     fi
 }
 
@@ -181,8 +200,8 @@ index_warc() {
     mkdir "$WARC_TMP"
     local CALL="java -Xmx1024M -Djava.io.tmpdir=\"$WARC_TMP\" -jar \"$INDEXER_JAR\" -c \"$INDEXER_CONFIG\" $INDEXER_CUSTOM -s  \"$SOLR_URL\"  \"$WARC\" &> \"$WARC_LOG\""
     echo "$CALL" >> "$WARC_LOG"
-    java -Xmx1024M -Djava.io.tmpdir="$WARC_TMP" -jar "$INDEXER_JAR" -c "$INDEXER_CONFIG" $INDEXER_CUSTOM -s  "$SOLR_URL"  "$WARC" &>> "$WARC_LOG"
-
+    # Using  >> "$WARC_LOG" 2>&1 instead of &>> to be able to run on machines with bash version 3. Most Macs come with some version of bash 3.
+    java -Xmx1024M -Djava.io.tmpdir="$WARC_TMP" -jar "$INDEXER_JAR" -c "$INDEXER_CONFIG" $INDEXER_CUSTOM -s  "$SOLR_URL"  "$WARC" >> "$WARC_LOG" 2>&1
     local RC=$?
     if [[ $(wc -l < "$WARC_LOG") -eq 1 ]]; then
         mv "$WARC_LOG" "$WARC_FAILED"
@@ -209,7 +228,7 @@ index_warcs() {
     fi
     
     WARC_COUNT=$(wc -l < "$WARCS")
-    echo " - Processing $WARC_COUNT WARCs using $THREADS threads"
+    echo " - Processing $WARC_COUNT WARCs using $THREADS threads, logs in $STATUS_ROOT"
     # We need to export these as we call index_warc in new processes
     export INDEXER_JAR
     export INDEXER_MEM
@@ -246,7 +265,15 @@ check_solr() {
         return;
     fi
     echo " - Checking if Solr is running"
-    wget  -nv -O- "${SOLR_URL}/admin/ping" > /dev/null
+
+    if [[ ! -z $(which curl) ]]; then
+        curl  -s "${SOLR_URL}/admin/ping" > /dev/null
+    elif [[ ! -z $(which wget) ]]; then
+        wget  -nv -O- "${SOLR_URL}/admin/ping" > /dev/null
+    else
+        >&2 echo "Warning: Unable to check for Solr availability as neither 'curl' nor 'wget' is present"
+    fi
+
     if [[ $? -ne 0 ]]; then
         >&2 echo ""
         >&2 echo "Warning: Solr commit did not respond to ping request"
@@ -260,8 +287,20 @@ commit() {
     if [[ "$SOLR_COMMIT" == "false" ]]; then
         return;
     fi
-    echo " -Triggering solr commit"
-    wget  -nv -O- "${SOLR_URL}/update?commit=true&openSearcher=true"  > /dev/null
+    echo " -Triggering solr flush. Documents will be visible after flush"
+    local COMMIT_URL="${SOLR_URL}/update?commit=true&openSearcher=true"
+    
+    if [[ ! -z $(which curl) ]]; then
+        curl  -s "$COMMIT_URL" > /dev/null
+    elif [[ ! -z $(which wget) ]]; then
+        wget  -nv -O- "$COMMIT_URL"  > /dev/null
+    else
+        >&2 echo "Warning: Unable to trigger Solr commit as neither 'curl' nor 'wget' is present"
+        >&2 echo "Either wait 10 minutes or visit the following URL in a browser to trigger commit:"
+        >&2 echo "$COMMIT_URL"
+        true
+    fi
+    
     if [[ $? -ne 0 ]]; then
         >&2 echo "Warning: Solr commit did not respond with success. Inspect that Solr is running at ${SOLR_URL}"
     fi
@@ -273,6 +312,7 @@ commit() {
 ###############################################################################
 
 check_parameters "$@"
+check_tools
 check_solr
 index_all
 commit
