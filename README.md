@@ -128,18 +128,20 @@ Documents in SolrWayback are indexed through the [warc-indexer](https://github.c
 
  
 ## Requirements
- * Works on macOS/Linux/Windows.  
+ * Works on macOS/Linux/Windows
  * JDK 11/17 
  * A nice collection of ARC/WARC files or harvest your own with Heritrix, Webrecorder, Brozzler, Wget, etc. 
  * Tomcat 9+ or another J2EE server for deploying the WAR-file
- * A Solr 7+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT +
+ * A Solr 9+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT+
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage
  * Build the application with: `mvn package`
  * Deploy the `target/solrwayback-*.war` file in a web-container
  * Copy `src/test/resources/properties/solrwayback.properties` and `/src/test/resources/properties/solrwaybackweb.properties`
-   to `user/home/` folder for the J2EE server
+   to either the root of the tomcat folder or the `user/home/` folder for the J2EE server.
+   Alternatively use the [src/main/webapp/META-INF/context.xml](src/main/webapp/META-INF/context.xml) as template
+   for a context for the SolrWayback WAR and set the paths for the properties directly.
  * Modify the property files. (default all urls http://localhost:8080)
  * Open search interface: http://localhost:8080/solrwayback
 
@@ -166,12 +168,12 @@ Unzip and follow the instructions below.
 
 ### 1) INITIAL SETUP
 
-* **Optional:** For screenshot previews to work you may have to edit the file `solrwayback.properties` and change the value of the last two properties : `chrome.command`  and `screenshot.temp.imagedir`.
+* **Optional:** For screenshot previews to work you may have to edit the file `properties/solrwayback.properties` and change the value of the last two properties : `chrome.command`  and `screenshot.temp.imagedir`.
   Chrome(Chromium) must be installed for preview of images to work.
 
 If you encounter any errors when running a script during installation or setup, try change the permissions for the file (`startup.sh` etc.). On Linux and mac, this can be done with the following command: `chmod +x filename.sh`
 
-**Note:** Previous versions of the SolrWayback bundle expected the property files to be located at the root of the home folder of the user. If this is preferable, move the two property files `solrwayback.properties` and `solrwaybackweb.properties` from the bundle folder to the root of the home folder of the user.
+**Note:** Previous versions of the SolrWayback bundle expected the property files to be located at the root of the home folder of the user. If this is preferable, move the two property files `solrwayback.properties` and `solrwaybackweb.properties` from the `properties/` folder in the bundle to the root of the home folder of the user.
 
 ### 2) STARTING SOLRWAYBACK
 SolrWayback requires both Solr and Tomcat to be running. These processes are started and stopped separately with the following commands:
@@ -179,26 +181,26 @@ SolrWayback requires both Solr and Tomcat to be running. These processes are sta
 * **Step 1:** Navigate to the location of the bundle on your computer.
 
 For Linux and Mac:
-* **Step 2.1:** Start tomcat with this command: `apache-tomcat-8.5.60/bin/startup.sh`
-* **Step 2.2:** Start solr with this command: `solr-7.7.3/bin/solr start`
+* **Step 2.1:** Start tomcat with this command: `tomcat-9/bin/startup.sh`
+* **Step 2.2:** Start solr with this command: `solr-9/bin/solr start -c -m 1g`
 
 For Windows: 
-* **Step 2.1:** To start tomcat navigate to `apache-tomcat-8.5.60/bin/` and type `startup.bat`
-* **Step 2.2:** To start solr navigate to `solr-7.7.3/bin/` and type `solr.cmd start`
-
+* **Step 2.1:** To start tomcat navigate to `tomcat-9/bin/` and type `startup.bat`
+* **Step 2.2:** To start solr navigate to `solr-9/bin/` and type `solr.cmd start -c -m 1g`
 
 * **Step 3:** To see that tomcat and solr is running open the following links: http://localhost:8080/solrwayback/ and http://localhost:8983/solr/#/netarchivebuilder. If these are not throwing errors the services have been started successfully. 
+
 #### Tomcat:  
 
-* Start tomcat: `apache-tomcat-8.5.60/bin/startup.sh`  
-* Stop tomcat:  `apache-tomcat-8.5.60/bin/shutdown.sh`  
-* (For windows navigate to `apache-tomcat-8.5.60/bin/` and type `startup.bat` or `shutdown.bat`)  
+* Start tomcat: `tomcat-9/bin/startup.sh`  
+* Stop tomcat:  `tomcat-9/bin/shutdown.sh`  
+* (For windows navigate to `tomcat-9/bin/` and type `startup.bat` or `shutdown.bat`)  
 * To see Tomcat is running open: http://localhost:8080/solrwayback/  
   
 #### Solr:  
-* Start solr: `solr-7.7.3/bin/solr start`  
-* Stop solr: `solr-7.7.3/bin/solr stop -all`  
-* (For windows navigate to `solr-7.7.3/bin/` and type `solr.cmd start` or `solr.cmd stop -all`)    
+* Start solr: `solr-9/bin/solr start -c -m 1g`  
+* Stop solr: `solr-9/bin/solr stop -all`  
+* (For windows navigate to `solr-9/bin/` and type `solr.cmd start -c -m 1g` or `solr.cmd stop -all`)    
 * To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 
 ### 3) INDEXING
@@ -279,7 +281,7 @@ A more advanced distributed indexing flow can be handled by the archon/arctika i
 If you want to remove and old index and create a new index from scratch, this can be done by following these steps:
 
 1. Stop solr 
-2. Delete the folder `solr-7.7.3/server/solr/configsets/netarchivebuilder/netarchivebuilder_data/index` (or rename to `index1` etc, if you want to switch back later)  
+2. Delete the folder `solr-9/server/solr/netarchivebuilder_shard1_replica_n1/data/index/` (or rename to `index1` etc, if you want to switch back later)  
 3. Start solr  
 4. Start the indexing script
 
@@ -310,17 +312,3 @@ The optional `--span-hosts` parameter will also harvest resources outside the do
   `wget --span-hosts --level=1 --recursive --warc-cdx --page-requisites --warc-file=warcfilename --warc-max-size=1G -i url_list.txt`\
   where `level=1` means "starting URLs and the first level of URLs linked from the starting URLs".
   This will substantially increase the size of the WARC file(s).
-
-
-**THIS VERSION HAS BEEN PATCHED AGAINST 'log4shell'**
-
-## log4shell security alert - Patch your SolrWayback Bundle if you are using a release before 4.2.3.
-SolrWayback itself does not use log4j 2+ and is not directly affected by [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228).
-
-The SolrWayback bundle uses Solr 7.7.3, which **is affected by log4shell**. Please follow the [Solr log4shell mitigation guide](https://solr.apache.org/security.html#apache-solr-affected-by-apache-log4j-cve-2021-44228) if the bundled Solr is used before version 4.2.3. The quickest fix, taken from the guide, is the following:
- * (Linux/MacOS) Edit your solr.in.sh file to include: SOLR_OPTS="$SOLR_OPTS -Dlog4j2.formatMsgNoLookups=true"
- * (Windows) Edit your solr.in.cmd file to include: set SOLR_OPTS=%SOLR_OPTS% -Dlog4j2.formatMsgNoLookups=true
-
-If another version of Solr is used, note that Solr >= 7.4 and < 8.11 are vulnerable. See the mitigation guide above for details.
-
-
