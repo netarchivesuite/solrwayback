@@ -172,12 +172,17 @@ public class DatetimeNegotiation {
      * @return              a response containing correct memento headers and the memento as the response entity.
      */
     private static Response streamMementoFromNonRedirectingTimeGate(MementoDoc doc, MementoMetadata metadata) {
-        try {
-            SolrWaybackResource resource = new SolrWaybackResource();
-            Response resp = resource.viewImpl(doc.getSource_file_path(), doc.getSource_file_offset(), true, true);
-            return Response.fromResponse(resp).replaceAll(metadata.getHttpHeaders()).build();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        // TODO: Add check for playback allowed. Do the same for redirecting timegate.
+        if (PropertiesLoader.PLAYBACK_DISABLED){
+         return Response.noContent().replaceAll(metadata.getHttpHeaders()).build();
+        } else {
+            try {
+                SolrWaybackResource resource = new SolrWaybackResource();
+                Response resp = resource.viewImpl(doc.getSource_file_path(), doc.getSource_file_offset(), true, true);
+                return Response.fromResponse(resp).replaceAll(metadata.getHttpHeaders()).build();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

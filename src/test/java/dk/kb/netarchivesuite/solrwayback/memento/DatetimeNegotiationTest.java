@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 
 public class DatetimeNegotiationTest {
 
+    //TODO: Do embedded solr testing instead. Use same docs as timemaptest
     @Test
     public void testHeadersForPatternTwoPointTwoHeaderConstruction() throws Exception {
         try (MockedStatic<DatetimeNegotiation> negotiation = Mockito.mockStatic(DatetimeNegotiation.class)) {
