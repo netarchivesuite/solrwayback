@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<!-- 
+This schema is for Solr 7+ and will not work under Solr 6.
+-->
+
+<schema name="ukwa" version="1.6">
+    <fields>
+        <!-- Solr special purpose meta-fields. Explicit attributes to be sure they are set correctly -->
+        <field name="id" type="string" indexed="true" stored="true" docValues="true" required="true" />
+        <field name="_version_" type="long" indexed="true" stored="true" docValues="true" />
+        <field name="_root_" type="string" indexed="true" stored="true" docValues="true"/>
+        <field name="_text_" type="text_general" multiValued="true" /> <!-- Isn't this only used for schema-less? -->
+
+        <!-- The time of document indexing. Set automatically by Solr.
+             Sample use: Freezing a query result even when new documents are added to the index:
+                         q=foo&fq=index_time:[* TO 2018-05-16T10:33:00Z]
+             Sample use: Discover new documents added since last check for new documents:
+                         q=*:*&fq=index_time:[2018-05-16T10:33:00Z TO *] -->
+        <field name="index_time" type="date" default="NOW" />
+
+        <!-- BL UKWA: Access flag (i.e. Open Access or not) -->
+        <field name="access_terms"         type="string" multiValued="true" />
+
+        <!-- Author extracted from HTML meta-fields, Word documents meta data, image Exif etc.
+             Search directly in the author-field is verbatim and thus not very usable for user-defines queries.
+             Sample use: Faceting with facet=true&facet.field=author -->
+        <field name="author"               type="string" multiValued="true" />
+
+        <!-- Does not seem to be used as of 20180516 -->
+        <field name="category"             type="text_general" />
+
+        <!-- Institution-specific collection names. Can be specified when calling the indexer -->
+        <field name="collection"           type="string" multiValued="true" /> <!-- Why is this multi-valued? -->
+        <field name="collections"          type="string" multiValued="true" />
+
+        <!-- Does not seem to be used as of 20180516 -->
+        <field name="comments"             type="text_general" multiValued="true" />
+
+        <!-- Dublin Core description tag from HTML pages -->
+        <field name="description"          type="text_general" />
+
+        <!-- hashtags and other keywords -->
+        <field name="keywords"             type="text_general" multiValued="true" />
+
+        <!-- Licence URL as specified on HTML pages using links with rel=license -->
+        <field name="license_url"          type="string" multiValued="true" />
+
+        <!-- The core content of the resource (all text with tags stripped from HTML pages, the text in a Word document)
+             Note: This field not searchable. Use 'text' for search.
+             Sample use: Highlighting with q=floodgate&hl=true&hl.field=content -->
+        <field name="content"              type="text_general" indexed="false" />
+
+        <!-- The original encoding of the content (UTF-8/ISO-8859-1/Windows-1250...)
+             Note: Irregardless of the original encoding, content is always converted to UTF-8 in the Solr document -->
+        <field name="content_encoding"     type="string" />
+
+        <!-- The first 4 bytes of the content, represented as lower-case hex with no space -->
+        <field name="content_ffb"          type="string" />
+
+        <!-- The first 32 bytes of the content, represented as shingled space-separated lower-case hex.
+             Sample use: Locate sub-sequences of bytes within the first 32 bytes (signature search):
+             content_first_bytes:"89 50 4e 47" locates content which is probably PNG -->
+        <field name="content_first_bytes"  type="hex_text_shingle" />
+
+        <!-- Language as detected by Tika.
+             Sample use: Faceting on language with facet=true&facet.field=content_language -->
+        <field name="content_language"     type="string" />
+
+        <!-- The content length measured in bytes.
+             Sample use: Sort by content size with sort=content_length desc
+             Sample use: Size statistics for the full result set: stats=true&stats.field=content_length -->
+        <field name="content_length"       type="int" />
+<!--        <field name="content_metadata_ss"  type="string" multiValued="true" />--> <!-- Not used for anything -->
+
+        <!-- If warc.index.tika.extract_all_metadata was enabled during indexing, Tika metadata is added here. -->
+        <field name="content_metadata"     type="text_general" />
+
+        <!-- The content length measured in characters. Mostly relevant for text-based formats (html, doc, pdf...).
+             Sample use: Sort by text length with sort=content_text_length desc
+             Sample use: Size statistics for the full result set: stats=true&stats.field=content_text_length -->
+        <field name="content_text_length"  type="int" />
+
+        <!-- The MIME content type as determined by DROID -->
+        <field name="content_type_droid"   type="string" />
+        <!-- The file extension: my.sample.png will yield 'png' -->
+        <field name="content_type_ext"     type="string" />
+        <!-- Best-guess MIME-type for the content, based on droid, Tika, WARC-header, HTTP-header and
+             webarchive-discovery processing -->
+        <field name="content_type_full"    type="string" />
+        <!-- Content type represented as low-cardinality human-readable text: image, video, text etc. -->
+        <field name="content_type_norm"    type="string" default="other" />
+        <!-- The MIME content type as specified by the web server the resource was harvested from -->
+        <field name="content_type_served"  type="string" />
+        <!-- The MIME content type as determined by Tika -->
+        <field name="content_type_tika"    type="string" />
+        <!-- Not clear what this is. TODO: Determine what it is -->
+        <field name="content_type"         type="string" /> <!-- Used to be multi-valued -->
+        <!-- The version for the MIME type, if available -->
+        <field name="content_type_version" type="string" />
+
+        <!-- The HTML elements used if the resource is a HTML page -->
+        <field name="elements_used"        type="string" multiValued="true" />
+        <!-- Hash of the content (SHA1) -->
+        <field name="hash"                 type="string" />
+
+        <!-- Does not seem to be used as of 20180516 -->
+        <field name="hashes"               type="string" multiValued="true" />
+        <!-- Does not seem to be used as of 20180516 -->
+        <field name="id_long"              type="long" />
+
+        <!-- The date represented as a long in the form of YYYYmmddHHMMSS, which is compatible with Wayback.
+             The field is not searchable. Use crawl_date for search and general processing -->
+        <field name="wayback_date"         type="long" indexed="false" stored="true" docValues="false" />
+        <!-- If webarchive-discovery runs in update-mode, multiple harvests of the same URL will be collapsed to
+             a single document and the dates from the different harvests will be added to this field -->
+        <field name="crawl_dates"          type="date" stored="true" docValues="false" multiValued="true" />
+        <!-- The crawl-date as specified in the WARC.
+             Sample use: Faceting by date with
+               facet=true&facet.range=crawl_date&facet.range.start=2010-01-01T00:00:00Z&facet.range.end=2019-01-01T00:00:00Z&facet.range.gap=+1MONTH&facet.range.method=dv
+             Sample use: Sorting newest material first: sort=crawl_date desc
+              -->
+        <field name="crawl_date"           type="date" />
+        <!-- month_day & day not used for anything -->
+<!--        <field name="crawl_year_month_day" type="int" />
+        <field name="crawl_year_month"     type="int" />-->
+        <!-- If webarchive-discovery runs in update-mode, multiple harvests of the same URL will be collapsed to
+             a single document and the years from the dates from the different harvests will be added to this field -->
+        <field name="crawl_years"          type="int" multiValued="true" />
+        <!-- The year extracted from crawl_date. Faster than crawl_date if used for faceting.
+             Sample use: Faceting by year with facet.field=crawl_year&facet.sort=index&facet=true -->
+        <field name="crawl_year"           type="int" />
+        <!-- Last modified timestamp extracted from the resource. Sources such as JPEG images, PDF files and Word
+             document often has this.
+             Note: This is not a very reliable timestamp for most formats. JPEGs tend to work quite well.
+             Sample use: Sorting by age as stated in the format sort=last_modified asc -->
+        <field name="last_modified"        type="date" />
+        <!-- The year from last_modified -->
+        <field name="last_modified_year"   type="string" /> <!-- Why is this a string? -->
+
+        <!-- Heavily normalised URL: http/https is collepsed to http, everything is lowercased, trailing / are removed
+             for all URLs, except those pointing to root, e.g. "http://example.com/". There is more processing than
+             that. If the field is to be queried with a user-provided URL, it is highly recommended to use the method
+             Normalisation.canonicaliseURL() from webarchive-discovery to ensure match.
+             This field matches normalisation with the links-field, making it possible to perform graph traversals.
+             Note: This field has very high cardinality (a little less than the number of documents in the index).
+             Faceting should be done with care and is likely to fail with an OutOfMemoryException on a large index
+             using stock Solr. This problem is being worked on by Toke Eskildsen - toes@kb.dk -->
+        <field name="url_norm"             type="string"  />
+        <!-- Variation of url_norm intended for search for partial URLs.
+             Sample use: Search for large images with q=url_search:"images/large" -->
+        <field name="url_search"           type="path" stored="false" /> <!-- search only to save space-->
+        <!-- Path-only for the URL: http://example.com/foo/bar.png becomes /foo/bar.png -->
+        <field name="url_path"             type="string" />
+        <!-- Original URL, as specified in the WARC header. Not analysed and thus likely to give false negatives
+             if searched directly with user-input. Consider using url_norm for searching.
+             Note: This field has very high cardinality (a little less than the number of documents in the index).
+             Faceting should be done with care and is likely to fail with an OutOfMemoryException on a large index
+             using stock Solr. This problem is being worked on by Toke Eskildsen - toes@kb.dk -->
+        <field name="url"                  type="string" />
+        <!-- Possible values: normal, robots.txt and slashpage (root page for the domain).
+             Sample use: Search only for root pages with q=url_type:slashpage -->
+        <field name="url_type"             type="string" />
+        <!-- The domain from the URL. The domain is the short name, registered by the domain owner.
+             This can be coupled with the links_domains field for building graphs.
+             Sample use: Faceting to show most popular domains with facet=true&facet.field=domain -->
+        <field name="domain"               type="string" />
+        <!-- The host from the URL. The ending of the host is always the same as the domain, with optional prefix,
+             e.g. a host can be foo.bar.zoo.example.com or just example.com for the domain example.com.
+             Sample use: Faceting to show most popular hosts with facet=true&facet.field=host -->
+        <field name="host"                 type="string" />
+        <!-- The host from the URL in SURT'ed form: http://webarchivingbucket.com/techblog/?p=48
+             e.g. foo.bar.dk becomes the three values ["(dk,", "(dk,bar,", "(dk,bar,foo"]. -->
+        <field name="host_surt"            type="string" multiValued="true" />
+        <!-- The part below the domain in the URL. For all dk-domains it will be dk. For domains such
+             as myname.blogspot.com and mycompany.co.uk it will be blogspot.com and co.uk. -->
+        <field name="public_suffix"        type="string" />
+        <!-- The last part of the URL, typically a filename, e.g. giant_rabbitFoot.png. The field is analysed with an
+             aggressive tokenizer, so that giant_rabbitFoot.png is split into [giant, rabbit, foot, png] and searches
+             are not dependent on knowing file extensions etc.
+             See resourcename_facet for sorting, grouping and faceting.
+             Sample use: Search for images of kittens: q=resourcename:kittens&fq=content_type_norm:image -->
+        <field name="resourcename"         type="path" />
+        <!-- Mirror of resourcename intended for sorting, grouping and faceting.
+             Important note: This is a high-cardinality field. Faceting on a web archive with billions of records
+             will likely lead to memory problems. This problem is being worked on by Toke Eskildsen - toes@kb.dk -->
+        <field name="resourcename_facet"   type="string" />
+
+        <!-- Does not seem to be used as of 20180516 -->
+        <field name="image_colours"        type="string" multiValued="true" />
+        <!-- If warc.index.extract.content.images.dominantColours was true during indexing, this field will contain
+            the dominant colour if the resource is an image. The colour is a human readable name, e.g. crimson,
+            icory or goldenrod, as defined by https://www.w3.org/TR/SVG/types.html#ColorKeywords -->
+        <field name="image_dominant_colour" type="string" />
+        <!-- If warc.index.extract.content.images.detectFaces was true during indexing, this will contain the number
+             of faces detected if the resource is an image.
+             Note: Face recognition is heavy and it is recommended not to enable it unless the need is high -->
+        <field name="image_faces_count"    type="int" />
+        <!-- If warc.index.extract.content.images.detectFaces was true during indexing, this will contain the faces
+             detected if the resource is an image. A face is represented by a bounding box relative to the original
+             image.
+             Note: Face recognition is heavy and it is recommended not to enable it unless the need is high -->
+        <field name="image_faces"          type="string" indexed="false" stored="true" docValues="false" multiValued="true" />
+        <!-- Image height in pixels.
+             Sample use: Get statistics for image height with stats=true&stats.field=image_height -->
+        <field name="image_height"         type="long" />
+        <!-- Image size in pixels (width*height).
+             Sample use: Get statistics for image size with stats=true&stats.field=image_size
+             Sample use: Locate largest images with sort=image_size desc -->
+        <field name="image_size"           type="long" />
+        <!-- Image width in pixels.
+             Sample use: Get statistics for image width with stats=true&stats.field=image_width -->
+        <field name="image_width"          type="long" />
+
+        <!-- Links to images shown on a given web page (aka embedded images).
+             Normalised the same way as url_norm -->
+        <field name="links_images"         type="string" multiValued="true" />
+        <!-- domains from outgoing links for a HTML page -->
+        <field name="links_domains"        type="string" multiValued="true" />
+        <!-- hosts from outgoing links for a HTML page -->
+        <field name="links_hosts"          type="string" multiValued="true" />
+        <!-- SORT'ed form of hosts (see the host_surt field) from outgoing links for a HTML page -->
+        <field name="links_hosts_surts"    type="string" multiValued="true" />
+        <!-- Might be used in the future but will take up a lot of space (same as 'links') -->
+<!--        <field name="links_norm"           type="string" multiValued="true" />-->
+        <!-- public suffixes (see public_suffix field) from outgoing links for a HTML page -->
+        <field name="links_public_suffixes" type="string" multiValued="true" />
+        <!-- Links to external (i.e. not images and other embedded content).
+             Normalised the same way as url_norm
+             Note: This field has extremely high cardinality (10 times the number of documents in the index).
+             Faceting should be done with care and is highly likely to fail with an OutOfMemoryException even on a
+             medium sized index using stock Solr. This problem is being worked on by Toke Eskildsen - toes@kb.dk -->
+        <field name="links"                type="string" multiValued="true" />
+
+        <!-- Geographical coordinates, extracted from postcodes.
+             Sample use: Find images taken within a given radius for from a given geo location with Solr geodist search
+             q=({!geofilt sfield=exif_location}) AND *:*&pt=56.17,10.20&d=0.8
+             where the coordinates can be retrieved from e.g. Google Maps, where they are shown at the bottom of
+             the map when a location is clicked. d is distance in kilometers.
+             See https://lucene.apache.org/solr/guide/7_3/spatial-search.html for details -->
+        <field name="locations"            type="location" multiValued="true" />
+
+        <!-- Non-fatal errors during mete data extraction as part of indexing -->
+        <field name="parse_error"          type="string" multiValued="true" />
+        <!-- If warc.index.extract.content.extractApachePreflightErrors is true during indexing, this field will
+             contain errors encountered during PDF/A-validation -->
+        <field name="pdf_pdfa_errors"      type="string" multiValued="true" />
+        <!-- If warc.index.extract.content.extractApachePreflightErrors is true during indexing, this field will
+             be true id the resource was a PDF and a valid PDF/A.
+             Note: PDF validation is heavy and it is recommended not to enable it unless the need is high-->
+        <field name="pdf_pdfa_is_valid"    type="string" />
+        <!-- UK postcodes only, as they are easily recognizable -->
+        <field name="postcode_district"    type="string" multiValued="true" />
+        <!-- UK postcodes only, as they are easily recognizable -->
+        <field name="postcode"             type="string" multiValued="true" />
+        
+        <!-- Does not seem to be used as of 20180516 -->
+        <field name="publication_date"     type="date" />
+        <!-- Does not seem to be used as of 20180516 -->
+        <field name="publication_year"     type="string" />
+        <!-- The source format. Currently arc or warc. This might be extended in the future -->
+        <field name="record_type"          type="string" />
+        <!-- If warc.index.extract.content.text_sentimentj was true during indexing, this field will contain a
+        numeric score for the sentiment, with 0.0 being "very negative" and high values being "very positive" -->
+        <field name="sentiment_score"      type="float" />
+        <!-- If warc.index.extract.content.text_sentimentj was true during indexing, this field will contain a
+        human readable assessment of the sentiment, from "very negative" to "very positive" -->
+        <field name="sentiment"            type="string" />
+
+        <!-- The HTTP server as stated in the HTTP-headers -->
+        <field name="server"               type="string" multiValued="true" />
+        <!-- Status-code for the resource, as stated in the HTTP-headers from the originating web server -->
+        <field name="status_code"          type="int" />
+        <!-- The generator for the resource, e.g. Wordpress or Photoshop -->
+        <field name="generator"            type="string" multiValued="true" />
+        <!-- Does not seem to be used as of 20180516 -->
+        <field name="referrer_url"         type="string" />
+        <!-- If the resource is returned with a 3xx HTTP response code, it is a redirection. This field contains
+             the URL that the resource redirects to, normalised like url_norm -->
+        <field name="redirect_to_norm"     type="string" />
+
+        <!-- The full path of the origin container (typically WARC) for the harvested resource, e.g.
+             /harvests/full/2018-05/myharvest_20180516_1706.warc.gz
+             Sample use: Delivery of the raw resource by seeking to the source_file_offset in source_file and
+             reading the resource bytes (the size of the resource is stated in the headers in the source_file) -->
+        <field name="source_file_path"     type="string" />
+        <!-- The offset for the resource within the source_file (aka WARC).
+             Sample use: Delivery of the raw resource by seeking to the source_file_offset in source_file and
+             reading the resource bytes (the size of the resource is stated in the headers in the source_file) -->
+        <field name="source_file_offset"   type="long" /> <!-- docValues as it will probably be used for streaming export -->
+        <!-- The file name of the origin container (typically WARC) for the harvested resource, e.g.
+             myharvest_20180516_1706.warc.gz
+             Sample use: Delivery of the raw resource by seeking to the source_file_offset in source_file and
+             reading the resource bytes (the size of the resource is stated in the headers in the source_file) -->
+        <field name="source_file"          type="string" />
+
+        <!-- Catch-all search field. All text content is copied here. -->
+        <field name="text"                 type="text_general" stored="false" multiValued="true" /> <!-- Catch-all -->
+        <!-- HTML page <title>, Word document title, Dublic Core title, etc -->
+        <field name="title"                type="text_general" />
+        <!-- Variant of content_type_norm with human readable designations for the content type -->
+        <field name="type"                 type="string" />
+
+        <!-- Meta data from Web Curator Tool -->
+        <field name="wct_agency"           type="string" />
+        <field name="wct_collections"      type="string" multiValued="true" />
+        <field name="wct_description"      type="text_general" />
+        <field name="wct_instance_id"      type="int" indexed="true" stored="true" docValues="false" />
+        <field name="wct_subjects"         type="string" multiValued="true" />
+        <field name="wct_target_id"        type="string" />
+        <field name="wct_title"            type="string" />
+
+        <!-- Root namespace for XML files.
+             Sample use: Facet to get most popular XML formats with facet=true&facet.field=xml_root_ns -->
+        <field name="xml_root_ns"          type="string" />
+        <!-- WARC-Record-ID if available -->
+        <field name="warc_key_id"          type="string" />
+        <!-- WARC-IP-Address if available -->
+        <field name="warc_ip"              type="string" />
+
+        <!-- Geographical coordinates, extracted from image Exif data.
+             Sample use: Find images taken within a given radius from a given geo location with Solr geodist search
+             q=({!geofilt sfield=exif_location}) AND *:*&pt=56.17,10.20&d=0.8
+             where the coordinates can be retrieved from e.g. Google Maps, where they are shown at the bottom of
+             the map when a location is clicked. d is distance in kilometers.
+             See https://lucene.apache.org/solr/guide/7_3/spatial-search.html for details -->
+        <field name="exif_location"        type="location" />
+        <!-- The Exif version (Exchangeable image file format) -->
+        <field name="exif_version"         type="string" stored="true" docValues="false" />
+
+        <!-- Fuzzy matching on text for similarity search.
+             If warc.index.extract.content.text_fuzzy_hash is true during indexing, fields for SSDeep hashes will
+             be created. See https://ssdeep-project.github.io/ssdeep/ for details -->
+        <dynamicField name="ssdeep_hash_bs_*" type="string" stored="true" docValues="false" />
+        <!-- Does not seem to be used as of 20180517 -->
+        <dynamicField name="ssdeep_hash_ngram_bs_*" type="literal_ngram" stored="true" />
+
+        <!-- User supplied Archive-It fields: -->
+        <field name="institution"          type="string" />
+        <field name="collection_id"        type="string" />
+        <!--:User supplied Archive-It fields -->
+
+        <!-- Harvest meta-data derived from WARC file names using regexp-rules defined in the warc-indexer config file.
+             Primarily used by the Royal Danish Library -->
+        <field name="arc_full"             type="string" stored="true" docValues="false" />
+        <field name="arc_name"             type="string" />
+        <field name="arc_orig"             type="string" />
+        <field name="arc_job"              type="string" />
+        <field name="arc_harvest"          type="string" />
+        <field name="arc_harvesttime"      type="string" />
+
+        <!-- Dynamic fields intended for intstitution-specific fields without changing the schema.
+             (yes, the arc_*-fields above should have been dynamic fields instead of hardcoded)
+              TODO: Add DocValues-enabled variants (take care not to change existing definitions) -->
+        <dynamicField name="*_i"       type="int"    indexed="true"  stored="true" />
+        <dynamicField name="*_is"      type="int"    indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="*_s"       type="string"  indexed="true"  stored="true" />
+        <dynamicField name="*_ss"      type="string"  indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="*_l"       type="long"   indexed="true"  stored="true" />
+        <dynamicField name="*_ls"      type="long"   indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="*_t"       type="text_general" indexed="true" stored="true" />
+        <dynamicField name="*_txt"     type="text_general" indexed="true" stored="true" />
+        <dynamicField name="*_b"       type="boolean" indexed="true" stored="true" />
+        <dynamicField name="*_bs"      type="boolean" indexed="true" stored="true" multiValued="true" />
+        <dynamicField name="*_f"       type="float"  indexed="true"  stored="true" />
+        <dynamicField name="*_fs"      type="float"  indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="*_d"       type="double" indexed="true"  stored="true" />
+        <dynamicField name="*_ds"      type="double" indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="*_coordinate" type="double" indexed="true"  stored="false" />
+        <dynamicField name="*_dt"      type="date"    indexed="true"  stored="true" />
+        <dynamicField name="*_dts"     type="date"    indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="*_p"       type="location" indexed="true" stored="true" />
+        <dynamicField name="*_ti"      type="int"    indexed="true"  stored="true" />
+        <dynamicField name="*_tis"     type="int"    indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="*_tl"      type="long"   indexed="true"  stored="true" />
+        <dynamicField name="*_tls"     type="long"   indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="*_tf"      type="float"  indexed="true"  stored="true" />
+        <dynamicField name="*_tfs"     type="float"  indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="*_td"      type="double" indexed="true"  stored="true" />
+        <dynamicField name="*_tds"     type="double" indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="*_tdt"     type="date"  indexed="true"  stored="true" />
+        <dynamicField name="*_tdts"    type="date"  indexed="true"  stored="true" multiValued="true" />
+        <dynamicField name="ignored_*" type="ignored" multiValued="true" />
+        <dynamicField name="attr_*"    type="text_general" indexed="true" stored="true" multiValued="true" />
+        <dynamicField name="random_*"  type="random" />
+
+        <dynamicField name="*_ws"      type="text_ws"  indexed="true"  stored="true" />
+        <dynamicField name="*_txt_en"  type="text_en"  indexed="true"  stored="true" />
+        <dynamicField name="*_txt_en_split" type="text_en_splitting"  indexed="true"  stored="true" />
+        <dynamicField name="*_txt_en_split_tight" type="text_en_splitting_tight"  indexed="true"  stored="true" />
+        <dynamicField name="*_txt_rev" type="text_general_rev"  indexed="true"  stored="true" />
+        <dynamicField name="*_phon_en" type="phonetic_en"  indexed="true"  stored="true" />
+        <dynamicField name="*_s_lower" type="lowercase"  indexed="true"  stored="true" />
+        <dynamicField name="*_descendent_path" type="descendent_path"  indexed="true"  stored="true" />
+        <dynamicField name="*_ancestor_path" type="ancestor_path"  indexed="true"  stored="true" />
+        <dynamicField name="*_point"   type="point"  indexed="true"  stored="true" />
+        <dynamicField name="*_txt_ga"  type="text_ga"  indexed="true"  stored="true" />
+    </fields>
+
+    <uniqueKey>id</uniqueKey>
+
+    <!-- TODO: Remove all copyFields where the source is indexed as text and adjust solrconfig.xml
+         to also search in those fields (edismax parser qf) -->
+    <copyField source="author" dest="text" />
+    <copyField source="keywords" dest="text" />
+    <copyField source="wct_title" dest="text" />
+    <copyField source="wct_description" dest="text" />
+    <copyField source="content" dest="text" />
+    <copyField source="url_norm" dest="url_search" />
+    <copyField source="resourcename" dest="resourcename_facet"/>
+    
+    <types>
+        <!-- Guiding principles:
+
+             Atomic types are single-valued indexed & docValues, but not stored. This allows for low-cost faceting,
+             grouping and sorting. The downside is a performance penalty on document retrieval where a full document
+             takes longer to retrieve. Enabling stored speeds up retrieval at the cost of increased index size.
+
+             Text types are single-valued indexed & stored, but not docValued (DV is not currently possible for Text).
+
+             Deviations are normally handled by overriding for the specific fields
+             -->
+
+        <fieldType name="string"   class="solr.StrField"         indexed="true"  docValues="true" stored="false" multiValued="false" sortMissingLast="true" />
+        <fieldType name="boolean"  class="solr.BoolField"        indexed="true"  docValues="true" stored="false" multiValued="false" sortMissingLast="true" />
+        <fieldType name="int"      class="solr.IntPointField"    indexed="true"  docValues="true" stored="false" multiValued="false" sortMissingLast="true" />
+        <fieldType name="float"    class="solr.FloatPointField"  indexed="true"  docValues="true" stored="false" multiValued="false" sortMissingLast="true" />
+        <fieldType name="long"     class="solr.LongPointField"   indexed="true"  docValues="true" stored="false" multiValued="false" sortMissingLast="true" />
+        <fieldType name="double"   class="solr.DoublePointField" indexed="true"  docValues="true" stored="false" multiValued="false" sortMissingLast="true" />
+        <fieldType name="date"     class="solr.DatePointField"   indexed="true"  docValues="true" stored="false" multiValued="false" sortMissingLast="true" />
+        <fieldType name="binary"   class="solr.BinaryField"      indexed="false" docValues="false" stored="true" multiValued="false" />
+        <fieldType name="random"   class="solr.RandomSortField" />
+
+        <fieldType name="text_ws" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true" multiValued="false">
+            <analyzer>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+            </analyzer>
+        </fieldType>
+
+        <!-- Used for parsing file paths, so that ["MOO BOO/FooBar_zoo.baz"] becomes ["moo", "boo", "foo", "bar", "zoo", "baz"] -->
+        <fieldType name="path" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true" multiValued="false">
+            <analyzer type="index">
+                <tokenizer class="solr.StandardTokenizerFactory" />
+                <filter class="solr.WordDelimiterFilterFactory" preserveOriginal="0" />
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords_path.txt" />
+                <filter class="solr.LowerCaseFilterFactory" />
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.StandardTokenizerFactory" />
+                <filter class="solr.WordDelimiterFilterFactory" preserveOriginal="0" />
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords_path.txt" />
+                <filter class="solr.LowerCaseFilterFactory" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true" multiValued="false">
+            <analyzer type="index">
+                <tokenizer class="solr.StandardTokenizerFactory" />
+                <filter class="solr.LowerCaseFilterFactory" />
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.StandardTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true" />
+                <filter class="solr.LowerCaseFilterFactory" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true" multiValued="false">
+            <analyzer type="index">
+                <tokenizer class="solr.StandardTokenizerFactory" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.EnglishPossessiveFilterFactory" />
+                <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt" />
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.StandardTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.EnglishPossessiveFilterFactory" />
+                <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="text_en_splitting" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true" indexed="true" stored="true" multiValued="false">
+            <analyzer type="index">
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt" />
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true" />
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="text_en_splitting_tight" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true" indexed="true" stored="true" multiValued="false">
+            <analyzer>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="false" />
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="0" generateNumberParts="0" catenateWords="1" catenateNumbers="1" catenateAll="0" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt" />
+                <filter class="solr.EnglishMinimalStemFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="text_general_rev" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true" multiValued="false">
+            <analyzer type="index">
+                <tokenizer class="solr.StandardTokenizerFactory" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.ReversedWildcardFilterFactory" withOriginal="true"
+                        maxPosAsterisk="3" maxPosQuestion="2" maxFractionAsterisk="0.33" />
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.StandardTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true" />
+                <filter class="solr.LowerCaseFilterFactory" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="phonetic_en" class="solr.TextField" indexed="true" stored="true" multiValued="false">
+            <analyzer>
+                <tokenizer class="solr.StandardTokenizerFactory" />
+                <filter class="solr.DoubleMetaphoneFilterFactory" inject="false" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="lowercase" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true" multiValued="false">
+            <analyzer>
+                <tokenizer class="solr.KeywordTokenizerFactory" />
+                <filter class="solr.LowerCaseFilterFactory" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="descendent_path" class="solr.TextField">
+            <analyzer type="index">
+                <tokenizer class="solr.PathHierarchyTokenizerFactory" delimiter="/" />
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.KeywordTokenizerFactory" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="ancestor_path" class="solr.TextField">
+            <analyzer type="index">
+                <tokenizer class="solr.KeywordTokenizerFactory" />
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.PathHierarchyTokenizerFactory" delimiter="/" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="ignored" stored="false" indexed="false" docValues="false" multiValued="true" class="solr.StrField" />
+        <fieldType name="point" class="solr.PointType" dimension="2" subFieldSuffix="_d" />
+        <fieldType name="location" class="solr.LatLonPointSpatialField" indexed="true" stored="false" docValues="true" multiValued="false" />
+
+        <fieldType name="text_ga" class="solr.TextField" positionIncrementGap="100">
+            <analyzer>
+                <tokenizer class="solr.StandardTokenizerFactory" />
+                <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="lang/contractions_ga.txt" />
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/hyphenations_ga.txt" />
+                <filter class="solr.IrishLowerCaseFilterFactory" />
+            </analyzer>
+        </fieldType>
+
+        <!-- BL UKWA: additional -->
+        <fieldType name="literal_ngram" class="solr.TextField" indexed="true" stored="false" multiValued="false" >
+            <analyzer>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="5" />
+            </analyzer>
+        </fieldType>
+
+        <fieldType name="hex_text_shingle" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true" docValues="false">
+            <analyzer>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.ShingleFilterFactory" minShingleSize="4" maxShingleSize="8" outputUnigrams="false" outputUnigramsIfNoShingles="false" tokenSeparator=" " />
+            </analyzer>
+        </fieldType>
+        <!--:BL UKWA -->
+    </types>
+</schema>

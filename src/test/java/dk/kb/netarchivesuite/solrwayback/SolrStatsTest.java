@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +37,7 @@ public class SolrStatsTest {
     @Before
     public void setUp() throws Exception {
 
-        coreContainer = new CoreContainer(solr_home);
+        coreContainer = CoreContainer.createAndLoad(Path.of(solr_home)); // new CoreContainer(solr_home);
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);

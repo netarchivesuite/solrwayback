@@ -63,7 +63,7 @@ public class UrlResolveTest {
 
         PropertiesLoader.initProperties();
 
-        coreContainer = new CoreContainer(SOLR_HOME);
+        coreContainer = CoreContainer.createAndLoad(Path.of(SOLR_HOME)); //new CoreContainer(SOLR_HOME);
         coreContainer.load();
         solr = new ConvenientEmbeddedSolrServer(coreContainer, "netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(solr);

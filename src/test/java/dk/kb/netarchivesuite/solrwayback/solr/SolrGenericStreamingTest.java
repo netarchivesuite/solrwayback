@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -59,7 +60,7 @@ public class SolrGenericStreamingTest {
 
         PropertiesLoader.initProperties();
 
-        coreContainer = new CoreContainer(SOLR_HOME);
+        coreContainer = CoreContainer.createAndLoad(Path.of(SOLR_HOME)); //new CoreContainer(SOLR_HOME);
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
