@@ -12,9 +12,18 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+/*
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
+ */
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +42,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+//TODO: ALL TESTS IN THIS CLASS FAILS UNDER JUNIT 4.13 HOWEVER THEY WORK IF UPGRADING JUNIT TO 5.8.1
 public class TimeMapTest {
     private static final Logger log = LoggerFactory.getLogger(TimeMapTest.class);
     public static final int TEST_DOCS = 20; // Changing this might make some unit tests fail
@@ -40,8 +50,8 @@ public class TimeMapTest {
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         log.info("Setting up embedded server");
         PropertiesLoader.initProperties();
         PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE = 10;
@@ -60,8 +70,8 @@ public class TimeMapTest {
         log.info("Embedded server ready");
     }
 
-    @AfterClass
-    public static void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         coreContainer.shutdown();
         embeddedServer.close();
     }
@@ -89,7 +99,7 @@ public class TimeMapTest {
     }
 
     @Test
-    public void testTimeMapLinkConstruction() throws IOException, URISyntaxException {
+    public void timeMapLinkConstruction() throws IOException, URISyntaxException {
         // Set very high to disable paging
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 0);
 
@@ -101,7 +111,7 @@ public class TimeMapTest {
     }
 
     @Test
-    public void testTimeMapJsonConstruction() throws IOException, URISyntaxException {
+    public void timeMapJsonConstruction() throws IOException, URISyntaxException {
         // Set very high to disable paging
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", 0);
 
