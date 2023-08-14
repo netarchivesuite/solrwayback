@@ -23,15 +23,15 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 public class EmbeddedSolrTest {
 
     private static final Logger log = LoggerFactory.getLogger(EmbeddedSolrTest.class);        
-    private static String solr_home= "target/test-classes/solr"; 
+    private static String solr_home= "target/test-classes/solr_9";
     private static NetarchiveSolrClient server = null;
     private static  CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
     
     @Before
     public void setUp() throws Exception {
-        
-       coreContainer = CoreContainer.createAndLoad(Path.of(solr_home)); //new CoreContainer(solr_home);
+        System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
+       coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath()); //new CoreContainer(solr_home);
        coreContainer.load();
        embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
        NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
