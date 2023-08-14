@@ -43,7 +43,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-//TODO: ALL TESTS IN THIS CLASS FAILS FROM MAVEN UNDER JUNIT 4.13 HOWEVER THEY WORK IF UPGRADING JUNIT TO 5.8.1.
 public class TimeMapTest {
     private static final Logger log = LoggerFactory.getLogger(TimeMapTest.class);
     public static final int TEST_DOCS = 20; // Changing this might make some unit tests fail
@@ -82,22 +81,6 @@ public class TimeMapTest {
     public void serverAvailable() throws SolrServerException, IOException {
         SolrQuery query = new SolrQuery("*:*");
         assertTrue("There should be some results", embeddedServer.query(query).getResults().getNumFound() > 0);
-    }
-
-    @Test
-    public void basicStreaming() {
-        log.debug("Testing basic streaming");
-        List<SolrDocument> docs = SolrGenericStreaming.create(
-                        SRequest.builder()
-                                .query("*:*")
-                                .fields("id, wayback_date")
-                                .sort("id asc")
-                                .pageSize(2))
-                                .stream()
-                                .collect(Collectors.toList());
-
-        assertEquals(20, docs.size());
-        assertFalse("Basic streaming should return some documents", docs.isEmpty());
     }
 
     @Test

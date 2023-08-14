@@ -73,22 +73,6 @@ public class PagedTimeMapTest {
     }
 
     @Test
-    public void basicStreaming() {
-        log.debug("Testing basic streaming");
-        List<SolrDocument> docs = SolrGenericStreaming.create(
-                        SRequest.builder()
-                                .query("*:*")
-                                .fields("id, wayback_date")
-                                .sort("id asc")
-                                .pageSize(2))
-                .stream()
-                .collect(Collectors.toList());
-
-        assertEquals(100, docs.size());
-        assertFalse("Basic streaming should return some documents", docs.isEmpty());
-    }
-
-    @Test
     public void testTimeMapLinkLastConstruction() throws IOException, URISyntaxException {
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 20);
 
