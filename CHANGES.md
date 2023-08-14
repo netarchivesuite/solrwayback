@@ -10,7 +10,7 @@ Remove an error message that would be shown while waiting to load "Page resource
 
 CTRL+click on a facet will open the search-result in a new tab. On macOS use CMD+click.  (github #404)
 
-Setting encoding to UTF-8 when indexing into Solr using the indexing scripts in the bundle install. A few OS/docker containers may not have UTF-8 as default.
+Setting encoding to UTF-8 when indexing into Solr using the indexing scripts in the bundle install. Some OS/docker containers may not have UTF-8 as default.
 
 
 4.4.2
