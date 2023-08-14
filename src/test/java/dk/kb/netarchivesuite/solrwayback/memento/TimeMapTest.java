@@ -6,6 +6,7 @@ import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrTestClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import org.apache.calcite.runtime.Resources;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -42,7 +43,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-//TODO: ALL TESTS IN THIS CLASS FAILS UNDER JUNIT 4.13 HOWEVER THEY WORK IF UPGRADING JUNIT TO 5.8.1
+//TODO: ALL TESTS IN THIS CLASS FAILS FROM MAVEN UNDER JUNIT 4.13 HOWEVER THEY WORK IF UPGRADING JUNIT TO 5.8.1.
 public class TimeMapTest {
     private static final Logger log = LoggerFactory.getLogger(TimeMapTest.class);
     public static final int TEST_DOCS = 20; // Changing this might make some unit tests fail
@@ -50,8 +51,8 @@ public class TimeMapTest {
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception {
         log.info("Setting up embedded server");
         PropertiesLoader.initProperties();
         PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE = 10;
@@ -67,13 +68,14 @@ public class TimeMapTest {
 
         fillSolr();
         SolrGenericStreaming.setDefaultSolrClient(embeddedServer);
-        log.info("Embedded server ready");
+        log.info("Embedded server ready with timemap paginglimit set to: '{}'", PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
+        assertEquals(10000, PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
     }
 
-    @After
-    public void tearDown() throws Exception {
-        coreContainer.shutdown();
+    @AfterClass
+    public static void tearDown() throws Exception {
         embeddedServer.close();
+        coreContainer.shutdown();
     }
 
     @Test
@@ -100,6 +102,7 @@ public class TimeMapTest {
 
     @Test
     public void timeMapLinkConstruction() throws IOException, URISyntaxException {
+        assertEquals(10000, PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
         // Set very high to disable paging
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 0);
 
@@ -112,6 +115,7 @@ public class TimeMapTest {
 
     @Test
     public void timeMapJsonConstruction() throws IOException, URISyntaxException {
+        assertEquals(10000, PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
         // Set very high to disable paging
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", 0);
 

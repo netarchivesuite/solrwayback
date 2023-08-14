@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.memento;
 
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.common.SolrDocument;
@@ -28,7 +29,7 @@ public class TimeMapAsLink {
                 .count();
         log.info("First stream has been consumed. '{}' documents have been streamed.", count);
 
-        if (count < TimeMap.PAGING_LIMIT){
+        if (count < PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT){
             metadata.setTimeMapHeadForLinkFormat(originalResource.toString(), 0);
             log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}' in link-format.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
@@ -40,7 +41,7 @@ public class TimeMapAsLink {
                     .map(doc -> createMementoInLinkFormat(doc, iterator, count))
                     .forEach(s -> writeStringSafe(s, output));
         } else {
-            if (pageNumber == null || (long) TimeMap.RESULTS_PER_PAGE * pageNumber > count){
+            if (pageNumber == null || (long) PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE * pageNumber > count){
                 pageNumber = 1;
                 log.info("Set page number to: " + pageNumber);
             }
@@ -72,7 +73,7 @@ public class TimeMapAsLink {
 
         output.write(metadata.getTimeMapHead().getBytes());
 
-        AtomicLong iterator = new AtomicLong(((long) pageNumber * TimeMap.RESULTS_PER_PAGE - TimeMap.RESULTS_PER_PAGE + 1) );
+        AtomicLong iterator = new AtomicLong(((long) pageNumber * PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE - PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE + 1) );
         pageOfResults.items
                 .map(doc -> createMementoInLinkFormat(doc, iterator, countOfMementos) )
                 .forEach(s -> writeStringSafe(s, output));
@@ -80,7 +81,7 @@ public class TimeMapAsLink {
         if (pageNumber - 1 != 0 ) {
             writeLinkTypePreviousPage(originalResource, output, pageNumber);
         }
-        if ((long) TimeMap.RESULTS_PER_PAGE * pageNumber < countOfMementos) {
+        if ((long) PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE * pageNumber < countOfMementos) {
             writeLinkTypeNextPage(originalResource, output, pageNumber);
         }
     }

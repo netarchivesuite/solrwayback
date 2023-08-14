@@ -12,9 +12,6 @@ import java.text.ParseException;
 import java.util.stream.Stream;
 
 public class TimeMap {
-
-    static final int RESULTS_PER_PAGE = PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE;
-    static final int PAGING_LIMIT = PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT;
     private static final Logger log = LoggerFactory.getLogger(TimeMap.class);
 
     /**
@@ -99,7 +96,7 @@ public class TimeMap {
      * @return                      a page of solr documents.
      */
     static Page<SolrDocument> getPage(Stream<SolrDocument> streamOfDocs, int pageNumber, long numberOfDocsInStream) {
-        int skipCount = (pageNumber - 1) * RESULTS_PER_PAGE;
+        int skipCount = (pageNumber - 1) * PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE;
 
         //TODO: something smells
         if (pageNumber == 0){
@@ -108,7 +105,7 @@ public class TimeMap {
 
         Stream<SolrDocument> solrDocs = streamOfDocs
                                         .skip(skipCount)
-                                        .limit(RESULTS_PER_PAGE);
+                                        .limit(PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE);
 
         Page<SolrDocument> page = new Page<>(pageNumber, numberOfDocsInStream, solrDocs);
 
@@ -134,7 +131,7 @@ public class TimeMap {
          */
         public Page(Integer pageNumber, Long totalResults, Stream<T> items) {
             this.pageNumber = pageNumber;
-            this.resultsPerPage = RESULTS_PER_PAGE;
+            this.resultsPerPage = PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE;
             this.totalResults = totalResults;
             this.items = items;
         }

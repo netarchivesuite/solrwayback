@@ -3,6 +3,8 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.xml.fastinfoset.sax.Properties;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.common.SolrDocument;
@@ -16,8 +18,6 @@ import java.net.URI;
 import java.text.ParseException;
 import java.util.stream.Stream;
 
-import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.PAGING_LIMIT;
-import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.RESULTS_PER_PAGE;
 import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getDocStreamAndUpdateDatesForFirstAndLastMemento;
 import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getMementoStream;
 import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getPage;
@@ -37,7 +37,7 @@ public class TimeMapAsJSON {
         long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
                 .count();
         log.info("Original resource has been harvested '{}' times.",count);
-        if (count < PAGING_LIMIT){
+        if (count < PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT){
             log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
 
@@ -91,7 +91,7 @@ public class TimeMapAsJSON {
                                                                Stream<SolrDocument> mementoStream,
                                                                long count, Integer pageNumber) {
 
-        if (pageNumber == null || (long) RESULTS_PER_PAGE * pageNumber > count){
+        if (pageNumber == null || (long) PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE * pageNumber > count){
             pageNumber = 1;
             log.info("Set page number to: " + pageNumber);
         }
@@ -192,7 +192,7 @@ public class TimeMapAsJSON {
                     (pageNumber - 1) + "/json/" + originalResource);
             jg.writeEndObject();//pages.prev end
         }
-        if ((long) RESULTS_PER_PAGE * pageNumber < totalMementosForResource){
+        if ((long) PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE * pageNumber < totalMementosForResource){
             jg.writeFieldName("next");
             jg.writeStartObject(); //pages.next start
             jg.writeFieldName("uri");

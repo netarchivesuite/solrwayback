@@ -56,7 +56,8 @@ public class PagedTimeMapTest {
 
         fillSolr();
         SolrGenericStreaming.setDefaultSolrClient(embeddedServer);
-        log.info("Embedded server ready");
+        log.info("Embedded server ready with timemap paging limit '{}'.", PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
+        assertEquals(1, PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
     }
 
     @AfterClass
@@ -149,7 +150,6 @@ public class PagedTimeMapTest {
 
         assertEquals(testPagedTimeMapJSONLastPage, timeMapString);
     }
-    // TODO: Tests for first page and a random middle page for json
 
     @Test
     public void testPagedTimeMapNoPageJSONConstruction() throws IOException, URISyntaxException {
