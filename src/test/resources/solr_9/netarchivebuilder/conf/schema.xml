@@ -17,7 +17,7 @@
 -->
 
 <!-- 
-This schema is for Solr 7+ and will not work under Solr 6.
+This schema is for Solr 9+
 -->
 
 <schema name="ukwa" version="1.6">
