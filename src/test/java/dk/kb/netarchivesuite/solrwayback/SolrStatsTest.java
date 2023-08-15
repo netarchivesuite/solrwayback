@@ -29,15 +29,16 @@ import java.util.List;
 public class SolrStatsTest {
     private static final Logger log = LoggerFactory.getLogger(SolrStatsTest.class);
 
-    private static String solr_home= "target/test-classes/solr";
+    private static String solr_home= "target/test-classes/solr_9";
     private static NetarchiveSolrClient server = null;
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
 
     @Before
     public void setUp() throws Exception {
-
-        coreContainer = CoreContainer.createAndLoad(Path.of(solr_home)); // new CoreContainer(solr_home);
+        // Embedded Solr 9.1+ must have absolute home both as env and explicit param
+        System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
+        coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath());
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);

@@ -30,8 +30,9 @@ public class EmbeddedSolrTest {
     
     @Before
     public void setUp() throws Exception {
-        System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
-       coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath()); //new CoreContainer(solr_home);
+       // Embedded Solr 9.1+ must have absolute home both as env and explicit param
+       System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
+       coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath());
        coreContainer.load();
        embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
        NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
@@ -53,7 +54,7 @@ public class EmbeddedSolrTest {
   
     @Test
     public void testDateSortBug() throws Exception {
-    
+
        String url = "http://testurl.dk/test";
       
        ArrayList<String> crawlTimes = new ArrayList<String>();

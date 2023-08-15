@@ -124,19 +124,35 @@
       <scope>test</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
-    <!-- Needed for TokenFilterFactory -->
-    <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-core</artifactId>
+      <!-- SOLR -->
+      <dependency>
+        <groupId>org.apache.solr</groupId>
+        <artifactId>solr-solrj</artifactId>
         <version>9.1.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.solr</groupId>
+        <artifactId>solr-test-framework</artifactId>
+        <version>9.1.0</version>
+        <!-- <version>7.1.0</version> -->
         <scope>test</scope>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-analyzers -->
-    <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-analyzers</artifactId>
-        <version>3.6.2</version>
-    </dependency>
+      </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.solr/solr-core -->
+      <dependency>
+          <groupId>org.apache.solr</groupId>
+          <artifactId>solr-core</artifactId>
+          <version>9.1.0</version>
+          <scope>test</scope>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
+      <dependency>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-core</artifactId>
+          <version>9.2.0</version>
+          <scope>test</scope>
+      </dependency>
+
 
     <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
     <dependency>

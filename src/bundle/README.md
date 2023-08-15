@@ -26,7 +26,7 @@ mkdir solrwayback_package_4.5
 cd solrwayback_package_4.5/
 cp -r ../src/bundle/indexing/ .
 cp 
-cp -r ../src/bundle/solrconfig_9/ .
+cp -r ../test/resources/solrconfig_9/ .
 cp ../CHANGES.md .
 mkdir properties
 cp ../src/test/resources/properties/solrwayback.properties properties/

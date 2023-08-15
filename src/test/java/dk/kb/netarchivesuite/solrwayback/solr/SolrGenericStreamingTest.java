@@ -50,7 +50,7 @@ public class SolrGenericStreamingTest {
     private static final Logger log = LoggerFactory.getLogger(SolrGenericStreamingTest.class);
 
     public static final int TEST_DOCS = 100; // Changing this might make some unit tests fail
-    private static final String SOLR_HOME = "target/test-classes/solr";
+    private static final String SOLR_HOME = "target/test-classes/solr_9";
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
 
@@ -60,7 +60,9 @@ public class SolrGenericStreamingTest {
 
         PropertiesLoader.initProperties();
 
-        coreContainer = CoreContainer.createAndLoad(Path.of(SOLR_HOME)); //new CoreContainer(SOLR_HOME);
+        // Embedded Solr 9.1+ must have absolute home both as env and explicit param
+        System.setProperty("solr.install.dir", Path.of(SOLR_HOME).toAbsolutePath().toString());
+        coreContainer = CoreContainer.createAndLoad(Path.of(SOLR_HOME).toAbsolutePath());
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
