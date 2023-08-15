@@ -26,8 +26,8 @@ mkdir solrwayback_package_4.5
 cd solrwayback_package_4.5/
 cp -r ../src/bundle/indexing/ .
 cp 
-cp -r ../test/resources/solrconfig_9/ .
-cp ../CHANGES.md .
+cp -r ../src/test/resources/solr_9/ solr_9_files.
+cp ../README.md ../CHANGES.md .
 mkdir properties
 cp ../src/test/resources/properties/solrwayback.properties properties/
 cp ../src/test/resources/properties/solrwaybackweb.properties properties/
@@ -62,9 +62,9 @@ Copy and rename the previously generated `solrwaybackrootproxy-4.3.1.war` to `to
 
 Download and unpack Solr 9 (in current folder `solrwayback_package_4.5`)
 ```
-wget 'https://www.apache.org/dyn/closer.lua/solr/solr/9.2.1/solr-9.2.1.tgz?action=download' -O solr-9.2.1.tgz
-tar -xovf solr-9.2.1.tgz
-mv solr-9.2.1 solr-9
+wget 'https://www.apache.org/dyn/closer.lua/solr/solr/9.3.0/solr-9.3.0.tgz?action=download' -O solr-9.3.0.tgz
+tar -xovf solr-9.3.0.tgz
+mv solr-9.3.0 solr-9
 rm solr-9.2.1.tgz
 ```
 
@@ -77,7 +77,7 @@ sed -i 's/REM set SOLR_JETTY_HOST=127.0.0.1/set SOLR_JETTY_HOST=0.0.0.0/' solr-9
 Start Solr in cloud mode, create a 1 shard `netarchivebuilder` collection and shut it down
 ```
 solr-9/bin/solr start -c -m 1g
-solr-9/bin/solr create_collection -c netarchivebuilder -d solrconfig_9/conf/ -n sw_conf_1 -shards 1
+solr-9/bin/solr create_collection -c netarchivebuilder -d solr_9_files/netarchivebuilder/conf/ -n sw_conf_1 -shards 1
 solr-9/bin/solr stop
 ```
 
