@@ -67,8 +67,8 @@ public class PropertiesLoader {
     public static boolean WARC_SOURCE_HTTP_FALLBACK = false;
     public static String PID_COLLECTION_NAME = null;
     public static boolean MEMENTO_REDIRECT = false;
-    public static int MEMENTO_TIMEMAP_PAGESIZE = 2;
-    public static int MEMENTO_TIMEMAP_PAGINGLIMIT = 5;
+    public static int MEMENTO_TIMEMAP_PAGESIZE = 50;
+    public static int MEMENTO_TIMEMAP_PAGINGLIMIT = 5000;
     public static String WORDCLOUD_STOPWORDS;
     public static LinkedHashMap<String,String> SOLR_PARAMS_MAP= new LinkedHashMap<String,String>(); 
 
@@ -123,9 +123,9 @@ public class PropertiesLoader {
             WARC_SOURCE_HTTP_FALLBACK = Boolean.parseBoolean(serviceProperties.getProperty(WARC_SOURCE_HTTP_FALLBACK_LEGACY_PROPERTY, "false"));
             WARC_SOURCE_HTTP_FALLBACK = Boolean.parseBoolean(serviceProperties.getProperty(WARC_SOURCE_HTTP_FALLBACK_PROPERTY, Boolean.toString(WARC_SOURCE_HTTP_FALLBACK)));
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
-            MEMENTO_REDIRECT = Boolean.parseBoolean(serviceProperties.getProperty(MEMENTO_REDIRECT_PROPERTY));
-            MEMENTO_TIMEMAP_PAGESIZE = Integer.parseInt(serviceProperties.getProperty(MEMENTO_TIMEMAP_PAGESIZE_PROPERTY));
-            MEMENTO_TIMEMAP_PAGINGLIMIT = Integer.parseInt(serviceProperties.getProperty(MEMENTO_TIMEMAP_PAGINGLIMIT_PROPERTY));
+            MEMENTO_REDIRECT = Boolean.parseBoolean(serviceProperties.getProperty(MEMENTO_REDIRECT_PROPERTY, String.valueOf(MEMENTO_REDIRECT)));
+            MEMENTO_TIMEMAP_PAGESIZE = Integer.parseInt(serviceProperties.getProperty(MEMENTO_TIMEMAP_PAGESIZE_PROPERTY, String.valueOf(MEMENTO_TIMEMAP_PAGESIZE)));
+            MEMENTO_TIMEMAP_PAGINGLIMIT = Integer.parseInt(serviceProperties.getProperty(MEMENTO_TIMEMAP_PAGINGLIMIT_PROPERTY, String.valueOf(MEMENTO_TIMEMAP_PAGINGLIMIT)));
             loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
             URL_NORMALISER  = serviceProperties.getProperty(URL_NORMALISER_PROPERTY,"normal");
