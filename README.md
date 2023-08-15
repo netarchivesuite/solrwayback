@@ -129,7 +129,7 @@ Documents in SolrWayback are indexed through the [warc-indexer](https://github.c
  
 ## Requirements
  * Works on macOS/Linux/Windows
- * JDK 11/17 
+ * Java 11 (tested with OpenJDK) 
  * A nice collection of ARC/WARC files or harvest your own with Heritrix, Webrecorder, Brozzler, Wget, etc. 
  * Tomcat 9+ or another J2EE server for deploying the WAR-file
  * A Solr 9+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT+
