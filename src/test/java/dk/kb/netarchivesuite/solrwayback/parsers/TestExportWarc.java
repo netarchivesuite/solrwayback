@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
@@ -19,7 +20,7 @@ public class TestExportWarc {
 
   public static void main (String[] args) throws Exception{
 
-    PropertiesLoader.initProperties();
+    PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
     SearchResult search = NetarchiveSolrClient.getInstance().search("hash:\"sha1:PROTE66RZ6GDXPZI3ZAHG6YPCXRKZMEN\"", 100000);
     // /netarkiv/0105/filedir/272829-30-20170318193124175-00168-sb-prod-har-001.statsbiblioteket.dk.warc.gz
     
