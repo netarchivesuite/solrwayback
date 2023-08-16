@@ -32,7 +32,7 @@ public class ScriptRewriterTest {
     public void invalidateProperties() throws IOException {
 
         // Need this to ensure that the normaliser has a known setting
-        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback.properties").getPath());
+        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
         Normalisation.setTypeFromConfig();
 //        PropertiesLoader.initProperties();
         // Also need this so that we know what the Solr server is set to

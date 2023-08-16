@@ -38,7 +38,7 @@ public class HtmlParserUrlRewriterTest {
     public void invalidateProperties()  throws Exception{
 
         // Need this to ensure that the normaliser has a known setting
-        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback.properties").getPath());
+        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
         Normalisation.setTypeFromConfig();
 
         // We need this so that we know what the Solr server is set to

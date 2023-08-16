@@ -14,6 +14,7 @@
  */
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
@@ -57,7 +58,7 @@ public class SolrGenericStreamingTest {
     public static void setUp() throws Exception {
         log.info("Setting up embedded server");
 
-        PropertiesLoader.initProperties();
+        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
 
         coreContainer = new CoreContainer(SOLR_HOME);
         coreContainer.load();

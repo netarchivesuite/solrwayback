@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.export;
 
 import java.io.PrintWriter;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
 import org.apache.solr.client.solrj.SolrClient;
@@ -13,7 +14,7 @@ public class TestGenerateLinkGraphCSV {
 
     public static void main(String[] args) throws Exception{
     
-    PropertiesLoader.initProperties();
+    PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
     
     String query = "katte";
 
