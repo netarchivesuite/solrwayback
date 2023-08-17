@@ -145,7 +145,8 @@ Documents in SolrWayback are indexed through the [warc-indexer](https://github.c
 
 
 ## Build and test with Docker
-Currently disabled as docker image has not been maintained. 
+
+A containerized sample can be found [here](./Dockerfile)
 
 ## Contact
 Thomas Egense (thomas.egense@gmail.com) 
