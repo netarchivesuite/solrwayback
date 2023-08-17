@@ -144,9 +144,11 @@ Documents in SolrWayback are indexed through the [warc-indexer](https://github.c
  * Open search interface: http://localhost:8080/solrwayback
 
 
-## Build and test with Docker
-
+## Build, Index and test with Docker
+The docker container will download the SolrWayback bundle 4.4.2.
+You can index WARC files from a folder outside the docker container and index them. 
 A containerized sample can be found [here](./Dockerfile)
+Read the docker file for documentation.
 
 ## Contact
 Thomas Egense (thomas.egense@gmail.com) 
