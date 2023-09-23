@@ -41,13 +41,13 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   /**
    * Create a stream with WARC-content from the records referenced by the solrClient.
    * The parts of the stream is lazy loaded and has no practical limit on sizes.
-   * @param solrClient delivers Solr documents specifying the records to stream. The records MUST include the fields
+   * @param solrDocs   the Solr documents specifying the records to stream. The documents MUST include the fields
    *                   {@code source_file_path} and {@code source_file_offset}.
    * @param maxRecords the maximum number of records to deliver.
    * @param gzip if true, the WARC-records will be gzipped. If false, they will be delivered as-is.
    */
-  public StreamingSolrWarcExportBufferedInputStream(SolrGenericStreaming solrClient, long maxRecords, boolean gzip) {
-    this.solrDocs = solrClient.iterator();
+  public StreamingSolrWarcExportBufferedInputStream(Iterator<SolrDocument> solrDocs, long maxRecords, boolean gzip) {
+    this.solrDocs = solrDocs;
     this.maxRecords = maxRecords;
     this.gzip = gzip;
   }
@@ -55,7 +55,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   /**
    * Create a stream with WARC-content from the records in the solrDocs Stream.
    * The parts of the stream is lazy loaded and has no practical limit on sizes.
-   * @param solrDocs   delivers Solr documents specifying the records to stream. The records MUST include the fields
+   * @param solrDocs   the Solr documents specifying the records to stream. The documents MUST include the fields
    *                   {@code source_file_path} and {@code source_file_offset}.
    * @param maxRecords the maximum number of records to deliver.
    * @param gzip if true, the WARC-records will be gzipped. If false, they will be delivered as-is.

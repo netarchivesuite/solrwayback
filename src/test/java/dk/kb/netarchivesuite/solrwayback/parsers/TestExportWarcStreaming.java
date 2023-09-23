@@ -7,7 +7,6 @@ import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -15,21 +14,19 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.stubbing.OngoingStubbing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class TestExportWarcStreaming extends UnitTestUtils {
   private static final Logger log = LoggerFactory.getLogger(TestExportWarcStreaming.class);
@@ -54,10 +51,10 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     }
 
     {
-      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, 1, 1);
+      Iterator<SolrDocument> mockedDocs = getMockedSolrDocs(WARC, OFFSET, 1, 1);
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
-              StreamingSolrWarcExportBufferedInputStream(mockedSolr, 1, false);
+              StreamingSolrWarcExportBufferedInputStream(mockedDocs, 1, false);
 
       byte[] exportedBytes = new byte[EXPECTED_EXPORT_LENGTH];
       int exported = IOUtils.read(exportStream, exportedBytes);
@@ -121,10 +118,10 @@ public class TestExportWarcStreaming extends UnitTestUtils {
         }
 
         {
-          SolrGenericStreaming mockedSolr = getMockedSolrStream(warc, offset, batchSize, batches);
+          Iterator<SolrDocument> mockedDocs = getMockedSolrDocs(warc, offset, batchSize, batches);
 
           StreamingSolrWarcExportBufferedInputStream exportStream = new
-                  StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize * batches, true);
+                  StreamingSolrWarcExportBufferedInputStream(mockedDocs, batchSize * batches, true);
           //GZIPInputStream gis = new GZIPInputStream(new BufferedInputStream(exportStream, 100)); // Fails after 6612
           //GZIPInputStream gis = new GZIPInputStream(new BufferedInputStream(exportStream, 100000)); // Does not fail
 
@@ -193,9 +190,9 @@ public class TestExportWarcStreaming extends UnitTestUtils {
   }
 
   private byte[] assertExportSize(String[][] entries, int expectedSize, boolean gunzip) throws Exception {
-    SolrGenericStreaming mockedSolr = getMockedSolrStream(entries);
+    Iterator<SolrDocument> mockedDocs = getMockedSolrDocs(entries);
 
-    InputStream exportStream = new StreamingSolrWarcExportBufferedInputStream(mockedSolr, entries.length, true);
+    InputStream exportStream = new StreamingSolrWarcExportBufferedInputStream(mockedDocs, entries.length, true);
     if (gunzip) {
       exportStream = new GzipCompressorInputStream(exportStream, true);
     }
@@ -225,10 +222,10 @@ public class TestExportWarcStreaming extends UnitTestUtils {
     final int EXPECTED_TOTAL_SIZE = EXPECTED_EXPORT_LENGTH*batchSize*2;
 
     {
-      SolrGenericStreaming mockedSolr = getMockedSolrStream(WARC, OFFSET, batchSize, 2);
+      Iterator<SolrDocument> solrDocs = getMockedSolrDocs(WARC, OFFSET, batchSize, 2);
 
       StreamingSolrWarcExportBufferedInputStream exportStream = new
-              StreamingSolrWarcExportBufferedInputStream(mockedSolr, batchSize*2, false);
+              StreamingSolrWarcExportBufferedInputStream(solrDocs, batchSize*2, false);
 
       byte[] exportedBytes = new byte[EXPECTED_TOTAL_SIZE];
 
@@ -306,9 +303,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
   }
 
   // Returns 2 batches, each of size docCount
-  private SolrGenericStreaming getMockedSolrStream(String WARC, long OFFSET, int docCount, int batches) throws Exception {
-    SolrGenericStreaming mockedSolr = mock(SolrGenericStreaming.class);
-    OngoingStubbing<SolrDocumentList> nextDocsStub = when(mockedSolr.nextDocuments());
+  private Iterator<SolrDocument> getMockedSolrDocs(String WARC, long OFFSET, int docCount, int batches) throws Exception {
     List<SolrDocument> allDocs = new ArrayList<>();
 
     for (int dl = 0 ; dl < batches ; dl++) {
@@ -324,22 +319,16 @@ public class TestExportWarcStreaming extends UnitTestUtils {
         doc.addField("source_file_offset", OFFSET);
         docs.add(doc);
       }
-      nextDocsStub = nextDocsStub.thenReturn(docs);
       allDocs.addAll(docs);
     }
-    nextDocsStub.thenReturn(null);
-    
-    // Also mock iterator
-    when(mockedSolr.iterator()).thenReturn(allDocs.iterator());
-    return mockedSolr;
+    return allDocs.iterator();
   }
 
   /**
    * @param entries Pairs of [warcfile, offset]
    * @return a mocked SolrGenericStreaming delivering the stated entries.
    */
-  private SolrGenericStreaming getMockedSolrStream(String[][] entries) throws Exception {
-    SolrGenericStreaming mockedSolr = mock(SolrGenericStreaming.class);
+  private Iterator<SolrDocument> getMockedSolrDocs(String[][] entries) throws Exception {
 
     SolrDocumentList docs = new SolrDocumentList();
     docs.setMaxScore(1.0f);
@@ -354,10 +343,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
       docs.add(doc);
     }
 
-    when(mockedSolr.nextDocuments()).thenReturn(docs).thenReturn(null);
-    when(mockedSolr.iterator()).thenReturn(docs.iterator());
-    return mockedSolr;
+    return docs.iterator();
   }
-
 
 }

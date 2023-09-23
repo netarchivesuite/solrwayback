@@ -89,25 +89,24 @@ public class SolrGenericStreamingTest {
     @Test
     public void basicStreaming() {
         log.debug("Testing basic streaming");
-        List<SolrDocument> docs = SolrGenericStreaming.create(
+        List<SolrDocument> docs = SolrGenericStreaming.stream(
                         SRequest.builder().
                                 query("title:title_5").
                                 fields("id").
-                                pageSize(2)).
-                stream().collect(Collectors.toList());
+                                pageSize(2))
+                .collect(Collectors.toList());
         assertFalse("Basic streaming should return some documents", docs.isEmpty());
     }
 
     @Test
     public void getIDsStreaming() {
         log.debug("Extract IDs");
-        List<String> ids = SolrGenericStreaming.create(
+        List<String> ids = SolrGenericStreaming.stream(
                         SRequest.builder().
                                 query("title:title_5").
-                                fields("id")).
-                stream().
-                map(d -> d.getFieldValue("id").toString()).
-                collect(Collectors.toList());
+                                fields("id"))
+                .map(d -> d.getFieldValue("id").toString())
+                .collect(Collectors.toList());
         assertFalse("Basic streaming should return some ids", ids.isEmpty());
     }
 
@@ -116,12 +115,12 @@ public class SolrGenericStreamingTest {
      */
     @Test
     public void timeProximity() {
-        List<SolrDocument> docs = SolrGenericStreaming.create(
+        List<SolrDocument> docs = SolrGenericStreaming.stream(
                         SRequest.builder().
                                 query("title:title_5").
                                 fields("id", "crawl_date").
-                                timeProximityDeduplication("2019-04-15T12:31:51Z", "url")).
-                stream().collect(Collectors.toList());
+                                timeProximityDeduplication("2019-04-15T12:31:51Z", "url"))
+                .collect(Collectors.toList());
         assertEquals("Single result expected",
                      1, docs.size());
         SolrDocument doc = docs.get(0);
@@ -191,14 +190,14 @@ public class SolrGenericStreamingTest {
     public void testLimit() {
         assertEquals("Limiting maxResults should return the desired max number of documents",
                      7,
-                     SolrGenericStreaming.create(SRequest.create(
-                             "*:*", "url", "links").maxResults(7)).
-                             stream().count());
+                     SolrGenericStreaming.stream(SRequest.create(
+                             "*:*", "url", "links").maxResults(7))
+                             .count());
         assertEquals("Having maxResults above the total number of documents should work",
                      100,
-                     SolrGenericStreaming.create(SRequest.create(
-                             "*:*", "url", "links").maxResults(100000)).
-                             stream().count());
+                     SolrGenericStreaming.stream(SRequest.create(
+                             "*:*", "url", "links").maxResults(100000))
+                             .count());
     }
 
     /**
@@ -293,10 +292,12 @@ public class SolrGenericStreamingTest {
      */
     @Test
     public void linksExportMulti() {
-        List<SolrDocument> docs = SolrGenericStreaming.create(SRequest.builder().
-                query("*:*").fields("url", "links").deduplicateField("url_norm")).
-                stream().
-                collect(Collectors.toList());
+        List<SolrDocument> docs = SolrGenericStreaming.stream(
+                        SRequest.builder()
+                                .query("*:*")
+                                .fields("url", "links")
+                                .deduplicateField("url_norm"))
+                .collect(Collectors.toList());
         for (SolrDocument doc: docs) {
             assertTrue("The 'links' field should contain multiple values",
                        doc.getFieldValues("links").size() > 1);
@@ -309,11 +310,10 @@ public class SolrGenericStreamingTest {
      */
     @Test
     public void linksExportSingle() {
-        List<SolrDocument> docs = SolrGenericStreaming.create(SRequest.builder().
-                query("*:*").fields("url", "links").deduplicateField("url_norm")).
-                stream().
-                flatMap(SolrGenericStreaming::flatten).
-                collect(Collectors.toList());
+        List<SolrDocument> docs = SolrGenericStreaming.stream(SRequest.builder().
+                query("*:*").fields("url", "links").deduplicateField("url_norm"))
+                .flatMap(SolrGenericStreaming::flatten)
+                .collect(Collectors.toList());
         for (SolrDocument doc: docs) {
             assertEquals("The 'links' field should only contain a single value",
                          1, doc.getFieldValues("links").size());

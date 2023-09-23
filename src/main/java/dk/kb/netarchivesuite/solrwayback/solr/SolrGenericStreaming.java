@@ -51,10 +51,7 @@ import static org.apache.commons.lang3.StringUtils.join;
 /**
  * Cursormark based chunking search client allowing for arbitrary sized result sets.
  *
- * Use this by creating a {@link SRequest} and calling {@link #create(SRequest)}.
- *
- * Results can be retrieved in chunks with {@link #nextDocuments()}, one at a time with {@link #iterator()} or
- * streaming with {@link #stream()}.
+ * Use this by creating a {@link SRequest} and calling {@link #stream} or {@link #iterate}.
  *
  *
  * Sample calls below.
@@ -64,7 +61,7 @@ import static org.apache.commons.lang3.StringUtils.join;
  * SRequest request = SRequest.builder().
  *     query("kittens").
  *     fields("id");
- * List<String> ids = SolrGenericStreaming.create(request).stream().
+ * List<String> ids = SolrGenericStreaming.stream(request).
  *     map(d -> d.getFieldValue("id").toString()).
  *     collect(Collectors.toList());
  * </pre>
@@ -77,7 +74,7 @@ import static org.apache.commons.lang3.StringUtils.join;
  *     filterQueries("content_type_norm:image").
  *     fields("source_file_path", "source_file_offset").
  *     timeProximityDeduplication("2019-04-15T12:31:51Z", "url"));
- * List<SolrDocument> sources = SolrGenericStreaming.create(request).stream().collect(Collectors.toList());
+ * List<SolrDocument> sources = SolrGenericStreaming.stream(request).collect(Collectors.toList());
  * </pre>
  *
  * Request all url_norms, source-paths and offsets for all pages about {@code kittens}, including embedded images,
@@ -93,7 +90,7 @@ import static org.apache.commons.lang3.StringUtils.join;
  *     timeProximityDeduplication("2019-04-15T12:31:51Z", "url").
  *     expandResources(true).
  *     ensureUnique(true));
- * List<SolrDocument> allUnique = SolrGenericStreaming.create(request).stream().collect(Collectors.toList());
+ * List<SolrDocument> allUnique = SolrGenericStreaming.stream(request).collect(Collectors.toList());
  * </pre>
  * 
  * For most use cases, the state of the {@code SolrGenericStreaming} instance is irrelevant. If the Stream of
@@ -150,16 +147,26 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    */
   static SolrClient defaultSolrClient = NetarchiveSolrClient.noCacheSolrServer;
 
-
   /**
    * Generic stream where all parts except {@link SRequest#query(String)} and {@link SRequest#fields(String...)}
    * are optional.
    *
    * @param request stream setup.
-   * @return an instance of SolrGenericStreaming, ready for use.
+   * @return a stream of {@code SolrDocument}s, as specified in the {@code request}.
    */
-  public static SolrGenericStreaming create(SRequest request) throws IllegalArgumentException {
-    return new SolrGenericStreaming(request);
+  public static Stream<SolrDocument> stream(SRequest request) throws IllegalArgumentException {
+    return new SolrGenericStreaming(request).stream();
+  }
+
+  /**
+   * Generic delivery of Solr documents where all parts except {@link SRequest#query(String)} and
+   * {@link SRequest#fields(String...)} are optional.
+   *
+   * @param request stream setup.
+   * @return an iterator of {@code SolrDocument}s, as specified in the {@code request}.
+   */
+  public static Iterator<SolrDocument> iterate(SRequest request) throws IllegalArgumentException {
+    return new SolrGenericStreaming(request).iterator();
   }
 
   /**
@@ -172,10 +179,26 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
    *                      If multiple filters are to be used, consider collapsing them into one:
    *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
-   * @return an instance of SolrGenericStreaming, ready for use.
+   * @return a stream of {@code SolrDocment}s with the requested fields, satisfying the given query ande filter queries.
    */
-  public static SolrGenericStreaming create(List<String> fields, String query, String... filterQueries) {
-    return create(SRequest.create(query, fields).filterQueries(filterQueries));
+  public static Stream<SolrDocument> stream(List<String> fields, String query, String... filterQueries) {
+    return stream(SRequest.create(query, fields).filterQueries(filterQueries));
+  }
+
+  /**
+   * Export the documents matching query and filterQueries with no limit on result size.
+   * {@link #defaultSolrClient} will be used for the requests.
+   *
+   * Default page size 1000, expandResources=false and ensureUnique=false.
+   * @param fields        the fields to export.
+   * @param query         standard Solr query.
+   * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
+   *                      If multiple filters are to be used, consider collapsing them into one:
+   *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
+   * @return an iterator of {@code SolrDocment}s with the requested fields, satisfying the given query ande filter queries.
+   */
+  public static Iterator<SolrDocument> iterate(List<String> fields, String query, String... filterQueries) {
+    return iterate(SRequest.create(query, fields).filterQueries(filterQueries));
   }
 
   /**
@@ -184,7 +207,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    *
    * @param request stream setup.
    */
-  public SolrGenericStreaming(SRequest request) {
+  protected SolrGenericStreaming(SRequest request) {
     this.request = request;
     originalSolrQuery = request.getMergedSolrQuery();
     solrQuery = SolrUtils.deepCopy(originalSolrQuery);
@@ -231,7 +254,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    *                         Note that a HashSet is created to keep track of encountered documents and will impose
    *                         a memory overhead linear to the number of results.
    * @param deduplicateField if not null, the value for the given field for a document will be compared to the value
-   *                         for the previous document. If they are equal, the current document will be skipped.
+     *                         for the previous document. If they are equal, the current document will be skipped.
    * @throws IllegalArgumentException if solrQuery has {@code group=true}.
    */
   public static void adjustSolrQuery(SolrQuery solrQuery,
@@ -369,45 +392,12 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   }
 
   /**
-   * Stream the Solr response one document list at a time.
-   * @return a stream of lists of SolrDocuments.
-   */
-  public Stream<SolrDocumentList> streamList() {
-    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iteratorList(), 0), false);
-  }
-
-  /**
-   * @return an iterator of SolrDocumentLists.
-   */
-  public Iterator<SolrDocumentList> iteratorList() {
-    return new Iterator<SolrDocumentList>() {
-      @Override
-      public boolean hasNext() {
-        return !hasFinished();
-      }
-
-      @Override
-      public SolrDocumentList next() {
-        if (!hasNext()) {
-          throw new NoSuchElementException("No more elements");
-        }
-        try {
-          return nextDocuments();
-        } catch (Exception e) {
-          throw new RuntimeException("Exception requesting next document list", e);
-        }
-      }
-    };
-
-  }
-
-  /**
    * @return at least 1 and at most {@link SRequest#pageSize} documents or null if there are no more documents.
    *         Call {@link #hasFinished()} to see if more document lists are available.
    * @throws SolrServerException if Solr could not handle a request for new documents.
    * @throws IOException if general communication with Solr failed.
    */
-  public SolrDocumentList nextDocuments() throws SolrServerException, IOException {
+  protected SolrDocumentList nextDocuments() throws SolrServerException, IOException {
     while (!hasFinished && delivered < request.maxResults) {
 
       // Return batch if undelivered contains any documents

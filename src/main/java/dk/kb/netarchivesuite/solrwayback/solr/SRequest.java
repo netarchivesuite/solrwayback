@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -759,12 +760,20 @@ public class SRequest {
 
     /**
      * Stream the Solr responses one document at a time.
-     * Shorthand for {@code SolrGenericStreaming.create(srequest).stream()}.
-     * Use when the status methods from {@link SolrGenericStreaming} are not needed.
+     * Shorthand for {@code SolrGenericStreaming.stream(srequest)}.
      * @return a stream of SolrDocuments.
      */
     public Stream<SolrDocument> stream() {
-        return SolrGenericStreaming.create(this).stream();
+        return SolrGenericStreaming.stream(this);
+    }
+
+    /**
+     * Create an iterator for the Solr documents specified for this request.
+     * Shorthand for {@code SolrGenericStreaming.iterate(srequest)}.
+     * @return am iterator of SolrDocuments for this request.
+     */
+    public Iterator<SolrDocument> iterate() {
+        return SolrGenericStreaming.iterate(this);
     }
 
 }

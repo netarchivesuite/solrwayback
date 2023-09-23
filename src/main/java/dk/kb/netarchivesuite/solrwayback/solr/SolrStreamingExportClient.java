@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.netarchivesuite.solrwayback.export.GenerateCSV;
 
+import java.util.Iterator;
+
 public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportClientInterface{
 
   public static final String BRIEF_FL = "title,url,source_file_path,crawl_date,wayback_date";
@@ -20,7 +22,7 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
   public static final int DEFAULT_PAGE_SIZE = 1000; //TODO change is content is extracted
 
   private final Logger log = LoggerFactory.getLogger(SolrStreamingExportClient.class);
-  private final SolrGenericStreaming inner;
+  private final Iterator<SolrDocument> solrDocs;
   private final String solrFields;
   private final String[] solrFieldsArray;
   private final String csvFields;
@@ -37,7 +39,7 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
     }
     this.solrFieldsArray = solrFields.split(", *");
     this.csvFieldsArray = csvFields.split(", *");
-    inner = SolrGenericStreaming.create(
+    solrDocs = SolrGenericStreaming.iterate(
             SRequest.builder().
                     solrClient(solrClient).
                     query(query).filterQueries(filterQueries).
@@ -61,10 +63,8 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
     return new SolrStreamingExportClient(solrClient, DEFAULT_PAGE_SIZE, fields ,fields, false, false, query, filterQueries);
   }
 
+  @Override
   public String next() throws Exception {
-    if (inner.hasFinished()) {
-      return "";
-    }
     StringBuffer export = new StringBuffer();
 
     if (first) {
@@ -72,15 +72,10 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
       first = false;
     }
 
-    SolrDocumentList docs = inner.nextDocuments();
-    if (docs == null || docs.isEmpty()) {
-      return export.toString();
+    if (solrDocs.hasNext()) {
+      GenerateCSV.generateLine(export, solrDocs.next(), csvFieldsArray);
     }
 
-    for ( SolrDocument doc : docs){
-     GenerateCSV.generateLine(export, doc, csvFieldsArray);
-    }
-    System.out.println("return size: " + export.length());
     return export.toString();
   }
   

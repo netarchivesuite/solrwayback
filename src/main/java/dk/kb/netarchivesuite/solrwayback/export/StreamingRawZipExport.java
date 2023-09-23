@@ -40,7 +40,7 @@ public class StreamingRawZipExport {
         ZipOutputStream zos = new ZipOutputStream(output);
         WarcMetadataFromSolr warcMetadata = new WarcMetadataFromSolr();
 
-        long streamedDocs = SolrGenericStreaming.create(request).stream()
+        long streamedDocs = SolrGenericStreaming.stream(request)
                 .map(doc -> extractMetadata(doc, warcMetadata))
                 .map(StreamingRawZipExport::safeGetArcEntry)
                 .map(entry -> addArcEntryToZip(entry, zos, warcMetadata))

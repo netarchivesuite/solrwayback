@@ -66,15 +66,14 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -553,7 +552,7 @@ public class Facade {
                 throw new InvalidArgumentServiceException("Number of results for warc expanded export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
             }
         }
-        SolrGenericStreaming solr = SolrGenericStreaming.create(
+        Iterator<SolrDocument> solrDocs = SolrGenericStreaming.iterate(
                 SRequest.builder()
                                 .query(query)
                                 .filterQueries(filterqueries)
@@ -562,7 +561,7 @@ public class Facade {
                         expandResources(expandResources).
                         ensureUnique(ensureUnique));
 
-        return new StreamingSolrWarcExportBufferedInputStream(solr, max, gzip); // Use maximum export results from property-file
+        return new StreamingSolrWarcExportBufferedInputStream(solrDocs, max, gzip); // Use maximum export results from property-file
     }
 
     public static InputStream exportLinkGraphStreaming(String q) {
@@ -636,7 +635,7 @@ public class Facade {
                 ensureUnique(ensureUnique);
 
         // Create stream
-        Stream<SolrDocument> docs = SolrGenericStreaming.create(request).stream();
+        Stream<SolrDocument> docs = SolrGenericStreaming.stream(request);
         if (Boolean.TRUE.equals(flatten)) {
             docs = docs.flatMap(SolrGenericStreaming::flatten);
         }

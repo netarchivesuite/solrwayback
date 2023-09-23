@@ -389,19 +389,18 @@ public class NetarchiveSolrClient {
      * @return ArcEntry representation of the matching images.
      */
     public ArrayList<ArcEntryDescriptor> findImagesForTimestamp(String searchString, String timeStamp) {
-        return SolrGenericStreaming.create(
-                        SRequest.builder().
-                                query(searchString).
-                                filterQueries("content_type_norm:image",   // only images
-                                              SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
-                                              "image_size:[2000 TO *]").   // No small images. (fillers etc.)
-                                fields(SolrUtils.indexDocFieldList).
-                                timeProximityDeduplication(timeStamp, "url_norm").
-                                maxResults(50) // TODO: Make this an argument instead
-                ).
-                stream().
-                map(SolrUtils::solrDocument2ArcEntryDescriptor).
-                collect(Collectors.toCollection(ArrayList::new));
+        SRequest request = SRequest.builder().
+                query(searchString).
+                filterQueries("content_type_norm:image",   // only images
+                              SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
+                              "image_size:[2000 TO *]").   // No small images. (fillers etc.)
+                fields(SolrUtils.indexDocFieldList).
+                timeProximityDeduplication(timeStamp, "url_norm").
+                maxResults(50); // TODO: Make this an argument instead
+
+        return SolrGenericStreaming.stream(request)
+                .map(SolrUtils::solrDocument2ArcEntryDescriptor)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
