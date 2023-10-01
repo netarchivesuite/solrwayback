@@ -18,12 +18,23 @@ import com.google.common.collect.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Spliterators;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -170,5 +181,419 @@ public class CollectionUtils {
         return StreamSupport.stream(iterable.spliterator(), false);
     }
 
+    /**
+     * Iterator-wrapper that buffers a stated amount of elements using a background thread.
+     * <p>
+     * Use case: If an iterator is staggering, i.e. it has low latency for most of the elements
+     * interrupted by high latency or a single element, wrapping it in the {@code BufferingIterator}
+     * will make the high latency points go away or at least be less significant by reading ahead.
+     * <p>
+     * Note: Creating an instance of the {@code BufferingIterator} will immediately result in
+     * background read-ahead, even though {@link Iterator#next()} has not been called.
+     */
+    public static class BufferingIterator<T> implements Iterator<T> {
+
+        static long OFFER_TIMEOUT_MS = 10*1000;
+        static long POLL_TIMEOUT_MS = 1000;
+
+        private final AtomicBoolean continueIterating;
+
+        private final BlockingQueue<T> buffer;
+        private final AtomicBoolean innerIsEmpty = new AtomicBoolean(false);
+        private T nextElement;
+
+        /**
+         * Wrap the given {@code inner} {@link Iterable} and start a background pre-fetch of {@code maxBufferSize}
+         * elements.
+         * @param inner      any iterator.
+         * @param executor   used for issuing background requests. This must be unbounded to avoid deadlocks!
+         * @param bufferSize the maximum and ideal size of the buffer.
+         * @param continueProcessing shared state for multiple iterators.
+         *                           Any failed operation on {@code inner} will result in this being set to false.
+         *                           If false, all state-sharing iterators should stop processing as soon as convenient.
+         */
+        public static <T> BufferingIterator<T> of(
+                Iterator<T> inner, Executor executor, int bufferSize, AtomicBoolean continueProcessing) {
+            return new BufferingIterator<>(inner, executor, bufferSize, continueProcessing);
+        }
+
+        /**
+         * Wrap the given {@code inner} {@link Iterable} and start a background pre-fetch of {@code maxBufferSize}
+         * elements.
+         * @param inner      any iterator.
+         * @param executor   used for issuing background requests. This must be unbounded to avoid deadlocks!
+         * @param bufferSize the maximum and ideal size of the buffer. If {@code < 2} this will be set to {@code 2}.
+         * @param continueProcessing shared state for multiple iterators.
+         *                           Any failed operation on {@code inner} will result in this being set to false.
+         *                           If false, all state-sharing iterators should stop processing as soon as convenient.
+         */
+        public BufferingIterator(Iterator<T> inner, Executor executor, int bufferSize, AtomicBoolean continueProcessing) {
+            this.continueIterating = continueProcessing;
+            // bufferSize-1 as we count "the one in the chamber" aka the element being offered to the queue
+            buffer = new ArrayBlockingQueue<>(Math.max(1, bufferSize-1));
+            executor.execute(() -> {
+                while (continueProcessing.get()) {
+                    if (!inner.hasNext()) {
+                        innerIsEmpty.set(true);
+                        return;
+                    }
+
+                    T next;
+                    try {
+                        // Typically a staggering call, e.g. every 100th call requires a remote request
+                        next = inner.next();
+                    } catch (Exception e) {
+                        log.warn("Exception while requesting inner.next(). " +
+                                 "Signalling stop to all state sharing iterators", e);
+                        continueProcessing.set(false);
+                        throw e;
+                    }
+
+                    boolean isAdded = false;
+                    while (continueProcessing.get() && !isAdded) {
+                        try {
+                            // The buffer is blocking with fixed size so most of the Thread time will be spend waiting
+                            isAdded = buffer.offer(next, OFFER_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                        } catch (InterruptedException e) {
+                            // no-op as continueIterating signals whether to continue processing or not
+                        } catch (Exception e) {
+                            log.warn("Unexpected Exception while offering element. " +
+                                     "Signalling stop to all state sharing iterators", e);
+                            continueProcessing.set(false);
+                            throw e;
+                        }
+                    }
+                }
+            });
+        }
+
+        /**
+         * Blocking call that sets {@link #nextElement}. Setting {@code #nextElement} to null signals no more elements.
+         */
+        private void ensureElement() {
+            if (nextElement != null) {
+                return;
+            }
+            while (nextElement == null && continueIterating.get() && !innerIsEmpty.get()) {
+                try {
+                    nextElement = buffer.poll(POLL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    // no-op as continueIterating & innerIsEmpty signals whether to continue processing or not
+                }
+            }
+        }
+
+        /**
+         * @return the element that will be delivered by the next call to {@link #hasNext}.
+         *         If the iterator is depleted, null will be returned.
+         */
+        public T peek() {
+            ensureElement();
+            return nextElement;
+        }
+        @Override
+        public boolean hasNext() {
+            ensureElement();
+            return nextElement != null && continueIterating.get();
+        }
+
+        @Override
+        public T next() {
+            ensureElement();
+            if (nextElement == null) {
+                throw new IllegalStateException("next() called when hasNext() == false");
+            }
+            T resultElement = nextElement;
+            nextElement = null;
+            return resultElement;
+        }
+   }
+
+    /**
+     * Iterator wrapper that adds the method {@code peek} for peeking the next value of {@code next()}.
+     */
+    public static class PeekableIterator<T> implements Iterator<T> {
+        private final Iterator<T> inner;
+        private T nextElement = null;
+
+        /**
+         * If the given {@code inner} is already a {@code PeekableIterator}, it is returned unmodified.
+         * Else it is wrapped in a {@code PeekableIterator}.
+         * @param inner any iterator.
+         * @return a {@code PeekableIterator} delivering the elements from {@code inner}.
+         */
+        public static <T> PeekableIterator<T> of(Iterator<T> inner) {
+            return inner instanceof PeekableIterator ? (PeekableIterator<T>)inner : new PeekableIterator<>(inner);
+        }
+
+        protected PeekableIterator(Iterator<T> inner) {
+            this.inner = inner;
+        }
+
+        /**
+         * @return the element that will be delivered by the next call to {@link #hasNext}.
+         *         If the iterator is depleted, null will be returned.
+         */
+        public T peek() {
+            fillBuffer();
+            return nextElement;
+        }
+
+        @Override
+        public boolean hasNext() {
+            fillBuffer();
+            return nextElement != null;
+        }
+
+        private void fillBuffer() {
+            if (nextElement == null && inner.hasNext()) {
+                nextElement = inner.next();
+            }
+        }
+
+        @Override
+        public T next() {
+            fillBuffer();
+            if (nextElement == null) {
+                throw new IllegalStateException("next() called when hasNext() == false");
+            }
+            T resultElement = nextElement;
+            nextElement = inner.hasNext() ? inner.next() : null;
+            return resultElement;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Remove is not supported for PeekableIterators");
+        }
+    }
+
+    /**
+     * Iterator wrapper where calls to the inner {@link Iterator#hasNext()} and {@link Iterator#next()} shares a
+     * constraint with other iterators on the number of concurrent calls.
+     */
+    public static class SharedConstraintIterator<T> implements Iterator<T> {
+        private final Iterator<T> inner;
+        private final Semaphore gatekeeper;
+
+        /**
+         * Wraps the given {@code inner} Iterator and calls {@link Semaphore#acquire()} in the {@code gatekeeper}
+         * on {@code inner methods}.
+         * @param inner      any Iterator.
+         * @param gatekeeper the {@link Semaphore} controlling concurrent calls.
+         */
+        public static <T> SharedConstraintIterator<T> of(Iterator<T> inner, Semaphore gatekeeper) {
+            return new SharedConstraintIterator<>(inner, gatekeeper);
+        }
+
+        /**
+         * Wraps the given {@code inner} Iterator and calls {@link Semaphore#acquire()} in the {@code gatekeeper}
+         * on {@code inner methods}.
+         * @param inner      any Iterator.
+         * @param gatekeeper the {@link Semaphore} controlling concurrent calls.
+         */
+        public SharedConstraintIterator(Iterator<T> inner, Semaphore gatekeeper) {
+            this.inner = inner;
+            this.gatekeeper = gatekeeper;
+        }
+
+        @Override
+        public boolean hasNext() {
+            acquire("Interrupted while waiting for semaphore in hasNext(). Retrying");
+
+            try {
+                return inner.hasNext();
+            } finally {
+                gatekeeper.release();
+            }
+        }
+
+        @Override
+        public T next() {
+            acquire("Interrupted while waiting for semaphore in next(). Retrying");
+
+            try {
+                return inner.next();
+            } finally {
+                gatekeeper.release();
+            }
+        }
+
+        /**
+         * Acqire the semaphore. Loops if interrupted.
+         * @param message logged if interrupted.
+         */
+        private void acquire(String message) {
+            while (true) {
+                try {
+                    gatekeeper.acquire();
+                    break;
+                } catch (InterruptedException e) {
+                    log.warn(message);
+                }
+            }
+        }
+    }
+
+    /**
+     * Order based merge of {@code streams}. The elements in the {@code streams} must be in the same order as
+     * ensured by the provided {@code comparator}. The merge uses a {@link PriorityQueue} for ordering the
+     * {@code streams} and have a total processing time of {@code O(n*log(s)} where {@code n} is the total
+     * number of elements in all streams combined and {@code s} is the number of streams.
+     * <p>
+     * This method is a wrapper for {@link #mergeIterators(Collection, Comparator)} that handles conversion
+     * from streams to iterators and vice versa.
+     * @param streams    0 or more streams where the elements are in {@code comparator} order.
+     * @param comparator a comparator matching the order in the {@code streams}.
+     * @return a stream delivering all elements in all provided {@code streams} in {@code comparator} order.
+     * @param <T> any class.
+     * @see #mergeIterators(Collection, Comparator)           
+     */
+    public static <T> Stream<T> mergeStreams(Collection<Stream<T>> streams, Comparator<T> comparator) {
+        Iterator<T> iterator = mergeIterators(
+                streams.stream()
+                        .map(Stream::iterator)
+                        .collect(Collectors.toList()),
+                comparator);
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, 0), false);
+    }
+
+    /**
+     * Order based merge of {@code iterators}. The elements in the {@code iterators} must be in the same order as
+     * ensured by the provided {@code comparator}. The merge uses a {@link PriorityQueue} for ordering the
+     * {@code iterators} and have a total processing time of {@code O(n*log(s)} where {@code n} is the total
+     * number of elements in all iterators combined and {@code s} is the number of iterators.
+     * @param iterators  0 or more iterators where the elements are in {@code comparator} order.
+     * @param comparator a comparator matching the order in the {@code iterators}.
+     * @return a stream delivering all elements in all provided {@code iterators} in {@code comparator} order.
+     * @param <T> any class.
+     * @see #mergeStreams(Collection, Comparator)            
+     */
+    public static <T> Iterator<T> mergeIterators(Collection<Iterator<T>> iterators, Comparator<T> comparator) {
+        // Wrap iterators as peekable and add them all to a prority queue using the given comparator (also wrapped)
+        Comparator<PeekableIterator<T>> peekComparator = (o1, o2) -> comparator.compare(o1.peek(), o2.peek());
+        final PriorityQueue<PeekableIterator<T>> pq = new PriorityQueue<>(iterators.size(), peekComparator);
+        iterators.stream()
+                // All iterators needs at least 1 element to be relevant
+                .filter(Iterator::hasNext)
+                .map(PeekableIterator::new)
+                .forEach(pq::add);
+
+        // Create a new iterator that
+        // 1) pop iterator from the top of the priority queue
+        // 2) deliver the next()element from the iterator
+        // 3) push the iterator back on the queue, if the iterator hasNext()
+        return new Iterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return !pq.isEmpty();
+            }
+
+            @SuppressWarnings("ConstantConditions")
+            @Override
+            public T next() {
+                PeekableIterator<T> pi = pq.poll();
+                T response = pi.next(); // We only insert iterators that hasNext() so we can skip the extra check
+                if (pi.hasNext()) {
+                    pq.add(pi);
+                }
+                return response;
+            }
+        };
+    }
+
+    /**
+     * Special purpose Iterator used by {@link #mergeIteratorsBuffered(Collection, Comparator, Executor, Semaphore, int)}
+     * for signalling cancellation in case of early iterator termination.
+     */
+    public static class CloseableIterator<T> implements Iterator<T>, Closeable {
+        private final Iterator<T> inner;
+        private final AtomicBoolean continueProcessing;
+
+        public static <T> CloseableIterator<T> of(Iterator<T> inner, AtomicBoolean continueProcessing) {
+            return new CloseableIterator<>(inner, continueProcessing);
+        }
+
+        public CloseableIterator(Iterator<T> inner, AtomicBoolean continueProcessing) {
+            this.inner = inner;
+            this.continueProcessing = continueProcessing;
+        }
+
+        /**
+         * Send termination signal to the provider of the iterator content.
+         */
+        @Override
+        public void close() {
+            continueProcessing.set(false);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return inner.hasNext();
+        }
+
+        @Override
+        public T next() {
+            return inner.next();
+        }
+
+        @Override
+        public void remove() {
+            inner.remove();
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super T> action) {
+            inner.forEachRemaining(action);
+        }
+    }
+
+    /**
+     * Order based merge of {@code iterators}. The elements in the {@code iterators} must be in the same order as
+     * ensured by the provided {@code comparator}. The merge uses a {@link PriorityQueue} for ordering the
+     * {@code iterators} and have a total processing time of {@code O(n*log(s)} where {@code n} is the total
+     * number of elements in all iterators combined and {@code s} is the number of iterators.
+     * <p>
+     * This merger wraps the provided {@code iterators} in {@link BufferingIterator} and
+     * {@link SharedConstraintIterator} then uses {@link #mergeIterators(Collection, Comparator)}.
+     * <p>
+     * <strong>Important:</strong> to avoid thread leaking, the caller of this method MUST ensure that the
+     * iterator is either depleted or that {@link CloseableIterator#close()} is called. The recommended way
+     * is to use auto-closeable try wrapping:
+     * <pre>
+     * Executor executor = Executors.newCachedThreadPool();
+     * Semaphore gatekeeper = new Semaphore(2);
+     * CountingIterator<Integer> pic1 = new CountingIterator<>(Arrays.asList(1, 3, 5).iterator());
+     * CountingIterator<Integer> pic2 = new CountingIterator<>(Arrays.asList(2, 4).iterator());
+     * try (CollectionUtils.CloseableIterator<Integer> ci = CollectionUtils.mergeIteratorsBuffered(
+     *      Arrays.asList(pic1, pic2), Integer::compareTo, executor, gatekeeper, 1)) {
+     *   while(ci.hasNext()) {
+     * System.out.println(ci.next());
+     *     }
+     * };     
+     * </pre>
+     * @param iterators  0 or more iterators where the elements are in {@code comparator} order.
+     * @param comparator a comparator matching the order in the {@code iterators}.
+     * @param executor   the Executor for starting background reading. This must be unbounded to avoid deadlocks.
+     *                   It is recommended to create a persistent Executor and use it for all calls.
+     * @param gatekeeper controls the amound of concurrent calls to the {@code iterators}. It is recommended to create
+     *                   a persistent gateKeeper and use it for all calls of the same type, to avoid multiple
+     *                   concurrent requests from users overwhelming the system.
+     * @param bufferSize the maximum and ideal size of the buffers used for each iterator.
+     * @return a stream delivering all elements in all provided {@code iterators} in {@code comparator} order.
+     * @param <T> any class.
+     * @see #mergeStreams(Collection, Comparator)
+     */
+    public static <T> CloseableIterator<T> mergeIteratorsBuffered(
+            Collection<Iterator<T>> iterators, Comparator<T> comparator, Executor executor, Semaphore gatekeeper,
+            int bufferSize) {
+        AtomicBoolean continueProcessing = new AtomicBoolean(true);
+        List<Iterator<T>> constrainedAndBuffered = iterators.stream()
+                .map(i -> SharedConstraintIterator.of(i, gatekeeper))
+                .map(i -> BufferingIterator.of(i, executor, bufferSize, continueProcessing))
+                .collect(Collectors.toList());
+        Iterator<T> merged = mergeIterators(constrainedAndBuffered, comparator);
+        return CloseableIterator.of(merged, continueProcessing);
+    }
 }
 
