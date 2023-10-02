@@ -87,6 +87,7 @@ public class SRequest {
     public int pageSize = SolrGenericStreaming.DEFAULT_PAGESIZE;
     public boolean usePaging = true;
     public int queryBatchSize = SolrGenericStreaming.DEFAULT_QUERY_BATCHSIZE;
+    public List<String> shards;
 
     /**
      * @return a fresh instance of SRequest intended for further adjustment.
@@ -658,6 +659,26 @@ public class SRequest {
     }
 
     /**
+     * Limit the request to the given shards. If this value is not specified, all shards in the collection is queried.
+     * @param shards 1 or more shard names.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest shards(String... shards) {
+        this.shards = Arrays.asList(shards);
+        return this;
+    }
+
+    /**
+     * Limit the request to the given shards. If this value is not specified, all shards in the collection is queried.
+     * @param shards 1 or more shard names.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest shards(List<String> shards) {
+        this.shards = shards;
+        return this;
+    }
+
+    /**
      * Newer Solrs (at least 9+) share a default upper limit of 1024 boolean clauses recursively in the user issued
      * query tree. As multi-query uses batching, this limit can quickly be reached. Keep well below 1024.
      * @param queryBatchSize batch size when using {@link #queries(Stream)}.
@@ -701,6 +722,9 @@ public class SRequest {
         }
         if (!fl.isEmpty()) {
             solrQuery.set(CommonParams.FL, String.join(",", fl));
+        }
+        if (shards != null && !shards.isEmpty()) {
+            solrQuery.set("shards", String.join(",", shards));
         }
 
         solrQuery.set(CommonParams.ROWS, (int) Math.min(maxResults, pageSize));
@@ -746,7 +770,8 @@ public class SRequest {
                 queries(queries).
                 filterQueries(copy(filterQueries)).
                 expandResourcesFilterQueries(copy(expandResourcesFilterQueries)).
-                pageSize(pageSize);
+                pageSize(pageSize).
+                shards(shards);
         copy.idealTime = idealTime;
         return copy;
     }

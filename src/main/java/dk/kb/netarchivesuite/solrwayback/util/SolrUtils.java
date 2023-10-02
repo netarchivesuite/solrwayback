@@ -1,11 +1,14 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -13,11 +16,14 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -433,5 +439,33 @@ public class SolrUtils {
         Stream<String> fullFiltersStream =Stream.concat(Stream.of(predefinedFilterField + ":" + predefinedFilterValue), filtersStream);
         return fullFiltersStream
                 .collect(Collectors.joining(") AND (", "(", ")"));
+    }
+
+    /**
+     * Retrieve the shard names for the given {@code collection} in the given {@code solrBase}.
+     * If it is not possible to retrieve shard names, e.g. if the Solr is running in standalone mode,
+     * null is returned.
+     * @param solrBase   an address for a running Sorl, such as {@code http://localhost:8983/solr}.
+     * @param collection a Solr collection, such as {@code netarchivebuilder}.
+     * @return
+     */
+    public static List<String> getShardNames(String solrBase, String collection) {
+        try {
+            URI clusterStatusUrl = URI.create(solrBase + "/admin/collections?action=CLUSTERSTATUS");
+            String statusJSON = IOUtils.toString(clusterStatusUrl, StandardCharsets.UTF_8);
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode statusRoot = mapper.readTree(statusJSON);
+            JsonNode shardsJSON = statusRoot.get("cluster").get("collections").get(collection).get("shards");
+            List<String> shardNames = new ArrayList<>();
+            for (Iterator<String> it = shardsJSON.fieldNames(); it.hasNext(); ) {
+                shardNames.add(it.next());
+            }
+            return shardNames;
+        } catch (Exception e) {
+            log.info("Unable to resolve shard names for Solr '{}' collection '{}'. Possibly because the Solr is " +
+                     "running as standalone. Returning null", solrBase, collection);
+            return null;
+        }
     }
 }
