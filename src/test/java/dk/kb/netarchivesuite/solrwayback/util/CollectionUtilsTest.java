@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import org.junit.Test;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -68,6 +69,28 @@ public class CollectionUtilsTest {
         assertEquals("Fourth peek should yield the expected result", Integer.valueOf(3), pit.peek());
         assertEquals("Third get should yield the expected result", Integer.valueOf(3), pit.next());
         assertFalse("Third hasNext() should yield the expected result", pit.hasNext());
+    }
+
+    @Test
+    public void testReducingIterator() {
+        Iterator<Integer> pi = Arrays.asList(1, 2, 3, 4, 5, 6, 7).iterator();
+        Iterator<Integer> eveni = CollectionUtils.ReducingIterator.of(pi, i -> (i&0x1) == 0);
+        List<Integer> evenl = new ArrayList<>();
+        eveni.forEachRemaining(evenl::add);
+        assertEquals("The reduced iterator should produce only even numbers",
+                     "[2, 4, 6]", evenl.toString());
+    }
+
+    @Test
+    public void testExpandingIterator() {
+        Iterator<Integer> pi = Arrays.asList(1, 3, 5).iterator();
+
+        Iterator<Integer> plusonei = CollectionUtils.ExpandingIterator.of(
+                pi, i -> Arrays.stream(new Integer[]{i, i+1}).iterator());
+        List<Integer> plusonel = new ArrayList<>();
+        plusonei.forEachRemaining(plusonel::add);
+        assertEquals("The expanding iterator should produce the missing numbers",
+                     "[1, 2, 3, 4, 5, 6]", plusonel.toString());
     }
 
     @Test

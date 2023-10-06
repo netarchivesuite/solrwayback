@@ -35,6 +35,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -307,7 +309,128 @@ public class CollectionUtils {
             nextElement = null;
             return resultElement;
         }
-   }
+    }
+
+    /**
+     * Iterator wrapper that takes a source {@link Iterator} and a {@link Predicate} acting as a filter on the
+     * iterator.
+     */
+    public static class ReducingIterator<T> implements Iterator<T> {
+        private final Iterator<T> inner;
+        private final Predicate<T> predicate;
+        private T nextElement = null;
+
+        /**
+         * Iterator wrapper that takes a source {@link Iterator} and a {@link Predicate} acting as a filter on the
+         * iterator.
+         * @param inner     any iterator.
+         * @param predicate only elements from inner that satisfies the predicate are passed on.
+         */
+        public static <T> ReducingIterator<T> of(Iterator<T> inner, Predicate<T> predicate) {
+            return new ReducingIterator<>(inner, predicate);
+        }
+
+        /**
+         * @param inner     any iterator.
+         * @param predicate only elements from inner that satisfies the predicate are passed on.
+         */
+        public ReducingIterator(Iterator<T> inner, Predicate<T> predicate) {
+            this.inner = inner;
+            this.predicate = predicate;
+        }
+
+        /**
+         * @return the element that will be delivered by the next call to {@link #hasNext}.
+         * If the iterator is depleted, null will be returned.
+         */
+        public T peek() {
+            fillBuffer();
+            return nextElement;
+        }
+
+        @Override
+        public boolean hasNext() {
+            fillBuffer();
+            return nextElement != null;
+        }
+
+        @Override
+        public T next() {
+            fillBuffer();
+            if (nextElement == null) {
+                throw new IllegalStateException("next() called when hasNext() == false");
+            }
+            T resultElement = nextElement;
+            nextElement = null;
+            return resultElement;
+        }
+
+        /**
+         * Keep retrieving elements from {@link #inner} and until one satisfies {@link #predicate} or until
+         * {@code inner} is empty.
+         */
+        private void fillBuffer() {
+            while (nextElement == null && inner.hasNext()) {
+                T innerNext = inner.next();
+                if (predicate.test(innerNext)) {
+                    nextElement = innerNext;
+                }
+            }
+        }
+    }
+
+    /**
+     * Iterator wrapper that takes a source {@link Iterator} and a {@link Function} that expands any element from
+     * the {@code iterator} to a new {@link Iterator}.
+     */
+    public static class ExpandingIterator<T> implements Iterator<T> {
+        private final Iterator<T> inner;
+        private final Function<T, Iterator<T>> expander;
+        private Iterator<T> expandedIterator = null; // Only assigned if hasNext()
+
+        /**
+         * Construct a wrapper that takes a source {@link Iterator} and a {@link Function} that expands any element from
+         * the {@code iterator} to a new {@link Iterator}.
+         * @param inner any iterator.
+         * @param expander takes an element from {@code inner} and delivers an iterator.
+         */
+        public static <T> ExpandingIterator<T> of(Iterator<T> inner, Function<T, Iterator<T>> expander) {
+            return new ExpandingIterator<>(inner, expander);
+        }
+
+        /**
+         * @param inner any iterator.
+         * @param expander takes an element from {@code inner} and delivers an iterator.
+         */
+        public ExpandingIterator(Iterator<T> inner, Function<T, Iterator<T>> expander) {
+            this.inner = inner;
+            this.expander = expander;
+        }
+
+        @Override
+        public boolean hasNext() {
+            fillBuffer();
+            return expandedIterator != null && expandedIterator.hasNext();
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new IllegalStateException("next() called when hasNext() == false");
+            }
+            return expandedIterator.next();
+        }
+
+        /**
+         * Keep retrieving elements from {@link #inner} and pass them through {@link #expander} until the result
+         * {@link Iterator#hasNext()} or until {@code inner} is empty.
+         */
+        private void fillBuffer() {
+            while ((expandedIterator == null || !expandedIterator.hasNext()) && inner.hasNext()) {
+                expandedIterator = expander.apply(inner.next());
+            }
+        }
+    }
 
     /**
      * Iterator wrapper that adds the method {@code peek} for peeking the next value of {@code next()}.
