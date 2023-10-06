@@ -209,7 +209,7 @@ public class SolrGenericStreamingTest {
         multi.setField("id", "foo");
         multi.setField("m", Arrays.asList("bar", "zoo"));
 
-        List<SolrDocument> singles = SolrGenericStreaming.flatten(multi).collect(Collectors.toList());
+        List<SolrDocument> singles = SolrStreamDecorators.flatten(multi).collect(Collectors.toList());
 
         assertEquals("There should be the expected number of single-value only documents",
                      2, singles.size());
@@ -233,7 +233,7 @@ public class SolrGenericStreamingTest {
         multi.setField("m1", Arrays.asList("bar", "zoo"));
         multi.setField("m2", Arrays.asList("moo", "bam", "kaboom"));
 
-        List<SolrDocument> singles = SolrGenericStreaming.flatten(multi).collect(Collectors.toList());
+        List<SolrDocument> singles = SolrStreamDecorators.flatten(multi).collect(Collectors.toList());
 
         assertEquals("There should be the expected number of single-value only documents",
                      2*3, singles.size());
@@ -312,7 +312,7 @@ public class SolrGenericStreamingTest {
     public void linksExportSingle() {
         List<SolrDocument> docs = SolrGenericStreaming.stream(SRequest.builder().
                 query("*:*").fields("url", "links").deduplicateField("url_norm"))
-                .flatMap(SolrGenericStreaming::flatten)
+                .flatMap(SolrStreamDecorators::flatten)
                 .collect(Collectors.toList());
         for (SolrDocument doc: docs) {
             assertEquals("The 'links' field should only contain a single value",

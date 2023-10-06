@@ -73,6 +73,7 @@ public class SRequest {
     public boolean useHashingForUnique = true;
 
     private String idealTime; // If defined, a sort will be created as String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
+    // TODO: Expand this to support multiple deduplicateFields
     public String deduplicateField = null;
     public List<String> fields;
     public long maxResults = Long.MAX_VALUE;

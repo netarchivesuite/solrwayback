@@ -1,8 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
-import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
-import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrClient;
@@ -23,22 +20,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -128,13 +118,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   private String lastDeduplicateValue = null; // Used for simulated cursorMark
   private String userQuery = null;            // Used for simulated cursorMark
 
-  private final List<String> initialFields;  // Caller provided fields
   private final List<String> adjustedFields; // Fields after adjusting for unique etc.
-  private final Consumer<SolrDocument> adjustFields; // Prunes and sorts field to match initialFields
 
-  private final UniqueFilter uniqueTracker;
   private int delivered = 0;
-  private long duplicatesRemoved = 0;
   private SolrDocumentList undelivered = null; // Leftover form previous call to keep deliveries below pageSize
 
   private Object lastStreamDeduplicateValue = null; // Used with timeProximity
@@ -155,7 +141,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * @return a stream of {@code SolrDocument}s, as specified in the {@code request}.
    */
   public static Stream<SolrDocument> stream(SRequest request) throws IllegalArgumentException {
-    return new SolrGenericStreaming(request).stream();
+    SolrGenericStreaming base = new SolrGenericStreaming(request);
+    return SolrStreamDecorators.addPostProcessors(base.stream(), base.request, String.join(",", base.adjustedFields));
   }
 
   /**
@@ -166,7 +153,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * @return an iterator of {@code SolrDocument}s, as specified in the {@code request}.
    */
   public static Iterator<SolrDocument> iterate(SRequest request) throws IllegalArgumentException {
-    return new SolrGenericStreaming(request).iterator();
+    SolrGenericStreaming base = new SolrGenericStreaming(request);
+    return SolrStreamDecorators.addPostProcessors(base.iterator(), base.request, String.join(",", base.adjustedFields));
   }
 
   /**
@@ -213,16 +201,11 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     solrQuery = SolrUtils.deepCopy(originalSolrQuery);
     queryDepleted = request.isMultiQuery(); // Single query starts assigned, multi are initialized later
     userQuery = request.isMultiQuery() ? null : solrQuery.getQuery();
-    this.initialFields = request.fields; //Arrays.asList(solrQuery.getFields().split(","));
-    adjustFields = SolrUtils.reduceAndSortFields(initialFields);
 
     adjustSolrQuery(solrQuery, request.expandResources, request.ensureUnique, request.deduplicateField);
     optimizeSolrQuery(solrQuery, request);
     this.adjustedFields = Arrays.asList(solrQuery.getFields().split(","));
 
-    this.uniqueTracker = request.ensureUnique ?
-            new UniqueFilter(request.useHashingForUnique, request.maxUnique, request.uniqueFields) :
-            null;
     queries = request.queries == null ? null:
             CollectionUtils.splitToLists(request.queries, request.queryBatchSize).
                     map(batch -> "(" + String.join(") OR (", batch) + ")").
@@ -257,8 +240,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
      *                         for the previous document. If they are equal, the current document will be skipped.
    * @throws IllegalArgumentException if solrQuery has {@code group=true}.
    */
-  public static void adjustSolrQuery(SolrQuery solrQuery,
-                                     boolean expandResources, boolean ensureUnique, String deduplicateField) {
+  public static void adjustSolrQuery(
+          SolrQuery solrQuery, boolean expandResources, boolean ensureUnique, String deduplicateField) {
     if (solrQuery.getBool(GroupParams.GROUP, false)) {
       throw new IllegalArgumentException("group==true is not compatible with cursorMark paging");
     }
@@ -465,23 +448,10 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
                 undelivered.get(undelivered.size()-1).getFieldValue(request.deduplicateField));
       }
 
-      // Expand or contract result set based on options
-      if (request.deduplicateField != null) {
-        streamDeduplicate(undelivered);
-      }
-      if (request.expandResources) {
-        expandResources(undelivered);
-      }
-      if (uniqueTracker != null) {
-        removeDuplicates(undelivered);
-      }
       // Reduce to maxResults
       while (request.maxResults-delivered < undelivered.size() && !undelivered.isEmpty()) {
         undelivered.remove(undelivered.size()-1);
       }
-
-      // Reduce documents to contain requested fields only
-      undelivered.forEach(adjustFields);
 
       // Prepare for next page
       if (!request.usePaging) { // No paging
@@ -524,118 +494,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     return batch;
   }
 
-  private void expandResources(SolrDocumentList documents) {
-    int initialSize = documents.size();
-    for (int i = 0 ; i < initialSize ; i++) {
-      if ("html".equals(documents.get(i).getFieldValue("content_type_norm"))) {
-        getHTMLResources(documents.get(i)).forEach(documents::add);
-      }
-    }
-  }
-
-  /**
-   * Performs a lookup of a HTML resource, extracting links to embedded resources and issues searches for
-   * those. Plain {@code <a href="..." ...>} links are not part of this. The graph traversal is only 1 level deep.
-   * @param html a SolrDocument representing a HTML page.
-   * @return the resources (images, CSS, JavaScript...) used by the page.
-   */
-  private Stream<SolrDocument> getHTMLResources(SolrDocument html) {
-    try {
-      String sourceFile = html.getFieldValue("source_file_path").toString();
-      long offset = Long.parseLong(html.getFieldValue("source_file_offset").toString());
-      ArcEntry arc= ArcParserFileResolver.getArcEntry(sourceFile, offset);
-      HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
-
-      return NetarchiveSolrClient.getInstance().findNearestDocuments(
-              join(adjustedFields, ","), arc.getCrawlDate(),
-              resources.stream(), request.getExpandResourcesFilterQueries());
-    } catch (Exception e) {
-      log.warn("Unable to get resources for SolrDocument '" + html + "'", e);
-      return Stream.of();
-    }
-  }
-
-  public long getDuplicatesRemoveCount() {
-    return duplicatesRemoved;
-  }
-
   public boolean hasFinished() {
     return hasFinished;
-  }
-
-  private void removeDuplicates(SolrDocumentList documents) {
-    List<SolrDocument> unique = new ArrayList<>(documents.size());
-
-    // Important: We ensure that first version (in sort order) of duplicate entries win
-    documents.forEach(doc -> {
-      if (uniqueTracker.test(doc)) { // Throws exception if the limit is reached
-        unique.add(doc);
-      } else {
-        duplicatesRemoved++;
-      }
-    });
-    documents.clear();
-    documents.addAll(unique);
-  }
-
-  /**
-   * Streaming deduplication where the incoming documents are expected to be in order.
-   */
-  private void streamDeduplicate(SolrDocumentList documents) {
-    List<SolrDocument> unique = new ArrayList<>(documents.size());
-    for (SolrDocument doc: documents) {
-      if (lastStreamDeduplicateValue == null ||
-          !lastStreamDeduplicateValue.equals(doc.getFieldValue(request.deduplicateField))) {
-          lastStreamDeduplicateValue = doc.getFieldValue(request.deduplicateField);
-          unique.add(doc);
-      } else {
-        duplicatesRemoved++;
-      }
-    }
-    documents.clear();
-    documents.addAll(unique);
-  }
-
-  /**
-   * Takes a SolrDocument which has 0 or more multi-valued fields and flattens those fields to single value by creating
-   * multiple documents with all permutations of the values in the multi-valued fields converted to single-valued.
-   *
-   * Typically used for exporting to CSV where multi-value is not desirable.
-   *
-   * The following example delivers a list of documents with a single source and a single destination URL for each link
-   * on each unique page on the kb.dk domain, where uniqueness is defined by hash:
-   * <pre>
-   * SRequest request = SRequest.builder().
-   *     query("domain:kb").
-   *     filterQueries("content_type_norm:html").
-   *     fields("url", "links").
-   *     timeProximityDeduplication("2019-04-15T12:31:51Z", "hash");
-   *
-   * List<SolrDocument> docs = SolrGenericStreaming.create(request).stream().
-   *     flatMap(SolrGenericStreaming::flatten).
-   *     collect(Collectors.toList());
-   * </pre>
-   *
-   * Note: With multiple multi-value fields, the number of produced documents grows multiplicatively.
-   *       As everything is streaming, this does not require excessive memory for flatten itself,
-   *       but the amount of produced SolrDocuments can present a problem for the caller.
-   * @param doc a document with at most 1 multi-valued field.
-   * @return the input document flattened to at least 1 documents holding only single-valued field.
-   */
-  @SuppressWarnings({"OptionalIsPresent", "unchecked"})
-  public static Stream<SolrDocument> flatten(SolrDocument doc) {
-    Optional<Map.Entry<String, Object>> firstMulti = doc.entrySet().stream().
-            filter(entry -> entry.getValue() instanceof Collection).findFirst();
-    if (!firstMulti.isPresent()) {
-       return Stream.of(doc);
-    }
-    return ((Collection<Object>)firstMulti.get().getValue()).stream().
-            map(value -> {
-              LinkedHashMap<String, Object> extraMap = new LinkedHashMap<>(doc);
-              extraMap.put(firstMulti.get().getKey(), value);
-              return new SolrDocument(extraMap);
-            }).
-            flatMap(SolrGenericStreaming::flatten);
   }
 
 }

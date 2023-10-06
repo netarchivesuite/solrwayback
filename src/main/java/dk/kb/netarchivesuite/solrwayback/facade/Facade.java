@@ -40,6 +40,7 @@ import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStats;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamDecorators;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
@@ -598,7 +599,7 @@ public class Facade {
      * @param groupField    if not null, documents will be grouped on the given field and only the first document
      *                      will be exported in each group. This will change document order from score to groupField.
      *                      This is implemented using {@link SRequest#deduplicateField(String)}.
-     * @param flatten       if true, {@link SolrGenericStreaming#flatten(SolrDocument)} will be called on each
+     * @param flatten       if true, {@link SolrStreamDecorators#flatten(SolrDocument)} will be called on each
      *                      SolrDocument to ensure that no field holds multiple values.
      *                      Note: If there are multiple multi-value fields, this can result in a large amount of
      *                            flattened documents, as all permutations of values will be present.
@@ -637,7 +638,7 @@ public class Facade {
         // Create stream
         Stream<SolrDocument> docs = SolrGenericStreaming.stream(request);
         if (Boolean.TRUE.equals(flatten)) {
-            docs = docs.flatMap(SolrGenericStreaming::flatten);
+            docs = docs.flatMap(SolrStreamDecorators::flatten);
         }
 
         return ContentStreams.deliver(docs, fields, format, gzip);
