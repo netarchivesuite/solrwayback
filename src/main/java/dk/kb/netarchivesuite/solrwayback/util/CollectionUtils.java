@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -399,6 +400,16 @@ public class CollectionUtils {
         }
 
         /**
+         * Helper constructor that takes a Stream expander and converts it to an Iterator expander,
+         * then feeds it ti {@link #of(Iterator, Function)}.
+         * @param inner any iterator.
+         * @param expander takes an element from {@code inner} and delivers a stream of elements.
+         */
+        public static <T> Iterator<T> ofStream(Iterator<T> inner, Function<T, Stream<T>> expander) {
+            return of(inner, element -> expander.apply(element).iterator());
+        }
+
+        /**
          * @param inner any iterator.
          * @param expander takes an element from {@code inner} and delivers an iterator.
          */
@@ -429,6 +440,44 @@ public class CollectionUtils {
             while ((expandedIterator == null || !expandedIterator.hasNext()) && inner.hasNext()) {
                 expandedIterator = expander.apply(inner.next());
             }
+        }
+    }
+
+    /**
+     * Iterator wrapper that takes a source {@link Iterator} and a {@link UnaryOperator} that adjusts elements from
+     * the {@code iterator}.
+     */
+    public static class AdjustingIterator<T> implements Iterator<T> {
+        private final Iterator<T> inner;
+        private final UnaryOperator<T> adjuster;
+
+        /**
+         * Construct an iterator wrapper that takes a source {@link Iterator} and a {@link UnaryOperator} that adjusts
+         * elements from the {@code iterator}.
+         * @param inner any iterator.
+         * @param adjuster adjusts elements {@code inner}.
+         */
+        public static <T> AdjustingIterator<T> of(Iterator<T> inner, UnaryOperator<T> adjuster) {
+            return new AdjustingIterator<>(inner, adjuster);
+        }
+
+        /**
+         * @param inner any iterator.
+         * @param adjuster adjusts elements {@code inner}.
+         */
+        public AdjustingIterator(Iterator<T> inner, UnaryOperator<T> adjuster) {
+            this.inner = inner;                          
+            this.adjuster = adjuster;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return inner.hasNext();
+        }
+
+        @Override
+        public T next() {
+            return adjuster.apply(inner.next());
         }
     }
 
