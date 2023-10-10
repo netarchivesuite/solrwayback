@@ -68,18 +68,18 @@ public class SolrStreamDecorators {
     // TODO: Make this a post-processor
     @SuppressWarnings({"OptionalIsPresent", "unchecked"})
     public static Stream<SolrDocument> flatten(SolrDocument doc) {
-      Optional<Map.Entry<String, Object>> firstMulti = doc.entrySet().stream().
-              filter(entry -> entry.getValue() instanceof Collection).findFirst();
-      if (!firstMulti.isPresent()) {
-         return Stream.of(doc);
-      }
-      return ((Collection<Object>)firstMulti.get().getValue()).stream().
-              map(value -> {
-                LinkedHashMap<String, Object> extraMap = new LinkedHashMap<>(doc);
-                extraMap.put(firstMulti.get().getKey(), value);
-                return new SolrDocument(extraMap);
-              }).
-              flatMap(SolrStreamDecorators::flatten);
+        Optional<Map.Entry<String, Object>> firstMulti = doc.entrySet().stream().
+                filter(entry -> entry.getValue() instanceof Collection).findFirst();
+        if (!firstMulti.isPresent()) {
+            return Stream.of(doc);
+        }
+        return ((Collection<Object>)firstMulti.get().getValue()).stream().
+                map(value -> {
+                    LinkedHashMap<String, Object> extraMap = new LinkedHashMap<>(doc);
+                    extraMap.put(firstMulti.get().getKey(), value);
+                    return new SolrDocument(extraMap);
+                }).
+                flatMap(SolrStreamDecorators::flatten);
     }
 
     /**
@@ -93,23 +93,23 @@ public class SolrStreamDecorators {
      * @see #addPostProcessors(Iterator, SRequest, String)
      */
     public static Stream<SolrDocument> addPostProcessors(Stream<SolrDocument> docs, SRequest request, String adjustedFields) {
-      if (request.deduplicateField != null) {
-        docs = docs.filter(new OrderedDeduplicator(request.deduplicateField));
-      }
+        if (request.deduplicateField != null) {
+            docs = docs.filter(new OrderedDeduplicator(request.deduplicateField));
+        }
 
-      if (request.expandResources) {
-        docs = docs.flatMap(new HTMLResourceExpander(
-                adjustedFields, request.getExpandResourcesFilterQueries(), true));
-      }
+        if (request.expandResources) {
+            docs = docs.flatMap(new HTMLResourceExpander(
+                    adjustedFields, request.getExpandResourcesFilterQueries(), true));
+        }
 
-      if (request.ensureUnique) {
-        docs = docs.filter(new UniqueFilter(request.useHashingForUnique, request.maxUnique, request.uniqueFields));
-      }
+        if (request.ensureUnique) {
+            docs = docs.filter(new UniqueFilter(request.useHashingForUnique, request.maxUnique, request.uniqueFields));
+        }
 
-      // Reduce documents to contain requested fields only
-      docs = docs.peek(SolrUtils.reduceAndSortFields(request.fields));
+        // Reduce documents to contain requested fields only
+        docs = docs.peek(SolrUtils.reduceAndSortFields(request.fields));
 
-      return docs;
+        return docs;
     }
 
     /**
@@ -124,28 +124,28 @@ public class SolrStreamDecorators {
      */
     // TODO: Make this a static and consider moving it to a support class
     public static Iterator<SolrDocument> addPostProcessors(Iterator<SolrDocument> docs, SRequest request, String adjustedFields) {
-      if (request.deduplicateField != null) {
-        docs = CollectionUtils.ReducingIterator.of(
-                docs, new OrderedDeduplicator(request.deduplicateField));
-      }
+        if (request.deduplicateField != null) {
+            docs = CollectionUtils.ReducingIterator.of(
+                    docs, new OrderedDeduplicator(request.deduplicateField));
+        }
 
-      if (request.expandResources) {
-        docs = CollectionUtils.ExpandingIterator.ofStream(docs, new HTMLResourceExpander(
-                adjustedFields, request.getExpandResourcesFilterQueries(), true));
-      }
+        if (request.expandResources) {
+            docs = CollectionUtils.ExpandingIterator.ofStream(docs, new HTMLResourceExpander(
+                    adjustedFields, request.getExpandResourcesFilterQueries(), true));
+        }
 
-      if (request.ensureUnique) {
-        docs = CollectionUtils.ReducingIterator.of(
-                docs, new UniqueFilter(request.useHashingForUnique, request.maxUnique, request.uniqueFields));
-      }
+        if (request.ensureUnique) {
+            docs = CollectionUtils.ReducingIterator.of(
+                    docs, new UniqueFilter(request.useHashingForUnique, request.maxUnique, request.uniqueFields));
+        }
 
-      // Reduce documents to contain requested fields only
-      docs = CollectionUtils.AdjustingIterator.of(docs, element -> {
-        SolrUtils.reduceAndSortFields(request.fields).accept(element);
-        return element;
-      });
+        // Reduce documents to contain requested fields only
+        docs = CollectionUtils.AdjustingIterator.of(docs, element -> {
+            SolrUtils.reduceAndSortFields(request.fields).accept(element);
+            return element;
+        });
 
-      return docs;
+        return docs;
     }
 
     /**
@@ -154,33 +154,33 @@ public class SolrStreamDecorators {
      * the current document to be classified as a duplicate.
      */
     static class OrderedDeduplicator implements Predicate<SolrDocument> {
-      private final String[] deduplicateFields;
-      private final Object[] lastStreamDeduplicateValues;
+        private final String[] deduplicateFields;
+        private final Object[] lastStreamDeduplicateValues;
 
-      public OrderedDeduplicator(String... deduplicateFields) {
-        if (deduplicateFields.length == 0) {
-          throw new IllegalArgumentException("No deduplicatefields given");
-        }
-        this.deduplicateFields = deduplicateFields;
-        this.lastStreamDeduplicateValues = new Object[deduplicateFields.length];
-      }
-
-      @Override
-      public boolean test(SolrDocument doc) {
-        out:
-        if (lastStreamDeduplicateValues[0] != null) {
-          for (int i = 0 ; i < deduplicateFields.length ; i++) {
-            if (lastStreamDeduplicateValues[i] != doc.getFieldValue(deduplicateFields[i])) {
-              break out;
+        public OrderedDeduplicator(String... deduplicateFields) {
+            if (deduplicateFields.length == 0) {
+                throw new IllegalArgumentException("No deduplicatefields given");
             }
-          }
-          return false;
+            this.deduplicateFields = deduplicateFields;
+            this.lastStreamDeduplicateValues = new Object[deduplicateFields.length];
         }
-        for (int i = 0 ; i < deduplicateFields.length ; i++) {
-          lastStreamDeduplicateValues[i] = doc.getFieldValue(deduplicateFields[i]);
+
+        @Override
+        public boolean test(SolrDocument doc) {
+            out:
+            if (lastStreamDeduplicateValues[0] != null) {
+                for (int i = 0 ; i < deduplicateFields.length ; i++) {
+                    if (lastStreamDeduplicateValues[i] != doc.getFieldValue(deduplicateFields[i])) {
+                        break out;
+                    }
+                }
+                return false;
+            }
+            for (int i = 0 ; i < deduplicateFields.length ; i++) {
+                lastStreamDeduplicateValues[i] = doc.getFieldValue(deduplicateFields[i]);
+            }
+            return true;
         }
-        return true;
-      }
     }
 
     /**
@@ -190,40 +190,40 @@ public class SolrStreamDecorators {
      * The graph traversal is only 1 level deep.
      */
     public static class HTMLResourceExpander implements Function<SolrDocument, Stream<SolrDocument>> {
-      private final String fields; // Comma separated
-      private final String[] expandFilterQueries;
-      private final boolean returnInput;
+        private final String fields; // Comma separated
+        private final String[] expandFilterQueries;
+        private final boolean returnInput;
 
-      /**
-       * @param fields comma separated list of fields to request for resources.
-       * @param expandFilterQueries 0 or more filters that are added when searching for resources.
-       * @param returnInput if true, the input document in {@link #apply(SolrDocument)} will always be returned.
-       */
-      public HTMLResourceExpander(String fields, String[] expandFilterQueries, boolean returnInput) {
-        this.fields = fields;
-        this.expandFilterQueries = expandFilterQueries;
-        this.returnInput = returnInput;
-      }
-
-      @Override
-      public Stream<SolrDocument> apply(SolrDocument doc) {
-        try {
-          if (!"html".equals(doc.getFieldValue("content_type_norm"))) {
-            return returnInput ? Stream.of(doc) : Stream.of();
-          }
-          String sourceFile = doc.getFieldValue("source_file_path").toString();
-          long offset = Long.parseLong(doc.getFieldValue("source_file_offset").toString());
-          ArcEntry arc= ArcParserFileResolver.getArcEntry(sourceFile, offset);
-          HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
-
-          Stream<SolrDocument> resourceStream =
-                  NetarchiveSolrClient.getInstance().findNearestDocuments(
-                          fields, arc.getCrawlDate(), resources.stream(), expandFilterQueries);
-          return returnInput ? Stream.concat(Stream.of(doc), resourceStream) : resourceStream;
-        } catch (Exception e) {
-          log.warn("Exception getting resources for SolrDocument '" + doc + "'", e);
-          return returnInput ? Stream.of(doc) : Stream.of();
+        /**
+         * @param fields comma separated list of fields to request for resources.
+         * @param expandFilterQueries 0 or more filters that are added when searching for resources.
+         * @param returnInput if true, the input document in {@link #apply(SolrDocument)} will always be returned.
+         */
+        public HTMLResourceExpander(String fields, String[] expandFilterQueries, boolean returnInput) {
+            this.fields = fields;
+            this.expandFilterQueries = expandFilterQueries;
+            this.returnInput = returnInput;
         }
-      }
+
+        @Override
+        public Stream<SolrDocument> apply(SolrDocument doc) {
+            try {
+                if (!"html".equals(doc.getFieldValue("content_type_norm"))) {
+                    return returnInput ? Stream.of(doc) : Stream.of();
+                }
+                String sourceFile = doc.getFieldValue("source_file_path").toString();
+                long offset = Long.parseLong(doc.getFieldValue("source_file_offset").toString());
+                ArcEntry arc= ArcParserFileResolver.getArcEntry(sourceFile, offset);
+                HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
+
+                Stream<SolrDocument> resourceStream =
+                        NetarchiveSolrClient.getInstance().findNearestDocuments(
+                                fields, arc.getCrawlDate(), resources.stream(), expandFilterQueries);
+                return returnInput ? Stream.concat(Stream.of(doc), resourceStream) : resourceStream;
+            } catch (Exception e) {
+                log.warn("Exception getting resources for SolrDocument '" + doc + "'", e);
+                return returnInput ? Stream.of(doc) : Stream.of();
+            }
+        }
     }
 }

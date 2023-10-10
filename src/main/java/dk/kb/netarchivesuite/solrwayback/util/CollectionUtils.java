@@ -15,6 +15,7 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
 import com.google.common.collect.Iterators;
+import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -277,7 +277,7 @@ public class CollectionUtils {
             if (nextElement != null) {
                 return;
             }
-            while (nextElement == null && continueIterating.get() && !innerIsEmpty.get()) {
+            while (nextElement == null && continueIterating.get() && (!buffer.isEmpty() || !innerIsEmpty.get())) {
                 try {
                     nextElement = buffer.poll(POLL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
@@ -650,7 +650,7 @@ public class CollectionUtils {
                 .filter(Iterator::hasNext)
                 .map(PeekableIterator::new)
                 .forEach(pq::add);
-
+        log.debug("Created merging priority queue with {} elements from {} iterators", pq.size(), iterators.size());
         // Create a new iterator that
         // 1) pop iterator from the top of the priority queue
         // 2) deliver the next()element from the iterator
@@ -682,8 +682,30 @@ public class CollectionUtils {
         private final Iterator<T> inner;
         private final AtomicBoolean continueProcessing;
 
+        /**
+         * Create a closeable iterator with a shared state. If {@code continueProcessing} is set to false, either
+         * by a call to {@link #close()} or externally (typically by a call to {@code close} on another
+         * {@code CloseableIterator}), no further elements will be delivered.
+         * @param inner any iterator.
+         * @param continueProcessing if true, standard processing commences. If false, processing is stopped.
+         * @return a {@code CloseableIterator}.
+         */
         public static <T> CloseableIterator<T> of(Iterator<T> inner, AtomicBoolean continueProcessing) {
             return new CloseableIterator<>(inner, continueProcessing);
+        }
+
+        /**
+         * Create a closeable iterator without shared state. If {@code continueProcessing} is set to false
+         * by a call to {@link #close()}, no further elements will be delivered.
+         * <p>
+         * This method is used when the requirement is to deliver a chain or tree of iterators with a shared
+         * state using {@code CloseableIterator}s, but circumstances dictates that a simpler non-shared-state
+         * iterator is returned.
+         * @param inner any iterator.
+         * @return a {@code CloseableIterator}.
+         */
+        public static CloseableIterator<SolrDocument> single(Iterator<SolrDocument> inner) {
+            return of(inner, new AtomicBoolean(true));
         }
 
         public CloseableIterator(Iterator<T> inner, AtomicBoolean continueProcessing) {
@@ -701,11 +723,18 @@ public class CollectionUtils {
 
         @Override
         public boolean hasNext() {
-            return inner.hasNext();
+            return continueProcessing.get() && inner.hasNext();
         }
 
         @Override
         public T next() {
+            if (!continueProcessing.get()) {
+                // This does not obey the contract that there is an element if hasNext() == true
+                // as continueProcessing might be set to false between the two calls.
+                // This is acceptable as the continueProcessing mechanism is intended for propagating errors across
+                // iterators with shared goals.
+                throw new IllegalStateException("continueProcessing == false");
+            }
             return inner.next();
         }
 
@@ -714,9 +743,12 @@ public class CollectionUtils {
             inner.remove();
         }
 
-        @Override
-        public void forEachRemaining(Consumer<? super T> action) {
-            inner.forEachRemaining(action);
+        /**
+         * @return the shared boolean controlling processing. Setting this to false stops processing for this
+         * iterator as well as other processors sharing the boolean.
+         */
+        public AtomicBoolean getContinueProcessing() {
+            return continueProcessing;
         }
     }
 

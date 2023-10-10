@@ -142,6 +142,24 @@ public class CollectionUtilsTest {
     }
 
     @Test
+    public void testBufferingSlowIterator() {
+        Executor executor = Executors.newCachedThreadPool();
+        AtomicBoolean continueProcessing = new AtomicBoolean(true);
+        CountingIterator<Integer> pic = new CountingIterator<>(Arrays.asList(1, 2, 3).iterator());
+        DelayingIterator<Integer> pid = new DelayingIterator<>(pic, 50);
+        Iterator<Integer> pib = CollectionUtils.BufferingIterator.of(pid, executor, 20, continueProcessing);
+        // Start reading result immediately
+        assertEquals("The right number of elements should have been read ahead", 0, pic.delivered);
+        assertTrue("First hasNext() should provide the expected result", pib.hasNext());
+        pib.next();
+        assertTrue("Second hasNext() should provide the expected result", pib.hasNext());
+        pib.next();
+        assertTrue("Third hasNext() should provide the expected result", pib.hasNext());
+        pib.next();
+        assertFalse("Fourth hasNext() should provide the expected result", pib.hasNext());
+    }
+
+    @Test
     public void testBufferingIteratorStop() throws InterruptedException {
         Executor executor = Executors.newCachedThreadPool();
         AtomicBoolean continueProcessing = new AtomicBoolean(true);
@@ -212,6 +230,31 @@ public class CollectionUtilsTest {
 
         public int getDelivered() {
             return delivered;
+        }
+    }
+
+    private static class DelayingIterator<T> implements Iterator<T> {
+        private final Iterator<T> inner;
+        private final long sleepMS;
+
+        public DelayingIterator(Iterator<T> inner, long sleepMS) {
+            this.inner = inner;
+            this.sleepMS = sleepMS;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return inner.hasNext();
+        }
+
+        @Override
+        public T next() {
+            try {
+                Thread.sleep(sleepMS);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            return inner.next();
         }
     }
 }

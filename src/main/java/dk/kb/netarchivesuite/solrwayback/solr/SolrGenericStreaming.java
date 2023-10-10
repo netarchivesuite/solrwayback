@@ -323,7 +323,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   }
 
   /**
-   * Stream the Solr response one document at a time.
+   * Constructs a "raw" Stream for {@link SolrDocument}s. In order for the end result to conform to
+   * the properties in the {@link SRequest} used to construct this {@code SolrGenericStreaming}, it is
+   * necessary to use {@link SolrStreamDecorators#addPostProcessors(Stream, SRequest, String)}.
    * @return a stream of SolrDocuments.
    */
   public Stream<SolrDocument> stream() {
@@ -331,6 +333,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   }
 
   /**
+   * Constructs a "raw" iterator for {@link SolrDocument}s. In order for the end result to conform to
+   * the properties in the {@link SRequest} used to construct this {@code SolrGenericStreaming}, it is
+   * necessary to use {@link SolrStreamDecorators#addPostProcessors(Iterator, SRequest, String)}.
    * @return an iterator of SolrDocuments.
    */
   @Override

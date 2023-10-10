@@ -14,6 +14,7 @@
  */
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -44,6 +45,8 @@ import java.util.stream.Stream;
 // TODO: Introduce addFilterqueries
 public class SRequest {
     private static final Logger log = LoggerFactory.getLogger(SRequest.class);
+
+    public enum CHOICE {always, never, auto}
 
     /**
      * Default maximum number of elements when the request requires unique results.
@@ -89,6 +92,15 @@ public class SRequest {
     public boolean usePaging = true;
     public int queryBatchSize = SolrGenericStreaming.DEFAULT_QUERY_BATCHSIZE;
     public List<String> shards;
+    public CHOICE shardDivide = CHOICE.valueOf(PropertiesLoader.SOLR_STREAM_SHARD_DIVIDE);
+    /**
+     * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
+     * full request is initiated. If the number of hits is above {@link #autoShardDivideLimit}, shard
+     * division is activated.
+     *
+     * The default value is specified in properties, falling back to 5000.
+     */
+    public long autoShardDivideLimit = PropertiesLoader.SOLR_STREAM_SHARD_DIVIDE_LIMIT;
 
     /**
      * @return a fresh instance of SRequest intended for further adjustment.
@@ -311,9 +323,6 @@ public class SRequest {
      * @see #fields(List) 
      */
     public SRequest forceFields(List<String> fields) {
-        if (this.fields != null) {
-            throw new IllegalStateException("fields already assigned. If overriding is intentional, use forceFields");
-        }
         this.fields = fields;
         return this;
     }
@@ -444,6 +453,9 @@ public class SRequest {
      * @throws IllegalStateException if {@link #query(String)} called before this or queries were already set.
      */
     public SRequest queries(Stream<String> queries) {
+        if (this.queries == null && queries == null) {
+            return this;
+        }
         if (this.queries != null) {
             throw new IllegalStateException(
                     "queries(Stream<String>) has already been called. If overriding is intentional, use forceQueries");
@@ -680,6 +692,76 @@ public class SRequest {
     }
 
     /**
+     * Extracting large search results from a Solr Cloud can be done efficiently with streaming exports.
+     * Unfortunately streaming exports does not support stored fields. The alternative is to use paging,
+     * either using {@code cursorMark} or sorting & grouping on a field. Both of these methods has the
+     * downside of initiating cross-shard searches for each page, thus processing {@code #shards * pageSize}
+     * results from {@code #shards} Solr Cloud-internal calls per overall page request.
+     * <p>
+     * If {@code shardDivide} it activated, it replaces the cross-shard per-page searches with {@code #shards}
+     * single-shard searches, keeping the returned pages from each shard in memory while merging the
+     * shard-results to a single output stream of documents. This comes at the cost of memory overhead, but
+     * the average number of results processed for each overall page request is only {@code pageSize} and the
+     * average number of shard calls is {@code 1}.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#never}, a standard request is created.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#always}, all shards are queried in parallel, subject to
+     * connection limit rules, and the resulting streams are merged.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
+     * full request is initiated. If the number of hits is above {@link #autoShardDivideLimit}, shard
+     * division is activated.
+     * @param choice the shardDivide strategy. The default is {@link CHOICE#auto} if not specified in properties.
+     * @see #autoShardDivideLimit(long)
+     */
+    public SRequest shardDivide(CHOICE choice) {
+        shardDivide = choice;
+        return this;
+    }
+    /**
+     * Extracting large search results from a Solr Cloud can be done efficiently with streaming exports.
+     * Unfortunately streaming exports does not support stored fields. The alternative is to use paging,
+     * either using {@code cursorMark} or sorting & grouping on a field. Both of these methods has the
+     * downside of initiating cross-shard searches for each page, thus processing {@code #shards * pageSize}
+     * results from {@code #shards} Solr Cloud-internal calls per overall page request.
+     * <p>
+     * If {@code shardDivide} it activated, it replaces the cross-shard per-page searches with {@code #shards}
+     * single-shard searches, keeping the returned pages from each shard in memory while merging the
+     * shard-results to a single output stream of documents. This comes at the cost of memory overhead, but
+     * the average number of results processed for each overall page request is only {@code pageSize} and the
+     * average number of shard calls is {@code 1}.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#never}, a standard request is created.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#always}, all shards are queried in parallel, subject to
+     * connection limit rules, and the resulting streams are merged.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
+     * full request is initiated. If the number of hits is {@code >=} {@link #autoShardDivideLimit}, shard
+     * division is activated.
+     * @param choice the shardDivide strategy. The default is {@link CHOICE#auto} if not specified in properties.
+     * @see #autoShardDivideLimit(long)
+     */
+    public SRequest shardDivide(String choice) {
+        shardDivide = CHOICE.valueOf(choice);
+        return this;
+    }
+
+    /**
+     * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
+     * full request is initiated. If the number of hits is {@code >=} {@link #autoShardDivideLimit}, shard
+     * division is activated.
+     * @param limit the search result size before shard division is activated, if the shard divide strategy is auto.
+     *              The default is 5000 if not specified in properties.
+     * @see #shardDivide(CHOICE)
+     */
+    public SRequest autoShardDivideLimit(long limit) {
+        this.autoShardDivideLimit = limit;
+        return this;
+    }
+
+    /**
      * Newer Solrs (at least 9+) share a default upper limit of 1024 boolean clauses recursively in the user issued
      * query tree. As multi-query uses batching, this limit can quickly be reached. Keep well below 1024.
      * @param queryBatchSize batch size when using {@link #queries(Stream)}.
@@ -695,7 +777,7 @@ public class SRequest {
      * Copies {@link #solrQuery} and adjusts it with defined attributes from the SRequest, extending with needed
      * SolrRequest-attributes.
      * <p>
-     * Note: This does assign {@link #query}, but not {@link #queries}: They muct be handled explicitly.
+     * Note: This does assign {@link #query}, but not {@link #queries}: They must be handled explicitly.
      * @return a SolrQuery ready for processing.
      */
     public SolrQuery getMergedSolrQuery() {

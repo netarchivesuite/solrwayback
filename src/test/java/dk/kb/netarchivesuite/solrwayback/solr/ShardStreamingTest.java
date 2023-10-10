@@ -16,11 +16,14 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.common.SolrDocument;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -90,6 +93,33 @@ public class ShardStreamingTest {
         List<String> shardNames = SolrUtils.getShardNames(LOCAL_SOLR, COLLECTION);
         assertTrue("There should be more than 1 shards", shardNames.size() > 1);
         log.debug("Shard names: " + shardNames);
+    }
+
+    @Test
+    public void testShardDivideAlways() {
+        if (!AVAILABLE) {
+            return;
+        }
+        PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id")
+                .shardDivide("always")
+                .maxResults(100);
+
+        try (CollectionUtils.CloseableIterator<SolrDocument> docs = SolrStreamShard.iterateStrategy(request)) {
+            long count = 0;
+            while (docs.hasNext()) {
+                count++;
+                docs.next();
+            }
+            System.out.println("ShardDivide Hits: " + count);
+        }
+        
+        long plain = request.shardDivide("never").stream().count();
+        System.out.println("Plain hits: " + plain);
+
     }
 
 }
