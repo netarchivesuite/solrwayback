@@ -33,10 +33,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Fake unit test as it requires a sharded Solr-setup running locally at
@@ -57,6 +59,7 @@ public class ShardStreamingTest {
         try {
             solrClient.query(query);
             AVAILABLE = true;
+            PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
         } catch (Exception e) {
             log.warn("No local Solr available at '" + LOCAL_SOLR + "/" + COLLECTION + "'. Skipping unit test");
         }
@@ -86,7 +89,7 @@ public class ShardStreamingTest {
     }
 
     @Test
-    public void checkShards() throws IOException {
+    public void checkShards() {
         if (!AVAILABLE) {
             return;
         }
@@ -100,26 +103,152 @@ public class ShardStreamingTest {
         if (!AVAILABLE) {
             return;
         }
-        PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
         SRequest request = new SRequest()
                 .solrClient(solrClient)
                 .query("*:*")
                 .fields("id")
                 .shardDivide("always")
                 .maxResults(100);
-
-        try (CollectionUtils.CloseableIterator<SolrDocument> docs = SolrStreamShard.iterateStrategy(request)) {
-            long count = 0;
-            while (docs.hasNext()) {
-                count++;
-                docs.next();
-            }
-            System.out.println("ShardDivide Hits: " + count);
-        }
-        
-        long plain = request.shardDivide("never").stream().count();
-        System.out.println("Plain hits: " + plain);
-
+        assertDocsEquals(request);
     }
+
+    @Test
+    public void testShardDivideAutoTrue() {
+        if (!AVAILABLE) {
+            return;
+        }
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id")
+                .shardDivide("auto")
+                .autoShardDivideLimit(10)
+                .maxResults(100);
+        assertDocsEquals(request);
+    }
+
+    @Test
+    public void testShardDivideExpandResources() {
+        if (!AVAILABLE) {
+            return;
+        }
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id")
+                .shardDivide("always")
+                .maxResults(100)
+                .expandResources(true);
+        assertDocsEquals(request);
+    }
+
+    @Test
+    public void testShardDivideTimeProximity() {
+        if (!AVAILABLE) {
+            return;
+        }
+        NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id")
+                .shardDivide("always")
+                .maxResults(100)
+                .timeProximityDeduplication("2023-10-10T19:47:00Z", "crawl_date");
+        assertDocsEquals(request);
+    }
+
+    @Test
+    public void testShardDivideSortDate() {
+        if (!AVAILABLE) {
+            return;
+        }
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id")
+                .shardDivide("always")
+                .maxResults(100)
+                .sort("crawl_date asc");
+        assertDocsEquals(request);
+    }
+
+    @Test
+    public void testShardDivideDeduplicate() {
+        if (!AVAILABLE) {
+            return;
+        }
+        PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id")
+                .shardDivide("always")
+                .maxResults(100)
+                .deduplicateField("domain");
+        assertDocsEquals(request);
+    }
+
+    @Test
+    public void testShardDivideAutoFalse() {
+        if (!AVAILABLE) {
+            return;
+        }
+        PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id")
+                .shardDivide("auto")
+                .autoShardDivideLimit(Long.MAX_VALUE)
+                .maxResults(100);
+        assertDocsEquals(request);
+    }
+
+    @Test
+    public void testComparator() {
+        Comparator<SolrDocument> asc = SolrStreamShard.getDocumentComparator(new SRequest().sort(
+                "crawl_date asc, id asc"));
+        Comparator<SolrDocument> desc = SolrStreamShard.getDocumentComparator(new SRequest().sort(
+                "crawl_date desc, id asc"));
+
+        SolrDocument doc1 = new SolrDocument();
+        doc1.setField("id", "1");
+        doc1.setField("crawl_date", new Date().getTime());
+
+        SolrDocument doc2 = new SolrDocument();
+        doc2.setField("id", "2");
+        doc2.setField("crawl_date", new Date().getTime()+100);
+
+        assertEquals("Comparison of doc1 and doc2 should yield expected order for asc",
+                     -1, asc.compare(doc1, doc2));
+        assertEquals("Comparison of doc2 and doc1 should yield expected order for asc",
+                     1, asc.compare(doc2, doc1));
+        assertEquals("Comparison of doc1 and doc2 should yield expected order for desc",
+                     1, desc.compare(doc1, doc2));
+    }
+
+    /**
+     * Calls {@link SolrStreamShard#iterateSharded(SRequest, List)} on the {@code request} and extracts all IDs,
+     * also sets {@link SRequest#shardDivide} to {@code false} and call {@link SolrGenericStreaming#iterate(SRequest)}
+     * and extracts all IDs. Finally the extracted IDs are compared.
+     * @param request a request to test shard division.
+     */
+    private void assertDocsEquals(SRequest request) {
+        Iterator<SolrDocument> plainDocs = SolrGenericStreaming.iterate(request.deepCopy().shardDivide("never"));
+        try (CollectionUtils.CloseableIterator<SolrDocument> shardDocs = SolrStreamShard.iterateStrategy(request)) {
+            long count = 0;
+            while (plainDocs.hasNext()) {
+                assertTrue("For doc #" + count + ", plainDocs has next so shardDocs should also have next",
+                           shardDocs.hasNext());
+                assertEquals("For doc #" + count + ", id for plain and shard should be equal",
+                             plainDocs.next().get("id"), shardDocs.next().get("id"));
+                count++;
+            }
+            assertFalse("After processing, shardDocs should have no more documents", shardDocs.hasNext());
+            log.debug("Finished comparing {} documents", count);
+        }
+    }
+
 
 }

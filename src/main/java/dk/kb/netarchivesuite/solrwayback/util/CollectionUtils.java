@@ -650,7 +650,6 @@ public class CollectionUtils {
                 .filter(Iterator::hasNext)
                 .map(PeekableIterator::new)
                 .forEach(pq::add);
-        log.debug("Created merging priority queue with {} elements from {} iterators", pq.size(), iterators.size());
         // Create a new iterator that
         // 1) pop iterator from the top of the priority queue
         // 2) deliver the next()element from the iterator
@@ -677,10 +676,14 @@ public class CollectionUtils {
     /**
      * Special purpose Iterator used by {@link #mergeIteratorsBuffered(Collection, Comparator, Executor, Semaphore, int)}
      * for signalling cancellation in case of early iterator termination.
+     * <p>
+     * This Iterator optionally auto-closes after a given limit.
      */
     public static class CloseableIterator<T> implements Iterator<T>, Closeable {
         private final Iterator<T> inner;
         private final AtomicBoolean continueProcessing;
+        private final long limit;
+        private long delivered = 0;
 
         /**
          * Create a closeable iterator with a shared state. If {@code continueProcessing} is set to false, either
@@ -692,6 +695,24 @@ public class CollectionUtils {
          */
         public static <T> CloseableIterator<T> of(Iterator<T> inner, AtomicBoolean continueProcessing) {
             return new CloseableIterator<>(inner, continueProcessing);
+        }
+
+        /**
+         * Create a closeable iterator with a shared state. If {@code continueProcessing} is set to false, either
+         * by a call to {@link #close()} or externally (typically by a call to {@code close} on another
+         * {@code CloseableIterator}), no further elements will be delivered.
+         * <p>
+         * Important: When the {@code limit} is hit, {@code continueProcessing} is set to {@code false}.
+         * This will signal an <strong></trong>immediate</strong> stop signal to iterator sharing the signal.
+         * It is recommended only to use {@code limit} if the iterator is the last in the chain.
+         * @param inner any iterator.
+         * @param continueProcessing if true, standard processing commences. If false, processing is stopped.
+         * @param limit the maximum amount of elements to deliver.
+         *              If this limit is hit, {@code continueProcessing} is set to false.
+         * @return a {@code CloseableIterator}.
+         */
+        public static <T> CloseableIterator<T> of(Iterator<T> inner, AtomicBoolean continueProcessing, long limit) {
+            return new CloseableIterator<>(inner, continueProcessing, limit);
         }
 
         /**
@@ -708,9 +729,34 @@ public class CollectionUtils {
             return of(inner, new AtomicBoolean(true));
         }
 
+        /**
+         * Create a closeable iterator with a shared state. If {@code continueProcessing} is set to false, either
+         * by a call to {@link #close()} or externally (typically by a call to {@code close} on another
+         * {@code CloseableIterator}), no further elements will be delivered.
+         * @param inner any iterator.
+         * @param continueProcessing if true, standard processing commences. If false, processing is stopped.
+         */
         public CloseableIterator(Iterator<T> inner, AtomicBoolean continueProcessing) {
+            this(inner, continueProcessing, Long.MAX_VALUE);
+        }
+
+        /**
+         * Create a closeable iterator with a shared state. If {@code continueProcessing} is set to false, either
+         * by a call to {@link #close()} or externally (typically by a call to {@code close} on another
+         * {@code CloseableIterator}), no further elements will be delivered.
+         * <p>
+         * Important: When the {@code limit} is hit, {@code continueProcessing} is set to {@code false}.
+         * This will signal an <strong></trong>immediate</strong> stop signal to iterator sharing the signal.
+         * It is recommended only to use {@code limit} if the iterator is the last in the chain.
+         * @param inner any iterator.
+         * @param continueProcessing if true, standard processing commences. If false, processing is stopped.
+         * @param limit the maximum amount of elements to deliver.
+         *              If this limit is hit, {@code continueProcessing} is set to false.
+         */
+        public CloseableIterator(Iterator<T> inner, AtomicBoolean continueProcessing, long limit) {
             this.inner = inner;
             this.continueProcessing = continueProcessing;
+            this.limit = limit;
         }
 
         /**
@@ -735,7 +781,11 @@ public class CollectionUtils {
                 // iterators with shared goals.
                 throw new IllegalStateException("continueProcessing == false");
             }
-            return inner.next();
+            T innerNext = inner.next();
+            if (++delivered == limit) {
+                continueProcessing.set(false);
+            }
+            return innerNext;
         }
 
         @Override

@@ -199,7 +199,8 @@ public class SolrStreamShard {
         // Ensure sort fields are delivered by the shard divided streams
         Set<String> fields = new LinkedHashSet<>(request.fields);
         fields.addAll(getSortFieldNames(base));
-        request.forceFields(new ArrayList<>(fields)); // TODO: Reduce to original fields before delivering merged result
+        // TODO: Reduce to original fields before delivering merged result
+        request.forceFields(new ArrayList<>(fields));
 
         // TODO: Resolve adjustedFields (by moving it into SRequest?)
         String adjustedFields = String.join(",", fields);
@@ -209,15 +210,22 @@ public class SolrStreamShard {
         List<Iterator<SolrDocument>> documentIterators = shards.stream()
                 .map(shard -> base.deepCopy().shards(shard))
                 .map(SolrGenericStreaming::new)
+                // Basic "raw results"
                 .map(SolrGenericStreaming::iterator)
+                // Limit hammering on the Solr Cloud
                 .map(iterator -> CollectionUtils.SharedConstraintIterator.of(iterator, gatekeeper))
-                // Not necessary but speeds up processing by threading most of the deduplication
+                // Speed up processing by threading most of the deduplication
                 .map(iterator -> makeDeduplicatingIfStated(iterator, request))
+                // Speed up processing by reading ahead
                 .map(iterator -> CollectionUtils.BufferingIterator.of(iterator, executor, request.pageSize, continueProcessing))
                 .collect(Collectors.toList());
+        // Merge all shard divisions to one iterator
         Iterator<SolrDocument> docs = CollectionUtils.mergeIterators(documentIterators, getDocumentComparator(request));
+        // Limit the amount of results
+        docs = CollectionUtils.CloseableIterator.of(docs, continueProcessing, request.maxResults);
+        // Remove duplicates, add resources...
         docs = SolrStreamDecorators.addPostProcessors(docs, request, adjustedFields);
-        // TODO: Add limiting iterator that supports continueProcessing to signal feeders
+        // Ensure that close() propagates to the BufferingIterator to avoid Thread & buffer leaks
         return CollectionUtils.CloseableIterator.of(docs, continueProcessing);
     }
 
@@ -233,11 +241,18 @@ public class SolrStreamShard {
      * @return all field names needed by {@link SRequest#sort}.
      */
     private static Set<String> getSortFieldNames(SRequest request) {
-        return Arrays.stream(request.sort.split(", *"))
+        log.debug("Constructing shard divide sort from '{}'", request.getFullSort());
+        Set<String> fields = Arrays.stream(request.getFullSort().split(", *"))
                 .map(SORT_FIELD_PATTERN::matcher)
                 .filter(Matcher::matches)
                 .map(matcher -> matcher.group(1))
                 .collect(Collectors.toCollection(HashSet::new));
+        Arrays.stream(request.getFullSort().split(", *"))
+                .map(SORT_FIELD_TIME_PROXIMITY_PATTERN::matcher)
+                .filter(Matcher::matches)
+                .map(matcher -> matcher.group(2))
+                .forEach(fields::add);
+        return fields;
     }
 
     /**
@@ -246,19 +261,21 @@ public class SolrStreamShard {
      * @param request a request with a comma separates sort chain in {@link SRequest#sort}.
      * @return a chained comparator for the sort elements.
      */
-    private static Comparator<SolrDocument> getDocumentComparator(SRequest request) {
+    public static Comparator<SolrDocument> getDocumentComparator(SRequest request) {
         // https://solr.apache.org/guide/solr/latest/query-guide/common-query-parameters.html#sort-parameter
-        String[] sortElements = request.sort.split(", *");
         Comparator<SolrDocument> comparator = null;
-        for (String sortElement: sortElements) {
+        Matcher clauseMatcher = SORT_CLAUSES_PATTERN.matcher(request.getFullSort());
+        while (clauseMatcher.find()) {
+            String clause = clauseMatcher.group(1);
             if (comparator == null) {
-                comparator = getSingleComparator(sortElement);
+                comparator = getSingleComparator(clause);
             } else {
-                comparator = comparator.thenComparing(getSingleComparator(sortElement));
+                comparator = comparator.thenComparing(getSingleComparator(clause));
             }
         }
         return comparator;
     }
+    public static final Pattern SORT_CLAUSES_PATTERN = Pattern.compile(" *(.*? (?:asc|desc)),? *");
 
     /**
      * Limited recreation of Solr sort. Basic score & field-based sorting is supported as well as the time-proximity
@@ -290,7 +307,7 @@ public class SolrStreamShard {
         if (proximityMatcher.matches()) {
             String origoS = proximityMatcher.group(1);
             String field = proximityMatcher.group(2);
-            int dir = "asc".equals(fieldMatcher.group(3)) ? 1 : -1;
+            int dir = "asc".equals(proximityMatcher.group(3)) ? 1 : -1;
             final long origoEpoch = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(origoS)).getEpochSecond();
             return (doc1, doc2) -> {
                 Object o1 = doc1.getFieldValue(field);
@@ -308,8 +325,8 @@ public class SolrStreamShard {
     }
 
     // score and plain fields work the same from a sorting perspective
-    private static final Pattern SORT_FIELD_PATTERN = Pattern.compile("^([a-zA-Z_][a-zA-Z0-9_]*) (asc|desc)$");
-    private static final Pattern SORT_FIELD_TIME_PROXIMITY_PATTERN = Pattern.compile(
-            "^abs *\\( *sub *\\( *ms *\\(([^)]+)\\) *, *([a-zA-Z_][a-zA-Z0-9_]*) *\\)* \\)  *(asc|desc)$");
+    public static final Pattern SORT_FIELD_PATTERN = Pattern.compile("^([a-zA-Z_][a-zA-Z0-9_]*) (asc|desc)$");
+    public static final Pattern SORT_FIELD_TIME_PROXIMITY_PATTERN = Pattern.compile(
+            "^abs *\\( *sub *\\( *ms *\\(([^)]+)\\) *, *([a-zA-Z_][a-zA-Z0-9_]*) *\\) *\\)  *(asc|desc)$");
 
 }

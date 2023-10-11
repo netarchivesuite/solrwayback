@@ -84,6 +84,11 @@ public class SRequest {
      * Default sort used when exporting. Ends with tie breaking on id.
      */
     public static final String DEFAULT_SORT = "score desc, id asc";
+    /**
+     * The sort param as given by the caller. It is recommended to call {@link #getFullSort()} instead of using this
+     * value directly as {@code getFullSort()} extends the sort with relevant clauses depending on other attributes
+     * in the current {@code SRequest}.
+     */
     public String sort = DEFAULT_SORT;
     public String query = null;
     public Stream<String> queries = null;
@@ -789,12 +794,7 @@ public class SRequest {
             solrQuery.setFilterQueries(filterQueries.toArray(new String[0]));
         }
 
-        if (idealTime != null) {
-            sort = String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
-        } else if (deduplicateField != null) {
-            sort = String.format(Locale.ROOT, "%s asc", deduplicateField);
-        }
-        solrQuery.set(CommonParams.SORT, sort);
+        solrQuery.set(CommonParams.SORT, getFullSort());
 
         Set<String> fl = new LinkedHashSet<>();
         if (fields != null) {
@@ -812,6 +812,31 @@ public class SRequest {
 
         solrQuery.set(CommonParams.ROWS, (int) Math.min(maxResults, pageSize));
         return solrQuery;
+    }
+
+    /**
+     * Resolve the sort param from {@link #DEFAULT_SORT}, {@link #solrQuery}-sort, {@link #sort}, {@link #idealTime},
+     * {@link #deduplicateField} and tie-breaking on {@code id}.
+     * @return fully resolved {@code sort} for use with Solr requests.
+     */
+    public String getFullSort() {
+        String sort = solrQuery == null ?
+                SRequest.DEFAULT_SORT :
+                solrQuery.get(CommonParams.SORT, SRequest.DEFAULT_SORT);
+        if (this.sort != null) {
+            sort = this.sort;
+        }
+        if (!(sort.endsWith("id asc") || sort.endsWith("id desc"))) {
+          sort = sort + ", id asc"; // A tie breaker is needed for cursorMark and ensures deterministic order
+        }
+        if (idealTime != null) {
+            sort = String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc, %s",
+                                 deduplicateField, idealTime, sort);
+        } else if (deduplicateField != null) {
+            sort = String.format(Locale.ROOT, "%s asc, %s",
+                                 deduplicateField, sort);
+        }
+        return sort;
     }
 
     /**

@@ -219,13 +219,10 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * If {@code fl} is not already set in solrQuery it will be set to {@code source_file_path,source_file_offset}.
    * If {@code cursorMark} is not already set in solrQuery it will be set to {@code *}.
    * If {@code rows} is not already set in solrQuery it will be set to {@link #DEFAULT_PAGESIZE}.
-   * If {@code sort} is not already set in solrQuery it will be set to {@link SRequest#DEFAULT_SORT}.
-   * If {@code sort} does not end with {@code id asc} or {@code id desc}, {@code id asc} will be appended.
    * If expandResources is true and {@code fl} in solrQuery does not contain {@code content_type_norm},
    * {code source_file_path} and {@code source_file_offset} they will be added.
    * If ensureUnique is true and {@code fl} in solrQuery does not contain the field {@code id} it will be added.
    * If deduplicateField is specified and {@code fl} in solrQuery does not already contain the field it will be added.
-   * If deduplicateField is specified and {@code sort} does not already have it as primary sort field it will be added.
    * {@code facets}, {@code stats} and {@code hl} will always be set to false, no matter their initial value.
    * If uniqueFields are specified, they are added to fields.
    *
@@ -271,16 +268,6 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       fl.add(deduplicateField);
     }
     solrQuery.set(CommonParams.FL, String.join(",", fl));
-
-    // Adjust sort to ensure presence of tie breaker and deduplication field (if enabled)
-    String sort = solrQuery.get(CommonParams.SORT, SRequest.DEFAULT_SORT);
-    if (!(sort.endsWith("id asc") || sort.endsWith("id desc"))) {
-      sort = sort + ", id asc"; // A tie breaker is needed when using cursormark
-    }
-    if (deduplicateField != null && !sort.startsWith(deduplicateField)) {
-      solrQuery.set(CommonParams.SORT, deduplicateField + " asc, " + sort);
-    }
-    solrQuery.set(CommonParams.SORT, sort);
 
     // Disable irrelevant processing
     solrQuery.set(FacetParams.FACET, false);
