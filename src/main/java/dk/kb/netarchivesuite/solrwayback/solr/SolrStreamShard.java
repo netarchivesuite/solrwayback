@@ -221,10 +221,13 @@ public class SolrStreamShard {
                 .collect(Collectors.toList());
         // Merge all shard divisions to one iterator
         Iterator<SolrDocument> docs = CollectionUtils.mergeIterators(documentIterators, getDocumentComparator(base));
+        // Needed for proper maxResult limiting. If not here, the subsequent CloseableIterator might close too early
+        docs = makeDeduplicatingIfStated(docs, base);
+        // Limit the amount of results
+        // Not connected to the other CloseableIterators as expandResources might result in more than maxResults docs
+        docs = CollectionUtils.CloseableIterator.of(docs, new AtomicBoolean(true), base.maxResults);
         // Remove duplicates, add resources... Note that the raw request is used as this has the non-expanded fields
         docs = SolrStreamDecorators.addPostProcessors(docs, request, adjustedFields);
-        // Limit the amount of results
-        docs = CollectionUtils.CloseableIterator.of(docs, continueProcessing, base.maxResults);
         // Ensure that close() propagates to the BufferingIterator to avoid Thread & buffer leaks
         return CollectionUtils.CloseableIterator.of(docs, continueProcessing);
     }

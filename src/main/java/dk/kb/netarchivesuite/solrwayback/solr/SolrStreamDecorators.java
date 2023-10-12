@@ -123,7 +123,7 @@ public class SolrStreamDecorators {
      * @return the {@code docs} iterator extended with steps as defined in the {@code request}.
      * @see #addPostProcessors(Stream, SRequest, String)
      */
-    // TODO: Make this a static and consider moving it to a support class
+    // TODO: Consider moving this to a support class
     public static Iterator<SolrDocument> addPostProcessors(Iterator<SolrDocument> docs, SRequest request, String adjustedFields) {
         if (request.deduplicateField != null) {
             docs = CollectionUtils.ReducingIterator.of(
