@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -135,8 +136,9 @@ public class ShardStreamingTest {
                 .query("*:*")
                 .fields("id")
                 .shardDivide("always")
-                .maxResults(50)
+                .maxResults(15)
                 .expandResources(true);
+//        dump(request);
         assertDocsEquals(request);
     }
 
@@ -168,6 +170,20 @@ public class ShardStreamingTest {
                 .shardDivide("always")
                 .maxResults(100)
                 .timeProximityDeduplication("2023-10-10T19:47:00Z", "crawl_date");
+        assertDocsEquals(request);
+    }
+
+    @Test
+    public void testShardDivideSore() {
+        if (!AVAILABLE) {
+            return;
+        }
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id")
+                .shardDivide("always")
+                .maxResults(100);
         assertDocsEquals(request);
     }
 
@@ -249,17 +265,24 @@ public class ShardStreamingTest {
     }
 
     private void dump(SRequest request) {
-        List<SolrDocument> collection = request.stream().collect(Collectors.toList());
+        List<SolrDocument> collection = request.deepCopy().stream().collect(Collectors.toList());
         List<SolrDocument> shard = new ArrayList<>();
         try (CollectionUtils.CloseableIterator<SolrDocument> shardIs =
-                     SolrStreamShard.iterateStrategy(request.shardDivide("always"))) {
+                     SolrStreamShard.iterateStrategy(request.deepCopy().shardDivide("always"))) {
             while (shardIs.hasNext()) {
                 shard.add(shardIs.next());
             }
         }
 
-        System.out.println("col:\n" + toString(collection, request.fields.toArray(new String[0])));
-        System.out.println("sha:\n" + toString(shard, request.fields.toArray(new String[0])));
+        String[] fl = request.fields.toArray(new String[0]);
+        for (int i = 0 ; i < Math.min(collection.size(), shard.size()) ; i++) {
+            String c = toString(collection.get(i), fl);
+            String s = toString(shard.get(i), fl);
+            System.out.println(c + " <-> " + s + ": equal=" + Objects.equals(c, s) + " #" + i);
+        }
+
+//        System.out.println("col:\n" + toString(collection, request.fields.toArray(new String[0])));
+//        System.out.println("sha:\n" + toString(shard, request.fields.toArray(new String[0])));
     }
 
     private String toString(List<SolrDocument> docs, String... fields) {
@@ -339,14 +362,17 @@ public class ShardStreamingTest {
      * @param request a request to test shard division.
      */
     private void assertDocsEquals(SRequest request) {
-        Iterator<SolrDocument> plainDocs = SolrGenericStreaming.iterate(request.deepCopy().shardDivide("never"));
-        try (CollectionUtils.CloseableIterator<SolrDocument> shardDocs = SolrStreamShard.iterateStrategy(request)) {
+        try (CollectionUtils.CloseableIterator<SolrDocument> shardDocs = SolrStreamShard.iterateStrategy(request);
+             CollectionUtils.CloseableIterator<SolrDocument> plainDocs = SolrStreamShard.iterateStrategy(request.deepCopy().shardDivide("never"))) {
             long count = 0;
             while (plainDocs.hasNext()) {
                 assertTrue("For doc #" + count + ", plainDocs has next so shardDocs should also have next",
                            shardDocs.hasNext());
+                SolrDocument colDoc = plainDocs.next();
+                SolrDocument shardDoc = shardDocs.next();
+//                System.out.println(colDoc.get("id") + " <-> " + shardDoc.get("id"));
                 assertEquals("For doc #" + count + ", id for plain and shard should be equal",
-                             plainDocs.next().get("id"), shardDocs.next().get("id"));
+                             colDoc.get("id"), shardDoc.get("id"));
                 count++;
             }
             assertFalse("After processing, shardDocs should have no more documents", shardDocs.hasNext());

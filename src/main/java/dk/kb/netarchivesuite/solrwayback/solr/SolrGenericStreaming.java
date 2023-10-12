@@ -237,6 +237,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
      *                         for the previous document. If they are equal, the current document will be skipped.
    * @throws IllegalArgumentException if solrQuery has {@code group=true}.
    */
+  // TODO: Deprecate this in favor of SRequest methods
   public static void adjustSolrQuery(
           SolrQuery solrQuery, boolean expandResources, boolean ensureUnique, String deduplicateField) {
     if (solrQuery.getBool(GroupParams.GROUP, false)) {
@@ -246,6 +247,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     // Properties defined parameters
     SolrUtils.setSolrParams(solrQuery);
 
+    // TODO: Replace fl handling with SRequest.getExpandedFieldList
     // Set default values if not already set
     solrQuery.set(CommonParams.FL,
                   solrQuery.get(CommonParams.FL, "source_file_path,source_file_offset"));

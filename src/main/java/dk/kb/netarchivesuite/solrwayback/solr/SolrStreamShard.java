@@ -197,13 +197,13 @@ public class SolrStreamShard {
         final SRequest base = request.deepCopy();
         base.shardDivide(SRequest.CHOICE.never);
         // Ensure sort fields are delivered by the shard divided streams
-        Set<String> fields = new LinkedHashSet<>(base.fields);
-        fields.addAll(getSortFieldNames(base));
+        Set<String> fl = base.getExpandedFieldList();
+        fl.addAll(getSortFieldNames(base));
         // TODO: Reduce to original fields before delivering merged result
-        base.forceFields(new ArrayList<>(fields));
+        base.forceFields(new ArrayList<>(fl));
 
         // TODO: Resolve adjustedFields (by moving it into SRequest?)
-        String adjustedFields = String.join(",", fields);
+        String adjustedFields = String.join(",", fl);
         final AtomicBoolean continueProcessing = new AtomicBoolean(true);
 
         // TODO: Consider a different pageSize for shardDivide requests

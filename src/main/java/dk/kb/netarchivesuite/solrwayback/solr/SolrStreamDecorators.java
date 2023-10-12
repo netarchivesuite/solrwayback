@@ -217,7 +217,6 @@ public class SolrStreamDecorators {
                 long offset = Long.parseLong(doc.getFieldValue("source_file_offset").toString());
                 ArcEntry arc= ArcParserFileResolver.getArcEntry(sourceFile, offset);
                 HashSet<String> resources = HtmlParserUrlRewriter.getResourceLinksForHtmlFromArc(arc);
-
                 Stream<SolrDocument> resourceStream =
                         NetarchiveSolrClient.getInstance().findNearestDocuments(
                                 fields, arc.getCrawlDate(), resources.stream(), expandFilterQueries);

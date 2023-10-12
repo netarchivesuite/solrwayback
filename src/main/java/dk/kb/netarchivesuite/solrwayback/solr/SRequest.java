@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -840,6 +841,29 @@ public class SRequest {
     }
 
     /**
+     * @return the explicitly defined {@code fl} as well as fields needed by {@link #expandResources} etc.
+     */
+    public Set<String> getExpandedFieldList() {
+        Set<String> fl = new HashSet<>();
+        if (solrQuery != null) {
+            fl.addAll(Arrays.asList(
+                    solrQuery.get(CommonParams.FL, "source_file_path,source_file_offset").split(", *")));
+        }
+        if (expandResources) {
+          fl.add("content_type_norm");  // Needed to determine if a resource is a webpage
+          fl.add("source_file_path");   // Needed to fetch the webpage for link extraction
+          fl.add("source_file_offset"); // Needed to fetch the webpage for link extraction
+        }
+        if (expandResources && ensureUnique) {
+          fl.add("id"); // id is shorter than sourcefile@offset in webarchive-discovery compatible indexes
+        }
+        if (deduplicateField != null) {
+          fl.add(deduplicateField);
+        }
+        return fl;
+    }
+
+    /**
      * @return expandResourcesFilterQueries as an array. Empty if no filters has been assigned.
      */
     public String[] getExpandResourcesFilterQueries() {
@@ -865,9 +889,9 @@ public class SRequest {
                 solrQuery(solrQuery == null ? null : SolrUtils.deepCopy(solrQuery)).
                 expandResources(expandResources).
 
-                ensureUnique(ensureUnique).
                 maxUnique(maxUnique).
                 uniqueFields(uniqueFields.toArray(new String[0])).
+                ensureUnique(ensureUnique). // Must be after the uniqueFields
                 uniqueHashing(useHashingForUnique).
 
                 deduplicateField(deduplicateField).
