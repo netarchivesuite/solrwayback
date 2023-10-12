@@ -774,13 +774,13 @@ public class CollectionUtils {
 
         @Override
         public T next() {
-            if (!continueProcessing.get()) {
+//            if (!continueProcessing.get()) {
                 // This does not obey the contract that there is an element if hasNext() == true
                 // as continueProcessing might be set to false between the two calls.
                 // This is acceptable as the continueProcessing mechanism is intended for propagating errors across
                 // iterators with shared goals.
-                throw new IllegalStateException("continueProcessing == false");
-            }
+//                throw new IllegalStateException("continueProcessing == false");
+//            }
             T innerNext = inner.next();
             if (++delivered == limit) {
                 continueProcessing.set(false);

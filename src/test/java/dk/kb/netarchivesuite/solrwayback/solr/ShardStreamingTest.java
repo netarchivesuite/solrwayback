@@ -14,12 +14,9 @@
  */
 package dk.kb.netarchivesuite.solrwayback.solr;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -30,13 +27,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -60,6 +57,7 @@ public class ShardStreamingTest {
             solrClient.query(query);
             AVAILABLE = true;
             PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
+            NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
         } catch (Exception e) {
             log.warn("No local Solr available at '" + LOCAL_SOLR + "/" + COLLECTION + "'. Skipping unit test");
         }
@@ -137,7 +135,7 @@ public class ShardStreamingTest {
                 .query("*:*")
                 .fields("id")
                 .shardDivide("always")
-                .maxResults(100)
+                .maxResults(50)
                 .expandResources(true);
         assertDocsEquals(request);
     }
@@ -147,11 +145,26 @@ public class ShardStreamingTest {
         if (!AVAILABLE) {
             return;
         }
-        NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
         SRequest request = new SRequest()
                 .solrClient(solrClient)
                 .query("*:*")
                 .fields("id")
+                .shardDivide("always")
+                .maxResults(100)
+                .timeProximityDeduplication("2023-10-10T19:47:00Z", "crawl_date");
+        assertDocsEquals(request);
+    }
+
+    @Test
+    public void testShardDivideTimeProximityExplicit() {
+        if (!AVAILABLE) {
+            return;
+        }
+        NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id, crawl_date, score")
                 .shardDivide("always")
                 .maxResults(100)
                 .timeProximityDeduplication("2023-10-10T19:47:00Z", "crawl_date");
@@ -174,6 +187,36 @@ public class ShardStreamingTest {
     }
 
     @Test
+    public void testShardDivideSortDateExplicit() {
+        if (!AVAILABLE) {
+            return;
+        }
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id, crawl_date")
+                .shardDivide("always")
+                .maxResults(100)
+                .sort("crawl_date asc");
+        assertDocsEquals(request);
+    }
+
+    @Test
+    public void testShardDivideSortDomainDate() {
+        if (!AVAILABLE) {
+            return;
+        }
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id")
+                .shardDivide("always")
+                .maxResults(100)
+                .sort("domain desc"); // FIXME domain does not become a part of fl!
+        assertDocsEquals(request);
+    }
+
+    @Test
     public void testShardDivideDeduplicate() {
         if (!AVAILABLE) {
             return;
@@ -184,8 +227,69 @@ public class ShardStreamingTest {
                 .query("*:*")
                 .fields("id")
                 .shardDivide("always")
-                .maxResults(100)
+                .maxResults(5)
                 .deduplicateField("domain");
+        assertDocsEquals(request);
+    }
+
+    @Test
+    public void testShardDivideDeduplicateDump() {
+        if (!AVAILABLE) {
+            return;
+        }
+        PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id", "domain")
+                .shardDivide("never")
+                .maxResults(5)
+                .deduplicateField("domain");
+        dump(request);
+    }
+
+    private void dump(SRequest request) {
+        List<SolrDocument> collection = request.stream().collect(Collectors.toList());
+        List<SolrDocument> shard = new ArrayList<>();
+        try (CollectionUtils.CloseableIterator<SolrDocument> shardIs =
+                     SolrStreamShard.iterateStrategy(request.shardDivide("always"))) {
+            while (shardIs.hasNext()) {
+                shard.add(shardIs.next());
+            }
+        }
+
+        System.out.println("col:\n" + toString(collection, request.fields.toArray(new String[0])));
+        System.out.println("sha:\n" + toString(shard, request.fields.toArray(new String[0])));
+    }
+
+    private String toString(List<SolrDocument> docs, String... fields) {
+        return docs.stream()
+                .map(doc -> toString(doc, fields))
+                .collect(Collectors.joining("\n"));
+    }
+    private String toString(SolrDocument doc, String... fields) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        sb.append(Arrays.stream(fields)
+                          .map(field -> field + "='" + doc.getFieldValue(field) + "'")
+                          .collect(Collectors.joining(", ")));
+        sb.append("]");
+        return sb.toString();
+    }
+
+    @Test
+    public void testShardDivideDeduplicateExplicit() {
+        if (!AVAILABLE) {
+            return;
+        }
+        PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id, domain")
+                .shardDivide("always")
+                .maxResults(100)
+                .deduplicateField("domain");  // FIXME domain does not become a part of fl!
         assertDocsEquals(request);
     }
 

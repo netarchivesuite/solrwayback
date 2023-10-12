@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -159,7 +160,7 @@ public class SolrStreamDecorators {
 
         public OrderedDeduplicator(String... deduplicateFields) {
             if (deduplicateFields.length == 0) {
-                throw new IllegalArgumentException("No deduplicatefields given");
+                throw new IllegalArgumentException("No deduplicateFields given");
             }
             this.deduplicateFields = deduplicateFields;
             this.lastStreamDeduplicateValues = new Object[deduplicateFields.length];
@@ -167,19 +168,20 @@ public class SolrStreamDecorators {
 
         @Override
         public boolean test(SolrDocument doc) {
+            boolean isNew = true;
             out:
             if (lastStreamDeduplicateValues[0] != null) {
                 for (int i = 0 ; i < deduplicateFields.length ; i++) {
-                    if (lastStreamDeduplicateValues[i] != doc.getFieldValue(deduplicateFields[i])) {
+                    if (!Objects.equals(lastStreamDeduplicateValues[i], doc.getFieldValue(deduplicateFields[i]))) {
                         break out;
                     }
                 }
-                return false;
+                isNew = false;
             }
             for (int i = 0 ; i < deduplicateFields.length ; i++) {
                 lastStreamDeduplicateValues[i] = doc.getFieldValue(deduplicateFields[i]);
             }
-            return true;
+            return isNew;
         }
     }
 

@@ -197,10 +197,10 @@ public class SolrStreamShard {
         final SRequest base = request.deepCopy();
         base.shardDivide(SRequest.CHOICE.never);
         // Ensure sort fields are delivered by the shard divided streams
-        Set<String> fields = new LinkedHashSet<>(request.fields);
+        Set<String> fields = new LinkedHashSet<>(base.fields);
         fields.addAll(getSortFieldNames(base));
         // TODO: Reduce to original fields before delivering merged result
-        request.forceFields(new ArrayList<>(fields));
+        base.forceFields(new ArrayList<>(fields));
 
         // TODO: Resolve adjustedFields (by moving it into SRequest?)
         String adjustedFields = String.join(",", fields);
@@ -215,16 +215,16 @@ public class SolrStreamShard {
                 // Limit hammering on the Solr Cloud
                 .map(iterator -> CollectionUtils.SharedConstraintIterator.of(iterator, gatekeeper))
                 // Speed up processing by threading most of the deduplication
-                .map(iterator -> makeDeduplicatingIfStated(iterator, request))
+                .map(iterator -> makeDeduplicatingIfStated(iterator, base))
                 // Speed up processing by reading ahead
-                .map(iterator -> CollectionUtils.BufferingIterator.of(iterator, executor, request.pageSize, continueProcessing))
+                .map(iterator -> CollectionUtils.BufferingIterator.of(iterator, executor, base.pageSize, continueProcessing))
                 .collect(Collectors.toList());
         // Merge all shard divisions to one iterator
-        Iterator<SolrDocument> docs = CollectionUtils.mergeIterators(documentIterators, getDocumentComparator(request));
-        // Limit the amount of results
-        docs = CollectionUtils.CloseableIterator.of(docs, continueProcessing, request.maxResults);
-        // Remove duplicates, add resources...
+        Iterator<SolrDocument> docs = CollectionUtils.mergeIterators(documentIterators, getDocumentComparator(base));
+        // Remove duplicates, add resources... Note that the raw request is used as this has the non-expanded fields
         docs = SolrStreamDecorators.addPostProcessors(docs, request, adjustedFields);
+        // Limit the amount of results
+        docs = CollectionUtils.CloseableIterator.of(docs, continueProcessing, base.maxResults);
         // Ensure that close() propagates to the BufferingIterator to avoid Thread & buffer leaks
         return CollectionUtils.CloseableIterator.of(docs, continueProcessing);
     }
