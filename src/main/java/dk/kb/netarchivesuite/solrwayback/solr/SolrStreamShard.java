@@ -80,6 +80,29 @@ public class SolrStreamShard {
     /**
      * Depending on the backing Solr Cloud topology, the collection and the {@link SRequest#shardDivide} and
      * {@link SRequest#autoShardDivideLimit}, either standard collection based document search & delivery or
+     * shard dividing search & delivery is used to provide an Stream of {@link SolrDocument}s.
+     * <p>
+     * Important: This method returns a {@link dk.kb.netarchivesuite.solrwayback.util.CollectionUtils.CloseableStream}
+     * and the caller <strong>must</strong> ensure that it is either depleted or closed after use, to avoid resource
+     * leaking. It is highly recommended to use {@code try-with-resources} directly on the returned stream:
+     * <pre>
+     * try (CollectionUtils.CloseableStream<SolrDocument> docs =
+     *      SolrStreamShard.streamStrategy(myRequest) {
+     *     long hugeIDs = docs.map(doc -> doc.get("id)).filter(id -> id.length() > 200).count();
+     * }
+     * </pre>
+     * @param request stream setup.
+     * @return an Stream of {@code SolrDocument}s, as specified in the {@code request}.
+     */
+    public static CollectionUtils.CloseableStream<SolrDocument> streamStrategy(
+            SRequest request) throws IllegalArgumentException {
+       return new CollectionUtils.CloseableStream<>(iterateStrategy(request));
+    }
+
+
+    /**
+     * Depending on the backing Solr Cloud topology, the collection and the {@link SRequest#shardDivide} and
+     * {@link SRequest#autoShardDivideLimit}, either standard collection based document search & delivery or
      * shard dividing search & delivery is used to provide an iterator of {@link SolrDocument}s.
      * <p>
      * Important: This method returns a {@link dk.kb.netarchivesuite.solrwayback.util.CollectionUtils.CloseableIterator}

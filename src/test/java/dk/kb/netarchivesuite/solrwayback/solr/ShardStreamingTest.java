@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -243,9 +244,27 @@ public class ShardStreamingTest {
                 .query("*:*")
                 .fields("id")
                 .shardDivide("always")
-                .maxResults(5)
+                .maxResults(50)
                 .deduplicateField("domain");
         assertDocsEquals(request);
+    }
+
+    @Test
+    public void testShardDivideStreaming() {
+        if (!AVAILABLE) {
+            return;
+        }
+        PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id")
+                .shardDivide("always")
+                .maxResults(50)
+                .deduplicateField("domain");
+        try (Stream<SolrDocument> docs = SolrStreamShard.streamStrategy(request)) {
+            assertTrue("More than 1 documents should be returned", docs.count() > 1);
+        }
     }
 
     @Test
