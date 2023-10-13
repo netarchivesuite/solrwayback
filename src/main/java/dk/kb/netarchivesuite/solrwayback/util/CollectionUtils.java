@@ -268,6 +268,7 @@ public class CollectionUtils {
                     }
 
                     boolean isAdded = false;
+                    // TODO: Add overall timeout to handle non-closed-but-failed scenarios
                     while (continueProcessing.get() && !isAdded) {
                         try {
                             // The buffer is blocking with fixed size so most of the Thread time will be spend waiting

@@ -136,9 +136,12 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   /**
    * Generic stream where all parts except {@link SRequest#query(String)} and {@link SRequest#fields(String...)}
    * are optional.
-   *
+   * <p>
+   * Note: This always uses a collection oriented procedure. It is recommended to use
+   * {@link SolrStreamShard#streamStrategy} instead as that allows for the faster shard division strategy.
    * @param request stream setup.
    * @return a stream of {@code SolrDocument}s, as specified in the {@code request}.
+   * @see SolrStreamShard#streamStrategy(SRequest)
    */
   public static Stream<SolrDocument> stream(SRequest request) throws IllegalArgumentException {
     SolrGenericStreaming base = new SolrGenericStreaming(request);
@@ -148,9 +151,12 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   /**
    * Generic delivery of Solr documents where all parts except {@link SRequest#query(String)} and
    * {@link SRequest#fields(String...)} are optional.
-   *
+   * <p>
+   * Note: This always uses a collection oriented procedure. It is recommended to use
+   * {@link SolrStreamShard#iterateStrategy} instead as that allows for the faster shard division strategy.
    * @param request stream setup.
    * @return an iterator of {@code SolrDocument}s, as specified in the {@code request}.
+   * @see SolrStreamShard#iterateStrategy(SRequest)
    */
   public static Iterator<SolrDocument> iterate(SRequest request) throws IllegalArgumentException {
     SolrGenericStreaming base = new SolrGenericStreaming(request);
@@ -160,7 +166,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   /**
    * Export the documents matching query and filterQueries with no limit on result size.
    * {@link #defaultSolrClient} will be used for the requests.
-   *
+   * <p>
+   * Note: This always uses a collection oriented procedure. It is recommended to use
+   * {@link SolrStreamShard#streamStrategy} instead as that allows for the faster shard division strategy.
    * Default page size 1000, expandResources=false and ensureUnique=false.
    * @param fields        the fields to export.
    * @param query         standard Solr query.
@@ -168,6 +176,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    *                      If multiple filters are to be used, consider collapsing them into one:
    *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
    * @return a stream of {@code SolrDocment}s with the requested fields, satisfying the given query ande filter queries.
+   * @see SolrStreamShard#streamStrategy(SRequest)
    */
   public static Stream<SolrDocument> stream(List<String> fields, String query, String... filterQueries) {
     return stream(SRequest.create(query, fields).filterQueries(filterQueries));
@@ -178,12 +187,16 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * {@link #defaultSolrClient} will be used for the requests.
    *
    * Default page size 1000, expandResources=false and ensureUnique=false.
+   * <p>
+   * Note: This always uses a collection oriented procedure. It is recommended to use
+   * {@link SolrStreamShard#iterateStrategy} instead as that allows for the faster shard division strategy.
    * @param fields        the fields to export.
    * @param query         standard Solr query.
    * @param filterQueries optional Solr filter queries. For performance, 0 or 1 filter query is recommended.
    *                      If multiple filters are to be used, consider collapsing them into one:
    *                      {@code ["foo", "bar"]} → {@code ["(foo) AND (bar)"]}.
    * @return an iterator of {@code SolrDocment}s with the requested fields, satisfying the given query ande filter queries.
+   * @see SolrStreamShard#iterateSharded(SRequest, List)
    */
   public static Iterator<SolrDocument> iterate(List<String> fields, String query, String... filterQueries) {
     return iterate(SRequest.create(query, fields).filterQueries(filterQueries));
@@ -192,7 +205,8 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
   /**
    * Generic stream where all parts except {@link SRequest#query(String)} and {@link SRequest#fields(String...)}
    * are optional.
-   *
+   * <p>
+   * Note: This is the "raw" stream where post-processors such as ensure uniqueness and expand resources are not added.
    * @param request stream setup.
    */
   protected SolrGenericStreaming(SRequest request) {

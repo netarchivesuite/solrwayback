@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -40,12 +41,14 @@ public class StreamingRawZipExport {
         ZipOutputStream zos = new ZipOutputStream(output);
         WarcMetadataFromSolr warcMetadata = new WarcMetadataFromSolr();
 
-        long streamedDocs = SolrGenericStreaming.stream(request)
-                .map(doc -> extractMetadata(doc, warcMetadata))
-                .map(StreamingRawZipExport::safeGetArcEntry)
-                .map(entry -> addArcEntryToZip(entry, zos, warcMetadata))
-                .count();
-
+        long streamedDocs;
+        try (Stream<SolrDocument> docs = request.stream()) {
+            streamedDocs = docs
+                    .map(doc -> extractMetadata(doc, warcMetadata))
+                    .map(StreamingRawZipExport::safeGetArcEntry)
+                    .map(entry -> addArcEntryToZip(entry, zos, warcMetadata))
+                    .count();
+        }
         zos.close();
         output.close();
         log.info("Zip export has completed. {} warc entries have been streamed, zipped and delivered.", streamedDocs);
