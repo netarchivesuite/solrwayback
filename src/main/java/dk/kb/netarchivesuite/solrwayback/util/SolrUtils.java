@@ -477,10 +477,22 @@ public class SolrUtils {
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode statusRoot = mapper.readTree(statusJSON);
-            JsonNode shardsJSON = statusRoot.get("cluster").get("collections").get(collection).get("shards");
+            // Maybe the collection is an alias
+            List<String> collectionIDs = new ArrayList<>();
+            if (!statusRoot.get("cluster").has("aliases")) {
+                collectionIDs.add(collection);
+            } else {
+                collectionIDs.addAll(Arrays.asList(
+                        statusRoot.get("cluster").get("aliases").get(collection).asText().split(", *")));
+                log.debug("Resolved alias '{}' to collections {} ", collection, collectionIDs);
+            }
+
             List<String> shardNames = new ArrayList<>();
-            for (Iterator<String> it = shardsJSON.fieldNames(); it.hasNext(); ) {
-                shardNames.add(it.next());
+            for (String collectionID: collectionIDs) {
+                JsonNode shardsJSON = statusRoot.get("cluster").get("collections").get(collectionID).get("shards");
+                for (Iterator<String> it = shardsJSON.fieldNames(); it.hasNext(); ) {
+                    shardNames.add(it.next());
+                }
             }
             return shardNames;
         } catch (Exception e) {
