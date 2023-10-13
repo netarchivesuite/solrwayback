@@ -38,7 +38,9 @@ public class SolrStreamingLinkGraphCSVExportClient implements SolrStreamingLineB
     this.solrFieldsArray = solrFields.split(", *");
     this.csvFieldsArray = csvFields.split(", *");
 
-    solrDocs = SolrGenericStreaming.iterate(
+    // TODO: Handle closing in case of exceptions
+    //solrDocs = SolrGenericStreaming.iterate(
+    solrDocs = SolrStreamShard.iterateStrategy(
             SRequest.builder().
                     solrClient(solrClient).
                     query(query).filterQueries(filters).

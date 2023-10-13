@@ -398,7 +398,8 @@ public class NetarchiveSolrClient {
                 timeProximityDeduplication(timeStamp, "url_norm").
                 maxResults(50); // TODO: Make this an argument instead
 
-        return SolrGenericStreaming.stream(request)
+        // TODO: Figure out how to handle the CloseableStream-problem
+        return SolrStreamShard.streamStrategy(request)
                 .map(SolrUtils::solrDocument2ArcEntryDescriptor)
                 .collect(Collectors.toCollection(ArrayList::new));
     }

@@ -41,8 +41,10 @@ import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStats;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamDecorators;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamShard;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
+import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
@@ -636,7 +638,9 @@ public class Facade {
                 ensureUnique(ensureUnique);
 
         // Create stream
-        Stream<SolrDocument> docs = SolrGenericStreaming.stream(request);
+        //Stream<SolrDocument> docs = SolrGenericStreaming.stream(request);
+        // TODO: Figure out how to handle the CloseableStream-problem
+        Stream<SolrDocument> docs = SolrStreamShard.streamStrategy(request);
         if (Boolean.TRUE.equals(flatten)) {
             docs = docs.flatMap(SolrStreamDecorators::flatten);
         }

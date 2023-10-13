@@ -199,7 +199,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
    * @see SolrStreamShard#iterateSharded(SRequest, List)
    */
   public static Iterator<SolrDocument> iterate(List<String> fields, String query, String... filterQueries) {
-    return iterate(SRequest.create(query, fields).filterQueries(filterQueries));
+    return iterate(SRequest.create(query, fields).filterQueries(filterQueries).shardDivide("never"));
   }
 
   /**

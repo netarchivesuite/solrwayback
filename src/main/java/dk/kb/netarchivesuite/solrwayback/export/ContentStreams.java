@@ -104,6 +104,7 @@ public class ContentStreams {
 
         SRequest directImagesReq = SRequest.builder().
                 query(query).
+                shardDivide("never"). // We are conservative here
                 filterQueries(SolrUtils.extend("content_type_norm:image", filterQueries)).
                 fields(SolrUtils.arcEntryDescriptorFieldList);
         if (goFast) { // TODO: Consider if this should be an explicit option instead
@@ -115,6 +116,7 @@ public class ContentStreams {
 
         SRequest htmlRequest = SRequest.builder().
                 query(query).
+                shardDivide("never"). // The conservative choice
                 filterQueries(SolrUtils.extend("content_type_norm:html", filterQueries)).
                 fields("crawl_date, links_images").
                 pageSize(100); // The links-field can be heavy and we want low latency
@@ -125,6 +127,7 @@ public class ContentStreams {
         if (goFast) {
             htmlImages = resolveImagesFromPageRequest(htmlPages, maxImagesPerPage, sharedLinkPruner).
                     useCachingClient(true).
+                    shardDivide("never"). // Conservative choice
                     stream();
         } else {
             Stream<Callable<Stream<SolrDocument>>> htmlCallbacks = htmlPages.
@@ -172,6 +175,7 @@ public class ContentStreams {
                               "image_size:[2000 TO *]").   // No small images. (fillers etc.)
                 fields(SolrUtils.arcEntryDescriptorFieldList). // Contains hash used for uniqueness
                 timeProximityDeduplication(isotime, "url_norm").
+                shardDivide("never"). // Conservatice choise. Maybe too conservative?
                 maxResults(maxImages); // No sense in returning more than maxImages from a sub-request
 
         // The strange construction where the stream is collected and then re-streamed is to ensure that the
