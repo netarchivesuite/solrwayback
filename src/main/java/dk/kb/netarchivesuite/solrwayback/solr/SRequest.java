@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -98,7 +97,8 @@ public class SRequest {
     public int pageSize = SolrGenericStreaming.DEFAULT_PAGESIZE;
     public boolean usePaging = true;
     public int queryBatchSize = SolrGenericStreaming.DEFAULT_QUERY_BATCHSIZE;
-    public List<String> shards;
+    public List<String> shards = null;
+    public String collection = null;
     public CHOICE shardDivide = CHOICE.valueOf(PropertiesLoader.SOLR_STREAM_SHARD_DIVIDE);
     /**
      * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
@@ -679,6 +679,36 @@ public class SRequest {
     }
 
     /**
+     * Set the collection to query. If not changed, the collection will be the default collection from the overall
+     * SolrWayback setup ({@code solrwayback.properties}).
+     * <p>
+     * Note: The collection will only be used for the base requests to Solr. {@link SRequest#expandResources} will
+     * still use the default collection.
+     * @param collection the collection to query.
+     * @return the SRequest adjusted with the provided value.
+     */
+    // TODO: Figure out how to handle the expandResources situation when doing collection vs. shard divide calls
+    // Maybe introduce a specific collection for that and let this method take two collections?
+    public SRequest collection(String collection) {
+        this.collection = collection;
+        return this;
+    }
+
+    /**
+     * Returns, in order of priority & existence<br>
+     * - {@link #collection}<br>
+     * - collection derived from {@link PropertiesLoader#WAYBACK_BASEURL}
+     * @return the Solr collection to query. This might be a collection alias.
+     */
+    public String getCollectionGuaranteed() {
+        if (collection != null) {
+            return collection;
+        }
+        return SolrUtils.getBaseCollection();
+
+    }
+
+    /**
      * Limit the request to the given shards. If this value is not specified, all shards in the collection is queried.
      * @param shards 1 or more shard names.
      * @return the SRequest adjusted with the provided value.
@@ -904,7 +934,9 @@ public class SRequest {
                 filterQueries(copy(filterQueries)).
                 expandResourcesFilterQueries(copy(expandResourcesFilterQueries)).
                 pageSize(pageSize).
-                shards(shards);
+                collection(collection).
+                shards(shards).
+                shardDivide(shardDivide);
         copy.idealTime = idealTime;
         return copy;
     }

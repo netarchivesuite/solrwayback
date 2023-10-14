@@ -31,8 +31,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,9 +46,13 @@ import static org.junit.Assert.*;
 public class ShardStreamingTest {
     private static final Logger log = LoggerFactory.getLogger(ShardStreamingTest.class);
 
+    public static final String STAGE_SOLR = "http://localhost:53301/solr";
+    //public static final String STAGE_SOLR = "http://localhost:52300/solr";
     public static final String LOCAL_SOLR = "http://localhost:8983/solr";
     public static final String COLLECTION = "netarchivebuilder";
-    protected static SolrClient solrClient = new HttpSolrClient.Builder(LOCAL_SOLR + "/" + COLLECTION).build();
+    public static final String STAGE_COLLECTION = "ns";
+//    protected static SolrClient solrClient = new HttpSolrClient.Builder(LOCAL_SOLR + "/" + COLLECTION).build();
+    protected static SolrClient solrClient = new HttpSolrClient.Builder(STAGE_SOLR + "/" + STAGE_COLLECTION).build();
     protected static boolean AVAILABLE = false;
 
 
@@ -59,9 +63,10 @@ public class ShardStreamingTest {
             solrClient.query(query);
             AVAILABLE = true;
             PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
+            PropertiesLoader.SOLR_SERVER = STAGE_SOLR + "/" + STAGE_COLLECTION;
             NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
         } catch (Exception e) {
-            log.warn("No local Solr available at '" + LOCAL_SOLR + "/" + COLLECTION + "'. Skipping unit test");
+            log.warn("No local Solr available at '" + LOCAL_SOLR + "/" + COLLECTION + "'. Skipping unit test", e);
         }
     }
 
@@ -75,6 +80,54 @@ public class ShardStreamingTest {
     }
 
     @Test
+    public void testStageBaseSharding() {
+        if (!AVAILABLE) {
+            return;
+        }
+        log.info("Starting basic shard test");
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .fields("id", "index_time", "author", "description", "keywords", "license_url", "content", "content_encoding")
+                .shardDivide("always")
+                .pageSize(20)
+                .maxResults(200);
+
+        long qt = -System.currentTimeMillis();
+        long hits = request.stream().count();
+        qt += System.currentTimeMillis();
+        System.out.printf(Locale.ROOT,
+                          "**** Got %d hits in %,d ms: %.2fhits/ms%n",
+                          hits, qt, 1.0 * hits / qt);
+    }
+
+    @Test
+    public void testStageSpeed() {
+        if (!AVAILABLE) {
+            return;
+        }
+        log.info("Starting speed test");
+        SRequest request = new SRequest()
+                .solrClient(solrClient)
+                .query("*:*")
+                .filterQueries("hash:sha1\\:A*")
+                .fields("id", "index_time", "author", "description", "keywords", "license_url", "content", "content_encoding")
+                .shardDivide("auto")
+                .sort("id asc")
+                .pageSize(500)
+                .maxResults(5000);
+
+        for (int i = 0 ; i < 3 ; i++) {
+            long qt = -System.currentTimeMillis();
+            long hits = request.stream().count();
+            qt += System.currentTimeMillis();
+            System.out.printf(Locale.ROOT,
+                              "**** Got %d hits in %,d ms: %.2fhits/ms%n",
+                              hits, qt, 1.0 * hits / qt);
+        }
+    }
+
+    @Test
     public void testShardedSearch() throws IOException {
         if (!AVAILABLE) {
             return;
@@ -82,7 +135,7 @@ public class ShardStreamingTest {
         long allHits = new SRequest().query("*:*").fields("id").solrClient(solrClient)
                 .stream().count();
         long shardHits = new SRequest().query("*:*").fields("id").solrClient(solrClient)
-                .shards(SolrUtils.getShardNames(LOCAL_SOLR, COLLECTION).get(0))
+                .shards(SolrUtils.getShards(LOCAL_SOLR, COLLECTION).get(0).shardID)
                 .stream().count();
         assertTrue("All hits (" + allHits + ") should be greater than single shard hits (" + shardHits + ")",
                    allHits > shardHits);
@@ -93,7 +146,7 @@ public class ShardStreamingTest {
         if (!AVAILABLE) {
             return;
         }
-        List<String> shardNames = SolrUtils.getShardNames(LOCAL_SOLR, COLLECTION);
+        List<SolrUtils.Shard> shardNames = SolrUtils.getShards(LOCAL_SOLR, COLLECTION);
         assertTrue("There should be more than 1 shards", shardNames.size() > 1);
         log.debug("Shard names: " + shardNames);
     }

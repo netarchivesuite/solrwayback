@@ -63,6 +63,7 @@ public class SolrStreamShard {
      */
     private static final Executor executor = Executors.newCachedThreadPool(new ThreadFactory() {
         int threadCount = 0;
+        @SuppressWarnings("NullableProblems")
         @Override
         public Thread newThread(Runnable r) {
             Thread t = new Thread(r, "SolrStream_" + threadCount++);
@@ -118,9 +119,15 @@ public class SolrStreamShard {
             return CollectionUtils.CloseableIterator.single(SolrGenericStreaming.iterate(request));
         }
 
-        List<String> shards = request.shards;
-        if (shards == null || shards.isEmpty()) {
-            shards = SolrUtils.getShardNames();
+        List<SolrUtils.Shard> shards = null;
+        List<String> shardIDs = request.shards;
+        if (shardIDs == null || shardIDs.isEmpty()) {
+            shards = SolrUtils.getShards();
+        } else { // Need to convert shardIDs to collection-qualified Shards
+            String collection = SolrUtils.getBaseCollection();
+            shards = shardIDs.stream()
+                    .map(shardID -> new SolrUtils.Shard(collection, shardID))
+                    .collect(Collectors.toList());
         }
 
         // Always shardDivide (if possible)
@@ -135,7 +142,7 @@ public class SolrStreamShard {
                          "Forcing shard dividing Solr document streaming although this does not make sense",
                          shards.get(0));
             } else {
-                log.debug("shardDivide == always. Using shard dividing Solr document streaming for {} shards",
+                log.debug("shardDivide == always. Using shard dividing Solr document streaming for {} shards ",
                           shards.size());
             }
             return iterateSharded(request, shards);
@@ -161,7 +168,7 @@ public class SolrStreamShard {
                 return CollectionUtils.CloseableIterator.single(SolrGenericStreaming.iterate(request));
             }
             log.debug("shardDivide == auto, and hitcount {} is >= limit {}. " +
-                      "Using shard dividing Solr document streaming for {} shards",
+                      "Using shard dividing Solr document streaming for {} shards ",
                       hits, request.autoShardDivideLimit, shards.size());
             return iterateSharded(request, shards);
         }
@@ -212,7 +219,7 @@ public class SolrStreamShard {
      * @return an iterator of {@code SolrDocument}s, as specified in the {@code request}.
      */
     protected static CollectionUtils.CloseableIterator<SolrDocument> iterateSharded(
-            SRequest request, List<String> shards) {
+            SRequest request, List<SolrUtils.Shard> shards) {
         if (shards == null || shards.isEmpty()) {
             throw new IllegalArgumentException("No shards specified");
         }
@@ -230,7 +237,7 @@ public class SolrStreamShard {
 
         // TODO: Consider a different pageSize for shardDivide requests
         List<Iterator<SolrDocument>> documentIterators = shards.stream()
-                .map(shard -> base.deepCopy().shards(shard))
+                .map(shard -> base.deepCopy().collection(shard.collectionID).shards(shard.shardID))
                 .map(SolrGenericStreaming::new)
                 // Basic "raw results"
                 .map(SolrGenericStreaming::iterator)

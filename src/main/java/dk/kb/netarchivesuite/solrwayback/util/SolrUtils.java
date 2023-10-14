@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -447,10 +448,13 @@ public class SolrUtils {
      * Retrieve the shard names for the default collection on the default Solr.
      * If it is not possible to retrieve shard names, e.g. if the Solr is running in standalone mode,
      * null is returned.
+     * <p>
+     * Note: Due to the Solr alias mechanism, shardIDs are not guaranteed to be unique in the result.
+     * To avoid ambiguity they are returned as {@link Shard} where the encapsulating collection is stated.
      * @return a list of the shards in the collection or null is the shard names could not be determined.
      */
     // TODO: Cache this
-    public static List<String> getShardNames() {
+    public static List<Shard> getShards() {
         // http://localhost:8983/solr/netarchivebuilder/
         Matcher m = SOLR_COLLECTION_PATTERN.matcher(PropertiesLoader.SOLR_SERVER);
         if (!m.matches()) {
@@ -458,7 +462,7 @@ public class SolrUtils {
                      PropertiesLoader.SOLR_SERVER, SOLR_COLLECTION_PATTERN.pattern());
             return null;
         }
-        return getShardNames(m.group(1), m.group(2));
+        return getShards(m.group(1), m.group(2));
     }
     private static final Pattern SOLR_COLLECTION_PATTERN = Pattern.compile("(http.*)/([^/]+)/?$");
 
@@ -466,11 +470,14 @@ public class SolrUtils {
      * Retrieve the shard names for the given {@code collection} in the given {@code solrBase}.
      * If it is not possible to retrieve shard names, e.g. if the Solr is running in standalone mode,
      * null is returned.
+     * <p>
+     * Note: Due to the Solr alias mechanism, shardIDs are not guaranteed to be unique in the result.
+     * To avoid ambiguity they are returned as {@link Shard} where the encapsulating collection is stated.
      * @param solrBase   an address for a running Sorl, such as {@code http://localhost:8983/solr}.
      * @param collection a Solr collection, such as {@code netarchivebuilder}.
-     * @return a list of the shards in the collection or null is the shard names could not be determined.
+     * @return a list of the shards in the collection or null if the shard names could not be determined.
      */
-    public static List<String> getShardNames(String solrBase, String collection) {
+    public static List<Shard> getShards(String solrBase, String collection) {
         try {
             URI clusterStatusUrl = URI.create(solrBase + "/admin/collections?action=CLUSTERSTATUS");
             String statusJSON = IOUtils.toString(clusterStatusUrl, StandardCharsets.UTF_8);
@@ -487,18 +494,51 @@ public class SolrUtils {
                 log.debug("Resolved alias '{}' to collections {} ", collection, collectionIDs);
             }
 
-            List<String> shardNames = new ArrayList<>();
+            List<Shard> shardNames = new ArrayList<>();
             for (String collectionID: collectionIDs) {
                 JsonNode shardsJSON = statusRoot.get("cluster").get("collections").get(collectionID).get("shards");
                 for (Iterator<String> it = shardsJSON.fieldNames(); it.hasNext(); ) {
-                    shardNames.add(it.next());
+                    shardNames.add(new Shard(collection, it.next()));
                 }
             }
             return shardNames;
         } catch (Exception e) {
-            log.info("Unable to resolve shard names for Solr '{}' collection '{}'. Possibly because the Solr is " +
-                     "running as standalone. Returning null", solrBase, collection);
+            log.info("Unable to resolve shard names for Solr '{}' collection '{}'. " +
+                     "Possibly because the Solr is running as standalone. Returning null",
+                     solrBase, collection);
             return null;
         }
+    }
+
+    /**
+     * Representation of a shardID and its encapsulating collectionID.
+     */
+    public static final class Shard {
+        public final String collectionID;
+        public final String shardID;
+
+        public Shard(String collectionID, String shardID) {
+            this.collectionID = collectionID;
+            this.shardID = shardID;
+        }
+
+        @Override
+        public String toString() {
+            return collectionID + ":" + shardID;
+        }
+    }
+
+    /**
+     * The collection or collection alias for the overall SolrWayback setup.
+     * @return The base collection for the overall SolrWayback setup.
+     */
+    public static String getBaseCollection() {
+        Matcher m = SOLR_COLLECTION_PATTERN.matcher(PropertiesLoader.SOLR_SERVER);
+        if (!m.matches()) {
+            throw new IllegalStateException(String.format(
+                    Locale.ROOT, "Unable to match Solr and collection from '%s' using pattern '%s'",
+                    PropertiesLoader.SOLR_SERVER, SOLR_COLLECTION_PATTERN.pattern()));
+        }
+        return m.group(2);
     }
 }

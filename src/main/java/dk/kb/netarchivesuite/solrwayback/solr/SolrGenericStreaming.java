@@ -439,15 +439,19 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       //log.debug("Issuing '{}'", SolrUtils.fieldValueToString(solrQuery));
 
       QueryResponse rsp;
+      long st = System.currentTimeMillis();
       try {
-        rsp = request.solrClient.query(solrQuery, METHOD.POST);
+        rsp = request.collection == null ?
+                request.solrClient.query(solrQuery, METHOD.POST) :
+                request.solrClient.query(request.getCollectionGuaranteed(), solrQuery, METHOD.POST);
       } catch (HttpSolrClient.RemoteSolrException e) {
-        log.warn("RemoteSolrException for POST request '" + SolrUtils.fieldValueToString(solrQuery) + "'", e);
+        log.warn("RemoteSolrException for POST request to collection '" + request.getCollectionGuaranteed() + "': " +
+                 SolrUtils.fieldValueToString(solrQuery), e);
         throw e;
-      }
+      }         ;
       undelivered = rsp.getResults();
       totalDelivered.addAndGet(undelivered.size());
-      //log.debug("Got " + undelivered.size() + " hits with total delivered counter " + totalDelivered.get());
+      log.debug("Got " + undelivered.size() + " hits with total delivered counter " + totalDelivered.get() + " in " + (System.currentTimeMillis()-st) + " ms");
       if (undelivered.size() < solrQuery.getRows() || rsp.getResults().getNumFound() <= solrQuery.getRows()) {
         queryDepleted = true;
       }

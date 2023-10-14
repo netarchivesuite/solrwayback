@@ -251,10 +251,18 @@ public class CollectionUtils {
             buffer = new ArrayBlockingQueue<>(Math.max(1, bufferSize-1));
             executor.execute(() -> {
                 while (continueProcessing.get()) {
-                    if (!inner.hasNext()) {
-                        innerIsEmpty.set(true);
-                        return;
+                    try {
+                        if (!inner.hasNext()) {
+                            innerIsEmpty.set(true);
+                            return;
+                        }
+                    } catch (Exception e) {
+                        log.warn("Exception while requesting inner.hasNext(). " +
+                                 "Signalling stop to all state sharing iterators", e);
+                        continueProcessing.set(false);
+                        throw e;
                     }
+
 
                     T next;
                     try {
