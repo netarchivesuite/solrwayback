@@ -38,7 +38,10 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * SolrClient wrapper that ensures that {@link PropertiesLoader#SOLR_PARAMS_MAP}
@@ -71,11 +74,32 @@ public class RestrictedSolrClient extends SolrClient {
      * Create a {@link HttpSolrClient} wrapped as a {@code RestrictedSolrClient} using the property
      * {@link PropertiesLoader#SOLR_PARAMS_MAP} for restrictions and the given {@code collection} as
      * {@link #defaultCollection}.
+     * <p>
+     * The {@code solrBaseURL} and {@code collection} are parsed from the combined version
+     * {@link PropertiesLoader#SOLR_SERVER}.
+     * @return a {@code SolrClient} where all calls are restricted aka "safe".
+     */
+    public static RestrictedSolrClient createSolrClient() {
+        Matcher m = SOLR_COLLECTION_PATTERN.matcher(PropertiesLoader.SOLR_SERVER);
+        if (!m.matches()) {
+            throw new IllegalStateException(String.format(
+                    Locale.ROOT, "Unable to match Solr and collection from '%s' using pattern '%s'",
+                    PropertiesLoader.SOLR_SERVER, SOLR_COLLECTION_PATTERN.pattern()));
+        }
+        return createSolrClient(m.group(1), m.group(2));
+    }
+    private static final Pattern SOLR_COLLECTION_PATTERN = Pattern.compile("(http.*)/([^/]+)/?$");
+
+    /**
+     * Create a {@link HttpSolrClient} wrapped as a {@code RestrictedSolrClient} using the property
+     * {@link PropertiesLoader#SOLR_PARAMS_MAP} for restrictions and the given {@code collection} as
+     * {@link #defaultCollection}.
      * @param solrBaseURL an URL to a Solr server, sans collection. Example: {@code http://localhost:8983/solr}.
      * @param collection the collection to use for {@link #defaultCollection}. Example: {@code netarchivebuilder}.
      * @return a {@code SolrClient} where all calls are restricted aka "safe".
      */
     public static RestrictedSolrClient createSolrClient(String solrBaseURL, String collection) {
+        log.info("Creating RestrictedSolrClient(solrBaseURL='{}', collection='{}')", solrBaseURL, collection);
         return new RestrictedSolrClient(new HttpSolrClient.Builder(solrBaseURL).build(), collection);
     }
 

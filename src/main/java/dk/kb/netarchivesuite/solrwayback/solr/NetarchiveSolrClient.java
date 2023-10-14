@@ -74,7 +74,7 @@ public class NetarchiveSolrClient {
      *
      */
     public static void initialize(String solrServerUrl) {
-        SolrClient innerSolrClient = new HttpSolrClient.Builder(solrServerUrl).build();
+        SolrClient innerSolrClient = RestrictedSolrClient.createSolrClient();
 
         if (PropertiesLoader.SOLR_SERVER_CACHING) {
             int maxCachingEntries = PropertiesLoader.SOLR_SERVER_CACHING_MAX_ENTRIES;
@@ -82,12 +82,12 @@ public class NetarchiveSolrClient {
             solrServer = new CachingSolrClient(innerSolrClient, maxCachingEntries,  maxCachingSeconds, -1); //-1 means no maximum number of connections 
             log.info("SolrClient initialized with caching properties: maxCachedEntrie="+maxCachingEntries +" cacheAgeSeconds="+maxCachingSeconds);
         } else {
-            solrServer = new HttpSolrClient.Builder(solrServerUrl).build();
-            log.info("SolClient initialized without caching");
+            solrServer = innerSolrClient;
+            log.info("SolrClient initialized without caching");
         }
 
         // some of the solr query will never using cache. word cloud(cache memory) + playback resolving etc. (cache poisoning)
-        noCacheSolrServer = new HttpSolrClient.Builder(solrServerUrl).build();
+        noCacheSolrServer = innerSolrClient;
 
         // solrServer.setRequestWriter(new BinaryRequestWriter()); // To avoid http
         // error code 413/414, due to monster URI. (and it is faster)
