@@ -318,20 +318,6 @@ public class SolrUtils {
     }
 
     /**
-     * Sets properties-defined parameters.
-     * This should be called with ALL SolrQuery instances before issuing the query.
-     *
-     * The semantics of whether it should be called before or after setting method specific parameters is unclear.
-     * @param solrQuery a Solr query
-     */
-    public static void setSolrParams(SolrQuery solrQuery) {
-        HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
-        for (String key : SOLR_PARAMS_MAP.keySet()) {
-            solrQuery.set(key,SOLR_PARAMS_MAP.get(key));
-        }
-    }
-
-    /**
      * Quotes the given phrase and escapes characters that needs escaping (backslash and quote).
      * {@code foo \bar "zoo} becomes {@code "foo \\bar \"zoo"}.
      * @param phrase any phrase.

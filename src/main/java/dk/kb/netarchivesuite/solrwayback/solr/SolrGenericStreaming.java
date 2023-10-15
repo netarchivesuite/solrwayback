@@ -241,8 +241,7 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     }
 
     // Properties defined parameters
-    SolrUtils.setSolrParams(solrQuery);
-
+    
     // Set default values if not already set
     solrQuery.set(CommonParams.FL,
                   solrQuery.get(CommonParams.FL, "source_file_path,source_file_offset"));
