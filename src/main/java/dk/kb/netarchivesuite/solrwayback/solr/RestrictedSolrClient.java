@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
  * Important: As the {@link #defaultCollection} is explicit, the given {@code inner} {@code SolrClient}s
  * must not specify the collection name in its URL. A valid URL would be {@code http://localhost:8983/solr}.
  * <p>
- * Recommended:
+ * Recommended: Use the convenience method {@link #createSolrClient()} for all Solr client creation.
  */
 public class RestrictedSolrClient extends SolrClient {
     private static final Logger log = LoggerFactory.getLogger(RestrictedSolrClient.class);
@@ -157,13 +157,14 @@ public class RestrictedSolrClient extends SolrClient {
     /**
      * Non-implemented {@link SolrRequest} version of {@link #restrict(SolrParams)}.
      */
+    @SuppressWarnings("rawtypes")
     private SolrRequest restrict(SolrRequest request) {
-        log.error("constrict(SolrRequest) called, but is not implemented yet, " +
+        log.error("restrict(SolrRequest) called, but is not implemented yet, " +
                   "as it was alledgedly not used in SolrWayback");
         throw new UnsupportedOperationException("Restriction of SolrRequests not supported yet");
     }
 
-    /* Delegates below where constrict and defaultCollection are applied when possible */
+    /* Delegates below where restrict(...) and defaultCollection are applied when possible */
 
     @Override
     public UpdateResponse add(String collection, Collection<SolrInputDocument> docs) throws SolrServerException, IOException {
