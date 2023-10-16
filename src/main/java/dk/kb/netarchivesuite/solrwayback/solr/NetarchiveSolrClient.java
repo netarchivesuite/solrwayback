@@ -198,7 +198,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("facet.limit", "" + (facetLimit + 1)); // +1 because itself will be removed and is almost certain of resultset is self-linking
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
         solrQuery.add("fl","id");                                                                                                                                                                  // request
-                QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not cache
+        QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not cache
         List<FacetCount> facetList = new ArrayList<FacetCount>();
         FacetField facet = rsp.getFacetField("links_domains");
 
@@ -251,7 +251,7 @@ public class NetarchiveSolrClient {
          return jsonResponse;                          
      }
     */
-    
+
     /*
      * The logic for getting the 4 dates in 2 queries is too complicated, and only
      * gives small performance boost...
@@ -283,7 +283,7 @@ public class NetarchiveSolrClient {
         solrQuery.setGetFieldStatistics(statsField);
 
         long call1ns = -System.nanoTime();
-                QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         call1ns += System.nanoTime();
         final long call1nsSolr = rsp.getQTime();
 
@@ -307,7 +307,7 @@ public class NetarchiveSolrClient {
         solrQuery.setGetFieldStatistics(statsField);
 
         long call2ns = -System.nanoTime();
-                rsp = solrServer.query(solrQuery, METHOD.POST);
+        rsp = solrServer.query(solrQuery, METHOD.POST);
         call2ns += System.nanoTime();
         final long call2nsSolr = rsp.getQTime();
 
@@ -337,7 +337,7 @@ public class NetarchiveSolrClient {
             solrQuery.setGetFieldStatistics(statsField);
 
             callDomain = -System.nanoTime();
-                        rsp = solrServer.query(solrQuery, METHOD.POST);
+            rsp = solrServer.query(solrQuery, METHOD.POST);
             callDomain += System.nanoTime();
             callDomainSolr = rsp.getQTime();
             if (rsp.getResults().size() == 0) {
@@ -352,7 +352,7 @@ public class NetarchiveSolrClient {
         solrQuery.setGetFieldStatistics("content_length");
 
         long call3ns = -System.nanoTime();
-                rsp = solrServer.query(solrQuery, METHOD.POST);
+        rsp = solrServer.query(solrQuery, METHOD.POST);
         call3ns += System.nanoTime();
         final long call3nsSolr = rsp.getQTime();
 
@@ -384,18 +384,18 @@ public class NetarchiveSolrClient {
      */
     public ArrayList<ArcEntryDescriptor> findImagesForTimestamp(String searchString, String timeStamp) {
         return SolrGenericStreaming.create(
-                        SRequest.builder().
-                                query(searchString).
-                                filterQueries("content_type_norm:image",   // only images
-                                              SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
-                                              "image_size:[2000 TO *]").   // No small images. (fillers etc.)
-                                fields(SolrUtils.indexDocFieldList).
-                                timeProximityDeduplication(timeStamp, "url_norm").
-                                maxResults(50) // TODO: Make this an argument instead
+                        SRequest.builder()
+                                .query(searchString)
+                                .filterQueries("content_type_norm:image",   // only images
+                                        SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
+                                        "image_size:[2000 TO *]")   // No small images. (fillers etc.)
+                                .fields(SolrUtils.indexDocFieldList)
+                                .timeProximityDeduplication(timeStamp, "url_norm")
+                                .maxResults(50) // TODO: Make this an argument instead
                 ).
-                stream().
-                map(SolrUtils::solrDocument2ArcEntryDescriptor).
-                collect(Collectors.toCollection(ArrayList::new));
+                stream()
+                .map(SolrUtils::solrDocument2ArcEntryDescriptor)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -415,8 +415,8 @@ public class NetarchiveSolrClient {
      */
     public Stream<SolrDocument> searchURLs(List<String> fields, Stream<String> urls, String... filterQueries) {
         // Handle processing in batches of 1000 for low latency and low memory overhead
-        return CollectionUtils.splitToStreams(urls, 1000).
-                flatMap(batch -> searchURLsSingleTake(fields, batch, filterQueries));
+        return CollectionUtils.splitToStreams(urls, 1000)
+                .flatMap(batch -> searchURLsSingleTake(fields, batch, filterQueries));
     }
 
     /**
@@ -463,12 +463,12 @@ public class NetarchiveSolrClient {
         Map<String, SolrDocument> lenient = resolveURLsLenient(allFields, unresolved, filterQueries);
 
         // Merge the results from direct and lenient and enrich with the SolrDocuments with originalURL
-        return urlPairs.stream().
-                map(Pair::first). // originalURL
-                        map(originalURL -> getValueFromMaps(originalURL, direct, lenient)).
-                filter(Objects::nonNull).
-                peek(resultPair -> resultPair.second().setField("originalURL", resultPair.first())).
-                map(Pair::second);
+        return urlPairs.stream()
+                .map(Pair::first) // originalURL
+                .map(originalURL -> getValueFromMaps(originalURL, direct, lenient))
+                .filter(Objects::nonNull)
+                .peek(resultPair -> resultPair.second().setField("originalURL", resultPair.first()))
+                .map(Pair::second);
     }
 
     /**
@@ -501,17 +501,17 @@ public class NetarchiveSolrClient {
         }
 
         // Create list of url queries for the normURLs
-        Stream<String> urlQueries = urlPairs.stream().
-                map(Pair::second).
-                map(normURL -> "url_norm:" + SolrUtils.createPhrase(normURL));
+        Stream<String> urlQueries = urlPairs.stream()
+                .map(Pair::second)
+                .map(normURL -> "url_norm:" + SolrUtils.createPhrase(normURL));
 
         // Resolve SolrDocuments using direct url_norm search and store them in a Map with url_norm as key
-        SRequest request = SRequest.builder().
-                queries(urlQueries).
-                queryBatchSize(1000). // Same as partitionSize in splitToStreams
-                //usePaging(false). // Optimize Solr lookups (no longer needed)
-                fields(fields).
-                filterQueries(filterQueries);
+        SRequest request = SRequest.builder()
+                .queries(urlQueries)
+                .queryBatchSize(1000) // Same as partitionSize in splitToStreams
+                //.usePaging(false) // Optimize Solr lookups (no longer needed)
+                .fields(fields)
+                .filterQueries(filterQueries);
         if (idealTime != null) {
             request = request.timeProximityDeduplication(idealTime, "url_norm");
         } else {
@@ -520,13 +520,13 @@ public class NetarchiveSolrClient {
 
         Map<String, SolrDocument> normResolved = request.stream().
                 collect(Collectors.toMap(value -> Objects.toString(value.getFieldValue("url_norm")),
-                                         value -> value));
+                        value -> value));
 
         // Convert the Map of [url_norm, SolrDocument] to a Map of [originalURL, SolrDocument]
-        return urlPairs.stream().
-                map(urlPair -> new Pair<String, SolrDocument>(urlPair.first(), normResolved.get(urlPair.second()))).
-                filter(urlPair -> Objects.nonNull(urlPair.second())).
-                collect(Collectors.toMap(Pair::first, Pair::second));
+        return urlPairs.stream()
+                .map(urlPair -> new Pair<>(urlPair.first(), normResolved.get(urlPair.second())))
+                .filter(urlPair -> Objects.nonNull(urlPair.second()))
+                .collect(Collectors.toMap(Pair::first, Pair::second));
     }
 
     /**
@@ -543,9 +543,9 @@ public class NetarchiveSolrClient {
             throw new IllegalStateException("fields does not contain 'url_norm'");
         }
         // Create jobs for unresolved originalURLs that delivers [originalURL, SolrDocument]
-        Stream<Callable<Pair<String, SolrDocument>>> lenientJobs = urlPairs.
-                map(Pair::first). // Only the originalURL is relevant when doing lenient resolving
-                map(originalURL -> () -> new Pair<>(
+        Stream<Callable<Pair<String, SolrDocument>>> lenientJobs = urlPairs
+                .map(Pair::first) // Only the originalURL is relevant when doing lenient resolving
+                .map(originalURL -> () -> new Pair<>(
                         originalURL,
                         resolveURLLenient(fields, originalURL, filterQueries)));
 
@@ -555,20 +555,20 @@ public class NetarchiveSolrClient {
                     if (Objects.isNull(jobPair.second())) {
                         log.debug("Unable to lenient resolve '{}'", jobPair.first());
                     }
-                }).
-                filter(jobPair -> Objects.nonNull(jobPair.second())).
-                peek(jobPair -> {
+                })
+                .filter(jobPair -> Objects.nonNull(jobPair.second()))
+                .peek(jobPair -> {
                     String originalURL = jobPair.first();
                     String normURL = Objects.toString(jobPair.second().getFieldValue("url_norm"));
                     if (originalURL.equals(normURL)) {
                         log.debug("Note: Lenient resolved '{}', but the url_norm was equal to the originalURL",
-                                  originalURL);
+                                originalURL);
                     } else {
                         log.debug("Lenient resolved '{}' to '{}'", originalURL, normURL);
                     }
-                    }
-                ).
-                collect(Collectors.toMap(Pair::first, Pair::second));
+                        }
+                )
+                .collect(Collectors.toMap(Pair::first, Pair::second));
     }
 
     /**
@@ -588,7 +588,7 @@ public class NetarchiveSolrClient {
         solrQuery.set(HighlightParams.HIGHLIGHT, false);
         solrQuery.set(FacetParams.FACET, false);
         solrQuery.set(GroupParams.GROUP, false);
-                QueryResponse response;
+        QueryResponse response;
         try {
             lenientAttempts.incrementAndGet();
             response = noCacheSolrServer.query(solrQuery);
@@ -610,7 +610,7 @@ public class NetarchiveSolrClient {
     public ArcEntryDescriptor findVideo(String videoQueryString) throws Exception {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(videoQueryString);
-                solrQuery.setRows(1); // Just get one result
+        solrQuery.setRows(1); // Just get one result
 
         solrQuery.set("facet", "false"); // Very important. Must overwrite to false. Facets are very slow and expensive.
         solrQuery.add("fq", "content_type_norm:video"); // only videos
@@ -637,14 +637,14 @@ public class NetarchiveSolrClient {
 
     public ArrayList<Date> getHarvestTimesForUrl(String url) throws Exception {
         ArrayList<Date> dates = new ArrayList<Date>();
-        
+
         String query=UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);
         SolrQuery solrQuery = new SolrQuery();
         solrQuery = new SolrQuery(query);
         solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
         solrQuery.add("fl", "id,crawl_date");
         solrQuery.setRows(1000000);
-                QueryResponse rsp = loggedSolrQuery("getHarvestTimeForUrl", solrQuery);
+        QueryResponse rsp = loggedSolrQuery("getHarvestTimeForUrl", solrQuery);
 
         SolrDocumentList docs = rsp.getResults();
 
@@ -665,7 +665,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("fl", "id");
         solrQuery.setFilterQueries(filterQueries);
         solrQuery.setRows(0);
-                QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         return rsp.getResults().getNumFound();
     }
 
@@ -682,7 +682,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(5000);
 
         long solrNS = -System.nanoTime();
-                QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not cache
+        QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not cache
         solrNS += System.nanoTime();
         SolrDocumentList docs = rsp.getResults();
 
@@ -711,7 +711,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(1000000);
 
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
-                SolrDocumentList docs = rsp.getResults();
+        SolrDocumentList docs = rsp.getResults();
 
         ArrayList<IndexDoc> indexDocs = SolrUtils.solrDocList2IndexDoc(docs);
         return indexDocs;
@@ -730,7 +730,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("facet.limit", "100"); //All years...
         solrQuery.add("fl","id");
         solrQuery.setRows(0);
-                QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         ArrayList<FacetCount> facetList = new ArrayList<FacetCount>();
         FacetField facet = rsp.getFacetField("crawl_year");
         for (Count c : facet.getValues()) {
@@ -763,7 +763,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(1);
 
         // QueryResponse rsp = loggedSolrQuery("getArchEntry", solrQuery); //Timing disabled due to spam. Also only took 1-5 millis
-                QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = rsp.getResults();
 
         if (docs.getNumFound() == 0) {
@@ -817,8 +817,8 @@ public class NetarchiveSolrClient {
             solrQuery.add("sort", sort);
         }
         solrQuery.setRows(results);
-        
-        
+
+
         // The 3 lines defines geospatial search. The ( ) are required if you want to
         // AND with another query
         solrQuery.setQuery("({!geofilt sfield=exif_location}) AND " + searchText);
@@ -848,9 +848,9 @@ public class NetarchiveSolrClient {
         if (filterQuery != null) {
             solrQuery.setFilterQueries(filterQuery);
         }
-        
-      
-                QueryResponse rsp = loggedSolrQuery("search", solrQuery);
+
+
+        QueryResponse rsp = loggedSolrQuery("search", solrQuery);
         SolrDocumentList docs = rsp.getResults();
 
         result.setNumberOfResults(docs.getNumFound());
@@ -862,21 +862,21 @@ public class NetarchiveSolrClient {
     public long numberOfDocuments() throws Exception {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("*:*");
-                QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = rsp.getResults();
         return docs.getNumFound();
     }
 
     public ArrayList<IndexDoc> findNearestHarvestTimeForMultipleUrlsFullFields(Collection<String> urls, String timeStamp) {
-        return findNearestDocuments(SolrUtils.indexDocFieldList, timeStamp, urls.stream()).
-                map(SolrUtils::solrDocument2IndexDoc).
-                collect(Collectors.toCollection(ArrayList::new));
+        return findNearestDocuments(SolrUtils.indexDocFieldList, timeStamp, urls.stream())
+                .map(SolrUtils::solrDocument2IndexDoc)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public ArrayList<IndexDocShort> findNearestHarvestTimeForMultipleUrlsFewFields(Collection<String> urls, String timeStamp){
-        return findNearestDocuments(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream()).
-                map(SolrUtils::solrDocument2IndexDocShort).
-                collect(Collectors.toCollection(ArrayList::new));
+        return findNearestDocuments(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream())
+                .map(SolrUtils::solrDocument2IndexDocShort)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
 
@@ -896,9 +896,9 @@ public class NetarchiveSolrClient {
                 findNearestDocumentsLenient(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream()) :
                 findNearestDocuments(SolrUtils.indexDocFieldListShort, timeStamp, urls.stream());
 
-        return docs.
-                map(SolrUtils::solrDocument2IndexDocShort).
-                collect(Collectors.toCollection(ArrayList::new));
+        return docs
+                .map(SolrUtils::solrDocument2IndexDocShort)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -917,19 +917,19 @@ public class NetarchiveSolrClient {
             String fieldList, String timeStamp, Stream<String> urls, String... filterQueries) {
         final int chunkSize = 1000;
 
-        Stream<String> urlQueries = urls.
-                filter(url -> !url.startsWith("data:")).
-                map(NetarchiveSolrClient::normalizeUrl).
-                map(SolrUtils::createPhrase).
-                map(url -> "url_norm:" + url);
+        Stream<String> urlQueries = urls
+                .filter(url -> !url.startsWith("data:"))
+                .map(NetarchiveSolrClient::normalizeUrl)
+                .map(SolrUtils::createPhrase)
+                .map(url -> "url_norm:" + url);
 
         return SRequest.builder().
                 queries(urlQueries).
                 filterQueries(SolrUtils.extend(SolrUtils.NO_REVISIT_FILTER, filterQueries)). // No binary for revists
-                queryBatchSize(chunkSize). // URL-searches are single-clause queries, so we can use large batches
-                pageSize(chunkSize).
+                        queryBatchSize(chunkSize). // URL-searches are single-clause queries, so we can use large batches
+                        pageSize(chunkSize).
                 //usePaging(false). // 1 URL = 1 hit as we deduplicate on url_norm (no longer needed)
-                fields(fieldList).
+                        fields(fieldList).
                 timeProximityDeduplication(timeStamp, "url_norm").
                 stream();
     }
@@ -957,8 +957,8 @@ public class NetarchiveSolrClient {
         String[] extendedFilterQueries = SolrUtils.extend(SolrUtils.NO_REVISIT_FILTER, filterQueries);
 
         // Handle processing in batches of 1000 for fast resolving
-        return CollectionUtils.splitToStreams(urls.filter(url -> !url.startsWith("data:")), chunkSize).
-                flatMap(batch -> findNearestDocumentLenientSingleTake(
+        return CollectionUtils.splitToStreams(urls.filter(url -> !url.startsWith("data:")), chunkSize)
+                .flatMap(batch -> findNearestDocumentLenientSingleTake(
                         fields, idealTime, batch, extendedFilterQueries));
     }
 
@@ -969,7 +969,7 @@ public class NetarchiveSolrClient {
      * This implementation performs a full resolve of all URLs before delivery, which delays the time before first
      * delivered {@code Solrdocument} and introduces a memory overhead: This method should only be called for a limited
      * amount of URLs, such as 1000-10,000.
-      <p>
+     <p>
      * If a document cannot be resolved using direct matching with {@code url_norm:<normURL>}, lenient matching is used.
      * Lenient first locates the {@code url_norm} closest to the original URL, then feeds that {@code url_norm} to
      * time prioritized resolving. When producing {@link SolrDocument}s, a normalised version of the original URL is
@@ -1007,27 +1007,27 @@ public class NetarchiveSolrClient {
                 filter(urlPair -> !direct.containsKey(urlPair.first()));
 
         List<Pair<String, String>> lenientURLPairs = // [originalURL, lenientResolvedNormURL]
-                resolveURLsLenient(Collections.singletonList("url_norm"), unresolved, filterQueries).
-                        entrySet().stream().
-                        filter(entry -> entry.getValue().containsKey("url_norm")).
-                        map(entry -> new Pair<>(
+                resolveURLsLenient(Collections.singletonList("url_norm"), unresolved, filterQueries)
+                        .entrySet().stream()
+                        .filter(entry -> entry.getValue().containsKey("url_norm"))
+                        .map(entry -> new Pair<>(
                                 entry.getKey(),
-                                Objects.toString(entry.getValue().getFieldValue("url_norm")))).
-                        collect(Collectors.toList());
+                                Objects.toString(entry.getValue().getFieldValue("url_norm"))))
+                        .collect(Collectors.toList());
 
         // Use the leniently resolved url_norm for time-proximity lookup
         Map<String, SolrDocument> lenient =
                 resolveURLsDirect(allFields, idealTime, lenientURLPairs, filterQueries);
 
         // Merge the results from direct and lenient and enrich with the SolrDocuments with originalURL
-        return urlPairs.stream().
-                map(Pair::first). // originalURL
-                map(originalURL -> getValueFromMaps(originalURL, direct, lenient)).
-                filter(Objects::nonNull).
-                peek(resultPair -> resultPair.second().setField("originalURL", resultPair.first())).
-                peek(resultPair -> resultPair.second().setField(
-                        "url_norm", UrlUtils.punyCodeAndNormaliseUrlSafe(resultPair.first()))).
-                map(Pair::second);
+        return urlPairs.stream()
+                .map(Pair::first) // originalURL
+                .map(originalURL -> getValueFromMaps(originalURL, direct, lenient))
+                .filter(Objects::nonNull)
+                .peek(resultPair -> resultPair.second().setField("originalURL", resultPair.first()))
+                .peek(resultPair -> resultPair.second().setField(
+                        "url_norm", UrlUtils.punyCodeAndNormaliseUrlSafe(resultPair.first())))
+                .map(Pair::second);
     }
 
     /**
@@ -1037,11 +1037,11 @@ public class NetarchiveSolrClient {
      * @return a list of {@code [originalURL, normURL]}.
      */
     private List<Pair<String, String>> getNormalisedURLs(Stream<String> urls) {
-        return urls.
-                map(url -> new Pair<>(url, UrlUtils.punyCodeAndNormaliseUrlSafe(url))).
-                filter(urlPair -> Objects.nonNull(urlPair.second())).
-                distinct().
-                collect(Collectors.toList());
+        return urls
+                .map(url -> new Pair<>(url, UrlUtils.punyCodeAndNormaliseUrlSafe(url)))
+                .filter(urlPair -> Objects.nonNull(urlPair.second()))
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     /**
@@ -1053,12 +1053,12 @@ public class NetarchiveSolrClient {
      */
     @SafeVarargs
     private static <T> Pair<String, T> getValueFromMaps(String key, Map<String, T>... maps) {
-        return Arrays.stream(maps).
-                map(map -> map.get(key)).
-                filter(Objects::nonNull).
-                map(map -> new Pair<>(key, map)).
-                findFirst().
-                orElse(null);
+        return Arrays.stream(maps)
+                .map(map -> map.get(key))
+                .filter(Objects::nonNull)
+                .map(map -> new Pair<>(key, map))
+                .findFirst()
+                .orElse(null);
     }
 
     public static void mergeInto(SolrDocumentList main, SolrDocumentList additional) {
@@ -1085,17 +1085,17 @@ public class NetarchiveSolrClient {
         return docs;
     }
 
-     /**
-      * Creates a query for 1 or more URLs, taking care to quote URLs and escape characters where needed.
-      * The result will be in the form {@code field:("url1" OR "url2")} or {@code field:("url1" AND "url2")}
-      * depending on operator.
-      * <p>
-      * Note: {@code data:}-URLs are ignored as they will never match.
-      * @param field    the field to query. Typically {@code url} or {@code url_norm}.
-      * @param operator {@code AND} or {@code OR}.
-      * @param urls     the URLs to create a query for.
-      * @return a query for the given URLs.
-      */
+    /**
+     * Creates a query for 1 or more URLs, taking care to quote URLs and escape characters where needed.
+     * The result will be in the form {@code field:("url1" OR "url2")} or {@code field:("url1" AND "url2")}
+     * depending on operator.
+     * <p>
+     * Note: {@code data:}-URLs are ignored as they will never match.
+     * @param field    the field to query. Typically {@code url} or {@code url_norm}.
+     * @param operator {@code AND} or {@code OR}.
+     * @param urls     the URLs to create a query for.
+     * @return a query for the given URLs.
+     */
     @SuppressWarnings("SameParameterValue")
     private String urlQueryJoin(String field, String operator, Iterable<String> urls) {
         StringBuilder sb = new StringBuilder();
@@ -1103,8 +1103,8 @@ public class NetarchiveSolrClient {
         sb.append(field).append(":(");
         for (String url : urls) {
             if (url.startsWith("data:") ) {
-                 continue;
-             }
+                continue;
+            }
             if (!first) {
                 sb.append(" ").append(operator).append(" ");
             }
@@ -1115,7 +1115,7 @@ public class NetarchiveSolrClient {
         return sb.toString();
     }
 
-    
+
     /*
      * Notice here do we not fix url_norm
      */
@@ -1128,10 +1128,10 @@ public class NetarchiveSolrClient {
         // normalize will remove last slash if not slashpage
         boolean slashLast = url.endsWith("/");
 
-        String urlNormQuery = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);                
-        
+        String urlNormQuery = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);
+
         String query = urlNormQuery +" AND status_code:200"; //Maybe also allow 400 and 404?: (status_code:200 OR status_code:400 OR status_code:404).          
-        
+
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 
@@ -1147,7 +1147,7 @@ public class NetarchiveSolrClient {
         // other methods in this class, but not as critical there.
         // Hoping for a solr fix....
         solrQuery.setRows(10);
-                QueryResponse rsp = loggedSolrQuery(
+        QueryResponse rsp = loggedSolrQuery(
                 String.format("findClosestHarvestTimeForUrl(url='%s', timestamp=%s)", url.length() > 50 ? url.substring(0, 50) + "..." : url, timeStamp),
                 solrQuery);
 
@@ -1232,7 +1232,7 @@ public class NetarchiveSolrClient {
     public Long countTextHtmlForPeriod(String query, String startDate, String endDate) throws Exception {
         SolrQuery solrQuery = buildSolrQueryForPeriod(query, startDate, endDate);
         solrQuery.add("fq", SolrUtils.NO_REVISIT_FILTER); // do not include record_type:revisit
-                QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         return rsp.getResults().getNumFound();
     }
 
@@ -1241,7 +1241,7 @@ public class NetarchiveSolrClient {
             throw new InvalidArgumentServiceException("Tag syntax not accepted:" + query);
         }
         SolrQuery solrQuery = buildSolrQueryForPeriod("elements_used:\"" + query + "\"", startDate, endDate);
-                QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         return rsp.getResults().getNumFound();
     }
 
@@ -1261,7 +1261,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("facet.field", "crawl_year");
         solrQuery.set("facet.sort", "index");
         solrQuery.set("facet.limit", "500"); // 500 is higher than number of different years
-                QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
 
         FacetField facetField = rsp.getFacetField("crawl_year");
 
@@ -1282,7 +1282,7 @@ public class NetarchiveSolrClient {
         solrQuery.setRows(1); // 1 page only
 
         solrQuery.add("fl", SolrUtils.indexDocFieldList);
-                QueryResponse rsp = loggedSolrQuery("pwidQuery", solrQuery);
+        QueryResponse rsp = loggedSolrQuery("pwidQuery", solrQuery);
 
         SolrDocumentList docs = rsp.getResults();
         if (docs.size() == 0) {
@@ -1292,7 +1292,7 @@ public class NetarchiveSolrClient {
         IndexDoc indexDoc = SolrUtils.solrDocument2IndexDoc(docs.get(0));
         return indexDoc;
     }
-    
+
     // Not used anymore
     public HashMap<Integer, Long> getYearFacetsHtmlAll() throws Exception {
         // facet=true&facet.field=crawl_year&facet.sort=index&facet.limit=500
@@ -1308,7 +1308,7 @@ public class NetarchiveSolrClient {
 
         solrQuery.add("fq","content_type_norm:html"); // only html pages
         solrQuery.add("fq", SolrUtils.NO_REVISIT_FILTER); // do not include record_type:revisit
-                QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
 
         FacetField facetField = rsp.getFacetField("crawl_year");
 
@@ -1340,7 +1340,7 @@ public class NetarchiveSolrClient {
 
         solrQuery.add("fq","content_type_norm:html"); // only html pages
         solrQuery.add("fq", SolrUtils.NO_REVISIT_FILTER); // do not include record_type:revisit
-                QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
 
         FacetField facetField = rsp.getFacetField("crawl_year");
 
@@ -1363,7 +1363,7 @@ public class NetarchiveSolrClient {
         solrQuery.set("group.sort", "abs(sub(ms(" + timeStamp + "), crawl_date)) asc");
         solrQuery.add("fl", SolrUtils.indexDocFieldList);
         solrQuery.setFilterQueries(SolrUtils.NO_REVISIT_FILTER); // No binary for revists.
-                QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
         SolrDocumentList docs = groupsToDoc(rsp);
         return SolrUtils.solrDocList2IndexDoc(docs);
     }
@@ -1400,14 +1400,14 @@ public class NetarchiveSolrClient {
             }
         }
 
-                
+
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");
 
         QueryRequest req = new QueryRequest(solrQuery);
         req.setResponseParser(rawJsonResponseParser);
-        
-        NamedList<Object> resp = solrServer.request(req);        
+
+        NamedList<Object> resp = solrServer.request(req);
         String jsonResponse = (String) resp.get("response");
         return jsonResponse;
     }
@@ -1445,14 +1445,14 @@ public class NetarchiveSolrClient {
             }
         }
 
-        
-                
+
+
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");
 
         QueryRequest req = new QueryRequest(solrQuery);
         req.setResponseParser(rawJsonResponseParser);
-        
+
         NamedList<Object> resp = solrServer.request(req);
         String jsonResponse = (String) resp.get("response");
         return jsonResponse;
@@ -1501,8 +1501,8 @@ public class NetarchiveSolrClient {
                 solrQuery.add("fq", filter);
             }
         }
-       
-                
+
+
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");
 
@@ -1516,7 +1516,7 @@ public class NetarchiveSolrClient {
 
     /*
      * field list is a comma seperated list of fields. If null all fields will loaded
-     * 
+     *
      */
     public String idLookupResponse(String id, String fieldList) throws Exception {
         SolrQuery solrQuery = new SolrQuery();
@@ -1526,17 +1526,17 @@ public class NetarchiveSolrClient {
         solrQuery.set("q.op", "AND");
         solrQuery.set("indent", "true");
         solrQuery.set("facet", "false");
-        
+
         if (fieldList!= null) {
-          solrQuery.set("fl",fieldList);        
+            solrQuery.set("fl",fieldList);
         }
-        
+
         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
         rawJsonResponseParser.setWriterType("json");
 
         QueryRequest req = new QueryRequest(solrQuery);
         req.setResponseParser(rawJsonResponseParser);
-                NamedList<Object> resp = solrServer.request(req);
+        NamedList<Object> resp = solrServer.request(req);
         String jsonResponse = (String) resp.get("response");
         return jsonResponse;
     }
@@ -1569,7 +1569,7 @@ public class NetarchiveSolrClient {
         solrQuery.add("stats", "true");
         solrQuery.add("stats.field", "{!count=true cardinality=true}url_norm"); // Important, use cardinality and not unique.
         solrQuery.add("stats.field", "{!sum=true}content_length");
-                QueryResponse rsp = solrServer.query(solrQuery);
+        QueryResponse rsp = solrServer.query(solrQuery);
 
         Map<String, FieldStatsInfo> statsMap = rsp.getFieldStatsInfo();
         FieldStatsInfo statsUrl_norm = statsMap.get("url_norm");
@@ -1611,13 +1611,13 @@ public class NetarchiveSolrClient {
         solrQuery.setQuery(query);
         solrQuery.setRows(0);
         solrQuery.set("facet", "false");
-        
+
         // default scale (by year)
         int startYear = PropertiesLoaderWeb.ARCHIVE_START_YEAR;
         int endYear = LocalDate.now().getYear() + 1; // add one since it is not incluced
 
         solrQuery.setParam("json.facet",
-            "{domains:{type:terms,field:domain,limit:30,facet:{years:{type:range,field:crawl_year,start:" + startYear + ",end:" + endYear + ",gap:1}}}}");
+                "{domains:{type:terms,field:domain,limit:30,facet:{years:{type:range,field:crawl_year,start:" + startYear + ",end:" + endYear + ",gap:1}}}}");
 
         for (String filter : fq) {
             solrQuery.addFilterQuery(filter);
@@ -1652,7 +1652,7 @@ public class NetarchiveSolrClient {
         String end = enddate + "T23:59:59Z";
         String gap = getGapFromScale(scale);
         solrQuery.setParam("json.facet",
-            "{domains:{type:terms,field:domain,limit:30,facet:{years:{type:range,field:crawl_date,start:'"+ start + "',end:'"+ end + "',gap:'"+ gap + "'}}}}");
+                "{domains:{type:terms,field:domain,limit:30,facet:{years:{type:range,field:crawl_date,start:'"+ start + "',end:'"+ end + "',gap:'"+ gap + "'}}}}");
         solrQuery.addFilterQuery("crawl_date:[" + start + " TO " + end + "]");
 
         for (String filter : fq) {
@@ -1671,7 +1671,7 @@ public class NetarchiveSolrClient {
 
     /**
      * Determine the gap for Solr from the time scale
-     * 
+     *
      * @param scale the time scale
      * @return the gap
      */
@@ -1700,7 +1700,7 @@ public class NetarchiveSolrClient {
         return (Long) doc.get("source_file_offset");
     }
 
-    private static String normalizeUrl(String url) {               
+    private static String normalizeUrl(String url) {
         return Normalisation.canonicaliseURL(url);
     }
 
@@ -1738,7 +1738,7 @@ public class NetarchiveSolrClient {
      * @return the result of issuing the query.
      */
     public static QueryResponse query(SolrQuery solrQuery, boolean useCachingClient) {
-                try {
+        try {
             return useCachingClient ?
                     solrServer.query(solrQuery, METHOD.POST) :
                     noCacheSolrServer.query(solrQuery, METHOD.POST);
@@ -1755,7 +1755,7 @@ public class NetarchiveSolrClient {
     public long getLenientAttempts() {
         return lenientAttempts.get();
     }
-    
+
     /**
      * @return the number of successful attempts for resolving an URL leniently with extended argument query.
      */
