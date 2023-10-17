@@ -259,8 +259,6 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
     }
 
     // Properties defined parameters
-    SolrUtils.setSolrParams(solrQuery);
-
     // TODO: Replace fl handling with SRequest.getExpandedFieldList
     // Set default values if not already set
     solrQuery.set(CommonParams.FL,

@@ -9,6 +9,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -319,24 +320,10 @@ public class SolrUtils {
      */
     public static SolrQuery deepCopy(SolrQuery solrQuery) {
       SolrQuery qc = new SolrQuery();
-      solrQuery.getMap().entrySet().stream().
-              peek(entry -> entry.setValue(Arrays.copyOf(entry.getValue(), entry.getValue().length))).
-              forEach(entry -> qc.set(entry.getKey(), entry.getValue()));
+        solrQuery.getMap().entrySet().stream()
+                .map(entry -> Pair.of(entry.getKey(), Arrays.copyOf(entry.getValue(), entry.getValue().length)))
+                .forEach(entry -> qc.set(entry.getKey(), entry.getValue()));
       return qc;
-    }
-
-    /**
-     * Sets properties-defined parameters.
-     * This should be called with ALL SolrQuery instances before issuing the query.
-     *
-     * The semantics of whether it should be called before or after setting method specific parameters is unclear.
-     * @param solrQuery a Solr query
-     */
-    public static void setSolrParams(SolrQuery solrQuery) {
-        HashMap<String, String> SOLR_PARAMS_MAP = PropertiesLoader.SOLR_PARAMS_MAP;
-        for (String key : SOLR_PARAMS_MAP.keySet()) {
-            solrQuery.set(key,SOLR_PARAMS_MAP.get(key));
-        }
     }
 
     /**
