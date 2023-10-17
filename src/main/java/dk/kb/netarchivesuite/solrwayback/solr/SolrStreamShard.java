@@ -29,15 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -193,7 +185,6 @@ public class SolrStreamShard {
         solrQuery.set(FacetParams.FACET, false);
         solrQuery.set(HighlightParams.HIGHLIGHT, false);
         solrQuery.set(StatsParams.STATS, false);
-        SolrUtils.setSolrParams(solrQuery);
         try {
             return request.solrClient.query(solrQuery).getResults().getNumFound();
         } catch (Exception e) {
@@ -235,6 +226,8 @@ public class SolrStreamShard {
         String adjustedFields = String.join(",", fl);
         final AtomicBoolean continueProcessing = new AtomicBoolean(true);
 
+        // Randomize to spread the load as much as possible (without doing a deeper analysis of the topology)
+        Collections.shuffle(shards);
         // TODO: Consider a different pageSize for shardDivide requests
         List<Iterator<SolrDocument>> documentIterators = shards.stream()
                 .map(shard -> base.deepCopy().collection(shard.collectionID).shards(shard.shardID))
