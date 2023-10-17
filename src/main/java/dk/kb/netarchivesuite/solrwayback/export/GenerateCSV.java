@@ -1,13 +1,16 @@
 package dk.kb.netarchivesuite.solrwayback.export;
 
 
+import java.util.Date;
 import java.util.List;
 
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.common.SolrDocument;
 
 /**
  * Created by teg on 10/28/16.
  */
+// TODO: This would be better with a dedicated CSV writer to handle the different types and escaping properly
 public class GenerateCSV {
 
     private static String NEWLINE="\n";
@@ -70,10 +73,16 @@ public class GenerateCSV {
             if (field_value != null) { //if null, just output a tab
                 
                 if (field_value instanceof List) { //if multivalued
-                    field_value = String.join(MULTIVALUE_SEPARATOR, (List<String>) field_value);
+                    result.append(String.join(MULTIVALUE_SEPARATOR, (List<String>) field_value));
+                } else if (field_value instanceof String) {
+                    result.append(escapeQuotes(field_value.toString()));
+                } else if (field_value instanceof Date) {
+                    // Dates formatted to ISO-8601 with second granularity
+                    result.append(escapeQuotes(DateUtils.getSolrDate((Date) field_value)));
+                } else {
+                    // Numbers and boolean are appended directly (no quotes)
+                    result.append(field_value);
                 }
-                String escaped = escapeQuotes(field_value.toString());
-                result.append(escaped);
             } else {
                 result.append(escapeQuotes(""));
             }
