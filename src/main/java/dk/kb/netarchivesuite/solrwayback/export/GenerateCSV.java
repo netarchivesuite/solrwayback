@@ -73,15 +73,14 @@ public class GenerateCSV {
             if (field_value != null) { //if null, just output a tab
                 
                 if (field_value instanceof List) { //if multivalued
-                    field_value = String.join(MULTIVALUE_SEPARATOR, (List<String>) field_value);
-                }
-                if (field_value instanceof String) {
-                    String escaped = escapeQuotes(field_value.toString());
-                    result.append(escaped);
+                    result.append(String.join(MULTIVALUE_SEPARATOR, (List<String>) field_value));
+                } else if (field_value instanceof String) {
+                    result.append(escapeQuotes(field_value.toString()));
                 } else if (field_value instanceof Date) {
+                    // Dates formatted to ISO-8601 with second granularity
                     result.append(escapeQuotes(DateUtils.getSolrDate((Date) field_value)));
                 } else {
-                    // Numbers and boolean
+                    // Numbers and boolean are appended directly (no quotes)
                     result.append(field_value);
                 }
             } else {
