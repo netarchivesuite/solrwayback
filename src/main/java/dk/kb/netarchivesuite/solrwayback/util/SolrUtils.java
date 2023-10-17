@@ -485,7 +485,7 @@ public class SolrUtils {
             for (String collectionID: collectionIDs) {
                 JsonNode shardsJSON = statusRoot.get("cluster").get("collections").get(collectionID).get("shards");
                 for (Iterator<String> it = shardsJSON.fieldNames(); it.hasNext(); ) {
-                    shardNames.add(new Shard(collection, it.next()));
+                    shardNames.add(new Shard(collectionID, it.next()));
                 }
             }
             return shardNames;

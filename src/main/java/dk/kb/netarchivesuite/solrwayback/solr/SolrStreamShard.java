@@ -134,8 +134,8 @@ public class SolrStreamShard {
                          "Forcing shard dividing Solr document streaming although this does not make sense",
                          shards.get(0));
             } else {
-                log.debug("shardDivide == always. Using shard dividing Solr document streaming for {} shards ",
-                          shards.size());
+                log.debug("shardDivide == always. Using shard dividing Solr document streaming for {} shards: {}",
+                          shards.size(), shards);
             }
             return iterateSharded(request, shards);
         }
@@ -160,8 +160,8 @@ public class SolrStreamShard {
                 return CollectionUtils.CloseableIterator.single(SolrGenericStreaming.iterate(request));
             }
             log.debug("shardDivide == auto, and hitcount {} is >= limit {}. " +
-                      "Using shard dividing Solr document streaming for {} shards ",
-                      hits, request.autoShardDivideLimit, shards.size());
+                      "Using shard dividing Solr document streaming for {} shards: {}",
+                      hits, request.autoShardDivideLimit, shards.size(), shards);
             return iterateSharded(request, shards);
         }
 

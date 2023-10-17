@@ -46,9 +46,9 @@ import static org.junit.Assert.*;
 public class ShardStreamingTest {
     private static final Logger log = LoggerFactory.getLogger(ShardStreamingTest.class);
 
-    public static final String STAGE_SOLR = "http://localhost:54001/solr";
+//    public static final String STAGE_SOLR = "http://localhost:54001/solr";
     //public static final String STAGE_SOLR = "http://localhost:53301/solr";
-    //public static final String STAGE_SOLR = "http://localhost:52300/solr";
+    public static final String STAGE_SOLR = "http://localhost:52300/solr";
     public static final String LOCAL_SOLR = "http://localhost:8983/solr";
     public static final String COLLECTION = "netarchivebuilder";
     public static final String STAGE_COLLECTION = "ns";
@@ -111,12 +111,12 @@ public class ShardStreamingTest {
         SRequest request = new SRequest()
                 .solrClient(solrClient)
                 .query("*:*")
-                .filterQueries("hash:sha1\\:D*")
+                .filterQueries("hash:sha1\\:G*")
                 .fields("id", "index_time", "author", "description", "keywords", "license_url", "content", "content_encoding")
                 .shardDivide("always")
                 .deduplicateField("url")
                 .pageSize(50)
-                .maxResults(200);
+                .maxResults(4000);
 
         StringBuffer sb = new StringBuffer();
 
@@ -138,6 +138,14 @@ public class ShardStreamingTest {
         System.out.println("-----------------");
         System.out.println(sb);
     }
+//    **** Got 2000 hits in 172,489 ms: 0.01hits/ms for shardDivide=always
+//    **** Got 2000 hits in 355,839 ms: 0.01hits/ms for shardDivide=never
+//    **** Got 2000 hits in 150,393 ms: 0.01hits/ms for shardDivide=always
+//    **** Got 2000 hits in 355,739 ms: 0.01hits/ms for shardDivide=never
+//    **** Got 4000 hits in 440,551 ms: 0.01hits/ms for shardDivide=always
+//    **** Got 4000 hits in 702,725 ms: 0.01hits/ms for shardDivide=never
+//    **** Got 4000 hits in 466,712 ms: 0.01hits/ms for shardDivide=always
+//    **** Got 4000 hits in 709,237 ms: 0.01hits/ms for shardDivide=never
 
     @Test
     public void testShardedSearch() throws IOException {
