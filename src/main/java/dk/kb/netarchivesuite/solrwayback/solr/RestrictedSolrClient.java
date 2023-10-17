@@ -21,6 +21,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.StreamingResponseCallback;
 import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -159,9 +160,26 @@ public class RestrictedSolrClient extends SolrClient {
      */
     @SuppressWarnings("rawtypes")
     private SolrRequest restrict(SolrRequest request) {
-        log.error("restrict(SolrRequest) called, but is not implemented yet, " +
-                  "as it was alledgedly not used in SolrWayback");
-        throw new UnsupportedOperationException("Restriction of SolrRequests not supported yet");
+//        if (fixedParams == null || fixedParams.isEmpty()) {
+//            return request;
+//        }
+        if (request instanceof QueryRequest) {
+            QueryRequest oldQR = (QueryRequest)request;
+            QueryRequest newQR = new QueryRequest(restrict(oldQR.getParams()), oldQR.getMethod());
+            newQR.setPath(oldQR.getPath());
+            newQR.setResponseParser(oldQR.getResponseParser());
+            newQR.setBasicAuthCredentials(oldQR.getBasicAuthUser(), oldQR.getBasicAuthPassword());
+            newQR.setStreamingResponseCallback(oldQR.getStreamingResponseCallback());
+            // newQR.setUseBinaryV2 // TODO: Problem: We cannot get this value from oldQR
+            // newQR.setUseV2       // TODO: Problem: We cannot get this value from oldQR
+            // newQR.setQueryParams // Derived from params so don't change these
+            return newQR;
+        }
+        log.error("restrict(SolrRequest) called with a SolrRequest that was not a QueryRequest. " +
+                "This is not implemented yet, as it was alledgedly not used in SolrWayback",
+                new RuntimeException("Stacktrace"));
+        throw new UnsupportedOperationException(
+                "Restriction of SolrRequests that are not QueryRequests not supported yet");
     }
 
     /* Delegates below where restrict(...) and defaultCollection are applied when possible */
@@ -474,8 +492,13 @@ public class RestrictedSolrClient extends SolrClient {
 
     @Override
     public NamedList<Object> request(SolrRequest request, String collection) throws SolrServerException, IOException {
-        return inner.request(restrict(request), collection);
+        return inner.request(restrict(request), collection == null ? defaultCollection : collection);
     }
+
+    // Here we should override the collection-less method in SorClient. But it is final!?
+    // In reality it is not a problem as is (always?) redirects to request(request, null)
+    // public final NamedList<Object> request(final SolrRequest request) throws SolrServerException, IOException
+
 
     @Override
     public DocumentObjectBinder getBinder() {
