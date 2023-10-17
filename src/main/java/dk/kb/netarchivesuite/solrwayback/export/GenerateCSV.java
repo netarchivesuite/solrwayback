@@ -73,7 +73,7 @@ public class GenerateCSV {
             if (field_value != null) { //if null, just output a tab
                 
                 if (field_value instanceof List) { //if multivalued
-                    result.append(String.join(MULTIVALUE_SEPARATOR, (List<String>) field_value));
+                    result.append(escapeQuotes(String.join(MULTIVALUE_SEPARATOR, (List<String>) field_value)));
                 } else if (field_value instanceof String) {
                     result.append(escapeQuotes(field_value.toString()));
                 } else if (field_value instanceof Date) {
