@@ -16,9 +16,12 @@ package dk.kb.netarchivesuite.solrwayback.interfaces;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.util.SkippingHTTPInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -36,6 +39,8 @@ import java.util.regex.Pattern;
  * {@code warc.file.resolver.source.http.readfallback=true}
  */
 public class ArcSource implements Supplier<InputStream> {
+    private static final Logger log = LoggerFactory.getLogger(ArcSource.class);
+
     private static final Pattern HTTP = Pattern.compile("^https?://.*");
     private static final Pattern FILE = Pattern.compile("^file://.*");
 
@@ -81,8 +86,12 @@ public class ArcSource implements Supplier<InputStream> {
             try {
                 // TODO: Verify that Files.newInputStream supports efficient skipping then switch to that
                 return new FileInputStream(file);
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to create FileInputStream for '" + file + "'", e);
+            } catch (FileNotFoundException e) {
+                log.error("FileNotFoundException trying to access (W)ARC '{}'", file);
+                throw new RuntimeException("FileNotFoundException trying to access (W)ARC '" + file + "'", e);
+            } catch (Exception e) {
+                log.error("Unable to create FileInputStream for (W)ARC '" + file + "'", e);
+                throw new RuntimeException("Unable to create FileInputStream for (W)ARC '" + file + "'", e);
             }
         });
     }
@@ -106,6 +115,8 @@ public class ArcSource implements Supplier<InputStream> {
             try {
                 return new SkippingHTTPInputStream(url, PropertiesLoader.WARC_SOURCE_HTTP_FALLBACK);
             } catch (IOException e) {
+                // TODO: This could be extended with a check for 404 for better error message
+                log.error("Unable to open stream for '" + httpURL + "'", e);
                 throw new RuntimeException("Unable to open stream for '" + httpURL + "'", e);
             }
         });
