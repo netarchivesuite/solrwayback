@@ -209,6 +209,9 @@ export default {
         if (!this.$_validateUrlSearchPrefix(this.futureQuery)) {
             this.futureQuery = 'http://' + this.futureQuery
         }
+        if(this.solrSettings.urlSearch === false) {
+          this.futureQuery = ''
+        }
       }
     },
     clearResultsAndSearch() {
