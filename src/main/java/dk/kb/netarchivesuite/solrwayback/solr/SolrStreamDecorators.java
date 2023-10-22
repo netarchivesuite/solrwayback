@@ -19,6 +19,7 @@ import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
+import dk.kb.netarchivesuite.solrwayback.util.ThroughputTracker;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,8 @@ import java.util.stream.Stream;
  */
 public class SolrStreamDecorators {
     private static final Logger log = LoggerFactory.getLogger(SolrStreamDecorators.class);
+    // Used for tracking exports
+    private static final Logger exportLog = LoggerFactory.getLogger("export");
 
     /**
      * Takes a SolrDocument which has 0 or more multi-valued fields and flattens those fields to single value by creating
@@ -110,6 +113,11 @@ public class SolrStreamDecorators {
         // Reduce documents to contain requested fields only
         docs = docs.peek(SolrUtils.reduceAndSortFields(request.fields));
 
+        // Log progress
+        ThroughputTracker tracker = new ThroughputTracker(
+                "Export(" + reduce(request.query, 20) + "): ", "docs", exportLog, request.pageSize*10L);
+        docs = docs.filter(tracker);
+        
         return docs;
     }
 
@@ -146,8 +154,27 @@ public class SolrStreamDecorators {
             return element;
         });
 
+        // Log progress
+        ThroughputTracker tracker = new ThroughputTracker(
+                "Export(" + reduce(request.query, 20) + "): ", "docs", exportLog, request.pageSize*10L);
+        docs = CollectionUtils.ReducingIterator.of(docs, tracker::test);
+
         return docs;
     }
+
+    /**
+     * Reduce {@code s} to {@code maxLength} by trimming and addition of {@code ...}, e.g.
+     * {@code reduce("abcdefghijklmnopqrstuvwxyz", 7)} -> {@code abcd...}
+     * @param s         any String, including {@code null}.
+     * @param maxLength the maximum length of the output String.
+     * @return the input {@code s} reduced to {@code maxLength}.
+     */
+    private static String reduce(String s, int maxLength) {
+        return s == null ? "null" :
+                s.length() <= maxLength ? s :
+                        s.substring(0, maxLength-3) + "...";
+    }
+
 
     /**
      * Deduplicator that expects the incoming {@link SolrDocument}s to be in order.

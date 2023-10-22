@@ -266,7 +266,7 @@ public class SolrStreamShard {
      * @return all field names needed by {@link SRequest#sort}.
      */
     private static Set<String> getSortFieldNames(SRequest request) {
-        log.debug("Constructing shard divide sort from '{}'", request.getFullSort());
+//        log.debug("Constructing shard divide sort from '{}'", request.getFullSort());
         Set<String> fields = Arrays.stream(request.getFullSort().split(", *"))
                 .map(SORT_FIELD_PATTERN::matcher)
                 .filter(Matcher::matches)

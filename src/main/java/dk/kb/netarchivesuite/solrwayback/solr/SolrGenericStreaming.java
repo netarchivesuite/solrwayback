@@ -449,7 +449,9 @@ public class SolrGenericStreaming implements Iterable<SolrDocument> {
       }         ;
       undelivered = rsp.getResults();
       totalDelivered.addAndGet(undelivered.size());
-      log.debug("Got " + undelivered.size() + " hits with total delivered counter " + totalDelivered.get() + " in " + (System.currentTimeMillis()-st) + " ms");
+//      log.debug("Got " + undelivered.size() + " hits with total delivered counter " + totalDelivered.get() + " in " +
+//                (System.currentTimeMillis()-st) + " ms from " + request.collection + "/" + request.shards +
+//                " for query '" + request.query + "' and fq " + request.filterQueries);
       if (undelivered.size() < solrQuery.getRows() || rsp.getResults().getNumFound() <= solrQuery.getRows()) {
         queryDepleted = true;
       }
