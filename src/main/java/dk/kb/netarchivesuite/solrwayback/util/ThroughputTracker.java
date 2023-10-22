@@ -16,6 +16,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import org.slf4j.Logger;
 
+import java.util.Locale;
 import java.util.function.Predicate;
 
 /**
@@ -23,7 +24,7 @@ import java.util.function.Predicate;
  * <p>
  * Technically it works as a filter, but it always passes the test. Add to a stream with
  * {@code myStream.filter(new ThroughputTracker("ImageSearch:", "solrDocs", log, 100))}
- * which will log statistics about Solrdocuments processes every 100 documents, as part of an image search.
+ * which will log statistics about SolrDocuments processes every 100 documents, as part of an image search.
  * <p>
  * Note: There is no automatic "final" logging when the stream is depleted. Call {@link #performLog()} for that.
  */
@@ -36,12 +37,13 @@ public class ThroughputTracker implements Predicate<Object> {
     private long callCounter = 0;
     private long nextLog;
     private final long startTime = System.currentTimeMillis();
+    private long lastTime = startTime;
 
     /**
      * Create a tracker intended as a "side effect only" filter for a Stream.
      * Every {@code logInterval} objects a message is logged to the given {@code log} at {@code debug} level.
      * @param prefix      each log message starts with this.
-     * @param designation the object that is lokked, e.g. {@code images} or {@code solrDocs}.
+     * @param designation the object that is logged, e.g. {@code images} or {@code solrDocs}.
      * @param log         the Logger to use.
      * @param logInterval how often statistics is logged.
      */
@@ -66,8 +68,16 @@ public class ThroughputTracker implements Predicate<Object> {
      * Trigger statistics logging.
      */
     public void performLog() {
-        long ms = System.currentTimeMillis()-startTime;
-        log.debug("{} {} {} in {} ms: {} {}/s",
-                  prefix, callCounter, designation, ms, callCounter*1000/ms, designation);
+        final long now = System.currentTimeMillis();
+        long ms = now-startTime;
+        long lastMS = now-lastTime;
+        long lastDelivered = callCounter%logInterval == 0 ? logInterval : callCounter%logInterval;
+        lastTime = now;
+        log.debug(String.format(
+                // ImageSearch: 87 docs in 174 ms: 500.0 docs/s (last 50: 563.4 dosc/s)
+                Locale.ROOT, "%s %d %s in %d ms: %.1f %s/s (last %d: %.1f %s/s)",
+                prefix, callCounter, designation, ms,
+                ms == 0 ? 0 : callCounter*1000.0/ms, designation,
+                logInterval, lastMS == 0 ? 0 : lastDelivered*1000.0/lastMS, designation));
     }
 }
