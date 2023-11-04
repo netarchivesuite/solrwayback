@@ -428,8 +428,7 @@ public class SRequest {
      * Note: {@link #timeProximityDeduplication(String, String...)} and {@link #deduplicateFields(String...)} takes
      * precedence over sort by prefixing with {@link #deduplicateFields}.
      *
-     * @param sort standard Solr sort. Depending on deduplicateFields and tie breaker it might be adjusted
-     *             by {@link SolrStreamDirect#adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+     * @param sort standard Solr sort. Depending on deduplicateFields and tie breaker it might be adjusted.
      *             Default is {@link #DEFAULT_SORT}.
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if sort has already been assigned.
@@ -448,8 +447,7 @@ public class SRequest {
      * precedence over sort by prefixing with {@link #deduplicateFields}.
      *
      * This method overrides existing sort without warning or error.
-     * @param sort standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
-     *             by {@link SolrStreamDirect#adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+     * @param sort standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted.
      *             Default is {@link #DEFAULT_SORT}.
      * @return the SRequest adjusted with the provided value.
      * @see #sort(String)
@@ -879,9 +877,6 @@ public class SRequest {
 
         solrQuery.set(CommonParams.ROWS, (int) Math.min(maxResults, pageSize));
 
-        // Properties defined parameters
-        SolrUtils.setSolrParams(solrQuery);
-
         // Disable irrelevant processing
         solrQuery.set(FacetParams.FACET, false);
         solrQuery.set(StatsParams.STATS, false);
@@ -1067,10 +1062,10 @@ public class SRequest {
      * @param maxLength {@code s} is truncated to this.
      * @return truncated String.
      */
-    private String limit(String s, int maxLength) {
+    public static String limit(String s, int maxLength) {
         return s == null || s.length() <= maxLength ? s : s.substring(0, maxLength-3) + "...";
     }
-    private String limit(List<String> list, int maxLength) {
+    public static String limit(List<String> list, int maxLength) {
         return list == null ?
                 "null" :
                 list.stream()

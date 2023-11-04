@@ -16,6 +16,7 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
+import dk.kb.netarchivesuite.solrwayback.util.ThroughputTracker;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import java.util.stream.Stream;
  */
 public class SolrStreamFactory {
     private static final Logger log = LoggerFactory.getLogger(SolrStreamFactory.class);
+    private static final Logger exportLog = LoggerFactory.getLogger("export");
 
     /**
      * Depending on the backing Solr (Cloud) topology, the collection and the {@link SRequest#shardDivide} and
@@ -173,6 +175,12 @@ public class SolrStreamFactory {
             docs = docs.limit(request.maxResults);
         }
 
+        // Log progress
+        // TODO: Change ThroughputTracker to be time based instead so that it logs every x seconds
+        ThroughputTracker tracker = new ThroughputTracker(
+                "Export(" + SRequest.limit(request.query, 20) + "): ", "docs", exportLog, 1000);
+
+        docs = docs.filter(tracker);
         return docs;
     }
 
@@ -214,6 +222,10 @@ public class SolrStreamFactory {
             docs = CollectionUtils.CloseableIterator.single(docs, request.maxResults);
         }
 
+        ThroughputTracker tracker = new ThroughputTracker(
+                "Export(" + SRequest.limit(request.query, 20) + "): ", "docs", exportLog, 1000);
+        docs = CollectionUtils.ReducingIterator.of(docs, tracker::test);
+        
         return docs;
     }
 }
