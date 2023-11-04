@@ -115,7 +115,7 @@ public class ShardStreamingTest {
                 .fields("id", "index_time", "author", "description", "keywords", "license_url", "content_encoding")
 //                .fields("id", "index_time", "author", "description", "keywords", "license_url", "content", "content_encoding")
                 .shardDivide("always")
-                .deduplicateField("domain")
+                .deduplicateFields("domain")
                 .pageSize(100)
                 .maxResults(5000);
 
