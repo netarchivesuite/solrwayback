@@ -46,13 +46,14 @@ import static org.junit.Assert.*;
 public class ShardStreamingTest {
     private static final Logger log = LoggerFactory.getLogger(ShardStreamingTest.class);
 
-    public static final String STAGE_SOLR = "http://localhost:53301/solr";
-    //public static final String STAGE_SOLR = "http://localhost:52300/solr";
+//    public static final String STAGE_SOLR = "http://localhost:54001/solr";
+//    public static final String STAGE_SOLR = "http://localhost:53301/solr";
+    public static final String STAGE_SOLR = "http://localhost:52300/solr";
     public static final String LOCAL_SOLR = "http://localhost:8983/solr";
     public static final String COLLECTION = "netarchivebuilder";
     public static final String STAGE_COLLECTION = "ns";
 //    protected static SolrClient solrClient = new HttpSolrClient.Builder(LOCAL_SOLR + "/" + COLLECTION).build();
-    protected static SolrClient solrClient = new HttpSolrClient.Builder(STAGE_SOLR + "/" + STAGE_COLLECTION).build();
+    protected static SolrClient solrClient = RestrictedSolrClient.createSolrClient(STAGE_SOLR, STAGE_COLLECTION);
     protected static boolean AVAILABLE = false;
 
 
@@ -110,22 +111,43 @@ public class ShardStreamingTest {
         SRequest request = new SRequest()
                 .solrClient(solrClient)
                 .query("*:*")
-                .filterQueries("hash:sha1\\:A*")
-                .fields("id", "index_time", "author", "description", "keywords", "license_url", "content", "content_encoding")
-                .shardDivide("auto")
-                .sort("id asc")
-                .pageSize(500)
+                .filterQueries("hash:sha1\\:G*")
+                .fields("id", "index_time", "author", "description", "keywords", "license_url", "content_encoding")
+//                .fields("id", "index_time", "author", "description", "keywords", "license_url", "content", "content_encoding")
+                .shardDivide("always")
+                .deduplicateField("domain")
+                .pageSize(100)
                 .maxResults(5000);
 
-        for (int i = 0 ; i < 3 ; i++) {
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0 ; i < 4 ; i++) {
             long qt = -System.currentTimeMillis();
+            request.forceFilterQueries("hash:sha1\\:C" + (i+2) + "*");
             long hits = request.stream().count();
             qt += System.currentTimeMillis();
-            System.out.printf(Locale.ROOT,
-                              "**** Got %d hits in %,d ms: %.2fhits/ms%n",
-                              hits, qt, 1.0 * hits / qt);
+            String message = String.format(Locale.ROOT,
+                    "**** Got %d hits in %,d ms: %.1f hits/s for shardDivide=%s",
+                    hits, qt, 1.0 * hits * 1000 / qt, request.shardDivide);
+            System.out.println(message);
+            sb.append(message).append("\n");
+            if (SRequest.CHOICE.always.equals(request.shardDivide)) {
+                request.shardDivide(SRequest.CHOICE.never);
+            } else {
+                request.shardDivide(SRequest.CHOICE.always);
+            }
         }
+        System.out.println("-----------------");
+        System.out.println(sb);
     }
+//    **** Got 2000 hits in 172,489 ms: 0.01hits/ms for shardDivide=always
+//    **** Got 2000 hits in 355,839 ms: 0.01hits/ms for shardDivide=never
+//    **** Got 2000 hits in 150,393 ms: 0.01hits/ms for shardDivide=always
+//    **** Got 2000 hits in 355,739 ms: 0.01hits/ms for shardDivide=never
+//    **** Got 4000 hits in 440,551 ms: 0.01hits/ms for shardDivide=always
+//    **** Got 4000 hits in 702,725 ms: 0.01hits/ms for shardDivide=never
+//    **** Got 4000 hits in 466,712 ms: 0.01hits/ms for shardDivide=always
+//    **** Got 4000 hits in 709,237 ms: 0.01hits/ms for shardDivide=never
 
     @Test
     public void testShardedSearch() throws IOException {

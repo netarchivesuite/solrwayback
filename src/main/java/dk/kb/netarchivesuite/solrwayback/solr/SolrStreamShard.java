@@ -94,7 +94,6 @@ public class SolrStreamShard {
         solrQuery.set(FacetParams.FACET, false);
         solrQuery.set(HighlightParams.HIGHLIGHT, false);
         solrQuery.set(StatsParams.STATS, false);
-        SolrUtils.setSolrParams(solrQuery);
         try {
             return request.solrClient.query(solrQuery).getResults().getNumFound();
         } catch (Exception e) {
@@ -136,6 +135,8 @@ public class SolrStreamShard {
         String adjustedFields = String.join(",", fl);
         final AtomicBoolean continueProcessing = new AtomicBoolean(true);
 
+        // Randomize to spread the load as much as possible (without doing a deeper analysis of the topology)
+        Collections.shuffle(shards);
         // TODO: Consider a different pageSize for shardDivide requests
         List<Iterator<SolrDocument>> documentIterators = shards.stream()
                 .map(shard -> base.deepCopy().collection(shard.collectionID).shards(shard.shardID))
@@ -174,7 +175,7 @@ public class SolrStreamShard {
      * @return all field names needed by {@link SRequest#sort}.
      */
     private static Set<String> getSortFieldNames(SRequest request) {
-        log.debug("Constructing shard divide sort from '{}'", request.getFullSort());
+        //log.debug("Constructing shard divide sort from '{}'", request.getFullSort());
         Set<String> fields = Arrays.stream(request.getFullSort().split(", *"))
                 .map(SORT_FIELD_PATTERN::matcher)
                 .filter(Matcher::matches)

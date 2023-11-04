@@ -3,7 +3,6 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.CursorMarkParams;
@@ -11,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @deprecated superceded by {@link SolrStreamDirect}
+ * @deprecated superceded by {@link SolrGenericStreaming}
  */
 @Deprecated
 public class SolrStreamingWarcExportClient {
@@ -22,7 +21,7 @@ public class SolrStreamingWarcExportClient {
     
   
   public SolrStreamingWarcExportClient(String solrServerUrl){
-    solrServer =  new HttpSolrClient.Builder(solrServerUrl).build();
+    solrServer =  RestrictedSolrClient.createSolrClient();
     //solrServer.setRequestWriter(new BinaryRequestWriter()); 
     cursorMark = CursorMarkParams.CURSOR_MARK_START; //Reset to start again 
   }
