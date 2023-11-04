@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 /**
  * Handles the logistics of streaming search results from Solr Shards.
  * <p>
- * {@link SolrGenericStreaming} uses either plain Solr cursorMarks or paging through a group field
+ * {@link SolrStreamDirect} uses either plain Solr cursorMarks or paging through a group field
  * for batching calls to Solr. Both of these methods 
  */
 public class SolrStreamShard {
@@ -77,105 +77,6 @@ public class SolrStreamShard {
      */
     private static final Semaphore gatekeeper = new Semaphore(PropertiesLoader.SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX);
 
-    /**
-     * Depending on the backing Solr Cloud topology, the collection and the {@link SRequest#shardDivide} and
-     * {@link SRequest#autoShardDivideLimit}, either standard collection based document search & delivery or
-     * shard dividing search & delivery is used to provide an Stream of {@link SolrDocument}s.
-     * <p>
-     * Important: This method returns a {@link dk.kb.netarchivesuite.solrwayback.util.CollectionUtils.CloseableStream}
-     * and the caller <strong>must</strong> ensure that it is either depleted or closed after use, to avoid resource
-     * leaking. It is highly recommended to use {@code try-with-resources} directly on the returned stream:
-     * <pre>
-     * try (CollectionUtils.CloseableStream<SolrDocument> docs =
-     *      SolrStreamShard.streamStrategy(myRequest) {
-     *     long hugeIDs = docs.map(doc -> doc.get("id)).filter(id -> id.length() > 200).count();
-     * }
-     * </pre>
-     * @param request stream setup.
-     * @return an Stream of {@code SolrDocument}s, as specified in the {@code request}.
-     */
-    public static CollectionUtils.CloseableStream<SolrDocument> streamStrategy(
-            SRequest request) throws IllegalArgumentException {
-       return new CollectionUtils.CloseableStream<>(iterateStrategy(request));
-    }
-
-
-    /**
-     * Depending on the backing Solr Cloud topology, the collection and the {@link SRequest#shardDivide} and
-     * {@link SRequest#autoShardDivideLimit}, either standard collection based document search & delivery or
-     * shard dividing search & delivery is used to provide an iterator of {@link SolrDocument}s.
-     * <p>
-     * Important: This method returns a {@link dk.kb.netarchivesuite.solrwayback.util.CollectionUtils.CloseableIterator}
-     * and the caller <strong>must</strong> ensure that it is either depleted or closed after use, to avoid resource
-     * leaking.
-     * @param request stream setup.
-     * @return an iterator of {@code SolrDocument}s, as specified in the {@code request}.
-     */
-    public static CollectionUtils.CloseableIterator<SolrDocument> iterateStrategy(
-            SRequest request) throws IllegalArgumentException {
-        // Never shardDivide
-        if (SRequest.CHOICE.never.equals(request.shardDivide)) {
-            log.debug("Using collection oriented Solr document stream as shardDivide == never");
-            return CollectionUtils.CloseableIterator.single(SolrGenericStreaming.iterate(request));
-        }
-
-        List<SolrUtils.Shard> shards = null;
-        List<String> shardIDs = request.shards;
-        if (shardIDs == null || shardIDs.isEmpty()) {
-            shards = SolrUtils.getShards();
-        } else { // Need to convert shardIDs to collection-qualified Shards
-            String collection = SolrUtils.getBaseCollection();
-            shards = shardIDs.stream()
-                    .map(shardID -> new SolrUtils.Shard(collection, shardID))
-                    .collect(Collectors.toList());
-        }
-
-        // Always shardDivide (if possible)
-        if (SRequest.CHOICE.always.equals(request.shardDivide)) {
-            if (shards == null) {
-                log.warn("shardDivide == always, but shards could not be resolved. " +
-                         "Falling back to collection oriented Solr document streaming");
-                return CollectionUtils.CloseableIterator.single(SolrGenericStreaming.iterate(request));
-            }
-            if (shards.size() == 1) {
-                log.warn("shardDivide == always, but only 1 shard is specified/available: '{}'. " +
-                         "Forcing shard dividing Solr document streaming although this does not make sense",
-                         shards.get(0));
-            } else {
-                log.debug("shardDivide == always. Using shard dividing Solr document streaming for {} shards ",
-                          shards.size());
-            }
-            return iterateSharded(request, shards);
-        }
-
-        // Maybe shardDivide
-        if (SRequest.CHOICE.auto.equals(request.shardDivide)) {
-            if (shards == null) {
-                log.debug("shardDivide == auto, but shards could not be resolved. " +
-                          "Falling back to collection oriented Solr document streaming");
-                return CollectionUtils.CloseableIterator.single(SolrGenericStreaming.iterate(request));
-            }
-            if (shards.size() == 1) {
-                log.debug("shardDivide == auto, but only 1 shard is specified/available: '{}'. " +
-                          "Falling back to collection oriented Solr document streaming", shards.get(0));
-                return CollectionUtils.CloseableIterator.single(SolrGenericStreaming.iterate(request));
-            }
-            long hits = getApproximateHits(request);
-            if (hits < request.autoShardDivideLimit) {
-                log.debug("shardDivide == auto, but approximate hitcount {} is < limit {}. " +
-                          "Falling back to collection oriented Solr document streaming",
-                          hits, request.autoShardDivideLimit);
-                return CollectionUtils.CloseableIterator.single(SolrGenericStreaming.iterate(request));
-            }
-            log.debug("shardDivide == auto, and hitcount {} is >= limit {}. " +
-                      "Using shard dividing Solr document streaming for {} shards ",
-                      hits, request.autoShardDivideLimit, shards.size());
-            return iterateSharded(request, shards);
-        }
-
-        throw new UnsupportedOperationException(
-                "shardDivide == '" + request.shardDivide + "', which is unsupported");
-    }
 
     /**
      * Used by {@link dk.kb.netarchivesuite.solrwayback.solr.SRequest.CHOICE#auto} mode for {@link SRequest#shardDivide}
@@ -202,12 +103,12 @@ public class SolrStreamShard {
     }
 
     /**
-     * Sets up an individual {@link SolrGenericStreaming} for each shard in the collection, or each shard in the
+     * Sets up an individual {@link SolrStreamDirect} for each shard in the collection, or each shard in the
      * {@code request} is shards are explicitly stated there. The resulting documents are merged using
      * {@link dk.kb.netarchivesuite.solrwayback.util.CollectionUtils#mergeIterators(Collection, Comparator)} and
-     * relevant post-processors are added using {@link SolrStreamDecorators#addPostProcessors(Iterator, SRequest, String)}.
+     * relevant post-processors are added using {@link SolrStreamFactory#addPostProcessors(Iterator, SRequest, String)}.
      * The end result from the returned iterator should be exactly the same as a direct call to
-     * {@link SolrGenericStreaming#iterate(SRequest)} but with better performance for large result sized.
+     * {@link SolrStreamDirect#iterate(SRequest)} but with better performance for large result sized.
      * <p>
      * Note: This method ignores {@link SRequest#shardDivide} and {@link SRequest#shards}.
      * <p>
@@ -238,9 +139,9 @@ public class SolrStreamShard {
         // TODO: Consider a different pageSize for shardDivide requests
         List<Iterator<SolrDocument>> documentIterators = shards.stream()
                 .map(shard -> base.deepCopy().collection(shard.collectionID).shards(shard.shardID))
-                .map(SolrGenericStreaming::new)
+                .map(SolrStreamDirect::new)
                 // Basic "raw results"
-                .map(SolrGenericStreaming::iterator)
+                .map(SolrStreamDirect::iterator)
                 // Limit hammering on the Solr Cloud
                 .map(iterator -> CollectionUtils.SharedConstraintIterator.of(iterator, gatekeeper))
                 // Speed up processing by threading most of the deduplication
@@ -256,15 +157,15 @@ public class SolrStreamShard {
         // Not connected to the other CloseableIterators as expandResources might result in more than maxResults docs
         docs = CollectionUtils.CloseableIterator.of(docs, new AtomicBoolean(true), base.maxResults);
         // Remove duplicates, add resources... Note that the raw request is used as this has the non-expanded fields
-        docs = SolrStreamDecorators.addPostProcessors(docs, request, adjustedFields);
+        docs = SolrStreamFactory.addPostProcessors(docs, request, adjustedFields);
         // Ensure that close() propagates to the BufferingIterator to avoid Thread & buffer leaks
         return CollectionUtils.CloseableIterator.of(docs, continueProcessing);
     }
 
     private static Iterator<SolrDocument> makeDeduplicatingIfStated(Iterator<SolrDocument> iterator, SRequest request) {
-        return request.deduplicateField == null ? iterator :
+        return request.deduplicateFields == null ? iterator :
                 CollectionUtils.ReducingIterator.of(
-                        iterator, new SolrStreamDecorators.OrderedDeduplicator(request.deduplicateField));
+                        iterator, new SolrStreamDecorators.OrderedDeduplicator(request.deduplicateFields));
     }
 
     /**

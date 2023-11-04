@@ -214,7 +214,7 @@ public class ContentStreams {
                               SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
                               "image_size:[2000 TO *]").   // No small images. (fillers etc.)
                 fields(SolrUtils.arcEntryDescriptorFieldList). // Contains hash used for uniqueness
-                deduplicateField("url_norm");
+                        deduplicateFields("url_norm");
     }
 
     /**

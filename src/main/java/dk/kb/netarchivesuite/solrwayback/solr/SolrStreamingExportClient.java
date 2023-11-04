@@ -2,7 +2,6 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,14 +40,14 @@ public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportC
     this.csvFieldsArray = csvFields.split(", *");
     // TODO: Handle closing in case of exceptions
     //solrDocs = SolrGenericStreaming.iterate(
-    solrDocs = SolrStreamShard.iterateStrategy(
-            SRequest.builder().
-                    solrClient(solrClient).
-                    query(query).filterQueries(filterQueries).
-                    fields(solrFieldsArray).
-                    pageSize(pageSize).
-                    expandResources(expandResources).
-                    ensureUnique(avoidDuplicates));
+    solrDocs = SRequest.builder().
+            solrClient(solrClient).
+            query(query).filterQueries(filterQueries).
+            fields(solrFieldsArray).
+            pageSize(pageSize).
+            expandResources(expandResources).
+            ensureUnique(avoidDuplicates).
+            iterate();
     this.solrFields = solrFields;
     this.csvFields = csvFields;
     this.query = query;

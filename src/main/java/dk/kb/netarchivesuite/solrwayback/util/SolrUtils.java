@@ -378,9 +378,12 @@ public class SolrUtils {
 
     /**
      * Convert the given Solr field value to a String.
-     * <p>
-     * For most values this is a simple toString, but
-     * Dates are converted using {@link DateUtils#getSolrDateFull(Date)} and Collections are expanded.
+     * <ul>
+     *     <li>Strings are processes using {@link #createPhrase(String)}</li>
+     *     <li>Dates are converted using {@link DateUtils#getSolrDateFull(Date)}</li>
+     *     <li>Collections are expanded</li>
+     *     <li>All else is processed using {@link Objects#toString}</li>
+     * </ul>
      * @param value a value from a Solr field.
      * @return a String representation of the given Solr field value or null if the input was null;
      */
@@ -391,14 +394,19 @@ public class SolrUtils {
         if (value instanceof Date) {
             return DateUtils.getSolrDate((Date) value);
         }
+        if (value instanceof String) {
+            return createPhrase((String) value);
+        }
         if (value instanceof String[]) {
-            return Arrays.toString((String[])value);
+            return Arrays.stream((String[])value)
+                    .map(SolrUtils::fieldValueToString)
+                    .collect(Collectors.joining(", ", "[", "]"));
         }
         if (value instanceof int[]) {
             return Arrays.toString((int[])value);
         }
         if (value instanceof long[]) {
-            return Arrays.toString((int[])value);
+            return Arrays.toString((long[])value);
         }
         if (value instanceof float[]) {
             return Arrays.toString((float[])value);

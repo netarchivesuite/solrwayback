@@ -3,7 +3,6 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
-import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
@@ -12,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @deprecated superceded by {@link SolrGenericStreaming}
+ * @deprecated superceded by {@link SolrStreamDirect}
  */
 @Deprecated
 public class SolrStreamingWarcExportClient {

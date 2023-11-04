@@ -703,7 +703,7 @@ public class CollectionUtils {
      * <p>
      * This Iterator optionally auto-closes after a given limit.
      */
-    public static class CloseableIterator<T> implements Iterator<T>, Closeable {
+    public static class CloseableIterator<T> implements Iterator<T>, AutoCloseable {
         private final Iterator<T> inner;
         private final AtomicBoolean continueProcessing;
         private final long limit;
@@ -746,11 +746,35 @@ public class CollectionUtils {
          * This method is used when the requirement is to deliver a chain or tree of iterators with a shared
          * state using {@code CloseableIterator}s, but circumstances dictates that a simpler non-shared-state
          * iterator is returned.
+         * <p>
+         * If the given {code inner} is already a {@code CloseableIterator} it is returned directly.
          * @param inner any iterator.
          * @return a {@code CloseableIterator}.
          */
         public static CloseableIterator<SolrDocument> single(Iterator<SolrDocument> inner) {
-            return of(inner, new AtomicBoolean(true));
+            return inner instanceof CloseableIterator ?
+                    (CloseableIterator<SolrDocument>) inner :
+                    of(inner, new AtomicBoolean(true));
+        }
+
+        /**
+         * Create a closeable iterator without shared state. If {@code continueProcessing} is set to false
+         * by a call to {@link #close()}, no further elements will be delivered.
+         * <p>
+         * This method is used when the requirement is to deliver a chain or tree of iterators with a shared
+         * state using {@code CloseableIterator}s, but circumstances dictates that a simpler non-shared-state
+         * iterator is returned.
+         * <p>
+         * If the given {code inner} is already a {@code CloseableIterator} with the same {@code limit} as specified,
+         * it is returned directly.
+         * @param inner any iterator.
+         * @param limit the maximum amount of elements to deliver.
+         * @return a {@code CloseableIterator}.
+         */
+        public static CloseableIterator<SolrDocument> single(Iterator<SolrDocument> inner, long limit) {
+            return inner instanceof CloseableIterator && ((CloseableIterator<?>)inner).limit == limit ?
+                    (CloseableIterator<SolrDocument>) inner :
+                    of(inner, new AtomicBoolean(true), limit);
         }
 
         /**
@@ -887,7 +911,7 @@ public class CollectionUtils {
      * }
      * </pre>
      */
-    public static class CloseableStream<T> implements Stream<T>, Closeable, AutoCloseable {
+    public static class CloseableStream<T> implements Stream<T>, AutoCloseable {
         private final Stream<T> inner;
         private final AtomicBoolean continueProcessing;
 
