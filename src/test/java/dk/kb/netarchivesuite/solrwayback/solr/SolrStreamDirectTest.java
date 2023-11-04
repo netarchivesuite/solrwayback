@@ -115,17 +115,19 @@ public class SolrStreamDirectTest {
      */
     @Test
     public void timeProximity() {
+        String date="2019-04-15T12:31:51Z";
+        String dateExptected="2019-03-15T12:31:51Z";
+
         List<SolrDocument> docs = SolrStreamDirect.stream(
                         SRequest.builder().
                                 query("title:title_5").
                                 fields("id", "crawl_date").
-                                timeProximityDeduplication("2019-04-15T12:31:51Z", "url"))
-                .collect(Collectors.toList());
-        assertEquals("Single result expected",
-                     1, docs.size());
+                                timeProximityDeduplication(date, "url")).
+                collect(Collectors.toList());
+        assertEquals("Single result expected", 1, docs.size());
         SolrDocument doc = docs.get(0);
-        assertEquals("The returned crawl_date should be the nearest",
-                     "Fri Mar 15 13:31:51 CET 2019", doc.get("crawl_date").toString());
+        String solrDate = DateUtils.getSolrDate((Date) doc.get("crawl_date"));
+        assertEquals("The returned crawl_date should be the nearest",dateExptected, solrDate);
     }
 
     /**
