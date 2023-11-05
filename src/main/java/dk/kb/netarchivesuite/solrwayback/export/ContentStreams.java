@@ -144,7 +144,8 @@ public class ContentStreams {
                 filter(finalUrlPruner);
 
         // Mix the two streams, 4 direct images for each 1 image derived from a page
-        return merged.filter(new ThroughputTracker("findImages:", "images", log, 100));
+        return merged.filter(
+                new ThroughputTracker("findImages:", "images").logger(log).logInterval(100));
     }
 
     /**

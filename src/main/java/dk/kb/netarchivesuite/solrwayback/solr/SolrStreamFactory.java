@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,7 +36,7 @@ import java.util.stream.Stream;
  */
 public class SolrStreamFactory {
     private static final Logger log = LoggerFactory.getLogger(SolrStreamFactory.class);
-    private static final Logger exportLog = LoggerFactory.getLogger("export");
+    private static final Logger exportLog = LoggerFactory.getLogger("kb.dk.export");
 
     /**
      * Depending on the backing Solr (Cloud) topology, the collection and the {@link SRequest#shardDivide} and
@@ -176,11 +177,12 @@ public class SolrStreamFactory {
         }
 
         // Log progress
-        // TODO: Change ThroughputTracker to be time based instead so that it logs every x seconds
-        ThroughputTracker tracker = new ThroughputTracker(
-                "Export(" + SRequest.limit(request.query, 20) + "): ", "docs", exportLog, 1000);
+        ThroughputTracker tracker = new ThroughputTracker()
+                .prefix("Export(" + SRequest.limit(request.query, 20) + "):")
+                .designation("docs")
+                .logger(exportLog);
+        docs = docs.filter(tracker).onClose(tracker::close);
 
-        docs = docs.filter(tracker);
         return docs;
     }
 
@@ -218,14 +220,21 @@ public class SolrStreamFactory {
             return element;
         });
 
-        if (request.maxResults < Long.MAX_VALUE) {
-            docs = CollectionUtils.CloseableIterator.single(docs, request.maxResults);
-        }
-
-        ThroughputTracker tracker = new ThroughputTracker(
-                "Export(" + SRequest.limit(request.query, 20) + "): ", "docs", exportLog, 1000);
+        // Log progress
+        ThroughputTracker tracker = new ThroughputTracker()
+                .prefix("Export(" + SRequest.limit(request.query, 20) + "):")
+                .designation("docs")
+                .logger(exportLog);
         docs = CollectionUtils.ReducingIterator.of(docs, tracker::test);
-        
+
+        docs = new CollectionUtils.CloseableIterator<SolrDocument>(docs, new AtomicBoolean(true), request.maxResults) {
+            @Override
+            public void close() {
+                tracker.close();
+                super.close();
+            }
+        };
+
         return docs;
     }
 }

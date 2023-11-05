@@ -47,8 +47,8 @@ public class ShardStreamingTest {
     private static final Logger log = LoggerFactory.getLogger(ShardStreamingTest.class);
 
 //    public static final String STAGE_SOLR = "http://localhost:54001/solr";
-//    public static final String STAGE_SOLR = "http://localhost:53301/solr";
-    public static final String STAGE_SOLR = "http://localhost:52300/solr";
+    public static final String STAGE_SOLR = "http://localhost:53301/solr";
+//    public static final String STAGE_SOLR = "http://localhost:52300/solr";
     public static final String LOCAL_SOLR = "http://localhost:8983/solr";
     public static final String COLLECTION = "netarchivebuilder";
     public static final String STAGE_COLLECTION = "ns";

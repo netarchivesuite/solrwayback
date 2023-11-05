@@ -361,8 +361,6 @@ public class SolrStreamDirect implements Iterable<SolrDocument> {
         }
         ;
         totalDelivered.addAndGet(rsp.getResults().size());
-        log.debug("Got {} hits with total delivered counter {} in {} ms",
-                  rsp.getResults().size(), totalDelivered.get(), System.currentTimeMillis()-st);
         return rsp;
     }
 
