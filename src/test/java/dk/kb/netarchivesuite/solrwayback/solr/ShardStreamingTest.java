@@ -48,8 +48,8 @@ public class ShardStreamingTest {
     private static final Logger log = LoggerFactory.getLogger(ShardStreamingTest.class);
 
 //    public static final String STAGE_SOLR = "http://localhost:54001/solr";
-//    public static final String STAGE_SOLR = "http://localhost:53301/solr";
-    public static final String STAGE_SOLR = "http://localhost:52300/solr";
+    public static final String STAGE_SOLR = "http://localhost:53301/solr";
+//    public static final String STAGE_SOLR = "http://localhost:52300/solr";
     public static final String LOCAL_SOLR = "http://localhost:8983/solr";
     public static final String COLLECTION = "netarchivebuilder";
     public static final String STAGE_COLLECTION = "ns";
@@ -365,7 +365,7 @@ public class ShardStreamingTest {
                 .fields("id")
                 .shardDivide("always")
                 .maxResults(50)
-                .deduplicateField("domain");
+                .deduplicateFields("domain");
         assertDocsEquals(request);
     }
 
@@ -380,8 +380,8 @@ public class ShardStreamingTest {
                 .fields("id")
                 .shardDivide("always")
                 .maxResults(50)
-                .deduplicateField("domain");
-        try (Stream<SolrDocument> docs = SolrStreamShard.streamStrategy(request)) {
+                .deduplicateFields("domain");
+        try (Stream<SolrDocument> docs = request.stream()) {
             assertTrue("More than 1 documents should be returned", docs.count() > 1);
         }
     }
@@ -397,7 +397,7 @@ public class ShardStreamingTest {
                 .fields("id", "domain")
                 .shardDivide("never")
                 .maxResults(5)
-                .deduplicateField("domain");
+                .deduplicateFields("domain");
         dump(request);
     }
 
@@ -405,7 +405,7 @@ public class ShardStreamingTest {
         List<SolrDocument> collection = request.deepCopy().stream().collect(Collectors.toList());
         List<SolrDocument> shard = new ArrayList<>();
         try (CollectionUtils.CloseableIterator<SolrDocument> shardIs =
-                     SolrStreamShard.iterateStrategy(request.deepCopy().shardDivide("always"))) {
+                     request.deepCopy().shardDivide("always").iterate()) {
             while (shardIs.hasNext()) {
                 shard.add(shardIs.next());
             }
@@ -449,7 +449,7 @@ public class ShardStreamingTest {
                 .fields("id, domain")
                 .shardDivide("always")
                 .maxResults(100)
-                .deduplicateField("domain");  // FIXME domain does not become a part of fl!
+                .deduplicateFields("domain");  // FIXME domain does not become a part of fl!
         assertDocsEquals(request);
     }
 
@@ -494,13 +494,13 @@ public class ShardStreamingTest {
 
     /**
      * Calls {@link SolrStreamShard#iterateSharded(SRequest, List)} on the {@code request} and extracts all IDs,
-     * also sets {@link SRequest#shardDivide} to {@code false} and call {@link SolrGenericStreaming#iterate(SRequest)}
+     * also sets {@link SRequest#shardDivide} to {@code false} and call {@link SolrStreamDirect#iterate(SRequest)}
      * and extracts all IDs. Finally the extracted IDs are compared.
      * @param request a request to test shard division.
      */
     private void assertDocsEquals(SRequest request) {
-        try (CollectionUtils.CloseableIterator<SolrDocument> shardDocs = SolrStreamShard.iterateStrategy(request);
-             CollectionUtils.CloseableIterator<SolrDocument> plainDocs = SolrStreamShard.iterateStrategy(request.deepCopy().shardDivide("never"))) {
+        try (CollectionUtils.CloseableIterator<SolrDocument> shardDocs = request.iterate();
+             CollectionUtils.CloseableIterator<SolrDocument> plainDocs = request.deepCopy().shardDivide("never").iterate()) {
             long count = 0;
             while (plainDocs.hasNext()) {
                 assertTrue("For doc #" + count + ", plainDocs has next so shardDocs should also have next",

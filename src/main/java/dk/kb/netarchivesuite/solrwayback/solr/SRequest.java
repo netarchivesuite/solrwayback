@@ -21,6 +21,9 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.FacetParams;
+import org.apache.solr.common.params.HighlightParams;
+import org.apache.solr.common.params.StatsParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,11 +31,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -78,7 +82,7 @@ public class SRequest {
 
     private String idealTime; // If defined, a sort will be created as String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
     // TODO: Expand this to support multiple deduplicateFields
-    public String deduplicateField = null;
+    public List<String> deduplicateFields;
     public List<String> fields;
     public long maxResults = Long.MAX_VALUE;
     /**
@@ -94,9 +98,9 @@ public class SRequest {
     public String query = null;
     public Stream<String> queries = null;
     public List<String> filterQueries;
-    public int pageSize = SolrGenericStreaming.DEFAULT_PAGESIZE;
+    public int pageSize = SolrStreamDirect.DEFAULT_PAGESIZE;
     public boolean usePaging = true;
-    public int queryBatchSize = SolrGenericStreaming.DEFAULT_QUERY_BATCHSIZE;
+    public int queryBatchSize = SolrStreamDirect.DEFAULT_QUERY_BATCHSIZE;
     public List<String> shards = null;
     public String collection = null;
     public CHOICE shardDivide = CHOICE.valueOf(PropertiesLoader.SOLR_STREAM_SHARD_DIVIDE);
@@ -140,7 +144,7 @@ public class SRequest {
      * @param solrClient used for issuing Solr requests.
      *                   If not specified, {@link NetarchiveSolrClient#noCacheSolrServer} will be used.
      * @return the SRequest adjusted with the provided value.
-     * @see #useCachingClient(boolean) 
+     * @see #useCachingClient(boolean)
      */
     public SRequest solrClient(SolrClient solrClient) {
         if (solrClient == null) {
@@ -157,10 +161,10 @@ public class SRequest {
      * The default is false (no caching). Set to true when used for limited result sets.
      * @param useCaching if true, a locally caching Solrclient is used.
      * @return the SRequest adjusted with the provided value.
-     * @see #solrClient(SolrClient) 
+     * @see #solrClient(SolrClient)
      */
     public SRequest useCachingClient(boolean useCaching) {
-        solrClient = useCaching ? 
+        solrClient = useCaching ?
                 NetarchiveSolrClient.solrServer :
                 NetarchiveSolrClient.noCacheSolrServer;
         return this;
@@ -252,41 +256,62 @@ public class SRequest {
     }
 
     /**
-     * Note: This overrides any existing {@link #sort(String)}.
-     * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
-     *                         Default is null (no deduplication).
-     *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
-     *                         if expandResources is true and uniqueness must also be guaranteed for resources.
+     * Deduplicating on one or more fields: Only the first document for any given combination of the fields is
+     * delivered. Note that this modifies the sort order by prefixing the sort chain with the deduplicate fields.
+     * @param deduplicateFields The fields to use for de-duplication. This is typically {@code url}.
+     *                          Default is null (no deduplication).
+     *                          Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
+     *                          expandResources is true and uniqueness must also be guaranteed for resources.
      * @return the SRequest adjusted with the provided value.
      */
-    public SRequest deduplicateField(String deduplicateField) {
-        if (deduplicateField != null && deduplicateField.isEmpty()) {
-            throw new IllegalArgumentException("deduplicateField cannot be the empty String");
+    public SRequest deduplicateFields(String... deduplicateFields) {
+        if (deduplicateFields != null && deduplicateFields.length == 1 && deduplicateFields[0] == null) {
+            this.deduplicateFields = null;
+            return this;
         }
-        this.deduplicateField = deduplicateField;
+
+        if (deduplicateFields != null && Arrays.stream(deduplicateFields).anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException(
+                    "Got null as deduplicateField in array " + Arrays.toString(deduplicateFields));
+        }
+        this.deduplicateFields = deduplicateFields == null || deduplicateFields.length == 0 ?
+                null :
+                Arrays.asList(deduplicateFields);
         return this;
     }
 
     /**
-     * Deduplication combined with time proximity sorting. This is a shorthand for
-     * {@code request.deduplicatefield(deduplicateField).sort("abs(sub(ms(idealTime), crawl_date)) asc");}
+     * Deduplicating on one or more fields: Only the first document for any given combination of the fields is
+     * delivered. Note that this modifies the sort order by prefixing the sort chain with the deduplicate fields.
+     * @param deduplicateFields The fields to use for de-duplication. This is typically {@code url}.
+     *                          Default is null (no deduplication).
+     *                          Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
+     *                          expandResources is true and uniqueness must also be guaranteed for resources.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest deduplicateFields(List<String> deduplicateFields) {
+        if (deduplicateFields != null && deduplicateFields.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException(
+                    "Got null as deduplicateField in list " + deduplicateFields);
+        }
+        this.deduplicateFields = deduplicateFields == null || deduplicateFields.isEmpty() ?
+                null :
+                deduplicateFields;
+        return this;
+    }
+
+    /**
+     * Time proximity sorting. This is a shorthand for {@code sort("abs(sub(ms(idealTime), crawl_date)) asc");}
      * <p>
-     * Use case: Extract unique URLs for matches that are closest to a given point in time:
-     * {@code timeProximityDeduplication("2014-01-03T11:56:58Z", "url_norm"}.
-     * <p>
-     * Note: This overrides any existing {@link #sort(String)}.
-     *
-     * @param idealTime        The time that the resources should be closest to, stated as a Solr timestamp
-     *                         {@code YYYY-MM-DDTHH:mm:SSZ}.
-     *                         <p>
-     *                         Also supports {@code oldest} and {@code newest} as values.
-     * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
+     * Use case: Extract documents for matches that are closest to a given point in time:
+     * {@code timeProximity("2014-01-03T11:56:58Z"}.
+     * @param idealTime         The time that the resources should be closest to, stated as a Solr timestamp
+     *                          {@code YYYY-MM-DDTHH:mm:SSZ}.
+     *                          <p>
+     *                          Also supports {@code oldest} and {@code newest} as values.
      * @return the SRequest adjusted with the provided values.
      */
-    public SRequest timeProximityDeduplication(String idealTime, String deduplicateField) {
-        if (deduplicateField != null && deduplicateField.isEmpty()) {
-            throw new IllegalArgumentException("deduplicateField cannot be the empty String");
-        }
+    public SRequest timeProximity(String idealTime) {
         String origo = idealTime;
         if ("newest".equals(idealTime)) {
             origo = "9999-12-31T23:59:59Z";
@@ -299,10 +324,28 @@ public class SRequest {
         }
         this.idealTime = origo;
 
-        if (deduplicateField == null) {
-            throw new NullPointerException("deduplicateField == null which is not allowed for timeProximityDeduplication");
-        }
-        this.deduplicateField = deduplicateField;
+        return this;
+    }
+
+    /**
+     * Deduplication combined with time proximity sorting. This is a shorthand for
+     * {@code request.deduplicateFields(deduplicateFields).sort("abs(sub(ms(idealTime), crawl_date)) asc");}
+     * <p>
+     * Use case: Extract unique URLs for matches that are closest to a given point in time:
+     * {@code timeProximityDeduplication("2014-01-03T11:56:58Z", "url_norm"}.
+     * <p>
+     * Note: The {@link #sort(String)} is prefixed with {@code deduplicateFields}.
+     *
+     * @param idealTime         The time that the resources should be closest to, stated as a Solr timestamp
+     *                          {@code YYYY-MM-DDTHH:mm:SSZ}.
+     *                          <p>
+     *                          Also supports {@code oldest} and {@code newest} as values.
+     * @param deduplicateFields Zero or more field to deduplicate on. This is typically {@code url_norm}.
+     * @return the SRequest adjusted with the provided values.
+     */
+    public SRequest timeProximityDeduplication(String idealTime, String... deduplicateFields) {
+        timeProximity(idealTime);
+        deduplicateFields(deduplicateFields);
         return this;
     }
 
@@ -312,7 +355,7 @@ public class SRequest {
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if fields has already been assigned.
      * @see #fields(String...)
-     * @see #forceFields(List) 
+     * @see #forceFields(List)
      */
     public SRequest fields(List<String> fields) {
         if (this.fields != null) {
@@ -320,14 +363,14 @@ public class SRequest {
         }
         return forceFields(fields);
     }
-    
+
     /**
      * This method overrides existing fields without warning or error.
      * @param fields fields to export (fl). deduplicateField will be added to this is not already present.
      *               This parameter has no default and must be defined.
      * @return the SRequest adjusted with the provided value.
      * @see #fields(String...)
-     * @see #fields(List) 
+     * @see #fields(List)
      */
     public SRequest forceFields(List<String> fields) {
         this.fields = fields;
@@ -342,7 +385,7 @@ public class SRequest {
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if fields has already been assigned.
      * @see #fields(List)
-     * @see #forceFields(String...)  
+     * @see #forceFields(String...)
      */
     public SRequest fields(String... fields) {
         if (this.fields != null) {
@@ -360,7 +403,7 @@ public class SRequest {
      *               as a comma separated list of fields: {@code "foo,bar,zoo" == "foo", "bar", "zoo"}.
      * @return the SRequest adjusted with the provided value.
      * @see #fields(List)
-     * @see #fields(String...) 
+     * @see #fields(String...)
      */
     public SRequest forceFields(String... fields) {
         if (fields.length == 1 && fields[0].contains(",")) {
@@ -382,15 +425,15 @@ public class SRequest {
     }
 
     /**
-     * Note: {@link #timeProximityDeduplication(String, String)} and {@link #deduplicateField(String)} takes
-     * precedence over sort.
+     * Note: {@link #timeProximityDeduplication(String, String...)} and {@link #deduplicateFields(String...)} takes
+     * precedence over sort by prefixing with {@link #deduplicateFields}.
      *
-     * @param sort standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
-     *             by {@link SolrGenericStreaming#adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+     * @param sort standard Solr sort. Depending on deduplicateFields and tie breaker it might be adjusted.
      *             Default is {@link #DEFAULT_SORT}.
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if sort has already been assigned.
      * @see #forceSort(String)
+     * @see #deduplicateFields(String...)
      */
     public SRequest sort(String sort) {
         if (!DEFAULT_SORT.equals(this.sort)) {
@@ -400,12 +443,11 @@ public class SRequest {
     }
 
     /**
-     * Note: {@link #timeProximityDeduplication(String, String)} and {@link #deduplicateField(String)} takes
-     * precedence over sort.
+     * Note: {@link #timeProximityDeduplication(String, String...)} and {@link #deduplicateFields(String...)} takes
+     * precedence over sort by prefixing with {@link #deduplicateFields}.
      *
      * This method overrides existing sort without warning or error.
-     * @param sort standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
-     *             by {@link SolrGenericStreaming#adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+     * @param sort standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted.
      *             Default is {@link #DEFAULT_SORT}.
      * @return the SRequest adjusted with the provided value.
      * @see #sort(String)
@@ -452,7 +494,8 @@ public class SRequest {
      *                If {@code queries = Arrays.asList("url:http://example.com/foo", "url:http://example.com/bar").stream()},
      *                the batch request will be {@code "url:http://example.com/foo OR url:http://example.com/bar"}.
      *                However, there is an upper limit to batching so multiple batches might be issued.
-     *                This affects {@link #deduplicateField(String)} and {@link #timeProximityDeduplication(String, String)}
+     *                This affects {@link #deduplicateFields(String...)} and
+     *                {@link #timeProximityDeduplication(String, String...)}
      *                as overall deduplication will not be guaranteed.
      *                Use {@link #ensureUnique(Boolean)} to force unique results, if needed.
      * @return the SRequest adjusted with the provided value.
@@ -482,7 +525,8 @@ public class SRequest {
      *                the batch request will be {@code "url:http://example.com/foo OR url:http://example.com/bar"}.
      *                <p>
      *                However, there is an upper limit to batching so multiple batches might be issued.
-     *                This affects {@link #deduplicateField(String)} and {@link #timeProximityDeduplication(String, String)}
+     *                This affects {@link #deduplicateFields(String...)} and
+     *                {@link #timeProximityDeduplication(String, String...)}
      *                as overall deduplication will not be guaranteed.
      *                <p>
      *                Use {@link #ensureUnique(Boolean)} to force unique results, if needed.
@@ -649,7 +693,7 @@ public class SRequest {
 
     /**
      * @param pageSize paging size. Typically 500-100,000 depending on fields.
-     *                 Default is {@link SolrGenericStreaming#DEFAULT_PAGESIZE}.
+     *                 Default is {@link SolrStreamDirect#DEFAULT_PAGESIZE}.
      * @return the SRequest adjusted with the provided value.
      */
     public SRequest pageSize(int pageSize) {
@@ -663,15 +707,12 @@ public class SRequest {
      * Use case: Getting a limited number of results from each query when using {@link #queries}.
      *           For that scenario, remember setting {@link #queryBatchSize(int)} to 1.
      * <p>
-     * Previously this was used for optimization of specific cases with {@link #deduplicateField(String)} and
-     * {@link #timeProximityDeduplication(String, String)} requests. This optimization is no longer needed.
-     * <p>
      * @param usePaging if true (the default), paging is used. If false, paging is not used and only the first
      *                  {@link #pageSize(int)} documents are processed for each query.
      * @return the SRequest adjusted with the provided value.
      * @see #pageSize(int)
-     * @see #timeProximityDeduplication(String, String) 
-     * @see #deduplicateField(String) 
+     * @see #timeProximityDeduplication(String, String...)
+     * @see #deduplicateFields(String...)
      */
     public SRequest usePaging(boolean usePaging) {
         this.usePaging = usePaging;
@@ -802,7 +843,7 @@ public class SRequest {
      * Newer Solrs (at least 9+) share a default upper limit of 1024 boolean clauses recursively in the user issued
      * query tree. As multi-query uses batching, this limit can quickly be reached. Keep well below 1024.
      * @param queryBatchSize batch size when using {@link #queries(Stream)}.
-     *                       Default is {@link SolrGenericStreaming#DEFAULT_QUERY_BATCHSIZE}.
+     *                       Default is {@link SolrStreamDirect#DEFAULT_QUERY_BATCHSIZE}.
      * @return the SRequest adjusted with the provided value.
      */
     public SRequest queryBatchSize(int queryBatchSize) {
@@ -822,33 +863,31 @@ public class SRequest {
         if (query != null) {
             solrQuery.setQuery(query);
         }
+
         if (filterQueries != null) {
             solrQuery.setFilterQueries(filterQueries.toArray(new String[0]));
         }
 
         solrQuery.set(CommonParams.SORT, getFullSort());
+        solrQuery.set(CommonParams.FL, String.join(",", getExpandedFieldList()));
 
-        Set<String> fl = new LinkedHashSet<>();
-        if (fields != null) {
-            fl.addAll(fields);
-        }
-        if (uniqueFields != null) {
-            fl.addAll(uniqueFields);
-        }
-        if (!fl.isEmpty()) {
-            solrQuery.set(CommonParams.FL, String.join(",", fl));
-        }
         if (shards != null && !shards.isEmpty()) {
             solrQuery.set("shards", String.join(",", shards));
         }
 
         solrQuery.set(CommonParams.ROWS, (int) Math.min(maxResults, pageSize));
+
+        // Disable irrelevant processing
+        solrQuery.set(FacetParams.FACET, false);
+        solrQuery.set(StatsParams.STATS, false);
+        solrQuery.set(HighlightParams.HIGHLIGHT, false);
+
         return solrQuery;
     }
 
     /**
      * Resolve the sort param from {@link #DEFAULT_SORT}, {@link #solrQuery}-sort, {@link #sort}, {@link #idealTime},
-     * {@link #deduplicateField} and tie-breaking on {@code id}.
+     * {@link #deduplicateFields} and tie-breaking on {@code id}.
      * @return fully resolved {@code sort} for use with Solr requests.
      */
     public String getFullSort() {
@@ -859,37 +898,48 @@ public class SRequest {
             sort = this.sort;
         }
         if (!(sort.endsWith("id asc") || sort.endsWith("id desc"))) {
-          sort = sort + ", id asc"; // A tie breaker is needed for cursorMark and ensures deterministic order
+            sort = sort + ", id asc"; // A tie breaker is needed for cursorMark and ensures deterministic order
         }
         if (idealTime != null) {
-            sort = String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc, %s",
-                                 deduplicateField, idealTime, sort);
-        } else if (deduplicateField != null) {
-            sort = String.format(Locale.ROOT, "%s asc, %s",
-                                 deduplicateField, sort);
+            sort = String.format(Locale.ROOT, "abs(sub(ms(%s), crawl_date)) asc, %s",
+                                 idealTime, sort);
+        }
+        if (deduplicateFields != null) {
+            for (int i = deduplicateFields.size()-1 ; i >= 0 ; i--) {
+                sort = String.format(Locale.ROOT, "%s asc, %s",
+                                     deduplicateFields.get(i), sort);
+            }
         }
         return sort;
     }
 
     /**
-     * @return the explicitly defined {@code fl} as well as fields needed by {@link #expandResources} etc.
+     * @return the explicitly defined {@code solrQuery.fl} as well as fields needed by {@link #expandResources} etc.
      */
     public Set<String> getExpandedFieldList() {
         Set<String> fl = new HashSet<>();
-        if (solrQuery != null) {
-            fl.addAll(Arrays.asList(
-                    solrQuery.get(CommonParams.FL, "source_file_path,source_file_offset").split(", *")));
+        if (solrQuery != null && solrQuery.getFields() != null) {
+            fl.addAll(Arrays.asList(solrQuery.get(CommonParams.FL).split(", *")));
+        } else {
+            fl.add("source_file_path");
+            fl.add("source_file_offset");
         }
         if (expandResources) {
-          fl.add("content_type_norm");  // Needed to determine if a resource is a webpage
-          fl.add("source_file_path");   // Needed to fetch the webpage for link extraction
-          fl.add("source_file_offset"); // Needed to fetch the webpage for link extraction
+            fl.add("content_type_norm");  // Needed to determine if a resource is a webpage
+            fl.add("source_file_path");   // Needed to fetch the webpage for link extraction
+            fl.add("source_file_offset"); // Needed to fetch the webpage for link extraction
         }
         if (expandResources && ensureUnique) {
-          fl.add("id"); // id is shorter than sourcefile@offset in webarchive-discovery compatible indexes
+            fl.add("id"); // id is shorter than sourcefile@offset in webarchive-discovery compatible indexes
         }
-        if (deduplicateField != null) {
-          fl.add(deduplicateField);
+        if (deduplicateFields != null) {
+            fl.addAll(deduplicateFields);
+        }
+        if (uniqueFields != null) {
+            fl.addAll(uniqueFields);
+        }
+        if (fields != null) {
+            fl.addAll(fields);
         }
         return fl;
     }
@@ -917,25 +967,23 @@ public class SRequest {
     public SRequest deepCopy() {
         SRequest copy = new SRequest().
                 solrClient(solrClient). // Implicitly handles useCachingClient
-                solrQuery(solrQuery == null ? null : SolrUtils.deepCopy(solrQuery)).
+                        solrQuery(solrQuery == null ? null : SolrUtils.deepCopy(solrQuery)).
                 expandResources(expandResources).
-
                 maxUnique(maxUnique).
                 uniqueFields(uniqueFields.toArray(new String[0])).
                 ensureUnique(ensureUnique). // Must be after the uniqueFields
                 uniqueHashing(useHashingForUnique).
-
-                deduplicateField(deduplicateField).
+                deduplicateFields(deduplicateFields).
                 fields(copy(fields)).
                 maxResults(maxResults).
                 sort(sort).
                 query(query).
-                queries(queries).
+                queries(queries). // TODO: Does not really make sense. What do we do here?
                 filterQueries(copy(filterQueries)).
                 expandResourcesFilterQueries(copy(expandResourcesFilterQueries)).
                 pageSize(pageSize).
                 collection(collection).
-                shards(shards).
+                shards(copy(shards)).
                 shardDivide(shardDivide);
         copy.idealTime = idealTime;
         return copy;
@@ -967,7 +1015,7 @@ public class SRequest {
      * @return a stream of SolrDocuments.
      */
     public CollectionUtils.CloseableStream<SolrDocument> stream() {
-        return SolrStreamShard.streamStrategy(this);
+        return SolrStreamFactory.stream(this);
     }
 
     /**
@@ -983,7 +1031,46 @@ public class SRequest {
      * @return an iterator of SolrDocuments for this request.
      */
     public CollectionUtils.CloseableIterator<SolrDocument> iterate() {
-        return SolrStreamShard.iterateStrategy(this);
+        return SolrStreamFactory.iterate(this);
+    }
+
+    @Override
+    public String toString() {
+        return "SRequest(..., " +
+               "query='" + limit(query, 40) + "', " +
+               "queries=" + (queries == null ? "not present" : "present") + ", " +
+               "filterQueries=" + limit(filterQueries, 20) + ", " +
+               "fields=" + fields + ", " +
+               "sort=" + sort + ", " +
+               "pageSize=" + pageSize + ", " +
+               "maxResults=" + maxResults + ", " +
+               "deduplicateFields=" + deduplicateFields + ", " +
+               "uniqueFields=" + uniqueFields + ", " +
+               "ensureUnique=" + ensureUnique + ", " +
+               "maxUnique=" + maxUnique + ", " +
+               "uniqueHashing=" + useHashingForUnique + ", " +
+               "expandResources=" + expandResources + ", " +
+               "expandResourcesFilterQueries=" + limit(expandResourcesFilterQueries, 20) + ", " +
+               "collection='" + collection + "'" + ", " +
+               "shards=" + shards + ", " +
+               "shardDivide=" + shardDivide;
+    }
+
+    /**
+     * Simple String length limiter.
+     * @param s any String.
+     * @param maxLength {@code s} is truncated to this.
+     * @return truncated String.
+     */
+    public static String limit(String s, int maxLength) {
+        return s == null || s.length() <= maxLength ? s : s.substring(0, maxLength-3) + "...";
+    }
+    public static String limit(List<String> list, int maxLength) {
+        return list == null ?
+                "null" :
+                list.stream()
+                        .map(fq -> limit(fq, maxLength))
+                        .collect(Collectors.joining(", ", "[", "]"));
     }
 
 }

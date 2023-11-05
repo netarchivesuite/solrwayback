@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.util.DelayedInputStream;
 import dk.kb.netarchivesuite.solrwayback.util.NamedConsumer;
 import dk.kb.netarchivesuite.solrwayback.util.StatusInputStream;

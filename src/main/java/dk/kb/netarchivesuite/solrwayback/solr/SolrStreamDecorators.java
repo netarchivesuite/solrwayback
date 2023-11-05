@@ -17,17 +17,14 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
-import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
-import dk.kb.netarchivesuite.solrwayback.util.ThroughputTracker;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,8 +37,6 @@ import java.util.stream.Stream;
  */
 public class SolrStreamDecorators {
     private static final Logger log = LoggerFactory.getLogger(SolrStreamDecorators.class);
-    // Used for tracking exports
-    private static final Logger exportLog = LoggerFactory.getLogger("export");
 
     /**
      * Takes a SolrDocument which has 0 or more multi-valued fields and flattens those fields to single value by creating
@@ -87,96 +82,6 @@ public class SolrStreamDecorators {
     }
 
     /**
-     * Extends the stream with post processing defined in {@code request}, such as duplicate removal and resource
-     * expansion.
-     * @param docs    a source stream with Solr Documents
-     * @param request same request as used for the stream source.
-     * @param adjustedFields comma separated field list expanded from the initial fields in the request,
-     *                       with extra fields needed by requested processing steps.
-     * @return the {@code docs} stream extended with steps as defined in the {@code request}.
-     * @see #addPostProcessors(Iterator, SRequest, String)
-     */
-    public static Stream<SolrDocument> addPostProcessors(Stream<SolrDocument> docs, SRequest request, String adjustedFields) {
-        if (request.deduplicateField != null) {
-            docs = docs.filter(new OrderedDeduplicator(request.deduplicateField));
-        }
-
-        if (request.expandResources) {
-            docs = docs.flatMap(new HTMLResourceExpander(
-                    adjustedFields, request.getExpandResourcesFilterQueries(), true));
-        }
-
-        if (request.ensureUnique) {
-            docs = docs.filter(new UniqueFilter(request.useHashingForUnique, request.maxUnique, request.uniqueFields));
-        }
-
-        // Reduce documents to contain requested fields only
-        docs = docs.peek(SolrUtils.reduceAndSortFields(request.fields));
-
-        // Log progress
-        ThroughputTracker tracker = new ThroughputTracker(
-                "Export(" + reduce(request.query, 20) + "): ", "docs", exportLog, request.pageSize*10L);
-        docs = docs.filter(tracker);
-        
-        return docs;
-    }
-
-    /**
-     * Extends the iterator with post processing defined in {@code request}, such as duplicate removal and resource
-     * expansion.
-     * @param docs    a source iterator with Solr Documents
-     * @param request same request as used for the iterator source.
-     * @param adjustedFields comma separated field list expanded from the initial fields in the request,
-     *                       with extra fields needed by requested processing steps.
-     * @return the {@code docs} iterator extended with steps as defined in the {@code request}.
-     * @see #addPostProcessors(Stream, SRequest, String)
-     */
-    // TODO: Consider moving this to a support class
-    public static Iterator<SolrDocument> addPostProcessors(Iterator<SolrDocument> docs, SRequest request, String adjustedFields) {
-        if (request.deduplicateField != null) {
-            docs = CollectionUtils.ReducingIterator.of(
-                    docs, new OrderedDeduplicator(request.deduplicateField));
-        }
-
-        if (request.expandResources) {
-            docs = CollectionUtils.ExpandingIterator.ofStream(docs, new HTMLResourceExpander(
-                    adjustedFields, request.getExpandResourcesFilterQueries(), true));
-        }
-
-        if (request.ensureUnique) {
-            docs = CollectionUtils.ReducingIterator.of(
-                    docs, new UniqueFilter(request.useHashingForUnique, request.maxUnique, request.uniqueFields));
-        }
-
-        // Reduce documents to contain requested fields only
-        docs = CollectionUtils.AdjustingIterator.of(docs, element -> {
-            SolrUtils.reduceAndSortFields(request.fields).accept(element);
-            return element;
-        });
-
-        // Log progress
-        ThroughputTracker tracker = new ThroughputTracker(
-                "Export(" + reduce(request.query, 20) + "): ", "docs", exportLog, request.pageSize*10L);
-        docs = CollectionUtils.ReducingIterator.of(docs, tracker::test);
-
-        return docs;
-    }
-
-    /**
-     * Reduce {@code s} to {@code maxLength} by trimming and addition of {@code ...}, e.g.
-     * {@code reduce("abcdefghijklmnopqrstuvwxyz", 7)} -> {@code abcd...}
-     * @param s         any String, including {@code null}.
-     * @param maxLength the maximum length of the output String.
-     * @return the input {@code s} reduced to {@code maxLength}.
-     */
-    private static String reduce(String s, int maxLength) {
-        return s == null ? "null" :
-                s.length() <= maxLength ? s :
-                        s.substring(0, maxLength-3) + "...";
-    }
-
-
-    /**
      * Deduplicator that expects the incoming {@link SolrDocument}s to be in order.
      * Deduplication is done on 1 or more fields. All fields must match the fields in the previous document for
      * the current document to be classified as a duplicate.
@@ -191,6 +96,14 @@ public class SolrStreamDecorators {
             }
             this.deduplicateFields = deduplicateFields;
             this.lastStreamDeduplicateValues = new Object[deduplicateFields.length];
+        }
+
+        public OrderedDeduplicator(List<String> deduplicateFields) {
+            if (deduplicateFields.isEmpty()) {
+                throw new IllegalArgumentException("No deduplicateFields given");
+            }
+            this.deduplicateFields = deduplicateFields.toArray(new String[0]);
+            this.lastStreamDeduplicateValues = new Object[deduplicateFields.size()];
         }
 
         @Override

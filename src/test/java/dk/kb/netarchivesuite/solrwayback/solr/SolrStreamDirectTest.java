@@ -46,8 +46,8 @@ import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.*;
 
-public class SolrGenericStreamingTest {
-    private static final Logger log = LoggerFactory.getLogger(SolrGenericStreamingTest.class);
+public class SolrStreamDirectTest {
+    private static final Logger log = LoggerFactory.getLogger(SolrStreamDirectTest.class);
 
     public static final int TEST_DOCS = 100; // Changing this might make some unit tests fail
     private static final String SOLR_HOME = "target/test-classes/solr";
@@ -69,7 +69,7 @@ public class SolrGenericStreamingTest {
         embeddedServer.deleteByQuery("*:*"); //This is not on the NetarchiveSolrClient API!
 
         fillSolr();
-        SolrGenericStreaming.setDefaultSolrClient(embeddedServer);
+        SolrStreamDirect.setDefaultSolrClient(embeddedServer);
         log.info("Embedded server ready");
     }
 
@@ -89,7 +89,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void basicStreaming() {
         log.debug("Testing basic streaming");
-        List<SolrDocument> docs = SolrGenericStreaming.stream(
+        List<SolrDocument> docs = SolrStreamDirect.stream(
                         SRequest.builder().
                                 query("title:title_5").
                                 fields("id").
@@ -101,7 +101,7 @@ public class SolrGenericStreamingTest {
     @Test
     public void getIDsStreaming() {
         log.debug("Extract IDs");
-        List<String> ids = SolrGenericStreaming.stream(
+        List<String> ids = SolrStreamDirect.stream(
                         SRequest.builder().
                                 query("title:title_5").
                                 fields("id"))
@@ -115,17 +115,19 @@ public class SolrGenericStreamingTest {
      */
     @Test
     public void timeProximity() {
-        List<SolrDocument> docs = SolrGenericStreaming.stream(
+        String date="2019-04-15T12:31:51Z";
+        String dateExptected="2019-03-15T12:31:51Z";
+
+        List<SolrDocument> docs = SolrStreamDirect.stream(
                         SRequest.builder().
                                 query("title:title_5").
                                 fields("id", "crawl_date").
-                                timeProximityDeduplication("2019-04-15T12:31:51Z", "url"))
-                .collect(Collectors.toList());
-        assertEquals("Single result expected",
-                     1, docs.size());
+                                timeProximityDeduplication(date, "url")).
+                collect(Collectors.toList());
+        assertEquals("Single result expected", 1, docs.size());
         SolrDocument doc = docs.get(0);
-        assertEquals("The returned crawl_date should be the nearest",
-                     "Fri Mar 15 13:31:51 CET 2019", doc.get("crawl_date").toString());
+        String solrDate = DateUtils.getSolrDate((Date) doc.get("crawl_date"));
+        assertEquals("The returned crawl_date should be the nearest",dateExptected, solrDate);
     }
 
     /**
@@ -190,12 +192,12 @@ public class SolrGenericStreamingTest {
     public void testLimit() {
         assertEquals("Limiting maxResults should return the desired max number of documents",
                      7,
-                     SolrGenericStreaming.stream(SRequest.create(
+                     SolrStreamDirect.stream(SRequest.create(
                              "*:*", "url", "links").maxResults(7))
                              .count());
         assertEquals("Having maxResults above the total number of documents should work",
                      100,
-                     SolrGenericStreaming.stream(SRequest.create(
+                     SolrStreamDirect.stream(SRequest.create(
                              "*:*", "url", "links").maxResults(100000))
                              .count());
     }
@@ -269,7 +271,7 @@ public class SolrGenericStreamingTest {
         List<SolrDocument> docs = SRequest.builder().
                 query("*:*").
                 fields("url", "source_file_offset").
-                deduplicateField("url").
+                deduplicateFields("url").
                 stream().collect(Collectors.toList());
 
         Set<String> urls = new HashSet<>();
@@ -292,11 +294,11 @@ public class SolrGenericStreamingTest {
      */
     @Test
     public void linksExportMulti() {
-        List<SolrDocument> docs = SolrGenericStreaming.stream(
+        List<SolrDocument> docs = SolrStreamDirect.stream(
                         SRequest.builder()
                                 .query("*:*")
                                 .fields("url", "links")
-                                .deduplicateField("url_norm"))
+                                .deduplicateFields("url_norm"))
                 .collect(Collectors.toList());
         for (SolrDocument doc: docs) {
             assertTrue("The 'links' field should contain multiple values",
@@ -310,8 +312,8 @@ public class SolrGenericStreamingTest {
      */
     @Test
     public void linksExportSingle() {
-        List<SolrDocument> docs = SolrGenericStreaming.stream(SRequest.builder().
-                query("*:*").fields("url", "links").deduplicateField("url_norm"))
+        List<SolrDocument> docs = SolrStreamDirect.stream(SRequest.builder().
+                query("*:*").fields("url", "links").deduplicateFields("url_norm"))
                 .flatMap(SolrStreamDecorators::flatten)
                 .collect(Collectors.toList());
         for (SolrDocument doc: docs) {
