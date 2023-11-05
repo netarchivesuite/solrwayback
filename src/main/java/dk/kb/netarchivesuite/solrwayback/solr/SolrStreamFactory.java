@@ -98,14 +98,20 @@ public class SolrStreamFactory {
 
             case auto: // Maybe shardDivide
                 shards = resolveShards(request);
+                if (!request.isSingleCollection()) {
+                    log.debug("shardDivide == auto and more than 1 collection is defined for shards. " +
+                              "Using shard dividing Solr document streaming for {} shards ",
+                              shards.size());
+                    return SolrStreamShard.iterateSharded(request, shards);
+                }
                 if (shards == null) {
                     log.debug("shardDivide == auto, but shards could not be resolved. " +
                               "Falling back to collection oriented Solr document streaming");
                     return CollectionUtils.CloseableIterator.single(SolrStreamDirect.iterate(request));
                 }
                 if (shards.size() == 1) {
-                    log.debug("shardDivide == auto, but only 1 shard is specified/available: '{}'. " +
-                              "Falling back to collection oriented Solr document streaming", shards.get(0));
+                    log.debug("shardDivide == auto, only 1 shard is specified/available: '{}'. " +
+                              "Using collection oriented Solr document streaming", shards.get(0));
                     return CollectionUtils.CloseableIterator.single(SolrStreamDirect.iterate(request));
                 }
                 long hits = SolrStreamShard.getApproximateHits(request);
@@ -113,6 +119,12 @@ public class SolrStreamFactory {
                     log.debug("shardDivide == auto, but approximate hitcount {} is < limit {}. " +
                               "Falling back to collection oriented Solr document streaming",
                               hits, request.autoShardDivideLimit);
+                    return CollectionUtils.CloseableIterator.single(SolrStreamDirect.iterate(request));
+                }
+                if (hits <= request.maxResults) {
+                    log.debug("shardDivide == auto, but approximate hitcount {} is <= maxResults {}. " +
+                              "Falling back to collection oriented Solr document streaming",
+                              hits, request.maxResults);
                     return CollectionUtils.CloseableIterator.single(SolrStreamDirect.iterate(request));
                 }
                 log.debug("shardDivide == auto, and hitcount {} is >= limit {}. " +

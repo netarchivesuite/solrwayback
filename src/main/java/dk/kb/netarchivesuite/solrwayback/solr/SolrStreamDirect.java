@@ -121,6 +121,7 @@ public class SolrStreamDirect implements Iterable<SolrDocument> {
     static final AtomicLong solrRequests = new AtomicLong(0);
     static final AtomicLong totalDelivered = new AtomicLong(0);
 
+    private final String collection;           // The collection (typically the default collection) to query against
     private final SRequest request;
     private final SolrQuery originalSolrQuery; // The original SolrQuery from the SRequest. Never modify this!
     private SolrQuery solrQuery;               // Deep copy of originalSolrQuery. Potentially modified with e.g. q and cursorMark
@@ -180,6 +181,10 @@ public class SolrStreamDirect implements Iterable<SolrDocument> {
      * @see SolrStreamFactory#addPostProcessors
      */
     protected SolrStreamDirect(SRequest request) {
+        if (!request.isSingleCollection()) {
+            throw new IllegalArgumentException("Request cannot be evaluated against a single collection: " + request);
+        }
+        collection = request.getCollectionGuaranteed();
         this.request = request;
         originalSolrQuery = request.getMergedSolrQuery();
         solrQuery = SolrUtils.deepCopy(originalSolrQuery);
@@ -351,9 +356,7 @@ public class SolrStreamDirect implements Iterable<SolrDocument> {
         QueryResponse rsp;
         long st = System.currentTimeMillis();
         try {
-            rsp = request.collection == null ?
-                    request.solrClient.query(solrQuery, METHOD.POST) :
-                    request.solrClient.query(request.getCollectionGuaranteed(), solrQuery, METHOD.POST);
+            rsp = request.solrClient.query(collection, solrQuery, METHOD.POST);
         } catch (HttpSolrClient.RemoteSolrException e) {
             log.warn("RemoteSolrException for POST request to collection '" + request.getCollectionGuaranteed() + "': " +
                      SolrUtils.fieldValueToString(solrQuery), e);

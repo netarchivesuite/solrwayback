@@ -737,20 +737,41 @@ public class SRequest {
 
     /**
      * Returns, in order of priority & existence<br>
+     * - collection from {@link #shards}, under the contract that the request {@link #isSingleCollection()}<br>
      * - {@link #collection}<br>
      * - collection derived from {@link PropertiesLoader#WAYBACK_BASEURL}
      * @return the Solr collection to query. This might be a collection alias.
      */
     public String getCollectionGuaranteed() {
+        if (shards != null) {
+            Set<String> collections = shards.stream()
+                    .filter(shard -> shard.contains(":"))
+                    .map(shard -> shard.split(":")[0])
+                    .collect(Collectors.toSet());
+            if (collections.size() == 1) {
+                return collections.iterator().next();
+            } else if (collections.size() > 1) {
+                throw new IllegalStateException("More than 1 collection derived from shards: " + collections);
+            }
+            // Fall through to other alternatives
+        }
+
         if (collection != null) {
             return collection;
         }
-        return SolrUtils.getBaseCollection();
 
+        return SolrUtils.getBaseCollection();
     }
 
     /**
      * Limit the request to the given shards. If this value is not specified, all shards in the collection is queried.
+     * <p>
+     * Shards can either be simple shard names {@code myshard} or collection qualified {@code mycollection:myshard}.
+     * If not qualified, {@link #collection(String)} is use. If {@code collection} is not defined, the default
+     * collection will be used.
+     * <p>
+     * Using qualified shards in combination with {@link #shardDivide} set to {@link CHOICE#never} is not recommended.
+     * In that case an exception will be thrown, unless all shards resolve to the same collection.
      * @param shards 1 or more shard names.
      * @return the SRequest adjusted with the provided value.
      */
@@ -761,6 +782,13 @@ public class SRequest {
 
     /**
      * Limit the request to the given shards. If this value is not specified, all shards in the collection is queried.
+     * <p>
+     * Shards can either be simple shard names {@code myshard} or collection qualified {@code mycollection:myshard}.
+     * If not qualified, {@link #collection(String)} is use. If {@code collection} is not defined, the default
+     * collection will be used.
+     * <p>
+     * Using qualified shards in combination with {@link #shardDivide} set to {@link CHOICE#never} is not recommended.
+     * In that case an exception will be thrown, unless all shards resolve to the same collection.
      * @param shards 1 or more shard names.
      * @return the SRequest adjusted with the provided value.
      */
@@ -872,7 +900,11 @@ public class SRequest {
         solrQuery.set(CommonParams.FL, String.join(",", getExpandedFieldList()));
 
         if (shards != null && !shards.isEmpty()) {
-            solrQuery.set("shards", String.join(",", shards));
+            // Under the assumption that isSingleCollection() is true
+            String shardIDs = shards.stream()
+                    .map(shard -> shard.contains(":") ? shard.split(":")[1] : shard)
+                    .collect(Collectors.joining(","));
+            solrQuery.set("shards",  shardIDs);
         }
 
         solrQuery.set(CommonParams.ROWS, (int) Math.min(maxResults, pageSize));
@@ -961,13 +993,30 @@ public class SRequest {
     }
 
     /**
+     * Iterates {@link #shards} and checks if all shards resolve to the same collection.
+     * <p>
+     * If there are null or 1 {@code shards} the quest is single collection.
+     * @return true if the request is to be evaluated against a single collection.
+     */
+    public boolean isSingleCollection() {
+        if (shards == null) {
+            return true;
+        }
+        String defCol = collection != null ? collection : SolrUtils.getBaseCollection();
+        return shards.stream()
+                .map(shard -> shard.contains(":") ? shard.split(":")[0] : defCol)
+                .distinct()
+                .count() == 1;
+    }
+
+    /**
      * Note: Due to the nature of Streams, {@link #queries} is not deep copied.
      * @return a copy of this SRequest, as independent as possible: {@link #solrQuery} and Lists are deep-copied.
      */
     public SRequest deepCopy() {
         SRequest copy = new SRequest().
                 solrClient(solrClient). // Implicitly handles useCachingClient
-                        solrQuery(solrQuery == null ? null : SolrUtils.deepCopy(solrQuery)).
+                solrQuery(solrQuery == null ? null : SolrUtils.deepCopy(solrQuery)).
                 expandResources(expandResources).
                 maxUnique(maxUnique).
                 uniqueFields(uniqueFields.toArray(new String[0])).

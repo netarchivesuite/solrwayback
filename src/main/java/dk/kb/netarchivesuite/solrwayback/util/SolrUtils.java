@@ -496,6 +496,12 @@ public class SolrUtils {
                     shardNames.add(new Shard(collectionID, it.next()));
                 }
             }
+            if (shardNames.isEmpty()) {
+                log.info("Unable to resolve shard names for Solr '{}' collectionIDs '{}'. " +
+                         "Possibly because the Solr is running as standalone. Returning null",
+                         solrBase, collectionIDs);
+                return null;
+            }
             return shardNames;
         } catch (Exception e) {
             log.info("Unable to resolve shard names for Solr '{}' collection '{}'. " +
@@ -512,8 +518,19 @@ public class SolrUtils {
         public final String collectionID;
         public final String shardID;
 
+        /**
+         * Forgiving constructor. If {@code shardID} is classified {@code mycollection:myshard}, {@code collectionID}
+         * is ignored and the classifying collection is used instead.
+         * @param collectionID the collection containing the shard. Ignored if {@code sardID}
+         * @param shardID      the shard itself.
+         */
         public Shard(String collectionID, String shardID) {
-            this.collectionID = collectionID;
+            if (shardID.contains(":")) {
+                String[] tokens = shardID.split(":", 2);
+                collectionID = tokens[0];
+                shardID = tokens[1];
+            }
+            this.collectionID =   collectionID;
             this.shardID = shardID;
         }
 
