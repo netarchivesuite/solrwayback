@@ -49,7 +49,7 @@ public class PropertiesLoader {
 
     // Used by SolrStreamShard
     public static final String SOLR_STREAM_SHARD_DIVIDE_PROPERTY = "solr.export.sharddivide.default";
-    public static final String SOLR_STREAM_SHARD_DIVIDE_LIMIT_PROPERTY = "solr.export.sharddivide.autolimit.default";
+    public static final String SOLR_STREAM_SHARD_AUTO_MIN_PROPERTY = "solr.export.sharddivide.autolimit.default";
     public static final String SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX_PROPERTY = "solr.export.sharddivide.concurrent.max";
 
     private static final String URL_NORMALISER_PROPERTY="url.normaliser";
@@ -89,7 +89,7 @@ public class PropertiesLoader {
 
     // Used by SolrStreamShard
     public static String SOLR_STREAM_SHARD_DIVIDE = "auto";
-    public static long SOLR_STREAM_SHARD_DIVIDE_LIMIT = 5000L;
+    public static long SOLR_STREAM_SHARD_AUTO_MIN_HITS = 5000L;
     // Maximum number of concurrent shard divided connections, shared between all shard divided calls
     public static int SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX = 20;
 
@@ -131,7 +131,7 @@ public class PropertiesLoader {
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
             URL_NORMALISER  = serviceProperties.getProperty(URL_NORMALISER_PROPERTY,"normal");
             SOLR_STREAM_SHARD_DIVIDE = serviceProperties.getProperty(SOLR_STREAM_SHARD_DIVIDE_PROPERTY, SOLR_STREAM_SHARD_DIVIDE);
-            SOLR_STREAM_SHARD_DIVIDE_LIMIT = Long.parseLong(serviceProperties.getProperty(SOLR_STREAM_SHARD_DIVIDE_LIMIT_PROPERTY, Long.toString(SOLR_STREAM_SHARD_DIVIDE_LIMIT)));
+            SOLR_STREAM_SHARD_AUTO_MIN_HITS = Long.parseLong(serviceProperties.getProperty(SOLR_STREAM_SHARD_AUTO_MIN_PROPERTY, Long.toString(SOLR_STREAM_SHARD_AUTO_MIN_HITS)));
             SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX = Integer.parseInt(serviceProperties.getProperty(SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX_PROPERTY, Integer.toString(SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX)));
 
             URL waybacksURL = new URL (WAYBACK_BASEURL);
@@ -188,7 +188,7 @@ public class PropertiesLoader {
             log.info("Property:"+ SOLR_SERVER_CHECK_INTERVAL_PROPERTY +" = " +  SOLR_SERVER_CHECK_INTERVAL);
             log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);
             log.info("Property:"+ SOLR_STREAM_SHARD_DIVIDE_PROPERTY + " = " + SOLR_STREAM_SHARD_DIVIDE);
-            log.info("Property:"+ SOLR_STREAM_SHARD_DIVIDE_LIMIT_PROPERTY + " = " + SOLR_STREAM_SHARD_DIVIDE_LIMIT_PROPERTY);
+            log.info("Property:" + SOLR_STREAM_SHARD_AUTO_MIN_PROPERTY + " = " + SOLR_STREAM_SHARD_AUTO_MIN_PROPERTY);
             log.info("Property:"+ SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX_PROPERTY + " = " + SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX);
         } catch (Exception e) {
             e.printStackTrace(); // Acceptable as this is catastrophic

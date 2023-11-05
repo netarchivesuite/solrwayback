@@ -19,7 +19,6 @@ import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.common.SolrDocument;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -266,7 +265,7 @@ public class ShardStreamingTest {
                 .query("*:*")
                 .fields("id")
                 .shardDivide("auto")
-                .autoShardDivideLimit(10)
+                .shardDivideAutoMinHits(10)
                 .maxResults(100);
         assertDocsEquals(request);
     }
@@ -487,7 +486,7 @@ public class ShardStreamingTest {
                 .query("*:*")
                 .fields("id")
                 .shardDivide("auto")
-                .autoShardDivideLimit(Long.MAX_VALUE)
+                .shardDivideAutoMinHits(Long.MAX_VALUE)
                 .maxResults(100);
         assertDocsEquals(request);
     }

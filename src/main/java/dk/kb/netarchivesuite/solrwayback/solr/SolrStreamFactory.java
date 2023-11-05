@@ -40,7 +40,7 @@ public class SolrStreamFactory {
 
     /**
      * Depending on the backing Solr (Cloud) topology, the collection and the {@link SRequest#shardDivide} and
-     * {@link SRequest#autoShardDivideLimit}, either standard collection based document search & delivery or
+     * {@link SRequest#shardDivideAutoMinHits}, either standard collection based document search & delivery or
      * shard dividing search & delivery is used to provide an Stream of {@link SolrDocument}s.
      * <p>
      * Important: This method returns a {@link CollectionUtils.CloseableStream} and the caller <strong>must</strong>
@@ -61,7 +61,7 @@ public class SolrStreamFactory {
 
     /**
      * Depending on the backing Solr Cloud topology, the collection and the {@link SRequest#shardDivide} and
-     * {@link SRequest#autoShardDivideLimit}, either standard collection based document search & delivery or
+     * {@link SRequest#shardDivideAutoMinHits}, either standard collection based document search & delivery or
      * shard dividing search & delivery is used to provide an iterator of {@link SolrDocument}s.
      * <p>
      * Important: This method returns a {@link CollectionUtils.CloseableIterator}
@@ -115,10 +115,10 @@ public class SolrStreamFactory {
                     return CollectionUtils.CloseableIterator.single(SolrStreamDirect.iterate(request));
                 }
                 long hits = SolrStreamShard.getApproximateHits(request);
-                if (hits < request.autoShardDivideLimit) {
+                if (hits < request.shardDivideAutoMinHits) {
                     log.debug("shardDivide == auto, but approximate hitcount {} is < limit {}. " +
                               "Falling back to collection oriented Solr document streaming",
-                              hits, request.autoShardDivideLimit);
+                              hits, request.shardDivideAutoMinHits);
                     return CollectionUtils.CloseableIterator.single(SolrStreamDirect.iterate(request));
                 }
                 if (hits <= request.maxResults) {
@@ -129,7 +129,7 @@ public class SolrStreamFactory {
                 }
                 log.debug("shardDivide == auto, and hitcount {} is >= limit {}. " +
                           "Using shard dividing Solr document streaming for {} shards ",
-                          hits, request.autoShardDivideLimit, shards.size());
+                          hits, request.shardDivideAutoMinHits, shards.size());
                 return SolrStreamShard.iterateSharded(request, shards);
 
             default:

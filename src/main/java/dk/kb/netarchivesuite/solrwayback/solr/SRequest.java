@@ -106,12 +106,12 @@ public class SRequest {
     public CHOICE shardDivide = CHOICE.valueOf(PropertiesLoader.SOLR_STREAM_SHARD_DIVIDE);
     /**
      * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
-     * full request is initiated. If the number of hits is above {@link #autoShardDivideLimit}, shard
+     * full request is initiated. If the number of hits is above {@link #shardDivideAutoMinHits}, shard
      * division is activated.
      *
      * The default value is specified in properties, falling back to 5000.
      */
-    public long autoShardDivideLimit = PropertiesLoader.SOLR_STREAM_SHARD_DIVIDE_LIMIT;
+    public long shardDivideAutoMinHits = PropertiesLoader.SOLR_STREAM_SHARD_AUTO_MIN_HITS;
 
     /**
      * @return a fresh instance of SRequest intended for further adjustment.
@@ -816,10 +816,10 @@ public class SRequest {
      * connection limit rules, and the resulting streams are merged.
      * <p>
      * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
-     * full request is initiated. If the number of hits is above {@link #autoShardDivideLimit}, shard
+     * full request is initiated. If the number of hits is above {@link #shardDivideAutoMinHits}, shard
      * division is activated.
      * @param choice the shardDivide strategy. The default is {@link CHOICE#auto} if not specified in properties.
-     * @see #autoShardDivideLimit(long)
+     * @see #shardDivideAutoMinHits(long)
      */
     public SRequest shardDivide(CHOICE choice) {
         shardDivide = choice;
@@ -844,10 +844,10 @@ public class SRequest {
      * connection limit rules, and the resulting streams are merged.
      * <p>
      * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
-     * full request is initiated. If the number of hits is {@code >=} {@link #autoShardDivideLimit}, shard
+     * full request is initiated. If the number of hits is {@code >=} {@link #shardDivideAutoMinHits}, shard
      * division is activated.
      * @param choice the shardDivide strategy. The default is {@link CHOICE#auto} if not specified in properties.
-     * @see #autoShardDivideLimit(long)
+     * @see #shardDivideAutoMinHits(long)
      */
     public SRequest shardDivide(String choice) {
         shardDivide = CHOICE.valueOf(choice);
@@ -856,14 +856,15 @@ public class SRequest {
 
     /**
      * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
-     * full request is initiated. If the number of hits is {@code >=} {@link #autoShardDivideLimit}, shard
-     * division is activated.
-     * @param limit the search result size before shard division is activated, if the shard divide strategy is auto.
-     *              The default is 5000 if not specified in properties.
+     * full request is initiated. The number of hits must be {@code >=} {@link #shardDivideAutoMinHits} for
+     * ahard division to be activated.
+     * @param minHits if the shard divide strategy is auto, the search result size must be at least this amount before
+     *                shard division is activated.
+     *                The default is 5000 if not specified otherwise in properties.
      * @see #shardDivide(CHOICE)
      */
-    public SRequest autoShardDivideLimit(long limit) {
-        this.autoShardDivideLimit = limit;
+    public SRequest shardDivideAutoMinHits(long minHits) {
+        this.shardDivideAutoMinHits = minHits;
         return this;
     }
 
@@ -1049,7 +1050,7 @@ public class SRequest {
      * Stream the Solr responses one document at a time.
      * <p>
      * Depending on the backing Solr Cloud topology, the collection and the {@link SRequest#shardDivide} and
-     * {@link SRequest#autoShardDivideLimit}, either standard collection based document search & delivery or
+     * {@link SRequest#shardDivideAutoMinHits}, either standard collection based document search & delivery or
      * shard dividing search & delivery is used to provide an Stream of {@link SolrDocument}s.
      * <p>
      * Important: This method returns a {@link dk.kb.netarchivesuite.solrwayback.util.CollectionUtils.CloseableStream}
@@ -1071,7 +1072,7 @@ public class SRequest {
      * Create an iterator for the Solr documents specified for this request.
      * <p>
      * Depending on the backing Solr Cloud topology, the collection and the {@link SRequest#shardDivide} and
-     * {@link SRequest#autoShardDivideLimit}, either standard collection based document search & delivery or
+     * {@link SRequest#shardDivideAutoMinHits}, either standard collection based document search & delivery or
      * shard dividing search & delivery is used to provide an iterator of {@link SolrDocument}s.
      * <p>
      * Important: This method returns a {@link dk.kb.netarchivesuite.solrwayback.util.CollectionUtils.CloseableIterator}
