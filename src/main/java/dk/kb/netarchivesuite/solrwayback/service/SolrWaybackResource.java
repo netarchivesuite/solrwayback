@@ -961,13 +961,10 @@ public class SolrWaybackResource {
    
    ResponseBuilder response = Response.ok(arcEntry.getBinaryRaw()).type(contentType );
 
-   
-     //Yes this is the same. Before gzip did not work if content encoding was taken from solr doc field
-     //For better cleanup see: https://github.com/netarchivesuite/solrwayback/issues/436
-    if (arcEntry.isHasBeenDecompressed()){     
-      response.header("Content-Encoding", arcEntry.getContentEncoding());    	
-    }else {      
-      response.header("Content-Encoding", arcEntry.getContentEncoding());
+    if (arcEntry.isHasBeenDecompressed()){ //Will have if playback (HTML, Twitter, etc.) has replaced the content
+    	response.header("Content-Encoding", "identity"); //Not required, but will make it easier to see it has been applied.
+    } else {      
+    	response.header("Content-Encoding", arcEntry.getContentEncoding());
     }          
          
      return response.build();
