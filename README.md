@@ -254,7 +254,41 @@ The indexing script keeps track of processed files by checking if a log from a p
 in the `status`-folder (this can be changed using the `STATUS_ROOT` variable). To re-index a WARC file, delete the
 corresponding log file.
 
+### 4) Customization
+Many custom properties in solrwaybackweb.properties can be changed. There are documention above most of the properties.
+Tomcat needs to be restart to load changes. Here are a few properties that must collections want to customize.
+This is a list of properties most collections want to change.
 
+**Collection start year:**
+
+Start year used in visualizations can be changed.
+ Property: 'archive.start.year=1998'
+
+** Custom logo:**
+
+Custom logo in the top left corner can be replaced with an image on the file system. Use absolute file path.
+Property: 'top.left.logo.image'
+
+Link when clicking on the custom logo: 
+Property 'top.left.logo.image.link'
+
+**Various text descriptions:**
+
+The following properties can be changed  to use a file on the file system. HTML formatting is allowed but no <html> and <body> tag must be present
+
+Properties:
+
+'about.text.file'
+
+'search.help.text.file'
+
+'collection.text.file'
+
+**Image geo search starting position:**
+Change the 'maps'-properties.
+
+**Word cloud:**
+For other languages that english change the wordcloud stopword list in the property 'wordcloud.stopwords'
 
 
 ## Deploying under another directory context.
