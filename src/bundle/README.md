@@ -44,10 +44,10 @@ Copy the previously generated `warc-indexer-XXX-jar-with-dependencies.jar` to th
 
 Download and unpack Tomcat 9 (in current folder `solrwayback_package_4.5`)
 ```
-wget 'https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.78/bin/apache-tomcat-9.0.78.tar.gz'
-tar -xzovf apache-tomcat-9.0.78.tar.gz
-mv apache-tomcat-9.0.78 tomcat-9
-rm apache-tomcat-9.0.78.tar.gz
+wget 'https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.84/bin/apache-tomcat-9.0.84.tar.gz'
+tar -xzovf apache-tomcat-9.0.84.tar.gz
+mv apache-tomcat-9.0.84 tomcat-9
+rm apache-tomcat-9.0.84.tar.gz
 ```
 
 Copy WAR and context:
@@ -67,16 +67,17 @@ Copy and rename the previously generated `solrwaybackrootproxy-4.3.1.war` to `to
 
 Download and unpack Solr 9 (in current folder `solrwayback_package_4.5`)
 ```
-wget 'https://www.apache.org/dyn/closer.lua/solr/solr/9.3.0/solr-9.3.0.tgz?action=download' -O solr-9.3.0.tgz
-tar -xovf solr-9.3.0.tgz
-mv solr-9.3.0 solr-9
-rm solr-9.2.1.tgz
+wget 'https://www.apache.org/dyn/closer.lua/solr/solr/9.4.0/solr-9.4.0.tgz?action=download' -O solr-9.4.0.tgz
+tar -xovf solr-9.4.0.tgz
+mv solr-9.4.0 solr-9
+
+rm solr-9.4.0.tgz
 ```
 
 /Optional but makes it easier to debug:/ Open Solr to the World instead of just localhost
 ```
-sed -i 's/#SOLR_JETTY_HOST="127.0.0.1"/SOLR_JETTY_HOST="0.0.0.0"/' solr-9/bin/solr.in.sh
-sed -i 's/REM set SOLR_JETTY_HOST=127.0.0.1/set SOLR_JETTY_HOST=0.0.0.0/' solr-9/bin/solr.in.cmd
+sed -i 's/#SOLR_JETTY_HOST="127.0.0.1"/SOLR_JETTY_HOST="0.0.0.0"/' solr-9.4.0/bin/solr.in.sh
+sed -i 's/REM set SOLR_JETTY_HOST=127.0.0.1/set SOLR_JETTY_HOST=0.0.0.0/' solr-9.4.0/bin/solr.in.cmd
 ```
 
 Start Solr in cloud mode, create a 1 shard `netarchivebuilder` collection and shut it down
