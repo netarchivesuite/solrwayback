@@ -109,20 +109,7 @@
       <version>30.0-jre</version>
     </dependency>
 
-    <!-- SOLR -->
-    <dependency>
-      <groupId>org.apache.solr</groupId>
-      <artifactId>solr-solrj</artifactId>
-      <version>9.1.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.solr</groupId>
-      <artifactId>solr-test-framework</artifactId>
-      <version>9.1.0</version>
-      <!-- <version>7.1.0</version> -->
-      <scope>test</scope>
-    </dependency>
+    <!-- SOLR -->    
     <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
       <!-- SOLR -->
       <dependency>
@@ -243,7 +230,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20180130</version>
+      <version>20231013</version>
     </dependency>
 
     <dependency>

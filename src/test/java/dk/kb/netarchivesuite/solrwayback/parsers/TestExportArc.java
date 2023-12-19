@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
@@ -13,7 +14,7 @@ public class TestExportArc {
 
   public static void main (String[] args) throws Exception{
 
-    PropertiesLoader.initProperties();
+      PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
       
     
     String arcFile="/media/teg/1200GB_SSD/netarkiv/0205/filedir/27119-33-20080401194737-00004-kb-prod-har-001.kb.dk.arc.gz";

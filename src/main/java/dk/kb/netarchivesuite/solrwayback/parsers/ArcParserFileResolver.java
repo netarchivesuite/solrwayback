@@ -1,15 +1,15 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import java.util.HashMap;
-
+import dk.kb.netarchivesuite.solrwayback.interfaces.ArcFileLocationResolverInterface;
 import dk.kb.netarchivesuite.solrwayback.interfaces.ArcSource;
 import dk.kb.netarchivesuite.solrwayback.interfaces.RewriteLocationResolver;
+import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dk.kb.netarchivesuite.solrwayback.interfaces.ArcFileLocationResolverInterface;
-import dk.kb.netarchivesuite.solrwayback.interfaces.IdentityArcFileResolver;
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
+import java.io.FileNotFoundException;
+import java.util.HashMap;
 
 /*
  * This class will resolve the arc-file location using source_file_path from the index.
@@ -57,6 +57,10 @@ public class ArcParserFileResolver {
       return ArcFileParserFactory.getArcEntry(arcSource, offset);
 
     } catch (Exception e) {
+      if (e instanceof RuntimeException && e.getCause() instanceof FileNotFoundException) {
+        // The only thing throwing FileNotFoundExceptions should be ArcSource.get and that already logs errors
+        throw new NotFoundServiceException("Unable to locate (W)ARC '" + source_file_path + "'");
+      }
       // It CAN happen, but crazy unlikely, and not critical at all... (took 10
       // threads spamming 1M+ requests/sec for it to happen in a test.):
       log.error("Critical error resolving warc:" + source_file_path + " and offset:" + offset + " Error:" + e.getMessage());

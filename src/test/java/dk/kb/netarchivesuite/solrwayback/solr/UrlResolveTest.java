@@ -14,6 +14,7 @@
  */
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.ParseResult;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
@@ -61,7 +62,7 @@ public class UrlResolveTest {
     public static void setUp() throws Exception {
         log.info("Setting up embedded server");
 
-        PropertiesLoader.initProperties();
+        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
 
         // Embedded Solr 9.1+ must have absolute home both as env and explicit param
         System.setProperty("solr.install.dir", Path.of(SOLR_HOME).toAbsolutePath().toString());

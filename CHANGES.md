@@ -9,6 +9,8 @@ Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 4.5.0 is
 
 Add Zip Export feature. It is now possible to extract raw files from SolrWayback in a combined zip file. This could for example be used to extract all HTML content, images, video etc. from a search result. (github #382 and #245). Add additional property in solrwaybackweb.properties to increase the default max file limit: export.zip.maxresults=1000000
 
+Docker support. The docker file will install the SolrWayback in the docker container. You can index WARC files from a folder outside the docker contain. See the docker file for documentation. (Thanks to Trym Bremnes for this PR)
+
 Query hints fix (range queries). The search validation helper did like range queries and showed warning when they was correct. (github #380)
 Remove an error message that would be shown while waiting to load "Page resources" 
 

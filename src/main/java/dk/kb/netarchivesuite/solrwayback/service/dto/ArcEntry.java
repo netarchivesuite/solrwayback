@@ -412,37 +412,18 @@ public void setFormat(FORMAT format) {
 
     /**
      * Sets the binary for this (W)ARC entry representation to the given content.
-     * The content will be converted to binary with respect to {@link #getContentCharset()} and potentially compressed,
-     * depending on {@link #getContentEncoding()}.
+     * The binary is overwritten when HTML is parsed and URL replaced.
+     * It will not be compressed and remove compressions/chunked flags so it will be returned as plain utf-8
      * <p>
-     * Warning: Although an attempt is made to keep the content representation synced to the original HTTP headers,
-     *          this is not guaranteed.
+     *
      * @param content replacement for the existing binary.
      */
     public void setStringContent(String content) {
-        if (contentEncoding != null &&
-            !contentEncoding.equalsIgnoreCase("gzip") &&
-            !contentEncoding.equalsIgnoreCase("x-gzip")) {
-            log.debug("setStringContent(...) has to disable content-encoding as encoding of '{}' compression " +
-                      "is not supported", contentEncoding);
-            contentEncoding = null;
-            hasBeenDecompressed = true;
-        }
-
-        if ("gzip".equalsIgnoreCase(contentEncoding) || "x-gzip".equalsIgnoreCase(contentEncoding)) {
-            try (ByteArrayOutputStream bos = new ByteArrayOutputStream() ;
-                 GZIPOutputStream gout = new GZIPOutputStream(bos)) {
-                IOUtils.copy(new StringReader(content), gout, getCharsetSafe());
-                cachedBinary = bos.toByteArray();
-            } catch (IOException e) {
-                throw new RuntimeException("IOException while assigning content", e);
-            }
-        } else {
-            cachedBinary = content.getBytes(getCharsetSafe());
-        }
+        cachedBinary = content.getBytes(getCharsetSafe());
         binaryTrueSize = cachedBinary.length;
-        setChunked(false);
-        // TODO: Mask the getter methods for binary
+        
+        hasBeenDecompressed = true; //This is the flag used by service when returning the content
+        setChunked(false); //also removed chunked flag 
     }
 
   private InputStream maybeBrotliDecode(InputStream before) throws IOException {
