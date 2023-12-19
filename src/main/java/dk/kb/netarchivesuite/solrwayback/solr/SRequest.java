@@ -857,7 +857,7 @@ public class SRequest {
     /**
      * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
      * full request is initiated. The number of hits must be {@code >=} {@link #shardDivideAutoMinHits} for
-     * ahard division to be activated.
+     * shard division to be activated.
      * @param minHits if the shard divide strategy is auto, the search result size must be at least this amount before
      *                shard division is activated.
      *                The default is 5000 if not specified otherwise in properties.

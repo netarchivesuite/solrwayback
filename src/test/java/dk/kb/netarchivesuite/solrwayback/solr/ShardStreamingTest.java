@@ -46,16 +46,15 @@ import static org.junit.Assert.*;
 public class ShardStreamingTest {
     private static final Logger log = LoggerFactory.getLogger(ShardStreamingTest.class);
 
-    public static final String STAGE_SOLR = "http://localhost:54001/solr";
+//    public static final String STAGE_SOLR = "http://localhost:54001/solr";
 //    public static final String STAGE_SOLR = "http://localhost:53301/solr";
-//    public static final String STAGE_SOLR = "http://localhost:52300/solr";
+    public static final String STAGE_SOLR = "http://localhost:52300/solr";
     public static final String STAGE_COLLECTION = "ns";
 
     public static final String LOCAL_SOLR = "http://localhost:8983/solr";
     public static final String COLLECTION = "netarchivebuilder";
-   // protected static SolrClient solrClient = new HttpSolrClient.Builder(LOCAL_SOLR).build();
-    protected static SolrClient solrClient = RestrictedSolrClient.createSolrClient(LOCAL_SOLR, COLLECTION);
-//    protected static SolrClient solrClient = RestrictedSolrClient.createSolrClient(STAGE_SOLR, STAGE_COLLECTION);
+//    protected static SolrClient solrClient = RestrictedSolrClient.createSolrClient(LOCAL_SOLR, COLLECTION);
+    protected static SolrClient solrClient = RestrictedSolrClient.createSolrClient(STAGE_SOLR, STAGE_COLLECTION);
     protected static boolean AVAILABLE = false;
 
 
@@ -65,8 +64,8 @@ public class ShardStreamingTest {
         try {
             solrClient.query(query);
             AVAILABLE = true;
-            PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
-            //PropertiesLoader.SOLR_SERVER = STAGE_SOLR + "/" + STAGE_COLLECTION;
+            //PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
+            PropertiesLoader.SOLR_SERVER = STAGE_SOLR + "/" + STAGE_COLLECTION;
             NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
         } catch (Exception e) {
             log.warn("No local Solr available at '" + LOCAL_SOLR + "/" + COLLECTION + "'. Skipping unit test", e);
@@ -110,27 +109,29 @@ public class ShardStreamingTest {
             return;
         }
         log.info("Starting speed test");
+//        List<String> shards = Arrays.asList("ns1:shard1", "ns2:shard1");
         SRequest request = new SRequest()
                 .solrClient(solrClient)
-                .query("*:*")
-                .filterQueries("hash:sha1\\:B3*")
+                .query("content_type_norm:html")
+                .filterQueries("hash:sha1\\:E*")
 //                .fields("id", "index_time", "author", "description", "keywords", "license_url", "content_encoding")
                 .fields("id", "index_time", "author", "description", "keywords", "license_url", "content", "content_encoding")
+//                .fields("id", "domain")
                 .shardDivide("always")
-//                .deduplicateFields("domain")
+//                .shards(shards)
+                .deduplicateFields("hash")
                 .sort("index_time asc")
                 .pageSize(100)
-                .maxResults(5000);
+                .maxResults(20000);
 
         StringBuffer sb = new StringBuffer();
 
         final String baseFQ = request.filterQueries.get(0).replace("*", "");
         for (int i = 0 ; i < 4 ; i++) {
-            final AtomicLong sum = new AtomicLong(0);
             long qt = -System.currentTimeMillis();
             // Ensure subsequent exports are not cached. +2 as the sha1-representation does not use 1 & 0
             request.forceFilterQueries(baseFQ + (i+2) + "*");
-            long hits = request.stream().peek(doc -> sum.addAndGet(doc.getFieldValue("id").hashCode())).count();
+            long hits = request.stream().count();
 
             qt += System.currentTimeMillis();
             String message = String.format(Locale.ROOT,

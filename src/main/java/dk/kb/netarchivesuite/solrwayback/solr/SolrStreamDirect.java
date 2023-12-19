@@ -182,7 +182,8 @@ public class SolrStreamDirect implements Iterable<SolrDocument> {
      */
     protected SolrStreamDirect(SRequest request) {
         if (!request.isSingleCollection()) {
-            throw new IllegalArgumentException("Request cannot be evaluated against a single collection: " + request);
+            throw new IllegalArgumentException("Request cannot be evaluated against a single collection as shards " +
+                                               "parameter specifies more than one: " + request);
         }
         collection = request.getCollectionGuaranteed();
         this.request = request;

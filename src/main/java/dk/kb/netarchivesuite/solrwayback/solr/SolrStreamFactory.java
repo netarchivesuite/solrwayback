@@ -91,7 +91,7 @@ public class SolrStreamFactory {
                              "Forcing shard dividing Solr document streaming although this does not make sense",
                              shards.get(0));
                 } else {
-                    log.debug("shardDivide == always. Using shard dividing Solr document streaming for {} shards ",
+                    log.debug("shardDivide == always. Using shard dividing Solr document streaming for {} shards",
                               shards.size());
                 }
                 return SolrStreamShard.iterateSharded(request, shards);
@@ -100,7 +100,7 @@ public class SolrStreamFactory {
                 shards = resolveShards(request);
                 if (!request.isSingleCollection()) {
                     log.debug("shardDivide == auto and more than 1 collection is defined for shards. " +
-                              "Using shard dividing Solr document streaming for {} shards ",
+                              "Using shard dividing Solr document streaming for {} shards",
                               shards.size());
                     return SolrStreamShard.iterateSharded(request, shards);
                 }
