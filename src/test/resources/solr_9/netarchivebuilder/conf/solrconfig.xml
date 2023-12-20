@@ -843,9 +843,12 @@
          text
        </str>     
         <!--  We really want http 200 first. 404 will be boosted too much if url/title match-->
-       <str name="bq">
-         status_code:200^100
-       </str>
+        <str name="bq">status_code:200^20</str>               
+        <str name="bq">content_type_norm:html^2</str>  i <!--  increase if HTML pages should be even more ranked  -->
+        <str name="bq">url_type:slashpage^5</str>   <!--  Boost frontpages (slashpage)  -->
+        <str name="bq">content_type_norm:other^-15</str>
+        <str name="bq">content_type_norm:text^-15</str>
+      
        <str name="fl">*,score</str>
        <str name="facet">false</str>
        <str name="facet.mincount">1</str>
