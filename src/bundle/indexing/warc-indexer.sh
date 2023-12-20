@@ -246,7 +246,8 @@ index_all() {
     for WARC in $WARCS; do
         if [[ -d "$WARC" ]]; then
             echo " - Recursively finding all WARCs in folder '$WARC'"
-            find "$WARC" -iname "*.warc" -o -iname "*.warc.gz" >> "$FILE_WARCS"
+            find "$WARC" -iname "*.warc" -o -iname "*.warc.gz" \
+                         -iname "*.arc" -o -iname "*.arc.gz" >> "$FILE_WARCS"
         else
             echo "$WARC" >> "$FILE_WARCS"
         fi
