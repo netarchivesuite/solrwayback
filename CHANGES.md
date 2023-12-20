@@ -1,5 +1,9 @@
 # SolrWayback changelog
 
+4.5.0
+-----
+Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 4.5.0 is backwards compatible with existing Solr 7 installations. 
+
 4.4.3
 -----
 
