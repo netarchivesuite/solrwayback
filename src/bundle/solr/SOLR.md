@@ -45,7 +45,7 @@ Visit http://localhost:8983/solr to see if Solr is running.
 
 Upload the [webarchive-discovery Solr 9 configuration](https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer/src/main/solr/solr9) to the local Solr Cloud and create a collection with 2 shards. The files are also available in the SolrWayback bundle 
 ```
-solr-9/bin/solr create_collection -c netarchivebuilder -d solr9/discovery/conf/ -n sw_conf1 -shards 2
+solr-9/bin/solr create_collection -c netarchivebuilder -d solr9/discovery/conf/ -n sw_conf1 -shards 1
 ```
 Visit http://localhost:8983/solr/#/~cloud?view=graph to check that there is now a collection called `netarchivebuilder` with 2 active shards.
 
