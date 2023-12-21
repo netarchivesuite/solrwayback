@@ -16,16 +16,16 @@ How-to for setting up a mini-cloud with Solr 9. Meant for experimentation and as
 
 If installed on a machine with 64GB or RAM, 8+ CPUs and SSDs, this should be able to handle a few terabytes of WARCs. **Note** this setup does not use replicas: If the storage on the machine crashes, the index is lost.
 
-Download Solr from the [Apache Solr homepage](https://solr.apache.org/downloads.html). As of 2024-05-12 the [webarchive-discovery](https://github.com/ukwa/webarchive-discovery) project has schemas for Solr 7 (deprecated) and Solr 9. When Solr 10 is released, it _might_ be able to use Solr 9 schemas. In this example we'll use the binary release of Solr 9.2.1.
+Download Solr from the [Apache Solr homepage](https://solr.apache.org/downloads.html). As of 2024-05-12 the [webarchive-discovery](https://github.com/ukwa/webarchive-discovery) project has schemas for Solr 7 (deprecated) and Solr 9. When Solr 10 is released, it _might_ be able to use Solr 9 schemas. In this example we'll use the binary release of Solr 9.4.0.
 
 ```
-wget 'https://www.apache.org/dyn/closer.lua/solr/solr/9.2.1/solr-9.2.1.tgz?action=download' -O solr-9.2.1.tgz
+wget 'https://www.apache.org/dyn/closer.lua/solr/solr/9.4.0/solr-9.4.0.tgz?action=download' -O solr-9.4.0.tgz
 ```
 
 Unpack Solr, rename the folder
 ```
-tar xovf solr-9.2.1.tgz
-mv solr-9.2.1 solr-9
+tar xovf solr-9.4.0.tgz
+mv solr-9.4.0 solr-9
 ```
 
 Allow the Solr to be accessed from other machines than localhost by opening `solr-9/bin/solr.in.sh` (or `solr-9/bin/solr.in.cmd` if using Windows) and changing the line
