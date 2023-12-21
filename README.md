@@ -1,7 +1,7 @@
 # SolrWayback
 
-## SolrWayback 5.0 software bundle has been released
-SolrWayback bundle release 5.0 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/5.0.0
+## SolrWayback 5.0.0 software bundle has been released
+SolrWayback bundle release 5.0.0 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/5.0.0
 
 The bundle is the recommended way to get started with SolrWayback. You download the bundle, follow the installation guide and index your own WARC files. Then you are up to speed. 
 
@@ -156,7 +156,7 @@ Read the docker file for documentation.
 Thomas Egense (thomas.egense@gmail.com) 
 Feel free to send emails with comments or questions.
 
-# SolrWayback software bundle 4 install guide
+# SolrWayback software bundle 5 install guide
 
 Through this bundle download you will have a fully working SolrWayback installation. Here you are able to index, search and playback web pages from your WARC files.
 The bundle contains Solr, the warc-indexer tool and SolrWayback installed on a Tomcat webserver.
@@ -184,12 +184,12 @@ SolrWayback requires both Solr and Tomcat to be running. These processes are sta
 * **Step 1:** Navigate to the location of the bundle on your computer.
 
 For Linux and Mac:
-* **Step 2.1:** Start tomcat with this command: `tomcat-9/bin/startup.sh`
-* **Step 2.2:** Start solr with this command: `solr-9/bin/solr start -c -m 1g`
+* **Step 2.1:** Start tomcat with this command: `tomcat-9/bin/startup.sh` 
+* **Step 2.2:** Start solr with this command: `solr-9/bin/solr start -c -m 1g`  (for version before 5.0.0 the -c parameter must be omitted)
 
 For Windows: 
 * **Step 2.1:** To start tomcat navigate to `tomcat-9/bin/` and type `startup.bat`
-* **Step 2.2:** To start solr navigate to `solr-9/bin/` and type `solr.cmd start -c -m 1g`
+* **Step 2.2:** To start solr navigate to `solr-9/bin/` and type `solr.cmd start -c -m 1g` (for version before 5.0.0 the -c parameter must be omitted)
 
 * **Step 3:** To see that tomcat and solr is running open the following links: http://localhost:8080/solrwayback/ and http://localhost:8983/solr/#/netarchivebuilder. If these are not throwing errors the services have been started successfully. 
 
