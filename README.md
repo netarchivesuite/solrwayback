@@ -181,17 +181,6 @@ If you encounter any errors when running a script during installation or setup, 
 ### 2) STARTING SOLRWAYBACK
 SolrWayback requires both Solr and Tomcat to be running. These processes are started and stopped separately with the following commands:
 
-* **Step 1:** Navigate to the location of the bundle on your computer.
-
-For Linux and Mac:
-* **Step 2.1:** Start tomcat with this command: `tomcat-9/bin/startup.sh` 
-* **Step 2.2:** Start solr with this command: `solr-9/bin/solr start -c -m 1g`  (for version before 5.0.0 the -c parameter must be omitted)
-
-For Windows: 
-* **Step 2.1:** To start tomcat navigate to `tomcat-9/bin/` and type `startup.bat`
-* **Step 2.2:** To start solr navigate to `solr-9/bin/` and type `solr.cmd start -c -m 1g` (for version before 5.0.0 the -c parameter must be omitted)
-
-* **Step 3:** To see that tomcat and solr is running open the following links: http://localhost:8080/solrwayback/ and http://localhost:8983/solr/#/netarchivebuilder. If these are not throwing errors the services have been started successfully. 
 
 #### Tomcat:  
 
@@ -205,6 +194,8 @@ For Windows:
 * Stop solr: `solr-9/bin/solr stop -all`  
 * (For windows navigate to `solr-9/bin/` and type `solr.cmd start -c -m 4g` or `solr.cmd stop -all`)    
 * To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
+* For Solrwayback bundle version before v.5 the '-c' parameter must be omitted.
+
 
 ### 3) INDEXING
 SolrWayback uses a Solr index of WARC files to support freetext search and more complex queries.  
@@ -219,6 +210,10 @@ The script `warc-indexer.sh` in the `indexing`-folder allows for multiprocessing
 indexed files, so the collection can be extended by adding more WARCs and running the script again.
 
 For more information about the warc-indexer see: https://github.com/ukwa/webarchive-discovery/wiki/Quick-Start
+
+### 3) TROUBLESHOOTING
+The SolrWayback log-file is in the folder tomcat-9/logs. See solrwayback.log or solrwayback_error.log
+The Solr log-file is in the folder solr-9/server/logs. See solr.log or solr-8983-console.log.
 
 
 **How to index on Linux and Mac:**
