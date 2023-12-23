@@ -253,7 +253,7 @@ The SolrWayback log-file is in the folder tomcat-9/logs. See solrwayback.log or 
 The Solr log-file is in the folder solr-9/server/logs. See solr.log or solr-8983-console.log.
 
 
-### 5) Customization
+### 5) CUSTOMIZATION 
 Many custom properties in solrwaybackweb.properties can be changed. There are documention above most of the properties.
 Tomcat needs to be restart to load changes. Here are a few properties that must collections want to customize.
 This is a list of properties most collections want to change.
@@ -321,14 +321,14 @@ If you want to remove and old index and create a new index from scratch, this ca
 A powerful laptop can handle up to 8 simultaneous indexing processes with Solr running on the same laptop. 
 Using an SSD for the Solr-index will speed up indexing and also improve search/playback performance drastically.
 
-### 4) SEARCHING AND ADDITIONAL FEATURES  
+### SEARCHING AND ADDITIONAL FEATURES  
 Click the question mark in the search-field in SolrWayback to get help with the search syntax for more complex queries and using 
 field queries.
 
 The toolbar icon opens a menu with the available tools.
 
 
-### 5) CREATING YOUR OWN WARCS - HARVESTING WITH WGET  
+### CREATING YOUR OWN WARCS - HARVESTING WITH WGET  
 How to create your own harvest of websites (macOS/Linux only):  
 * macOS user may have to install wget first (use Homebrew)
 * Using the wget command is an easy way to harvest websites and create WARC files. The WARC files can then be indexed into SolrWayback.
