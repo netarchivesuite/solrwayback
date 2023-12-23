@@ -211,11 +211,6 @@ indexed files, so the collection can be extended by adding more WARCs and runnin
 
 For more information about the warc-indexer see: https://github.com/ukwa/webarchive-discovery/wiki/Quick-Start
 
-### 3) TROUBLESHOOTING
-The SolrWayback log-file is in the folder tomcat-9/logs. See solrwayback.log or solrwayback_error.log
-The Solr log-file is in the folder solr-9/server/logs. See solr.log or solr-8983-console.log.
-
-
 **How to index on Linux and Mac:**
 
 Call `indexing/warc-indexer.sh -h` for usage and how to adjust the number of processes to use for indexing. We recommend moving your WARC files to the folders `warcs1` or `warcs2` and use the example below for your first time indexing. 
@@ -253,7 +248,12 @@ The indexing script keeps track of processed files by checking if a log from a p
 in the `status`-folder (this can be changed using the `STATUS_ROOT` variable). To re-index a WARC file, delete the
 corresponding log file.
 
-### 4) Customization
+### 4) TROUBLESHOOTING
+The SolrWayback log-file is in the folder tomcat-9/logs. See solrwayback.log or solrwayback_error.log
+The Solr log-file is in the folder solr-9/server/logs. See solr.log or solr-8983-console.log.
+
+
+### 5) Customization
 Many custom properties in solrwaybackweb.properties can be changed. There are documention above most of the properties.
 Tomcat needs to be restart to load changes. Here are a few properties that must collections want to customize.
 This is a list of properties most collections want to change.
