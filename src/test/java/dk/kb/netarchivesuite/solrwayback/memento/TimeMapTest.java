@@ -2,15 +2,15 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrTestClient;
-import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
+
 import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
-import org.apache.calcite.runtime.Resources;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.solr.common.SolrDocument;
+
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
 import org.junit.After;
@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -46,7 +47,7 @@ import static org.junit.Assert.assertTrue;
 public class TimeMapTest {
     private static final Logger log = LoggerFactory.getLogger(TimeMapTest.class);
     public static final int TEST_DOCS = 20; // Changing this might make some unit tests fail
-    private static final String SOLR_HOME = "target/test-classes/solr";
+    private static String solr_home= "target/test-classes/solr_9";
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
 
@@ -58,10 +59,13 @@ public class TimeMapTest {
         PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT = 10000;
         PropertiesLoaderWeb.initProperties();
 
-        coreContainer = new CoreContainer(SOLR_HOME);
+        // Embedded Solr 9.1+ must have absolute home both as env and explicit param
+        System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
+        coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath());
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
+                
         // Remove any items from previous executions:
         embeddedServer.deleteByQuery("*:*"); //This is not on the NetarchiveSolrClient API!
 

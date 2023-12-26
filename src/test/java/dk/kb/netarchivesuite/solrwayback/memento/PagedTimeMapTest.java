@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -36,7 +37,7 @@ import static org.junit.Assert.assertTrue;
 public class PagedTimeMapTest {
     private static final Logger log = LoggerFactory.getLogger(PagedTimeMapTest.class);
     public static final int TEST_DOCS = 100; // Changing this might make some unit tests fail
-    private static final String SOLR_HOME = "target/test-classes/solr";
+    private static String solr_home= "target/test-classes/solr_9";
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
 
@@ -47,10 +48,13 @@ public class PagedTimeMapTest {
         PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE = 5;
         PropertiesLoaderWeb.initProperties();
 
-        coreContainer = new CoreContainer(SOLR_HOME);
+        // Embedded Solr 9.1+ must have absolute home both as env and explicit param
+        System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
+        coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath());
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
+                
         // Remove any items from previous executions:
         embeddedServer.deleteByQuery("*:*"); //This is not on the NetarchiveSolrClient API!
 

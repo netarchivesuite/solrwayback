@@ -23,6 +23,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -34,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 public class DatetimeNegotiationTest {
     private static final Logger log = LoggerFactory.getLogger(DatetimeNegotiationTest.class);
     public static final int TEST_DOCS = 20; // Changing this might make some unit tests fail
-    private static final String SOLR_HOME = "target/test-classes/solr";
+    private static String solr_home= "target/test-classes/solr_9";
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
 
@@ -43,13 +44,17 @@ public class DatetimeNegotiationTest {
         log.info("Setting up embedded server");
         PropertiesLoader.initProperties();
         PropertiesLoaderWeb.initProperties();
-
-        coreContainer = new CoreContainer(SOLR_HOME);
+        
+        // Embedded Solr 9.1+ must have absolute home both as env and explicit param
+        System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
+        coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath());
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
+                
         // Remove any items from previous executions:
         embeddedServer.deleteByQuery("*:*"); //This is not on the NetarchiveSolrClient API!
+
 
         fillSolr();
         SolrGenericStreaming.setDefaultSolrClient(embeddedServer);
