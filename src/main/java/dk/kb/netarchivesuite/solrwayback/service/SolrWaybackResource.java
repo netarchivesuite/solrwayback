@@ -401,13 +401,13 @@ public class SolrWaybackResource {
   @Deprecated   
   @GET
   @Path("/export/csv")    
-  public Response exportFull(@QueryParam("query") String q, @QueryParam("fq") String fq,@QueryParam("fields") String fields) throws SolrWaybackServiceException {
+  public Response exportFull(@QueryParam("query") String q,@QueryParam("fields") String fields, @QueryParam("fq") String... filters) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){ 
       throw new InvalidArgumentServiceException("Export to csv not allowed!");
     }
     try {               
-      log.debug("Csv export. Query:"+q +" filterquery:"+fq);
-      InputStream is = Facade.exportFields(fields, false, false, null, false, "csv", false, q, fq);
+      log.debug("Csv export. Query:"+q +" filterquery:"+filters);
+      InputStream is = Facade.exportFields(fields, false, false, null, false, "csv", false, q, filters);
       return Response.ok(is).header("Content-Disposition", getDisposition("solrwayback_$DATETIME.csv")).build();
 
     } catch (Exception e) {
@@ -419,14 +419,16 @@ public class SolrWaybackResource {
 
   @GET
   @Path("/export/fields")
-  public Response exportFields(@QueryParam("query") String q, @QueryParam("fq") String fq,
+  public Response exportFields(@QueryParam("query") String q, 
                                @QueryParam("fields") String fields,
                                @QueryParam("expandResources") Boolean expandResources,
                                @QueryParam("ensureUnique") Boolean ensureUnique,
                                @QueryParam("groupfield") String groupField,
                                @QueryParam("flatten") Boolean flatten,
                                @QueryParam("format") String format,
-                               @QueryParam("gzip") Boolean gzip) throws SolrWaybackServiceException {
+                               @QueryParam("gzip") Boolean gzip,
+                               @QueryParam("fq") String... filters                     
+          ) throws SolrWaybackServiceException {
     if (!PropertiesLoaderWeb.ALLOW_EXPORT_CSV){
       throw new InvalidArgumentServiceException("Export to fields not allowed!");
     }
@@ -434,10 +436,10 @@ public class SolrWaybackResource {
     gzip = Boolean.TRUE.equals(gzip); // Guard against NullPointerException later on
     try {
       log.debug("{} export. Query:'{}, filterquery:'{}', fields:'{}', expandResources:{}, ensureUnique:{}, flatten:{}, groupfield:{}, gzip:{}",
-                format, q, fq, fields,
+                format, q, filters, fields,
                 Boolean.TRUE.equals(expandResources), Boolean.TRUE.equals(ensureUnique), Boolean.TRUE.equals(flatten),
                 groupField, gzip);
-      InputStream is = Facade.exportFields(fields, expandResources, ensureUnique, groupField, flatten, format, gzip, q, fq);
+      InputStream is = Facade.exportFields(fields, expandResources, ensureUnique, groupField, flatten, format, gzip, q, filters);
       // TODO: Set MIME-type and compression flag
       String filenameTemplate = "solrwayback_$DATETIME." + format + (gzip ? ".gz" : "");
       return Response.ok(is).header("Content-Disposition", getDisposition(filenameTemplate)).build();
@@ -464,23 +466,10 @@ public class SolrWaybackResource {
 
     StreamingOutput zip = Facade.exportZipContent(query, filters);
 
-    String filename = createZipFilename();
-
     return Response.ok(zip)
-            .header("Content-Disposition", "attachment; filename=" + filename)
+            .header("Content-Disposition", getDisposition("solrwayback_$DATETIME.zip"))
             .build();
 
-  }
-
-  /**
-   * Create name for zip file. The name includes information on the exported mimetype and the time for the export.
-   * @return            the filename in the format datetime_export.zip
-   */
-  private String createZipFilename() {
-    Date date = new Date() ;
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-
-    return dateFormat.format(date) + "_export.zip";
   }
 
 
@@ -891,11 +880,10 @@ public class SolrWaybackResource {
    
    ResponseBuilder response = Response.ok(arcEntry.getBinaryRaw()).type(contentType );
 
-   
-    if (arcEntry.isHasBeenDecompressed()){     
-      response.header("Content-Encoding", doc.getContentEncoding()); 
-    }else {      
-      response.header("Content-Encoding", arcEntry.getContentEncoding());
+    if (arcEntry.isHasBeenDecompressed()){ //Will have if playback (HTML, Twitter, etc.) has replaced the content
+    	response.header("Content-Encoding", "identity"); //Not required, but will make it easier to see it has been applied.
+    } else {      
+    	response.header("Content-Encoding", arcEntry.getContentEncoding());
     }          
          
      return response.build();

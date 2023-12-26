@@ -1,7 +1,7 @@
 <template>
   <div class="contentContainerHarvestTimes">
     <notifications />
-    <div v-if="harvestTimesData">
+    <div v-if="dataFound || dataFound === null">
       <h2>
         {{ harvestTimesData.pageUrl }}
       </h2>
@@ -48,7 +48,8 @@ export default {
   data: () => ({
         harvestTimesData:null,
         sourceFilePath: null,
-        offset:null
+        offset:null,
+        dataFound:null
   }),
  
   mounted() {
@@ -57,10 +58,12 @@ export default {
     requestService.getHarvestedPageResources(this.sourceFilePath, this.offset)
         .then(data => {
            this.harvestTimesData = data
+           this.dataFound = true
            /* Uncomment for local test only */
            //this.harvestTimesData.notHarvested = ['http://foobar.dk/images/bar/lorem/public/images/icon_facebook.png','http://foobar.dk/images/bar/lorem/public/images/icon_instagram.png','http://foobar.dk/images/bar/lorem/public/images/payment_icon.png','http://foobar.dk/images/bar/lorem/public/images/icon_favorite.png']
-          //this.harvestTimesData.notHarvested = []
+          this.harvestTimesData.notHarvested = []
       }).catch(() => {
+        this.dataFound = false
           this.setNotification({
           	title: 'We are so sorry!',
             text: 'Something went wrong when fetching the harvest data for this page - please try again',
@@ -78,7 +81,7 @@ export default {
     getPrettyDate(date) {
       return toHumanDate(new Date(date), true, true)
     }
-   },
+  },
 }
 </script>
 

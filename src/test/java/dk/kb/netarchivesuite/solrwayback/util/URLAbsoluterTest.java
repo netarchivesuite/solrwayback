@@ -28,7 +28,7 @@ public class URLAbsoluterTest {
 
     @Before
     public void setUpProperties()  throws Exception{ 
-        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback.properties").getPath());
+        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
         // We need this so that we know what the Solr server is set to
         PropertiesLoader.WAYBACK_BASEURL = "http://localhost:0000/solrwayback/";
     }

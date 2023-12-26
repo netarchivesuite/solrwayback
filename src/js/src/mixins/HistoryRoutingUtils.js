@@ -24,6 +24,17 @@ export default {
         currentParams.facets !== appliedFacets.join('') ||
         currentParams.offset !== solrSettings.offset ||
         currentParams.sort !== solrSettings.sort)
+    },
+    $_getResolvedUrl(destination, query, appliedFacets, solrSettings) {
+      const route = this.$router.resolve({name: destination, query: { query: query,
+        grouping: solrSettings.grouping,
+        imgSearch: solrSettings.imgSearch,
+        offset: solrSettings.imgSearch === true ? 0 : solrSettings.offset,
+        urlSearch: solrSettings.urlSearch,
+        facets:appliedFacets.join(''),
+        sort:solrSettings.sort
+        } })
+        return route
     }
   },
 }

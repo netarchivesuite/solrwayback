@@ -1,10 +1,28 @@
 # SolrWayback changelog
 
+5.0.0
+-----
+Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 4.5.0 is backwards compatible with existing Solr 7 installations. 
+Better guide for using start and stop scripts.
+Fixed csv/json export when more than 1 facet was selected. (regression bug... sorry)
+warc-indexer now also finds arc files when searching recursive(thanks to @fedorw) 
+Frontend third-parties dependencies updated.
+
+
 4.4.3
 -----
-Query hints fix (range queries). The search validation helper did like range queries and showed warning when they was correct. (github #380)
 
-Add Zip Export feature. It is now possible to extract raw files from SolrWayback in a combined zip file. This could for example be used to extract all HTML content, images, video etc. from a search result. (github #382 and #245)
+Add Zip Export feature. It is now possible to extract raw files from SolrWayback in a combined zip file. This could for example be used to extract all HTML content, images, video etc. from a search result. (github #382 and #245). Add additional property in solrwaybackweb.properties to increase the default max file limit: export.zip.maxresults=1000000
+
+Docker support. The docker file will install the SolrWayback in the docker container. You can index WARC files from a folder outside the docker contain. See the docker file for documentation. (Thanks to Trym Bremnes for this PR)
+
+Query hints fix (range queries). The search validation helper did like range queries and showed warning when they was correct. (github #380)
+Remove an error message that would be shown while waiting to load "Page resources" 
+
+CTRL+click on a facet will open the search-result in a new tab. On macOS use CMD+click.  (github #404)
+
+Setting encoding to UTF-8 when indexing into Solr using the indexing scripts in the bundle install. Some OS/docker containers may not have UTF-8 as default.
+
 
 4.4.2
 -----

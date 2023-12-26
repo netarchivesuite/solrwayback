@@ -184,7 +184,7 @@ public class AutoFileResolver implements ArcFileLocationResolverInterface, Runna
                 }
                 String filename = pathEntry.getFileName().toString();
                 if (!filePattern.matcher(filename).matches()) {
-                    log.debug("Scanner encountered non-matching file '{}'", filename);
+                    log.trace("Scanner encountered non-matching file '{}'", filename); //spamming too much during build
                     return;
                 }
                 if (warcs.containsKey(filename)) {

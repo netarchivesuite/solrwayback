@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 
 import static org.junit.Assert.assertEquals;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -22,15 +23,16 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 public class EmbeddedSolrTest {
 
     private static final Logger log = LoggerFactory.getLogger(EmbeddedSolrTest.class);        
-    private static String solr_home= "target/test-classes/solr"; 
+    private static String solr_home= "target/test-classes/solr_9";
     private static NetarchiveSolrClient server = null;
     private static  CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
     
     @Before
     public void setUp() throws Exception {
-        
-       coreContainer = new CoreContainer(solr_home);
+       // Embedded Solr 9.1+ must have absolute home both as env and explicit param
+       System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
+       coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath());
        coreContainer.load();
        embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
        NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
@@ -52,7 +54,7 @@ public class EmbeddedSolrTest {
   
     @Test
     public void testDateSortBug() throws Exception {
-    
+
        String url = "http://testurl.dk/test";
       
        ArrayList<String> crawlTimes = new ArrayList<String>();

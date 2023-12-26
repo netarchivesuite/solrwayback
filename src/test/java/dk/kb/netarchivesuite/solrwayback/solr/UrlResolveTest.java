@@ -14,6 +14,7 @@
  */
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
 import dk.kb.netarchivesuite.solrwayback.parsers.ParseResult;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
@@ -53,7 +54,7 @@ import static org.junit.Assert.assertTrue;
 public class UrlResolveTest {
     private static final Logger log = LoggerFactory.getLogger(UrlResolveTest.class);
 
-    private static final String SOLR_HOME = "target/test-classes/solr";
+    private static final String SOLR_HOME = "target/test-classes/solr_9";
     private static CoreContainer coreContainer= null;
     private static ConvenientEmbeddedSolrServer solr = null;
 
@@ -61,9 +62,11 @@ public class UrlResolveTest {
     public static void setUp() throws Exception {
         log.info("Setting up embedded server");
 
-        PropertiesLoader.initProperties();
+        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
 
-        coreContainer = new CoreContainer(SOLR_HOME);
+        // Embedded Solr 9.1+ must have absolute home both as env and explicit param
+        System.setProperty("solr.install.dir", Path.of(SOLR_HOME).toAbsolutePath().toString());
+        coreContainer = CoreContainer.createAndLoad(Path.of(SOLR_HOME).toAbsolutePath());
         coreContainer.load();
         solr = new ConvenientEmbeddedSolrServer(coreContainer, "netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(solr);

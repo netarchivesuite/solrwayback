@@ -12,7 +12,7 @@
         <div v-for="(facet, facetIndex) in facetCategory[1]"
              :key="facetIndex"
              :class="facetIndex % 2 === 0 ? 'facetItem' : 'facetCount'"
-             @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet) : null">
+             @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet, $event) : null">
           {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
         <div v-show="extraFacetLoading === facetCategory[0]" class="extraFacetsloading" />
@@ -77,11 +77,30 @@ export default {
       let appliedFacets = this.searchAppliedFacets.join('')
       this.addSpecificRequestedFacets({facet:facetArea, query:structuredQuery, appliedFacets:appliedFacets})
     },
-    applyFacet(facetCategory, facet) {
+    applyFacet(facetCategory, facet, event) {
+      let facetAllreadyApplied = false
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
-      this.updateSolrSettingOffset(0)
-      this.addToSearchAppliedFacets(newFacet)
-      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.searchAppliedFacets.forEach((facet) => {
+        facet === newFacet ? facetAllreadyApplied = true : null
+      })
+      if(!facetAllreadyApplied) {
+        if(event.ctrlKey || event.metaKey) {
+            const localSolrSettings = JSON.parse(JSON.stringify(this.solrSettings))
+            const localFacets = [...this.searchAppliedFacets]
+            localFacets.push(newFacet)
+            localSolrSettings.offset = 0
+            window.open(this.$_getResolvedUrl('Search', this.query, localFacets, localSolrSettings).href, '_blank')
+          }
+          else {
+            this.updateSolrSettingOffset(0)
+            this.addToSearchAppliedFacets(newFacet)
+            this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+        }
+      }
+      else if(facetAllreadyApplied && event.ctrlKey ||
+              facetAllReadyApplied && event.metaKey) {
+        window.open(this.$_getResolvedUrl('Search', this.query, this.searchAppliedFacets, this.solrSettings).href, '_blank')
+      }
     },
     checkForFacets(facets) {
     //we test if the variable exists first - can cause problems if it's not set yet.

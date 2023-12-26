@@ -1,16 +1,17 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ public class FileUtil {
     }
 
     /**
-     * Locates a file designated by {@code resource} by using the class loadr primarily and direct checking of
+     * Locates a file designated by {@code resource} by using the class loader primarily and direct checking of
      * the file system secondarily.
      * @param resource a resource available on the file system.
      * @return the path to the {@code resource}.
@@ -64,6 +65,68 @@ public class FileUtil {
             throw new IOException("Unable to convert URL '" + url + "' to URI", e);
         }
     }
+
+    /**
+     * Specialized resolver that operates on the file system. Attempts to locate the given resources in order
+     * <ul>
+     *     <li>Directly as file</li>
+     *     <li>As {@code env:catalina.base/resource}, {@code env:catalina.base/../resource} etc</li>
+     *     <li>As {@code env:catalina.home/resource}, {@code env:catalina.home/../resource} etc</li>
+     *     <li>As {@code env:user.dir/resource}, {@code env:user.dir/../resource} etc</li>
+     *     <li>As {@code env:user.home/resource}</li>
+     * </ul>
+     * When running under Tomcat, {@code catalina.home} is guaranteed to be set and {@code catalina.base} might be set.
+     * @param resources one or more resources to look for. First file system match is returned.
+     * @return a Path to an existing file, found using the priorities stated above.
+     * @throws FileNotFoundException if none of the resources could be found.
+     */
+    public static Path resolveContainerResource(String... resources) throws FileNotFoundException {
+        Set<Path> candidates = Arrays.stream(resources).
+                flatMap(FileUtil::getContainerCandidates).
+                collect(Collectors.toCollection(LinkedHashSet::new));
+
+        // We print all potential paths to show people reading logs where the resources can be
+        log.info("Resolving resource in order {}", candidates);
+
+        return candidates.stream().
+                filter(Files::exists).
+                findFirst().
+                orElseThrow(() -> new FileNotFoundException("Unable to locate any of " + Arrays.toString(resources)));
+    }
+
+    /**
+     * Generates candidate Paths for the given resource in order
+     * <ul>
+     *     <li>Directly as file</li>
+     *     <li>As {@code env:catalina.base/resource}, {@code env:catalina.base/../resource} etc</li>
+     *     <li>As {@code env:catalina.home/resource}, {@code env:catalina.home/../resource} etc</li>
+     *     <li>As {@code env:user.dir/resource}, {@code env:user.dir/../resource} etc</li>
+     *     <li>As {@code env:user.home/resource}</li>
+     * </ul>
+     * When running under Tomcat, {@code catalina.home} is guaranteed to be set and {@code catalina.base} might be set.
+     * @param resource a resource to look for.
+     * @return a stream with Paths to check for existence of the given resource, in order of priority as listed above.
+     */
+    static Stream<Path> getContainerCandidates(String resource) {
+        return Stream.of("catalina.base", "catalina.home", "user.dir", "user.home").
+                map(System::getProperty).            // Get the property value
+                filter(Objects::nonNull).            // Ignore the non-defined properties
+                map(Paths::get).                     // Convert to Path
+                flatMap(FileUtil::allLevels).        // All folders
+                map(path -> path.resolve(resource)); // All full paths
+    }
+
+    /**
+     * Expand the given path to a Stream of the path itself, followed by all its parents.
+     * @param path any path.
+     * @return a stream of the path followed by all parents.
+     */
+    private static Stream<Path> allLevels(Path path) {
+        return path.getParent() != null ?
+                Stream.concat(Stream.of(path), allLevels(path.getParent())) :
+                Stream.of(path);
+    }
+
     /**
      * Converts sPath to a {@link Path} and checks that it is an accessible folder.
      * @param sPath a file system path.

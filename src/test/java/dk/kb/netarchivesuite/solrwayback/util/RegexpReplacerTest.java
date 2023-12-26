@@ -1,6 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
-import com.google.protobuf.Enum;
 import org.junit.Test;
 
 import java.util.HashSet;

@@ -36,7 +36,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
 
   @Before
   public void setUpProperties()  throws Exception{
-      PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback.properties").getPath());
+      PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
   }
 
   @Test
@@ -268,7 +268,7 @@ public class TestExportWarcStreaming extends UnitTestUtils {
   }
 
   public static void main(String[] args) throws Exception{
-    PropertiesLoader.initProperties();
+    PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
     String source_file_path="/home/teg/workspace/solrwayback/storedanske_export-00000.warc";
     int offset = 515818793;
     ArcEntry warcEntry = WarcParser.getWarcEntry(ArcSource.fromFile(source_file_path),offset);

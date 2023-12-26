@@ -30,7 +30,7 @@ THREADS_DEFAULT="2"
 
 : ${WARCS:="$@"}
 
-: ${INDEXER_JAR:="${WI_HOME}/warc-indexer-3.2.0-SNAPSHOT-jar-with-dependencies.jar"}
+: ${INDEXER_JAR:="${WI_HOME}/warc-indexer-3.3.1-jar-with-dependencies.jar"}
 : ${INDEXER_MEM:="1024M"}
 : ${INDEXER_CONFIG:="${WI_HOME}/config3.conf"}
 : ${INDEXER_CUSTOM:=""} # Custom arguments, e.g. "--collection OurHeritage2020" goes here
@@ -41,6 +41,7 @@ THREADS_DEFAULT="2"
 : ${TMP_ROOT:="${STATUS_ROOT}/tmp"}
 : ${SOLR_CHECK:="true"}
 : ${SOLR_COMMIT:="true"}
+
 popd > /dev/null
 
 function usage() {
@@ -198,10 +199,10 @@ index_warc() {
 
     echo "   - Indexing $WARC"
     mkdir "$WARC_TMP"
-    local CALL="java -Xmx1024M -Djava.io.tmpdir=\"$WARC_TMP\" -jar \"$INDEXER_JAR\" -c \"$INDEXER_CONFIG\" $INDEXER_CUSTOM -s  \"$SOLR_URL\"  \"$WARC\" &> \"$WARC_LOG\""
+    local CALL="java -Dfile.encoding=UTF-8 -Xmx1024M -Djava.io.tmpdir=\"$WARC_TMP\" -jar \"$INDEXER_JAR\" -c \"$INDEXER_CONFIG\" $INDEXER_CUSTOM -s  \"$SOLR_URL\"  \"$WARC\" &> \"$WARC_LOG\""
     echo "$CALL" >> "$WARC_LOG"
     # Using  >> "$WARC_LOG" 2>&1 instead of &>> to be able to run on machines with bash version 3. Most Macs come with some version of bash 3.
-    java -Xmx1024M -Djava.io.tmpdir="$WARC_TMP" -jar "$INDEXER_JAR" -c "$INDEXER_CONFIG" $INDEXER_CUSTOM -s  "$SOLR_URL"  "$WARC" >> "$WARC_LOG" 2>&1
+    java -Dfile.encoding=UTF-8 -Xmx1024M -Djava.io.tmpdir="$WARC_TMP" -jar "$INDEXER_JAR" -c "$INDEXER_CONFIG" $INDEXER_CUSTOM -s  "$SOLR_URL"  "$WARC" >> "$WARC_LOG" 2>&1
     local RC=$?
     if [[ $(wc -l < "$WARC_LOG") -eq 1 ]]; then
         mv "$WARC_LOG" "$WARC_FAILED"
@@ -237,7 +238,7 @@ index_warcs() {
     export SOLR_URL
     export STATUS_ROOT
     export TMP_ROOT
-    cat "$WARCS" | xargs -P "$THREADS" -n 1 -I "{}" bash -c 'index_warc "{}"'
+    cat "$WARCS" | xargs -P "$THREADS" -I "{}" bash -c 'index_warc "{}"'
 }
 
 index_all() {
@@ -245,7 +246,7 @@ index_all() {
     for WARC in $WARCS; do
         if [[ -d "$WARC" ]]; then
             echo " - Recursively finding all WARCs in folder '$WARC'"
-            find "$WARC" -iname "*.warc" -o -iname "*.warc.gz" >> "$FILE_WARCS"
+            find "$WARC" -iname "*.warc" -o -iname "*.warc.gz" -o -iname "*.arc" -o -iname "*.arc.gz" >> "$FILE_WARCS"
         else
             echo "$WARC" >> "$FILE_WARCS"
         fi
