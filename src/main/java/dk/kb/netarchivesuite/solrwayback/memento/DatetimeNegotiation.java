@@ -190,7 +190,8 @@ public class DatetimeNegotiation {
     }
     
     /**
-     * Streams the memento found for the timegate.
+     * Return the header with the 302 redirection location. Has no payload.
+     * 
      * @param doc           containing data from solr for accessing the memento in the WARC files.
      * @param metadata      object which contains metadata on the memento. Including the additional headers.
      * @return              a response containing correct memento headers and the memento as the response entity.
@@ -199,9 +200,8 @@ public class DatetimeNegotiation {
         if (PropertiesLoader.PLAYBACK_DISABLED){
             return Response.noContent().replaceAll(metadata.getHttpHeaders()).build();
         } else {
-            try {
-                ArcEntry mementoEntity = Facade.getArcEntry(doc.getSource_file_path(), doc.getSource_file_offset());
-                ResponseBuilder entity = Response.status(302).entity(mementoEntity.getBinaryRaw());
+            try {               
+                ResponseBuilder entity = Response.status(302);
                 addMementoHeadersToReponse(entity,metadata);                
                 return entity.build();
             } catch (Exception e) {
