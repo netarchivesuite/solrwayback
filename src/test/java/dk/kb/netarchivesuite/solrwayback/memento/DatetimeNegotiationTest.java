@@ -14,8 +14,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +27,7 @@ import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -67,8 +66,7 @@ public class DatetimeNegotiationTest {
         coreContainer.shutdown();
     }
 
-
-
+    
     @Test
     public void testHeadersForPatternTwoPointTwo() throws Exception {
         PropertiesLoader.PLAYBACK_DISABLED = true;
@@ -77,10 +75,11 @@ public class DatetimeNegotiationTest {
         MultivaluedMap<String, Object> headers = timeGate.getHeaders();
 
         assertEquals("accept-datetime", headers.get("Vary").get(0));
-        assertFalse(headers.get("Content-Location").isEmpty());
-        assertFalse(headers.get("Memento-Datetime").isEmpty());
+        String contentLocation=(String) headers.get("Content-Location").get(0);
+        assertTrue(contentLocation.endsWith("/20200315123151/https://kb.dk/"));
+        assertNotNull(headers.get("Memento-Datetime"));
         assertTrue(headers.get("Link").get(0).toString().contains("rel=\"original\""));
-        assertFalse(headers.get("Content-Length").isEmpty());
+        assertNotNull(headers.get("Content-Length").get(0));    
         assertEquals("text/html;charset=UTF-8", headers.get("Content-Type").get(0));
     }
 
@@ -95,21 +94,12 @@ public class DatetimeNegotiationTest {
         MultivaluedMap<String, Object> headers = timeGate.getHeaders();
 
         assertEquals("accept-datetime", headers.get("Vary").get(0));
-        assertFalse(headers.get("Location").isEmpty());
+        assertNotNull(headers.get("Location"));
         assertFalse(headers.containsKey("Memento-Datetime"));
         assertTrue(headers.get("Link").get(0).toString().contains("rel=\"original\""));
         assertEquals(0, headers.get("Content-Length").get(0));
         assertEquals("text/html;charset=UTF-8", headers.get("Content-Type").get(0));
     }
-
-
-
-
-
-
-
-
-
 
     public static void fillSolr() throws SolrServerException, IOException {
         log.info("Filling embedded server with {} documents", TEST_DOCS);
@@ -146,14 +136,7 @@ public class DatetimeNegotiationTest {
         document.addField("content_type_served", "text/html;charset=UTF-8");
         document.addField("type", "text/html;charset=UTF-8");
         embeddedServer.add(document);
-
     }
-
-
-
-
-
-
 
 
     //TODO: Do embedded solr testing instead. Use same docs as timemaptest

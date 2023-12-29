@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -177,18 +179,20 @@ public class DatetimeNegotiation {
         } else {
             try {
                 SolrWaybackResource resource = new SolrWaybackResource();
-                Response resp = resource.viewImpl(doc.getSource_file_path(), doc.getSource_file_offset(), true, true);
-                return Response.fromResponse(resp).replaceAll(metadata.getHttpHeaders()).build();
+                Response resp = resource.viewImpl(doc.getSource_file_path(), doc.getSource_file_offset(), true, true);                               
+                ResponseBuilder entity = Response.fromResponse(resp);
+                addMementoHeadersToReponse(entity, metadata);                                                       
+               return entity.build();                
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
     }
-
+    
     /**
      * Streams the memento found for the timegate.
      * @param doc           containing data from solr for accessing the memento in the WARC files.
-     * @param metadata      object which contains metadata on the memento. Including headers.
+     * @param metadata      object which contains metadata on the memento. Including the additional headers.
      * @return              a response containing correct memento headers and the memento as the response entity.
      */
     private static Response streamMementoFromRedirectingTimeGate(MementoDoc doc, MementoMetadata metadata) {
@@ -197,10 +201,27 @@ public class DatetimeNegotiation {
         } else {
             try {
                 ArcEntry mementoEntity = Facade.getArcEntry(doc.getSource_file_path(), doc.getSource_file_offset());
-                return Response.status(302).entity(mementoEntity.getBinaryRaw()).replaceAll(metadata.getHttpHeaders()).build();
+                ResponseBuilder entity = Response.status(302).entity(mementoEntity.getBinaryRaw());
+                addMementoHeadersToReponse(entity,metadata);                
+                return entity.build();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
     }
+
+    /**
+     * Add the additional headers for mememto reponse. The headers are different for redirecting and non-redirecting requests. 
+     * 
+     * @param entity The response to enrinch with additioal headers
+     * @param metadata Additional headers
+     */
+    private static void addMementoHeadersToReponse(ResponseBuilder entity, MementoMetadata metadata) {
+        for (String header: metadata.getHttpHeaders().keySet()) {
+            String value=metadata.getHttpHeaders().get(header).get(0).toString();
+            log.debug("adding memento header:"+header +" value:"+value);
+            entity.header(header, value);
+        }
+    }
+    
 }
