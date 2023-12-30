@@ -17,6 +17,7 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.commons.fileupload.util.Streams;
@@ -60,7 +61,8 @@ public class SolrGenericStreamingTest {
         log.info("Setting up embedded server");
 
         PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
-
+        PropertiesLoaderWeb.initProperties(UnitTestUtils.getFile("properties/solrwaybackweb_unittest.properties").getPath()); 
+        
         // Embedded Solr 9.1+ must have absolute home both as env and explicit param
         System.setProperty("solr.install.dir", Path.of(SOLR_HOME).toAbsolutePath().toString());
         coreContainer = CoreContainer.createAndLoad(Path.of(SOLR_HOME).toAbsolutePath());

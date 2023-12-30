@@ -68,6 +68,9 @@ public class NormalisationStandard extends NormalisationAbstract{
             url = url.substring(0, url.length() - 1);
         }
 
+        if (!url.startsWith("http://")){
+            url = "http://" + url;
+        }
         // If the link is domain-only (http://example.com), is _must_ end with slash
         if (DOMAIN_ONLY.matcher(url).matches()) {
             url += "/";

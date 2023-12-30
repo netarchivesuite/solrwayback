@@ -3,7 +3,9 @@ package dk.kb.netarchivesuite.solrwayback;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 
 public class UnitTestUtils {
@@ -51,5 +53,16 @@ public class UnitTestUtils {
         out.close();
     }
 
-
+    /* When run under maven, hostname is not localhost but instead etc. 'teg-legion-y540-15irh:8080'
+     * Replace this by localhost:8080
+     * This is used by Memento unittest    
+     */
+    public static String replaceHostNameWithLocalHost(String text) throws UnknownHostException{        
+        String hostName= InetAddress.getLocalHost().getHostName().toLowerCase();            
+        String t= text.replace(hostName+":8080", "localhost:8080");                                    
+        return t;
+       
+    }
+    
+    
 }
