@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.memento;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 
@@ -31,8 +32,10 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -96,8 +99,9 @@ public class TimeMapTest {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         timeMap.write(output);
         String timeMapString = new String(output.toByteArray(), StandardCharsets.UTF_8);
-
-        assertEquals(testTimeMapLinkFormat, timeMapString);
+        
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);        
+        assertEquals(testTimeMapLinkFormat, timeMapStringLocalhost);
     }
 
     @Test
@@ -109,8 +113,8 @@ public class TimeMapTest {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         timeMap.write(output);
         String timeMapString = new String(output.toByteArray(), StandardCharsets.UTF_8);
-
-        assertEquals(testTimeMapJSON, timeMapString);
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);        
+        assertEquals(testTimeMapJSON, timeMapStringLocalhost);
     }
 
     public static void fillSolr() throws SolrServerException, IOException {
@@ -147,6 +151,8 @@ public class TimeMapTest {
         embeddedServer.add(document);
     }
 
+  
+    
     final String testTimeMapJSON = "{\"original_uri\":\"http://kb.dk/\",\"timegate_uri\":\"http://localhost:8080/solrwayback/services/memento/http://kb.dk/\"," +
             "\"timemap_uri\":{\"link_format\":\"http://localhost:8080/solrwayback/services/memento/timemap/link/http://kb.dk/\"," +
             "\"json_format\":\"http://localhost:8080/solrwayback/services/memento/timemap/json/http://kb.dk/\"}," +

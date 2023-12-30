@@ -7,6 +7,7 @@ import dk.kb.netarchivesuite.solrwayback.service.SolrWaybackResource;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
+import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.common.SolrDocument;
@@ -25,6 +26,8 @@ import java.util.Optional;
 /**
  * This class implements the Datetime Negotiation of the Memento Framework
  * as specified in <a href="https://datatracker.ietf.org/doc/html/rfc7089#section-4.1">RFC 7089</a>.
+ * 
+ * All methods for non-redirect (2.2 mode) has been commented out since 2.2 is not supported.
  */
 public class DatetimeNegotiation {
     private static final Logger log = LoggerFactory.getLogger(DatetimeNegotiation.class);
@@ -33,11 +36,16 @@ public class DatetimeNegotiation {
         if (PropertiesLoader.MEMENTO_REDIRECT) {
             return redirectingTimegate(url, acceptDatetime);
         } else {
-            return nonRedirectingTimeGate(url, acceptDatetime);
+        
+            throw new InvalidArgumentServiceException("Memento playback only supports redirect mode."); //
+            //return nonRedirectingTimeGate(url, acceptDatetime);
         }
     }
 
     /**
+     * 
+     * 
+     * 
      * Non-Redirecting TimeGate (Memento Pattern 2.2)
      * This behavior is consistent with Memento Pattern 2.2 and is the default behavior for timegates in SolrWayback.
      *
@@ -46,6 +54,14 @@ public class DatetimeNegotiation {
      *                       the closest possible memento.
      * @return an HTTP 200 response with memento headers and the memento as the entity.
      */
+  
+    
+    //Playback will be very flawed with this approach since url now has /mememto.
+    //Only solution is to return a small HTML page with a frame, that has the correct playback url.
+    //Playback logic is implemented in root-service. Html URL parser, serviceworker, live leak referrer fix. We do not want to have double logic for playback     
+    //Noone cares.. Everyone uses browser they will not notice a redirect, so this 2.2 option is not required.
+    //Also I do not like it! Playback is  polluted with Memento header fields.
+    /*
     public static Response nonRedirectingTimeGate(String url,
                                                   String acceptDatetime) throws Exception {
 
@@ -62,7 +78,7 @@ public class DatetimeNegotiation {
 
         return responseOpt.orElseGet(() -> Response.status(404).build());
     }
-
+*/
     /**
      * Redirecting TimeGate (Memento Pattern 2.1)
      * This behavior is consistent with Memento Pattern 2.1 and can be configured through a property.
@@ -112,6 +128,8 @@ public class DatetimeNegotiation {
      *                 in this object when constructed.
      * @return         the input doc for further use in a streaming chain.
      */
+    
+     /*
     private static MementoDoc addHeadersToMetadataObjectNonRedirecting(MementoDoc doc, MementoMetadata metadata) {
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         headers.add("Date", java.time.OffsetDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME));
@@ -137,7 +155,7 @@ public class DatetimeNegotiation {
 
         return doc;
     }
-
+*/
     /**
      * Create HTTP headers for timegate found from Solr Index
      * @param doc      contains data used to construct the header for the memento.
@@ -173,6 +191,7 @@ public class DatetimeNegotiation {
      * @param metadata      object which contains metadata on the memento. Including headers.
      * @return              a response containing correct memento headers and the memento as the response entity.
      */
+    /*
     private static Response streamMementoFromNonRedirectingTimeGate(MementoDoc doc, MementoMetadata metadata) {
         if (PropertiesLoader.PLAYBACK_DISABLED){
          return Response.noContent().replaceAll(metadata.getHttpHeaders()).build();
@@ -188,7 +207,7 @@ public class DatetimeNegotiation {
             }
         }
     }
-    
+    */
     /**
      * Return the header with the 302 redirection location. Has no payload.
      * 

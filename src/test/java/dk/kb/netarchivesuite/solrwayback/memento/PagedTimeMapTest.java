@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.memento;
 
+import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrTestClient;
@@ -81,8 +82,9 @@ public class PagedTimeMapTest {
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 20);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
-
-        assertEquals(testPagedTimeMapLinkLastPage, timeMapString);
+        
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);              
+        assertEquals(testPagedTimeMapLinkLastPage, timeMapStringLocalhost);
     }
 
     @Test
@@ -90,16 +92,17 @@ public class PagedTimeMapTest {
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", null);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
-
-        assertEquals(testPagedTimeMapLinkFirstPage, timeMapString);
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
+        
+        assertEquals(testPagedTimeMapLinkFirstPage, timeMapStringLocalhost);
     }
     @Test
     public void testTimeMapLinkFirstConstruction() throws IOException, URISyntaxException {
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 1);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
-
-        assertEquals(testPagedTimeMapLinkFirstPage, timeMapString);
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
+        assertEquals(testPagedTimeMapLinkFirstPage, timeMapStringLocalhost);
     }
 
 
@@ -108,8 +111,8 @@ public class PagedTimeMapTest {
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 5);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
-
-        assertEquals(testPagedTimeMapLinkFifthPage, timeMapString);
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
+        assertEquals(testPagedTimeMapLinkFifthPage, timeMapStringLocalhost);
     }
 
     @Test
@@ -117,8 +120,8 @@ public class PagedTimeMapTest {
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", 1);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
-
-        assertEquals(testPagedTimeMapJSONFirstPage, timeMapString);
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
+        assertEquals(testPagedTimeMapJSONFirstPage, timeMapStringLocalhost);
     }
 
     @Test
@@ -126,8 +129,8 @@ public class PagedTimeMapTest {
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", 12);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
-
-        assertEquals(testPagedTimeMapJSONTwelthPage, timeMapString);
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
+        assertEquals(testPagedTimeMapJSONTwelthPage, timeMapStringLocalhost);
     }
 
     @Test
@@ -135,8 +138,8 @@ public class PagedTimeMapTest {
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", 20);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
-
-        assertEquals(testPagedTimeMapJSONLastPage, timeMapString);
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
+        assertEquals(testPagedTimeMapJSONLastPage, timeMapStringLocalhost);
     }
 
     @Test
@@ -144,8 +147,8 @@ public class PagedTimeMapTest {
         StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", null);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
-
-        assertEquals(testPagedTimeMapJSONFirstPage, timeMapString);
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
+        assertEquals(testPagedTimeMapJSONFirstPage, timeMapStringLocalhost);
     }
 
     private static String convertStreamingTimeMapToString(StreamingOutput timeMap) throws IOException {

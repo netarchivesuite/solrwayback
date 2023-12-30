@@ -66,7 +66,7 @@ public class DatetimeNegotiationTest {
         coreContainer.shutdown();
     }
 
-    
+    /*
     @Test
     public void testHeadersForPatternTwoPointTwo() throws Exception {
         PropertiesLoader.PLAYBACK_DISABLED = true; //Must be disabled since playback needs warc files
@@ -83,10 +83,11 @@ public class DatetimeNegotiationTest {
         assertNotNull(headers.get("Content-Length").get(0));    
         assertEquals("text/html;charset=UTF-8", headers.get("Content-Type").get(0));
     }
+  */
 
 
-
-    @Test
+   
+    @Test 
     public void testHeadersForPatternTwoPointOne() throws Exception {
         PropertiesLoader.PLAYBACK_DISABLED = false; //
         PropertiesLoader.MEMENTO_REDIRECT = true;
@@ -101,6 +102,7 @@ public class DatetimeNegotiationTest {
         assertEquals("0", headers.get("Content-Length").get(0));
         assertEquals("text/html;charset=UTF-8", headers.get("Content-Type").get(0));
     }
+
 
     public static void fillSolr() throws SolrServerException, IOException {
         log.info("Filling embedded server with {} documents", TEST_DOCS);
