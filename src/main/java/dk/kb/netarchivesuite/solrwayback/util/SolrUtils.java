@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,6 +44,13 @@ public class SolrUtils {
     public static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_full,content_type_norm,hash,type,crawl_date,content_encoding,exif_location,status_code,last_modified,redirect_to_norm";
     public static String indexDocFieldListShort = "url,url_norm,source_file_path,source_file,source_file_offset,crawl_date";
     public static String arcEntryDescriptorFieldList = "url,url_norm,source_file_path,source_file_offset,hash,content_type";
+
+    /**
+     * The {@code shardCache} is used by the {@link #getShards(String, String)} method. It caches forever, which does
+     * present a potential problem if the Solr Cloud layout is changed without restarting SolrWayback.
+     */
+    // TODO: Add a timeout or other form of cache invalidation to this cache
+    private static final Map<String, List<Shard>> shardCache = new HashMap<>();
 
     /**
      * Normalizes a given list of urls and makes a Solr search string from the result.
@@ -468,11 +476,27 @@ public class SolrUtils {
      * <p>
      * Note: Due to the Solr alias mechanism, shardIDs are not guaranteed to be unique in the result.
      * To avoid ambiguity they are returned as {@link Shard} where the encapsulating collection is stated.
-     * @param solrBase   an address for a running Sorl, such as {@code http://localhost:8983/solr}.
+     * @param solrBase   an address for a running Solr, such as {@code http://localhost:8983/solr}.
      * @param collection a Solr collection, such as {@code netarchivebuilder}.
      * @return a list of the shards in the collection or null if the shard names could not be determined.
      */
     public static List<Shard> getShards(String solrBase, String collection) {
+        final String cacheKey = solrBase + "___" + collection;
+        if (!shardCache.containsKey(cacheKey)) {
+            cacheShards(cacheKey, solrBase, collection);
+        }
+        List<Shard> shards = shardCache.get(cacheKey);
+        return shards == null || shards.isEmpty() ? null : shards;
+    }
+
+    /**
+     * Retrieve the shard names for the given {@code collection} in the given {@code solrBase},
+     * store the result in {@link #shardCache}.
+     * @param cacheKey   the key to use when storing the result in the {@link #shardCache}.
+     * @param solrBase   an address for a running Solr, such as {@code http://localhost:8983/solr}.
+     * @param collection a Solr collection, such as {@code netarchivebuilder}.
+     */
+    private static void cacheShards(String cacheKey, String solrBase, String collection) {
         try {
             URI clusterStatusUrl = URI.create(solrBase + "/admin/collections?action=CLUSTERSTATUS");
             String statusJSON = IOUtils.toString(clusterStatusUrl, StandardCharsets.UTF_8);
@@ -498,16 +522,15 @@ public class SolrUtils {
             }
             if (shardNames.isEmpty()) {
                 log.info("Unable to resolve shard names for Solr '{}' collectionIDs '{}'. " +
-                         "Possibly because the Solr is running as standalone. Returning null",
+                         "Possibly because the Solr is running as standalone",
                          solrBase, collectionIDs);
-                return null;
             }
-            return shardNames;
+            shardCache.put(cacheKey, shardNames);
         } catch (Exception e) {
-            log.info("Unable to resolve shard names for Solr '{}' collection '{}'. " +
-                     "Possibly because the Solr is running as standalone. Returning null",
-                     solrBase, collection);
-            return null;
+            log.info("Exception resolving shard names for Solr '{}' collection '{}'. " +
+                     "Possibly because the Solr is running as standalone",
+                     solrBase, collection, e);
+            shardCache.put(cacheKey, Collections.emptyList());
         }
     }
 
