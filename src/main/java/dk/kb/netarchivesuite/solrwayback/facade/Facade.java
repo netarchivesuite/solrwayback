@@ -545,13 +545,13 @@ public class Facade {
         if (!expandResources) {
             max= PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS;
             if (results > PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS) {
-                throw new InvalidArgumentServiceException("Number of results for warc export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS);
+                throw new InvalidArgumentServiceException("Number of results("+results+") for warc export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_MAXRESULTS);
             }
         }
         else {
             max= PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS;
             if (results > PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS) {
-                throw new InvalidArgumentServiceException("Number of results for warc expanded export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
+                throw new InvalidArgumentServiceException("Number of results("+results+") for warc expanded export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
             }
         }
         Iterator<SolrDocument> solrDocs = SolrStreamDirect.iterate(
@@ -580,7 +580,7 @@ public class Facade {
         //Check size
         long results = NetarchiveSolrClient.getInstance().countResults(q,new String[] {fq});
         if (results > PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS) {
-            throw new InvalidArgumentServiceException("Number of results for csv export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
+            throw new InvalidArgumentServiceException("Number of results"+results+") for csv export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
         }
 
         SolrStreamingExportClient solr = SolrStreamingExportClient.createCvsExporter(null, q, fields, fq);
@@ -624,7 +624,7 @@ public class Facade {
         long results = NetarchiveSolrClient.getInstance().countResults(query, filterQueries);
         if (results > PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS) {
             throw new InvalidArgumentServiceException(
-                    "Number of results for " + format + " export exceeds the configured limit: " +
+                    "Number of results("+results+") for " + format + " export exceeds the configured limit: " +
                     PropertiesLoaderWeb.EXPORT_CSV_MAXRESULTS);
         }
         // Setup request
@@ -667,7 +667,7 @@ public class Facade {
                 query, combinedFilters, results);
         if (results > PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS) {
             throw new InvalidArgumentServiceException(
-                    "Number of results for zip export exceeds the configured limit: " +
+                    "Number of ("+results+") for zip export exceeds the configured limit: " +
                             PropertiesLoaderWeb.EXPORT_ZIP_MAXRESULTS);
         }
 

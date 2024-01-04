@@ -3,12 +3,15 @@ package dk.kb.netarchivesuite.solrwayback.util;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.hdfs.util.ByteBufferOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.manipulation.Filter;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
