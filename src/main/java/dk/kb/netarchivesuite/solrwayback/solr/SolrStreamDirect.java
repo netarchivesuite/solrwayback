@@ -104,7 +104,7 @@ public class SolrStreamDirect implements Iterable<SolrDocument> {
         group }
 
     /**
-     * Default page size (rows) for the cursormark paging.
+     * Default page size (rows) for the cursorMark paging.
      */
     public static final int DEFAULT_PAGESIZE = 1000;
     /**

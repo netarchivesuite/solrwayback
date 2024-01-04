@@ -150,40 +150,8 @@ public class ShardStreamingTest {
     }
     // TODO: Add "minShards"-property to auto
 
-    // Sparseness: sha1:G22*
-    // Collapsing
-    // big / small fields
-    // Only docValues / only stored
-    // Sort
-
-//    **** Got 2000 hits in 172,489 ms: 0.01hits/ms for shardDivide=always
-//    **** Got 2000 hits in 355,839 ms: 0.01hits/ms for shardDivide=never
-//    **** Got 2000 hits in 150,393 ms: 0.01hits/ms for shardDivide=always
-//    **** Got 2000 hits in 355,739 ms: 0.01hits/ms for shardDivide=never
-//    **** Got 4000 hits in 440,551 ms: 0.01hits/ms for shardDivide=always
-//    **** Got 4000 hits in 702,725 ms: 0.01hits/ms for shardDivide=never
-//    **** Got 4000 hits in 466,712 ms: 0.01hits/ms for shardDivide=always
-//    **** Got 4000 hits in 709,237 ms: 0.01hits/ms for shardDivide=never
-//                .sort("index_time asc")
-//**** Got 20000 hits in 13,909 ms: 1437.9 hits/s for shardDivide=always
-//**** Got 20000 hits in 83,882 ms: 238.4 hits/s for shardDivide=never
-//**** Got 20000 hits in 13,883 ms: 1440.6 hits/s for shardDivide=always
-//**** Got 20000 hits in 90,263 ms: 221.6 hits/s for shardDivide=never
-// No sort
-//**** Got 20000 hits in 93,379 ms: 214.2 hits/s for shardDivide=always
-//**** Got 20000 hits in 154,528 ms: 129.4 hits/s for shardDivide=never
-//**** Got 20000 hits in 80,361 ms: 248.9 hits/s for shardDivide=always
-//**** Got 20000 hits in 147,427 ms: 135.7 hits/s for shardDivide=never
-//                .sort("index_time asc")
-//**** Got 20000 hits in 12,734 ms: 1570.6 hits/s for shardDivide=always
-//**** Got 20000 hits in 81,209 ms: 246.3 hits/s for shardDivide=never
-//**** Got 20000 hits in 12,574 ms: 1590.6 hits/s for shardDivide=always
-//**** Got 20000 hits in 86,156 ms: 232.1 hits/s for shardDivide=never
-//    .deduplicateField("domain")
-//
-
     @Test
-    public void testShardedSearch() throws IOException {
+    public void testShardedSearch() {
         if (!AVAILABLE) {
             return;
         }

@@ -105,6 +105,14 @@ public class SRequest {
     public String collection = null;
     public CHOICE shardDivide = CHOICE.valueOf(PropertiesLoader.SOLR_STREAM_SHARD_DIVIDE);
     /**
+     * If {@link #shardDivide} is {@link CHOICE#auto}, and the number of shards is at least
+     * {@link #shardDivideAutoMinShards} and the number of hits is above {@link #shardDivideAutoMinHits},
+     * shard division is activated.
+     *
+     * The default value is specified in properties, falling back to 2.
+     */
+    public long shardDivideAutoMinShards = PropertiesLoader.SOLR_STREAM_SHARD_AUTO_MIN_SHARDS;
+    /**
      * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
      * full request is initiated. If the number of hits is above {@link #shardDivideAutoMinHits}, shard
      * division is activated.
@@ -815,9 +823,9 @@ public class SRequest {
      * If {@link #shardDivide} is {@link CHOICE#always}, all shards are queried in parallel, subject to
      * connection limit rules, and the resulting streams are merged.
      * <p>
-     * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
-     * full request is initiated. If the number of hits is above {@link #shardDivideAutoMinHits}, shard
-     * division is activated.
+     * If {@link #shardDivide} is {@link CHOICE#auto} and the number of shards is at least
+     * {@link #shardDivideAutoMinShards}, a hit-counting search is performed before the full request is initiated.
+     * If the number of hits is above {@link #shardDivideAutoMinHits}, shard division is activated.
      * @param choice the shardDivide strategy. The default is {@link CHOICE#auto} if not specified in properties.
      * @see #shardDivideAutoMinHits(long)
      */
@@ -862,9 +870,25 @@ public class SRequest {
      *                shard division is activated.
      *                The default is 5000 if not specified otherwise in properties.
      * @see #shardDivide(CHOICE)
+     * @see #shardDivideAutoMinShards(long)
      */
     public SRequest shardDivideAutoMinHits(long minHits) {
         this.shardDivideAutoMinHits = minHits;
+        return this;
+    }
+
+    /**
+     * If {@link #shardDivide} is {@link CHOICE#auto}, and the number of shards is at least
+     * {@link #shardDivideAutoMinShards} and the number of hits is above {@link #shardDivideAutoMinHits},
+     * shard division is activated.
+     * @param minShards if the shard divide strategy is auto, the number of shards must be at least this before
+     *                shard division is activated.
+     *                The default is 2 if not specified otherwise in properties.
+     * @see #shardDivide(CHOICE)
+     * @see #shardDivideAutoMinHits(long)
+     */
+    public SRequest shardDivideAutoMinShards(long minShards) {
+        this.shardDivideAutoMinShards = minShards;
         return this;
     }
 
@@ -1103,7 +1127,9 @@ public class SRequest {
                "expandResourcesFilterQueries=" + limit(expandResourcesFilterQueries, 20) + ", " +
                "collection='" + collection + "'" + ", " +
                "shards=" + shards + ", " +
-               "shardDivide=" + shardDivide;
+               "shardDivide=" + shardDivide + ", " +
+               "shardDivideAutoMinShards=" + shardDivideAutoMinShards + ", " +
+               "shardDivideAutoMinHits=" + shardDivideAutoMinHits;
     }
 
     /**

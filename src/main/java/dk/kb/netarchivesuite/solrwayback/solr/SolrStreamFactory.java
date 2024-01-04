@@ -39,9 +39,10 @@ public class SolrStreamFactory {
     private static final Logger exportLog = LoggerFactory.getLogger("kb.dk.export");
 
     /**
-     * Depending on the backing Solr (Cloud) topology, the collection and the {@link SRequest#shardDivide} and
-     * {@link SRequest#shardDivideAutoMinHits}, either standard collection based document search & delivery or
-     * shard dividing search & delivery is used to provide an Stream of {@link SolrDocument}s.
+     * Depending on the backing Solr (Cloud) topology, the collection and the {@link SRequest#shardDivide},
+     * {@link SRequest#shardDivideAutoMinShards} and {@link SRequest#shardDivideAutoMinHits}, either standard
+     * collection based document search & delivery or shard dividing search & delivery is used to provide a
+     * Stream of {@link SolrDocument}s.
      * <p>
      * Important: This method returns a {@link CollectionUtils.CloseableStream} and the caller <strong>must</strong>
      * ensure that it is either depleted or closed after use, to avoid resource leaking. It is highly recommended to
@@ -60,9 +61,10 @@ public class SolrStreamFactory {
     }
 
     /**
-     * Depending on the backing Solr Cloud topology, the collection and the {@link SRequest#shardDivide} and
-     * {@link SRequest#shardDivideAutoMinHits}, either standard collection based document search & delivery or
-     * shard dividing search & delivery is used to provide an iterator of {@link SolrDocument}s.
+     * Depending on the backing Solr (Cloud) topology, the collection and the {@link SRequest#shardDivide},
+     * {@link SRequest#shardDivideAutoMinShards} and {@link SRequest#shardDivideAutoMinHits}, either standard
+     * collection based document search & delivery or shard dividing search & delivery is used to provide an
+     * iterator of {@link SolrDocument}s.
      * <p>
      * Important: This method returns a {@link CollectionUtils.CloseableIterator}
      * and the caller <strong>must</strong> ensure that it is either depleted or closed after use, to avoid resource
@@ -110,8 +112,14 @@ public class SolrStreamFactory {
                     return CollectionUtils.CloseableIterator.single(SolrStreamDirect.iterate(request));
                 }
                 if (shards.size() == 1) {
-                    log.debug("shardDivide == auto, only 1 shard is specified/available: '{}'. " +
+                    log.debug("shardDivide == auto, but only 1 shard is specified/available: '{}'. " +
                               "Using collection oriented Solr document streaming", shards.get(0));
+                    return CollectionUtils.CloseableIterator.single(SolrStreamDirect.iterate(request));
+                }
+                if (shards.size() < request.shardDivideAutoMinShards) {
+                    log.debug("shardDivide == auto, but only {} shards are specified/available with " +
+                              "shardDivideAutoMinShards = {}. Using collection oriented Solr document streaming",
+                              shards.size(), request.shardDivideAutoMinShards);
                     return CollectionUtils.CloseableIterator.single(SolrStreamDirect.iterate(request));
                 }
                 long hits = SolrStreamShard.getApproximateHits(request);
