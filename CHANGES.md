@@ -2,7 +2,7 @@
 
 5.0.0
 -----
-Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 4.5.0 is backwards compatible with existing Solr 7 installations. 
+Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.5.0 is backwards compatible with existing Solr 7 installations.
 Better guide for using start and stop scripts.
 Fixed csv/json export when more than 1 facet was selected. (regression bug... sorry)
 warc-indexer now also finds arc files when searching recursive(thanks to @fedorw) 

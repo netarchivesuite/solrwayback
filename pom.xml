@@ -87,8 +87,6 @@
       <version>3.3.6</version>
     </dependency>
 
-
-
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
@@ -122,8 +120,7 @@
         <groupId>org.apache.solr</groupId>
         <artifactId>solr-test-framework</artifactId>
         <version>9.1.0</version>
-        <!-- <version>7.1.0</version> -->
-        <scope>test</scope>
+        <scope>test</scope>      
       </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.solr/solr-core -->
       <dependency>
@@ -131,6 +128,13 @@
           <artifactId>solr-core</artifactId>
           <version>9.1.0</version>
           <scope>test</scope>
+        <exclusions>
+         <exclusion>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+        </exclusion>
+      
+      </exclusions>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
       <dependency>
