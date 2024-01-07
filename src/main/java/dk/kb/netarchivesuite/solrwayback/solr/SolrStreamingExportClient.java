@@ -11,13 +11,6 @@ import java.util.Iterator;
 
 public class SolrStreamingExportClient  implements SolrStreamingLineBasedExportClientInterface{
 
-  public static final String BRIEF_FL = "title,url,source_file_path,crawl_date,wayback_date";
-  
-
-  public static final String FULL_FL =
-          "title, host, public_suffix, crawl_year, content_type, content_language, source_file_path,url," +
-          "source_file_path,crawl_date,wayback_date";
-  
   public static final int DEFAULT_PAGE_SIZE = 1000; //TODO change is content is extracted
 
   private final Logger log = LoggerFactory.getLogger(SolrStreamingExportClient.class);
