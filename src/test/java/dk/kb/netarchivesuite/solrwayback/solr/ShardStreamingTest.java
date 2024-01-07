@@ -66,9 +66,10 @@ public class ShardStreamingTest {
             AVAILABLE = true;
             //PropertiesLoader.SOLR_SERVER = LOCAL_SOLR + "/" + COLLECTION;
             PropertiesLoader.SOLR_SERVER = STAGE_SOLR + "/" + STAGE_COLLECTION;
+            log.info("Checking availability of " + PropertiesLoader.SOLR_SERVER);
             NetarchiveSolrClient.initialize(PropertiesLoader.SOLR_SERVER);
         } catch (Exception e) {
-            log.warn("No local Solr available at '" + LOCAL_SOLR + "/" + COLLECTION + "'. Skipping unit test");
+            log.warn("No local Solr available at '" + PropertiesLoader.SOLR_SERVER + "'. Skipping unit test", e);
         }
     }
 
