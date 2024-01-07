@@ -1,21 +1,19 @@
 package dk.kb.netarchivesuite.solrwayback.properties;
 
-import java.io.File;
-import java.io.FileInputStream;
+import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
-import java.util.*;
-
-import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class PropertiesLoader {
@@ -49,12 +47,17 @@ public class PropertiesLoader {
     private static final String SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY="solr.server.caching.age.seconds";
     public static final String SOLR_SERVER_CHECK_INTERVAL_PROPERTY = "solr.server.check.interval.seconds";
 
+    // Used by SolrStreamShard
+    public static final String SOLR_STREAM_SHARD_DIVIDE_PROPERTY = "solr.export.sharddivide.default";
+    public static final String SOLR_STREAM_SHARD_AUTO_MIN_SHARDS_PROPERTY = "solr.export.sharddivide.autolimit.shards.default";
+    public static final String SOLR_STREAM_SHARD_AUTO_MIN_HITS_PROPERTY = "solr.export.sharddivide.autolimit.hits.default";
+    public static final String SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX_PROPERTY = "solr.export.sharddivide.concurrent.max";
+
     private static final String URL_NORMALISER_PROPERTY="url.normaliser";
     
     public static final String PLAYBACK_DISABLED_PROPERTY="playback.disabled";
     private static final String SOLR_SEARCH_PARAMS_PROPERTY="solr.search.params";
-    
-    
+
     private static Properties serviceProperties = null;
     public static boolean PLAYBACK_DISABLED = false;
     public static String SOLR_SERVER = null;
@@ -84,6 +87,13 @@ public class PropertiesLoader {
      */
     public static int SOLR_SERVER_CHECK_INTERVAL = 60000; //default value every minute
     public static String URL_NORMALISER="normal";
+
+    // Used by SolrStreamShard
+    public static String SOLR_STREAM_SHARD_DIVIDE = "auto";
+    public static long SOLR_STREAM_SHARD_AUTO_MIN_SHARDS = 2;
+    public static long SOLR_STREAM_SHARD_AUTO_MIN_HITS = 5000L;
+    // Maximum number of concurrent shard divided connections, shared between all shard divided calls
+    public static int SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX = 20;
 
     public static int SCREENSHOT_PREVIEW_TIMEOUT = 10;//default
 
@@ -122,6 +132,10 @@ public class PropertiesLoader {
             loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
             URL_NORMALISER  = serviceProperties.getProperty(URL_NORMALISER_PROPERTY,"normal");
+            SOLR_STREAM_SHARD_DIVIDE = serviceProperties.getProperty(SOLR_STREAM_SHARD_DIVIDE_PROPERTY, SOLR_STREAM_SHARD_DIVIDE);
+            SOLR_STREAM_SHARD_AUTO_MIN_SHARDS = Long.parseLong(serviceProperties.getProperty(SOLR_STREAM_SHARD_AUTO_MIN_SHARDS_PROPERTY, Long.toString(SOLR_STREAM_SHARD_AUTO_MIN_SHARDS)));
+            SOLR_STREAM_SHARD_AUTO_MIN_HITS = Long.parseLong(serviceProperties.getProperty(SOLR_STREAM_SHARD_AUTO_MIN_HITS_PROPERTY, Long.toString(SOLR_STREAM_SHARD_AUTO_MIN_HITS)));
+            SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX = Integer.parseInt(serviceProperties.getProperty(SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX_PROPERTY, Integer.toString(SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX)));
 
             URL waybacksURL = new URL (WAYBACK_BASEURL);
             WAYBACK_SERVER_PORT =  waybacksURL.getPort();
@@ -176,6 +190,10 @@ public class PropertiesLoader {
             log.info("Property:"+ SOLR_SERVER_CACHING_MAX_ENTRIES_PROPERTY +" = " +  SOLR_SERVER_CACHING_MAX_ENTRIES);
             log.info("Property:"+ SOLR_SERVER_CHECK_INTERVAL_PROPERTY +" = " +  SOLR_SERVER_CHECK_INTERVAL);
             log.info("Property:"+ SOLR_SEARCH_PARAMS_PROPERTY+" loaded map: " +  SOLR_PARAMS_MAP);
+            log.info("Property:"+ SOLR_STREAM_SHARD_DIVIDE_PROPERTY + " = " + SOLR_STREAM_SHARD_DIVIDE);
+            log.info("Property:" + SOLR_STREAM_SHARD_AUTO_MIN_SHARDS_PROPERTY + " = " + SOLR_STREAM_SHARD_AUTO_MIN_SHARDS);
+            log.info("Property:" + SOLR_STREAM_SHARD_AUTO_MIN_HITS_PROPERTY + " = " + SOLR_STREAM_SHARD_AUTO_MIN_HITS);
+            log.info("Property:" + SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX_PROPERTY + " = " + SOLR_STREAM_SHARD_DIVIDE_CONCURRENT_MAX);
         } catch (Exception e) {
             e.printStackTrace(); // Acceptable as this is catastrophic
             log.error("Could not load property file '" + propertyPath + "'",e);

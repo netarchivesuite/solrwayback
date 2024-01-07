@@ -383,17 +383,17 @@ public class NetarchiveSolrClient {
      * @return ArcEntry representation of the matching images.
      */
     public ArrayList<ArcEntryDescriptor> findImagesForTimestamp(String searchString, String timeStamp) {
-        return SolrGenericStreaming.create(
-                        SRequest.builder()
-                                .query(searchString)
-                                .filterQueries("content_type_norm:image",   // only images
-                                        SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
-                                        "image_size:[2000 TO *]")   // No small images. (fillers etc.)
-                                .fields(SolrUtils.indexDocFieldList)
-                                .timeProximityDeduplication(timeStamp, "url_norm")
-                                .maxResults(50) // TODO: Make this an argument instead
-                ).
-                stream()
+        SRequest request = SRequest.builder().
+                query(searchString).
+                filterQueries("content_type_norm:image",   // only images
+                              SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
+                              "image_size:[2000 TO *]").   // No small images. (fillers etc.)
+                fields(SolrUtils.indexDocFieldList).
+                timeProximityDeduplication(timeStamp, "url_norm").
+                maxResults(50); // TODO: Make this an argument instead
+
+        // TODO: Figure out how to handle the CloseableStream-problem
+        return request.stream()
                 .map(SolrUtils::solrDocument2ArcEntryDescriptor)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -515,7 +515,7 @@ public class NetarchiveSolrClient {
         if (idealTime != null) {
             request = request.timeProximityDeduplication(idealTime, "url_norm");
         } else {
-            request = request.deduplicateField("url_norm");
+            request = request.deduplicateFields("url_norm");
         }
 
         Map<String, SolrDocument> normResolved = request.stream().

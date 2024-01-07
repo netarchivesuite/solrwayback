@@ -14,22 +14,29 @@
  */
 package dk.kb.netarchivesuite.solrwayback.solr;
 
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.FacetParams;
+import org.apache.solr.common.params.HighlightParams;
+import org.apache.solr.common.params.StatsParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -43,6 +50,8 @@ import java.util.stream.Stream;
 // TODO: Introduce addFilterqueries
 public class SRequest {
     private static final Logger log = LoggerFactory.getLogger(SRequest.class);
+
+    public enum CHOICE {always, never, auto}
 
     /**
      * Default maximum number of elements when the request requires unique results.
@@ -72,20 +81,45 @@ public class SRequest {
     public boolean useHashingForUnique = true;
 
     private String idealTime; // If defined, a sort will be created as String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
-    public String deduplicateField = null;
+    // TODO: Expand this to support multiple deduplicateFields
+    public List<String> deduplicateFields;
     public List<String> fields;
     public long maxResults = Long.MAX_VALUE;
     /**
      * Default sort used when exporting. Ends with tie breaking on id.
      */
     public static final String DEFAULT_SORT = "score desc, id asc";
+    /**
+     * The sort param as given by the caller. It is recommended to call {@link #getFullSort()} instead of using this
+     * value directly as {@code getFullSort()} extends the sort with relevant clauses depending on other attributes
+     * in the current {@code SRequest}.
+     */
     public String sort = DEFAULT_SORT;
     public String query = null;
     public Stream<String> queries = null;
     public List<String> filterQueries;
-    public int pageSize = SolrGenericStreaming.DEFAULT_PAGESIZE;
+    public int pageSize = SolrStreamDirect.DEFAULT_PAGESIZE;
     public boolean usePaging = true;
-    public int queryBatchSize = SolrGenericStreaming.DEFAULT_QUERY_BATCHSIZE;
+    public int queryBatchSize = SolrStreamDirect.DEFAULT_QUERY_BATCHSIZE;
+    public List<String> shards = null;
+    public String collection = null;
+    public CHOICE shardDivide = CHOICE.valueOf(PropertiesLoader.SOLR_STREAM_SHARD_DIVIDE);
+    /**
+     * If {@link #shardDivide} is {@link CHOICE#auto}, and the number of shards is at least
+     * {@link #shardDivideAutoMinShards} and the number of hits is above {@link #shardDivideAutoMinHits},
+     * shard division is activated.
+     *
+     * The default value is specified in properties, falling back to 2.
+     */
+    public long shardDivideAutoMinShards = PropertiesLoader.SOLR_STREAM_SHARD_AUTO_MIN_SHARDS;
+    /**
+     * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
+     * full request is initiated. If the number of hits is above {@link #shardDivideAutoMinHits}, shard
+     * division is activated.
+     *
+     * The default value is specified in properties, falling back to 5000.
+     */
+    public long shardDivideAutoMinHits = PropertiesLoader.SOLR_STREAM_SHARD_AUTO_MIN_HITS;
 
     /**
      * @return a fresh instance of SRequest intended for further adjustment.
@@ -118,7 +152,7 @@ public class SRequest {
      * @param solrClient used for issuing Solr requests.
      *                   If not specified, {@link NetarchiveSolrClient#noCacheSolrServer} will be used.
      * @return the SRequest adjusted with the provided value.
-     * @see #useCachingClient(boolean) 
+     * @see #useCachingClient(boolean)
      */
     public SRequest solrClient(SolrClient solrClient) {
         if (solrClient == null) {
@@ -135,10 +169,10 @@ public class SRequest {
      * The default is false (no caching). Set to true when used for limited result sets.
      * @param useCaching if true, a locally caching Solrclient is used.
      * @return the SRequest adjusted with the provided value.
-     * @see #solrClient(SolrClient) 
+     * @see #solrClient(SolrClient)
      */
     public SRequest useCachingClient(boolean useCaching) {
-        solrClient = useCaching ? 
+        solrClient = useCaching ?
                 NetarchiveSolrClient.solrServer :
                 NetarchiveSolrClient.noCacheSolrServer;
         return this;
@@ -230,41 +264,62 @@ public class SRequest {
     }
 
     /**
-     * Note: This overrides any existing {@link #sort(String)}.
-     * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
-     *                         Default is null (no deduplication).
-     *                         Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
-     *                         if expandResources is true and uniqueness must also be guaranteed for resources.
+     * Deduplicating on one or more fields: Only the first document for any given combination of the fields is
+     * delivered. Note that this modifies the sort order by prefixing the sort chain with the deduplicate fields.
+     * @param deduplicateFields The fields to use for de-duplication. This is typically {@code url}.
+     *                          Default is null (no deduplication).
+     *                          Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
+     *                          expandResources is true and uniqueness must also be guaranteed for resources.
      * @return the SRequest adjusted with the provided value.
      */
-    public SRequest deduplicateField(String deduplicateField) {
-        if (deduplicateField != null && deduplicateField.isEmpty()) {
-            throw new IllegalArgumentException("deduplicateField cannot be the empty String");
+    public SRequest deduplicateFields(String... deduplicateFields) {
+        if (deduplicateFields != null && deduplicateFields.length == 1 && deduplicateFields[0] == null) {
+            this.deduplicateFields = null;
+            return this;
         }
-        this.deduplicateField = deduplicateField;
+
+        if (deduplicateFields != null && Arrays.stream(deduplicateFields).anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException(
+                    "Got null as deduplicateField in array " + Arrays.toString(deduplicateFields));
+        }
+        this.deduplicateFields = deduplicateFields == null || deduplicateFields.length == 0 ?
+                null :
+                Arrays.asList(deduplicateFields);
         return this;
     }
 
     /**
-     * Deduplication combined with time proximity sorting. This is a shorthand for
-     * {@code request.deduplicatefield(deduplicateField).sort("abs(sub(ms(idealTime), crawl_date)) asc");}
+     * Deduplicating on one or more fields: Only the first document for any given combination of the fields is
+     * delivered. Note that this modifies the sort order by prefixing the sort chain with the deduplicate fields.
+     * @param deduplicateFields The fields to use for de-duplication. This is typically {@code url}.
+     *                          Default is null (no deduplication).
+     *                          Note: deduplicateField does not affect expandResources. Set ensureUnique to true if
+     *                          expandResources is true and uniqueness must also be guaranteed for resources.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest deduplicateFields(List<String> deduplicateFields) {
+        if (deduplicateFields != null && deduplicateFields.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException(
+                    "Got null as deduplicateField in list " + deduplicateFields);
+        }
+        this.deduplicateFields = deduplicateFields == null || deduplicateFields.isEmpty() ?
+                null :
+                deduplicateFields;
+        return this;
+    }
+
+    /**
+     * Time proximity sorting. This is a shorthand for {@code sort("abs(sub(ms(idealTime), crawl_date)) asc");}
      * <p>
-     * Use case: Extract unique URLs for matches that are closest to a given point in time:
-     * {@code timeProximityDeduplication("2014-01-03T11:56:58Z", "url_norm"}.
-     * <p>
-     * Note: This overrides any existing {@link #sort(String)}.
-     *
-     * @param idealTime        The time that the resources should be closest to, stated as a Solr timestamp
-     *                         {@code YYYY-MM-DDTHH:mm:SSZ}.
-     *                         <p>
-     *                         Also supports {@code oldest} and {@code newest} as values.
-     * @param deduplicateField The field to use for de-duplication. This is typically {@code url}.
+     * Use case: Extract documents for matches that are closest to a given point in time:
+     * {@code timeProximity("2014-01-03T11:56:58Z"}.
+     * @param idealTime         The time that the resources should be closest to, stated as a Solr timestamp
+     *                          {@code YYYY-MM-DDTHH:mm:SSZ}.
+     *                          <p>
+     *                          Also supports {@code oldest} and {@code newest} as values.
      * @return the SRequest adjusted with the provided values.
      */
-    public SRequest timeProximityDeduplication(String idealTime, String deduplicateField) {
-        if (deduplicateField != null && deduplicateField.isEmpty()) {
-            throw new IllegalArgumentException("deduplicateField cannot be the empty String");
-        }
+    public SRequest timeProximity(String idealTime) {
         String origo = idealTime;
         if ("newest".equals(idealTime)) {
             origo = "9999-12-31T23:59:59Z";
@@ -277,10 +332,28 @@ public class SRequest {
         }
         this.idealTime = origo;
 
-        if (deduplicateField == null) {
-            throw new NullPointerException("deduplicateField == null which is not allowed for timeProximityDeduplication");
-        }
-        this.deduplicateField = deduplicateField;
+        return this;
+    }
+
+    /**
+     * Deduplication combined with time proximity sorting. This is a shorthand for
+     * {@code request.deduplicateFields(deduplicateFields).sort("abs(sub(ms(idealTime), crawl_date)) asc");}
+     * <p>
+     * Use case: Extract unique URLs for matches that are closest to a given point in time:
+     * {@code timeProximityDeduplication("2014-01-03T11:56:58Z", "url_norm"}.
+     * <p>
+     * Note: The {@link #sort(String)} is prefixed with {@code deduplicateFields}.
+     *
+     * @param idealTime         The time that the resources should be closest to, stated as a Solr timestamp
+     *                          {@code YYYY-MM-DDTHH:mm:SSZ}.
+     *                          <p>
+     *                          Also supports {@code oldest} and {@code newest} as values.
+     * @param deduplicateFields Zero or more field to deduplicate on. This is typically {@code url_norm}.
+     * @return the SRequest adjusted with the provided values.
+     */
+    public SRequest timeProximityDeduplication(String idealTime, String... deduplicateFields) {
+        timeProximity(idealTime);
+        deduplicateFields(deduplicateFields);
         return this;
     }
 
@@ -290,7 +363,7 @@ public class SRequest {
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if fields has already been assigned.
      * @see #fields(String...)
-     * @see #forceFields(List) 
+     * @see #forceFields(List)
      */
     public SRequest fields(List<String> fields) {
         if (this.fields != null) {
@@ -298,19 +371,16 @@ public class SRequest {
         }
         return forceFields(fields);
     }
-    
+
     /**
      * This method overrides existing fields without warning or error.
      * @param fields fields to export (fl). deduplicateField will be added to this is not already present.
      *               This parameter has no default and must be defined.
      * @return the SRequest adjusted with the provided value.
      * @see #fields(String...)
-     * @see #fields(List) 
+     * @see #fields(List)
      */
     public SRequest forceFields(List<String> fields) {
-        if (this.fields != null) {
-            throw new IllegalStateException("fields already assigned. If overriding is intentional, use forceFields");
-        }
         this.fields = fields;
         return this;
     }
@@ -323,7 +393,7 @@ public class SRequest {
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if fields has already been assigned.
      * @see #fields(List)
-     * @see #forceFields(String...)  
+     * @see #forceFields(String...)
      */
     public SRequest fields(String... fields) {
         if (this.fields != null) {
@@ -341,7 +411,7 @@ public class SRequest {
      *               as a comma separated list of fields: {@code "foo,bar,zoo" == "foo", "bar", "zoo"}.
      * @return the SRequest adjusted with the provided value.
      * @see #fields(List)
-     * @see #fields(String...) 
+     * @see #fields(String...)
      */
     public SRequest forceFields(String... fields) {
         if (fields.length == 1 && fields[0].contains(",")) {
@@ -363,15 +433,15 @@ public class SRequest {
     }
 
     /**
-     * Note: {@link #timeProximityDeduplication(String, String)} and {@link #deduplicateField(String)} takes
-     * precedence over sort.
+     * Note: {@link #timeProximityDeduplication(String, String...)} and {@link #deduplicateFields(String...)} takes
+     * precedence over sort by prefixing with {@link #deduplicateFields}.
      *
-     * @param sort standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
-     *             by {@link SolrGenericStreaming#adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+     * @param sort standard Solr sort. Depending on deduplicateFields and tie breaker it might be adjusted.
      *             Default is {@link #DEFAULT_SORT}.
      * @return the SRequest adjusted with the provided value.
      * @throws IllegalStateException if sort has already been assigned.
      * @see #forceSort(String)
+     * @see #deduplicateFields(String...)
      */
     public SRequest sort(String sort) {
         if (!DEFAULT_SORT.equals(this.sort)) {
@@ -381,12 +451,11 @@ public class SRequest {
     }
 
     /**
-     * Note: {@link #timeProximityDeduplication(String, String)} and {@link #deduplicateField(String)} takes
-     * precedence over sort.
+     * Note: {@link #timeProximityDeduplication(String, String...)} and {@link #deduplicateFields(String...)} takes
+     * precedence over sort by prefixing with {@link #deduplicateFields}.
      *
      * This method overrides existing sort without warning or error.
-     * @param sort standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted
-     *             by {@link SolrGenericStreaming#adjustSolrQuery(SolrQuery, boolean, boolean, String)}.
+     * @param sort standard Solr sort. Depending on deduplicateField and tie breaker it might be adjusted.
      *             Default is {@link #DEFAULT_SORT}.
      * @return the SRequest adjusted with the provided value.
      * @see #sort(String)
@@ -433,7 +502,8 @@ public class SRequest {
      *                If {@code queries = Arrays.asList("url:http://example.com/foo", "url:http://example.com/bar").stream()},
      *                the batch request will be {@code "url:http://example.com/foo OR url:http://example.com/bar"}.
      *                However, there is an upper limit to batching so multiple batches might be issued.
-     *                This affects {@link #deduplicateField(String)} and {@link #timeProximityDeduplication(String, String)}
+     *                This affects {@link #deduplicateFields(String...)} and
+     *                {@link #timeProximityDeduplication(String, String...)}
      *                as overall deduplication will not be guaranteed.
      *                Use {@link #ensureUnique(Boolean)} to force unique results, if needed.
      * @return the SRequest adjusted with the provided value.
@@ -441,6 +511,9 @@ public class SRequest {
      * @throws IllegalStateException if {@link #query(String)} called before this or queries were already set.
      */
     public SRequest queries(Stream<String> queries) {
+        if (this.queries == null && queries == null) {
+            return this;
+        }
         if (this.queries != null) {
             throw new IllegalStateException(
                     "queries(Stream<String>) has already been called. If overriding is intentional, use forceQueries");
@@ -460,7 +533,8 @@ public class SRequest {
      *                the batch request will be {@code "url:http://example.com/foo OR url:http://example.com/bar"}.
      *                <p>
      *                However, there is an upper limit to batching so multiple batches might be issued.
-     *                This affects {@link #deduplicateField(String)} and {@link #timeProximityDeduplication(String, String)}
+     *                This affects {@link #deduplicateFields(String...)} and
+     *                {@link #timeProximityDeduplication(String, String...)}
      *                as overall deduplication will not be guaranteed.
      *                <p>
      *                Use {@link #ensureUnique(Boolean)} to force unique results, if needed.
@@ -627,7 +701,7 @@ public class SRequest {
 
     /**
      * @param pageSize paging size. Typically 500-100,000 depending on fields.
-     *                 Default is {@link SolrGenericStreaming#DEFAULT_PAGESIZE}.
+     *                 Default is {@link SolrStreamDirect#DEFAULT_PAGESIZE}.
      * @return the SRequest adjusted with the provided value.
      */
     public SRequest pageSize(int pageSize) {
@@ -641,15 +715,12 @@ public class SRequest {
      * Use case: Getting a limited number of results from each query when using {@link #queries}.
      *           For that scenario, remember setting {@link #queryBatchSize(int)} to 1.
      * <p>
-     * Previously this was used for optimization of specific cases with {@link #deduplicateField(String)} and
-     * {@link #timeProximityDeduplication(String, String)} requests. This optimization is no longer needed.
-     * <p>
      * @param usePaging if true (the default), paging is used. If false, paging is not used and only the first
      *                  {@link #pageSize(int)} documents are processed for each query.
      * @return the SRequest adjusted with the provided value.
      * @see #pageSize(int)
-     * @see #timeProximityDeduplication(String, String) 
-     * @see #deduplicateField(String) 
+     * @see #timeProximityDeduplication(String, String...)
+     * @see #deduplicateFields(String...)
      */
     public SRequest usePaging(boolean usePaging) {
         this.usePaging = usePaging;
@@ -657,10 +728,175 @@ public class SRequest {
     }
 
     /**
+     * Set the collection to query. If not changed, the collection will be the default collection from the overall
+     * SolrWayback setup ({@code solrwayback.properties}).
+     * <p>
+     * Note: The collection will only be used for the base requests to Solr. {@link SRequest#expandResources} will
+     * still use the default collection.
+     * @param collection the collection to query.
+     * @return the SRequest adjusted with the provided value.
+     */
+    // TODO: Figure out how to handle the expandResources situation when doing collection vs. shard divide calls
+    // Maybe introduce a specific collection for that and let this method take two collections?
+    public SRequest collection(String collection) {
+        this.collection = collection;
+        return this;
+    }
+
+    /**
+     * Returns, in order of priority & existence<br>
+     * - collection from {@link #shards}, under the contract that the request {@link #isSingleCollection()}<br>
+     * - {@link #collection}<br>
+     * - collection derived from {@link PropertiesLoader#WAYBACK_BASEURL}
+     * @return the Solr collection to query. This might be a collection alias.
+     */
+    public String getCollectionGuaranteed() {
+        if (shards != null) {
+            Set<String> collections = shards.stream()
+                    .filter(shard -> shard.contains(":"))
+                    .map(shard -> shard.split(":")[0])
+                    .collect(Collectors.toSet());
+            if (collections.size() == 1) {
+                return collections.iterator().next();
+            } else if (collections.size() > 1) {
+                throw new IllegalStateException("More than 1 collection derived from shards: " + collections);
+            }
+            // Fall through to other alternatives
+        }
+
+        if (collection != null) {
+            return collection;
+        }
+
+        return SolrUtils.getBaseCollection();
+    }
+
+    /**
+     * Limit the request to the given shards. If this value is not specified, all shards in the collection is queried.
+     * <p>
+     * Shards can either be simple shard names {@code myshard} or collection qualified {@code mycollection:myshard}.
+     * If not qualified, {@link #collection(String)} is use. If {@code collection} is not defined, the default
+     * collection will be used.
+     * <p>
+     * Using qualified shards in combination with {@link #shardDivide} set to {@link CHOICE#never} is not recommended.
+     * In that case an exception will be thrown, unless all shards resolve to the same collection.
+     * @param shards 1 or more shard names.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest shards(String... shards) {
+        this.shards = Arrays.asList(shards);
+        return this;
+    }
+
+    /**
+     * Limit the request to the given shards. If this value is not specified, all shards in the collection is queried.
+     * <p>
+     * Shards can either be simple shard names {@code myshard} or collection qualified {@code mycollection:myshard}.
+     * If not qualified, {@link #collection(String)} is use. If {@code collection} is not defined, the default
+     * collection will be used.
+     * <p>
+     * Using qualified shards in combination with {@link #shardDivide} set to {@link CHOICE#never} is not recommended.
+     * In that case an exception will be thrown, unless all shards resolve to the same collection.
+     * @param shards 1 or more shard names.
+     * @return the SRequest adjusted with the provided value.
+     */
+    public SRequest shards(List<String> shards) {
+        this.shards = shards;
+        return this;
+    }
+
+    /**
+     * Extracting large search results from a Solr Cloud can be done efficiently with streaming exports.
+     * Unfortunately streaming exports does not support stored fields. The alternative is to use paging,
+     * either using {@code cursorMark} or sorting & grouping on a field. Both of these methods has the
+     * downside of initiating cross-shard searches for each page, thus processing {@code #shards * pageSize}
+     * results from {@code #shards} Solr Cloud-internal calls per overall page request.
+     * <p>
+     * If {@code shardDivide} it activated, it replaces the cross-shard per-page searches with {@code #shards}
+     * single-shard searches, keeping the returned pages from each shard in memory while merging the
+     * shard-results to a single output stream of documents. This comes at the cost of memory overhead, but
+     * the average number of results processed for each overall page request is only {@code pageSize} and the
+     * average number of shard calls is {@code 1}.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#never}, a standard request is created.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#always}, all shards are queried in parallel, subject to
+     * connection limit rules, and the resulting streams are merged.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#auto} and the number of shards is at least
+     * {@link #shardDivideAutoMinShards}, a hit-counting search is performed before the full request is initiated.
+     * If the number of hits is above {@link #shardDivideAutoMinHits}, shard division is activated.
+     * @param choice the shardDivide strategy. The default is {@link CHOICE#auto} if not specified in properties.
+     * @see #shardDivideAutoMinHits(long)
+     */
+    public SRequest shardDivide(CHOICE choice) {
+        shardDivide = choice;
+        return this;
+    }
+    /**
+     * Extracting large search results from a Solr Cloud can be done efficiently with streaming exports.
+     * Unfortunately streaming exports does not support stored fields. The alternative is to use paging,
+     * either using {@code cursorMark} or sorting & grouping on a field. Both of these methods has the
+     * downside of initiating cross-shard searches for each page, thus processing {@code #shards * pageSize}
+     * results from {@code #shards} Solr Cloud-internal calls per overall page request.
+     * <p>
+     * If {@code shardDivide} it activated, it replaces the cross-shard per-page searches with {@code #shards}
+     * single-shard searches, keeping the returned pages from each shard in memory while merging the
+     * shard-results to a single output stream of documents. This comes at the cost of memory overhead, but
+     * the average number of results processed for each overall page request is only {@code pageSize} and the
+     * average number of shard calls is {@code 1}.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#never}, a standard request is created.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#always}, all shards are queried in parallel, subject to
+     * connection limit rules, and the resulting streams are merged.
+     * <p>
+     * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
+     * full request is initiated. If the number of hits is {@code >=} {@link #shardDivideAutoMinHits}, shard
+     * division is activated.
+     * @param choice the shardDivide strategy. The default is {@link CHOICE#auto} if not specified in properties.
+     * @see #shardDivideAutoMinHits(long)
+     */
+    public SRequest shardDivide(String choice) {
+        shardDivide = CHOICE.valueOf(choice);
+        return this;
+    }
+
+    /**
+     * If {@link #shardDivide} is {@link CHOICE#auto}, a hit-counting search is performed before the
+     * full request is initiated. The number of hits must be {@code >=} {@link #shardDivideAutoMinHits} for
+     * shard division to be activated.
+     * @param minHits if the shard divide strategy is auto, the search result size must be at least this amount before
+     *                shard division is activated.
+     *                The default is 5000 if not specified otherwise in properties.
+     * @see #shardDivide(CHOICE)
+     * @see #shardDivideAutoMinShards(long)
+     */
+    public SRequest shardDivideAutoMinHits(long minHits) {
+        this.shardDivideAutoMinHits = minHits;
+        return this;
+    }
+
+    /**
+     * If {@link #shardDivide} is {@link CHOICE#auto}, and the number of shards is at least
+     * {@link #shardDivideAutoMinShards} and the number of hits is above {@link #shardDivideAutoMinHits},
+     * shard division is activated.
+     * @param minShards if the shard divide strategy is auto, the number of shards must be at least this before
+     *                shard division is activated.
+     *                The default is 2 if not specified otherwise in properties.
+     * @see #shardDivide(CHOICE)
+     * @see #shardDivideAutoMinHits(long)
+     */
+    public SRequest shardDivideAutoMinShards(long minShards) {
+        this.shardDivideAutoMinShards = minShards;
+        return this;
+    }
+
+    /**
      * Newer Solrs (at least 9+) share a default upper limit of 1024 boolean clauses recursively in the user issued
      * query tree. As multi-query uses batching, this limit can quickly be reached. Keep well below 1024.
      * @param queryBatchSize batch size when using {@link #queries(Stream)}.
-     *                       Default is {@link SolrGenericStreaming#DEFAULT_QUERY_BATCHSIZE}.
+     *                       Default is {@link SolrStreamDirect#DEFAULT_QUERY_BATCHSIZE}.
      * @return the SRequest adjusted with the provided value.
      */
     public SRequest queryBatchSize(int queryBatchSize) {
@@ -672,7 +908,7 @@ public class SRequest {
      * Copies {@link #solrQuery} and adjusts it with defined attributes from the SRequest, extending with needed
      * SolrRequest-attributes.
      * <p>
-     * Note: This does assign {@link #query}, but not {@link #queries}: They muct be handled explicitly.
+     * Note: This does assign {@link #query}, but not {@link #queries}: They must be handled explicitly.
      * @return a SolrQuery ready for processing.
      */
     public SolrQuery getMergedSolrQuery() {
@@ -680,30 +916,89 @@ public class SRequest {
         if (query != null) {
             solrQuery.setQuery(query);
         }
+
         if (filterQueries != null) {
             solrQuery.setFilterQueries(filterQueries.toArray(new String[0]));
         }
 
-        if (idealTime != null) {
-            sort = String.format(Locale.ROOT, "%s asc, abs(sub(ms(%s), crawl_date)) asc", deduplicateField, idealTime);
-        } else if (deduplicateField != null) {
-            sort = String.format(Locale.ROOT, "%s asc", deduplicateField);
-        }
-        solrQuery.set(CommonParams.SORT, sort);
+        solrQuery.set(CommonParams.SORT, getFullSort());
+        solrQuery.set(CommonParams.FL, String.join(",", getExpandedFieldList()));
 
-        Set<String> fl = new LinkedHashSet<>();
-        if (fields != null) {
-            fl.addAll(fields);
+        if (shards != null && !shards.isEmpty()) {
+            // Under the assumption that isSingleCollection() is true
+            String shardIDs = shards.stream()
+                    .map(shard -> shard.contains(":") ? shard.split(":")[1] : shard)
+                    .collect(Collectors.joining(","));
+            solrQuery.set("shards",  shardIDs);
+        }
+
+        solrQuery.set(CommonParams.ROWS, (int) Math.min(maxResults, pageSize));
+
+        // Disable irrelevant processing
+        solrQuery.set(FacetParams.FACET, false);
+        solrQuery.set(StatsParams.STATS, false);
+        solrQuery.set(HighlightParams.HIGHLIGHT, false);
+
+        return solrQuery;
+    }
+
+    /**
+     * Resolve the sort param from {@link #DEFAULT_SORT}, {@link #solrQuery}-sort, {@link #sort}, {@link #idealTime},
+     * {@link #deduplicateFields} and tie-breaking on {@code id}.
+     * @return fully resolved {@code sort} for use with Solr requests.
+     */
+    public String getFullSort() {
+        String sort = solrQuery == null ?
+                SRequest.DEFAULT_SORT :
+                solrQuery.get(CommonParams.SORT, SRequest.DEFAULT_SORT);
+        if (this.sort != null) {
+            sort = this.sort;
+        }
+        if (!(sort.endsWith("id asc") || sort.endsWith("id desc"))) {
+            sort = sort + ", id asc"; // A tie breaker is needed for cursorMark and ensures deterministic order
+        }
+        if (idealTime != null) {
+            sort = String.format(Locale.ROOT, "abs(sub(ms(%s), crawl_date)) asc, %s",
+                                 idealTime, sort);
+        }
+        if (deduplicateFields != null) {
+            for (int i = deduplicateFields.size()-1 ; i >= 0 ; i--) {
+                sort = String.format(Locale.ROOT, "%s asc, %s",
+                                     deduplicateFields.get(i), sort);
+            }
+        }
+        return sort;
+    }
+
+    /**
+     * @return the explicitly defined {@code solrQuery.fl} as well as fields needed by {@link #expandResources} etc.
+     */
+    public Set<String> getExpandedFieldList() {
+        Set<String> fl = new HashSet<>();
+        if (solrQuery != null && solrQuery.getFields() != null) {
+            fl.addAll(Arrays.asList(solrQuery.get(CommonParams.FL).split(", *")));
+        } else {
+            fl.add("source_file_path");
+            fl.add("source_file_offset");
+        }
+        if (expandResources) {
+            fl.add("content_type_norm");  // Needed to determine if a resource is a webpage
+            fl.add("source_file_path");   // Needed to fetch the webpage for link extraction
+            fl.add("source_file_offset"); // Needed to fetch the webpage for link extraction
+        }
+        if (expandResources && ensureUnique) {
+            fl.add("id"); // id is shorter than sourcefile@offset in webarchive-discovery compatible indexes
+        }
+        if (deduplicateFields != null) {
+            fl.addAll(deduplicateFields);
         }
         if (uniqueFields != null) {
             fl.addAll(uniqueFields);
         }
-        if (!fl.isEmpty()) {
-            solrQuery.set(CommonParams.FL, String.join(",", fl));
+        if (fields != null) {
+            fl.addAll(fields);
         }
-
-        solrQuery.set(CommonParams.ROWS, (int) Math.min(maxResults, pageSize));
-        return solrQuery;
+        return fl;
     }
 
     /**
@@ -723,6 +1018,23 @@ public class SRequest {
     }
 
     /**
+     * Iterates {@link #shards} and checks if all shards resolve to the same collection.
+     * <p>
+     * If there are null or 1 {@code shards} the quest is single collection.
+     * @return true if the request is to be evaluated against a single collection.
+     */
+    public boolean isSingleCollection() {
+        if (shards == null) {
+            return true;
+        }
+        String defCol = collection != null ? collection : SolrUtils.getBaseCollection();
+        return shards.stream()
+                .map(shard -> shard.contains(":") ? shard.split(":")[0] : defCol)
+                .distinct()
+                .count() == 1;
+    }
+
+    /**
      * Note: Due to the nature of Streams, {@link #queries} is not deep copied.
      * @return a copy of this SRequest, as independent as possible: {@link #solrQuery} and Lists are deep-copied.
      */
@@ -731,21 +1043,22 @@ public class SRequest {
                 solrClient(solrClient). // Implicitly handles useCachingClient
                 solrQuery(solrQuery == null ? null : SolrUtils.deepCopy(solrQuery)).
                 expandResources(expandResources).
-
-                ensureUnique(ensureUnique).
                 maxUnique(maxUnique).
                 uniqueFields(uniqueFields.toArray(new String[0])).
+                ensureUnique(ensureUnique). // Must be after the uniqueFields
                 uniqueHashing(useHashingForUnique).
-
-                deduplicateField(deduplicateField).
+                deduplicateFields(deduplicateFields).
                 fields(copy(fields)).
                 maxResults(maxResults).
                 sort(sort).
                 query(query).
-                queries(queries).
+                queries(queries). // TODO: Does not really make sense. What do we do here?
                 filterQueries(copy(filterQueries)).
                 expandResourcesFilterQueries(copy(expandResourcesFilterQueries)).
-                pageSize(pageSize);
+                pageSize(pageSize).
+                collection(collection).
+                shards(copy(shards)).
+                shardDivide(shardDivide);
         copy.idealTime = idealTime;
         return copy;
     }
@@ -759,12 +1072,81 @@ public class SRequest {
 
     /**
      * Stream the Solr responses one document at a time.
-     * Shorthand for {@code SolrGenericStreaming.create(srequest).stream()}.
-     * Use when the status methods from {@link SolrGenericStreaming} are not needed.
+     * <p>
+     * Depending on the backing Solr Cloud topology, the collection and the {@link SRequest#shardDivide} and
+     * {@link SRequest#shardDivideAutoMinHits}, either standard collection based document search & delivery or
+     * shard dividing search & delivery is used to provide an Stream of {@link SolrDocument}s.
+     * <p>
+     * Important: This method returns a {@link dk.kb.netarchivesuite.solrwayback.util.CollectionUtils.CloseableStream}
+     * and the caller <strong>must</strong> ensure that it is either depleted or closed after use, to avoid resource
+     * leaking in case of shard division being used.
+     * It is highly recommended to use {@code try-with-resources} directly on the returned stream:
+     * <pre>
+     * try (CollectionUtils.CloseableStream<SolrDocument> docs = myRequest.stream()) {
+     *     long hugeIDs = docs.map(doc -> doc.get("id)).filter(id -> id.length() > 200).count();
+     * }
+     * </pre>
      * @return a stream of SolrDocuments.
      */
-    public Stream<SolrDocument> stream() {
-        return SolrGenericStreaming.create(this).stream();
+    public CollectionUtils.CloseableStream<SolrDocument> stream() {
+        return SolrStreamFactory.stream(this);
+    }
+
+    /**
+     * Create an iterator for the Solr documents specified for this request.
+     * <p>
+     * Depending on the backing Solr Cloud topology, the collection and the {@link SRequest#shardDivide} and
+     * {@link SRequest#shardDivideAutoMinHits}, either standard collection based document search & delivery or
+     * shard dividing search & delivery is used to provide an iterator of {@link SolrDocument}s.
+     * <p>
+     * Important: This method returns a {@link dk.kb.netarchivesuite.solrwayback.util.CollectionUtils.CloseableIterator}
+     * and the caller <strong>must</strong> ensure that it is either depleted or closed after use, to avoid resource
+     * leaking.
+     * @return an iterator of SolrDocuments for this request.
+     */
+    public CollectionUtils.CloseableIterator<SolrDocument> iterate() {
+        return SolrStreamFactory.iterate(this);
+    }
+
+    @Override
+    public String toString() {
+        return "SRequest(..., " +
+               "query='" + limit(query, 40) + "', " +
+               "queries=" + (queries == null ? "not present" : "present") + ", " +
+               "filterQueries=" + limit(filterQueries, 20) + ", " +
+               "fields=" + fields + ", " +
+               "sort=" + sort + ", " +
+               "pageSize=" + pageSize + ", " +
+               "maxResults=" + maxResults + ", " +
+               "deduplicateFields=" + deduplicateFields + ", " +
+               "uniqueFields=" + uniqueFields + ", " +
+               "ensureUnique=" + ensureUnique + ", " +
+               "maxUnique=" + maxUnique + ", " +
+               "uniqueHashing=" + useHashingForUnique + ", " +
+               "expandResources=" + expandResources + ", " +
+               "expandResourcesFilterQueries=" + limit(expandResourcesFilterQueries, 20) + ", " +
+               "collection='" + collection + "'" + ", " +
+               "shards=" + shards + ", " +
+               "shardDivide=" + shardDivide + ", " +
+               "shardDivideAutoMinShards=" + shardDivideAutoMinShards + ", " +
+               "shardDivideAutoMinHits=" + shardDivideAutoMinHits;
+    }
+
+    /**
+     * Simple String length limiter.
+     * @param s any String.
+     * @param maxLength {@code s} is truncated to this.
+     * @return truncated String.
+     */
+    public static String limit(String s, int maxLength) {
+        return s == null || s.length() <= maxLength ? s : s.substring(0, maxLength-3) + "...";
+    }
+    public static String limit(List<String> list, int maxLength) {
+        return list == null ?
+                "null" :
+                list.stream()
+                        .map(fq -> limit(fq, maxLength))
+                        .collect(Collectors.joining(", ", "[", "]"));
     }
 
 }

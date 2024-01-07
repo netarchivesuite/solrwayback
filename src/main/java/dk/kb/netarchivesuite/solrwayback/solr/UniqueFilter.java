@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * When constructed, the maximum number of unique values to track is specified. If this limit is reached, an exception
  * is thrown.
  * <p>
- * This implementation is not thread safe.
+ * This implementation is thread safe.
  */
 public class UniqueFilter implements Predicate<SolrDocument> {
     private static final Logger log = LoggerFactory.getLogger(UniqueFilter.class);

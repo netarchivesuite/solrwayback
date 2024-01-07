@@ -3,8 +3,6 @@ package dk.kb.netarchivesuite.solrwayback.export;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
-import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
@@ -12,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -40,12 +39,14 @@ public class StreamingRawZipExport {
         ZipOutputStream zos = new ZipOutputStream(output);
         WarcMetadataFromSolr warcMetadata = new WarcMetadataFromSolr();
 
-        long streamedDocs = SolrGenericStreaming.create(request).stream()
-                .map(doc -> extractMetadata(doc, warcMetadata))
-                .map(StreamingRawZipExport::safeGetArcEntry)
-                .map(entry -> addArcEntryToZip(entry, zos, warcMetadata))
-                .count();
-
+        long streamedDocs;
+        try (Stream<SolrDocument> docs = request.stream()) {
+            streamedDocs = docs
+                    .map(doc -> extractMetadata(doc, warcMetadata))
+                    .map(StreamingRawZipExport::safeGetArcEntry)
+                    .map(entry -> addArcEntryToZip(entry, zos, warcMetadata))
+                    .count();
+        }
         zos.close();
         output.close();
         log.info("Zip export has completed. {} warc entries have been streamed, zipped and delivered.", streamedDocs);
