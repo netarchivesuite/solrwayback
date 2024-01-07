@@ -86,8 +86,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
         loadMore();
         if (entryStreams.isEmpty()) {
           // Still no streams. Stop processing
-          log.info("warcExport buffer empty");
-          log.info("Warcs read:"+docsWarcRead +" arcs read:"+docsArcRead);
+          log.info("warcExport buffer empty. Warcs read:"+docsWarcRead +" arcs read:"+docsArcRead);
           return totalRead == 0 ? -1 : totalRead; // -1 signals EOS
         }
       }
@@ -143,7 +142,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
       }
       // log.debug("Got " + (docs == null ? 0 : docs.size()) + " Solr documents");
       if (entryStreams.isEmpty()) {
-        log.info("loadMore(): No more documents available after " + (docsWarcRead+docsArcRead) + " docs read");
+        log.debug("loadMore(): No more documents available after " + (docsWarcRead+docsArcRead) + " docs read");
       }
     } catch (Exception e) {
       log.error("Unhandled exception in loadMore", e);
