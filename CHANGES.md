@@ -4,6 +4,7 @@
 5.0.1
 -----
 Substatial speed up when exporting (csv,warc etc.) from large multi sharded collections. See https://github.com/netarchivesuite/solrwayback/issues/329  (Thanks Toke Eskildsen)
+
 Minor tweaking of log info/debug. Less log lines in default solrwayback.log when running with log level INFO.
 
 
