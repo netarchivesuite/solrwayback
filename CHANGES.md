@@ -16,7 +16,7 @@ Better guide for using start and stop scripts.
 
 Fixed csv/json export when more than 1 facet was selected. (regression bug... sorry)
 
-warc-indexer now also finds arc files when searching recursive(thanks to @fedorw) 
+warc-indexer.sh script will now also finds arc files when searching recursive(thanks to @fedorw) 
 
 Frontend third-parties dependencies updated.
 
