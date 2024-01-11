@@ -85,7 +85,7 @@ public class PropertiesLoader {
      * Used by {@link dk.kb.netarchivesuite.solrwayback.solr.IndexWatcher}
      * through {@link dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient}.
      */
-    public static int SOLR_SERVER_CHECK_INTERVAL = 60*60; //default value every hour
+    public static int SOLR_SERVER_CHECK_INTERVAL = 10*60; //default 10 minutes
     public static String URL_NORMALISER="normal";
 
     // Used by SolrStreamShard
