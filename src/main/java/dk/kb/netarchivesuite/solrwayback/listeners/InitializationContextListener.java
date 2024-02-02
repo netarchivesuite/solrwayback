@@ -86,16 +86,7 @@ public class InitializationContextListener implements ServletContextListener {
             else{
               log.info("Using default warc-file-resolver implementation");
             }
-                        
-            //TODO Delete code later. this is just a backup implementation 
-            /* This works with socks 5 
-            new Thread(new Runnable() {
-              public void run() {
-                SOCKS.main(new String[]{"/home/teg/workspace/solrwayback/socks.properties"});
-              }
-             }).start();
-            */
-                       
+                                               
             log.info("solrwayback version " + version + " started successfully");
 
         } catch (Exception e) {
