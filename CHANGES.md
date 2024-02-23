@@ -1,7 +1,7 @@
 # SolrWayback changelog
 
 
-5.0.1
+5.1.0
 -----
 Substatial speed up when exporting (csv,warc etc.) from large multi sharded collections. See https://github.com/netarchivesuite/solrwayback/issues/329  (Thanks Toke Eskildsen)
 
