@@ -202,7 +202,7 @@ public class CollectionUtilsTest {
         try (CollectionUtils.CloseableIterator<Integer> ci = CollectionUtils.mergeIteratorsBuffered(
                 Arrays.asList(pic1, pic2), Integer::compareTo, executor, gatekeeper, 1)) {
             while(ci.hasNext()) {
-                System.out.println(ci.next());
+              //  System.out.println(ci.next());
             }
         };
     }
