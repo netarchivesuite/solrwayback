@@ -61,7 +61,7 @@ export default {
            this.dataFound = true
            /* Uncomment for local test only */
            //this.harvestTimesData.notHarvested = ['http://foobar.dk/images/bar/lorem/public/images/icon_facebook.png','http://foobar.dk/images/bar/lorem/public/images/icon_instagram.png','http://foobar.dk/images/bar/lorem/public/images/payment_icon.png','http://foobar.dk/images/bar/lorem/public/images/icon_favorite.png']
-          this.harvestTimesData.notHarvested = []
+           //this.harvestTimesData.notHarvested = []
       }).catch(() => {
         this.dataFound = false
           this.setNotification({
