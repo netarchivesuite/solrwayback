@@ -171,8 +171,11 @@ Unzip and follow the instructions below.
 * Copy `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to the `user/home/` folder. 
 If you want to use a custom location for the properties you can edit and enable the tomcat context environment variables in `/tomcat-9/conf/Catalina/localhost/solrwayback.xml`
 
+* **Windows only:** Create an enviroment value that points to the folder with java11 or java 17 : `JAVA_HOME=C:\Program Files\Java\jdk-11`
+
 * **Optional:** For screenshot previews to work you may have to edit the file `properties/solrwayback.properties` and change the value of the last two properties : `chrome.command`  and `screenshot.temp.imagedir`.
   Chrome(Chromium) must be installed for preview of images to work.
+
 
 If you encounter any errors when running a script during installation or setup, try change the permissions for the file (`startup.sh` etc.). On Linux and mac, this can be done with the following command: `chmod +x filename.sh`
 

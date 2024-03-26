@@ -10,6 +10,8 @@ Substatial speed up when exporting (csv,warc etc.) from large multi sharded coll
 Minor tweaking of log info/debug. Less log lines in default solrwayback.log when running with log level INFO.
 Fix regression bug where "page resources" was not showing missing resources for the webpage.
 
+Updated the bundle install documentation. Added new section how to redeploy the Solr configuration.
+
 5.0.0
 -----
 Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.5.0 is backwards compatible with existing Solr 7 installations.
