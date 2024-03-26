@@ -5,7 +5,7 @@
 
 5.1.0
 -----
-Substatial speed up when exporting (csv,warc etc.) from large multi sharded collections. See https://github.com/netarchivesuite/solrwayback/issues/329  (Thanks Toke Eskildsen) This feature still needs a little more testing.
+Substatial speed up when exporting (csv,warc etc.) from large multi sharded collections. See https://github.com/netarchivesuite/solrwayback/issues/329  (Thanks Toke Eskildsen) This feature still needs a little more testing. Feedback will be welcome.
 
 Minor tweaking of log info/debug. Less log lines in default solrwayback.log when running with log level INFO.
 Fix regression bug where "page resources" was not showing missing resources for the webpage.

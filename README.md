@@ -1,7 +1,7 @@
 # SolrWayback
 
-## SolrWayback 5.1.1 software bundle has been released
-SolrWayback bundle release 5.1.1 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/5.1.1
+## SolrWayback 5.1.0 software bundle has been released
+SolrWayback bundle release 5.1.0 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/5.1.0
 
 The bundle is the recommended way to get started with SolrWayback. You download the bundle, follow the installation guide and index your own WARC files. Then you are up to speed. 
 
@@ -321,7 +321,7 @@ If you want to make changes to schema.xml or solrconfig.xml you must use the clo
 Changes to schema.xml must be done before starting indexing. Changes to SolrConfig.xml can be done run time.  
 To update the configuration use the following two commands. (replace paths to your system)
 
-`bin/solr zk upconfig -n netarchivebuilder_conf -d "/home/xxx/solrwayback/solrwayback_package_5.1.1/solr_config/conf" -z localhost:9983`
+`bin/solr zk upconfig -n netarchivebuilder_conf -d "/home/xxx/solrwayback/solrwayback_package_5.1.0/solr_config/conf" -z localhost:9983`
 
 `curl -X POST "http://localhost:8983/api/collections/netarchivebuilder/" -H 'Content-Type: application/json' -d '{"modify":{"config": "netarchivebuilder_conf" } }`
 
