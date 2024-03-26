@@ -320,7 +320,9 @@ For experienced Solr users only that want to tweak the Solr configuration.
 If you want to make changes to schema.xml or solrconfig.xml you must use the cloud update script on a running Solr Cloud.
 Changes to schema.xml must be done before starting indexing. Changes to SolrConfig.xml can be done run time.  
 To update the configuration use the following two commands. (replace paths to your system)
+
 `bin/solr zk upconfig -n netarchivebuilder_conf -d "/home/xxx/solrwayback/solrwayback_package_5.1.1/solr_config/conf" -z localhost:9983`
+
 `curl -X POST "http://localhost:8983/api/collections/netarchivebuilder/" -H 'Content-Type: application/json' -d '{"modify":{"config": "netarchivebuilder_conf" } }`
 
 
