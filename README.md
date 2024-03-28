@@ -169,7 +169,6 @@ Unzip and follow the instructions below.
 ### 1) INITIAL SETUP
 
 * Copy `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to the `user/home/` folder. 
-If you want to use a custom location for the properties you can edit and enable the tomcat context environment variables in `/tomcat-9/conf/Catalina/localhost/solrwayback.xml`
 
 * **Windows only:** Create an enviroment value that points to the folder with java11 or java 17 : `JAVA_HOME=C:\Program Files\Java\jdk-11`
 
