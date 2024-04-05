@@ -2,6 +2,11 @@
 
 
 
+5.1.1
+-----
+Little cleanup in log messages due to shard-splitting to avoid repeated stack traces.
+Solr9 bug temporary bug fix due to invalid Json from Solr.  See:https://github.com/netarchivesuite/solrwayback/issues/449
+
 
 5.1.0
 -----
