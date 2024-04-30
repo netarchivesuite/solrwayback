@@ -2,7 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.javascript;
 
 
 import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
-import jdk.nashorn.api.scripting.JSObject;
+import org.openjdk.nashorn.api.scripting.JSObject;
 import org.junit.Before;
 import org.junit.Test;
 
