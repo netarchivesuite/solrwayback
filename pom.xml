@@ -162,13 +162,6 @@
       <version>0.1.2</version>
     </dependency>
 
-    <!-- JavaScript testing -->
-    <dependency>
-      <groupId>org.openjdk.nashorn</groupId>
-      <artifactId>nashorn-core</artifactId>
-      <version>15.0</version>
-    </dependency>
-
 
     <!-- Support for SVG and other image types. -->
     <!-- Can render some SVG (and scale them), but causes a lot more trouble that it is worth for now.
