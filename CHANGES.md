@@ -2,6 +2,11 @@
 
 
 
+5.1.2
+-----
+Bug fix. Chunking was not removed in all cases. This was only relevant for WARC-files that are created with chunking. (not Heritrix) 
+
+
 5.1.1
 -----
 Little cleanup in log messages due to shard-splitting to avoid repeated stack traces.
