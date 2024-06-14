@@ -275,6 +275,19 @@
       <version>3.1</version>
     </dependency>
 
+
+    <!-- GraalVM dependencies are used for JavaScript testing. -->
+    <dependency>
+      <groupId>org.graalvm.sdk</groupId>
+      <artifactId>graal-sdk</artifactId>
+      <version>21.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js</artifactId>
+      <version>21.3.0</version>
+    </dependency>
+
   </dependencies>
 
   <build>
