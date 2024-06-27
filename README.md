@@ -136,6 +136,7 @@ Documents in SolrWayback are indexed through the [warc-indexer](https://github.c
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage for developers.
+ * Make sure to use a supported Java version, if necessary set the `JAVA_HOME` accordingly (e.g. `export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.23.0.9-1.fc39.x86_64`)
  * Build the application with: `mvn package`
  * Deploy the `target/solrwayback-*.war` file in a web-container
  * Copy `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to the `user/home/` folder.  
