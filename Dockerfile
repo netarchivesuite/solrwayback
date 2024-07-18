@@ -23,9 +23,9 @@
 
 FROM ubuntu:22.04
 
-ENV SOLRWAYBACK_VERSION 4.4.2
-ENV APACHE_TOMCAT_VERSION 8.5.60
-ENV SOLR_VERSION 7.7.3
+ENV SOLRWAYBACK_VERSION 5.1.0
+ENV APACHE_TOMCAT_VERSION 9
+ENV SOLR_VERSION 9
 
 RUN apt-get update --assume-yes --quiet
 RUN apt-get install wget unzip --assume-yes --quiet
@@ -53,9 +53,9 @@ RUN cp unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/properties/sol
 RUN cp unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/properties/solrwaybackweb.properties .
 
 # Verify that apache-tomcat works
-RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/apache-tomcat-${APACHE_TOMCAT_VERSION}/bin/startup.sh
-RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/apache-tomcat-${APACHE_TOMCAT_VERSION}/bin/shutdown.sh
+RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/tomcat-${APACHE_TOMCAT_VERSION}/bin/startup.sh
+RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/tomcat-${APACHE_TOMCAT_VERSION}/bin/shutdown.sh
 
 # Verify that solr works
-RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/solr-${SOLR_VERSION}/bin/solr start
+RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/solr-${SOLR_VERSION}/bin/solr start -c
 RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/solr-${SOLR_VERSION}/bin/solr stop -all
