@@ -6,6 +6,8 @@
 -----
 Bug fix. Chunking was not removed in all cases. This was only relevant for WARC-files that are created with chunking. (not Heritrix) 
 
+Dockerfile has been updated to build SolrWayback bundle 5.1.0. See: https://github.com/netarchivesuite/solrwayback/pull/456 implemented by @c-vandendyck-kbr
+
 
 5.1.1
 -----
