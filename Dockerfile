@@ -7,9 +7,9 @@
 # where <path/to/WARCs> is a file path that only contains WARC files and directories.
 
 # When the container is running, run the following commands to start Solr and Tomcat:
-# export SOLRWAYBACK_VERSION 5.1.0
-# export APACHE_TOMCAT_VERSION 9
-# export SOLR_VERSION 9
+# export SOLRWAYBACK_VERSION=5.1.0
+# export APACHE_TOMCAT_VERSION=9
+# export SOLR_VERSION=9
 # ./unpacked-bundle/solrwayback_package_$SOLRWAYBACK_VERSION/solr-$SOLR_VERSION/bin/solr start -c
 # ./unpacked-bundle/solrwayback_package_$SOLRWAYBACK_VERSION/tomcat-$APACHE_TOMCAT_VERSION/bin/startup.sh
 
