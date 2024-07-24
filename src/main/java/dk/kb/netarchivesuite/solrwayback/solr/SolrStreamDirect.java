@@ -6,7 +6,6 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -358,7 +357,7 @@ public class SolrStreamDirect implements Iterable<SolrDocument> {
         long st = System.currentTimeMillis();
         try {
             rsp = request.solrClient.query(collection, solrQuery, METHOD.POST);
-        } catch (HttpSolrClient.RemoteSolrException e) {
+        } catch (SolrServerException e) {
             log.warn("RemoteSolrException for POST request to collection '" + request.getCollectionGuaranteed() + "': " +
                      SolrUtils.fieldValueToString(solrQuery), e);
             throw e;
