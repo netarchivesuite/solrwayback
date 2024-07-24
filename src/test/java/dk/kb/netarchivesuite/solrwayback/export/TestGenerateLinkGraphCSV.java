@@ -6,7 +6,7 @@ import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 
 public class TestGenerateLinkGraphCSV {
 
@@ -18,7 +18,7 @@ public class TestGenerateLinkGraphCSV {
     
     String query = "katte";
 
-    SolrClient solrClient = new HttpSolrClient.Builder(PropertiesLoader.SOLR_SERVER).build();
+    SolrClient solrClient = new Http2SolrClient.Builder(PropertiesLoader.SOLR_SERVER).build();
      SolrStreamingLinkGraphCSVExportClient solr =  SolrStreamingLinkGraphCSVExportClient.createExporter(solrClient, query);
 
     //MAX 100.000 results
