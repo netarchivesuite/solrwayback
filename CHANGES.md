@@ -2,6 +2,10 @@
 
 
 
+5.2.0
+-----
+Geo search was not working for Solr 9.4 in cloud mode. The fix still works against Solr7 but also with Solr9.4 cloud mode.
+
 5.1.1
 -----
 Little cleanup in log messages due to shard-splitting to avoid repeated stack traces.

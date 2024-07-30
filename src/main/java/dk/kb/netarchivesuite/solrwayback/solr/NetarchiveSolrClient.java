@@ -803,6 +803,12 @@ public class NetarchiveSolrClient {
      * "crawl_date asc";
      */
 
+    
+    
+    /**
+     *  
+     * Solr documentation for spatial search: https://solr.apache.org/guide/solr/latest/query-guide/spatial-search.html#geofilt
+     */
     public ArrayList<IndexDoc> imagesLocationSearchWithSort(String searchText, String filterQuery, int results, double latitude, double longitude,
                                                             double radius, String sort) throws Exception {
         log.info("imagesLocationSearch:" + searchText + " coordinates:" + latitude + "," + longitude + " radius:" + radius);
@@ -816,19 +822,18 @@ public class NetarchiveSolrClient {
         if (sort != null) {
             solrQuery.add("sort", sort);
         }
-        solrQuery.setRows(results);
+        solrQuery.setRows(results); 
+        solrQuery.setQuery(searchText);        
 
-
-        // The 3 lines defines geospatial search. The ( ) are required if you want to
-        // AND with another query
-        solrQuery.setQuery("({!geofilt sfield=exif_location}) AND " + searchText);
+        // Geospatial search fields
         solrQuery.setParam("pt", latitude + "," + longitude);
         solrQuery.setParam("d", "" + radius);
-
+        
         if (filterQuery != null) {
-            solrQuery.setFilterQueries(filterQuery);
+            solrQuery.setFilterQueries(filterQuery); 
         }
 
+        solrQuery.addFilterQuery("({!geofilt sfield=exif_location})"); //As from Solr9 for some reason this has to be in filter query.        
         QueryResponse rsp = solrServer.query(solrQuery);
 
         // SolrDocumentList docs = rsp.getResults();
