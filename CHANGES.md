@@ -2,16 +2,11 @@
 
 
 
-
-5.2.0
------
-Geo search was not working for Solr 9.4 in cloud mode. The fix still works against Solr7 but also with Solr9.4 cloud mode.
-
 5.1.2
 -----
 Bug fix. Chunking was not removed in all cases. This was only relevant for WARC-files that are created with chunking. (not Heritrix) 
-
-Dockerfile has been updated to build SolrWayback bundle 5.1.0. See: https://github.com/netarchivesuite/solrwayback/pull/456 implemented by @c-vandendyck-kbr
+Dockerfile has been updated to build SolrWayback bundle 5.1.0. (Will be upgraded each release) See: https://github.com/netarchivesuite/solrwayback/pull/456 implemented by @c-vandendyck-kbr
+Geo search was not working for Solr 9.4 in cloud mode. Solr function query syntax rewrite was required and it also is backwards compatible with Solr7.
 
 5.1.1
 -----
