@@ -136,6 +136,7 @@ Documents in SolrWayback are indexed through the [warc-indexer](https://github.c
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage for developers.
+ * Make sure to use a supported Java version, if necessary set the `JAVA_HOME` accordingly (e.g. `export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.23.0.9-1.fc39.x86_64`)
  * Build the application with: `mvn package`
  * Deploy the `target/solrwayback-*.war` file in a web-container
  * Copy `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to the `user/home/` folder.  
@@ -144,7 +145,7 @@ Documents in SolrWayback are indexed through the [warc-indexer](https://github.c
 
 
 ## Build, Index and test with Docker
-The docker container will download the SolrWayback bundle 4.4.2.
+The docker container will download the SolrWayback bundle 5.1.0.
 You can index WARC files from a folder outside the docker container and index them. 
 A containerized sample can be found [here](./Dockerfile)
 Read the docker file for documentation.
@@ -186,13 +187,13 @@ SolrWayback requires both Solr and Tomcat to be running. These processes are sta
 
 * Start tomcat: `tomcat-9/bin/startup.sh`  
 * Stop tomcat:  `tomcat-9/bin/shutdown.sh`  
-* (For windows navigate to `tomcat-9/bin/` and type `startup.bat` or `shutdown.bat`)  
+* (For windows navigate to `tomcat-9\bin\` and type `startup.bat` or `shutdown.bat`)  
 * To see Tomcat is running open: http://localhost:8080/solrwayback/  
   
 #### Solr:  
 * Start solr: `solr-9/bin/solr start -c -m 4g`  (start with 8g or 16g if you have an index with over 100M records.)
 * Stop solr: `solr-9/bin/solr stop -all`  
-* (For windows navigate to `solr-9/bin/` and type `solr.cmd start -c -m 4g` or `solr.cmd stop -all`)    
+* (For windows navigate to `solr-9\bin\` and type `solr.cmd start -c -m 4g` or `solr.cmd stop -all`)    
 * To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 * For Solrwayback bundle version before v.5 the '-c' parameter must be omitted.
 
@@ -233,8 +234,8 @@ You can then enable faceting on these fields in the property file: `solrwaybackw
 
 Indexing works a little different on Windows. This also works on Linux and Mac, however we recommend using the `warc-indexer.sh` as above. 
 
-* **Step 1:** Copy ARC/WARC files into the folder: `indexing/warcs1`
-* **Step 2:** To index the files call `indexing/batch_warcs1_folder.bat` (batch_warcs1_folder.sh for Linux and Mac)
+* **Step 1:** Copy ARC/WARC files into the folder: `indexing\warcs1`
+* **Step 2:** To index the files call `indexing\batch_warcs1_folder.bat` (batch_warcs1_folder.sh for Linux and Mac)
 * **Note:** There is a batch_warcs2_folder.sh similar script to show how to easily add new WARC files to the collection without indexing the old ones again.
 
 
