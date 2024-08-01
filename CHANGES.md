@@ -1,5 +1,8 @@
 # SolrWayback changelog
 
+UNRELEASED
+-----
+Upgraded solr dependencies from v9.1.0 to v9.4.1
 
 
 5.1.2
