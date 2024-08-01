@@ -31,7 +31,7 @@ RUN apt-get update --assume-yes --quiet
 RUN apt-get install wget unzip --assume-yes --quiet
 
 # Install dependencies
-RUN apt-get install default-jre lsof curl --assume-yes --quiet
+RUN apt-get install default-jre lsof curl bc --assume-yes --quiet
 
 RUN useradd --create-home --shell /bin/bash builder
 RUN chown builder:builder /home/builder -R
