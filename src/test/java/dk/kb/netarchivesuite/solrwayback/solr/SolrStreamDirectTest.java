@@ -27,6 +27,7 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
+import org.apache.solr.core.NodeConfig;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,8 +63,10 @@ public class SolrStreamDirectTest {
         PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
 
         // Embedded Solr 9.1+ must have absolute home both as env and explicit param
-        System.setProperty("solr.install.dir", Path.of(SOLR_HOME).toAbsolutePath().toString());
-        coreContainer = CoreContainer.createAndLoad(Path.of(SOLR_HOME).toAbsolutePath());
+        Path solrHome = Path.of(SOLR_HOME).toAbsolutePath();
+        System.setProperty("solr.install.dir", solrHome.toString());
+        NodeConfig nodeConfig = new NodeConfig.NodeConfigBuilder("netarchivebuilder", solrHome).build();
+        coreContainer = new CoreContainer(nodeConfig);
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
