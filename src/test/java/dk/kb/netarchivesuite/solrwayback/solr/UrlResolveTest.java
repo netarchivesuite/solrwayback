@@ -64,8 +64,10 @@ public class UrlResolveTest {
         PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
 
         // Embedded Solr 9.1+ must have absolute home both as env and explicit param
-        System.setProperty("solr.install.dir", Path.of(SOLR_HOME).toAbsolutePath().toString());
-        coreContainer = CoreContainer.createAndLoad(Path.of(SOLR_HOME).toAbsolutePath());
+        Path solrHome = Path.of(SOLR_HOME).toAbsolutePath();
+        System.setProperty("solr.install.dir", solrHome.toString());
+        NodeConfig nodeConfig = new NodeConfig.NodeConfigBuilder("netarchivebuilder", solrHome).build();
+        coreContainer = new CoreContainer(nodeConfig);
         coreContainer.load();
         solr = new ConvenientEmbeddedSolrServer(coreContainer, "netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(solr);

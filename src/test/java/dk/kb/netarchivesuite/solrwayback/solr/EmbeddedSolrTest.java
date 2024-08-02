@@ -4,16 +4,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashSet;
 
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.*;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,23 +18,25 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 public class EmbeddedSolrTest {
 
     private static final Logger log = LoggerFactory.getLogger(EmbeddedSolrTest.class);        
-    private static String solr_home= "target/test-classes/solr_9";
+    private static String SOLR_HOME = "target/test-classes/solr_9";
     private static NetarchiveSolrClient server = null;
     private static  CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
     
     @Before
     public void setUp() throws Exception {
-       // Embedded Solr 9.1+ must have absolute home both as env and explicit param
-       System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
-       coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath());
-       coreContainer.load();
-       embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
-       NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
-       server = NetarchiveSolrClient.getInstance();
-       
+        // Embedded Solr 9.1+ must have absolute home both as env and explicit param
+        Path solrHome = Path.of(SOLR_HOME).toAbsolutePath();
+        System.setProperty("solr.install.dir", solrHome.toString());
+        NodeConfig nodeConfig = new NodeConfig.NodeConfigBuilder("netarchivebuilder", solrHome).build();
+        coreContainer = new CoreContainer(nodeConfig);
+        coreContainer.load();
+        embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
+        NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
+        server = NetarchiveSolrClient.getInstance();
+
         // Remove any items from previous executions:
-       embeddedServer.deleteByQuery("*:*"); //This is not on the NetarchiveSolrClient API!
+        embeddedServer.deleteByQuery("*:*"); //This is not on the NetarchiveSolrClient API!
     }
 
     /**
