@@ -4,15 +4,14 @@ import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrTestClient;
-import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamDirect;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
+import org.apache.solr.core.NodeConfig;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,9 +26,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -38,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 public class PagedTimeMapTest {
     private static final Logger log = LoggerFactory.getLogger(PagedTimeMapTest.class);
     public static final int TEST_DOCS = 100; // Changing this might make some unit tests fail
-    private static String solr_home= "target/test-classes/solr_9";
+    private static String SOLR_HOME = "target/test-classes/solr_9";
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
 
@@ -50,8 +47,10 @@ public class PagedTimeMapTest {
         PropertiesLoaderWeb.initProperties();
 
         // Embedded Solr 9.1+ must have absolute home both as env and explicit param
-        System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
-        coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath());
+        Path solrHome = Path.of(SOLR_HOME).toAbsolutePath();
+        System.setProperty("solr.install.dir", solrHome.toString());
+        NodeConfig nodeConfig = new NodeConfig.NodeConfigBuilder("netarchivebuilder", solrHome).build();
+        coreContainer = new CoreContainer(nodeConfig);
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
@@ -60,7 +59,7 @@ public class PagedTimeMapTest {
         embeddedServer.deleteByQuery("*:*"); //This is not on the NetarchiveSolrClient API!
 
         fillSolr();
-        SolrGenericStreaming.setDefaultSolrClient(embeddedServer);
+        SolrStreamDirect.setDefaultSolrClient(embeddedServer);
         log.info("Embedded server ready with timemap paging limit '{}'.", PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
         assertEquals(1, PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
     }

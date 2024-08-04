@@ -2,17 +2,17 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrTestClient;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamDirect;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
+import org.apache.solr.core.NodeConfig;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 public class DatetimeNegotiationTest {
     private static final Logger log = LoggerFactory.getLogger(DatetimeNegotiationTest.class);
     public static final int TEST_DOCS = 20; // Changing this might make some unit tests fail
-    private static String solr_home= "target/test-classes/solr_9";
+    private static String SOLR_HOME = "target/test-classes/solr_9";
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;
 
@@ -43,10 +43,12 @@ public class DatetimeNegotiationTest {
         log.info("Setting up embedded server");
         PropertiesLoader.initProperties();
         PropertiesLoaderWeb.initProperties();
-        
+
         // Embedded Solr 9.1+ must have absolute home both as env and explicit param
-        System.setProperty("solr.install.dir", Path.of(solr_home).toAbsolutePath().toString());
-        coreContainer = CoreContainer.createAndLoad(Path.of(solr_home).toAbsolutePath());
+        Path solrHome = Path.of(SOLR_HOME).toAbsolutePath();
+        System.setProperty("solr.install.dir", solrHome.toString());
+        NodeConfig nodeConfig = new NodeConfig.NodeConfigBuilder("netarchivebuilder", solrHome).build();
+        coreContainer = new CoreContainer(nodeConfig);
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer,"netarchivebuilder");
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
@@ -56,7 +58,7 @@ public class DatetimeNegotiationTest {
 
 
         fillSolr();
-        SolrGenericStreaming.setDefaultSolrClient(embeddedServer);
+        SolrStreamDirect.setDefaultSolrClient(embeddedServer);
         log.info("Embedded server ready with timemap paginglimit set to: '{}'", PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
     }
 
