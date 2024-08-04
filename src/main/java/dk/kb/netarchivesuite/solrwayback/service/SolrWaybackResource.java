@@ -878,7 +878,7 @@ public class SolrWaybackResource {
    //log.debug("setting contentype:"+contentType);
 //          
    
-   ResponseBuilder response = Response.ok(arcEntry.getBinaryRaw()).type(contentType );
+   ResponseBuilder response = Response.ok(arcEntry.getBinaryNoChunking()).type(contentType );
 
     if (arcEntry.isHasBeenDecompressed()){ //Will have if playback (HTML, Twitter, etc.) has replaced the content
     	response.header("Content-Encoding", "identity"); //Not required, but will make it easier to see it has been applied.

@@ -38,10 +38,12 @@ import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceExcept
 import dk.kb.netarchivesuite.solrwayback.smurf.SmurfUtil;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamDirect;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStats;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamDecorators;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
+import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamFactory;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
@@ -66,15 +68,14 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -553,7 +554,7 @@ public class Facade {
                 throw new InvalidArgumentServiceException("Number of results("+results+") for warc expanded export exceeds the configured limit: "+PropertiesLoaderWeb.EXPORT_WARC_EXPANDED_MAXRESULTS);
             }
         }
-        SolrGenericStreaming solr = SolrGenericStreaming.create(
+        Iterator<SolrDocument> solrDocs = SolrStreamDirect.iterate(
                 SRequest.builder()
                                 .query(query)
                                 .filterQueries(filterqueries)
@@ -562,7 +563,7 @@ public class Facade {
                         expandResources(expandResources).
                         ensureUnique(ensureUnique));
 
-        return new StreamingSolrWarcExportBufferedInputStream(solr, max, gzip); // Use maximum export results from property-file
+        return new StreamingSolrWarcExportBufferedInputStream(solrDocs, max, gzip); // Use maximum export results from property-file
     }
 
     public static InputStream exportLinkGraphStreaming(String q) {
@@ -598,8 +599,8 @@ public class Facade {
      *                      Note 2: This also works with expandResources.
      * @param groupField    if not null, documents will be grouped on the given field and only the first document
      *                      will be exported in each group. This will change document order from score to groupField.
-     *                      This is implemented using {@link SRequest#deduplicateField(String)}.
-     * @param flatten       if true, {@link SolrGenericStreaming#flatten(SolrDocument)} will be called on each
+     *                      This is implemented using {@link SRequest#deduplicateFields(String)}.
+     * @param flatten       if true, {@link SolrStreamDecorators#flatten(SolrDocument)} will be called on each
      *                      SolrDocument to ensure that no field holds multiple values.
      *                      Note: If there are multiple multi-value fields, this can result in a large amount of
      *                            flattened documents, as all permutations of values will be present.
@@ -632,13 +633,15 @@ public class Facade {
                 filterQueries(filterQueries).
                 fields(fields).
                 expandResources(expandResources).
-                deduplicateField(groupField).
+                deduplicateFields(groupField).
                 ensureUnique(ensureUnique);
 
         // Create stream
-        Stream<SolrDocument> docs = SolrGenericStreaming.create(request).stream();
+        //Stream<SolrDocument> docs = SolrGenericStreaming.stream(request);
+        // TODO: Figure out how to handle the CloseableStream-problem
+        Stream<SolrDocument> docs = request.stream();
         if (Boolean.TRUE.equals(flatten)) {
-            docs = docs.flatMap(SolrGenericStreaming::flatten);
+            docs = docs.flatMap(SolrStreamDecorators::flatten);
         }
 
         return ContentStreams.deliver(docs, fields, format, gzip);

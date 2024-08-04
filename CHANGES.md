@@ -1,11 +1,41 @@
 # SolrWayback changelog
 
+UNRELEASED
+-----
+Upgraded solr dependencies from v9.1.0 to v9.4.1
+
+
+5.1.2
+-----
+Bug fix. Chunking was not removed in all cases. This was only relevant for WARC-files that are created with chunking. (not Heritrix) 
+Dockerfile has been updated to build SolrWayback bundle 5.1.0. (Will be upgraded each release) See: https://github.com/netarchivesuite/solrwayback/pull/456 implemented by @c-vandendyck-kbr
+Geo search was not working for Solr 9.4 in cloud mode. Solr function query syntax rewrite was required and it also is backwards compatible with Solr7.
+
+5.1.1
+-----
+Little cleanup in log messages due to shard-splitting to avoid repeated stack traces.
+Solr9 bug temporary bug fix due to invalid Json from Solr.  See:https://github.com/netarchivesuite/solrwayback/issues/449
+
+
+5.1.0
+-----
+Substatial speed up when exporting (csv,warc etc.) from large multi sharded collections. See https://github.com/netarchivesuite/solrwayback/issues/329  (Thanks Toke Eskildsen) This feature still needs a little more testing. Feedback will be welcome.
+
+Minor tweaking of log info/debug. Less log lines in default solrwayback.log when running with log level INFO.
+Fix regression bug where "page resources" was not showing missing resources for the webpage.
+
+Updated the bundle install documentation. Added new section how to redeploy the Solr configuration.
+
 5.0.0
 -----
-Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 4.5.0 is backwards compatible with existing Solr 7 installations. 
+Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.5.0 is backwards compatible with existing Solr 7 installations.
+
 Better guide for using start and stop scripts.
+
 Fixed csv/json export when more than 1 facet was selected. (regression bug... sorry)
-warc-indexer now also finds arc files when searching recursive(thanks to @fedorw) 
+
+warc-indexer.sh script will now also finds arc files when searching recursive(thanks to @fedorw) 
+
 Frontend third-parties dependencies updated.
 
 

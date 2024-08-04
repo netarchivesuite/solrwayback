@@ -384,17 +384,17 @@ public class NetarchiveSolrClient {
      * @return ArcEntry representation of the matching images.
      */
     public ArrayList<ArcEntryDescriptor> findImagesForTimestamp(String searchString, String timeStamp) {
-        return SolrGenericStreaming.create(
-                        SRequest.builder()
-                                .query(searchString)
-                                .filterQueries("content_type_norm:image",   // only images
-                                        SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
-                                        "image_size:[2000 TO *]")   // No small images. (fillers etc.)
-                                .fields(SolrUtils.indexDocFieldList)
-                                .timeProximityDeduplication(timeStamp, "url_norm")
-                                .maxResults(50) // TODO: Make this an argument instead
-                ).
-                stream()
+        SRequest request = SRequest.builder().
+                query(searchString).
+                filterQueries("content_type_norm:image",   // only images
+                              SolrUtils.NO_REVISIT_FILTER, // No binary for revisits.
+                              "image_size:[2000 TO *]").   // No small images. (fillers etc.)
+                fields(SolrUtils.indexDocFieldList).
+                timeProximityDeduplication(timeStamp, "url_norm").
+                maxResults(50); // TODO: Make this an argument instead
+
+        // TODO: Figure out how to handle the CloseableStream-problem
+        return request.stream()
                 .map(SolrUtils::solrDocument2ArcEntryDescriptor)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -516,7 +516,7 @@ public class NetarchiveSolrClient {
         if (idealTime != null) {
             request = request.timeProximityDeduplication(idealTime, "url_norm");
         } else {
-            request = request.deduplicateField("url_norm");
+            request = request.deduplicateFields("url_norm");
         }
 
         Map<String, SolrDocument> normResolved = request.stream().
@@ -804,6 +804,12 @@ public class NetarchiveSolrClient {
      * "crawl_date asc";
      */
 
+    
+    
+    /**
+     *  
+     * Solr documentation for spatial search: https://solr.apache.org/guide/solr/latest/query-guide/spatial-search.html#geofilt
+     */
     public ArrayList<IndexDoc> imagesLocationSearchWithSort(String searchText, String filterQuery, int results, double latitude, double longitude,
                                                             double radius, String sort) throws Exception {
         log.info("imagesLocationSearch:" + searchText + " coordinates:" + latitude + "," + longitude + " radius:" + radius);
@@ -817,19 +823,18 @@ public class NetarchiveSolrClient {
         if (sort != null) {
             solrQuery.add("sort", sort);
         }
-        solrQuery.setRows(results);
+        solrQuery.setRows(results); 
+        solrQuery.setQuery(searchText);        
 
-
-        // The 3 lines defines geospatial search. The ( ) are required if you want to
-        // AND with another query
-        solrQuery.setQuery("({!geofilt sfield=exif_location}) AND " + searchText);
+        // Geospatial search fields
         solrQuery.setParam("pt", latitude + "," + longitude);
         solrQuery.setParam("d", "" + radius);
-
+        
         if (filterQuery != null) {
-            solrQuery.setFilterQueries(filterQuery);
+            solrQuery.setFilterQueries(filterQuery); 
         }
 
+        solrQuery.addFilterQuery("({!geofilt sfield=exif_location})"); //As from Solr9 for some reason this has to be in filter query.        
         QueryResponse rsp = solrServer.query(solrQuery);
 
         // SolrDocumentList docs = rsp.getResults();

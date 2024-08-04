@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>dk.kb.netarchivesuite.solrwayback</groupId>
   <artifactId>solrwayback</artifactId>
-  <version>5.0.0</version>
+  <version>5.1.3-SNAPSHOT</version>
   <packaging>war</packaging>
   <name>solrwayback</name>
   <url>https://maven.apache.org</url>
@@ -87,8 +87,6 @@
       <version>3.3.6</version>
     </dependency>
 
-
-
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
@@ -115,28 +113,34 @@
       <dependency>
         <groupId>org.apache.solr</groupId>
         <artifactId>solr-solrj</artifactId>
-        <version>9.1.0</version>
+        <version>9.4.1</version>
       </dependency>
 
       <dependency>
         <groupId>org.apache.solr</groupId>
         <artifactId>solr-test-framework</artifactId>
-        <version>9.1.0</version>
-        <!-- <version>7.1.0</version> -->
-        <scope>test</scope>
+        <version>9.4.1</version>
+        <scope>test</scope>      
       </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.solr/solr-core -->
       <dependency>
           <groupId>org.apache.solr</groupId>
           <artifactId>solr-core</artifactId>
-          <version>9.1.0</version>
+          <version>9.4.1</version>
           <scope>test</scope>
+        <exclusions>
+         <exclusion>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+        </exclusion>
+      
+      </exclusions>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
       <dependency>
           <groupId>org.apache.lucene</groupId>
           <artifactId>lucene-core</artifactId>
-          <version>9.2.0</version>
+          <version>9.8.0</version>
           <scope>test</scope>
       </dependency>
 

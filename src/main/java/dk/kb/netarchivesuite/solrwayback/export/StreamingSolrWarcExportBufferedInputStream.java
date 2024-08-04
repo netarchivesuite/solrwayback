@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import dk.kb.netarchivesuite.solrwayback.solr.SolrGenericStreaming;
 import dk.kb.netarchivesuite.solrwayback.util.DelayedInputStream;
 import dk.kb.netarchivesuite.solrwayback.util.NamedConsumer;
 import dk.kb.netarchivesuite.solrwayback.util.StatusInputStream;
@@ -41,13 +40,13 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   /**
    * Create a stream with WARC-content from the records referenced by the solrClient.
    * The parts of the stream is lazy loaded and has no practical limit on sizes.
-   * @param solrClient delivers Solr documents specifying the records to stream. The records MUST include the fields
+   * @param solrDocs   the Solr documents specifying the records to stream. The documents MUST include the fields
    *                   {@code source_file_path} and {@code source_file_offset}.
    * @param maxRecords the maximum number of records to deliver.
    * @param gzip if true, the WARC-records will be gzipped. If false, they will be delivered as-is.
    */
-  public StreamingSolrWarcExportBufferedInputStream(SolrGenericStreaming solrClient, long maxRecords, boolean gzip) {
-    this.solrDocs = solrClient.iterator();
+  public StreamingSolrWarcExportBufferedInputStream(Iterator<SolrDocument> solrDocs, long maxRecords, boolean gzip) {
+    this.solrDocs = solrDocs;
     this.maxRecords = maxRecords;
     this.gzip = gzip;
   }
@@ -55,7 +54,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
   /**
    * Create a stream with WARC-content from the records in the solrDocs Stream.
    * The parts of the stream is lazy loaded and has no practical limit on sizes.
-   * @param solrDocs   delivers Solr documents specifying the records to stream. The records MUST include the fields
+   * @param solrDocs   the Solr documents specifying the records to stream. The documents MUST include the fields
    *                   {@code source_file_path} and {@code source_file_offset}.
    * @param maxRecords the maximum number of records to deliver.
    * @param gzip if true, the WARC-records will be gzipped. If false, they will be delivered as-is.
@@ -87,8 +86,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
         loadMore();
         if (entryStreams.isEmpty()) {
           // Still no streams. Stop processing
-          log.info("warcExport buffer empty");
-          log.info("Warcs read:"+docsWarcRead +" arcs read:"+docsArcRead);
+          log.info("warcExport buffer empty. Warcs read:"+docsWarcRead +" arcs read:"+docsArcRead);
           return totalRead == 0 ? -1 : totalRead; // -1 signals EOS
         }
       }
@@ -144,7 +142,7 @@ public class StreamingSolrWarcExportBufferedInputStream extends InputStream{
       }
       // log.debug("Got " + (docs == null ? 0 : docs.size()) + " Solr documents");
       if (entryStreams.isEmpty()) {
-        log.info("loadMore(): No more documents available after " + (docsWarcRead+docsArcRead) + " docs read");
+        log.debug("loadMore(): No more documents available after " + (docsWarcRead+docsArcRead) + " docs read");
       }
     } catch (Exception e) {
       log.error("Unhandled exception in loadMore", e);

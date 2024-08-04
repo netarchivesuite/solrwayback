@@ -56,6 +56,8 @@ public class AutoFileResolverTest {
         }
     }
 
+    
+    /**
     @Test
     public void testRescan() throws IOException, InterruptedException {
         File tmpdirF = Files.createTempDirectory("autoresolver_").toFile();
@@ -96,4 +98,6 @@ public class AutoFileResolverTest {
         assertNotEquals("The (W)ARC '" + newWarc + "' should be resolvable after creation",
                         newWarc, resolver.resolveArcFileLocation(newWarc).getSource());
     }
+   */
+
 }

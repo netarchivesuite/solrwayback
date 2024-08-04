@@ -7,11 +7,11 @@
 # where <path/to/WARCs> is a file path that only contains WARC files and directories.
 
 # When the container is running, run the following commands to start Solr and Tomcat:
-# export SOLRWAYBACK_VERSION=4.4.2
-# export APACHE_TOMCAT_VERSION=8.5.60
-# export SOLR_VERSION=7.7.3
-# ./unpacked-bundle/solrwayback_package_$SOLRWAYBACK_VERSION/solr-$SOLR_VERSION/bin/solr start
-# ./unpacked-bundle/solrwayback_package_$SOLRWAYBACK_VERSION/apache-tomcat-$APACHE_TOMCAT_VERSION/bin/startup.sh
+# export SOLRWAYBACK_VERSION=5.1.2
+# export APACHE_TOMCAT_VERSION=9
+# export SOLR_VERSION=9
+# ./unpacked-bundle/solrwayback_package_$SOLRWAYBACK_VERSION/solr-$SOLR_VERSION/bin/solr start -c
+# ./unpacked-bundle/solrwayback_package_$SOLRWAYBACK_VERSION/tomcat-$APACHE_TOMCAT_VERSION/bin/startup.sh
 
 # You should now verify that the following links works with a browser:
 # http://localhost:8080/solrwayback/
@@ -23,15 +23,15 @@
 
 FROM ubuntu:22.04
 
-ENV SOLRWAYBACK_VERSION 4.4.2
-ENV APACHE_TOMCAT_VERSION 8.5.60
-ENV SOLR_VERSION 7.7.3
+ENV SOLRWAYBACK_VERSION 5.1.2
+ENV APACHE_TOMCAT_VERSION 9
+ENV SOLR_VERSION 9
 
 RUN apt-get update --assume-yes --quiet
 RUN apt-get install wget unzip --assume-yes --quiet
 
 # Install dependencies
-RUN apt-get install default-jre lsof curl --assume-yes --quiet
+RUN apt-get install default-jre lsof curl bc --assume-yes --quiet
 
 RUN useradd --create-home --shell /bin/bash builder
 RUN chown builder:builder /home/builder -R
@@ -53,9 +53,9 @@ RUN cp unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/properties/sol
 RUN cp unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/properties/solrwaybackweb.properties .
 
 # Verify that apache-tomcat works
-RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/apache-tomcat-${APACHE_TOMCAT_VERSION}/bin/startup.sh
-RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/apache-tomcat-${APACHE_TOMCAT_VERSION}/bin/shutdown.sh
+RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/tomcat-${APACHE_TOMCAT_VERSION}/bin/startup.sh
+RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/tomcat-${APACHE_TOMCAT_VERSION}/bin/shutdown.sh
 
 # Verify that solr works
-RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/solr-${SOLR_VERSION}/bin/solr start
+RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/solr-${SOLR_VERSION}/bin/solr start -c
 RUN unpacked-bundle/solrwayback_package_${SOLRWAYBACK_VERSION}/solr-${SOLR_VERSION}/bin/solr stop -all

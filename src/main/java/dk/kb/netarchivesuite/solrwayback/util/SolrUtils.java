@@ -1,5 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
@@ -8,6 +10,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocument;
@@ -16,17 +19,24 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,6 +47,13 @@ public class SolrUtils {
     public static String indexDocFieldListShort = "url,url_norm,source_file_path,source_file,source_file_offset,crawl_date";
     public static String arcEntryDescriptorFieldList = "url,url_norm,source_file_path,source_file_offset,hash,content_type";
     public static String mementoDocFieldList = "content_length,wayback_date,content_type_served";
+
+    /**
+     * The {@code shardCache} is used by the {@link #getShards(String, String)} method. It caches forever, which does
+     * present a potential problem if the Solr Cloud layout is changed without restarting SolrWayback.
+     */
+    // TODO: Add a timeout or other form of cache invalidation to this cache
+    private static final Map<String, List<Shard>> shardCache = new HashMap<>();
 
     /**
      * Normalizes a given list of urls and makes a Solr search string from the result.
@@ -385,9 +402,12 @@ public class SolrUtils {
 
     /**
      * Convert the given Solr field value to a String.
-     * <p>
-     * For most values this is a simple toString, but
-     * Dates are converted using {@link DateUtils#getSolrDateFull(Date)} and Collections are expanded.
+     * <ul>
+     *     <li>Strings are processes using {@link #createPhrase(String)}</li>
+     *     <li>Dates are converted using {@link DateUtils#getSolrDateFull(Date)}</li>
+     *     <li>Collections are expanded</li>
+     *     <li>All else is processed using {@link Objects#toString}</li>
+     * </ul>
      * @param value a value from a Solr field.
      * @return a String representation of the given Solr field value or null if the input was null;
      */
@@ -398,14 +418,19 @@ public class SolrUtils {
         if (value instanceof Date) {
             return DateUtils.getSolrDate((Date) value);
         }
+        if (value instanceof String) {
+            return createPhrase((String) value);
+        }
         if (value instanceof String[]) {
-            return Arrays.toString((String[])value);
+            return Arrays.stream((String[])value)
+                    .map(SolrUtils::fieldValueToString)
+                    .collect(Collectors.joining(", ", "[", "]"));
         }
         if (value instanceof int[]) {
             return Arrays.toString((int[])value);
         }
         if (value instanceof long[]) {
-            return Arrays.toString((int[])value);
+            return Arrays.toString((long[])value);
         }
         if (value instanceof float[]) {
             return Arrays.toString((float[])value);
@@ -449,5 +474,135 @@ public class SolrUtils {
         Stream<String> fullFiltersStream =Stream.concat(Stream.of(predefinedFilterField + ":" + predefinedFilterValue), filtersStream);
         return fullFiltersStream
                 .collect(Collectors.joining(") AND (", "(", ")"));
+    }
+
+    /**
+     * Retrieve the shard names for the default collection on the default Solr.
+     * If it is not possible to retrieve shard names, e.g. if the Solr is running in standalone mode,
+     * null is returned.
+     * <p>
+     * Note: Due to the Solr alias mechanism, shardIDs are not guaranteed to be unique in the result.
+     * To avoid ambiguity they are returned as {@link Shard} where the encapsulating collection is stated.
+     * @return a list of the shards in the collection or null is the shard names could not be determined.
+     */
+    // TODO: Cache this
+    public static List<Shard> getShards() {
+        // http://localhost:8983/solr/netarchivebuilder/
+        Matcher m = SOLR_COLLECTION_PATTERN.matcher(PropertiesLoader.SOLR_SERVER);
+        if (!m.matches()) {
+            log.warn("Unable to match Solr and collection from '{}' using pattern '{}'",
+                     PropertiesLoader.SOLR_SERVER, SOLR_COLLECTION_PATTERN.pattern());
+            return null;
+        }
+        return getShards(m.group(1), m.group(2));
+    }
+    private static final Pattern SOLR_COLLECTION_PATTERN = Pattern.compile("(http.*)/([^/]+)/?$");
+
+    /**
+     * Retrieve the shard names for the given {@code collection} in the given {@code solrBase}.
+     * If it is not possible to retrieve shard names, e.g. if the Solr is running in standalone mode,
+     * null is returned.
+     * <p>
+     * Note: Due to the Solr alias mechanism, shardIDs are not guaranteed to be unique in the result.
+     * To avoid ambiguity they are returned as {@link Shard} where the encapsulating collection is stated.
+     * @param solrBase   an address for a running Solr, such as {@code http://localhost:8983/solr}.
+     * @param collection a Solr collection, such as {@code netarchivebuilder}.
+     * @return a list of the shards in the collection or null if the shard names could not be determined.
+     */
+    public static List<Shard> getShards(String solrBase, String collection) {
+        final String cacheKey = solrBase + "___" + collection;
+        if (!shardCache.containsKey(cacheKey)) {
+            cacheShards(cacheKey, solrBase, collection);
+        }
+        List<Shard> shards = shardCache.get(cacheKey);
+        return shards == null || shards.isEmpty() ? null : shards;
+    }
+
+    /**
+     * Retrieve the shard names for the given {@code collection} in the given {@code solrBase},
+     * store the result in {@link #shardCache}.
+     * @param cacheKey   the key to use when storing the result in the {@link #shardCache}.
+     * @param solrBase   an address for a running Solr, such as {@code http://localhost:8983/solr}.
+     * @param collection a Solr collection, such as {@code netarchivebuilder}.
+     */
+    private static void cacheShards(String cacheKey, String solrBase, String collection) {
+        try {
+            URI clusterStatusUrl = URI.create(solrBase + "/admin/collections?action=CLUSTERSTATUS");
+            String statusJSON = IOUtils.toString(clusterStatusUrl, StandardCharsets.UTF_8);
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode statusRoot = mapper.readTree(statusJSON);
+            // Maybe the collection is an alias
+            List<String> collectionIDs = new ArrayList<>();
+            if (!statusRoot.get("cluster").has("aliases")) {
+                collectionIDs.add(collection);
+            } else {
+                collectionIDs.addAll(Arrays.asList(
+                        statusRoot.get("cluster").get("aliases").get(collection).asText().split(", *")));
+                log.debug("Resolved alias '{}' to collections {} ", collection, collectionIDs);
+            }
+
+            List<Shard> shardNames = new ArrayList<>();
+            for (String collectionID: collectionIDs) {
+                JsonNode shardsJSON = statusRoot.get("cluster").get("collections").get(collectionID).get("shards");
+                for (Iterator<String> it = shardsJSON.fieldNames(); it.hasNext(); ) {
+                    shardNames.add(new Shard(collectionID, it.next()));
+                }
+            }
+            if (shardNames.isEmpty()) {
+                log.info("Unable to resolve shard names for Solr '{}' collectionIDs '{}'. " +
+                         "Possibly because the Solr is running as standalone",
+                         solrBase, collectionIDs);
+            }
+            shardCache.put(cacheKey, shardNames);
+        } catch (Exception e) {
+            log.info("Exception resolving shard names for Solr '{}' collection '{}'. " +
+                     "Possibly because the Solr is running as standalone",
+                     solrBase, collection, e);
+            shardCache.put(cacheKey, Collections.emptyList());
+        }
+    }
+
+    /**
+     * Representation of a shardID and its encapsulating collectionID.
+     */
+    public static final class Shard {
+        public final String collectionID;
+        public final String shardID;
+
+        /**
+         * Forgiving constructor. If {@code shardID} is classified {@code mycollection:myshard}, {@code collectionID}
+         * is ignored and the classifying collection is used instead.
+         * @param collectionID the collection containing the shard. Ignored if {@code sardID}
+         * @param shardID      the shard itself.
+         */
+        public Shard(String collectionID, String shardID) {
+            if (shardID.contains(":")) {
+                String[] tokens = shardID.split(":", 2);
+                collectionID = tokens[0];
+                shardID = tokens[1];
+            }
+            this.collectionID =   collectionID;
+            this.shardID = shardID;
+        }
+
+        @Override
+        public String toString() {
+            return collectionID + ":" + shardID;
+        }
+    }
+
+    /**
+     * The collection or collection alias for the overall SolrWayback setup.
+     * @return The base collection for the overall SolrWayback setup.
+     */
+    public static String getBaseCollection() {
+        Matcher m = SOLR_COLLECTION_PATTERN.matcher(PropertiesLoader.SOLR_SERVER);
+        if (!m.matches()) {
+            throw new IllegalStateException(String.format(
+                    Locale.ROOT, "Unable to match Solr and collection from '%s' using pattern '%s'",
+                    PropertiesLoader.SOLR_SERVER, SOLR_COLLECTION_PATTERN.pattern()));
+        }
+        return m.group(2);
     }
 }

@@ -1,7 +1,7 @@
 # SolrWayback
 
-## SolrWayback 5.0.0 software bundle has been released
-SolrWayback bundle release 5.0.0 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/5.0.0
+## SolrWayback 5.1.2 software bundle has been released
+SolrWayback bundle release 5.1.2 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/5.1.2
 
 The bundle is the recommended way to get started with SolrWayback. You download the bundle, follow the installation guide and index your own WARC files. Then you are up to speed. 
 
@@ -135,19 +135,17 @@ Documents in SolrWayback are indexed through the [warc-indexer](https://github.c
  * A Solr 9+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT+
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
-## Build and usage
+## Build and usage for developers.
+ * Make sure to use a supported Java version, if necessary set the `JAVA_HOME` accordingly (e.g. `export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.23.0.9-1.fc39.x86_64`)
  * Build the application with: `mvn package`
  * Deploy the `target/solrwayback-*.war` file in a web-container
- * Copy `src/test/resources/properties/solrwayback.properties` and `/src/test/resources/properties/solrwaybackweb.properties`
-   to either the root of the tomcat folder or the `user/home/` folder for the J2EE server.
-   Alternatively use the [src/main/webapp/META-INF/context.xml](src/main/webapp/META-INF/context.xml) as template
-   for a context for the SolrWayback WAR and set the paths for the properties directly.
+ * Copy `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to the `user/home/` folder.  
  * Modify the property files. (default all urls http://localhost:8080)
  * Open search interface: http://localhost:8080/solrwayback
 
 
 ## Build, Index and test with Docker
-The docker container will download the SolrWayback bundle 4.4.2.
+The docker container will download the SolrWayback bundle 5.1.2.
 You can index WARC files from a folder outside the docker container and index them. 
 A containerized sample can be found [here](./Dockerfile)
 Read the docker file for documentation.
@@ -171,12 +169,15 @@ Unzip and follow the instructions below.
 
 ### 1) INITIAL SETUP
 
+* Copy `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to the `user/home/` folder. 
+
+* **Windows only:** Create an enviroment value that points to the folder with java11 or java 17 : `JAVA_HOME=C:\Program Files\Java\jdk-11`
+
 * **Optional:** For screenshot previews to work you may have to edit the file `properties/solrwayback.properties` and change the value of the last two properties : `chrome.command`  and `screenshot.temp.imagedir`.
   Chrome(Chromium) must be installed for preview of images to work.
 
-If you encounter any errors when running a script during installation or setup, try change the permissions for the file (`startup.sh` etc.). On Linux and mac, this can be done with the following command: `chmod +x filename.sh`
 
-**Note:** Previous versions of the SolrWayback bundle expected the property files to be located at the root of the home folder of the user. If this is preferable, move the two property files `solrwayback.properties` and `solrwaybackweb.properties` from the `properties/` folder in the bundle to the root of the home folder of the user.
+If you encounter any errors when running a script during installation or setup, try change the permissions for the file (`startup.sh` etc.). On Linux and mac, this can be done with the following command: `chmod +x filename.sh`
 
 ### 2) STARTING SOLRWAYBACK
 SolrWayback requires both Solr and Tomcat to be running. These processes are started and stopped separately with the following commands:
@@ -186,13 +187,13 @@ SolrWayback requires both Solr and Tomcat to be running. These processes are sta
 
 * Start tomcat: `tomcat-9/bin/startup.sh`  
 * Stop tomcat:  `tomcat-9/bin/shutdown.sh`  
-* (For windows navigate to `tomcat-9/bin/` and type `startup.bat` or `shutdown.bat`)  
+* (For windows navigate to `tomcat-9\bin\` and type `startup.bat` or `shutdown.bat`)  
 * To see Tomcat is running open: http://localhost:8080/solrwayback/  
   
 #### Solr:  
 * Start solr: `solr-9/bin/solr start -c -m 4g`  (start with 8g or 16g if you have an index with over 100M records.)
 * Stop solr: `solr-9/bin/solr stop -all`  
-* (For windows navigate to `solr-9/bin/` and type `solr.cmd start -c -m 4g` or `solr.cmd stop -all`)    
+* (For windows navigate to `solr-9\bin\` and type `solr.cmd start -c -m 4g` or `solr.cmd stop -all`)    
 * To see Solr is running open: http://localhost:8983/solr/#/netarchivebuilder  
 * For Solrwayback bundle version before v.5 the '-c' parameter must be omitted.
 
@@ -233,8 +234,8 @@ You can then enable faceting on these fields in the property file: `solrwaybackw
 
 Indexing works a little different on Windows. This also works on Linux and Mac, however we recommend using the `warc-indexer.sh` as above. 
 
-* **Step 1:** Copy ARC/WARC files into the folder: `indexing/warcs1`
-* **Step 2:** To index the files call `indexing/batch_warcs1_folder.bat` (batch_warcs1_folder.sh for Linux and Mac)
+* **Step 1:** Copy ARC/WARC files into the folder: `indexing\warcs1`
+* **Step 2:** To index the files call `indexing\batch_warcs1_folder.bat` (batch_warcs1_folder.sh for Linux and Mac)
 * **Note:** There is a batch_warcs2_folder.sh similar script to show how to easily add new WARC files to the collection without indexing the old ones again.
 
 
@@ -316,6 +317,18 @@ If you want to remove and old index and create a new index from scratch, this ca
 2. Delete the folder `solr-9/server/solr/netarchivebuilder_shard1_replica_n1/data/index/` (or rename to `index1` etc, if you want to switch back later)  
 3. Start solr  
 4. Start the indexing script
+
+### Update Solr cloud configuration
+For experienced Solr users only that want to tweak the Solr configuration. 
+If you want to make changes to schema.xml or solrconfig.xml you must use the cloud update script on a running Solr Cloud.
+Changes to schema.xml must be done before starting indexing. Changes to SolrConfig.xml can be done run time.  
+To update the configuration use the following two commands. (replace paths to your system)
+
+`bin/solr zk upconfig -n netarchivebuilder_conf -d "/home/xxx/solrwayback/solrwayback_package_5.1.2/solr_config/conf" -z localhost:9983`
+
+`curl -X POST "http://localhost:8983/api/collections/netarchivebuilder/" -H 'Content-Type: application/json' -d '{"modify":{"config": "netarchivebuilder_conf" } }`
+
+
 
 ### Faster indexing
 A powerful laptop can handle up to 8 simultaneous indexing processes with Solr running on the same laptop. 

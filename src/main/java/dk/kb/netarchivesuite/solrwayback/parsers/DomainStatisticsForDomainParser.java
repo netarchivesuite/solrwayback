@@ -20,6 +20,11 @@ public class DomainStatisticsForDomainParser {
   public static Map<String,List<FacetCount>> parseDomainStatisticsJson(String jsonString){
     Map<String,List<FacetCount>> yearFacetDomainCountMap = new HashMap<String,List<FacetCount>>();
     
+    //Ugly quick hack for v.5.1.0 release.
+    //Solr 9 returns highlight attribute twice, and this is not allowed in json and parsing will fail.
+    //see https://github.com/netarchivesuite/solrwayback/issues/449    
+    jsonString=jsonString.replaceFirst("\"highlighting\"", "\"highlighting1\"");//Rename first to highlighting1 HACK!    
+    
     
     JSONObject json = new JSONObject(jsonString);
     JSONObject jsonFacets = JsonUtils.getSubObjectIfExists(json, "facets");
