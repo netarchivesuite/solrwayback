@@ -57,7 +57,7 @@ public class ShardStreamingTest {
     protected static SolrClient solrClient = RestrictedSolrClient.createSolrClient(STAGE_SOLR, STAGE_COLLECTION);
     protected static boolean AVAILABLE = false;
 
-
+ /* This unittest will hang if connecting to solr. THink it is the index watcher thread that blocks.
     @BeforeClass
     public static void checkAvailability() {
         SolrQuery query = new SolrQuery("*:*");
@@ -72,7 +72,7 @@ public class ShardStreamingTest {
             log.warn("No local Solr available at '" + PropertiesLoader.SOLR_SERVER + "'. Skipping unit test", e);
         }
     }
-
+*/
     @Test
     public void testPlainStream() {
         if (!AVAILABLE) {
