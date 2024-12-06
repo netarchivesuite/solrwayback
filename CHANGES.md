@@ -3,7 +3,7 @@
 UNRELEASED
 -----
 Upgraded solr dependencies from v9.1.0 to v9.4.1
-
+HTML pages with geo tag will no longer we found in image GEO search.
 
 5.1.2
 -----

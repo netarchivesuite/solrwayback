@@ -835,6 +835,7 @@ public class NetarchiveSolrClient {
         }
 
         solrQuery.addFilterQuery("({!geofilt sfield=exif_location})"); //As from Solr9 for some reason this has to be in filter query.        
+        solrQuery.addFilterQuery("content_type_norm:image"); //Some HTML page can have <meta name "geo.position">. So geo field will have value for HTML page.
         QueryResponse rsp = solrServer.query(solrQuery);
 
         // SolrDocumentList docs = rsp.getResults();
