@@ -85,7 +85,7 @@ public class SolrWaybackMementoAPI {
             if (mimeTypeForResponse.isEmpty()) {
                 mimeTypeForResponse = "application/link-format";
             }
-            log.info("Accept header not specified in path. Returning: " + mimeTypeForResponse);
+            log.info("Accept header not specified in path. Returning: '{}'", mimeTypeForResponse);
         }
 
         URI uri =  PathResolver.mementoAPIResolver("/timemap/" + type + "/", uriInfo, url);

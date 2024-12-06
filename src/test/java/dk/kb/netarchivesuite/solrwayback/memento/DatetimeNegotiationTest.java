@@ -106,7 +106,7 @@ public class DatetimeNegotiationTest {
     }
 
     @Test
-    public void testtimestampInUrlPatternTwoPointOne() throws Exception {
+    public void testTimestampInUrlPatternTwoPointOne() throws Exception {
         PropertiesLoader.PLAYBACK_DISABLED = false; //
         PropertiesLoader.MEMENTO_REDIRECT = true;
 
