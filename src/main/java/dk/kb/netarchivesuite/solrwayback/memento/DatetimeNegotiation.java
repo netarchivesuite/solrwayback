@@ -10,6 +10,7 @@ import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,8 +91,17 @@ public class DatetimeNegotiation {
      */
     private static Response redirectingTimegate(String url, String acceptDatetime) throws ParseException {
         MementoMetadata metadata = new MementoMetadata();
-        String solrDate = DateUtils.convertMementodate2Solrdate(acceptDatetime);
-        log.info("Converted RFC1123 date to solrdate: '{}'", solrDate);
+
+        // Wayback date from URL path
+        String solrDate;
+        if (StringUtils.isNumeric(acceptDatetime)) {
+            solrDate = DateUtils.convertWaybackDate2SolrDate(acceptDatetime);
+            log.info("Converted wayback date to solrdate: '{}'", solrDate);
+        } else {
+            solrDate = DateUtils.convertMementodate2Solrdate(acceptDatetime);
+            log.info("Converted RFC1123 date to solrdate: '{}'", solrDate);
+        }
+
 
         // Create response through streaming of a single SolrDocument.
         Optional<Response> responseOpt = NetarchiveSolrClient.getInstance()

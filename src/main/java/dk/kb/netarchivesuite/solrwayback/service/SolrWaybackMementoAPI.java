@@ -69,10 +69,10 @@ public class SolrWaybackMementoAPI {
     // However the RFC 7089 from 2013 only mentions the support for multiple mimetypes through the HTTP accept header: https://datatracker.ietf.org/doc/html/rfc7089#section-5
     // specifying it as a path argument is the "modern" way.
     @GET
-    @Path("timemap/{type}/{url:.+}")
+    @Path("timemap/{type}/{date}/{url:.+}")
     public Response timeMap(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest,
                             @PathParam("url") String url, @HeaderParam("Accept") String acceptHeader,
-                            @PathParam("type") String type)
+                            @PathParam("type") String type, @PathParam("date") String date)
                             throws URISyntaxException {
 
         String mimeTypeForResponse = acceptHeader;
@@ -140,6 +140,27 @@ public class SolrWaybackMementoAPI {
         URI uri =  PathResolver.mementoAPIResolver("/memento/", uriInfo, url);
         Response timeGate = DatetimeNegotiation.getMemento(String.valueOf(uri), acceptDatetime);
 
+        return timeGate;
+    }
+
+    /**
+     *
+     * @param url
+     * @param timestamp
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path("/{timestamp}/{url:.+}")
+    public Response getResolvedTimeGateFromPathTimestamp(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("url") String url, @PathParam("timestamp")
+                                         String timestamp) throws Exception {
+        if (timestamp == null || timestamp.isEmpty()){
+            timestamp = DateUtils.formatDate(new Date(System.currentTimeMillis()));
+            log.warn("Requested memento without timestamp info. The newest memento is returned.");
+        }
+
+        URI uri =  PathResolver.mementoAPIResolver("/memento/", uriInfo, url);
+        Response timeGate = DatetimeNegotiation.getMemento(String.valueOf(uri), timestamp);
         return timeGate;
     }
 

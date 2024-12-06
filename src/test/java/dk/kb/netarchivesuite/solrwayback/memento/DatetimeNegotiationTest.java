@@ -105,6 +105,24 @@ public class DatetimeNegotiationTest {
         assertEquals("text/html;charset=UTF-8", headers.get("Content-Type").get(0));
     }
 
+    @Test
+    public void testtimestampInUrlPatternTwoPointOne() throws Exception {
+        PropertiesLoader.PLAYBACK_DISABLED = false; //
+        PropertiesLoader.MEMENTO_REDIRECT = true;
+
+        Response timeGate = DatetimeNegotiation.getMemento("http://kb.dk/", "20190323140557");
+        MultivaluedMap<String, Object> headers = timeGate.getHeaders();
+
+        assertEquals("accept-datetime", headers.get("Vary").get(0));
+        assertNotNull(headers.get("Location"));
+        assertFalse(headers.containsKey("Memento-Datetime"));
+        assertTrue(headers.get("Link").get(0).toString().contains("rel=\"original\""));
+        assertEquals("0", headers.get("Content-Length").get(0));
+        assertEquals("text/html;charset=UTF-8", headers.get("Content-Type").get(0));
+    }
+
+
+
 
     public static void fillSolr() throws SolrServerException, IOException {
         log.info("Filling embedded server with {} documents", TEST_DOCS);
