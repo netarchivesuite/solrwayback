@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class PagedTimeMapTest {
@@ -42,6 +41,7 @@ public class PagedTimeMapTest {
     @BeforeClass
     public static void setUp() throws Exception {
         log.info("Setting up embedded server");
+        PropertiesLoader.initProperties();
         PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT = 1;
         PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE = 5;
         PropertiesLoaderWeb.initProperties();
@@ -153,7 +153,7 @@ public class PagedTimeMapTest {
     private static String convertStreamingTimeMapToString(StreamingOutput timeMap) throws IOException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         timeMap.write(output);
-        return new String(output.toByteArray(), StandardCharsets.UTF_8);
+        return output.toString(StandardCharsets.UTF_8);
     }
 
     final String testPagedTimeMapJSONFirstPage = "{\"original_uri\":\"http://kb.dk/\"," +
