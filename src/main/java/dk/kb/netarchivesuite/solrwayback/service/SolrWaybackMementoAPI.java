@@ -134,7 +134,7 @@ public class SolrWaybackMementoAPI {
 
         if (acceptDatetime == null || acceptDatetime.isEmpty()){
             acceptDatetime = DateUtils.formatDate(new Date(System.currentTimeMillis()));
-            log.warn("Requested memento without accept-datetime header. The newest memento is returned.");
+            log.info("Requested memento without accept-datetime header. The newest memento is returned.");
         }
 
         URI uri =  PathResolver.mementoAPIResolver("/memento/", uriInfo, url);
@@ -151,17 +151,31 @@ public class SolrWaybackMementoAPI {
      * @throws Exception
      */
     @GET
-    @Path("/{timestamp}/{url:.+}")
+    @Path("/{timestamp:\\d+}/{url:.+}")
     public Response getResolvedTimeGateFromPathTimestamp(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("url") String url, @PathParam("timestamp")
                                          String timestamp) throws Exception {
+        /*if (!StringUtils.isNumeric(timestamp)){
+            log.debug("No timestamp is available. The whole URL is part of a memento.");
+
+            // Combine URL prefix with url as no timestamp is present and the variable timestamp probably contains https/
+            StringJoiner joiner = new StringJoiner("/");
+            joiner.add(timestamp).add(url);
+
+            // When this happens we need a new timestamp.
+            String currentTime = DateUtils.formatDate(new Date(System.currentTimeMillis()));
+            URI uri =  PathResolver.mementoAPIResolver("/memento/", uriInfo, joiner.toString());
+            return DatetimeNegotiation.getMemento(String.valueOf(uri), currentTime);
+        }*/
+
+
         if (timestamp == null || timestamp.isEmpty()){
             timestamp = DateUtils.formatDate(new Date(System.currentTimeMillis()));
-            log.warn("Requested memento without timestamp info. The newest memento is returned.");
+            log.info("Requested memento without timestamp info. The newest memento is returned.");
         }
 
+
         URI uri =  PathResolver.mementoAPIResolver("/memento/", uriInfo, url);
-        Response timeGate = DatetimeNegotiation.getMemento(String.valueOf(uri), timestamp);
-        return timeGate;
+        return DatetimeNegotiation.getMemento(String.valueOf(uri), timestamp);
     }
 
     /**
