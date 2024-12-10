@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -19,6 +20,17 @@ public class PathResolverTest {
                 .thenReturn(URI.create("http://localhost:8080/services/memento/https:/kb.dk/"));
 
         URI result = PathResolver.mementoAPIResolver("/memento/", uriInfo, "https://kb.dk/");
+
+        assertEquals("http://kb.dk/", result.toString());
+    }
+
+    @Test
+    public void testMementoResolvingWaybackDate() throws URISyntaxException, InternalServiceException {
+        UriInfo uriInfo = Mockito.mock(UriInfo.class);
+        Mockito.when(uriInfo.getRequestUri())
+                .thenReturn(URI.create("http://localhost:8080/services/memento/2013/https:/kb.dk/"));
+
+        URI result = PathResolver.mementoAPIResolver("/memento/", uriInfo, "https://kb.dk/", "2013");
 
         assertEquals("http://kb.dk/", result.toString());
     }

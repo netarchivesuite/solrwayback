@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.util.Date;
 
 import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getTimeMap;
+import static dk.kb.netarchivesuite.solrwayback.util.DateUtils.validateTimestamp;
 
 /**
  * <h2>Memento framework</h2>
@@ -154,28 +155,16 @@ public class SolrWaybackMementoAPI {
     @Path("/{timestamp:\\d+}/{url:.+}")
     public Response getResolvedTimeGateFromPathTimestamp(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("url") String url, @PathParam("timestamp")
                                          String timestamp) throws Exception {
-        /*if (!StringUtils.isNumeric(timestamp)){
-            log.debug("No timestamp is available. The whole URL is part of a memento.");
-
-            // Combine URL prefix with url as no timestamp is present and the variable timestamp probably contains https/
-            StringJoiner joiner = new StringJoiner("/");
-            joiner.add(timestamp).add(url);
-
-            // When this happens we need a new timestamp.
-            String currentTime = DateUtils.formatDate(new Date(System.currentTimeMillis()));
-            URI uri =  PathResolver.mementoAPIResolver("/memento/", uriInfo, joiner.toString());
-            return DatetimeNegotiation.getMemento(String.valueOf(uri), currentTime);
-        }*/
-
-
         if (timestamp == null || timestamp.isEmpty()){
-            timestamp = DateUtils.formatDate(new Date(System.currentTimeMillis()));
+            timestamp = org.apache.http.client.utils.DateUtils.formatDate(new Date(System.currentTimeMillis()));
             log.info("Requested memento without timestamp info. The newest memento is returned.");
         }
 
-
-        URI uri =  PathResolver.mementoAPIResolver("/memento/", uriInfo, url);
-        return DatetimeNegotiation.getMemento(String.valueOf(uri), timestamp);
+        // Here we need the original timestamp
+        URI uri =  PathResolver.mementoAPIResolver("/memento/", uriInfo, url, timestamp);
+        // Using correctedTimestamp here
+        String correctDatetime = validateTimestamp(timestamp);
+        return DatetimeNegotiation.getMemento(String.valueOf(uri), correctDatetime);
     }
 
     /**
@@ -191,9 +180,5 @@ public class SolrWaybackMementoAPI {
             return ".wlnk";
         }
     }
-
-
-
-
 
 }

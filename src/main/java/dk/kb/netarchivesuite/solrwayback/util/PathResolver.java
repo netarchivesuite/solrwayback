@@ -5,10 +5,10 @@ import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.SolrWaybackResource;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
-import org.archive.wayback.util.url.AggressiveUrlCanonicalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +30,7 @@ public class PathResolver {
      * @return          a normalised uri ready for lookup in SolrWayback.
      */
     public static URI mementoAPIResolver(String basePath, //should be: "/memento/" or "/timemap/"
-                                         UriInfo uriInfo, String path ) throws URISyntaxException {
+                                         UriInfo uriInfo, String path) throws URISyntaxException {
 
         log.debug("{} called with data:{}", basePath, path);
         String fullUrl = uriInfo.getRequestUri().toString();
@@ -38,6 +38,32 @@ public class PathResolver {
         int dataStart = fullUrl.indexOf(basePath);
         String url = fullUrl.substring(dataStart + basePath.length());
 
+        return normalizeUri(url);
+    }
+
+    /**
+     *
+     * Resolves the URL of an original resource to fetch mementos for through SolrWayback.
+     * The URL is given as a path parameter, so some resolving and normalising has to be done.
+     * @param basePath  contains the last part of the path, before the URI-R begins.
+     * @param uriInfo   contains information of the full URI requested from browser.
+     * @param path      which represents the URL-R
+     * @param datetime
+     * @return a normalised uri ready for lookup in SolrWayback.
+     */
+    public static URI mementoAPIResolver(String basePath, //should be: "/memento/" or "/timemap/"
+                                         UriInfo uriInfo, String path, String datetime) throws URISyntaxException, InternalServiceException {
+
+        log.debug("{} called with data:{}", basePath, path);
+        String fullUrl = uriInfo.getRequestUri().toString();
+
+        int dataStart = fullUrl.indexOf(basePath);
+        String url = fullUrl.substring(dataStart + basePath.length() + datetime.length() + 1);
+
+        return normalizeUri(url);
+    }
+
+    private static URI normalizeUri(String url) throws URISyntaxException {
         url = checkForSingleSlash(url);
         String newUrl = replaceEncoding(url);
         newUrl = checkForNoHttpButPresentWWW(newUrl);

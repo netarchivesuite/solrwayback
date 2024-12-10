@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import org.apache.solr.common.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -262,4 +263,25 @@ public class DateUtils {
       return listPeriods;
   }
 
+
+    /**
+     * Validate that a wayback date string is in fact 14 digits long
+     * @param timestamp consisting of 0 to 14 digits.
+     * @return a 14 digits long wayback date.
+     * @throws InternalServiceException when the timestamp string is longer than 14 digits.
+     */
+    public static String validateTimestamp(String timestamp) throws InternalServiceException {
+        if (timestamp.length() > 14){
+            throw new InternalServiceException("Wayback date has been defined wrong. Please only use 14 digits.");
+        }
+
+        StringBuilder timestampBuilder = new StringBuilder(timestamp);
+        while (timestampBuilder.length() < 14){
+            timestampBuilder.append("0");
+        }
+
+        timestamp = timestampBuilder.toString();
+        log.info("Timestamp is now: '{}'", timestamp);
+        return timestamp;
+    }
 }
