@@ -82,7 +82,8 @@ public class PagedTimeMapTest {
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
         
-        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);              
+        String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
+        System.out.println(timeMapStringLocalhost);
         assertEquals(testPagedTimeMapLinkLastPage, timeMapStringLocalhost);
     }
 
@@ -203,31 +204,31 @@ public class PagedTimeMapTest {
     final String testPagedTimeMapLinkFirstPage = "<http://kb.dk/>;rel=\"original\",\n" +
             "<http://localhost:8080/solrwayback/services/memento/timemap/1/link/http://kb.dk/>; rel=\"self\"; type=\"application/link-format\"; from=\"Tue, 15 Mar 2005 12:31:51 GMT\"; until=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n" +
             "<http://localhost:8080/solrwayback/services/memento/http://kb.dk/>; rel=\"timegate\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"first memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"first memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
             "<http://localhost:8080/solrwayback/services/memento/timemap/2/link/http://kb.dk/>; rel=\"next\"; type=\"application/link-format\"\n";
 
     final String testPagedTimeMapLinkFifthPage = "<http://kb.dk/>;rel=\"original\",\n" +
             "<http://localhost:8080/solrwayback/services/memento/timemap/5/link/http://kb.dk/>; rel=\"self\"; type=\"application/link-format\"; from=\"Tue, 15 Mar 2005 12:31:51 GMT\"; until=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n" +
             "<http://localhost:8080/solrwayback/services/memento/http://kb.dk/>; rel=\"timegate\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20120315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Thu, 15 Mar 2012 12:31:51 GMT\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20050315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Tue, 15 Mar 2005 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20120315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Thu, 15 Mar 2012 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
             "<http://localhost:8080/solrwayback/services/memento/timemap/4/link/http://kb.dk/>; rel=\"prev\"; type=\"application/link-format\"\n" +
             "<http://localhost:8080/solrwayback/services/memento/timemap/6/link/http://kb.dk/>; rel=\"next\"; type=\"application/link-format\"\n";
     final String testPagedTimeMapLinkLastPage = "<http://kb.dk/>;rel=\"original\",\n" +
             "<http://localhost:8080/solrwayback/services/memento/timemap/20/link/http://kb.dk/>; rel=\"self\"; type=\"application/link-format\"; from=\"Tue, 15 Mar 2005 12:31:51 GMT\"; until=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n"+
             "<http://localhost:8080/solrwayback/services/memento/http://kb.dk/>; rel=\"timegate\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n" +
-            "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"last memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
+            "<http://localhost:8080/solrwayback/services/web/20230315123151/https://kb.dk/>; rel=\"last memento\"; datetime=\"Wed, 15 Mar 2023 12:31:51 GMT\"; collection=\"netarchivebuilder\",\n" +
             "<http://localhost:8080/solrwayback/services/memento/timemap/19/link/http://kb.dk/>; rel=\"prev\"; type=\"application/link-format\"\n";
 
 

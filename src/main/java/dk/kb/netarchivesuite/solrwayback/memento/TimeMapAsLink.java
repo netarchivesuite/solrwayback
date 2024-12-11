@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import java.util.stream.Stream;
 
 public class TimeMapAsLink {
     private static final Logger log = LoggerFactory.getLogger(TimeMapAsLink.class);
+    private static final String collectionName = SRequest.builder().getCollectionGuaranteed();
 
     /**
      * Writes a timemap (URI-T) for a URI-R to an outputstream in the link-type format.
@@ -145,17 +147,17 @@ public class TimeMapAsLink {
             if (iterator.longValue() == 1L){
                 memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
                         doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">" +
-                        "; rel=\"first memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\",\n";
+                        "; rel=\"first memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"; collection=\""  + collectionName + "\",\n";
                 iterator.getAndIncrement();
             } else if (iterator.longValue() == countOfMementos) {
                 memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
                         doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">" +
-                        "; rel=\"last memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\",\n";
+                        "; rel=\"last memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"; collection=\"" + collectionName + "\",\n";
                 iterator.getAndIncrement();
             } else {
                 memento = "<" + PropertiesLoaderWeb.WAYBACK_SERVER + "services/web/" +
                         doc.getFieldValue("wayback_date") + "/" + doc.getFieldValue("url") + ">" +
-                        "; rel=\"memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\",\n";
+                        "; rel=\"memento\"; datetime=\"" + DateUtils.convertWaybackdate2Mementodate((Long) doc.getFieldValue("wayback_date")) + "\"; collection=\"" + collectionName + "\",\n";
                 iterator.getAndIncrement();
             }
         } catch (ParseException e) {
