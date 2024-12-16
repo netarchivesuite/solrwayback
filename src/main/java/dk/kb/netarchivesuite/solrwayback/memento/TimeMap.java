@@ -17,22 +17,25 @@ public class TimeMap {
     /**
      * Get timemap for specified URI-R. Timemap contains all captured mementos for the given resource.
      * @param originalResource  URI-R to fetch timemap for.
-     * @param responseFormat    Mimetype which specifies how the response is to be delivered.
+     * @param type    type which specifies how the response is to be delivered.
      *                          Defaults to application/link-type.
      * @return                  The timemap in the specified format.
      */
-    public static StreamingOutput getTimeMap(URI originalResource, String responseFormat, Integer pageNumber) {
+    public static StreamingOutput getTimeMap(URI originalResource, String type, Integer pageNumber) {
 
-        if (responseFormat.equals("application/json")){
-            return TimeMapAsJSON.getTimeMapAsJson(originalResource, pageNumber);
-        } else {
-            return output -> TimeMapAsLink.getTimeMapAsLinkFormat(originalResource, output, pageNumber);
+        switch (type){
+            case "json":
+                return TimeMapAsCdxJSON.getTimeMapAsCdxJson(originalResource);
+            case "spec":
+                return TimeMapAsJSON.getTimeMapAsSpecJson(originalResource, pageNumber);
+            default:
+                return output -> TimeMapAsLink.getTimeMapAsLinkFormat(originalResource, output, pageNumber);
         }
     }
 
 
     /**
-     * Stream solrdocuments containing metadata used to create memento entries for a timemap.
+     * Stream solrdocuments containing metadata used to create memento entries for a timemap with fields following the specification.
      * Sorting on ID to easier find first and last mementos.
      * @param originalResource  to create timemap for
      * @return                  A stream of solr documents. Containing all harvests of given url.
@@ -40,6 +43,20 @@ public class TimeMap {
      static Stream<SolrDocument> getMementoStream(URI originalResource) {
         return SRequest.builder().query("url_norm:\"" + originalResource + "\"")
                 .fields("url", "url_norm", "wayback_date")
+                .sort("id asc")
+                .stream();
+    }
+
+
+    /**
+     * Stream solrdocuments containing metadata used to create memento entries for a timemap that is CDX compliant.
+     * Sorting on ID to easier find first and last mementos.
+     * @param originalResource  to create timemap for
+     * @return                  A stream of solr documents. Containing all harvests of given url.
+     */
+    static Stream<SolrDocument> getMementoStreamCdxFields(URI originalResource) {
+        return SRequest.builder().query("url_norm:\"" + originalResource + "\"")
+                .fields("url", "url_norm", "wayback_date", "host_surt", "content_type", "status_code", "hash", "content_length")
                 .sort("id asc")
                 .stream();
     }

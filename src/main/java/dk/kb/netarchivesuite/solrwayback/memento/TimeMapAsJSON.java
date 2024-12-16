@@ -3,7 +3,6 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.xml.fastinfoset.sax.Properties;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
@@ -25,13 +24,12 @@ import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getPage;
 public class TimeMapAsJSON {
     private static final Logger log = LoggerFactory.getLogger(TimeMapAsJSON.class);
 
-
     /**
      * Creates a timemap (URI-T) for a URI-R as JSON.
      * @param originalResource  URI-R to create URI-T from.
      * @return                  A json representation of the timemap ready for streaming.
      */
-    static StreamingOutput getTimeMapAsJson(URI originalResource, Integer pageNumber) {
+    static StreamingOutput getTimeMapAsSpecJson(URI originalResource, Integer pageNumber) {
         MementoMetadata metadata = new MementoMetadata();
 
         long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)

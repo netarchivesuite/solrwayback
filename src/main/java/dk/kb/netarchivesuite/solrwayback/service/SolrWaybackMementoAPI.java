@@ -78,25 +78,32 @@ public class SolrWaybackMementoAPI {
 
         String mimeTypeForResponse = acceptHeader;
 
-        if (type.equals("json")){
-            mimeTypeForResponse = "application/json";
-        } else if (type.equals("link")) {
-            mimeTypeForResponse = "application/link-format";
-        } else {
-            if (mimeTypeForResponse.isEmpty()) {
+        switch (type){
+            case "json":
+                mimeTypeForResponse = "application/json";
+                break;
+            case "spec":
+                mimeTypeForResponse = "application/json";
+                break;
+            case "link":
                 mimeTypeForResponse = "application/link-format";
-            }
-            log.info("Accept header not specified in path. Returning: '{}'", mimeTypeForResponse);
+                break;
+            default:
+                if (mimeTypeForResponse.isEmpty()) {
+                    mimeTypeForResponse = "application/link-format";
+                }
+                log.info("Accept header not specified in path. Returning: '{}'", mimeTypeForResponse);
+
+
         }
 
         URI uri =  PathResolver.mementoAPIResolver("/timemap/" + type + "/", uriInfo, url);
-        StreamingOutput timemap = getTimeMap(uri, mimeTypeForResponse, null);
+        StreamingOutput timemap = getTimeMap(uri, type, null);
         String fileType = fileEndingFromAcceptHeader(mimeTypeForResponse);
 
-        // TODO: Fresh eyes on http headers for timemap
         return Response.ok().type(mimeTypeForResponse)
                 .entity(timemap)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap"+ fileType + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline") // Ensure inline displa
                 .build();
     }
 
