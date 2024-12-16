@@ -72,7 +72,6 @@ public class DatetimeNegotiationTest {
     @Test
     public void testHeadersForPatternTwoPointTwo() throws Exception {
         PropertiesLoader.PLAYBACK_DISABLED = true; //Must be disabled since playback needs warc files
-        PropertiesLoader.MEMENTO_REDIRECT = false;
 
         Response timeGate = DatetimeNegotiation.getMemento("http://kb.dk/", "Thu, 23 Mar 2019 14:05:57 GMT");
         MultivaluedMap<String, Object> headers = timeGate.getHeaders();
@@ -92,7 +91,6 @@ public class DatetimeNegotiationTest {
     @Test 
     public void testHeadersForPatternTwoPointOne() throws Exception {
         PropertiesLoader.PLAYBACK_DISABLED = false; //
-        PropertiesLoader.MEMENTO_REDIRECT = true;
 
         Response timeGate = DatetimeNegotiation.getMemento("http://kb.dk/", "Thu, 23 Mar 2019 14:05:57 GMT");
         MultivaluedMap<String, Object> headers = timeGate.getHeaders();
@@ -108,7 +106,6 @@ public class DatetimeNegotiationTest {
     @Test
     public void testTimestampInUrlPatternTwoPointOne() throws Exception {
         PropertiesLoader.PLAYBACK_DISABLED = false; //
-        PropertiesLoader.MEMENTO_REDIRECT = true;
 
         Response timeGate = DatetimeNegotiation.getMemento("http://kb.dk/", "20190323140557");
         MultivaluedMap<String, Object> headers = timeGate.getHeaders();
