@@ -89,7 +89,7 @@ public class TimeMapAsJSON {
                                                                Stream<SolrDocument> mementoStream,
                                                                long count, Integer pageNumber) {
 
-        if (pageNumber == null || (long) PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE * pageNumber > count){
+        if (pageNumber == null){
             pageNumber = 1;
             log.info("Set page number to: " + pageNumber);
         }

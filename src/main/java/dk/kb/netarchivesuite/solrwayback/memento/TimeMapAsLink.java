@@ -43,7 +43,7 @@ public class TimeMapAsLink {
                     .map(doc -> createMementoInLinkFormat(doc, iterator, count))
                     .forEach(s -> writeStringSafe(s, output));
         } else {
-            if (pageNumber == null || (long) PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE * pageNumber > count){
+            if (pageNumber == null){
                 pageNumber = 1;
                 log.info("Set page number to: " + pageNumber);
             }
