@@ -87,6 +87,7 @@ public class InitializationContextListener implements ServletContextListener {
               log.info("Using default warc-file-resolver implementation");
             }
                                                
+            log.info(SolrWaybackAsciiLogo.SOLRWAYBACK_LOGO); //Add nice logo when started successfully.            
             log.info("solrwayback version " + version + " started successfully");
 
         } catch (Exception e) {
