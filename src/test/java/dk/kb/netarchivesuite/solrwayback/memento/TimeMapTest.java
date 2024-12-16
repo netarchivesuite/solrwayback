@@ -91,7 +91,7 @@ public class TimeMapTest {
     public void timeMapLinkConstruction() throws IOException, URISyntaxException {
         assertEquals(10000, PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
         // Set very high to disable paging
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 0);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "link", 0);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         timeMap.write(output);
@@ -105,7 +105,7 @@ public class TimeMapTest {
     public void timeMapJsonConstruction() throws IOException, URISyntaxException {
         assertEquals(10000, PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
         // Set very high to disable paging
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", 0);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 0);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         timeMap.write(output);

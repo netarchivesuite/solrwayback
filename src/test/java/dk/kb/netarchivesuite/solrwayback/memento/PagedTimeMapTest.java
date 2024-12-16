@@ -78,7 +78,7 @@ public class PagedTimeMapTest {
 
     @Test
     public void testTimeMapLinkLastConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 20);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "link", 20);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
         
@@ -89,7 +89,7 @@ public class PagedTimeMapTest {
 
     @Test
     public void testTimeMapLinkNoPageConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", null);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "link", null);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
@@ -98,7 +98,7 @@ public class PagedTimeMapTest {
     }
     @Test
     public void testTimeMapLinkFirstConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 1);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "link", 1);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
@@ -108,7 +108,7 @@ public class PagedTimeMapTest {
 
     @Test
     public void testTimeMapLinkRandomConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/link-format", 5);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "link", 5);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
@@ -117,7 +117,7 @@ public class PagedTimeMapTest {
 
     @Test
     public void testPagedTimeMapFirstJSONConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", 1);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 1);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
@@ -126,7 +126,7 @@ public class PagedTimeMapTest {
 
     @Test
     public void testPagedTimeMapRandomJSONConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", 12);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 12);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
@@ -135,7 +135,7 @@ public class PagedTimeMapTest {
 
     @Test
     public void testPagedTimeMapLastJSONConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", 20);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 20);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
@@ -144,7 +144,7 @@ public class PagedTimeMapTest {
 
     @Test
     public void testPagedTimeMapNoPageJSONConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "application/json", null);
+        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "spec", null);
 
         String timeMapString = convertStreamingTimeMapToString(timeMap);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
