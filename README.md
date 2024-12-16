@@ -27,6 +27,7 @@ SolrWayback comes with multiple features:
 * Search by upload of a file. (e.g., image, PDF) to see if the resource has been harvested and find HTML pages using the image.
 * View all fields indexed for a resource and show warc-header for records.
 * Configure alternative playback engine to any playback engine using the playback-API such as OpenWayback or pywb.
+* Supports memento API. (See [wiki](https://github.com/netarchivesuite/solrwayback/wiki/Features-in-SolrWayback#memento-api)).
 
 
 ## Live demo
