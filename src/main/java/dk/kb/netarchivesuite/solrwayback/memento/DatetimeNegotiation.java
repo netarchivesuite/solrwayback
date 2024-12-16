@@ -34,13 +34,7 @@ public class DatetimeNegotiation {
     private static final Logger log = LoggerFactory.getLogger(DatetimeNegotiation.class);
 
     public static Response getMemento(String url, String acceptDatetime) throws Exception {
-        if (PropertiesLoader.MEMENTO_REDIRECT) {
             return redirectingTimegate(url, acceptDatetime);
-        } else {
-        
-            throw new InvalidArgumentServiceException("Memento playback only supports redirect mode."); //
-            //return nonRedirectingTimeGate(url, acceptDatetime);
-        }
     }
 
     /**
