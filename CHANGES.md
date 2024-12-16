@@ -29,7 +29,7 @@ Updated the bundle install documentation. Added new section how to redeploy the 
 
 5.0.0
 -----
-Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.5.0 is backwards compatible with existing Solr 7 installations.
+Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.0.0 is backwards compatible with existing Solr 7 installations.
 
 Better guide for using start and stop scripts.
 
