@@ -4,6 +4,7 @@ UNRELEASED
 -----
 Upgraded solr dependencies from v9.1.0 to v9.4.1
 HTML pages with geo tag will no longer we found in image GEO search.
+Add support for memento API, including timegates and timemaps.
 
 5.1.2
 -----
@@ -28,7 +29,7 @@ Updated the bundle install documentation. Added new section how to redeploy the 
 
 5.0.0
 -----
-Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.5.0 is backwards compatible with existing Solr 7 installations.
+Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.0.0 is backwards compatible with existing Solr 7 installations.
 
 Better guide for using start and stop scripts.
 

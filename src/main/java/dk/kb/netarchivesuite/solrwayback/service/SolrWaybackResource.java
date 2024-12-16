@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
-import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -33,6 +32,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import dk.kb.netarchivesuite.solrwayback.util.PathResolver;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -607,108 +607,25 @@ public class SolrWaybackResource {
   /*
    * '/web/' is the same as wayback machine uses. 
    * 
-   * Jersey syntax to match all after /web/.
+   * JAX-RS syntax to match all after /web/.
    */
   @GET
   @Path("/web/{path:.+}")      
   public Response waybackAPIResolver(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest,
                                      @PathParam("path") String path) throws SolrWaybackServiceException {
-    return waybackAPIResolverHelper("/web/", uriInfo, httpRequest, path, false);
+    return PathResolver.waybackAPIResolverHelper(this, "/web/", uriInfo, httpRequest, path, false);
   }
   /*
    * Playback with lenient URL resolving.
    * The last part of the path '/web/' is the same as wayback machine uses.
    *
-   * Jersey syntax to match all after /lenient/web/.
+   * JAX-RS syntax to match all after /lenient/web/.
    */
   @GET
   @Path("/lenient/web/{path:.+}")
   public Response waybackAPIResolverLenient(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest,
                                      @PathParam("path") String path) throws SolrWaybackServiceException {
-    return waybackAPIResolverHelper("/lenient/web/", uriInfo, httpRequest, path, true);
-  }
-  private Response waybackAPIResolverHelper(
-          String basePath, // "/lenient/web/" or "/web/"
-          UriInfo uriInfo, HttpServletRequest httpRequest, String path, Boolean lenient) throws SolrWaybackServiceException {
-    try {
-      //For some reason the var regexp does not work with comma (;) and other characters. So I have to grab the full url from uriInfo
-      log.debug("{} called with data:{} lenient:{}", basePath, path, lenient);
-      String fullUrl = uriInfo.getRequestUri().toString();
-//   log.info("full url:"+fullUrl);
-     
-      int dataStart=fullUrl.indexOf(basePath);
-      
-      String waybackDataObject = fullUrl.substring(dataStart+basePath.length());
-      //log.info("Waybackdata object:"+waybackDataObject);
-
-      int indexFirstSlash = waybackDataObject.indexOf("/");  
-             
-      String waybackDate = waybackDataObject.substring(0,indexFirstSlash);
-      String url = waybackDataObject.substring(indexFirstSlash+1);
-
-      //Stupid fix, some webservices makes parameter http:// into http:/  ( removes a slash)
- 
-      //TODO into method
-      if (url.startsWith("http:/") && !url.startsWith("http://")) {
-        url = url.replaceFirst("http:/", "http://");
-        
-      }
-      
-    //TODO into method
-      if (url.startsWith("https:/") && !url.startsWith("https://")) {
-        url = url.replaceFirst("https:/", "https://");
-      }
-  
-           
-      //Validate this is a URL with domain (can be releative leak).
-      //etc. http://images/horse.png.
-      //use referer to match the correct url
-                       
-      String solrDate = DateUtils.convertWaybackDate2SolrDate(waybackDate);
-
-      boolean urlOK = UrlUtils.isUrlWithDomain(url);
-      if (!urlOK){        
-        String refererUrl = httpRequest.getHeader("referer");       
-        log.info("url not with domain:"+url +" referer:"+refererUrl);         
-        IndexDoc doc = Facade.matchRelativeUrlForDomain(refererUrl,url,solrDate);           
-        return downloadRaw(doc.getSource_file_path(),doc.getOffset());      
-      }      
-            
-      //log.info("solrDate="+solrDate +" , url="+url);
-      IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
- 
-             
-      if (doc == null){
-        log.info("Url has never been harvested:"+url);
-        throw new NotFoundServiceException("Url has never been harvested:"+url);
-      }        
-   
-      
-      //THIS BLOCK WILL FORWARD URLS TO MATCH CRAWLTIME FOR HTML PLAYBACK
-       // html forward to a new request so date in url will show the true crawldate of the document. Avoid having 2020 in url with the page is from 2021 etc.      
-      String htmlPageCrawlDate= DateUtils.convertUtcDate2WaybackDate(doc.getCrawlDate());
-        if ("html".equalsIgnoreCase(doc.getContentTypeNorm()) &&  !htmlPageCrawlDate.equals(waybackDate)) {                         
-          String newUrl=PropertiesLoader.WAYBACK_BASEURL+"services" + basePath + htmlPageCrawlDate+"/"+url;
-          log.info("Forwarding html view to a url where crawldate matches html crawltime. url crawltime:"+htmlPageCrawlDate +" true crawl:"+htmlPageCrawlDate);
-          newUrl = newUrl.replace("|", "%7C");//For some unknown reason Java does not accept |, must encode.
-          newUrl = newUrl.replace("%2f", "/"); // or url will not match Rest pattern for method. (not clear why)
-          newUrl = newUrl.replace("%2F", "/"); // or url will not match Rest pattern for method. (not clear why)
-          
-          URI uri =new URI(newUrl);
-          log.info("new url:"+newUrl);
-          return Response.seeOther( uri ).build(); //Jersey way to forward response.
-        }
-      //END BLOCK
-           
-      //log.debug("return viewImpl for type:"+doc.getMimeType() +" and url:"+doc.getUrl());
-          
-      Response viewImpl = viewImpl(doc.getSource_file_path() , doc.getOffset(),true, lenient);
-      
-      return viewImpl;
-    } catch (Exception e) {
-      throw handleServiceExceptions(e);
-    }
-
+    return PathResolver.waybackAPIResolverHelper(this,"/lenient/web/", uriInfo, httpRequest, path, true);
   }
    
   /*
@@ -926,7 +843,7 @@ public class SolrWaybackResource {
   }
 */
 
-  private Response viewImpl(String source_file_path, long offset,Boolean showToolbar, Boolean lenient) throws Exception{
+  public Response viewImpl(String source_file_path, long offset, Boolean showToolbar, Boolean lenient) throws Exception{
     
       if (PropertiesLoader.PLAYBACK_DISABLED) {          
           throw new InvalidArgumentServiceException("Playback has been disabled in the configuration");
@@ -1131,7 +1048,7 @@ public class SolrWaybackResource {
     return template.replace("$DATETIME", dateStr);
   }
 
-  private SolrWaybackServiceException handleServiceExceptions(Exception e) {
+  public SolrWaybackServiceException handleServiceExceptions(Exception e) {
     if (e instanceof SolrWaybackServiceException) {
       log.info("Handling serviceException:" + e.getMessage());
       return (SolrWaybackServiceException) e; // Do nothing, exception already correct
