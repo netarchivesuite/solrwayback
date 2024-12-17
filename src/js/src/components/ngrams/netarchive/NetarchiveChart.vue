@@ -1,11 +1,17 @@
 <template>
   <div>
     <div class="chart-container">
+      <button v-if="datasets.length > 0" class="download" @click="downloadOpen = !downloadOpen">
+        DOWNLOAD
+      </button>
       <line-chart v-if="datasets.length > 0"
                   :chart-data="datacollection"
                   :options="options"
                   :chart-id="'netarchive-chart'"
                   :height="150" />
+    </div>
+    <div v-if="downloadOpen">
+      <export-data @close-exporter="downloadOpen = false" />
     </div>
   </div>
 </template>
@@ -14,17 +20,20 @@
   
   import LineChart from '../chartsCore/chartEngines/LineChart'
   import ChartHelpers from '../chartsCore/chartHelpers'
+  import ExportData from '../exporterCSV/ExportData.vue'
   import {mapState} from 'vuex'
 
   export default {
     name: 'NetarchiveChart',
     components: {
-      LineChart
+      LineChart,
+      ExportData
     },
 
     data() {
       return {
         datacollection: {},
+        downloadOpen: false,
         options: ChartHelpers.getChartOptions(null, this.scale)
        }
     },
@@ -66,6 +75,33 @@
 
 <style lang="scss">
   @import '../../../assets/styles/charts.scss'; 
+
+  .download {
+    border: 2px solid var(--secondary-bg-color);
+    border-radius: 0;
+    background-color: white;
+    color: var(--secondary-bg-color);
+    padding: 5px 10px 5px 10px;
+    box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.2s linear 0s;
+    text-align:center;
+    width:fit-content;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .download:hover {
+    border: 2px solid white;
+    background-color: var(--secondary-bg-color);
+    color: white;
+
+
+
+  }
+
 </style>
 
 
