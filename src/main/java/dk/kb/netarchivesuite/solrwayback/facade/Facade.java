@@ -566,9 +566,25 @@ public class Facade {
         return new StreamingSolrWarcExportBufferedInputStream(solrDocs, max, gzip); // Use maximum export results from property-file
     }
 
+    /**
+     * <p>
+     * Query will have filter: content_type_norm:html AND links_domains:* AND url_type:slashpage"
+     * </p>
+     * <p>
+     * The same domains will appear many time in the solr result set, but only first one will be
+     * added the the csv file. The extraction uses a HashMap to remember what domains has been added.
+     * </p>
+     * <p>
+     *  The 100M limit of solr documents will most likely result in a final CSV file with  less than 1M documents.
+     *  And this should be enough since Gephi can not handle more than 1M nodes.
+     *  Split extraction into crawl_year if the 100M limit is not enough.    
+     * </p>
+     *  @param q The query
+     * 
+     */
     public static InputStream exportLinkGraphStreaming(String q) {
         SolrStreamingLinkGraphCSVExportClient solr = SolrStreamingLinkGraphCSVExportClient.createExporter(null, q);
-        return new StreamingSolrExportBufferedInputStream(solr, 1000000); // 1 MIL
+        return new StreamingSolrExportBufferedInputStream(solr, 100000000);  //100M limit, the CSV streaming extractor needs a limit.
     }
 
     /**
