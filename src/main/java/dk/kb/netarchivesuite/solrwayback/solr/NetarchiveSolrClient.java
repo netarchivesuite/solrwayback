@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
 import dk.kb.netarchivesuite.solrwayback.util.CollectionUtils;
 import dk.kb.netarchivesuite.solrwayback.util.Processing;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;
@@ -802,6 +803,12 @@ public class NetarchiveSolrClient {
      * "crawl_date asc";
      */
 
+    
+    
+    /**
+     *  
+     * Solr documentation for spatial search: https://solr.apache.org/guide/solr/latest/query-guide/spatial-search.html#geofilt
+     */
     public ArrayList<IndexDoc> imagesLocationSearchWithSort(String searchText, String filterQuery, int results, double latitude, double longitude,
                                                             double radius, String sort) throws Exception {
         log.info("imagesLocationSearch:" + searchText + " coordinates:" + latitude + "," + longitude + " radius:" + radius);
@@ -815,19 +822,19 @@ public class NetarchiveSolrClient {
         if (sort != null) {
             solrQuery.add("sort", sort);
         }
-        solrQuery.setRows(results);
+        solrQuery.setRows(results); 
+        solrQuery.setQuery(searchText);        
 
-
-        // The 3 lines defines geospatial search. The ( ) are required if you want to
-        // AND with another query
-        solrQuery.setQuery("({!geofilt sfield=exif_location}) AND " + searchText);
+        // Geospatial search fields
         solrQuery.setParam("pt", latitude + "," + longitude);
         solrQuery.setParam("d", "" + radius);
-
+        
         if (filterQuery != null) {
-            solrQuery.setFilterQueries(filterQuery);
+            solrQuery.setFilterQueries(filterQuery); 
         }
 
+        solrQuery.addFilterQuery("({!geofilt sfield=exif_location})"); //As from Solr9 for some reason this has to be in filter query.        
+        solrQuery.addFilterQuery("content_type_norm:image"); //Some HTML page can have <meta name "geo.position">. So geo field will have value for HTML page.
         QueryResponse rsp = solrServer.query(solrQuery);
 
         // SolrDocumentList docs = rsp.getResults();
@@ -878,6 +885,10 @@ public class NetarchiveSolrClient {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    public Stream<MementoDoc> findNearestHarvestTimeForSingleUrlFewFields(String url, String timeStamp){
+        return findNearestDocuments(SolrUtils.indexDocFieldList + "," +SolrUtils.mementoDocFieldList, timeStamp, Stream.of(url))
+                .map(SolrUtils::solrDocument2MementoDoc);
+    }
 
     /**
      * Resolves {@link IndexDocShort}s for the given URLs.

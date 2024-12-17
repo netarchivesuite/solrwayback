@@ -1,13 +1,18 @@
 # SolrWayback changelog
 
+UNRELEASED
+-----
+Upgraded solr dependencies from v9.1.0 to v9.4.1
+HTML pages with geo tag will no longer we found in image GEO search.
+Add support for Memento API, including timegates and timemaps. Memento properties added to solrwayback.properties (Thanks @VictorHarbo )
+Upgrade from deprecated HttpSolrClient to Http2SolrClient.
 
 
 5.1.2
 -----
 Bug fix. Chunking was not removed in all cases. This was only relevant for WARC-files that are created with chunking. (not Heritrix) 
-
-Dockerfile has been updated to build SolrWayback bundle 5.1.0. See: https://github.com/netarchivesuite/solrwayback/pull/456 implemented by @c-vandendyck-kbr
-Upgrade from deprecated HttpSolrClient to Http2SolrClient.
+Dockerfile has been updated to build SolrWayback bundle 5.1.0. (Will be upgraded each release) See: https://github.com/netarchivesuite/solrwayback/pull/456 implemented by @c-vandendyck-kbr
+Geo search was not working for Solr 9.4 in cloud mode. Solr function query syntax rewrite was required and it also is backwards compatible with Solr7.
 
 5.1.1
 -----
@@ -26,7 +31,7 @@ Updated the bundle install documentation. Added new section how to redeploy the 
 
 5.0.0
 -----
-Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.5.0 is backwards compatible with existing Solr 7 installations.
+Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.0.0 is backwards compatible with existing Solr 7 installations.
 
 Better guide for using start and stop scripts.
 

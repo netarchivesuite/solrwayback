@@ -1,7 +1,7 @@
 # SolrWayback
 
-## SolrWayback 5.1.0 software bundle has been released
-SolrWayback bundle release 5.1.0 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/5.1.0
+## SolrWayback 5.1.2 software bundle has been released
+SolrWayback bundle release 5.1.2 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/tag/5.1.2
 
 The bundle is the recommended way to get started with SolrWayback. You download the bundle, follow the installation guide and index your own WARC files. Then you are up to speed. 
 
@@ -27,6 +27,7 @@ SolrWayback comes with multiple features:
 * Search by upload of a file. (e.g., image, PDF) to see if the resource has been harvested and find HTML pages using the image.
 * View all fields indexed for a resource and show warc-header for records.
 * Configure alternative playback engine to any playback engine using the playback-API such as OpenWayback or pywb.
+* Supports memento API. (See [wiki](https://github.com/netarchivesuite/solrwayback/wiki/Features-in-SolrWayback#memento-api)).
 
 
 ## Live demo
@@ -145,7 +146,7 @@ Documents in SolrWayback are indexed through the [warc-indexer](https://github.c
 
 
 ## Build, Index and test with Docker
-The docker container will download the SolrWayback bundle 5.1.0.
+The docker container will download the SolrWayback bundle 5.1.2.
 You can index WARC files from a folder outside the docker container and index them. 
 A containerized sample can be found [here](./Dockerfile)
 Read the docker file for documentation.
@@ -324,7 +325,7 @@ If you want to make changes to schema.xml or solrconfig.xml you must use the clo
 Changes to schema.xml must be done before starting indexing. Changes to SolrConfig.xml can be done run time.  
 To update the configuration use the following two commands. (replace paths to your system)
 
-`bin/solr zk upconfig -n netarchivebuilder_conf -d "/home/xxx/solrwayback/solrwayback_package_5.1.0/solr_config/conf" -z localhost:9983`
+`bin/solr zk upconfig -n netarchivebuilder_conf -d "/home/xxx/solrwayback/solrwayback_package_5.1.2/solr_config/conf" -z localhost:9983`
 
 `curl -X POST "http://localhost:8983/api/collections/netarchivebuilder/" -H 'Content-Type: application/json' -d '{"modify":{"config": "netarchivebuilder_conf" } }`
 

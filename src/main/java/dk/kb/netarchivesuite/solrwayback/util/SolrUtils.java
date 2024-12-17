@@ -2,11 +2,13 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntryDescriptor;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
+import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -44,6 +46,7 @@ public class SolrUtils {
     public static String indexDocFieldList = "id,score,title,url,url_norm,links_images,source_file_path,source_file,source_file_offset,domain,resourcename,content_type,content_type_full,content_type_norm,hash,type,crawl_date,content_encoding,exif_location,status_code,last_modified,redirect_to_norm";
     public static String indexDocFieldListShort = "url,url_norm,source_file_path,source_file,source_file_offset,crawl_date";
     public static String arcEntryDescriptorFieldList = "url,url_norm,source_file_path,source_file_offset,hash,content_type";
+    public static String mementoDocFieldList = "content_length,wayback_date,content_type_served";
 
     /**
      * The {@code shardCache} is used by the {@link #getShards(String, String)} method. It caches forever, which does
@@ -208,6 +211,32 @@ public class SolrUtils {
         Date date = (Date) doc.get("crawl_date");
         indexDoc.setCrawlDate(DateUtils.getSolrDate(date));
         return indexDoc;
+    }
+
+    /**
+     * Convert the given {@link SolrDocument} to a {@link MementoDoc}.
+     * See {@link #mementoDocFieldList} for Solr fields for the MementoDoc.
+     * This document is used to fetch data used in the memento framework.
+     *
+     * Note that {@link MementoDoc}s only holds a tiny subset of all possible fields from {@link SolrDocument}:
+     * {@code url}, {@code url_norm}, {@code wayback_date} and {@code content_length}}.
+     * @param doc a document from a Solr search.
+     * @return a short index document.
+     */
+    public static MementoDoc solrDocument2MementoDoc(SolrDocument doc) {
+        MementoDoc mementoDoc = new MementoDoc();
+
+        mementoDoc.setContent_length((int) doc.get("content_length"));
+        mementoDoc.setUrl((String) doc.get("url"));
+        mementoDoc.setWayback_date((Long) doc.get("wayback_date"));
+        mementoDoc.setUrl_norm((String) doc.get("url_norm"));
+        mementoDoc.setContent_type((String) doc.get("content_type_served"));
+        mementoDoc.setSource_file_path((String) doc.get("source_file_path"));
+        mementoDoc.setSource_file_offset((long) doc.get("source_file_offset"));
+        mementoDoc.setType((String) doc.get("type"));
+        mementoDoc.setStatusCode((int) doc.get("status_code"));
+
+        return mementoDoc;
     }
 
     /**

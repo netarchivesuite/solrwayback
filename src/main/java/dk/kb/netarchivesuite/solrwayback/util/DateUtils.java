@@ -9,8 +9,10 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
+import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
 import org.apache.solr.common.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +49,67 @@ public class DateUtils {
       catch(Exception e){        
           throw new RuntimeException("Could not parse waybackdate from:"+waybackdate,e);
       }
+  }
+
+    /**
+     * Converts the content of an Accept-DateTime Header to a waybackdate.
+     * @param acceptDateTime header value.
+     * @return              the waybackdate representation for the given RFC1123 date.
+     * @see <a href="https://datatracker.ietf.org/doc/html/rfc1123">RFC1123</a> for the dateformat in memento headers.
+     */
+  public static Long convertMementoAcceptDateTime2Waybackdate(String acceptDateTime) throws ParseException {
+      DateFormat mementoFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+      mementoFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+      DateFormat waybackdateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+      waybackdateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+      Date d = mementoFormat.parse(acceptDateTime);
+
+      String format = waybackdateFormat.format(d);
+      Long waybackDate = Long.parseLong(format);
+      log.info("Constructed this waybackdate from Accept-Datetime header: '{}'", format);
+      return waybackDate;
+  }
+
+  public static String convertWaybackdate2Mementodate(Long waybackdate) throws ParseException {
+      DateFormat waybackdateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+      waybackdateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+      DateFormat mementoFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+      mementoFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+      Date d = waybackdateFormat.parse(String.valueOf(waybackdate));
+      String mementoDate = mementoFormat.format(d);
+      return mementoDate;
+  }
+
+  public static String convertMementodate2Solrdate(String mementoDate) throws ParseException {
+      DateFormat mementoFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+      mementoFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+
+      DateFormat solrDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new
+      solrDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+      Date d = mementoFormat.parse(mementoDate);
+      String solrDate = solrDateFormat.format(d) + "Z";
+
+      return solrDate;
+  }
+
+  public static String convertSolrdate2Mementodate(String solrDate) throws ParseException {
+      DateFormat solrDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //not thread safe, so create new
+      solrDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+      DateFormat mementoFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+      mementoFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+
+
+      Date d = solrDateFormat.parse(solrDate);
+      String mementoDate = mementoFormat.format(d);
+
+      return mementoDate;
   }
   
   
@@ -200,4 +263,25 @@ public class DateUtils {
       return listPeriods;
   }
 
+
+    /**
+     * Validate that a wayback date string is in fact 14 digits long
+     * @param timestamp consisting of 0 to 14 digits.
+     * @return a 14 digits long wayback date.
+     * @throws InternalServiceException when the timestamp string is longer than 14 digits.
+     */
+    public static String validateTimestamp(String timestamp) throws InternalServiceException {
+        if (timestamp.length() > 14){
+            throw new InternalServiceException("Wayback date has been defined wrong. Please only use 14 digits.");
+        }
+
+        StringBuilder timestampBuilder = new StringBuilder(timestamp);
+        while (timestampBuilder.length() < 14){
+            timestampBuilder.append("0");
+        }
+
+        timestamp = timestampBuilder.toString();
+        log.info("Timestamp is now: '{}'", timestamp);
+        return timestamp;
+    }
 }
