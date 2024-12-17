@@ -10,7 +10,7 @@ import java.util.Map;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
-import org.apache.solr.client.solrj.impl.Http2SolrClient;
+import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -192,10 +192,10 @@ public class SolrClientTest {
 
 
   public static void test1() throws Exception{
-    Http2SolrClient solrServer;
+    HttpJdkSolrClient solrServer;
     NetarchiveSolrClient instance = null;
 
-    solrServer =  new Http2SolrClient.Builder("http://ariel:52300/solr/").build();
+    solrServer =  new HttpJdkSolrClient.Builder("http://ariel:52300/solr/").build();
 
     //solrServer.setRequestWriter(new BinaryRequestWriter());
 
@@ -250,10 +250,10 @@ public class SolrClientTest {
   public static void domainStatistics() throws Exception{
     int maxRows = 20000;// it is faster than grouping to extract all
     String domain ="ekot.dk";
-    Http2SolrClient solrServer;
+    HttpJdkSolrClient solrServer;
     NetarchiveSolrClient instance = null;
 
-    solrServer =  new Http2SolrClient.Builder("http://localhost:8983/solr/netarchivebuilder").build();
+    solrServer =  new HttpJdkSolrClient.Builder("http://localhost:8983/solr/netarchivebuilder").build();
 
     //solrServer.setRequestWriter(new BinaryRequestWriter());
 
@@ -318,7 +318,7 @@ public class SolrClientTest {
     SolrClient solrServer;
 
 
-    solrServer =  new Http2SolrClient.Builder("http://localhost:8983/solr/netarchivebuilder/").build();
+    solrServer =  new HttpJdkSolrClient.Builder("http://localhost:8983/solr/netarchivebuilder/").build();
 
     //Generate URL string: (url_norm:"A" OR url_norm:"B" OR ....)
     StringBuffer buf = new StringBuffer();
