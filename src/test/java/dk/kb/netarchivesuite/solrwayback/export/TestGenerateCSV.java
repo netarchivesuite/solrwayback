@@ -6,7 +6,7 @@ import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 
 public class TestGenerateCSV {
 
@@ -20,7 +20,7 @@ public class TestGenerateCSV {
     String filter = null;
 
     String fields = "id, domain,  hash , links_images  ";
-    SolrClient solrClient = new HttpSolrClient.Builder(SOLR).build();
+    SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR).build();
      SolrStreamingExportClient solr =  SolrStreamingExportClient.createCvsExporter(solrClient, query,fields, filter);
 
      StreamingSolrExportBufferedInputStream streamExport = new StreamingSolrExportBufferedInputStream(solr,100);

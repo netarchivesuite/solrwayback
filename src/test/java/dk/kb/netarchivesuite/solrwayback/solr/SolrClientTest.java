@@ -1,41 +1,24 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
 import java.io.FileWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
-import java.util.TreeSet;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
-import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.apache.solr.client.solrj.response.FacetField;
-import org.apache.solr.client.solrj.response.FacetField.Count;
+import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
-import org.apache.solr.client.solrj.response.Group;
-import org.apache.solr.client.solrj.response.GroupCommand;
-import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.service.dto.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
-
-import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
-import dk.kb.netarchivesuite.solrwayback.solr.WaybackStatistics;
 
 public class SolrClientTest {
 
@@ -209,10 +192,10 @@ public class SolrClientTest {
 
 
   public static void test1() throws Exception{
-    HttpSolrClient solrServer;
+    HttpJdkSolrClient solrServer;
     NetarchiveSolrClient instance = null;
 
-    solrServer =  new HttpSolrClient.Builder("http://ariel:52300/solr/").build();
+    solrServer =  new HttpJdkSolrClient.Builder("http://ariel:52300/solr/").build();
 
     //solrServer.setRequestWriter(new BinaryRequestWriter());
 
@@ -267,10 +250,10 @@ public class SolrClientTest {
   public static void domainStatistics() throws Exception{
     int maxRows = 20000;// it is faster than grouping to extract all
     String domain ="ekot.dk";
-    HttpSolrClient solrServer;
+    HttpJdkSolrClient solrServer;
     NetarchiveSolrClient instance = null;
 
-    solrServer =  new HttpSolrClient.Builder("http://localhost:8983/solr/netarchivebuilder").build();
+    solrServer =  new HttpJdkSolrClient.Builder("http://localhost:8983/solr/netarchivebuilder").build();
 
     //solrServer.setRequestWriter(new BinaryRequestWriter());
 
@@ -335,7 +318,7 @@ public class SolrClientTest {
     SolrClient solrServer;
 
 
-    solrServer =  new HttpSolrClient.Builder("http://localhost:8983/solr/netarchivebuilder/").build();
+    solrServer =  new HttpJdkSolrClient.Builder("http://localhost:8983/solr/netarchivebuilder/").build();
 
     //Generate URL string: (url_norm:"A" OR url_norm:"B" OR ....)
     StringBuffer buf = new StringBuffer();

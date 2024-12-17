@@ -24,7 +24,7 @@ import java.util.*;
 public class SolrStatsTest {
     private static final Logger log = LoggerFactory.getLogger(SolrStatsTest.class);
 
-    private static String SOLR_HOME = "target/test-classes/solr_9";
+    private static String SOLR_HOME = Path.of("target/test-classes/solr_9").toAbsolutePath().toString();
     private static NetarchiveSolrClient server = null;
     private static CoreContainer coreContainer= null;
     private static EmbeddedSolrServer embeddedServer = null;

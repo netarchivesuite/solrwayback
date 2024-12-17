@@ -8,6 +8,8 @@ Fixed Gephi export regression bug, not all results was extracted due to Gephi al
 Added SolrWayback ASCII logo in log file when started successfully.
 Add support for Memento API, including timegates and timemaps. Memento properties added to solrwayback.properties (Thanks @VictorHarbo ) 
 Removed Jetty 'mvn jetty:run' as development option and switched to 'mvn cargo:run that will start a Tomcat instead. Routing was not working in Jetty. See README.md for details how to use.
+Upgrade from deprecated HttpSolrClient to HttpJdkSolrClient compatible with Http1 and Http2.
+
 
 5.1.2
 -----

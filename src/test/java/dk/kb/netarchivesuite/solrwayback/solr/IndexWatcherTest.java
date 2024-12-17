@@ -1,7 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 
 /*
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,7 @@ public class IndexWatcherTest {
      * {@code localhost:8983} (default for the SolrWayback bundle) while watching the output.
      */
     public void disabledtestAgainstExistingIndex() throws InterruptedException {
-        SolrClient solrClient = new HttpSolrClient.Builder(SOLR_SERVER).build();
+        SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_SERVER).build();
         IndexWatcher watcher = new IndexWatcher(
                 solrClient, 500,
                 status -> System.out.println("New status: " + status));

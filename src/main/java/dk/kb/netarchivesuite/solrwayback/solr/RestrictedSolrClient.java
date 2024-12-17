@@ -20,7 +20,7 @@ import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.StreamingResponseCallback;
 import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
@@ -72,7 +72,7 @@ public class RestrictedSolrClient extends SolrClient {
     private final Map<String, String> fixedParams;
 
     /**
-     * Create a {@link HttpSolrClient} wrapped as a {@code RestrictedSolrClient} using the property
+     * Create a {@link HttpJdkSolrClient} wrapped as a {@code RestrictedSolrClient} using the property
      * {@link PropertiesLoader#SOLR_PARAMS_MAP} for restrictions and the given {@code collection} as
      * {@link #defaultCollection}.
      * <p>
@@ -92,7 +92,7 @@ public class RestrictedSolrClient extends SolrClient {
     private static final Pattern SOLR_COLLECTION_PATTERN = Pattern.compile("(http.*)/([^/]+)/?$");
 
     /**
-     * Create a {@link HttpSolrClient} wrapped as a {@code RestrictedSolrClient} using the property
+     * Create a {@link HttpJdkSolrClient} wrapped as a {@code RestrictedSolrClient} using the property
      * {@link PropertiesLoader#SOLR_PARAMS_MAP} for restrictions and the given {@code collection} as
      * {@link #defaultCollection}.
      * @param solrBaseURL an URL to a Solr server, sans collection. Example: {@code http://localhost:8983/solr}.
@@ -101,7 +101,7 @@ public class RestrictedSolrClient extends SolrClient {
      */
     public static RestrictedSolrClient createSolrClient(String solrBaseURL, String collection) {
         log.info("Creating RestrictedSolrClient(solrBaseURL='{}', collection='{}')", solrBaseURL, collection);
-        return new RestrictedSolrClient(new HttpSolrClient.Builder(solrBaseURL).build(), collection);
+        return new RestrictedSolrClient(new HttpJdkSolrClient.Builder(solrBaseURL).build(), collection);
     }
 
     /**
