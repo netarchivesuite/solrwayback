@@ -143,7 +143,8 @@ Documents in SolrWayback are indexed through the [warc-indexer](https://github.c
  * Copy `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to the `user/home/` folder.  
  * Modify the property files. (default all urls http://localhost:8080)
  * Open search interface: http://localhost:8080/solrwayback
-
+ * For development purpose you can deploy and start a tomcat with: `mvn package -DskipTests cargo:run` . SolrWayback log files can be found in  `/target/cargo/installs/tomcat-9.0.41/apache-tomcat-9.0.41/logs`
+ 
 
 ## Build, Index and test with Docker
 The docker container will download the SolrWayback bundle 5.1.2.
