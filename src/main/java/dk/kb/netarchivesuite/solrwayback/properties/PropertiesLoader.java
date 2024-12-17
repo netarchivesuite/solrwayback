@@ -57,6 +57,10 @@ public class PropertiesLoader {
     
     public static final String PLAYBACK_DISABLED_PROPERTY="playback.disabled";
     private static final String SOLR_SEARCH_PARAMS_PROPERTY="solr.search.params";
+    private static final String MEMENTO_TIMEMAP_PAGESIZE_PROPERTY="memento.timemap.pagesize";
+    private static final String MEMENTO_TIMEMAP_PAGINGLIMIT_PROPERTY="memento.timemap.paginglimit";
+
+    
 
     private static Properties serviceProperties = null;
     public static boolean PLAYBACK_DISABLED = false;
@@ -70,6 +74,8 @@ public class PropertiesLoader {
     public static Map<String, String> WARC_FILE_RESOLVER_PARAMETERS= new HashMap<>();
     public static boolean WARC_SOURCE_HTTP_FALLBACK = false;
     public static String PID_COLLECTION_NAME = null;
+    public static int MEMENTO_TIMEMAP_PAGESIZE = 50;
+    public static int MEMENTO_TIMEMAP_PAGINGLIMIT = 5000;
     public static String WORDCLOUD_STOPWORDS;
     public static LinkedHashMap<String,String> SOLR_PARAMS_MAP= new LinkedHashMap<String,String>(); 
 
@@ -129,6 +135,8 @@ public class PropertiesLoader {
             WARC_SOURCE_HTTP_FALLBACK = Boolean.parseBoolean(serviceProperties.getProperty(WARC_SOURCE_HTTP_FALLBACK_LEGACY_PROPERTY, "false"));
             WARC_SOURCE_HTTP_FALLBACK = Boolean.parseBoolean(serviceProperties.getProperty(WARC_SOURCE_HTTP_FALLBACK_PROPERTY, Boolean.toString(WARC_SOURCE_HTTP_FALLBACK)));
             PID_COLLECTION_NAME = serviceProperties.getProperty(PID_COLLECTION_NAME_PROPERTY);
+            MEMENTO_TIMEMAP_PAGESIZE = Integer.parseInt(serviceProperties.getProperty(MEMENTO_TIMEMAP_PAGESIZE_PROPERTY, String.valueOf(MEMENTO_TIMEMAP_PAGESIZE)));
+            MEMENTO_TIMEMAP_PAGINGLIMIT = Integer.parseInt(serviceProperties.getProperty(MEMENTO_TIMEMAP_PAGINGLIMIT_PROPERTY, String.valueOf(MEMENTO_TIMEMAP_PAGINGLIMIT)));
             loadArcResolverParameters(serviceProperties);
             String timeout  = serviceProperties.getProperty(SCREENSHOT_PREVIEW_TIMEOUT_PROPERTY);
             URL_NORMALISER  = serviceProperties.getProperty(URL_NORMALISER_PROPERTY,"normal");
@@ -171,6 +179,7 @@ public class PropertiesLoader {
             else {
              log.info("no solrParams loaded");   
             }
+
             PLAYBACK_DISABLED = Boolean.parseBoolean(serviceProperties.getProperty(PLAYBACK_DISABLED_PROPERTY));
             
             log.info("Property:"+ PLAYBACK_DISABLED_PROPERTY +" = " + PLAYBACK_DISABLED);
@@ -184,6 +193,8 @@ public class PropertiesLoader {
             log.info("Property:"+ WARC_SOURCE_HTTP_FALLBACK_PROPERTY + " = " + WARC_SOURCE_HTTP_FALLBACK);
             log.info("Property:"+ URL_NORMALISER_PROPERTY +" = " +  URL_NORMALISER);
             log.info("Property:"+ PID_COLLECTION_NAME_PROPERTY +" = " +  PID_COLLECTION_NAME);
+            log.info("Property:"+ MEMENTO_TIMEMAP_PAGESIZE_PROPERTY+" = "+ MEMENTO_TIMEMAP_PAGESIZE);
+            log.info("Property:"+ MEMENTO_TIMEMAP_PAGINGLIMIT_PROPERTY + " = "+ MEMENTO_TIMEMAP_PAGINGLIMIT);
             log.info("Property:"+ WARC_FILES_VERIFY_COLLECTION_PROPERTY  +" = " + WARC_FILES_VERIFY_COLLECTION);
             log.info("Property:"+ SOLR_SERVER_CACHING_PROPERTY +" = " +  SOLR_SERVER_CACHING);
             log.info("Property:"+ SOLR_SERVER_CACHING_AGE_SECONDS_PROPERTY +" = " +  SOLR_SERVER_CACHING_AGE_SECONDS);

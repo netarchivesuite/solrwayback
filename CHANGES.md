@@ -6,6 +6,8 @@ Upgraded solr dependencies from v9.1.0 to v9.4.1
 HTML pages with geo tag will no longer we found in image GEO search.
 Fixed Gephi export regression bug, not all results was extracted due to Gephi also was limit by CSV export limit size in property file.
 Added SolrWayback ASCII logo in log file when started successfully.
+Add support for Memento API, including timegates and timemaps. Memento properties added to solrwayback.properties (Thanks @VictorHarbo ) 
+
 
 5.1.2
 -----
@@ -30,7 +32,7 @@ Updated the bundle install documentation. Added new section how to redeploy the 
 
 5.0.0
 -----
-Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.5.0 is backwards compatible with existing Solr 7 installations.
+Upgrade Java 1.8 → 11, Tomcat 8.5 → 9 and Solr 7 → 9. SolrWayback 5.0.0 is backwards compatible with existing Solr 7 installations.
 
 Better guide for using start and stop scripts.
 
