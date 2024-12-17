@@ -315,6 +315,26 @@
       </plugin>
 
       <plugin>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-maven2-plugin</artifactId>
+        <version>1.9.0</version>
+        <configuration>
+           <container>
+             <containerId>tomcat9x</containerId>         
+           </container>
+           <deployables>
+             <deployable>
+               <type>war</type>
+               <location>${project.build.directory}/${project.build.finalName}.war</location>
+               <properties>
+                  <context>/solrwayback</context>
+               </properties>
+             </deployable>
+           </deployables>
+         </configuration>
+       </plugin>
+            
+      <plugin>
         <!-- Filter resources -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -403,43 +423,6 @@
 
         </executions>
       </plugin>
-
-      <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>compile</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${basedir}/target/jetty-res</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>src/test/jetty</directory>
-                  <filtering>true</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.51.v20230217</version>
-        <!--<version>9.4.30.v20200611</version>-->
-        <configuration>
-          <useTestScope>true</useTestScope>
-          <webApp>
-            <contextPath>/solrwayback/</contextPath>
-            <descriptor>${project.basedir}/src/main/webapp/WEB-INF/web.xml</descriptor>
-          </webApp>
-        </configuration>
-      </plugin>
-
     </plugins>
 
   </build>
