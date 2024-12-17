@@ -51,6 +51,10 @@
       <version>2.1.1</version>
     </dependency>
 
+    <!-- JAKARTA DEPENDENCIES FOR EMBEDDED TEST SOLR-->
+    <!-- Solr has started depending on jakarta versions of libraries and as SolrWayback still runs under javax, these need to be included to run the embedded tests.
+         When we are to migrate completely to the jakarta namespace, we have to upgrade our tomcat servers to at least version 10, as jakarta webapps aren't compatible with
+         older tomcats. -->
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
