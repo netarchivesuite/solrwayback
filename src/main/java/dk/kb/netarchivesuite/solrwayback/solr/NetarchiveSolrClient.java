@@ -1656,6 +1656,7 @@ public class NetarchiveSolrClient {
         solrQuery.setQuery(query);
         solrQuery.setRows(0);
         solrQuery.set("facet", "false");
+        solrQuery.set("hl", "false");
 
         // custom scale
         String start = startdate + "T00:00:00Z";
