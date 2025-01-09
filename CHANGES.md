@@ -2,6 +2,11 @@
 
 UNRELEASED
 -----
+
+
+
+5.2.0
+-----
 * Upgraded solr dependencies from v9.1.0 to v9.4.1
 * HTML pages with geo tag will no longer we found in image GEO search.
 * Fixed Gephi export regression bug, not all results was extracted due to Gephi also was limit by CSV export limit size in property file.
@@ -10,7 +15,7 @@ UNRELEASED
 * Two new memento properties added in solrwayback.properties. Will use same default values if not defined in property file.
 * Removed Jetty 'mvn jetty:run' as development option and switched to 'mvn cargo:run that will start a Tomcat instead. Routing was not working in Jetty. See README.md for details how to use.
 * Upgrade from deprecated HttpSolrClient to HttpJdkSolrClient compatible with Http1 and Http2.
-- Download button added to toolbox n-gram to download data in csv format. 
+* Download button added to toolbox n-gram to download data in csv format. 
 
 
 5.1.2
