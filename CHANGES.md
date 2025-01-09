@@ -11,7 +11,7 @@ UNRELEASED
 * HTML pages with geo tag will no longer we found in image GEO search.
 * Fixed Gephi export regression bug, not all results was extracted due to Gephi also was limit by CSV export limit size in property file.
 * Added SolrWayback ASCII logo in log file when started successfully.
-* Add support for Memento API, including timegates and timemaps. Memento properties added to solrwayback.properties (Thanks @VictorHarbo ) 
+* Added support for Memento API, including timegates and timemaps. Memento properties added to solrwayback.properties (Thanks @VictorHarbo ) 
 * Two new memento properties added in solrwayback.properties. Will use same default values if not defined in property file.
 * Removed Jetty 'mvn jetty:run' as development option and switched to 'mvn cargo:run that will start a Tomcat instead. Routing was not working in Jetty. See README.md for details how to use.
 * Upgrade from deprecated HttpSolrClient to HttpJdkSolrClient compatible with Http1 and Http2.
