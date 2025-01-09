@@ -550,15 +550,15 @@ public class SolrUtils {
                 }
             }
             if (shardNames.isEmpty()) {
-                log.info("Unable to resolve shard names for Solr '{}' collectionIDs '{}'. " +
-                         "Possibly because the Solr is running as standalone",
+                log.warn("Unable to resolve shard names for Solr '{}' collectionIDs '{}'. " +
+                         "Possibly because the Solr is running as standalone or from bundle release",
                          solrBase, collectionIDs);
             }
             shardCache.put(cacheKey, shardNames);
         } catch (Exception e) {
-            log.info("Exception resolving shard names for Solr '{}' collection '{}'. " +
-                     "Possibly because the Solr is running as standalone",
-                     solrBase, collection, e);
+            log.warn("Could not resolve shard names for Solr '{}' collection '{}'. " +
+                     "Possibly because the Solr is running as standalone or from bundle release",
+                     solrBase, collection);
             shardCache.put(cacheKey, Collections.emptyList());
         }
     }
