@@ -8,7 +8,7 @@ UNRELEASED
 5.2.0
 -----
 * Upgraded solr dependencies from v9.1.0 to v9.4.1
-* HTML pages with geo tag will no longer we found in image GEO search.
+* HTML pages with geo tag will no longer be found in image GEO search.
 * Fixed Gephi export regression bug, not all results was extracted due to Gephi also was limit by CSV export limit size in property file.
 * Added SolrWayback ASCII logo in log file when started successfully.
 * Added support for Memento API, including timegates and timemaps. Memento properties added to solrwayback.properties (Thanks @VictorHarbo ) 
