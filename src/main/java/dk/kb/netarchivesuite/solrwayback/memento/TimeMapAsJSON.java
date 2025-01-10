@@ -29,24 +29,22 @@ public class TimeMapAsJSON {
      * @param originalResource  URI-R to create URI-T from.
      * @return                  A json representation of the timemap ready for streaming.
      */
-    static StreamingOutput getTimeMapAsSpecJson(URI originalResource, Integer pageNumber) {
+    StreamingOutput getTimeMapAsSpecJson(URI originalResource, Integer pageNumber) {
         MementoMetadata metadata = new MementoMetadata();
 
         long count = getDocStreamAndUpdateDatesForFirstAndLastMemento(originalResource, metadata)
                 .count();
         log.info("Original resource has been harvested '{}' times.",count);
+        Stream<SolrDocument> mementoStream = getMementoStream(originalResource);
+
         if (count < PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT){
             log.info("Creating timemap of '{}' entries, with dates in range from '{}' to '{}'.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
-
-            Stream<SolrDocument> mementoStream = getMementoStream(originalResource);
 
             return getJSONStreamingOutput(originalResource, metadata, mementoStream);
         } else {
             log.info("Creating paged timemaps of '{}' entries, with dates in range from '{}' to '{}'.",
                     count, metadata.getFirstMemento(), metadata.getLastMemento());
-
-            Stream<SolrDocument> mementoStream = getMementoStream(originalResource);
 
             return getJSONPagedStreamingOutput(originalResource, metadata, mementoStream, count, pageNumber);
         }
@@ -85,13 +83,13 @@ public class TimeMapAsJSON {
      * @param count             total amount of mementos.
      * @return                  A paged JSON timemap ready for streaming.
      */
-    private static StreamingOutput getJSONPagedStreamingOutput(URI originalResource, MementoMetadata metadata,
+    private StreamingOutput getJSONPagedStreamingOutput(URI originalResource, MementoMetadata metadata,
                                                                Stream<SolrDocument> mementoStream,
                                                                long count, Integer pageNumber) {
 
         if (pageNumber == null){
             pageNumber = 1;
-            log.info("Set page number to: " + pageNumber);
+            log.info("Set page number to: '{}'", pageNumber);
         }
 
         int finalPageNumber = pageNumber;
@@ -164,7 +162,7 @@ public class TimeMapAsJSON {
      * @param pageNumber                of the page to retrieve.
      * @param pageOfResults             a page containing SolrDocuments that are to be written as a paged timemap.
      */
-    private static void createPagedJsonTimemap(URI originalResource, MementoMetadata metadata, long totalMementosForResource,
+    private void createPagedJsonTimemap(URI originalResource, MementoMetadata metadata, long totalMementosForResource,
                                                int pageNumber, TimeMap.Page<SolrDocument> pageOfResults, OutputStream os)
                                                throws IOException {
 

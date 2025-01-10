@@ -1,6 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
 import dk.kb.netarchivesuite.solrwayback.memento.DatetimeNegotiation;
+import dk.kb.netarchivesuite.solrwayback.memento.TimeMap;
 import dk.kb.netarchivesuite.solrwayback.util.PathResolver;
 import org.apache.http.client.utils.DateUtils;
 import org.slf4j.Logger;
@@ -20,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getTimeMap;
 import static dk.kb.netarchivesuite.solrwayback.util.DateUtils.validateTimestamp;
 
 /**
@@ -81,7 +81,8 @@ public class SolrWaybackMementoAPI {
         mimeTypeForResponse = getMimeTypeForResponse(type, mimeTypeForResponse);
 
         URI uri =  PathResolver.mementoAPIResolver("/timemap/" + type + "/", uriInfo, url);
-        StreamingOutput timemap = getTimeMap(uri, type, null);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput timemap = timeMap.getTimeMap(uri, type, null);
         String fileType = fileEndingFromAcceptHeader(mimeTypeForResponse);
 
         return Response.ok().type(mimeTypeForResponse)
@@ -102,12 +103,13 @@ public class SolrWaybackMementoAPI {
         mimeTypeForResponse = getMimeTypeForResponse(type, mimeTypeForResponse);
 
         URI uri =  PathResolver.mementoAPIResolver("/timemap/" + page + "/" + type + "/", uriInfo, url);
-        StreamingOutput timemap = getTimeMap(uri, type, Integer.valueOf(page));
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput output = timeMap.getTimeMap(uri, type, Integer.valueOf(page));
         String fileType = fileEndingFromAcceptHeader(mimeTypeForResponse);
 
         // TODO: Fresh eyes on http headers for timemap
         return Response.ok().type(mimeTypeForResponse)
-                .entity(timemap)
+                .entity(output)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline") // Ensure inline displa
                 //.header(HttpHeaders.CONTENT_DISPOSITION, "attachment ; filename = \"timemap"+ fileType + "\"")
                 .build();

@@ -78,9 +78,10 @@ public class PagedTimeMapTest {
 
     @Test
     public void testTimeMapLinkLastConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "link", 20);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput output = timeMap.getTimeMap(new URI("http://kb.dk/"), "link", 20);
 
-        String timeMapString = convertStreamingTimeMapToString(timeMap);
+        String timeMapString = convertStreamingTimeMapToString(output);
         
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
         System.out.println(timeMapStringLocalhost);
@@ -89,18 +90,20 @@ public class PagedTimeMapTest {
 
     @Test
     public void testTimeMapLinkNoPageConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "link", null);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput output = timeMap.getTimeMap(new URI("http://kb.dk/"), "link", null);
 
-        String timeMapString = convertStreamingTimeMapToString(timeMap);
+        String timeMapString = convertStreamingTimeMapToString(output);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
         
         assertEquals(testPagedTimeMapLinkFirstPage, timeMapStringLocalhost);
     }
     @Test
     public void testTimeMapLinkFirstConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "link", 1);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput output = timeMap.getTimeMap(new URI("http://kb.dk/"), "link", 1);
 
-        String timeMapString = convertStreamingTimeMapToString(timeMap);
+        String timeMapString = convertStreamingTimeMapToString(output);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
         assertEquals(testPagedTimeMapLinkFirstPage, timeMapStringLocalhost);
     }
@@ -108,45 +111,50 @@ public class PagedTimeMapTest {
 
     @Test
     public void testTimeMapLinkRandomConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "link", 5);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput output = timeMap.getTimeMap(new URI("http://kb.dk/"), "link", 5);
 
-        String timeMapString = convertStreamingTimeMapToString(timeMap);
+        String timeMapString = convertStreamingTimeMapToString(output);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
         assertEquals(testPagedTimeMapLinkFifthPage, timeMapStringLocalhost);
     }
 
     @Test
     public void testPagedTimeMapFirstJSONConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 1);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput output = timeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 1);
 
-        String timeMapString = convertStreamingTimeMapToString(timeMap);
+        String timeMapString = convertStreamingTimeMapToString(output);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
         assertEquals(testPagedTimeMapJSONFirstPage, timeMapStringLocalhost);
     }
 
     @Test
     public void testPagedTimeMapRandomJSONConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 12);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput output = timeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 12);
 
-        String timeMapString = convertStreamingTimeMapToString(timeMap);
+        String timeMapString = convertStreamingTimeMapToString(output);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
         assertEquals(testPagedTimeMapJSONTwelthPage, timeMapStringLocalhost);
     }
 
     @Test
     public void testPagedTimeMapLastJSONConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 20);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput output = timeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 20);
 
-        String timeMapString = convertStreamingTimeMapToString(timeMap);
+        String timeMapString = convertStreamingTimeMapToString(output);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
         assertEquals(testPagedTimeMapJSONLastPage, timeMapStringLocalhost);
     }
 
     @Test
     public void testPagedTimeMapNoPageJSONConstruction() throws IOException, URISyntaxException {
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "spec", null);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput output = timeMap.getTimeMap(new URI("http://kb.dk/"), "spec", null);
 
-        String timeMapString = convertStreamingTimeMapToString(timeMap);
+        String timeMapString = convertStreamingTimeMapToString(output);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);
         assertEquals(testPagedTimeMapJSONFirstPage, timeMapStringLocalhost);
     }

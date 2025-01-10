@@ -21,13 +21,15 @@ public class TimeMap {
      *                          Defaults to application/link-type.
      * @return                  The timemap in the specified format.
      */
-    public static StreamingOutput getTimeMap(URI originalResource, String type, Integer pageNumber) {
+    public StreamingOutput getTimeMap(URI originalResource, String type, Integer pageNumber) {
 
         switch (type){
             case "json":
                 return TimeMapAsCdxJSON.getTimeMapAsCdxJson(originalResource);
             case "spec":
-                return TimeMapAsJSON.getTimeMapAsSpecJson(originalResource, pageNumber);
+                TimeMapAsJSON timeMapAsJSON = new TimeMapAsJSON();
+
+                return timeMapAsJSON.getTimeMapAsSpecJson(originalResource, pageNumber);
             default:
                 return output -> TimeMapAsLink.getTimeMapAsLinkFormat(originalResource, output, pageNumber);
         }
@@ -120,6 +122,7 @@ public class TimeMap {
                                         .limit(PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE);
 
         Page<SolrDocument> page = new Page<>(pageNumber, numberOfDocsInStream, solrDocs);
+        log.info("Returning a paged result. This query returns pageNumber: '{}'", pageNumber);
 
         return page;
     }
