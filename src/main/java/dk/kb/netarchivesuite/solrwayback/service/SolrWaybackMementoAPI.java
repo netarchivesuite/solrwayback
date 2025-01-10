@@ -2,6 +2,8 @@ package dk.kb.netarchivesuite.solrwayback.service;
 
 import dk.kb.netarchivesuite.solrwayback.memento.DatetimeNegotiation;
 import dk.kb.netarchivesuite.solrwayback.memento.TimeMap;
+import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
+import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.util.PathResolver;
 import org.apache.http.client.utils.DateUtils;
 import org.slf4j.Logger;
@@ -89,6 +91,19 @@ public class SolrWaybackMementoAPI {
                 .entity(timemap)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline") // Ensure inline displa
                 .build();
+    }
+
+    /**
+     * The paged timemap is not implemented for the json timemap, therefore trying to access a paged version throws an exception.
+     */
+    @GET
+    @Path("timemap/{page:\\d+}/json/{url:.+}")
+    public Response timeMapPagedJson(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @PathParam("url") String url, @PathParam("page") String page)
+            throws NotFoundServiceException {
+
+        String message = "Endpoint timemap/json does not support pagination. Either access the full timemap at /services/memento/timemap/json/" + url + " or request a paged " +
+                "timemap in the link or spec-json format at /services/memento/timemap/" + page + "/spec/" + url;
+        throw new NotFoundServiceException(message);
     }
 
     @GET
