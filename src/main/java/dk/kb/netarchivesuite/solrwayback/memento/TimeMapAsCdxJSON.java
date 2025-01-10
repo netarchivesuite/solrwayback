@@ -10,6 +10,7 @@ import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getDocStreamAndUpdateDatesForFirstAndLastMemento;
@@ -76,16 +77,37 @@ public class TimeMapAsCdxJSON {
      */
     private static SolrDocument addMementoToTimeMapObject(SolrDocument solrDoc, JsonGenerator jsonGenerator) {
         List<String> hostSurtList = (List<String>) solrDoc.get("host_surt");
+        
+        String hostsurt = "";
+        String waybackdate = "";
+        String url = "";
+        String contentType = "";
+        String statusCode = "";
+        String hash = "";
+        String contentLength = "";
+
+        try {
+            // There is a chance that some values are null. The JSON generator does not like these, therefore we check.
+            hostsurt = hostSurtList.get(hostSurtList.size()-1);
+            waybackdate = solrDoc.get("wayback_date").toString();
+            url = solrDoc.get("url").toString();
+            contentType = solrDoc.get("content_type").toString();
+            statusCode = solrDoc.get("status_code").toString();
+            hash = solrDoc.get("hash").toString();
+            contentLength = solrDoc.get("content_length").toString();
+        } catch (NullPointerException e){
+            log.debug("A NullPointerException happened when extracting values from SolrDocument. The specific value will be empty in the timemap");
+        }
 
         try {
             jsonGenerator.writeStartArray(); // Start entry
-            jsonGenerator.writeString(hostSurtList.get(hostSurtList.size()-1));
-            jsonGenerator.writeString(solrDoc.get("wayback_date").toString());
-            jsonGenerator.writeString((String) solrDoc.get("url"));
-            jsonGenerator.writeString(solrDoc.get("content_type").toString());
-            jsonGenerator.writeString(solrDoc.get("status_code").toString());
-            jsonGenerator.writeString((String) solrDoc.get("hash"));
-            jsonGenerator.writeString(solrDoc.get("content_length").toString());
+            jsonGenerator.writeString(hostsurt);
+            jsonGenerator.writeString(waybackdate);
+            jsonGenerator.writeString(url);
+            jsonGenerator.writeString(contentType);
+            jsonGenerator.writeString(statusCode);
+            jsonGenerator.writeString(hash);
+            jsonGenerator.writeString(contentLength);
             jsonGenerator.writeEndArray(); // End entry
             jsonGenerator.writeRaw("\n");
         } catch (IOException e) {
