@@ -10,7 +10,6 @@ import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static dk.kb.netarchivesuite.solrwayback.memento.TimeMap.getDocStreamAndUpdateDatesForFirstAndLastMemento;
@@ -78,26 +77,13 @@ public class TimeMapAsCdxJSON {
     private static SolrDocument addMementoToTimeMapObject(SolrDocument solrDoc, JsonGenerator jsonGenerator) {
         List<String> hostSurtList = (List<String>) solrDoc.get("host_surt");
         
-        String hostsurt = "";
-        String waybackdate = "";
-        String url = "";
-        String contentType = "";
-        String statusCode = "";
-        String hash = "";
-        String contentLength = "";
-
-        try {
-            // There is a chance that some values are null. The JSON generator does not like these, therefore we check.
-            hostsurt = hostSurtList.get(hostSurtList.size()-1);
-            waybackdate = solrDoc.get("wayback_date").toString();
-            url = solrDoc.get("url").toString();
-            contentType = solrDoc.get("content_type").toString();
-            statusCode = solrDoc.get("status_code").toString();
-            hash = solrDoc.get("hash").toString();
-            contentLength = solrDoc.get("content_length").toString();
-        } catch (NullPointerException e){
-            log.debug("A NullPointerException happened when extracting values from SolrDocument. The specific value will be empty in the timemap");
-        }
+        String hostsurt = hostSurtList.get(hostSurtList.size()-1);
+        String waybackdate = extractNonNullStringFromSolr(solrDoc, "wayback_date");
+        String url = extractNonNullStringFromSolr(solrDoc, "url");
+        String contentType = extractNonNullStringFromSolr(solrDoc, "content_type");
+        String statusCode = extractNonNullStringFromSolr(solrDoc, "status_code");
+        String hash = extractNonNullStringFromSolr(solrDoc, "hash");
+        String contentLength = extractNonNullStringFromSolr(solrDoc, "content_length");
 
         try {
             jsonGenerator.writeStartArray(); // Start entry
@@ -115,6 +101,21 @@ public class TimeMapAsCdxJSON {
         }
 
         return solrDoc;
+    }
+
+    /**
+     * Return a value from the input SolrDocument if it is present otherwise return an empty string.
+     * @param solrDoc to retrieve value from.
+     * @param value to retrieve in doc.
+     * @return the value if present.
+     */
+    private static String extractNonNullStringFromSolr(SolrDocument solrDoc, String value) {
+        try {
+            return solrDoc.get(value).toString();
+        } catch (NullPointerException e){
+            log.debug("A NullPointerException happened when extracting values from SolrDocument. The specific value will be empty in the timemap");
+            return "";
+        }
     }
 
 
