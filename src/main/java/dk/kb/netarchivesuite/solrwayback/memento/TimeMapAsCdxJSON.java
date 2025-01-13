@@ -76,16 +76,24 @@ public class TimeMapAsCdxJSON {
      */
     private static SolrDocument addMementoToTimeMapObject(SolrDocument solrDoc, JsonGenerator jsonGenerator) {
         List<String> hostSurtList = (List<String>) solrDoc.get("host_surt");
+        
+        String hostsurt = hostSurtList.get(hostSurtList.size()-1);
+        String waybackdate = extractNonNullStringFromSolr(solrDoc, "wayback_date");
+        String url = extractNonNullStringFromSolr(solrDoc, "url");
+        String contentType = extractNonNullStringFromSolr(solrDoc, "content_type");
+        String statusCode = extractNonNullStringFromSolr(solrDoc, "status_code");
+        String hash = extractNonNullStringFromSolr(solrDoc, "hash");
+        String contentLength = extractNonNullStringFromSolr(solrDoc, "content_length");
 
         try {
             jsonGenerator.writeStartArray(); // Start entry
-            jsonGenerator.writeString(hostSurtList.get(hostSurtList.size()-1));
-            jsonGenerator.writeString(solrDoc.get("wayback_date").toString());
-            jsonGenerator.writeString((String) solrDoc.get("url"));
-            jsonGenerator.writeString(solrDoc.get("content_type").toString());
-            jsonGenerator.writeString(solrDoc.get("status_code").toString());
-            jsonGenerator.writeString((String) solrDoc.get("hash"));
-            jsonGenerator.writeString(solrDoc.get("content_length").toString());
+            jsonGenerator.writeString(hostsurt);
+            jsonGenerator.writeString(waybackdate);
+            jsonGenerator.writeString(url);
+            jsonGenerator.writeString(contentType);
+            jsonGenerator.writeString(statusCode);
+            jsonGenerator.writeString(hash);
+            jsonGenerator.writeString(contentLength);
             jsonGenerator.writeEndArray(); // End entry
             jsonGenerator.writeRaw("\n");
         } catch (IOException e) {
@@ -93,6 +101,21 @@ public class TimeMapAsCdxJSON {
         }
 
         return solrDoc;
+    }
+
+    /**
+     * Return a value from the input SolrDocument if it is present otherwise return an empty string.
+     * @param solrDoc to retrieve value from.
+     * @param value to retrieve in doc.
+     * @return the value if present.
+     */
+    private static String extractNonNullStringFromSolr(SolrDocument solrDoc, String value) {
+        try {
+            return solrDoc.get(value).toString();
+        } catch (NullPointerException e){
+            log.debug("A NullPointerException happened when extracting values from SolrDocument. The specific value will be empty in the timemap");
+            return "";
+        }
     }
 
 

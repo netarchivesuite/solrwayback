@@ -91,10 +91,11 @@ public class TimeMapTest {
     public void timeMapLinkConstruction() throws IOException, URISyntaxException {
         assertEquals(10000, PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
         // Set very high to disable paging
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "link", 0);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput streamingOutput = timeMap.getTimeMap(new URI("http://kb.dk/"), "link", 0);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        timeMap.write(output);
+        streamingOutput.write(output);
         String timeMapString = new String(output.toByteArray(), StandardCharsets.UTF_8);
         
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);        
@@ -105,10 +106,11 @@ public class TimeMapTest {
     public void timeMapJsonConstruction() throws IOException, URISyntaxException {
         assertEquals(10000, PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT);
         // Set very high to disable paging
-        StreamingOutput timeMap = TimeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 0);
+        TimeMap timeMap = new TimeMap();
+        StreamingOutput streamingOutput = timeMap.getTimeMap(new URI("http://kb.dk/"), "spec", 0);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        timeMap.write(output);
+        streamingOutput.write(output);
         String timeMapString = new String(output.toByteArray(), StandardCharsets.UTF_8);
         String timeMapStringLocalhost=UnitTestUtils.replaceHostNameWithLocalHost(timeMapString);        
         assertEquals(testTimeMapJSON, timeMapStringLocalhost);
