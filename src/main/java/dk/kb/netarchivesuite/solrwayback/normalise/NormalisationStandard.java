@@ -21,6 +21,10 @@ public class NormalisationStandard extends NormalisationAbstract{
     private static Pattern WWW_PREFIX = Pattern.compile("([a-z]+://)(?:www[0-9]*|ww2|ww)[.](.+)");
     
 
+    public static void main(String[] args) {
+        System.out.println(canonicaliseURL("http://home4.inet.tele.dk:80/tlas4700/"));
+    }
+    
     /**
      * Default and very aggressive normaliser. Shorthand for {@code canonicaliseURL(url, true, true)}.
      */

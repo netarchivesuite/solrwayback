@@ -2,8 +2,7 @@
 
 UNRELEASED
 -----
-
-
+Added code comment only with new unittest. ARC-files before 2004 from IA has port :80 as part of URL. The correct fix is to strip port 80 in the warc-indexer in  url_norm. Too complicated and performance issue to try match every url with and without port 80.
 
 
 5.2.1

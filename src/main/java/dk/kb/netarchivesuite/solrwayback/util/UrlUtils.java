@@ -25,7 +25,11 @@ public class UrlUtils {
 
         //Normalisation.setType(NormaliseType.LEGACY);
         //System.out.println(fixLegacyNormaliseUrlErrorQuery("http://bt.dk/"));
-    
+    String url="http://home4.inet.tele.dk:80/tlas4700/";
+        String result = punyCodeAndNormaliseUrl(url);
+        System.out.println(result);
+        
+        
     }
     
 
@@ -192,17 +196,27 @@ public class UrlUtils {
         String hostName = uri.getHost();
         String hostNameEncoded = IDN.toASCII(hostName);
 
+
         String path = uri.getPath();
         if ("".equals(path)) {
             path = "/";
         }
         String urlQueryPath = uri.getQuery();
         String urlPunied = null;
+        
+        /* Not active, correct fix to strip port 80 i warc-indexer in the url_norm field.
+        int port=uri.getPort();
+        String port ="";        
+        if (port == 80) { //Very specific fix for ARC-files from IA before 2004.
+            port=":80";
+        }
+         */
+        
         if (urlQueryPath == null) {
-             urlPunied = "http://" + hostNameEncoded + path;
+             urlPunied = "http://" + hostNameEncoded+"" + path;
         }
         else {
-            urlPunied = "http://" + hostNameEncoded + path +"?"+ urlQueryPath;
+            urlPunied = "http://" + hostNameEncoded+"" + path +"?"+ urlQueryPath;
         }
         String urlPuniedAndNormalized = Normalisation.canonicaliseURL(urlPunied);
         return urlPuniedAndNormalized;
