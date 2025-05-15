@@ -1,7 +1,13 @@
 import Chart from 'chart.js'
 
 export default {
-  drawChart: function(chartLabels, sizeInKb, numberOfPages, ingoingLinks) {
+  drawChart: function(chartLabels, sizeInKb, numberOfPages, ingoingLinks, textSize) {
+    var colorOne = '#fd7f6f'
+    var colorTwo = '#7eb0d5'
+    var colorThree = '#b2e061'
+    var colorFour = '#bd7ebe'
+
+
     var domainGrowthChart = new Chart(document.getElementById('line-chart'), {
         type: 'line',
         data: {
@@ -11,14 +17,14 @@ export default {
                     data: sizeInKb,
                     label: 'Size in kilobytes',
                     yAxisID: 'kilobytes',
-                    borderColor: '#0066cc',
+                    borderColor: colorOne,
                     fill: false,
                 },
                 {
                     data: numberOfPages,
                     label: 'Pages',
                     yAxisID: 'totalpages',
-                    borderColor: '#cc0000',
+                    borderColor: colorTwo,
                     fill: false
                 },
                 {
@@ -26,7 +32,15 @@ export default {
                     label: 'Ingoing links',
                     fontColor: 'black',
                     yAxisID: 'links',
-                    borderColor: '#009900',
+                    borderColor: colorThree,
+                    fill: false
+                },
+                {
+                    data: textSize,
+                    label: 'Average page size (In characters)',
+                    fontColor: 'black',
+                    yAxisID: 'text',
+                    borderColor: colorFour,
                     fill: false
                 }
             ]
@@ -47,7 +61,7 @@ export default {
                         scaleLabel: {
                             display: true,
                             labelString: 'Size in kilobytes',
-                            fontColor: '#0066cc',
+                            fontColor: colorOne,
                         }
                     },
                     {
@@ -60,7 +74,7 @@ export default {
                         scaleLabel: {
                             display: true,
                             labelString: 'Pages',
-                            fontColor: '#cc0000',
+                            fontColor: colorTwo,
                         },
                         gridLines : {
                             display : true,
@@ -77,7 +91,24 @@ export default {
                         scaleLabel: {
                             display: true,
                             labelString: 'Ingoing links',
-                            fontColor: '#009900',
+                            fontColor: colorThree,
+                        },
+                        gridLines : {
+                            display : true,
+                            borderDash: [2,4]
+                        }
+                    },
+                    {
+                        id: 'text',
+                        ticks: {
+                            beginAtZero: true,
+                            //maxTicksLimit: 5,
+                            suggestedMax: 10
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Average page size (In characters)',
+                            fontColor: colorFour,
                         },
                         gridLines : {
                             display : true,
@@ -100,6 +131,6 @@ export default {
                 }
             }
         }
-      })
+      }) 
   }
 }

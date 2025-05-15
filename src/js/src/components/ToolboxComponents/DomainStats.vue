@@ -55,6 +55,13 @@
                 {{ item.ingoingLinks.toLocaleString("en") }}
               </td>
             </tr>
+            <tr>
+              <td>Avg. page size in characters</td>
+              <td v-for="(item, index) in rawData" :key="index">
+                {{ item.contentTextLength.toLocaleString("en") }}
+              </td>
+            </tr>
+            // TODO: Add text size to table
           </tbody>
         </table>
       </div>
@@ -86,7 +93,8 @@ export default {
         chartLabels:[],
         sizeInKb:[],
         ingoingLinks:[],
-        numberOfPages:[]
+        numberOfPages:[],
+        textSize:[]
       },
       startDate:'',
       endDate:'',
@@ -102,7 +110,8 @@ export default {
         chartLabels:[],
         sizeInKb:[],
         ingoingLinks:[],
-        numberOfPages:[]
+        numberOfPages:[],
+        textSize:[]
       }
       this.rawData = null
       this.loading = true
@@ -135,8 +144,22 @@ export default {
         this.graphData.sizeInKb.push(data[i].sizeInKb)
         this.graphData.ingoingLinks.push(data[i].ingoingLinks)
         this.graphData.numberOfPages.push(data[i].totalPages)
+        
+
+        // Handle missing contentTextLength
+        if (data[i].contentTextLength !== undefined && data[i].contentTextLength !== null) {
+          this.graphData.textSize.push(data[i].contentTextLength)
+        } else {
+          this.graphData.textSize.push(0) // Fallback value
+        }
       }
-      domainScript.drawChart(this.graphData.chartLabels, this.graphData.sizeInKb, this.graphData.numberOfPages, this.graphData.ingoingLinks)
+
+      console.log(this.graphData.textSize)
+
+      domainScript.drawChart(this.graphData.chartLabels, this.graphData.sizeInKb,
+                             this.graphData.numberOfPages, this.graphData.ingoingLinks,
+                             this.graphData.textSize)
+      
       this.loading = false
     }
     
