@@ -10,19 +10,20 @@ public class DomainStatistics {
   private int sizeInKb;
   private int uniquePages;
   private String domain;
+  private int contentTextLength;
   
   public  DomainStatistics(){
   }
 
-public String getDate() {
+  public String getDate() {
     return date;
-}
+  }
 
-public void setDate(String date) {
+  public void setDate(String date) {
     this.date = date;
-}
+  }
 
-public int getIngoingLinks() {
+  public int getIngoingLinks() {
     return ingoingLinks;
   }
 
@@ -54,4 +55,11 @@ public int getIngoingLinks() {
     this.domain = domain;
   }
 
+  public int getContentTextLength() {
+    return contentTextLength;
+  }
+
+  public void setContentTextLength(int contentTextLength) {
+    this.contentTextLength = contentTextLength;
+  }
 }
