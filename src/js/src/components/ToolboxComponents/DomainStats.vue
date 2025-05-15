@@ -18,13 +18,32 @@
             Generate
           </button>
         </div>
+        <!-- Toggle Button -->
+        <div class="toggleViewContainer">
+          <button class="toggleViewButton" @click="toggleChartView">
+            {{ showCombinedChart ? 'Show Individual Charts' : 'Show Combined Chart' }}
+          </button>
+        </div>
       </div>
       <div v-if="loading" class="spinner" />
-      <div v-show="!loading && rawData" id="lineContainer">
-        <canvas
-          id="line-chart"
-          width="800"
-          height="450" />
+      <!-- Combined Chart -->
+      <div v-show="!loading && rawData && showCombinedChart" id="lineContainer">
+        <canvas id="line-chart" width="800" height="450"></canvas>
+      </div>
+      <!-- Individual Charts -->
+      <div v-show="!loading && rawData && !showCombinedChart" id="individualChartsContainer">
+        <div class="chartWrapper">
+          <canvas id="size-chart" width="400" height="300"></canvas>
+        </div>
+        <div class="chartWrapper">
+          <canvas id="pages-chart" width="400" height="300"></canvas>
+        </div>
+        <div class="chartWrapper">
+          <canvas id="links-chart" width="400" height="300"></canvas>
+        </div>
+        <div class="chartWrapper">
+          <canvas id="textsize-chart" width="400" height="300"></canvas>
+        </div>
       </div>
       <div v-if="rawData !== null && !loading" id="tableContainer">
         <table id="domainGrowthTable">
@@ -61,7 +80,6 @@
                 {{ item.contentTextLength.toLocaleString("en") }}
               </td>
             </tr>
-            // TODO: Add text size to table
           </tbody>
         </table>
       </div>
@@ -98,9 +116,11 @@ export default {
       },
       startDate:'',
       endDate:'',
-      timeScale:''
+      timeScale:'',
+      showCombinedChart: true
     }
   },
+
   methods: {
     ...mapActions('Notifier', {
       setNotification: 'setNotification'
@@ -128,6 +148,16 @@ export default {
                 timeout: false
               })
             })
+            
+      if (this.showCombinedChart) {
+        domainScript.drawChart(this.graphData.chartLabels, this.graphData.sizeInKb,
+                               this.graphData.numberOfPages, this.graphData.ingoingLinks,
+                               this.graphData.textSize)
+      } else {
+        domainScript.drawIndividualCharts(this.graphData.chartLabels, this.graphData.sizeInKb,
+                                          this.graphData.numberOfPages, this.graphData.ingoingLinks,
+                                          this.graphData.textSize)
+      }
     },
     prepareDomainForGetRequest() {
       let preparedDomain = this.domain
@@ -156,13 +186,36 @@ export default {
 
       console.log(this.graphData.textSize)
 
+      if (this.showCombinedChart) {
+        domainScript.drawChart(this.graphData.chartLabels, this.graphData.sizeInKb,
+                               this.graphData.numberOfPages, this.graphData.ingoingLinks,
+                               this.graphData.textSize)
+      } else {
+        domainScript.drawIndividualCharts(this.graphData.chartLabels, this.graphData.sizeInKb,
+                                          this.graphData.numberOfPages, this.graphData.ingoingLinks,
+                                          this.graphData.textSize)
+      }
+      
+      this.loading = false
+    },
+    toggleChartView() {
+      this.showCombinedChart = !this.showCombinedChart
+      if (!this.showCombinedChart) {
+        this.renderIndividualCharts()
+      } else {
+        this.renderCombinedChart()
+      }
+    },
+    renderIndividualCharts() {
+      domainScript.drawIndividualCharts(this.graphData.chartLabels, this.graphData.sizeInKb,
+                                        this.graphData.numberOfPages, this.graphData.ingoingLinks,
+                                        this.graphData.textSize)
+    },
+    renderCombinedChart() {
       domainScript.drawChart(this.graphData.chartLabels, this.graphData.sizeInKb,
                              this.graphData.numberOfPages, this.graphData.ingoingLinks,
                              this.graphData.textSize)
-      
-      this.loading = false
     }
-    
   }
 }
 </script>

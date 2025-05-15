@@ -1,6 +1,7 @@
 import Chart from 'chart.js'
 
 export default {
+
   drawChart: function(chartLabels, sizeInKb, numberOfPages, ingoingLinks, textSize) {
     var colorOne = '#fd7f6f'
     var colorTwo = '#7eb0d5'
@@ -132,5 +133,154 @@ export default {
             }
         }
       }) 
-  }
+  },
+
+  drawIndividualCharts: function (chartLabels, sizeInKb, numberOfPages, ingoingLinks, textSize) {
+    const colors = {
+      sizeInKb: '#fd7f6f',
+      numberOfPages: '#7eb0d5',
+      ingoingLinks: '#b2e061',
+      textSize: '#bd7ebe',
+    }
+
+    // Size in KB Chart
+    new Chart(document.getElementById('size-chart'), {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: [
+          {
+            data: sizeInKb,
+            label: 'Size in kilobytes',
+            borderColor: colors.sizeInKb,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Size in Kilobytes',
+        },
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'Size (KB)',
+              },
+            },
+          ],
+        },
+      },
+    })
+
+    // Number of Pages Chart
+    new Chart(document.getElementById('pages-chart'), {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: [
+          {
+            data: numberOfPages,
+            label: 'Number of Pages',
+            borderColor: colors.numberOfPages,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Number of Pages',
+        },
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'Pages',
+              },
+            },
+          ],
+        },
+      },
+    })
+
+    // Ingoing Links Chart
+    new Chart(document.getElementById('links-chart'), {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: [
+          {
+            data: ingoingLinks,
+            label: 'Ingoing Links',
+            borderColor: colors.ingoingLinks,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Ingoing Links',
+        },
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'Links',
+              },
+            },
+          ],
+        },
+      },
+    })
+
+    // Text Size Chart
+    new Chart(document.getElementById('textsize-chart'), {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: [
+          {
+            data: textSize,
+            label: 'Average Page Size (Characters)',
+            borderColor: colors.textSize,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Average Page Size (Characters)',
+        },
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'Characters',
+              },
+            },
+          ],
+        },
+      },
+    })
+  },
 }
