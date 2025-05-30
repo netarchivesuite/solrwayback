@@ -67,7 +67,7 @@ The <b>TO</b> must be upper case and notice the Z in the end of the dates.
  Always use field prefix search if you also want to search a non-default search field.<br>
  Example: <b>content_type_served:"image/jpeg"</b>
 
-<h3>Field desriptions</h3>
+<h3>Field descriptions</h3>
 This is a description of some of the more important fields but does not include all.
 
 <table border='1'>
