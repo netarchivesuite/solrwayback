@@ -4,6 +4,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation.NormaliseType;
+import dk.kb.netarchivesuite.solrwayback.normalise.NormalisationStandard;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,6 +65,25 @@ public class URLAbsoluterTest {
         assertEquals("http://example.com/", urlDomainOnlyNorm); //www is removed
         urlDomainWithPathNorm= Normalisation.canonicaliseURL(urlDomainWithPath );
         assertEquals("http://example.com/index.html",urlDomainWithPathNorm); //www is removed        
+    }
+
+    
+    
+    
+    
+    //Notice this is probably not the beviour we want. Warc-indexer most remove port 80
+    @Test
+    public void testNormal() {
+         Normalisation.setType(NormaliseType.NORMAL);
+         //with port 80
+         String url="http://test.dk:80/TEST.html";
+         String canonicaliseURL = NormalisationStandard.canonicaliseURL(url);
+         assertEquals(url.toLowerCase(),canonicaliseURL);
+    
+         //without port
+         url="http://test.dk/TEST.html";
+         canonicaliseURL = NormalisationStandard.canonicaliseURL(url);
+         assertEquals(url.toLowerCase(),canonicaliseURL);                  
     }
 
     

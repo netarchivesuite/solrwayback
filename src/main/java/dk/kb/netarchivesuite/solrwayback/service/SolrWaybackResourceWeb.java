@@ -399,10 +399,10 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("/util/normalizeurl")
     @Produces(MediaType.APPLICATION_JSON)
-    public UrlWrapper waybackgraph(@QueryParam("url") String url) throws SolrWaybackServiceException {
+    public UrlWrapper normalizeUrl(@QueryParam("url") String url) throws SolrWaybackServiceException {
       try{
        
-        //also rewrite to puny code
+        //also rewrite to puny code. This method will keep port number if that is included.
         String url_norm =  UrlUtils.punyCodeAndNormaliseUrl(url);
         log.info("Normalize url:"+url +" -> " +  url_norm);        
         UrlWrapper wrapper = new UrlWrapper();
