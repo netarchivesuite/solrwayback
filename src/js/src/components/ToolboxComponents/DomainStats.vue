@@ -17,9 +17,8 @@
           <button :disabled="loading" class="domainStatsButton" @click.prevent="loadGraphData(domain)">
             Generate
           </button>
-        </div>
-        <!-- Toggle Button -->
-        <div class="toggleViewContainer">
+        
+          <!-- Toggle Button -->
           <button class="toggleViewButton" @click="toggleChartView">
             {{ showCombinedChart ? 'Show Individual Charts' : 'Show Combined Chart' }}
           </button>

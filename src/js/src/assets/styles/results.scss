@@ -1194,6 +1194,11 @@ padding:.5rem .5rem .5rem 0;
   padding:0 10px;
 }
 
+.generateButtonContainer {
+  display: flex;
+  gap: 10px;
+}
+
 .timePeriodRefinerLabel {
   margin-right: 5px;
   cursor: text !important;
