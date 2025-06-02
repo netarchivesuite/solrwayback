@@ -7,11 +7,12 @@
     "**/.factorypath": true
   },
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
   "eslint.validate": ["javascript", "vue"],
   "eslint.workingDirectories": [
     "./src/js"
-  ]
+  ],
+  "java.compile.nullAnalysis.mode": "disabled"
  
 }
