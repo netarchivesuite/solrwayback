@@ -8,13 +8,13 @@
         <input v-model="domain"
                placeholder="Enter domain, like 'kb.dk'"
                :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
-               @keyup.enter="showCurrentChartType(domain)">
+               @keyup.enter="loadGraphData(domain)">
         <time-period-refiner ref="refiner"
                              class="refiner"
                              @startdate="(sdate) => startDate = sdate"
                              @enddate="(edate) => endDate = edate" />
         <div class="generateButtonContainer contain">
-          <button :disabled="loading" class="domainStatsButton" @click.prevent="showCurrentChartType(domain)">
+          <button :disabled="loading" class="domainStatsButton" @click.prevent="loadGraphData(domain)">
             Generate
           </button>
         
@@ -185,9 +185,6 @@ export default {
     toggleChartView() {
       this.showCombinedChart = !this.showCombinedChart
       this.renderCurrentlyActiveChart()
-    },
-    showCurrentChartType(domain) {
-      this.loadGraphData(domain)
     },
     renderCurrentlyActiveChart() {
       if (this.showCombinedChart) {
