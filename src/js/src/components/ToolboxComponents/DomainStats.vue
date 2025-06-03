@@ -237,14 +237,14 @@ export default {
                                         this.graphData.numberOfPages, this.graphData.ingoingLinks,
                                         this.graphData.textSize)
     },
-    
+
     /**
      * Renders a combined chart displaying domain statistics.
      * This method is responsible for generating and displaying the chart
      * that visualizes the aggregated data for the selected domain.
      */
     renderCombinedChart() {
-      domainScript.drawChart(this.graphData.chartLabels, this.graphData.sizeInKb,
+      domainScript.drawCombinedChart(this.graphData.chartLabels, this.graphData.sizeInKb,
                              this.graphData.numberOfPages, this.graphData.ingoingLinks,
                              this.graphData.textSize)
     }
