@@ -132,11 +132,12 @@ export default {
         numberOfPages:[],
         textSize:[]
       }
-      this.rawData = null
+      // this.rawData = null
       this.loading = true
       this.timeScale = this.$refs.refiner.timeScaleInput
       requestService.getDomainStatistics(this.prepareDomainForGetRequest(),this.startDate, this.endDate, this.timeScale)
-        .then(result => (this.sanitizeResponseDataAndDrawChart(result), this.rawData = result))
+        .then(result => this.sanitizeResponseData(result))
+        .then(this.loading = false)
         .catch(error => {
               this.loading = false
               this.setNotification({
@@ -147,16 +148,6 @@ export default {
                 timeout: false
               })
             })
-            
-      if (this.showCombinedChart) {
-        domainScript.drawChart(this.graphData.chartLabels, this.graphData.sizeInKb,
-                               this.graphData.numberOfPages, this.graphData.ingoingLinks,
-                               this.graphData.textSize)
-      } else {
-        domainScript.drawIndividualCharts(this.graphData.chartLabels, this.graphData.sizeInKb,
-                                          this.graphData.numberOfPages, this.graphData.ingoingLinks,
-                                          this.graphData.textSize)
-      }
     },
     prepareDomainForGetRequest() {
       let preparedDomain = this.domain
@@ -167,14 +158,14 @@ export default {
       }
       return preparedDomain
     },
-    sanitizeResponseDataAndDrawChart(data) {
+    sanitizeResponseData(data) {
+      this.rawData = data
       for(let i = 0; i < data.length; i++){
         this.graphData.chartLabels.push(this.$_displayDate(data[i].date, this.timeScale))
         this.graphData.sizeInKb.push(data[i].sizeInKb)
         this.graphData.ingoingLinks.push(data[i].ingoingLinks)
         this.graphData.numberOfPages.push(data[i].totalPages)
         
-
         // Handle missing contentTextLength
         if (data[i].contentTextLength !== undefined && data[i].contentTextLength !== null) {
           this.graphData.textSize.push(data[i].contentTextLength)
@@ -184,33 +175,27 @@ export default {
       }
 
       console.log(this.graphData.textSize)
-
-      if (this.showCombinedChart) {
-        domainScript.drawChart(this.graphData.chartLabels, this.graphData.sizeInKb,
-                               this.graphData.numberOfPages, this.graphData.ingoingLinks,
-                               this.graphData.textSize)
-      } else {
-        domainScript.drawIndividualCharts(this.graphData.chartLabels, this.graphData.sizeInKb,
-                                          this.graphData.numberOfPages, this.graphData.ingoingLinks,
-                                          this.graphData.textSize)
-      }
-      
-      this.loading = false
     },
     toggleChartView() {
       this.showCombinedChart = !this.showCombinedChart
-      if (!this.showCombinedChart) {
-        this.renderIndividualCharts()
-      } else {
-        this.renderCombinedChart()
-      }
+      this.renderCurrentlyActiveChart()
     },
     showCurrentChartType(domain) {
+      console.log('rawData1', this.rawData)
+
       this.loadGraphData(domain)
-      if (!this.showCombinedChart) {
-        this.renderIndividualCharts()
-      } else {
+      console.log('rawData2', this.rawData)
+
+      this.renderCurrentlyActiveChart()
+
+      console.log('rawData3', this.rawData)
+      this.loading = false
+    },
+    renderCurrentlyActiveChart() {
+      if (this.showCombinedChart) {
         this.renderCombinedChart()
+      } else {
+        this.renderIndividualCharts()
       }
     },
     renderIndividualCharts() {
