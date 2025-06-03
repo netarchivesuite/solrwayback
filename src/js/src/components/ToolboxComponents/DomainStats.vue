@@ -124,6 +124,14 @@ export default {
     ...mapActions('Notifier', {
       setNotification: 'setNotification'
     }),
+
+    /**
+     * Loads and processes graph data for the specified domain.
+     * This method fetches relevant statistics or metrics associated with the given domain
+     * and prepares the data for visualization in the graph component.
+     *
+     * @param {string} domain - The domain for which to load graph data.
+     */
     loadGraphData(domain) {
       this.graphData = {
         chartLabels:[],
@@ -143,7 +151,6 @@ export default {
              this.renderCurrentlyActiveChart()
           })
         })
-        
         .catch(error => {
               this.loading = false
               this.setNotification({
@@ -155,6 +162,14 @@ export default {
               })
             })
     },
+
+    /**
+     * Prepares the domain string for use in a GET request.
+     * This method encodes or formats the domain as needed
+     * to ensure it is safe and valid for inclusion in a URL.
+     *
+     * @returns {string} The processed domain string ready for a GET request.
+     */
     prepareDomainForGetRequest() {
       let preparedDomain = this.domain
       preparedDomain = preparedDomain.replace(/http.*:\/\//i,'').trim() //Get domain from URL, using replace and regex to trim domain
@@ -164,6 +179,14 @@ export default {
       }
       return preparedDomain
     },
+
+    /**
+     * Sanitizes the response data received from the server and saves it in the graphData object of this class.
+     * This method processes the input `data` to remove or transform any
+     * unwanted or unsafe content before it is used within the component.
+     *
+     * @param {Object} data - The raw response data to be sanitized.
+     */
     sanitizeResponseData(data) {
       this.rawData = data
       for(let i = 0; i < data.length; i++){
@@ -179,13 +202,23 @@ export default {
           this.graphData.textSize.push(0) // Fallback value
         }
       }
-
-      console.log(this.graphData.textSize)
     },
+
+    /**
+     * Toggles between the two different chart views in the domain statistics component.
+     * It switches the display mode (e.g., between a combined chart and multiple charts).
+     * Called when the user interacts with the chart view toggle button.
+     */
     toggleChartView() {
       this.showCombinedChart = !this.showCombinedChart
       this.renderCurrentlyActiveChart()
     },
+
+    /**
+     * Renders the chart that is currently active based on the user's selection or state.
+     * Determines which chart component or visualization to display and returns the corresponding chart.
+     * This method is typically used within the component's render logic to dynamically update the displayed chart.
+     */
     renderCurrentlyActiveChart() {
       if (this.showCombinedChart) {
         this.renderCombinedChart()
@@ -193,11 +226,23 @@ export default {
         this.renderIndividualCharts()
       }
     },
+
+    /**
+     * Renders individual charts for domain statistics.
+     * This method is responsible for generating and displaying separate chart components
+     * based on the domain statistics data.
+     */
     renderIndividualCharts() {
       domainScript.drawIndividualCharts(this.graphData.chartLabels, this.graphData.sizeInKb,
                                         this.graphData.numberOfPages, this.graphData.ingoingLinks,
                                         this.graphData.textSize)
     },
+    
+    /**
+     * Renders a combined chart displaying domain statistics.
+     * This method is responsible for generating and displaying the chart
+     * that visualizes the aggregated data for the selected domain.
+     */
     renderCombinedChart() {
       domainScript.drawChart(this.graphData.chartLabels, this.graphData.sizeInKb,
                              this.graphData.numberOfPages, this.graphData.ingoingLinks,
