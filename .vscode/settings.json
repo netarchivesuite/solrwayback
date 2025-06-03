@@ -12,6 +12,5 @@
   "eslint.validate": ["javascript", "vue"],
   "eslint.workingDirectories": [
     "./src/js"
-  ]
- 
+  ] 
 }

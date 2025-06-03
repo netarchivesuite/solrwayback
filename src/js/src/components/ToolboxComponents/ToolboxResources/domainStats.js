@@ -1,7 +1,43 @@
 import Chart from 'chart.js'
 
+Chart.plugins.register({
+  /**
+   * Chart.js plugin hook that fills the chart background with white before drawing.
+   *
+   * This function is registered as a Chart.js plugin and is called before each chart is drawn.
+   * It ensures that the chart's background is filled with a solid white color, which is useful
+   * for exporting charts as images.
+   *
+   * @param {Object} chart - The Chart.js chart instance being drawn.
+   */
+  beforeDraw: function(chart) {
+    const ctx = chart.chart.ctx
+    ctx.save()
+    ctx.globalCompositeOperation = 'destination-over'
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, chart.width, chart.height)
+    ctx.restore()
+  }
+})
+
+const colorOne = '#fd7f6f'
+const colorTwo = '#7eb0d5'
+const colorThree = '#b2e061'
+const colorFour = '#bd7ebe'
+
 export default {
-  drawChart: function(chartLabels, sizeInKb, numberOfPages, ingoingLinks) {
+
+  /**
+   * Draws a multi-axis line chart displaying all available domain statistics over time.
+   *
+   * @function
+   * @param {Array<string>} chartLabels - Labels for the x-axis (typically dates or time periods).
+   * @param {Array<number>} sizeInKb - Data points for size in kilobytes.
+   * @param {Array<number>} numberOfPages - Data points for number of pages.
+   * @param {Array<number>} ingoingLinks - Data points for ingoing links.
+   * @param {Array<number>} textSize - Data points for average page size in characters.
+   */
+  drawCombinedChart: function(chartLabels, sizeInKb, numberOfPages, ingoingLinks, textSize) {
     var domainGrowthChart = new Chart(document.getElementById('line-chart'), {
         type: 'line',
         data: {
@@ -11,14 +47,14 @@ export default {
                     data: sizeInKb,
                     label: 'Size in kilobytes',
                     yAxisID: 'kilobytes',
-                    borderColor: '#0066cc',
+                    borderColor: colorOne,
                     fill: false,
                 },
                 {
                     data: numberOfPages,
                     label: 'Pages',
                     yAxisID: 'totalpages',
-                    borderColor: '#cc0000',
+                    borderColor: colorTwo,
                     fill: false
                 },
                 {
@@ -26,7 +62,15 @@ export default {
                     label: 'Ingoing links',
                     fontColor: 'black',
                     yAxisID: 'links',
-                    borderColor: '#009900',
+                    borderColor: colorThree,
+                    fill: false
+                },
+                {
+                    data: textSize,
+                    label: 'Average page size (In characters)',
+                    fontColor: 'black',
+                    yAxisID: 'text',
+                    borderColor: colorFour,
                     fill: false
                 }
             ]
@@ -47,7 +91,7 @@ export default {
                         scaleLabel: {
                             display: true,
                             labelString: 'Size in kilobytes',
-                            fontColor: '#0066cc',
+                            fontColor: colorOne,
                         }
                     },
                     {
@@ -60,7 +104,7 @@ export default {
                         scaleLabel: {
                             display: true,
                             labelString: 'Pages',
-                            fontColor: '#cc0000',
+                            fontColor: colorTwo,
                         },
                         gridLines : {
                             display : true,
@@ -77,7 +121,24 @@ export default {
                         scaleLabel: {
                             display: true,
                             labelString: 'Ingoing links',
-                            fontColor: '#009900',
+                            fontColor: colorThree,
+                        },
+                        gridLines : {
+                            display : true,
+                            borderDash: [2,4]
+                        }
+                    },
+                    {
+                        id: 'text',
+                        ticks: {
+                            beginAtZero: true,
+                            //maxTicksLimit: 5,
+                            suggestedMax: 10
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Average page size (In characters)',
+                            fontColor: colorFour,
                         },
                         gridLines : {
                             display : true,
@@ -100,6 +161,80 @@ export default {
                 }
             }
         }
-      })
+      }) 
+  },
+
+  /**
+   * Draws four individual line charts for each domain metric: size in KB, number of pages, ingoing links, and text size.
+   *
+   * @function
+   * @param {Array<string>} chartLabels - Labels for the x-axis (typically dates or time periods).
+   * @param {Array<number>} sizeInKb - Data points for size in kilobytes.
+   * @param {Array<number>} numberOfPages - Data points for number of pages.
+   * @param {Array<number>} ingoingLinks - Data points for ingoing links.
+   * @param {Array<number>} textSize - Data points for average page size in characters.
+   * @returns {void}
+   */
+  drawIndividualCharts: function (chartLabels, sizeInKb, numberOfPages, ingoingLinks, textSize) {
+    // Size in KB Chart
+    this.drawSingleLineChart('size-chart', chartLabels, sizeInKb, 'Size in Kilobytes', colorOne, 'Size (KB)')
+
+    // Number of Pages Chart
+    this.drawSingleLineChart('pages-chart', chartLabels, numberOfPages, 'Number of Pages', colorTwo, 'Pages')
+    
+    // Ingoing Links Chart
+    this.drawSingleLineChart('links-chart', chartLabels, ingoingLinks, 'Ingoing Links', colorThree, 'Links')
+    
+    // Text Size Chart
+    this.drawSingleLineChart('textsize-chart', chartLabels, textSize, 'Average Page Size (Characters)', colorFour, 'Characters')
+  },
+
+  /**
+ * Draws a single line chart on the specified canvas element.
+ *
+ * This function creates a new Chart.js line chart using the provided data and configuration.
+ * It is used to visualize a single metric (such as size, pages, links, or text size) over time.
+ *
+ * @param {string} elementId - The ID of the canvas element where the chart will be rendered.
+ * @param {Array<string>} chartLabels - The labels for the x-axis (typically dates or time periods).
+ * @param {Array<number>} dataPoints - The data points to plot on the chart.
+ * @param {string} label - The label for the dataset (displayed in the chart legend and title).
+ * @param {string} color - The color of the line in the chart (CSS color string).
+ * @param {string} yAxisLabel - The label for the y-axis.
+ */
+  drawSingleLineChart: function (elementId, chartLabels, dataPoints, label, color, yAxisLabel) {
+    new Chart(document.getElementById(elementId), {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: [
+          {
+            data: dataPoints,
+            label: label,
+            borderColor: color,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        title: {
+          display: true,
+          text: label,
+        },
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
+              scaleLabel: {
+                display: true,
+                labelString: yAxisLabel,
+              },
+            },
+          ],
+        },
+      },
+    })
   }
 }
