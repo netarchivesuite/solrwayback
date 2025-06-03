@@ -1,5 +1,16 @@
 import Chart from 'chart.js'
 
+Chart.plugins.register({
+  beforeDraw: function(chart) {
+    const ctx = chart.chart.ctx
+    ctx.save()
+    ctx.globalCompositeOperation = 'destination-over'
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, chart.width, chart.height)
+    ctx.restore()
+  }
+})
+
 export default {
 
   drawChart: function(chartLabels, sizeInKb, numberOfPages, ingoingLinks, textSize) {
