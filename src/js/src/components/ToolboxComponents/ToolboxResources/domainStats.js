@@ -1,6 +1,15 @@
 import Chart from 'chart.js'
 
 Chart.plugins.register({
+  /**
+   * Chart.js plugin hook that fills the chart background with white before drawing.
+   *
+   * This function is registered as a Chart.js plugin and is called before each chart is drawn.
+   * It ensures that the chart's background is filled with a solid white color, which is useful
+   * for exporting charts as images.
+   *
+   * @param {Object} chart - The Chart.js chart instance being drawn.
+   */
   beforeDraw: function(chart) {
     const ctx = chart.chart.ctx
     ctx.save()
