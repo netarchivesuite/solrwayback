@@ -136,8 +136,14 @@ export default {
       this.loading = true
       this.timeScale = this.$refs.refiner.timeScaleInput
       requestService.getDomainStatistics(this.prepareDomainForGetRequest(),this.startDate, this.endDate, this.timeScale)
-        .then(result => this.sanitizeResponseData(result))
-        .then(this.loading = false)
+        .then(result => {
+          this.sanitizeResponseData(result)
+          this.loading = false // <-- Move this line up
+          this.$nextTick(() => { // <-- Ensure DOM is updated
+             this.renderCurrentlyActiveChart()
+          })
+        })
+        
         .catch(error => {
               this.loading = false
               this.setNotification({
@@ -181,15 +187,7 @@ export default {
       this.renderCurrentlyActiveChart()
     },
     showCurrentChartType(domain) {
-      console.log('rawData1', this.rawData)
-
       this.loadGraphData(domain)
-      console.log('rawData2', this.rawData)
-
-      this.renderCurrentlyActiveChart()
-
-      console.log('rawData3', this.rawData)
-      this.loading = false
     },
     renderCurrentlyActiveChart() {
       if (this.showCombinedChart) {
