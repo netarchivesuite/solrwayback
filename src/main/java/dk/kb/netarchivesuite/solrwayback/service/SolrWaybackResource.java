@@ -185,7 +185,7 @@ public class SolrWaybackResource {
       if (image== null){
         // java does not support ico format. Just serve it RAW... 
         // Also SVG scaling bugs too much in java
-        if (arcEntry.getUrl().toLowerCase().indexOf("/favicon.ico") >0 || arcEntry.getContentType().indexOf("image/svg+xml") >=0){ 
+        if (arcEntry.getUrl().toLowerCase().indexOf("/favicon.ico") >0 || arcEntry.getContentType().contains("image/svg+xml")){
            log.info("image is ico-image or SVG serving it raw");
            return downloadRaw(source_file_path, offset);          
         }
