@@ -82,11 +82,28 @@ import java.util.stream.Stream;
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
 
+    /**
+     * Search the Solr index for the given text with the filter query applied.
+     * @param searchText the text to search for.
+     * @param filterQuery the filter query to apply, e.g. "content_type_norm:html".
+     * @return a SearchResult DTO containing the results of the search.
+     */
     public static SearchResult search(String searchText, String filterQuery) throws Exception {
         SearchResult result = NetarchiveSolrClient.getInstance().search(searchText, filterQuery);
         return result;
     }
 
+    /**
+     * Search the Solr index for the given query with the filter queries applied and posibility to define
+     * other parameters such as start, sort and grouping.
+     * @param query the query to search for.
+     * @param filterQueries the filter queries to apply, e.g. "content_type_norm:html".
+     * @param grouping if true, grouping will be applied to the search.
+     * @param revisits if true, revisits will be included in the search.
+     * @param start the starting point for the search results, used for pagination. Cannot be greater than 1000.
+     * @param sort the sort order for the search results.
+     * @return a JSON formatted solr response.
+     */
     public static String solrSearchNoFacets(String query, List<String> filterQueries, boolean grouping, boolean revisits, int start, String sort) throws Exception {
         if (start >= 1001) {
             throw new InvalidArgumentServiceException("Pagination (start) must be less than 1001");
@@ -94,6 +111,13 @@ public class Facade {
         return proxySolrNoFacets(query, filterQueries, grouping, revisits, start, sort);
     }
 
+    /**
+     * Search the Solr index for the given query and only return facets.
+     * @param query the query to search for.
+     * @param filterQueries the filter queries to apply, e.g. "content_type_norm:html".
+     * @param revisits if true, revisits will be included in the search.
+     * @return a JSON formatted solr response containing only facets.
+     */
     public static String solrSearchFacetsOnly(String query, List<String> filterQueries, boolean revisits) throws Exception {
         return proxySolrOnlyFacets(query, filterQueries, revisits);
     }
@@ -122,22 +146,39 @@ public class Facade {
         return doc;
     }
 
+    /**
+     * Get the "AboutText" for the SolrWayback service.
+     * This message is what is shown in the bottom "About" section of the web interface.
+     * @return the "AboutText" as a String.
+     * @throws Exception if there is an error reading the file.
+     */
     public static String getAboutText() throws Exception {
         String aboutFile = PropertiesLoaderWeb.ABOUT_TEXT_FILE;
-        String aboutText = FileUtil.fetchUTF8(aboutFile);
-        return aboutText;
+        return FileUtil.fetchUTF8(aboutFile);
     }
 
+    /**
+     * Get the "SearchHelpText" for the SolrWayback service.
+     * This message is what is shown in the "Search Help" section of the web interface represented by a magnifying glass
+     * besides the query input field.
+     * @return the "SearchHelpText" as a String.
+     * @throws Exception if there is an error reading the file.
+     */
     public static String getSearchHelpText() throws Exception {
         String searchHelpFile = PropertiesLoaderWeb.SEARCH_HELP_TEXT_FILE;
-        String searchHelpText = FileUtil.fetchUTF8(searchHelpFile);
-        return searchHelpText;
+        return FileUtil.fetchUTF8(searchHelpFile);
     }
 
+    /**
+     * Get the "CollectionText" for the SolrWayback service.
+     * This message is what is shown in the "About this collection" section of the web interface where users can get
+     * information on how the collection was created, what it contains, etc.
+     * @return the "CollectionText" as a String.
+     * @throws Exception if there is an error reading the file.
+     */
     public static String getCollectionText() throws Exception {
         String collectionFile = PropertiesLoaderWeb.COLLECTION_TEXT_FILE;
-        String collectionText = FileUtil.fetchUTF8(collectionFile);
-        return collectionText;
+        return FileUtil.fetchUTF8(collectionFile);
     }
 
     public static String generateDomainResultGraph(String q, List<String> fq, String startdate, String enddate, String scale) throws Exception {
@@ -208,6 +249,14 @@ public class Facade {
         return extractImages;
     }
 
+    /**
+     * Get statistics for a specific domain.
+     * @param domain the domain to get statistics for, e.g. "example.com".
+     * @param start the start date for the statistics, in ISO format (YYYY-MM-DD).
+     * @param end the end date for the statistics, in ISO format (YYYY-MM-DD).
+     * @param scale the time scale for the statistics, e.g. "day", "month", "year".
+     * @return a List of DomainStatistics objects containing the statistics for the domain.
+     */
     public static List<DomainStatistics> statisticsDomain(String domain, LocalDate start, LocalDate end, String scale) throws Exception {
         log.info("Statistics for domain: " + domain + ", startdate:" + start.toString() + ", enddate:" + end.toString() + ", timescale:" + scale);
 
@@ -355,6 +404,11 @@ public class Facade {
 
     }
 
+    /**
+     * Get all harvest times for a specific URL.
+     * @param url the URL to get harvest times for, e.g. "http://example.com".
+     * @return a HarvestDates object containing the harvest times for the provided URL.
+     */
     public static HarvestDates getHarvestTimesForUrl(String url) throws Exception {
         log.info("getting harvesttimes for url:" + url);
         HarvestDates datesVO = new HarvestDates();
@@ -365,8 +419,8 @@ public class Facade {
 
         for (Date d : dates) {
             crawltimes.add(d.getTime());
-
         }
+
         datesVO.setDates(crawltimes);
         Collections.sort(crawltimes);
 
@@ -405,6 +459,7 @@ public class Facade {
 
         return facetCounts;
     }
+
     /*
      * Can be deleted when frontend has switched
      */
@@ -417,6 +472,12 @@ public class Facade {
         return bufferedImage;
     }
 
+    /**
+     * Generate an image of a word cloud for the given query and filter query.
+     * @param query the query to search for.
+     * @param filterQuery the filter query to apply, e.g. "content_type_norm:html".
+     * @return a BufferedImage containing the word cloud.
+     */
     public static BufferedImage wordCloudForQuery(String query, String filterQuery) throws Exception {
         log.info("getting wordcloud for query:" + query +" filter query:"+filterQuery);
         String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,filterQuery); // Only contains the required fields for this method
@@ -439,11 +500,17 @@ public class Facade {
         return arcEntrys2Images(arcs);
     }
 
-    /*
-     * Find images on a HTML page. 1) Find the doc in solr from source_file_path and
-     * offset. (fast) 2) Get image links field 3) For each images try to find that
-     * url_norm in solr with harvest time closest to the harvesttime for the HTML
-     * page.
+    /**
+     * Find images on an HTML page through the following steps:
+     * <ol>
+     *     <li>Find the doc in solr from source_file_path and offset. (fast) </li>
+     *     <li>Get image links field.</li>
+     *     <li>For each images try to find that url_norm in solr with harvest time closest to the harvest time for the HTML page.</li>
+     * </ol>
+     *
+     * @param source_file_path the path to the source file in the WARC collection, e.g. "crawl1/20100101000000/warc/part-00001.warc.gz".
+     * @param offset the offset in the WARC file where the HTML page starts, e.g. 123456.
+     * @return an ArrayList of ArcEntryDescriptor objects representing the location of the images found on the HTML page in the WARC collection.
      */
     public static ArrayList<ArcEntryDescriptor> getImagesForHtmlPageNewThreaded(String source_file_path, long offset) throws Exception {
         IndexDoc doc = NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset);
@@ -489,11 +556,18 @@ public class Facade {
         return imagesFromHtmlPage;
     }
 */
-    public static String getEncoding(String source_file_path, String offset) throws Exception {
 
-        SearchResult search = NetarchiveSolrClient.getInstance().search("source_file_path:\"" + source_file_path + "\" AND source_file_offset:" + offset, 1);
+    /**
+     * Get the content encoding for a specific resource in the input WARC file.
+     * @param sourceFilePath the path to the source WARC file in the WARC collection, e.g. "crawl1/20100101000000/warc/part-00001.warc.gz".
+     * @param offset the offset in the WARC file where the resource starts, e.g. 123456.
+     * @return the content encoding as a String, e.g. "UTF-8". If not found, returns "UTF-8" as default.
+     */
+    public static String getEncoding(String sourceFilePath, String offset) throws Exception {
+
+        SearchResult search = NetarchiveSolrClient.getInstance().search("sourceFilePath:\"" + sourceFilePath + "\" AND source_file_offset:" + offset, 1);
         if (search.getNumberOfResults() == 0) {
-            log.warn("No content encoding found for:" + source_file_path + " and offset:" + offset);
+            log.warn("No content encoding found for:" + sourceFilePath + " and offset:" + offset);
             return "UTF-8";
         } else {
             return search.getResults().get(0).getContentEncoding(); // Can still be null.
@@ -501,9 +575,13 @@ public class Facade {
     }
 
     /**
-    * Important to set the load binary flag to false if not used    
-    */    
-    public static ArcEntry getArcEntry(String source_file_path, long offset) throws Exception {
+     * Get the ArcEntry for a specific resource in the WARC file at sourceFilePath.
+     * It is important to set the load binary flag to false if  it is not used.
+     * @param sourceFilePath the path to the source WARC file in the WARC collection, e.g. "crawl1/20100101000000/warc/part-00001.warc.gz".
+     * @param offset the offset in the WARC file where the resource starts, e.g. 123456.
+     * @return the ArcEntry object containing the resource.
+     */
+    public static ArcEntry getArcEntry(String sourceFilePath, long offset) throws Exception {
 
        //Validate WARC+offset has been indexed and in the collection.
        //This will prevent url hacking and accessing other WARC-files if you know location on filesystem.
@@ -512,10 +590,10 @@ public class Facade {
        
        boolean validateWARCFileInCollection=PropertiesLoader.WARC_FILES_VERIFY_COLLECTION;        
         if (validateWARCFileInCollection) { 
-            NetarchiveSolrClient.getInstance().getArcEntry(source_file_path, offset); //Call Solr. Correct exception already thrown if not found
+            NetarchiveSolrClient.getInstance().getArcEntry(sourceFilePath, offset); //Call Solr. Correct exception already thrown if not found
         }        
         
-        return ArcParserFileResolver.getArcEntry(source_file_path, offset);
+        return ArcParserFileResolver.getArcEntry(sourceFilePath, offset);
     }
 
     /**
@@ -536,7 +614,13 @@ public class Facade {
         return new StreamingSolrWarcExportBufferedInputStream(imageDocs, Integer.MAX_VALUE, gzip);
     }
 
-
+    /**
+     * Export the search result for the given query and filterQuery as WARC entries.
+     * This method makes use of a streaming export, which means that the results are processed
+     * as they are fetched from Solr, allowing for large result sets to be handled without
+     * loading everything into memory at once.
+     *
+     */
     public static InputStream exportWarcStreaming(boolean expandResources, boolean ensureUnique, boolean gzip, String query, String... filterqueries)  throws Exception{
 
         long max=0;
@@ -978,7 +1062,10 @@ public class Facade {
         }
     }
 
-    // For fronted
+    /**
+     * Get the properties for the frontend web application.
+     * @return a HashMap with the properties used by the frontend.
+     */
     public static HashMap<String, String> getPropertiesWeb() throws Exception {
         HashMap<String, String> props = new HashMap<String, String>();
         props.put(PropertiesLoaderWeb.WEBAPP_BASEURL_PROPERTY,PropertiesLoaderWeb.WEBAPP_PREFIX); //TODO change value name when frontend also switch
@@ -1015,9 +1102,7 @@ public class Facade {
                props.put("PLAYBACK_"+mapping,PropertiesLoaderWeb.ALTERNATIVE_PLAYBACK_COLLECTION_MAPPING.get(mapping));                        
             }            
         }
-        
-        
-        
+
         return props;
     }
 
