@@ -79,6 +79,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static dk.kb.netarchivesuite.solrwayback.util.InputStreamUtils.getStringFromInputStream;
+
 public class Facade {
     private static final Logger log = LoggerFactory.getLogger(Facade.class);
 
@@ -1147,35 +1149,6 @@ public class Facade {
      * }
      */
 
-    // convert InputStream to String
-    private static String getStringFromInputStream(InputStream is) {
-
-        BufferedReader br = null;
-        StringBuilder sb = new StringBuilder();
-
-        String line;
-        try {
-
-            br = new BufferedReader(new InputStreamReader(is));
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return sb.toString();
-
-    }
 
     public static ArrayList<ImageUrl> indexDoc2Images(ArrayList<IndexDoc> docs) {
         ArrayList<ImageUrl> imageUrls = new ArrayList<ImageUrl>();
