@@ -1,7 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.normalise;
 
 import java.net.URL;
-import java.nio.charset.Charset;
 
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.logging.Log;

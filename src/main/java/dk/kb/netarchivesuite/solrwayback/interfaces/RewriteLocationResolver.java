@@ -1,13 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.interfaces;
 
-import dk.kb.netarchivesuite.solrwayback.util.SkippingHTTPInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

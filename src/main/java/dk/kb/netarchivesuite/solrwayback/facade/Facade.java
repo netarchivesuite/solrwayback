@@ -43,7 +43,6 @@ import dk.kb.netarchivesuite.solrwayback.solr.SolrStats;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamDecorators;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingExportClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamingLinkGraphCSVExportClient;
-import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamFactory;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 import dk.kb.netarchivesuite.solrwayback.util.SolrUtils;

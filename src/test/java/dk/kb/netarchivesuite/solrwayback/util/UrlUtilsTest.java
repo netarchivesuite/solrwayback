@@ -2,16 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import static org.junit.Assert.*;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class UrlUtilsTest {

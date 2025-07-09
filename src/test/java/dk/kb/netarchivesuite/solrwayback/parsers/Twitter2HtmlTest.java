@@ -1,13 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
-import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
-import org.junit.Test;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
-import static org.junit.Assert.assertEquals;
 
 // TODO REWRITE ME
 public class Twitter2HtmlTest extends UnitTestUtils{
