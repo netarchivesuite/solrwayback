@@ -1108,14 +1108,32 @@ public class Facade {
         return props;
     }
 
+    /**
+     * Proxy a Solr query and return the JSON response without facets.
+     * @param query the Solr query to execute.
+     * @param fq filter queries to apply to the Solr query.
+     * @param grouping if true, grouping will be applied to the Solr query.
+     * @param revisits if true, revisits will be included in the Solr query.
+     * @param start the starting point for the results (pagination).
+     * @param sort the sort order for the results.
+     * @return the JSON response from the Solr query as a String.
+     */
     public static String proxySolrNoFacets(String query, List<String> fq, boolean grouping, boolean revisits, Integer start, String sort) throws Exception {
         return NetarchiveSolrClient.getInstance().searchJsonResponseNoFacets(query, fq, grouping, revisits, start, sort);
     }
 
+    /**
+     * Proxy a Solr query and return the JSON response containing facets only.
+     * @param query the Solr query to execute.
+     * @param fq filter queries to apply to the Solr query.
+     * @param revisits if true, revisits will be included in the Solr query.
+     * @return the JSON response from the Solr query containing only facets as a String.
+     */
     public static String proxySolrOnlyFacets(String query, List<String> fq, boolean revisits) throws Exception {
         return NetarchiveSolrClient.getInstance().searchJsonResponseOnlyFacets(query, fq, revisits);
     }
 
+    //TODO: Describe what this method does.
     public static String proxySolrOnlyFacetsLoadMore( String query, List<String> fq, String facetField, boolean revisits) throws Exception {
         return NetarchiveSolrClient.getInstance().searchJsonResponseOnlyFacetsLoadMore(query, fq, facetField, revisits);
     }
