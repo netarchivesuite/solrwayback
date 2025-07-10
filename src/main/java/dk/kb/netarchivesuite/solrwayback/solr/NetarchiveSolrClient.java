@@ -1568,20 +1568,27 @@ public class NetarchiveSolrClient {
 
         String searchString = "domain:\"" + domain + "\"";
 
-        SolrQuery solrQuery = new SolrQuery();
+        QueryResponse statsResponse = getStatsResponse(startDate, endDate, searchString);
 
-        solrQuery.setQuery(searchString);
-        solrQuery.set("facet", "false");
-        solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
-        solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + "T23:59:59Z]");
-        solrQuery.setRows(0);
-        solrQuery.add("fl", "id");
-        solrQuery.add("stats", "true");
-        solrQuery.add("stats.field", "{!count=true cardinality=true}url_norm"); // Important, use cardinality and not unique.
-        solrQuery.add("stats.field", "{!sum=true}content_length");
-        QueryResponse rsp = solrServer.query(solrQuery);
+        Map<String, FieldStatsInfo> statsMap = statsResponse.getFieldStatsInfo();
+        addSolrStatsToDomainStatisticsObject(statsMap, stats);
 
-        Map<String, FieldStatsInfo> statsMap = rsp.getFieldStatsInfo();
+        QueryResponse linksStatsResponse = getLinksStatsResponse(domain, startDate, endDate);
+        Map<String, FieldStatsInfo> stats2 = linksStatsResponse.getFieldStatsInfo();
+
+        FieldStatsInfo statsLinks = stats2.get("domain");
+        long links_cardinality = statsLinks.getCardinality();
+        stats.setIngoingLinks((int) links_cardinality);
+
+        return stats;
+    }
+
+    /**
+     * Add statistics from a map of {@link QueryResponse#getFieldStatsInfo()} to a {@link DomainStatistics}-object.
+     * @param statsMap containing values for the following keys: url_norm, content_length, content_text_length
+     * @param stats DomainStatistics object, which in the end is sent to the frontend/querier
+     */
+    private static void addSolrStatsToDomainStatisticsObject(Map<String, FieldStatsInfo> statsMap, DomainStatistics stats) {
         FieldStatsInfo statsUrl_norm = statsMap.get("url_norm");
         long url_norm_cardinality = statsUrl_norm.getCardinality();
         long url_norm_total = statsUrl_norm.getCount();
@@ -1594,8 +1601,22 @@ public class NetarchiveSolrClient {
         stats.setSizeInKb((int) size);
         stats.setTotalPages((int) url_norm_cardinality);
 
+        FieldStatsInfo statsTextLength = statsMap.get("content_text_length");
+        Double textLengthMean = (Double) statsTextLength.getMean();
+        stats.setContentTextLength(textLengthMean.intValue());
+    }
+
+    /**
+     * Query the backing solr server for a response containing almost only the stats component as a result for links to a domain.
+     * @param domain to query for ingoing links.
+     * @param startDate used to limit crawl dates returned.
+     * @param endDate used to limit crawl dates returned.
+     * @return a {@link QueryResponse} object with SolrStats available for ingoing links
+     */
+    private static QueryResponse getLinksStatsResponse(String domain, String startDate, String endDate) throws SolrServerException, IOException {
         // Links
-        solrQuery = new SolrQuery();
+        String searchString = "domain:\"" + domain + "\"";
+        SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("links_domains:\"" + domain + "\" -" + searchString); // links to, but not from same domain
         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
         solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + "T23:59:59Z]");
@@ -1603,14 +1624,29 @@ public class NetarchiveSolrClient {
         solrQuery.add("stats", "true");
         solrQuery.add("fl", "id");
         solrQuery.add("stats.field", "{!cardinality=true}domain"); // Important, use cardinality and not unique.
+        return solrServer.query(solrQuery);
+    }
 
-        rsp = solrServer.query(solrQuery);
-        Map<String, FieldStatsInfo> stats2 = rsp.getFieldStatsInfo();
-
-        FieldStatsInfo statsLinks = stats2.get("domain");
-        long links_cardinality = statsLinks.getCardinality();
-        stats.setIngoingLinks((int) links_cardinality);
-        return stats;
+    /**
+     * Query the backing solr server for a response containing almost only the stats component as a result.
+     * @param startDate used to limit crawl dates returned.
+     * @param endDate used to limit crawl dates returned.
+     * @param searchString to query for
+     * @return a {@link QueryResponse} object with SolrStats available
+     */
+    private static QueryResponse getStatsResponse(String startDate, String endDate, String searchString) throws SolrServerException, IOException {
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(searchString);
+        solrQuery.set("facet", "false");
+        solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
+        solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + "T23:59:59Z]");
+        solrQuery.setRows(0);
+        solrQuery.add("fl", "id");
+        solrQuery.add("stats", "true");
+        solrQuery.add("stats.field", "{!count=true cardinality=true}url_norm"); // Important, use cardinality and not unique.
+        solrQuery.add("stats.field", "{!sum=true}content_length");
+        solrQuery.add("stats.field", "{!sum=true mean=true}content_text_length");
+        return solrServer.query(solrQuery);
     }
 
     /*

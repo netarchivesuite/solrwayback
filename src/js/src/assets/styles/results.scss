@@ -296,6 +296,7 @@ margin: 1em 0 0 0;
 .exportContent .downloadButton, 
 .wordcloudButton, 
 .domainContentContainer .domainStatsButton,
+.domainContentContainer .toggleViewButton,
 .linkGraphContainer .linkGraphButton,
 .searchVisualizationContainer .searchVisualizationButton {
   float:right;
@@ -1193,15 +1194,17 @@ padding:.5rem .5rem .5rem 0;
   padding:0 10px;
 }
 
+.generateButtonContainer {
+  display: flex;
+  gap: 10px;
+}
+
 .timePeriodRefinerLabel {
   margin-right: 5px;
   cursor: text !important;
 }
 
-.timePeriodRefinerPeriodContainer
-{
-  margin-bottom: 5px;
-}
+
 
 .exporterLink {
   display:flex;
@@ -1521,4 +1524,16 @@ flex-direction: row-reverse;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
+}
+
+#individualChartsContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns */
+  gap: 20px; /* Space between grid items */
+}
+
+.chartWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
