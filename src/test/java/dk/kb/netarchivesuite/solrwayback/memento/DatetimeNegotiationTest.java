@@ -2,7 +2,6 @@ package dk.kb.netarchivesuite.solrwayback.memento;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
-import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrTestClient;
 import dk.kb.netarchivesuite.solrwayback.solr.SolrStreamDirect;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;

@@ -1,7 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.playback;
 
-import java.nio.charset.Charset;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +27,7 @@ public class HtmlPlayback  extends PlaybackHandler{
      ParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc, lenient);
       String textReplaced=htmlReplaced.getReplaced();
 
-      boolean xhtml =doc.getContentType().toLowerCase().indexOf("application/xhtml") > -1;            
+      boolean xhtml = doc.getContentType().toLowerCase().contains("application/xhtml");
     //Inject tooolbar
      if (showToolbar ){ //If true or null. 
         textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(doc.getSource_file_path(),doc.getOffset(),htmlReplaced , xhtml);

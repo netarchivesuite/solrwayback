@@ -1,17 +1,11 @@
 package dk.kb.netarchivesuite.solrwayback.memento;
 
-import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
-import dk.kb.netarchivesuite.solrwayback.service.SolrWaybackResource;
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
-import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.MementoDoc;
-import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

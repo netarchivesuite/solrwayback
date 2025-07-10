@@ -18,7 +18,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Map that keeps track of the number of successfull and unsuccessfull {@link #get(Object)} calls.

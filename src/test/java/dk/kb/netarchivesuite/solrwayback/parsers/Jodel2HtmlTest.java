@@ -1,14 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
-import org.junit.Test;
-
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.junit.Assert.*;
 
 /*
  *  Licensed under the Apache License, Version 2.0 (the "License");

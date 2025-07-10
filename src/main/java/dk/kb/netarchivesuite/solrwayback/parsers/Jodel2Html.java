@@ -1,8 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 //Has to be rewritten to use the new JSON Util class.
 
 

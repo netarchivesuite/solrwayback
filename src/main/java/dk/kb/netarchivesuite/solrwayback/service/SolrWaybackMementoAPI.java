@@ -3,7 +3,6 @@ package dk.kb.netarchivesuite.solrwayback.service;
 import dk.kb.netarchivesuite.solrwayback.memento.DatetimeNegotiation;
 import dk.kb.netarchivesuite.solrwayback.memento.TimeMap;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
-import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.util.PathResolver;
 import org.apache.http.client.utils.DateUtils;
 import org.slf4j.Logger;

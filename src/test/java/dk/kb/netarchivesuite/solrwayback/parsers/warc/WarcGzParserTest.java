@@ -2,10 +2,8 @@ package dk.kb.netarchivesuite.solrwayback.parsers.warc;
 import static org.junit.Assert.*;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.File;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;

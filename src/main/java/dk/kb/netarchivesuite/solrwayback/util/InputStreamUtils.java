@@ -1,9 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PushbackInputStream;
+import java.io.*;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
@@ -93,5 +90,39 @@ public class InputStreamUtils {
             remain -= n;
         }
         return toSkip - remain;
+    }
+
+
+    /**
+     * Reads the content of the given InputStream and returns it as a String.
+     * The InputStream is expected to be UTF-8 encoded.
+     *
+     * @param is the InputStream to read from
+     * @return the content of the InputStream as a String
+     */
+    public static String getStringFromInputStream(InputStream is) {
+        BufferedReader br = null;
+        StringBuilder sb = new StringBuilder();
+
+        String line;
+        try {
+            br = new BufferedReader(new InputStreamReader(is));
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+
+        } catch (IOException e) {
+            log.error("IOException while reading from InputStream", e);
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    log.error("Error closing BufferedReader", e);
+                }
+            }
+        }
+
+        return sb.toString();
     }
 }

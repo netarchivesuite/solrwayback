@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
-import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.util.FileUtil;
 
 import org.slf4j.Logger;

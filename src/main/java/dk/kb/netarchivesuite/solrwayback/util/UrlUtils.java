@@ -1,7 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
-import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation.NormaliseType;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InvalidArgumentServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.SRequest;
 

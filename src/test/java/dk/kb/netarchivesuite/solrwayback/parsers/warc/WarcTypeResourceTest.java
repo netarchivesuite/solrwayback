@@ -1,16 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.parsers.warc;
 
-import static org.junit.Assert.assertEquals;
-
-import java.awt.image.BufferedImage;
-import java.io.File;
-
 import org.junit.Test;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
-import dk.kb.netarchivesuite.solrwayback.facade.Facade;
-import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
-import dk.kb.netarchivesuite.solrwayback.service.dto.ArcEntry;
 
 public class WarcTypeResourceTest  extends UnitTestUtils{
 

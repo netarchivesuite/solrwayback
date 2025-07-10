@@ -1,6 +1,5 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
-import junit.framework.TestCase;
 import org.apache.solr.common.SolrDocument;
 import org.junit.Test;
 
