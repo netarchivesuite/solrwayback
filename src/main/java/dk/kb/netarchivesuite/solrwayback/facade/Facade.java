@@ -566,7 +566,7 @@ public class Facade {
      */
     public static String getEncoding(String sourceFilePath, String offset) throws Exception {
 
-        SearchResult search = NetarchiveSolrClient.getInstance().search("sourceFilePath:\"" + sourceFilePath + "\" AND source_file_offset:" + offset, 1);
+        SearchResult search = NetarchiveSolrClient.getInstance().search("source_file_path:\"" + sourceFilePath + "\" AND source_file_offset:" + offset, 1);
         if (search.getNumberOfResults() == 0) {
             log.warn("No content encoding found for:" + sourceFilePath + " and offset:" + offset);
             return "UTF-8";
