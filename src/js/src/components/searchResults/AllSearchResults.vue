@@ -22,9 +22,9 @@
 import { mapState, mapActions } from 'vuex'
 import SearchFacetOptions from './../SearchFacetOptions.vue'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
-import ImageSearchResults from './ImageSearchResults'
-import PostSearchResults from './PostSearchResults'
-import SearchResultExport from './SearchResultExport'
+import ImageSearchResults from './ImageSearchResults.vue'
+import PostSearchResults from './PostSearchResults.vue'
+import SearchResultExport from './SearchResultExport.vue'
 import configs from '../../configs'
 
 export default {

@@ -55,18 +55,18 @@
 import { mapState, mapActions } from 'vuex'
 import SearchFacetOptions from './../SearchFacetOptions.vue'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
-import ImageSearchResults from './ImageSearchResults'
+import ImageSearchResults from './ImageSearchResults.vue'
 import configs from '../../configs'
 
 
 export default {
   name: 'PostSearchResults',
   components: {
-    SearchSingleItemDefault: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemDefault'),
-    SearchSingleItemTweet: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemTweet'),
-    SearchSingleItemWeb: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemWeb'),
-    SearchSingleItemImage: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemImage'),
-    SearchSingleItemVideoAudio: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemVideoAudio'),
+    SearchSingleItemDefault: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemDefault.vue'),
+    SearchSingleItemTweet: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemTweet.vue'),
+    SearchSingleItemWeb: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemWeb.vue'),
+    SearchSingleItemImage: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemImage.vue'),
+    SearchSingleItemVideoAudio: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemVideoAudio.vue'),
    
    SearchFacetOptions,
     ImageSearchResults

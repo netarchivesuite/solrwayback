@@ -67,12 +67,12 @@ import { requestService } from '../services/RequestService'
 import {groupHarvestDatesByYearAndMonth} from '../components/harvestCalendar/tranformers/transformerMain'
 import {calculateLinearActivityLevel, calculateLogarithmicActivityLevel} from '../components/harvestCalendar/plugins/tranformationHelpers'
 import {toHumanDate} from '../components/harvestCalendar/util'
-import YearMonthGraph from '../components/harvestCalendar/YearMonthGraph'
-import AllYearsGraph from '../components/harvestCalendar/AllYearsGraph'
-import WeekGraph from '../components/harvestCalendar/WeekGraph'
-import Notifications from '../components/notifications/Notifications'
+import YearMonthGraph from '../components/harvestCalendar/YearMonthGraph.vue'
+import AllYearsGraph from '../components/harvestCalendar/AllYearsGraph.vue'
+import WeekGraph from '../components/harvestCalendar/WeekGraph.vue'
+import Notifications from '../components/notifications/Notifications.vue'
 import { mapActions } from 'vuex'
-import Vue from 'vue'
+import * as Vue from 'vue'
 import VTooltip from 'v-tooltip'
 
 Vue.use(VTooltip)
@@ -155,6 +155,6 @@ export default {
 </script>
 
 <style lang="scss">
-  @import '../assets/styles/harvestCalendar.scss'; 
+  @use '../assets/styles/harvestCalendar.scss'; 
 </style>
     

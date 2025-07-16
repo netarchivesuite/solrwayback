@@ -81,7 +81,7 @@ export default {
 </script>
 
 <style lang="scss">
-  @import '../assets/styles/pwid.scss'; 
+  @use '../assets/styles/pwid.scss'; 
 </style>
 
     

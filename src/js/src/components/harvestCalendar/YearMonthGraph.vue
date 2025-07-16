@@ -39,7 +39,7 @@
 
 <script>
 
-import ColorLegend from '../harvestCalendar/ColorLegend'
+import ColorLegend from '../harvestCalendar/ColorLegend.vue'
 
 export default {
   name: 'YearMontGraph',

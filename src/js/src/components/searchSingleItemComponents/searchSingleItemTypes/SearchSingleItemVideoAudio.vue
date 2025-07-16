@@ -34,7 +34,7 @@
 import SearchSingleItemStandardInfo from './../SearchSingleItemStandardInfo.vue'
 import SearchSingleItemAllData from './../SearchSingleItemAllData.vue'
 import SearchSingleItemImages from './../SearchSingleItemImages.vue'
-import InlinePlayer from '../../inlinePlayer/InlinePlayer'
+import InlinePlayer from '../../inlinePlayer/InlinePlayer.vue'
 import Configs from '../../../configs/'
 import { isPlaybackDisabled } from '../../../configs/configHelper'
 

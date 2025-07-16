@@ -26,7 +26,7 @@
 
 <script>
 
-import SearchSingleItemFocusImage from './SearchSingleItemFocusImage'
+import SearchSingleItemFocusImage from './SearchSingleItemFocusImage.vue'
 import ImageSearchUtils from './../../mixins/ImageSearchUtils'
 import configs from '../../configs'
 import { isPlaybackDisabled } from '../../configs/configHelper'

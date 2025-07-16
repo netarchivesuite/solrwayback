@@ -1,7 +1,7 @@
-import Vue from 'vue'
+//import Vue, { createApp } from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
-import VueRouter from 'vue-router'
-import { routes } from './router/routes'
+import router from './router';
 import store from './store'
 import Axios from 'axios'
 import { setServerConfigInApp } from './configs/configHelper'
@@ -17,19 +17,10 @@ Axios.get('services/frontend/properties/solrwaybackweb/')
     })
     .catch(error => initializeVue('/'))
 
-function initializeVue(appBaseURL){
-  const router = new VueRouter({
-    mode: 'history',
-    base: appBaseURL,
-    routes
-  })
- 
-  Vue.use(VueRouter)
 
-  new Vue({
-    router,
-    store,
-    render: h => h(App)
-  }).$mount('#app')
+const app = createApp(App);
+
+app.use(router);
+
+app.mount('#app')
   
-}

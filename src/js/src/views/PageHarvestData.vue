@@ -86,5 +86,5 @@ export default {
 </script>
 
 <style lang="scss">
-  @import '../assets/styles/harvestTimes.scss'; 
+  @use '../assets/styles/harvestTimes.scss'; 
 </style>

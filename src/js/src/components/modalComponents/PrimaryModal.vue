@@ -17,10 +17,10 @@
 
 <script>
 
-import SearchGuidelines from './SearchGuidelines'
-import SearchVisualization from './SearchVisualization'
-import GpsSearch from './GpsSearch'
-import CollectionInfo from './CollectionInfo'
+import SearchGuidelines from './SearchGuidelines.vue'
+import SearchVisualization from './SearchVisualization.vue'
+import GpsSearch from './GpsSearch.vue'
+import CollectionInfo from './CollectionInfo.vue'
 import { mapState, mapActions } from 'vuex'
 
 export default {

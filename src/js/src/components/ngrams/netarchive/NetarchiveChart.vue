@@ -74,7 +74,7 @@
 </script>
 
 <style lang="scss">
-  @import '../../../assets/styles/charts.scss'; 
+  @use '../../../assets/styles/charts.scss'; 
 
   .download {
     border: 2px solid var(--secondary-bg-color);
