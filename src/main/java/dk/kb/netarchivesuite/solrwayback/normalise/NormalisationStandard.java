@@ -117,12 +117,19 @@ public class NormalisationStandard extends NormalisationAbstract {
         }
     }
 
+    /**
+     * Will remove port from url starting with http or https.
+     * If it is a relative url such url such as /books/index.html it will be returned as is. 
+     * 
+     * @param inputUrl String that must not be null. 
+     */
     public static String removePort(String inputUrl) throws MalformedURLException {
-
-        if (!inputUrl.startsWith("http://") || inputUrl.toLowerCase().startsWith("https://")) {
+        
+        //If not http or http return as is
+        if (!(inputUrl.toLowerCase().startsWith("http://") || inputUrl.toLowerCase().startsWith("https://"))) {
             return inputUrl;
         }
-
+        
         URL url = new URL(inputUrl);
         int port = url.getPort();
 
@@ -131,8 +138,10 @@ public class NormalisationStandard extends NormalisationAbstract {
             return inputUrl;
         }
 
-        // Reconstruct URL without the port
-        String cleanedUrl = url.getProtocol() + "://" + url.getHost() + url.getPath();
+        // Reconstruct URL without the port. Important this cover all cases.
+        String cleanedUrl = url.getProtocol() + "://" +
+                            url.getHost() +
+                            url.getPath();
 
         if (url.getQuery() != null) {
             cleanedUrl += "?" + url.getQuery();
