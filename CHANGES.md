@@ -2,9 +2,11 @@
 
 UNRELEASED
 -----
-Added code comment only with new unittest. ARC-files before 2004 from IA has port :80 as part of URL. The correct fix is to strip port 80 in the warc-indexer in  url_norm. Too complicated and performance issue to try match every url with and without port 80.
+* Remove port in the url_norm field.  This wil fix playback for very old ARC files from IA (1995-2002). They have port:80 in the ARC HTTP-header. 
+This require the index has been build with warc-indexer version 3.4.0+. If normalisation mode is set to LEGACY in solrwayback.properties the port will not be removed.
+See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
 
-Added functionality to the DOMAIN STATS tool in the toolbox. Added a visualisation for average context length over time and a toggle button for showing the graphs combined or on individual canvases.
+* Added functionality to the DOMAIN STATS tool in the toolbox. Added a visualisation for average context length over time and a toggle button for showing the graphs combined or on individual canvases. Thanks to @VictorHarbo for this feature
 
 
 5.2.1

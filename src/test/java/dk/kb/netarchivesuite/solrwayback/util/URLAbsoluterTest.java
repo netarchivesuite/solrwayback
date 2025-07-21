@@ -33,7 +33,6 @@ public class URLAbsoluterTest {
         // We need this so that we know what the Solr server is set to
         PropertiesLoader.WAYBACK_BASEURL = "http://localhost:0000/solrwayback/";
     }
-
     
     /*
      * Notice this test uses two different url normalizers
@@ -58,35 +57,39 @@ public class URLAbsoluterTest {
         assertEquals("Unicode escapes should be kept",
                      "http://example.com/j0%5cu00253d&_nc_ohc=pnymjb_o1",
                      absoluter.apply("https://example.com/j0\\u00253D&_nc_ohc=PNyMjb_o1"));
-        
+            
         // Repeat the test with  normal normaliser
         Normalisation.setType(NormaliseType.NORMAL);
         urlDomainOnlyNorm= Normalisation.canonicaliseURL(urlDomainOnly );
         assertEquals("http://example.com/", urlDomainOnlyNorm); //www is removed
         urlDomainWithPathNorm= Normalisation.canonicaliseURL(urlDomainWithPath );
-        assertEquals("http://example.com/index.html",urlDomainWithPathNorm); //www is removed        
+        assertEquals("http://example.com/index.html",urlDomainWithPathNorm); //www is removed                   
     }
 
-    
-    
-    
-    
-    //Notice this is probably not the beviour we want. Warc-indexer most remove port 80
     @Test
-    public void testNormal() {
+    public void testLegacyDoNotRemovePort() {
+        // For NormaliseType.LEGACY we keep the port. This way the lesser buggy solution.        
+        Normalisation.setType(NormaliseType.LEGACY);
+        String url="http://test.dk:80/TEST.html";
+        String canonicaliseURL = NormalisationStandard.canonicaliseURL(url);
+        assertEquals("http://test.dk:80/test.html",canonicaliseURL);                                
+    }
+    
+    @Test
+    public void testNormalRemovePort() {
+
+        // Port must be removed if it is a full url. Ie starting with http/https 
          Normalisation.setType(NormaliseType.NORMAL);
          //with port 80
          String url="http://test.dk:80/TEST.html";
          String canonicaliseURL = NormalisationStandard.canonicaliseURL(url);
-         assertEquals(url.toLowerCase(),canonicaliseURL);
+         assertEquals("http://test.dk/test.html",canonicaliseURL);
     
          //without port
          url="http://test.dk/TEST.html";
          canonicaliseURL = NormalisationStandard.canonicaliseURL(url);
-         assertEquals(url.toLowerCase(),canonicaliseURL);                  
+         assertEquals(url.toLowerCase(),canonicaliseURL);                                    
     }
-
-    
     
     @Test
     public void testSimple() {

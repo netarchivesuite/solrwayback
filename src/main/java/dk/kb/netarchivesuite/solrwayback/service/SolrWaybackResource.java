@@ -863,7 +863,7 @@ public class SolrWaybackResource {
     String contentType = arcEntry.getContentType();
     
     
-   // log.debug("warc content charset:"+arcEntry.getContentCharset() +" warc content type:"+arcEntry.getContentType());
+    log.info("warc content charset:"+arcEntry.getContentCharset() +" warc content type:"+arcEntry.getContentType());
    if (contentType ==  null){    
     //log.debug("no contenttype, using content_type from tika:"+doc.getContentType());
     contentType=doc.getContentType(); 
