@@ -40,7 +40,7 @@
 
 <script>
 import Wordcloud from './ToolboxComponents/Wordcloud.vue'
-import LinkGraph from './ToolboxComponents/LinkGraph.vue'
+// import LinkGraph from './ToolboxComponents/LinkGraph.vue'
 import DomainStats from './ToolboxComponents/DomainStats.vue'
 import GephiExport from './ToolboxComponents/GephiExport.vue'
 import NgramNetarchive from './ToolboxComponents/NgramNetarchive.vue'
@@ -50,7 +50,7 @@ export default {
   name: 'Toolbox',
   components: {
     Wordcloud, 
-    LinkGraph, 
+    // LinkGraph, 
     DomainStats,
     GephiExport,
     NgramNetarchive

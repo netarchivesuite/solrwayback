@@ -1,18 +1,22 @@
 import HistoryRoutingUtils from './HistoryRoutingUtils'
-import { mapState, mapActions } from 'vuex'
+// import { mapState, mapActions } from 'vuex'
+import { mapStores, mapActions } from 'pinia'
+import { useSearchStore } from '../store/search.store'
+import { useNotifierStore } from '../store/notifier.store'
 import { requestService } from '../services/RequestService'
 
 export default {
   mixins: [HistoryRoutingUtils],
   computed: {
-    ...mapState({
-      query: state => state.Search.query,
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
-      solrSettings: state => state.Search.solrSettings,
-    }),
+    // ...mapState({
+    //   query: state => state.Search.query,
+    //   searchAppliedFacets: state => state.Search.searchAppliedFacets,
+    //   solrSettings: state => state.Search.solrSettings,
+    // }),
+    ...mapStores(useSearchStore)
   },
   methods: {
-    ...mapActions('Search', {
+    ...mapActions(useSearchStore, {
       updateQuery:'updateQuery',
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
@@ -29,7 +33,7 @@ export default {
       requestFacets:'requestFacets'
 
     }),
-    ...mapActions('Notifier', {
+    ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
     }),
     $_validateUrlSearchPrefix(testString) {

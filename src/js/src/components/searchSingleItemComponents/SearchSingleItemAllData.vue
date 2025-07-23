@@ -12,7 +12,7 @@
       <br>
       {{ warcHeaderData }}
     </div>
-    <div v-if="allDataShown && allData !== {}">
+    <div v-if="allDataShown && Object.keys(allData).length !== 0">
       <hr class="informationDivider">
       <div class="table">
         <div class="tr">
@@ -56,7 +56,9 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+// import { mapState, mapActions } from 'vuex'
+import { mapStores, mapActions } from 'pinia'
+import { useSearchStore } from '../../store/search.store'
 import { requestService } from '../../services/RequestService'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
 
@@ -92,10 +94,11 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      solrSettings: state => state.Search.solrSettings,
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
-    }),
+    // ...mapState({
+    //   solrSettings: state => state.Search.solrSettings,
+    //   searchAppliedFacets: state => state.Search.searchAppliedFacets,
+    // }),
+    ...mapStores(useSearchStore),
     allDataButtonText: function () {
       return this.allDataShown ? 'Hide data fields' : 'View data fields'
     },
@@ -107,7 +110,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions('Search', {
+    ...mapActions(useSearchStore, {
       updateQuery: 'updateQuery',
       emptySearchAppliedFacets:'emptySearchAppliedFacets',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch'

@@ -71,11 +71,13 @@ import YearMonthGraph from '../components/harvestCalendar/YearMonthGraph.vue'
 import AllYearsGraph from '../components/harvestCalendar/AllYearsGraph.vue'
 import WeekGraph from '../components/harvestCalendar/WeekGraph.vue'
 import Notifications from '../components/notifications/Notifications.vue'
-import { mapActions } from 'vuex'
+// import { mapActions } from 'vuex'
+import { mapActions } from 'pinia'
+import { useNotifierStore } from '../store/notifier.store'
 import * as Vue from 'vue'
-import VTooltip from 'v-tooltip'
+// import VTooltip from 'v-tooltip'
 
-Vue.use(VTooltip)
+// Vue.use(VTooltip)
 
 
 export default {
@@ -134,7 +136,7 @@ export default {
   },
   
   methods: {
-    ...mapActions('Notifier', {
+    ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
     }),
      showYearWeek(year) {

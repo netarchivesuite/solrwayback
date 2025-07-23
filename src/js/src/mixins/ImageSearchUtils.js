@@ -1,16 +1,19 @@
 import HistoryRoutingUtils from './HistoryRoutingUtils'
-import { mapState, mapActions } from 'vuex'
+// import { mapState, mapActions } from 'vuex'
+import { mapStores, mapActions } from 'pinia'
+import { useSearchStore } from '../store/search.store'
 
 export default {
   mixins: [HistoryRoutingUtils],
   computed: {
-    ...mapState({
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
-      solrSettings: state => state.Search.solrSettings,
-    }),
+    // ...mapState({
+    //   searchAppliedFacets: state => state.Search.searchAppliedFacets,
+    //   solrSettings: state => state.Search.solrSettings,
+    // }),
+    ...mapStores(useSearchStore)
   },
   methods: {
-    ...mapActions('Search', {
+    ...mapActions(useSearchStore, {
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
     }),
     $_startPageSearchFromImage(searchItem) {

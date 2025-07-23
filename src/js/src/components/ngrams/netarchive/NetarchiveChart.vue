@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="chart-container">
-      <button v-if="datasets.length > 0" class="download" @click="downloadOpen = !downloadOpen">
+      <button v-if="this.ngramStore.datasets.length > 0" class="download" @click="downloadOpen = !downloadOpen">
         DOWNLOAD
       </button>
-      <line-chart v-if="datasets.length > 0"
+      <line-chart v-if="this.ngramStore.datasets.length > 0"
                   :chart-data="datacollection"
                   :options="options"
                   :chart-id="'netarchive-chart'"
@@ -21,7 +21,9 @@
   import LineChart from '../chartsCore/chartEngines/LineChart'
   import ChartHelpers from '../chartsCore/chartHelpers'
   import ExportData from '../exporterCSV/ExportData.vue'
-  import {mapState} from 'vuex'
+  // import {mapState} from 'vuex'
+  import { mapStores } from 'pinia'
+import { useNgramStore } from '../../../store/ngram.store'
 
   export default {
     name: 'NetarchiveChart',
@@ -39,13 +41,14 @@
     },
 
     computed: {
-    ...mapState({
-      query: state => state.Ngram.query,
-      datasets: state => state.Ngram.datasets,
-      searchType:state => state.Ngram.searchType,
-      labels: state => state.Ngram.labels,
-      scale: state => state.Ngram.timeScale
-    })
+    // ...mapState({
+    //   query: state => state.Ngram.query,
+    //   datasets: state => state.Ngram.datasets,
+    //   searchType:state => state.Ngram.searchType,
+    //   labels: state => state.Ngram.labels,
+    //   scale: state => state.Ngram.timeScale
+    // })
+    ...mapStores(useNgramStore)
     },
 
     watch: {

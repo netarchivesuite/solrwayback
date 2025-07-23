@@ -1,8 +1,8 @@
 <template>
   <div class="notifications">
-    <notification-item v-for="(notification, index) in notifications" 
+    <notification-item v-for="(notification, index) in this.notifierStore.notifications" 
                        :key="index"
-                       :current="index + 1 === notifications.length"
+                       :current="index + 1 === this.notifierStore.notifications.length"
                        :notification="notification" 
                        @dismiss-notification="doDismissNotification" />
   </div>
@@ -10,7 +10,9 @@
 
 <script>
 import NotificationItem from './NotificationItem.vue'
-import { mapState, mapActions } from 'vuex'
+// import { mapState, mapActions } from 'vuex'
+import { mapStores, mapActions } from 'pinia'
+import { useNotifierStore } from '../../store/notifier.store'
 
 export default {
   name: 'Notifications',
@@ -20,13 +22,14 @@ export default {
   },
 
   computed: {
-    ...mapState({
-      notifications: state => state.Notifier.notifications
-    }),
+    // ...mapState({
+    //   notifications: state => state.Notifier.notifications
+    // }),
+    ...mapStores(useNotifierStore)
   },
 
   methods: {
-  ...mapActions('Notifier', {
+  ...mapActions(useNotifierStore, {
       dismissNotification: 'dismissNotification'
       
   }),

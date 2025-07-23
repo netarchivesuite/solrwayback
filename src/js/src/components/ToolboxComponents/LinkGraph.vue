@@ -60,7 +60,8 @@ import VueSlider from 'vue-3-slider-component'
 //import 'vue-3-slider-component/theme/default.css'
 import StringManipulationUtils from './../../mixins/StringManipulationUtils'
 import { requestService } from '../../services/RequestService'
-import * as d3 from 'd3'
+// import * as d3 from 'd3'
+import d3 from 'd3'
 import configs from './../../configs'
 
 export default {

@@ -13,7 +13,10 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+// import { mapState, mapActions } from 'vuex'
+import { mapStores, mapActions } from 'pinia'
+import { useSearchStore } from '../store/search.store'
+import { useNotifierStore } from '../store/notifier.store'
 import { requestService } from '../services/RequestService'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
 
@@ -26,18 +29,19 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-        searchAppliedFacets: state => state.Search.searchAppliedFacets,
-        solrSettings: state => state.Search.solrSettings
-    })
+    // ...mapState({
+    //     searchAppliedFacets: state => state.Search.searchAppliedFacets,
+    //     solrSettings: state => state.Search.solrSettings
+    // })
+    ...mapStores(useSearchStore)
   },
   methods: {
-    ...mapActions('Search', {
+    ...mapActions(useSearchStore, {
       requestSearch: 'requestSearch',
        updateQuery: 'updateQuery',
     }),
 
-    ...mapActions('Notifier', {
+    ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
      
     }),

@@ -1,8 +1,13 @@
-import { defineConfig } from "vite";
-// vite.config.js
-import vue from "@vitejs/plugin-vue";
-import path from "path";
-import { fileURLToPath, URL } from "node:url";
+import { fileURLToPath, URL } from 'node:url'
+import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
+import Components from 'unplugin-vue-components/vite'
+import { defineConfig } from 'vite'
+
+// import { defineConfig } from "vite";
+// import vue from "@vitejs/plugin-vue";
+// import path from "path";
+// import { fileURLToPath, URL } from "node:url";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],

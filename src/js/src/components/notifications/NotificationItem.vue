@@ -24,7 +24,9 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+// import { mapState, mapActions } from 'vuex'
+import { mapStores } from 'pinia'
+import { useNotifierStore } from '../../store/notifier.store'
 
 export default {
   name: 'NotificationItem',
@@ -46,9 +48,10 @@ export default {
   },
 
   computed: {
-    ...mapState({
-      notifications: state => state.Notifier.notifications
-    }),
+    // ...mapState({
+    //   notifications: state => state.Notifier.notifications
+    // }),
+    ...mapStores(useNotifierStore)
   },
 
   mounted () {

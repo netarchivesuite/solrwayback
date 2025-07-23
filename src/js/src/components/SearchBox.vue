@@ -13,12 +13,12 @@
     </transition>   
     <div class="searchBoxContainer">
       <form class="searchForm" @submit.prevent="launchNewSearch()">
-        <span v-if="preNormalizedQuery !== null" class="orgQuery">Normalized query<span class="preQueryExplanation" title="When you search for an URL, we normalize it for you - this is the normalized query we used for the search">[ ? ]</span>: <span class="preQuery" :title="normalizedQuery"><span class="urlNormPrefix">url_norm:"</span>{{ normalizedQuery }}<span class="urlNormPrefix">"</span></span><span class="copyToClipboard"
+        <span v-if="this.searchStore.preNormalizedQuery !== null" class="orgQuery">Normalized query<span class="preQueryExplanation" title="When you search for an URL, we normalize it for you - this is the normalized query we used for the search">[ ? ]</span>: <span class="preQuery" :title="this.searchStore.normalizedQuery"><span class="urlNormPrefix">url_norm:"</span>{{ this.searchStore.normalizedQuery }}<span class="urlNormPrefix">"</span></span><span class="copyToClipboard"
                                                                                                                                                                                                                                                                                                                                                                                                                        :class="normalizedQueryCopied ? 'checkmarkIcon' : 'clipboardIcon'"
                                                                                                                                                                                                                                                                                                                                                                                                                        title="Copy normalized query to clipboard"
                                                                                                                                                                                                                                                                                                                                                                                                                        @click.prevent="copyURLSearchQuery()" /></span>
         <transition name="url-search-helper">
-          <span v-if="solrSettings.urlSearch" class="urlSearchHelper">URL:</span>
+          <span v-if="this.searchStore.solrSettings.urlSearch" class="urlSearchHelper">URL:</span>
         </transition>
         <textarea id="query"
                   ref="query"
@@ -26,12 +26,12 @@
                   type="text"
                   rows="1"
                   autofocus
-                  :class="solrSettings.urlSearch 
+                  :class="this.searchStore.solrSettings.urlSearch 
                     ? decideActiveClassesForQueryBox()
                     : ''"
-                  :placeholder="solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'"
+                  :placeholder="this.searchStore.solrSettings.urlSearch ? 'Enter search url' : 'Enter search term'"
                   @keydown.enter="checkKeyPresses()"
-                  @keyup.prevent="solrSettings.urlSearch ? null : checkQuery()"
+                  @keyup.prevent="this.searchStore.solrSettings.urlSearch ? null : checkQuery()"
                   @input="$_getSizeOfTextArea('query')" />
         <button type="button"
                 title="See search guidelines"
@@ -42,23 +42,23 @@
         <button id="querySubmit" title="Search" type="submit">
           <div id="magnifyingGlass" />
         </button>
-        <button v-if="futureQuery !== '' || Object.keys(results).length !== 0"
+        <button v-if="futureQuery !== '' || Object.keys(this.searchStore.results).length !== 0"
                 id="clearSubmit"
                 title="Clear search and results"
                 type="button"
                 @click="clearResultsAndSearch()" />
         <div class="sortOptions">
-          <div @click.prevent="updateSolrSettingGrouping(!solrSettings.grouping)">
+          <div @click.prevent="updateSolrSettingGrouping(!this.searchStore.solrSettings.grouping)">
             <input id="groupedSearch"
-                   :checked="solrSettings.grouping"
+                   :checked="this.searchStore.solrSettings.grouping"
                    type="checkbox"
                    name="groupedSearch"
-                   @click.stop="updateSolrSettingGrouping(!solrSettings.grouping)">
+                   @click.stop="updateSolrSettingGrouping(!this.searchStore.solrSettings.grouping)">
             <label for="groupedSearch">Grouped search <span class="buttonExplanation" title="Grouping results by URL, meaning you only seen an URL as one hit, even though it might have been a hit on several params.">[ ? ]</span></label>
           </div>
           <div class="floatRight" @click.prevent="selectSearchMethod('urlSearch')">
             <input id="urlSearch"
-                   :checked="solrSettings.urlSearch"
+                   :checked="this.searchStore.solrSettings.urlSearch"
                    type="checkbox"
                    name="urlSearch"
                    @click.stop="selectSearchMethod('urlSearch')">
@@ -66,7 +66,7 @@
           </div>
           <div class="floatRight marginRight" @click.prevent="selectSearchMethod('imgSearch')">
             <input id="imgSearch"
-                   :checked="solrSettings.imgSearch"
+                   :checked="this.searchStore.solrSettings.imgSearch"
                    type="checkbox"
                    name="imgSearch"
                    @click.stop="selectSearchMethod('imgSearch')">
@@ -102,7 +102,11 @@
 </template> 
 
 <script>
-import { mapState, mapActions } from 'vuex'
+//import { mapState, mapActions } from 'vuex'
+import {useRoute} from 'vue-router'
+import { mapStores, mapActions } from 'pinia'
+import { useModalStore } from '../store/modal.store'
+import { useSearchStore } from '../store/search.store'
 import {copyTextToClipboard} from '../utils/globalUtils'
 import AppliedSearchFacets from './AppliedSearchFacets.vue'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
@@ -130,17 +134,18 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      query: state => state.Search.query,
-      preNormalizedQuery: state => state.Search.preNormalizedQuery,
-      normalizedQuery: state => state.Search.normalizedQuery,
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
-      results: state => state.Search.results,
-      solrSettings: state => state.Search.solrSettings,
-      loading: state => state.Search.loading,
-      showModal: state => state.Modal.showModal,
-      currentModal: state => state.Modal.currentModal
-    })
+    // ...mapState({
+    //   query: state => state.Search.query,
+    //   preNormalizedQuery: state => state.Search.preNormalizedQuery,
+    //   normalizedQuery: state => state.Search.normalizedQuery,
+    //   searchAppliedFacets: state => state.Search.searchAppliedFacets,
+    //   results: state => state.Search.results,
+    //   solrSettings: state => state.Search.solrSettings,
+    //   loading: state => state.Search.loading,
+    //   showModal: state => state.Modal.showModal,
+    //   currentModal: state => state.Modal.currentModal
+    // })
+    ...mapStores(useModalStore, useSearchStore)
   },
   watch: {
     query: function (val) {
@@ -148,7 +153,9 @@ export default {
     },
   },
   mounted () {
-    const routerQuery = this.$router.history.current.query
+    const route = useRoute();
+    const routerQuery = route.query
+    // const routerQuery = this.$router.history.current.query
     if(routerQuery.query) {
       this.futureQuery =  routerQuery.query
       if(routerQuery.facets) {
@@ -168,7 +175,8 @@ export default {
       else {
         //If we mount and there is no query, we just make sure to empty the state, results and facets for good measure.
         //If this is resulted by a backbutton going to the first time the user landed on the page, we want a clean slate.
-        this.resetSearchState()
+        //this.resetSearchState()
+        this.searchStore.$reset()
       }
       this.$refs.query.value = this.futureQuery
       this.$_getSizeOfTextArea('query')
@@ -180,10 +188,10 @@ export default {
   },
   
   methods: {
-    ...mapActions('Search', {
+    ...mapActions(useSearchStore, {
       clearResults: 'clearResults',
       addToSearchAppliedFacets:'addToSearchAppliedFacets',
-      resetSearchState:'resetState',
+      //resetSearchState:'resetState',
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
@@ -191,7 +199,7 @@ export default {
       updateSolrSettingSort:'updateSolrSettingSort',
       emptySearchAppliedFacets:'emptySearchAppliedFacets'
     }),
-    ...mapActions('Modal', {
+    ...mapActions(useModalStore, {
       updateShowModal:'updateShowModal',
       updateCurrentModal:'updateCurrentModal'
     }),
@@ -224,7 +232,8 @@ export default {
         this.$_pushCleanHistory('SolrWayback')
       }
       this.preNormalizeQuery = null
-      this.resetSearchState()
+      //this.resetSearchState()
+      this.searchStore.$reset()
       //Make sure the query textarea is returned to its original size, regardless of what it was before.
       this.$refs.query.style.height = '1px'
     },

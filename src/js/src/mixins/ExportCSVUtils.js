@@ -3,16 +3,19 @@
  * 
  */
 
-import {mapActions, mapState} from 'vuex'
+// import {mapActions, mapState} from 'vuex'
+import { mapStores } from 'pinia'
+import { useNgramStore } from '../store/ngram.store'
 
 
  export default {
   computed: {
-    ...mapState({
-      datasets: state => state.Ngram.datasets,
-      labels: state => state.Ngram.labels
+    // ...mapState({
+    //   datasets: state => state.Ngram.datasets,
+    //   labels: state => state.Ngram.labels
      
-    })
+    // })
+    ...mapStores(useNgramStore)
   },
   methods: {
   

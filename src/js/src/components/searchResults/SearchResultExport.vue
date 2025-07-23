@@ -127,7 +127,9 @@
   </div>
 </template>
 <script>
-import { mapState } from 'vuex'
+// import { mapState } from 'vuex'
+import { mapStores } from 'pinia'
+import { useSearchStore } from '../../store/search.store'
 
 export default {
   name: 'SearchResultExport',
@@ -152,11 +154,12 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      query: state => state.Search.query,
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
-      solrSettings: state => state.Search.solrSettings
-    })
+    // ...mapState({
+    //   query: state => state.Search.query,
+    //   searchAppliedFacets: state => state.Search.searchAppliedFacets,
+    //   solrSettings: state => state.Search.solrSettings
+    // })
+    ...mapStores(useSearchStore)
   },
   mounted () {
     this.selectedArray = this.getSplitFieldsSelected(this.configs.exportOptions.csvFields)

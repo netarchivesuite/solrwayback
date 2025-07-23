@@ -45,10 +45,13 @@
 import L from 'leaflet'
 import icon from '../../../node_modules/leaflet/dist/images/marker-icon.png'
 import iconShadow from '../../../node_modules/leaflet/dist/images/marker-shadow.png'
-import Markercluster from '../../../node_modules/leaflet.markercluster/dist/leaflet.markercluster.js'
+import * as Markercluster from '../../../node_modules/leaflet.markercluster/dist/leaflet.markercluster.js'
 import ImageSearchResults from '../searchResults/ImageSearchResults.vue'
 import SearchUtils from './../../mixins/SearchUtils'
-import { mapState, mapActions } from 'vuex'
+// import { mapState, mapActions } from 'vuex'
+import { mapActions } from 'pinia'
+import { useSearchStore } from '../../store/search.store.js'
+import { useNotifierStore } from '../../store/notifier.store.js'
 import { requestService } from '../../services/RequestService'
 import configs from '../../configs'
 
@@ -88,10 +91,10 @@ export default {
     this.createMap()
   },
   methods: {
-    ...mapActions('Search', {
+    ...mapActions(useSearchStore, {
       setLoadingStatus:'setLoadingStatus'
     }),
-    ...mapActions('Notifier', {
+    ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
      
     }),

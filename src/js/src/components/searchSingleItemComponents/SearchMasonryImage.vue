@@ -30,7 +30,9 @@ import SearchSingleItemFocusImage from './SearchSingleItemFocusImage.vue'
 import ImageSearchUtils from './../../mixins/ImageSearchUtils'
 import configs from '../../configs'
 import { isPlaybackDisabled } from '../../configs/configHelper'
-import { mapState, mapActions } from 'vuex'
+// import { mapState, mapActions } from 'vuex'
+import { mapStores, mapActions } from 'pinia'
+import { useModalStore } from '../../store/modal.store'
 
 export default {
   name: 'SearchMasonryImage',
@@ -63,13 +65,14 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      showModal: state => state.Modal.showModal,
-      currentModal: state => state.Modal.currentModal,
-    }),
+    // ...mapState({
+    //   showModal: state => state.Modal.showModal,
+    //   currentModal: state => state.Modal.currentModal,
+    // }),
+    ...mapStores(useModalStore)
   },
   methods: {
-    ...mapActions('Modal', {
+    ...mapActions(useModalStore, {
       updateShowModal:'updateShowModal',
       updateCurrentModal:'updateCurrentModal'
     }),

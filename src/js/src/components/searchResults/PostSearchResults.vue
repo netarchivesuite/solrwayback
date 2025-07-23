@@ -1,20 +1,20 @@
 <template>
   <div>
-    <span v-if="!results.cardinality">
-      <span>Showing <span class="highlightText">{{ results.numFound !== 0 ? solrSettings.offset + 1 : 0 }}</span>  - <span class="highlightText">{{ solrSettings.offset + hitsPerPage > results.numFound ? results.numFound : solrSettings.offset + hitsPerPage }}</span> of </span>
-      <span class="highlightText">{{ results.numFound.toLocaleString("en") }}</span> entries matching query.
+    <span v-if="!this.searchStore.results.cardinality">
+      <span>Showing <span class="highlightText">{{ this.searchStore.results.numFound !== 0 ? this.searchStore.solrSettings.offset + 1 : 0 }}</span>  - <span class="highlightText">{{ this.searchStore.solrSettings.offset + hitsPerPage > this.searchStore.results.numFound ? this.searchStore.results.numFound : this.searchStore.solrSettings.offset + hitsPerPage }}</span> of </span>
+      <span class="highlightText">{{ this.searchStore.results.numFound.toLocaleString("en") }}</span> entries matching query.
     </span>
-    <span v-if="results.cardinality">
-      <span>Showing <span class="highlightText">{{ results.numFound !== 0 ? solrSettings.offset + 1 : 0 }}</span> - <span class="highlightText">{{ solrSettings.offset + hitsPerPage > results.cardinality ? results.cardinality : solrSettings.offset + hitsPerPage }}</span> of </span>
-      <span class="highlightText">{{ results.cardinality.toLocaleString("en") }}</span> unique entries matching query 
-      <span class="tonedDownText">(total hits approximated: {{ results.numFound.toLocaleString("en") }})</span>.
+    <span v-if="this.searchStore.results.cardinality">
+      <span>Showing <span class="highlightText">{{ this.searchStore.results.numFound !== 0 ? this.searchStore.solrSettings.offset + 1 : 0 }}</span> - <span class="highlightText">{{ this.searchStore.solrSettings.offset + hitsPerPage > this.searchStore.results.cardinality ? this.searchStore.results.cardinality : this.searchStore.solrSettings.offset + hitsPerPage }}</span> of </span>
+      <span class="highlightText">{{ this.searchStore.results.cardinality.toLocaleString("en") }}</span> unique entries matching query 
+      <span class="tonedDownText">(total hits approximated: {{ this.searchStore.results.numFound.toLocaleString("en") }})</span>.
     </span>
     <div class="postSearchContainer">
-      <div v-if="results.cardinality !== 0 && results.numFound !== 0" class="pagingContainer">
-        <button :disabled="solrSettings.offset < hitsPerPage" @click="getPreviousResults()">
+      <div v-if="this.searchStore.results.cardinality !== 0 && this.searchStore.results.numFound !== 0" class="pagingContainer">
+        <button :disabled="this.searchStore.solrSettings.offset < hitsPerPage" @click="getPreviousResults()">
           Previous {{ hitsPerPage }}
         </button>
-        <button :disabled="results.cardinality ? solrSettings.offset + hitsPerPage >= results.cardinality : solrSettings.offset + hitsPerPage >= results.numFound" @click="getNextResults()">
+        <button :disabled="this.searchStore.results.cardinality ? this.searchStore.solrSettings.offset + hitsPerPage >= this.searchStore.results.cardinality : this.searchStore.solrSettings.offset + hitsPerPage >= this.searchStore.results.numFound" @click="getNextResults()">
           Next {{ hitsPerPage }}
         </button>
       </div>
@@ -33,18 +33,18 @@
         </select>
       </div>
     </div>
-    <div v-if="results && results !== {}" class="results">
+    <div v-if="this.searchStore.results && Object.keys(this.searchStore.results).length !== 0" class="results">
       <component :is="SingleEntryComponent(result.type)"
-                 v-for="(result, index) in results.docs"
+                 v-for="(result, index) in this.searchStore.results.docs"
                  :key="index"
                  :result="result"
                  :rank-number="index" />
     </div>
-    <div v-if="results.cardinality !== 0 && results.numFound !== 0" class="pagingContainer">
-      <button :disabled="solrSettings.offset < hitsPerPage" @click="getPreviousResults()">
+    <div v-if="this.searchStore.results.cardinality !== 0 && this.searchStore.results.numFound !== 0" class="pagingContainer">
+      <button :disabled="this.searchStore.solrSettings.offset < hitsPerPage" @click="getPreviousResults()">
         Previous {{ hitsPerPage }}
       </button>
-      <button :disabled="results.cardinality ? solrSettings.offset + hitsPerPage >= results.cardinality : solrSettings.offset + hitsPerPage >= results.numFound" @click="getNextResults()">
+      <button :disabled="this.searchStore.results.cardinality ? this.searchStore.solrSettings.offset + hitsPerPage >= this.searchStore.results.cardinality : this.searchStore.solrSettings.offset + hitsPerPage >= this.searchStore.results.numFound" @click="getNextResults()">
         Next {{ hitsPerPage }}
       </button>
     </div>
@@ -52,7 +52,9 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+// import { mapState, mapActions } from 'vuex'
+import { mapStores, mapActions } from 'pinia'
+import { useSearchStore } from '../../store/search.store'
 import SearchFacetOptions from './../SearchFacetOptions.vue'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
 import ImageSearchResults from './ImageSearchResults.vue'
@@ -78,12 +80,13 @@ export default {
         }
   },
   computed: {
-    ...mapState({
-      query: state => state.Search.query,
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
-      results: state => state.Search.results,
-      solrSettings: state => state.Search.solrSettings
-    }),
+    // ...mapState({
+    //   query: state => state.Search.query,
+    //   searchAppliedFacets: state => state.Search.searchAppliedFacets,
+    //   results: state => state.Search.results,
+    //   solrSettings: state => state.Search.solrSettings
+    // }),
+    ...mapStores(useSearchStore),
     sortInput: {
       get () {
         return this.$store.state.Search.solrSettings.sort
@@ -97,7 +100,7 @@ export default {
     this.hitsPerPage = parseInt(configs.search.pagination)
   },
   methods: {
-    ...mapActions('Search', {
+    ...mapActions(useSearchStore, {
       updateSolrSettingOffset:'updateSolrSettingOffset',
       updateSolrSettingSort: 'updateSolrSettingSort'
     }),

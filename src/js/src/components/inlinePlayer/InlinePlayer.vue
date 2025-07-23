@@ -8,7 +8,9 @@
 
 <script>
 import videojs from 'video.js'
-import {mapActions} from 'vuex'
+// import {mapActions} from 'vuex'
+import { mapActions } from 'pinia'
+import { useNotifierStore } from '../../store/notifier.store'
 import Configs from '../../configs'
 
 export default {
@@ -43,7 +45,7 @@ export default {
     },
 
     methods: {
-      ...mapActions('Notifier', {
+      ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
      
         }),
