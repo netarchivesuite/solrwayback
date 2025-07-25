@@ -53,19 +53,19 @@ export const useSearchStore = defineStore('search', {
       this.solrSettings.imgSearch = param
     },
     updateSolrSettingUrlSearch ( param ) {
-      solrSettings.urlSearch = param
+      this.solrSettings.urlSearch = param
     },
     updateSolrSettingSort ( param ) {
       this.solrSettings.sort = param
     },
     addToSearchAppliedFacets ( param ) {
-      searchAppliedFacets.push(param)
+      this.searchAppliedFacets.push(param)
     },
     removeFromSearchAppliedFacets ( position ) {
       this.searchAppliedFacets.splice(position, 1)
     },
     emptySearchAppliedFacets () {
-      searchAppliedFacets = []
+      this.searchAppliedFacets = []
     },
     addSpecificRequestedFacets ( params ) {
       this.setExtraFacetLoadingStatus(params.facet)
@@ -103,8 +103,8 @@ export const useSearchStore = defineStore('search', {
       this.facetLoading = false
     },
     clearFacets () {
-      state.facets = {}
-      state.facetLoading = false
+      this.facets = {}
+      this.facetLoading = false
     },
     requestSearch ( params ) {
       this.setLoadingStatus(true)

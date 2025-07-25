@@ -10,8 +10,8 @@ import { defineConfig } from 'vite'
 // import { fileURLToPath, URL } from "node:url";
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/solrwayback/',
   plugins: [vue()],
-
   resolve: {
     alias: {
       extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue"],

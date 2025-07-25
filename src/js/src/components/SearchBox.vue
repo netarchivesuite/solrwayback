@@ -208,16 +208,16 @@ export default {
     },
     selectSearchMethod(selected) {
       if(selected === 'imgSearch') {
-        this.updateSolrSettingImgSearch(!this.solrSettings.imgSearch)
+        this.updateSolrSettingImgSearch(!this.searchStore.solrSettings.imgSearch)
         this.updateSolrSettingUrlSearch(false)
       }
       else if(selected === 'urlSearch') {
-        this.updateSolrSettingUrlSearch(!this.solrSettings.urlSearch)
+        this.updateSolrSettingUrlSearch(!this.searchStore.solrSettings.urlSearch)
         this.updateSolrSettingImgSearch(false)
         if (!this.$_validateUrlSearchPrefix(this.futureQuery)) {
             this.futureQuery = 'http://' + this.futureQuery
         }
-        if(this.solrSettings.urlSearch === false) {
+        if(this.searchStore.solrSettings.urlSearch === false) {
           this.futureQuery = ''
         }
       }
@@ -228,10 +228,10 @@ export default {
       this.updateSolrSettingUrlSearch(false)
       this.futureQuery = ''
       // Check if we gotta push a route (if we're on the frontpage and just deleting query and no results, we dont have to.)
-      if(Object.keys(this.results).length !== 0) {
+      if(Object.keys(this.searchStore.results).length !== 0) {
         this.$_pushCleanHistory('SolrWayback')
       }
-      this.preNormalizeQuery = null
+      this.searchStore.preNormalizeQuery = null
       //this.resetSearchState()
       this.searchStore.$reset()
       //Make sure the query textarea is returned to its original size, regardless of what it was before.
@@ -251,10 +251,10 @@ export default {
       this.emptySearchAppliedFacets()
       this.updateSolrSettingOffset(0)
       this.updateSolrSettingSort('score desc')
-      this.$_pushSearchHistory('Search', this.futureQuery, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', this.futureQuery, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings)
     },
     openSelectedModal(modal) {
-      this.updateShowModal(!this.showModal),
+      this.updateShowModal(!this.modalStore.showModal),
       this.updateCurrentModal(modal)
     },
     toggleToolbox() {
@@ -277,7 +277,7 @@ export default {
       return this.searchWithUploadedFileDisabled() ? 'Search by uploaded file has been disabled in the configuration' : ''
     },
     copyURLSearchQuery(){
-      const normalizedQueryToCopy = `url_norm:"${this.normalizedQuery}"`  
+      const normalizedQueryToCopy = `url_norm:"${this.searchStore.normalizedQuery}"`  
       if (copyTextToClipboard(normalizedQueryToCopy)) {
          this.normalizedQueryCopied = true
           setTimeout(() => {

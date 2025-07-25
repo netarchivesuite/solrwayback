@@ -49,7 +49,7 @@ export default {
       updateCurrentModal:'updateCurrentModal'
     }),
     closeModal() {
-      this.updateShowModal(!this.showModal)
+      this.updateShowModal(!this.modalStore.showModal)
       this.updateCurrentModal('')
     },
   }
