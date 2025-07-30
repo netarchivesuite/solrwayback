@@ -17,7 +17,6 @@ import SearchSingleItemStandardInfo from './../SearchSingleItemStandardInfo.vue'
 import SearchSingleItemAllData from './../SearchSingleItemAllData.vue'
 import SearchSingleItemImages from './../SearchSingleItemImages.vue'
 
-//import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'SearchSingleItemWeb',

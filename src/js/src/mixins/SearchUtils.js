@@ -43,9 +43,9 @@ export default {
     },
     //Deliver a normal search
     deliverSearchRequest(futureQuery, updateHistory, pagnation) {
-      this.requestSearch({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings})
-      !pagnation ? this.requestFacets({query:futureQuery, facets:this.searchAppliedFacets, options:this.solrSettings}) : null
-      updateHistory ? this.$_pushSearchHistory('Search', futureQuery, this.searchAppliedFacets, this.solrSettings) : null
+      this.requestSearch({query:futureQuery, facets:this.searchStore.searchAppliedFacets, options:this.searchStore.solrSettings})
+      !pagnation ? this.requestFacets({query:futureQuery, facets:this.searchStore.searchAppliedFacets, options:this.searchStore.solrSettings}) : null
+      updateHistory ? this.$_pushSearchHistory('Search', futureQuery, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings) : null
     },
     //Deliver an URL search
      async deliverUrlSearchRequest(futureQuery, updateHistory) {
@@ -53,9 +53,9 @@ export default {
       if(this.$_validateUrlSearchPrefix(this.disectQueryForNewUrlSearch(futureQuery))) {
         let normalizedURL = await requestService.getNormalizedURL(this.disectQueryForNewUrlSearch(futureQuery))
         this.updateNormalizedQuery(normalizedURL)
-        this.requestUrlSearch({query:normalizedURL, facets:this.searchAppliedFacets, options:this.solrSettings, preNormalizedQuery:this.disectQueryForNewUrlSearch(futureQuery)})
-        this.requestNormalizedFacets({query:normalizedURL, facets:this.searchAppliedFacets, options:this.solrSettings, preNormalizedQuery:this.disectQueryForNewUrlSearch(futureQuery)})
-        updateHistory ? this.$_pushSearchHistory('Search', normalizedURL, this.searchAppliedFacets, this.solrSettings) : null
+        this.requestUrlSearch({query:normalizedURL, facets:this.searchStore.searchAppliedFacets, options:this.searchStore.solrSettings, preNormalizedQuery:this.disectQueryForNewUrlSearch(futureQuery)})
+        this.requestNormalizedFacets({query:normalizedURL, facets:this.searchStore.searchAppliedFacets, options:this.searchStore.solrSettings, preNormalizedQuery:this.disectQueryForNewUrlSearch(futureQuery)})
+        updateHistory ? this.$_pushSearchHistory('Search', normalizedURL, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings) : null
       }
       else {
         this.setNotification({
@@ -69,11 +69,11 @@ export default {
     // Deliver an image search
     deliverImgSearchRequest(futureQuery, updateHistory) {
       this.requestImageSearch({query:futureQuery})
-      updateHistory ? this.$_pushSearchHistory('Search', futureQuery, this.searchAppliedFacets, this.solrSettings) : null
+      updateHistory ? this.$_pushSearchHistory('Search', futureQuery, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings) : null
     },
     // Check if there has been any changes to the query
     queryHasChanged(query) {
-      return query !== this.query
+      return query !== this.searchStore.query
     },
     // Prepare for a new search
     prepareStateForNewSearch(futureQuery, pagnation) {
@@ -101,10 +101,10 @@ export default {
       //console.log('we have these solrsettings: ', this.solrSettings)
       //console.log('and these facets', this.searchAppliedFacets)
       this.prepareStateForNewSearch(futureQuery, pagnation)
-      if(this.solrSettings.imgSearch) {
+      if(this.searchStore.solrSettings.imgSearch) {
         this.deliverImgSearchRequest(futureQuery ,updateHistory)
       }
-      else if(this.solrSettings.urlSearch) {
+      else if(this.searchStore.solrSettings.urlSearch) {
         this.deliverUrlSearchRequest(futureQuery , updateHistory)
       }
       else {

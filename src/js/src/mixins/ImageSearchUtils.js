@@ -17,10 +17,10 @@ export default {
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
     }),
     $_startPageSearchFromImage(searchItem) {
-      return '/search?query=' + 'links_images:"' + encodeURIComponent(searchItem) + '"' + '&offset=0&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false&facets='
+      return '/search?query=' + 'links_images:"' + encodeURIComponent(searchItem) + '"' + '&offset=0&grouping=' + this.searchStore.solrSettings.grouping + '&imgSearch=false&urlSearch=false&facets='
     },
     $_startImageSearchFromImage(searchItem) {
-      return '/search?query=' + 'hash:"' + encodeURIComponent(searchItem) + '"' + '&offset=0&grouping=' + this.solrSettings.grouping + '&imgSearch=false&urlSearch=false&facets='
+      return '/search?query=' + 'hash:"' + encodeURIComponent(searchItem) + '"' + '&offset=0&grouping=' + this.searchStore.solrSettings.grouping + '&imgSearch=false&urlSearch=false&facets='
     },
   }
 }

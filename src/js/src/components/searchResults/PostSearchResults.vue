@@ -59,16 +59,17 @@ import SearchFacetOptions from './../SearchFacetOptions.vue'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
 import ImageSearchResults from './ImageSearchResults.vue'
 import configs from '../../configs'
+import { defineAsyncComponent } from 'vue';
 
 
 export default {
   name: 'PostSearchResults',
   components: {
-    SearchSingleItemDefault: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemDefault.vue'),
-    SearchSingleItemTweet: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemTweet.vue'),
-    SearchSingleItemWeb: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemWeb.vue'),
-    SearchSingleItemImage: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemImage.vue'),
-    SearchSingleItemVideoAudio: () => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemVideoAudio.vue'),
+    SearchSingleItemDefault: defineAsyncComponent(() => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemDefault.vue')),
+    SearchSingleItemTweet: defineAsyncComponent(() => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemTweet.vue')),
+    SearchSingleItemWeb: defineAsyncComponent(() => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemWeb.vue')),
+    SearchSingleItemImage: defineAsyncComponent(() => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemImage.vue')),
+    SearchSingleItemVideoAudio: defineAsyncComponent(() => import('./../searchSingleItemComponents/searchSingleItemTypes/SearchSingleItemVideoAudio.vue')),
    
    SearchFacetOptions,
     ImageSearchResults
@@ -89,7 +90,8 @@ export default {
     ...mapStores(useSearchStore),
     sortInput: {
       get () {
-        return this.$store.state.Search.solrSettings.sort
+        // return this.$store.state.Search.solrSettings.sort
+        return this.searchStore.solrSettings.sort
       },
       set (value) {
         this.updateSolrSettingSort(value)
@@ -105,27 +107,27 @@ export default {
       updateSolrSettingSort: 'updateSolrSettingSort'
     }),
     getNextResults() {
-      this.updateSolrSettingOffset(this.solrSettings.offset + this.hitsPerPage)
-      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.updateSolrSettingOffset(this.searchStore.solrSettings.offset + this.hitsPerPage)
+      this.$_pushSearchHistory('Search', this.searchStore.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings)
     },
     getPreviousResults() {
-      this.updateSolrSettingOffset(this.solrSettings.offset - this.hitsPerPage)
-      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.updateSolrSettingOffset(this.searchStore.solrSettings.offset - this.hitsPerPage)
+      this.$_pushSearchHistory('Search', this.searchStore.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings)
     },
     getResultsWithSort(event) {
       this.updateSolrSettingSort(event.target.value)
-      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', this.searchStore.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings)
     },
     SingleEntryComponent(type) {
       //console.log('search result type', type)
-      switch(type) {   
-        case 'Web Page': return 'SearchSingleItemWeb'
-        case 'Image': return 'SearchSingleItemImage'
-        case 'Twitter Tweet': return 'SearchSingleItemTweet'
-        case 'Video' : 
-        case 'Audio' : return 'SearchSingleItemVideoAudio'
-        default: return 'SearchSingleItemDefault'
-      }
+      switch(type) {
+      case 'Web Page': return this.$options.components.SearchSingleItemWeb;
+      case 'Image': return this.$options.components.SearchSingleItemImage;
+      case 'Twitter Tweet': return this.$options.components.SearchSingleItemTweet;
+      case 'Video':
+      case 'Audio': return this.$options.components.SearchSingleItemVideoAudio;
+      default: return this.$options.components.SearchSingleItemDefault;
+    }
     }
   }
 }

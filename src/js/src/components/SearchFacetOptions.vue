@@ -76,33 +76,33 @@ export default {
       return length <= 20 ? 'more ' + facet + 's' : 'less ' + facet + 's'
     },
     requestAdditionalFacets(facetArea) {
-      let structuredQuery = this.query
-      let appliedFacets = this.searchAppliedFacets.join('')
+      let structuredQuery = this.searchStore.query
+      let appliedFacets = this.searchStore.searchAppliedFacets.join('')
       this.addSpecificRequestedFacets({facet:facetArea, query:structuredQuery, appliedFacets:appliedFacets})
     },
     applyFacet(facetCategory, facet, event) {
       let facetAllreadyApplied = false
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
-      this.searchAppliedFacets.forEach((facet) => {
+      this.searchStore.searchAppliedFacets.forEach((facet) => {
         facet === newFacet ? facetAllreadyApplied = true : null
       })
       if(!facetAllreadyApplied) {
         if(event.ctrlKey || event.metaKey) {
-            const localSolrSettings = JSON.parse(JSON.stringify(this.solrSettings))
-            const localFacets = [...this.searchAppliedFacets]
+            const localSolrSettings = JSON.parse(JSON.stringify(this.searchStore.solrSettings))
+            const localFacets = [...this.searchStore.searchAppliedFacets]
             localFacets.push(newFacet)
             localSolrSettings.offset = 0
-            window.open(this.$_getResolvedUrl('Search', this.query, localFacets, localSolrSettings).href, '_blank')
+            window.open(this.$_getResolvedUrl('Search', this.searchStore.query, localFacets, localSolrSettings).href, '_blank')
           }
           else {
             this.updateSolrSettingOffset(0)
             this.addToSearchAppliedFacets(newFacet)
-            this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+            this.$_pushSearchHistory('Search', this.searchStore.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings)
         }
       }
       else if(facetAllreadyApplied && event.ctrlKey ||
               facetAllReadyApplied && event.metaKey) {
-        window.open(this.$_getResolvedUrl('Search', this.query, this.searchAppliedFacets, this.solrSettings).href, '_blank')
+        window.open(this.$_getResolvedUrl('Search', this.searchStore.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings).href, '_blank')
       }
     },
     checkForFacets(facets) {

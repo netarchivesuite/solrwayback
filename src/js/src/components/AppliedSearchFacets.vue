@@ -41,7 +41,7 @@ export default {
     removeFacet(index) {
       this.updateSolrSettingOffset(0)
       this.removeFromSearchAppliedFacets(index)
-      this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', this.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings)
     }
   }
 }

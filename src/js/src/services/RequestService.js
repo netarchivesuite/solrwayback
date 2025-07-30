@@ -26,53 +26,54 @@ export const requestService = {
   getMoreFacets
 }
 
-function fireSearchRequest (query, facets, options) {
+async function fireSearchRequest (query, facets, options) {
   let optionString = '&start=' + options.offset + '&grouping=' + options.grouping + '&sort=' + options.sort
   // Split url and move to config
   let facetsStr = ''
     for (const f of facets){
       facetsStr = facetsStr + '&fq=' + encodeURIComponent(f.substring(4))
     }
+
   const url = 'services/frontend/solr/search/results/' + `?query=${encodeURIComponent(query) + facetsStr + optionString}`
-  return axios.get(
-    url, {
-      transformResponse: [
-        function(response) {
-          let returnObj = JSON.parse(response)
-          if(options.grouping === false) {
-            returnObj = dataTransformationHelper.transformSearchResponse(returnObj)
-          }
-          else {
-            returnObj = dataTransformationHelper.transformGroupedSearchResponse(returnObj)
-          }
-          return returnObj
-        }
-      ]}).then(returnObj => {
-    return returnObj.data
-  }).catch(error => {
+
+  try{
+    const response = await axios.get(url);
+    let returnObj = response.data
+
+    if(options.grouping === false) {
+      returnObj = dataTransformationHelper.transformSearchResponse(returnObj)
+    }
+    else {
+      returnObj = dataTransformationHelper.transformGroupedSearchResponse(returnObj)
+    }
+
+    return returnObj
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function fireImageSearchRequest(query) {
+async function fireImageSearchRequest(query) {
   // Split url and move to config
   const url = 'services/frontend/images/search/' + `?query=${encodeURIComponent(query)}`
-  return axios.get(
-    url, {
-      transformResponse: [
-        function(response) {
-          let returnObj = JSON.parse(response)
-          returnObj = dataTransformationHelper.transformImageResponse(returnObj,'image')
-          return returnObj
-        }
-      ]}).then(returnObj => {
-    return returnObj.data
-  }).catch(error => {
+
+  try{
+    const response = await axios.get(url);
+    let returnObj = response.data
+
+    returnObj = dataTransformationHelper.transformImageResponse(returnObj,'image')
+
+    return returnObj
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function fireFacetRequest (query, facets, options) {
+async function fireFacetRequest (query, facets, options) {
   let optionString = '&start=' + options.offset + '&grouping=' + options.grouping
   // Split url and move to config
   let facetsStr = ''
@@ -82,33 +83,44 @@ function fireFacetRequest (query, facets, options) {
   }
   // Split url and move to config
   const url = 'services/frontend/solr/search/facets/' + `?query=${encodeURIComponent(query) + facetsStr + optionString}`
-  return axios.get(
-    url).then(response => {
-    //console.log('facets', response.data.facet_counts)
+
+  try{
+    const response = await axios.get(url);
+    
     return response.data.facet_counts
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function fireImagesRequest (source_file_path, offset) {
+async function fireImagesRequest (source_file_path, offset) {
   const url = 'services/frontend/images/htmlpage/' + `?source_file_path=${encodeURIComponent(source_file_path)}&offset=${offset}`
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+  
 }
 
-function fireLookupRequest(id) {
+async function fireLookupRequest(id) {
   const url = 'services/frontend/solr/idlookup/' + `?id=${id}`
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+  
 }
 
 function uploadFileRequest(fileData) {
@@ -123,97 +135,135 @@ function uploadFileRequest(fileData) {
   })
 }
 
-function getNormalizedURL(query) {
-  const url =  `services/frontend/util/normalizeurl/?url=${encodeURIComponent(query)}` 
-  return axios.get(
-    url).then(response => {
-    return response.data.url 
-      }).catch(error => {
-        return Promise.reject(error)
-      })
+async function getNormalizedURL(query) {
+  const url =  `services/frontend/util/normalizeurl/?url=${encodeURIComponent(query)}`
+
+  try{
+    const response = await axios.get(url);
+
+    return response.data.url
+
+  } catch (error){
+    return Promise.reject(error)
+  }
+
 }
 
-function getNormalizedUrlSearch(url, facets, options) {
-    return fireSearchRequest('url_norm:"' + url + '"', facets, options).then(returnObj => {
-        return returnObj
-      }).catch(error => {
-        return Promise.reject(error)
-      })
+async function getNormalizedUrlSearch(url, facets, options) {
+
+  try{
+    const response = await fireSearchRequest('url_norm:"' + url + '"', facets, options)
+
+    return response
+
+  } catch (error){
+    return Promise.reject(error)
+  }
+
 }
 
-function getNormalizedUrlFacets(url, facets, options) {
-    return fireFacetRequest('url_norm:"' + url + '"', facets, options).then(returnObj => {
-        return returnObj
-      }).catch(error => {
-        return Promise.reject(error)
-      })
+async function getNormalizedUrlFacets(url, facets, options) {
+
+  try{
+    const response = await fireFacetRequest('url_norm:"' + url + '"', facets, options)
+
+    return response
+
+  } catch (error){
+    return Promise.reject(error)
+  }
+
 }
 
-function getHarvestDates(harvestUrl) {
+async function getHarvestDates(harvestUrl) {
   const url = 'services/frontend/harvestDates/' + `?url=${harvestUrl}`
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function getAboutText() {
+async function getAboutText() {
   const url = 'services/frontend/help/about/'
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function getSearchGuidelines() {
+async function getSearchGuidelines() {
   const url = 'services/frontend/help/search/'
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function getCollectionInfo() {
+async function getCollectionInfo() {
   const url = 'services/frontend/help/collection/'
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
   
-function getHarvestedPageResources(source_file_path, offset) {
+async function getHarvestedPageResources(source_file_path, offset) {
   const url = `services/timestampsforpage/?source_file_path=${encodeURIComponent(source_file_path)}&offset=${offset}`
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function getDomainStatistics(domain, startDate, endDate, timeScale) {
+async function getDomainStatistics(domain, startDate, endDate, timeScale) {
   let settings = ''
   if (timeScale != null && timeScale != '') {
       settings = '&startdate=' + startDate +'&enddate='+ endDate + '&scale=' + timeScale
   }
   const url = `services/statistics/domain/?domain=${domain + settings}`
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch((error) => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function getNgramNetarchive(params){
+async function getNgramNetarchive(params){
   let url
   let settings = ''
     if (params.timeScale != null && params.timeScale != '') {
@@ -223,67 +273,88 @@ function getNgramNetarchive(params){
   url = `services/frontend/smurf/tags/?tag=${encodeURIComponent(params.query) + settings}`
   :
   url = `services/frontend/smurf/text/?q=${encodeURIComponent(params.query) + settings}`
-  return axios.get(url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
     
-function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
+async function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
   const url = 'services/frontend/images/search/location/' + `?query=${query}&latitude=${latitude}&longitude=${longitude}&d=${radius}`
-  return axios.get(
-    url, {
-      transformResponse: [
-        function(response) {
-          let returnObj = JSON.parse(response)
-          returnObj = dataTransformationHelper.transformImageResponse(returnObj,'geoImage')
-          return returnObj
-        }
-      ]}).then(returnObj => {
+
+  try{
+    const response = await axios.get(url);
+    let returnObj = response
+
+    returnObj = dataTransformationHelper.transformImageResponse(returnObj,'geoImage')
+
     return returnObj.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
  
-function getPWID(sourceFilePath, offset) {
+async function getPWID(sourceFilePath, offset) {
   const url = `services/generatepwid/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function getWarcHeader(sourceFilePath, offset) {
+async function getWarcHeader(sourceFilePath, offset) {
   const url = `services/warc/header/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function getLinkGraph(domain, facetLimit, ingoing, dateStart, dateEnd) {
+async function getLinkGraph(domain, facetLimit, ingoing, dateStart, dateEnd) {
   const url = `services/frontend/tools/linkgraph/?domain=${domain}&facetLimit=${facetLimit}&ingoing=${ingoing}&dateStart=${dateStart}&dateEnd=${dateEnd}`
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }
 
-function getMoreFacets(domain, query, appliedFacets) {
+async function getMoreFacets(domain, query, appliedFacets) {
   const url = `services/frontend/solr/search/facets/loadmore/?facetfield=${domain}&grouping=false&query=${encodeURIComponent(query) + appliedFacets}`
-  return axios.get(
-    url).then(response => {
+
+  try{
+    const response = await axios.get(url);
+
     return response.data
-  }).catch(error => {
+
+  } catch (error){
     return Promise.reject(error)
-  })
+  }
+
 }

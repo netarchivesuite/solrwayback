@@ -1,6 +1,6 @@
 // Global search state.
 import { defineStore } from 'pinia';
-
+import { useNotifierStore } from '../store/notifier.store'
 import { requestService } from '../services/RequestService'
 
 export const useSearchStore = defineStore('search', {
@@ -67,30 +67,30 @@ export const useSearchStore = defineStore('search', {
     emptySearchAppliedFacets () {
       this.searchAppliedFacets = []
     },
-    addSpecificRequestedFacets ( params ) {
+    async addSpecificRequestedFacets ( params ) {
       this.setExtraFacetLoadingStatus(params.facet)
-      //commit('setExtraFacetLoadingStatus', params.facet)
-      requestService
-        .getMoreFacets(params.facet, params.query, params.appliedFacets)
-        .then(
-          result => {
-            let newFacets = JSON.parse(JSON.stringify(this.facets))
-            newFacets['facet_fields'][params.facet] = result.facet_counts.facet_fields[params.facet]
-            this.facets = newFacets
-            this.extraFacetLoading = false
-          },
-          error => {
-            this.dispatch('Notifier/setNotification', {
-              title: 'We are so sorry!',
-              text: 'Something went wrong when fetching more facets - please try again',
-              srvMessage: 'Facets not found.',
-              type: 'error',
-              timeout: false
-            })
-            this.extraFacetLoading = false
-          })
-          // commit('loadMorefacetsRequestSuccess', {result:result, selectedFacet:params.facet}), error =>
-          // commit('loadMorefacetsRequestError', error))
+
+      try {
+        const result = await requestService.getMoreFacets(params.facet, params.query, params.appliedFacets);
+
+        let newFacets = JSON.parse(JSON.stringify(this.facets));
+        newFacets['facet_fields'][params.facet] = result.facet_counts.facet_fields[params.facet];
+        this.facets = newFacets;
+        // this.extraFacetLoading = false;
+        this.setExtraFacetLoadingStatus(false)
+      } catch (error){
+        const notifier = useNotifierStore();
+        notifier.setNotification({
+          title: 'We are so sorry!',
+          text: 'Something went wrong when fetching more facets - please try again',
+          srvMessage: error,
+          type: 'error',
+          timeout: false
+        });
+
+        // this.extraFacetLoading = false
+        this.setExtraFacetLoadingStatus(false)
+      }
     },
     setFacetToInitialAmount ( facetArea ) {
       let newFacets = JSON.parse(JSON.stringify(this.facets))
@@ -106,122 +106,117 @@ export const useSearchStore = defineStore('search', {
       this.facets = {}
       this.facetLoading = false
     },
-    requestSearch ( params ) {
+    async requestSearch ( params ) {
       this.setLoadingStatus(true)
-      // commit('setLoadingStatus', true)
-      requestService
-        .fireSearchRequest(params.query, params.facets, params.options)
-        .then(
-          result => {
-            this.results = result.response
-            this.loading = false
-          },
-          error => {
-            this.dispatch('Notifier/setNotification', {
-              title: 'We are so sorry!',
-              text: 'Something went wrong when searching - please try again',
-              srvMessage: error,
-              type: 'error',
-              timeout: false
-            })
-            this.loading = false
-          }
-        )
-        // commit('doSearchSuccess', result), error =>
-        // commit('doSearchError', error))
+
+      try {
+        const result = await requestService.fireSearchRequest(params.query, params.facets, params.options);
+
+        this.results = result.response
+        this.setLoadingStatus(false)
+      } catch (error){
+        const notifier = useNotifierStore();
+        notifier.setNotification({
+          title: 'We are so sorry!',
+          text: 'Something went wrong when searching - please try again',
+          srvMessage: error,
+          type: 'error',
+          timeout: false
+        });
+
+        this.setLoadingStatus(false)
+      }
     },
-    requestImageSearch ( params ) {
-      // commit('setLoadingStatus', true)
+    async requestImageSearch ( params ) {
       this.setLoadingStatus(true)
-      requestService
-        .fireImageSearchRequest(params.query)
-        .then(
-          result => {
-            this.results = result.response
-            this.loading = false
-          },
-          error =>{
-            this.dispatch('Notifier/setNotification', {
-              title: 'We are so sorry!',
-              text: 'Something went wrong when searching for images - please try again',
-              srvMessage: error,
-              type: 'error',
-              timeout: false
-            })
-            this.loading = false
-          })     
-          // commit('doImageSearchSuccess', result), error =>
-          // commit('doImageSearchError', error))
+
+      try {
+        const result = await requestService.fireImageSearchRequest(params.query);
+
+        this.results = result.response
+        this.setLoadingStatus(false)
+      } catch (error){
+        const notifier = useNotifierStore();
+        notifier.setNotification({
+          title: 'We are so sorry!',
+          text: 'Something went wrong when searching - please try again',
+          srvMessage: error,
+          type: 'error',
+          timeout: false
+        });
+
+        this.setLoadingStatus(false)
+      }
     },
-    requestUrlSearch ( params ) {
-      // commit('setLoadingStatus',true)
+    async requestUrlSearch ( params ) {
       this.setLoadingStatus(true)
-      requestService
-        .getNormalizedUrlSearch(params.query, params.facets, params.options)
-        .then(
-          result => {
-            this.results = result.response
-            this.query =  params.preNormalizedQuery //data.result.responseHeader.params.q
-            this.loading = false
-          },
-          error => {
-            this.dispatch('Notifier/setNotification', {
-              title: 'We are so sorry!',
-              text: 'Something went wrong when searching for URLs - please try again',
-              srvMessage: error,
-              type: 'error',
-              timeout: false
-            })
-            this.loading = false
-          })
-          // commit('doUrlSearchSuccess', {result, params}), error =>
-          // commit('doUrlSearchError', error))
+
+      try {
+        const result = await requestService.getNormalizedUrlSearch(params.query, params.facets, params.options);
+
+        this.results = result.response
+        this.query =  params.preNormalizedQuery //data.result.responseHeader.params.q
+        this.setLoadingStatus(false)
+      } catch (error){
+        const notifier = useNotifierStore();
+        notifier.setNotification({
+          title: 'We are so sorry!',
+          text: 'Something went wrong when searching - please try again',
+          srvMessage: error,
+          type: 'error',
+          timeout: false
+        });
+
+        this.setLoadingStatus(false)
+      }
     },
-    requestNormalizedFacets( params ) {
-      // commit('setLoadingStatus', true)
-      this.setLoadingStatus(true)
-      requestService
-        .getNormalizedUrlFacets(params.query, params.facets, params.options)
-        .then(
-          result => {
-            this.facets = result
-            this.facetLoading = false
-          },
-          error => {
-            this.dispatch('Notifier/setNotification', {
-              title: 'We are so sorry!',
-              text: 'Something went wrong when requesting the facets - please try again',
-              srvMessage: error,
-              type: 'error',
-              timeout: false
-            })
-            this.loading = false
-          })
-          // commit('facetRequestSuccess', result), error =>
-          // commit('facetRequestError', error))
+    async requestNormalizedFacets( params ) {
+      // this.setLoadingStatus(true)
+      this.setFacetLoadingStatus(true)
+
+      try {
+        const result = await requestService.getNormalizedUrlFacets(params.query, params.facets, params.options);
+
+        this.facets = result
+        this.setFacetLoadingStatus(false)
+        // this.facetLoading = false
+      } catch (error){
+        const notifier = useNotifierStore();
+        notifier.setNotification({
+          title: 'We are so sorry!',
+          text: 'Something went wrong when searching - please try again',
+          srvMessage: error,
+          type: 'error',
+          timeout: false
+        });
+
+        // this.setLoadingStatus(false)
+        this.setFacetLoadingStatus(false)
+      }
     },
-    requestFacets( params ) {
-      // commit('setFacetLoadingStatus', true)
-      this.setLoadingStatus(true)
-      requestService
-        .fireFacetRequest(params.query, params.facets, params.options)
-        .then(
-          result => {
-            this.facets = result
-            this.facetLoading = false
-          },
-          error => {
-            this.dispatch('Notifier/setNotification', {
-              title: 'We are so sorry!',
-              text: 'Something went wrong when requesting the facets - please try again',
-              srvMessage: error,
-              type: 'error',
-              timeout: false
-            })
-            this.loading = false
-          })
-          // commit('facetRequestSuccess', result), error =>
-          // commit('facetRequestError', error))
+    async requestFacets( params ) {
+      // this.setLoadingStatus(true)
+      this.setFacetLoadingStatus(true)
+
+      try {
+        const result = await requestService.fireFacetRequest(params.query, params.facets, params.options);
+
+        this.facets = result
+        // this.facetLoading = false
+        this.setFacetLoadingStatus(false)
+      } catch (error){
+        const notifier = useNotifierStore();
+        notifier.setNotification({
+          title: 'We are so sorry!',
+          text: 'Something went wrong when searching - please try again',
+          srvMessage: error,
+          type: 'error',
+          timeout: false
+        });
+
+        this.setFacetLoadingStatus(false)
+        // this.setLoadingStatus(false)
+      }
     },
     resetState() {
       // commit('resetState')
@@ -234,154 +229,3 @@ export const useSearchStore = defineStore('search', {
 
 
 })
-
-
-
-// const mutations = {
-  // updateQuerySuccess(state, param) {
-  //   state.query = param
-  // },
-  // updatePreNormalizedQuerySuccess(state, param) {
-  //   state.preNormalizedQuery = param
-  // },
-  // updateNormalizedQuerySuccess(state, param) {
-  //   state.normalizedQuery = param
-  // },
-
-  // updateSolrSettingGroupingSuccess(state, param) {
-  //   state.solrSettings.grouping = param
-  // },
-  // updateSolrSettingOffsetSuccess(state, param) {
-  //   state.solrSettings.offset = param
-  // },
-  // updateSolrSettingImgSearchSuccess(state, param) {
-  //   state.solrSettings.imgSearch = param
-  // },
-  // updateSolrSettingUrlSearchSuccess(state, param) {
-  //   state.solrSettings.urlSearch = param
-  // },
-  // updateSolrSettingSortSuccess(state, param) {
-  //   state.solrSettings.sort = param
-  // },
-  // addToSearchAppliedFacetsSuccess(state, param) {
-  //   state.searchAppliedFacets.push(param)
-  // },
-  // removeFromSearchAppliedFacetsSuccess(state, position) {
-  //   state.searchAppliedFacets.splice(position, 1)
-  // },
-  // emptySearchAppliedFacetsSuccess(state) {
-  //   state.searchAppliedFacets = []
-  // },
-  // loadMorefacetsRequestSuccess(state, param) {
-  //   let newFacets = JSON.parse(JSON.stringify(state.facets))
-  //   newFacets['facet_fields'][param.selectedFacet] = param.result.facet_counts.facet_fields[param.selectedFacet]
-  //   state.facets = newFacets
-  //   state.extraFacetLoading = false
-  // },
-  // setFacetsToInitialAmountSuccess(state, facetArea) {
-  //   let newFacets = JSON.parse(JSON.stringify(state.facets))
-  //   newFacets['facet_fields'][facetArea] = newFacets['facet_fields'][facetArea].splice(0,20)
-  //   state.facets = newFacets
-  //   state.extraFacetLoading = false
-
-  // },
-  // loadMorefacetsRequestError() {
-  //   this.dispatch('Notifier/setNotification', {
-  //     title: 'We are so sorry!',
-  //     text: 'Something went wrong when fetching more facets - please try again',
-  //     srvMessage: 'Facets not found.',
-  //     type: 'error',
-  //     timeout: false
-  //   })
-  //   state.extraFacetLoading = false
-
-  // },
-  // facetRequestSuccess(state, result) {
-  //     state.facets = result
-  //     state.facetLoading = false
-  // },
-  // facetRequestError(state, message) {
-  //   this.dispatch('Notifier/setNotification', {
-  //     title: 'We are so sorry!',
-  //     text: 'Something went wrong when requesting the facets - please try again',
-  //     srvMessage: message,
-  //     type: 'error',
-  //     timeout: false
-  //   })
-  //   state.loading = false
-  // },
-  // doSearchSuccess(state, result) {
-  //   state.results = result.response
-  //   state.loading = false
-  // },
-  // doSearchError(state, message) {
-  //   this.dispatch('Notifier/setNotification', {
-  //     title: 'We are so sorry!',
-  //     text: 'Something went wrong when searching - please try again',
-  //     srvMessage: message,
-  //     type: 'error',
-  //     timeout: false
-  //   })
-  //   state.loading = false
-  // },
-  // doImageSearchSuccess(state, result) {
-  //   state.results = result.response
-  //   state.loading = false
-  // },
-  // doImageSearchError(state, message) {
-  //   this.dispatch('Notifier/setNotification', {
-  //     title: 'We are so sorry!',
-  //     text: 'Something went wrong when searching for images - please try again',
-  //     srvMessage: message,
-  //     type: 'error',
-  //     timeout: false
-  //   })
-  //   state.loading = false
-  // },
-  // doUrlSearchSuccess(state, data) {
-  //   state.results = data.result.response
-  //   state.query =  data.params.preNormalizedQuery //data.result.responseHeader.params.q
-  //   state.loading = false
-  // },
-  // doUrlSearchError(state, message) {
-  //   this.dispatch('Notifier/setNotification', {
-  //     title: 'We are so sorry!',
-  //     text: 'Something went wrong when searching for URLs - please try again',
-  //     srvMessage: message,
-  //     type: 'error',
-  //     timeout: false
-  //   })
-  //   state.loading = false
-  // },
-  // setLoadingStatus(state, status) {
-  //   state.loading = status
-  // },
-  // setFacetLoadingStatus(state, status) {
-  //   state.facetLoading = status
-  // },
-  // setExtraFacetLoadingStatus(state, status) {
-  //   state.extraFacetLoading = status
-  // },
-  // clearResultsSuccess(state) {
-  //   state.results = {}
-  //   state.facetLoading = false
-  // },
-  // clearFacetsSuccess(state) {
-  //   state.facets = {}
-  //   state.facetLoading = false
-  // },
-  // resetState(state) {
-  //   const newState = initialState()
-  //   Object.keys(newState).forEach(key => {
-  //         state[key] = newState[key]
-  //   })
-  // },
-
-// }
-
-// export default {
-//   namespaced: true,
-//   state,
-//   actions,
-//   mutations
-// }

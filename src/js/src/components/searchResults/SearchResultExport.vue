@@ -164,38 +164,38 @@ export default {
   mounted () {
     this.selectedArray = this.getSplitFieldsSelected(this.configs.exportOptions.csvFields)
     this.nonSelectedArray = this.getSplitFieldsNotSelected(this.configs.exportOptions.csvFields)
-    this.exportOptions.grouping = this.solrSettings.grouping ? 'url_norm' : this.solrSettings.grouping
+    this.exportOptions.grouping = this.searchStore.solrSettings.grouping ? 'url_norm' : this.searchStore.solrSettings.grouping
   },
   methods: {
     exportToWARC() {
-     return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}warc?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`:
-      `${this.returnExportUrl()}warc?query=${encodeURIComponent(this.query)}`
+     return this.searchStore.searchAppliedFacets ? 
+      `${this.returnExportUrl()}warc?query=${encodeURIComponent(this.searchStore.query)}${this.getEncodedAppliedFacets(this.searchStore.searchAppliedFacets).join('')}`:
+      `${this.returnExportUrl()}warc?query=${encodeURIComponent(this.searchStore.query)}`
     },
     exportToExtendedWARC() {
-      return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}warcExpanded?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`:
-      `${this.returnExportUrl()}warcExpanded?query=${encodeURIComponent(this.query)}`
+      return this.searchStore.searchAppliedFacets ? 
+      `${this.returnExportUrl()}warcExpanded?query=${encodeURIComponent(this.searchStore.query)}${this.getEncodedAppliedFacets(this.searchStore.searchAppliedFacets).join('')}`:
+      `${this.returnExportUrl()}warcExpanded?query=${encodeURIComponent(this.searchStore.query)}`
     },
     exportToWARCGZ() {
-      return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}warc?gzip=true&query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}` :
-      `${this.returnExportUrl()}warc?gzip=true&query=${encodeURIComponent(this.query)}`
+      return this.searchStore.searchAppliedFacets ? 
+      `${this.returnExportUrl()}warc?gzip=true&query=${encodeURIComponent(this.searchStore.query)}${this.getEncodedAppliedFacets(this.searchStore.searchAppliedFacets).join('')}` :
+      `${this.returnExportUrl()}warc?gzip=true&query=${encodeURIComponent(this.searchStore.query)}`
     },
     exportToExtendedWARCGZ() {
-      return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}warcExpanded?gzip=true&query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`:
-      `${this.returnExportUrl()}warcExpanded?gzip=true&query=${encodeURIComponent(this.query)}`
+      return this.searchStore.searchAppliedFacets ? 
+      `${this.returnExportUrl()}warcExpanded?gzip=true&query=${encodeURIComponent(this.searchStore.query)}${this.getEncodedAppliedFacets(this.searchStore.searchAppliedFacets).join('')}`:
+      `${this.returnExportUrl()}warcExpanded?gzip=true&query=${encodeURIComponent(this.searchStore.query)}`
     },
     exportToCSV() {
       let fields = this.selectedArray.join(',')
       const groupFieldParam =  this.exportOptions.grouping ? `&groupfield=${this.exportOptions.grouping}` : ''
-      return this.searchAppliedFacets ? 
-      `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}&gzip=${this.exportOptions.gzip}` :
-      `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.query)}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}&gzip=${this.exportOptions.gzip}`
+      return this.searchStore.searchAppliedFacets ? 
+      `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.searchStore.query)}${this.getEncodedAppliedFacets(this.searchStore.searchAppliedFacets).join('')}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}&gzip=${this.exportOptions.gzip}` :
+      `${this.returnExportUrl()}fields?query=${encodeURIComponent(this.searchStore.query)}&fields=${encodeURIComponent(fields)}${groupFieldParam}&flatten=${this.exportOptions.flatten}&format=${this.exportOptions.format}&gzip=${this.exportOptions.gzip}`
     },
     exportToZip() {
-         return `${this.returnExportUrl()}zip?query=${encodeURIComponent(this.query)}${this.getEncodedAppliedFacets(this.searchAppliedFacets).join('')}`
+         return `${this.returnExportUrl()}zip?query=${encodeURIComponent(this.searchStore.query)}${this.getEncodedAppliedFacets(this.searchStore.searchAppliedFacets).join('')}`
     },
     returnExportUrl() {
       return this.configs.playbackConfig.solrwaybackBaseURL + 'services/export/'

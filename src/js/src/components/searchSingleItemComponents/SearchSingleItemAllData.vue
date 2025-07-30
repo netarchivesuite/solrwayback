@@ -149,7 +149,7 @@ export default {
       this.updateQuery(searchString)
       this.updateSolrSettingUrlSearch(false)
       this.emptySearchAppliedFacets()
-      this.$_pushSearchHistory('Search', searchString, this.searchAppliedFacets, this.solrSettings)
+      this.$_pushSearchHistory('Search', searchString, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings)
     },
     toggleShownData(index) {
       index === this.currentDataShown ? this.currentDataShown = null : this.currentDataShown = index
