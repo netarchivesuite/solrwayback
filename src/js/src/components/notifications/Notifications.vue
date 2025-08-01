@@ -10,7 +10,6 @@
 
 <script>
 import NotificationItem from './NotificationItem.vue'
-// import { mapState, mapActions } from 'vuex'
 import { mapStores, mapActions } from 'pinia'
 import { useNotifierStore } from '../../store/notifier.store'
 

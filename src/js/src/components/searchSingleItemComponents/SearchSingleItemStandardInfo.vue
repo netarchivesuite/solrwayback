@@ -52,7 +52,6 @@
 <script>
 import configs from '../../configs'
 import { isPlaybackDisabled } from '../../configs/configHelper'
-// import { mapState } from 'vuex'
 import { mapStores, mapActions } from 'pinia'
 import { useSearchStore } from '../../store/search.store'
 

@@ -88,7 +88,6 @@
 
 <script>
 
-// import { mapActions } from 'vuex'
 import { mapActions } from 'pinia'
 import { useNotifierStore } from '../../store/notifier.store'
 import { requestService } from '../../services/RequestService'

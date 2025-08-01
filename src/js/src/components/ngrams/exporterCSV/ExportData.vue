@@ -26,7 +26,7 @@
 </template>
 
 <script>
-// import { mapState, mapActions } from 'vuex'
+
 import { mapStores, mapActions } from 'pinia'
 import { useNgramStore } from '../../../store/ngram.store'
 import { useNotifierStore } from '../../../store/notifier.store'

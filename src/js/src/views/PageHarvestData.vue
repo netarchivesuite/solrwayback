@@ -33,7 +33,6 @@ import HarvestMaxTimeDifference from '../components/harvestTimeResources/Harvest
 
 import Notifications from '../components/notifications/Notifications'
 import {toHumanDate} from '../components/harvestCalendar/util'
-// import {mapActions} from 'vuex'
 import { mapActions } from 'pinia'
 import { useNotifierStore } from '../../store/notifier.store'
 

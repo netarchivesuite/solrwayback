@@ -3,7 +3,6 @@
  * 
  */
 
-// import {mapActions, mapState} from 'vuex'
 import { mapStores } from 'pinia'
 import { useNgramStore } from '../store/ngram.store'
 

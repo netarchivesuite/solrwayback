@@ -52,7 +52,7 @@
 </template>
 
 <script>
-// import { mapState, mapActions } from 'vuex'
+
 import { mapStores, mapActions } from 'pinia'
 import { useSearchStore } from '../../store/search.store'
 import SearchFacetOptions from './../SearchFacetOptions.vue'

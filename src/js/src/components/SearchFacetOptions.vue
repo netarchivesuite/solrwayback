@@ -35,7 +35,6 @@
 
 <script>
 
-// import { mapState, mapActions } from 'vuex'
 import { mapStores, mapActions } from 'pinia'
 import { useSearchStore } from '../store/search.store'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'

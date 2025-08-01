@@ -36,7 +36,6 @@
  import Notifications from '../components/notifications/Notifications.vue'
  import LoadingOverlay from '../components/LoadingOverlay.vue'
  import SearchUtils from './../mixins/SearchUtils'
-//  import { mapState, mapActions } from 'vuex'
  import { mapStores, mapActions } from 'pinia'
  import { useModalStore } from '../store/modal.store'
  import { useSearchStore } from '../store/search.store'

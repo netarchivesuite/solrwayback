@@ -48,7 +48,6 @@ import iconShadow from '../../../node_modules/leaflet/dist/images/marker-shadow.
 import * as Markercluster from '../../../node_modules/leaflet.markercluster/dist/leaflet.markercluster.js'
 import ImageSearchResults from '../searchResults/ImageSearchResults.vue'
 import SearchUtils from './../../mixins/SearchUtils'
-// import { mapState, mapActions } from 'vuex'
 import { mapActions } from 'pinia'
 import { useSearchStore } from '../../store/search.store.js'
 import { useNotifierStore } from '../../store/notifier.store.js'

@@ -1,5 +1,4 @@
 import HistoryRoutingUtils from './HistoryRoutingUtils'
-// import { mapState, mapActions } from 'vuex'
 import { mapStores, mapActions } from 'pinia'
 import { useSearchStore } from '../store/search.store'
 import { useNotifierStore } from '../store/notifier.store'

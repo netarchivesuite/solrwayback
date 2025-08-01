@@ -12,14 +12,14 @@
       <!-- HERE COMES RESULTS // Figure out if this should be splitted out into a new component -->
       <post-search-results v-if="this.searchStore.results.searchType === 'post'" />
       <!-- HERE COMES PICTURES -->
-      <image-search-results v-if="this.searchStore.results.searchType === 'image'" :img-results="results" />
+      <image-search-results v-if="this.searchStore.results.searchType === 'image'" :img-results="this.searchStore.results" />
     </div>
     <div class="marginContainer" />
   </div>
 </template>
 
 <script>
-// import { mapState, mapActions } from 'vuex'
+
 import { mapStores, mapActions } from 'pinia'
 import { useModalStore } from '../../store/modal.store'
 import { useSearchStore } from '../../store/search.store'

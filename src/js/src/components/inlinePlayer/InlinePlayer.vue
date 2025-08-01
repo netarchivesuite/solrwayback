@@ -8,7 +8,6 @@
 
 <script>
 import videojs from 'video.js'
-// import {mapActions} from 'vuex'
 import { mapActions } from 'pinia'
 import { useNotifierStore } from '../../store/notifier.store'
 import Configs from '../../configs'

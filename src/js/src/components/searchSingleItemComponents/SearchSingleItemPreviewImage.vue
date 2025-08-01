@@ -12,11 +12,11 @@
                                     :index="index"
                                     @close-window="closeWindow" />
     <div class="imageButtonContainer">
-      <router-link :to="{ path: $_startImageSearchFromImage(item.hash ? item.hash : hash )}">
+      <router-link :to="$_startImageSearchFromImage(item.hash ? item.hash : hash )">
         <span>Search for image</span>
       </router-link>
-      <router-link :to="{ path: $_startPageSearchFromImage(item.urlNorm ? item.urlNorm : urlNorm)}">
-        <span>Pages linking to image</span>
+      <router-link :to="$_startPageSearchFromImage(item.urlNorm ? item.urlNorm : urlNorm)">
+        <span>Pages linking to image {{ item.urlNorm }} | {{ urlNorm }}</span>
       </router-link>
     </div>
   </div>

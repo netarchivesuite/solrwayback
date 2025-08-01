@@ -12,12 +12,14 @@ import './assets/styles/main.scss'
 
 // Vue.config.productionTip = false
 
-// Axios.get('services/frontend/properties/solrwaybackweb/')
-//     .then(response => {
-//         setServerConfigInApp(response.data)
-//         initializeVue(response.data['webapp.baseurl'])
-//     })
-//     .catch(error => initializeVue('/'))
+Axios.get('services/frontend/properties/solrwaybackweb/')
+    .then(response => {
+        setServerConfigInApp(response.data)
+    })
+    .catch(error => {
+        // TODO - unsure what best to do here (Ben)
+        console.error("Failed to load server config", error)
+    })
 
 
 const pinia = createPinia()

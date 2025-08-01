@@ -102,7 +102,7 @@
 </template> 
 
 <script>
-//import { mapState, mapActions } from 'vuex'
+
 import {useRoute} from 'vue-router'
 import { mapStores, mapActions } from 'pinia'
 import { useModalStore } from '../store/modal.store'
@@ -148,14 +148,12 @@ export default {
     ...mapStores(useModalStore, useSearchStore)
   },
   watch: {
-    query: function (val) {
-      this.futureQuery  = val
-    },
-  },
+    'searchStore.query': function (val) {
+      this.futureQuery = val;
+    }
+  }, 
   mounted () {
-    const route = useRoute();
-    const routerQuery = route.query
-    // const routerQuery = this.$router.history.current.query
+    const routerQuery = this.$route.query
     if(routerQuery.query) {
       this.futureQuery =  routerQuery.query
       if(routerQuery.facets) {

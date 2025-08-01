@@ -18,10 +18,9 @@
 <script>
 
 import SearchGuidelines from './SearchGuidelines.vue'
-// import SearchVisualization from './SearchVisualization.vue'
+import SearchVisualization from './SearchVisualization.vue'
 import GpsSearch from './GpsSearch.vue'
 import CollectionInfo from './CollectionInfo.vue'
-// import { mapState, mapActions } from 'vuex'
 import { mapStores, mapActions } from 'pinia'
 import { useModalStore } from '../../store/modal.store'
 
@@ -29,7 +28,7 @@ export default {
   name: 'PrimaryModal',
   components: {
     SearchGuidelines,
-    // SearchVisualization,
+    SearchVisualization,
     GpsSearch,
     CollectionInfo
   },

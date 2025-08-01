@@ -24,7 +24,7 @@
 </template>
 
 <script>
-// import { mapState, mapActions } from 'vuex'
+
 import { mapStores } from 'pinia'
 import { useNotifierStore } from '../../store/notifier.store'
 

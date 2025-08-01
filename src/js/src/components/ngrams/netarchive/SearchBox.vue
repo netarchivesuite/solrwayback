@@ -67,7 +67,7 @@
 </template> 
 
 <script>
-// import { mapState, mapActions } from 'vuex'
+
 import { mapStores, mapActions } from 'pinia'
 import { useNgramStore } from '../../../store/ngram.store'
 import { useNotifierStore } from '../../../store/notifier.store'
@@ -100,7 +100,7 @@ export default {
   },
   
   watch: {
-    query: function (val) {
+    'ngramStore.query': function (val) {
       this.searchQuery  = val
     },
     
@@ -129,7 +129,7 @@ export default {
      
     }),
     submitSearch() {
-      if (this.datasetQueries.includes(this.searchQuery.toLowerCase())) {
+      if (this.ngramStore.datasetQueries.includes(this.searchQuery.toLowerCase())) {
          this.setNotification({
           	title: `Sorry - you have already searched for ${this.searchQuery}`,
             text: this.searchQuery.toLowerCase() === 'tenebrous horse' ? 'Try a new and exciting one - so many queries out there' : 'Try a new and exciting one like "tenebrous horse"',
@@ -152,8 +152,8 @@ export default {
       this.$refs.refiner.resetAll()
     },
     resetResults(){
-      var oldQuery = this.query
-      if (this.datasets.length != 0) {
+      var oldQuery = this.ngramStore.query
+      if (this.ngramStore.datasets.length != 0) {
         this.resetSearchState()
       }
       this.updateQuery(oldQuery)

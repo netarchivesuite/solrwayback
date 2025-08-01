@@ -3,10 +3,10 @@
     <div class="searchVisualizationHeadline">
       <h2>Visualization of search result by domain</h2>
       <p>
-        query: <span>{{ query }}</span>
+        query: <span>{{ this.searchStore.query }}</span>
       </p>
-      <p v-if="searchAppliedFacets.length > 0">
-        filters: <span>{{ searchAppliedFacets.join('') }}</span>
+      <p v-if="this.searchStore.searchAppliedFacets.length > 0">
+        filters: <span>{{ this.searchStore.searchAppliedFacets.join('') }}</span>
       </p>
       <div class="searchVisualizationSettings">
         <time-period-refiner @startdate="(sdate) => startDate = sdate"
@@ -26,7 +26,8 @@
 
 <script>
 
-import { mapState } from 'vuex'
+import { mapStores } from 'pinia'
+import { useSearchStore } from '../../store/search.store'
 import Visualization from './Visualization'
 import TimePeriodRefiner from './../TimePeriodRefiner.vue'
 
@@ -42,11 +43,12 @@ export default {
     timeScale:''
   }),
   computed: {
-    ...mapState({
-      query: state => state.Search.query,
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
-      solrSettings: state => state.Search.solrSettings,
-    })
+    // ...mapState({
+    //   query: state => state.Search.query,
+    //   searchAppliedFacets: state => state.Search.searchAppliedFacets,
+    //   solrSettings: state => state.Search.solrSettings,
+    // })
+    ...mapStores(useSearchStore)
   },
 // For test purposes
  /* watch: {
@@ -56,14 +58,14 @@ export default {
   }, */
   mounted () {
     this.loading = true
-    Visualization.createVisualization(this.query, this.searchAppliedFacets, this.solrSettings, this.startDate, this.endDate, this.timeScale).then(() =>{
+    Visualization.createVisualization(this.searchStore.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings, this.startDate, this.endDate, this.timeScale).then(() =>{
     this.loading = false
     })
   },
   methods: {
     loadVisualisation() {
       this.loading = true
-      Visualization.createVisualization(this.query, this.searchAppliedFacets, this.solrSettings, this.startDate, this.endDate, this.timeScale) .then(() =>{
+      Visualization.createVisualization(this.searchStore.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings, this.startDate, this.endDate, this.timeScale) .then(() =>{
       this.loading = false
       })
     }

@@ -127,7 +127,7 @@
   </div>
 </template>
 <script>
-// import { mapState } from 'vuex'
+
 import { mapStores } from 'pinia'
 import { useSearchStore } from '../../store/search.store'
 

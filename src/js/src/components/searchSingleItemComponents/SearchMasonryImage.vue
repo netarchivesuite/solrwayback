@@ -14,10 +14,10 @@
                                     :index="row + number * rowNumber"
                                     @close-window="closeWindow" />
     <div class="imageButtonContainer">
-      <router-link :to="{ path: $_startImageSearchFromImage(result.hash)}">
+      <router-link :to="$_startImageSearchFromImage(result.hash)">
         <span @click="closeModalIfOpen()">Search for image</span>
       </router-link>
-      <router-link :to="{ path: $_startPageSearchFromImage(result.urlNorm)}">
+      <router-link :to="$_startPageSearchFromImage(result.urlNorm)">
         <span @click="closeModalIfOpen()">Pages linking to image</span>
       </router-link>
     </div>
@@ -30,7 +30,6 @@ import SearchSingleItemFocusImage from './SearchSingleItemFocusImage.vue'
 import ImageSearchUtils from './../../mixins/ImageSearchUtils'
 import configs from '../../configs'
 import { isPlaybackDisabled } from '../../configs/configHelper'
-// import { mapState, mapActions } from 'vuex'
 import { mapStores, mapActions } from 'pinia'
 import { useModalStore } from '../../store/modal.store'
 

@@ -21,7 +21,6 @@
   import LineChart from '../chartsCore/chartEngines/LineChart'
   import ChartHelpers from '../chartsCore/chartHelpers'
   import ExportData from '../exporterCSV/ExportData.vue'
-  // import {mapState} from 'vuex'
   import { mapStores } from 'pinia'
 import { useNgramStore } from '../../../store/ngram.store'
 
@@ -52,24 +51,24 @@ import { useNgramStore } from '../../../store/ngram.store'
     },
 
     watch: {
-      datasets: function (newVal) {
-      this.fillData(newVal)
+      'ngramStore.datasets': function (newVal) {
+        this.fillData(newVal)
       },
       
-      searchType: function (newVal) {
-        this.options = ChartHelpers.getChartOptions(newVal, this.scale)
+      'ngramStore.searchType': function (newVal) {
+        this.options = ChartHelpers.getChartOptions(newVal, this.ngramStore.scale)
       },
-      scale: function (newVal) {
-        this.options = ChartHelpers.getChartOptions(this.searchType, this.scale)
+      'ngramStore.scale': function (newVal) {
+        this.options = ChartHelpers.getChartOptions(this.ngramStore.searchType, this.ngramStore.scale)
       }
     },
     
     methods: {
       fillData () {
         this.datacollection = {
-          rawLabels: this.labels,
-          labels: ChartHelpers.getChartLabels(this.labels, this.scale),
-          datasets: ChartHelpers.getChartDataSet(this.datasets)
+          rawLabels: this.ngramStore.labels,
+          labels: ChartHelpers.getChartLabels(this.ngramStore.labels, this.ngramStore.scale),
+          datasets: ChartHelpers.getChartDataSet(this.ngramStore.datasets)
         }
       }
     }

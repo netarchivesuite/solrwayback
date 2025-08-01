@@ -20,7 +20,6 @@
 import { requestService } from '../services/RequestService'
 import Notifications from '../components/notifications/Notifications'
  import {copyTextToClipboard} from '../utils/globalUtils'
-// import { mapActions } from 'vuex'
 import { mapActions } from 'pinia'
 import { useNotifierStore } from '../../store/notifier.store'
 

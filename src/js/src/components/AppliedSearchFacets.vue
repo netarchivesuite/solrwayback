@@ -11,7 +11,6 @@
 
 <script>
 
-// import { mapState, mapActions } from 'vuex'
 import { mapStores, mapActions } from 'pinia'
 import { useSearchStore } from '../store/search.store'
 import StringManipulationUtils from './../mixins/StringManipulationUtils'
@@ -41,7 +40,7 @@ export default {
     removeFacet(index) {
       this.updateSolrSettingOffset(0)
       this.removeFromSearchAppliedFacets(index)
-      this.$_pushSearchHistory('Search', this.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings)
+      this.$_pushSearchHistory('Search', this.searchStore.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings)
     }
   }
 }
