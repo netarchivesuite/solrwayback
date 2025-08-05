@@ -290,11 +290,11 @@ async function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
 
   try{
     const response = await axios.get(url);
-    let returnObj = response
+    let returnObj = response.data
 
     returnObj = dataTransformationHelper.transformImageResponse(returnObj,'geoImage')
 
-    return returnObj.data
+    return returnObj
 
   } catch (error){
     return Promise.reject(error)
