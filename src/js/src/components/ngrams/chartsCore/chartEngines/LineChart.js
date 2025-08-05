@@ -27,7 +27,7 @@ export default {
     }
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     this._data._chart.destroy()
 },
 

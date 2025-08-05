@@ -18,10 +18,10 @@
 
 <script>
 import { requestService } from '../services/RequestService'
-import Notifications from '../components/notifications/Notifications'
+import Notifications from '../components/notifications/Notifications.vue'
  import {copyTextToClipboard} from '../utils/globalUtils'
 import { mapActions } from 'pinia'
-import { useNotifierStore } from '../../store/notifier.store'
+import { useNotifierStore } from '../store/notifier.store'
 
 export default {
   name: 'PWID',

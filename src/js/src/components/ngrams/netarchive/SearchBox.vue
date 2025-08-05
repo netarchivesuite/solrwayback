@@ -113,7 +113,7 @@ export default {
     endDate : function (){this.resetResults()},
     timeScale : function (){this.resetResults()}
   },
-  beforeDestroy() {
+  beforeUnmount() {
         this.resetSearchState()
   },
   

@@ -37,7 +37,7 @@ export default {
       })
     },
 
-    beforeDestroy() {
+    beforeUnmount() {
         if (this.playerInstance) {
             this.playerInstance.dispose()
         }
