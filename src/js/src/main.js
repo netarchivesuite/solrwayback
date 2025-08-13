@@ -1,16 +1,12 @@
-//import Vue, { createApp } from 'vue'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router';
-//import store from './store'
 import Axios from 'axios'
 import VTooltip from 'v-tooltip'
 import { setServerConfigInApp } from './configs/configHelper'
 
 import './assets/styles/main.scss'
-
-// Vue.config.productionTip = false
 
 Axios.get('services/frontend/properties/solrwaybackweb/')
     .then(response => {

@@ -74,7 +74,6 @@ import WeekGraph from '../components/harvestCalendar/WeekGraph.vue'
 import Notifications from '../components/notifications/Notifications.vue'
 import { mapActions } from 'pinia'
 import { useNotifierStore } from '../store/notifier.store'
-import * as Vue from 'vue'
 
 
 export default {

@@ -4,13 +4,22 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 
-// import { defineConfig } from "vite";
-// import vue from "@vitejs/plugin-vue";
-// import path from "path";
-// import { fileURLToPath, URL } from "node:url";
-// https://vitejs.dev/config/
 export default defineConfig({
   base: '/solrwayback/',
+  build: {
+    rollupOptions: {
+      input: {
+        custom: 'solrwayback_index_page.html'
+      }
+    }
+  },
+  root: '.',
+  server: {
+    open: 'solrwayback_index_page.html', // automatically open this in browser
+  },
+  preview: {
+    open: 'solrwayback_index_page.html', // automatically open this in browser
+  },
   plugins: [vue()],
   resolve: {
     alias: {

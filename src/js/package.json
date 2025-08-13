@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build-preview": "vite build --mode preview",
     "serve": "vite preview",
     "lint": "eslint . --ext .vue,.js --ignore-pattern .gitignore"
   },
@@ -23,8 +24,7 @@
     "vue": "^3.5.13",
     "vue-3-slider-component": "^1.0.2",
     "vue-chartjs": "^3.5.1",
-    "vue-router": "^4.5.1",
-    "vuex": "^4.1.0"
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",

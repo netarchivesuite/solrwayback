@@ -1,6 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import SolrWayback from '../views/SolrWayback.vue'
 
+
+const devRoutes = [];
+
+if (import.meta.env.DEV || import.meta.env.MODE === 'preview') {
+  devRoutes.push({
+    path: '/solrwayback_index_page.html',
+    name: 'SolrWaybackDev',
+    component: SolrWayback,
+  });
+}
+
 export const routes = {
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -9,6 +20,7 @@ export const routes = {
       name: 'SolrWayback',
       component: SolrWayback,
     },
+    ...devRoutes,
     {
       path: '/search/:query?',
       name: 'Search',
