@@ -8,22 +8,21 @@ import { setServerConfigInApp } from './configs/configHelper'
 
 import './assets/styles/main.scss'
 
-Axios.get('services/frontend/properties/solrwaybackweb/')
+Axios.get(import.meta.env.BASE_URL + 'services/frontend/properties/solrwaybackweb/')
     .then(response => {
         setServerConfigInApp(response.data)
+
+        const pinia = createPinia()
+        const app = createApp(App);
+
+        app.use(pinia)
+        app.use(router)
+        app.use(VTooltip)
+
+        app.mount('#app')
     })
     .catch(error => {
         // TODO - unsure what best to do here (Ben)
         console.error("Failed to load server config", error)
     })
-
-
-const pinia = createPinia()
-const app = createApp(App);
-
-app.use(pinia)
-app.use(router)
-app.use(VTooltip)
-
-app.mount('#app')
   
