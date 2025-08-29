@@ -1,5 +1,5 @@
 // Global search state.
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
 import { useNotifierStore } from '../store/notifier.store'
 import { requestService } from '../services/RequestService'
 
@@ -71,22 +71,22 @@ export const useSearchStore = defineStore('search', {
       this.setExtraFacetLoadingStatus(params.facet)
 
       try {
-        const result = await requestService.getMoreFacets(params.facet, params.query, params.appliedFacets);
+        const result = await requestService.getMoreFacets(params.facet, params.query, params.appliedFacets)
 
-        let newFacets = JSON.parse(JSON.stringify(this.facets));
-        newFacets['facet_fields'][params.facet] = result.facet_counts.facet_fields[params.facet];
-        this.facets = newFacets;
-        // this.extraFacetLoading = false;
+        let newFacets = JSON.parse(JSON.stringify(this.facets))
+        newFacets['facet_fields'][params.facet] = result.facet_counts.facet_fields[params.facet]
+        this.facets = newFacets
+        // this.extraFacetLoading = false
         this.setExtraFacetLoadingStatus(false)
       } catch (error){
-        const notifier = useNotifierStore();
+        const notifier = useNotifierStore()
         notifier.setNotification({
           title: 'We are so sorry!',
           text: 'Something went wrong when fetching more facets - please try again',
           srvMessage: error,
           type: 'error',
           timeout: false
-        });
+        })
 
         // this.extraFacetLoading = false
         this.setExtraFacetLoadingStatus(false)
@@ -110,19 +110,19 @@ export const useSearchStore = defineStore('search', {
       this.setLoadingStatus(true)
 
       try {
-        const result = await requestService.fireSearchRequest(params.query, params.facets, params.options);
+        const result = await requestService.fireSearchRequest(params.query, params.facets, params.options)
 
         this.results = result.response
         this.setLoadingStatus(false)
       } catch (error){
-        const notifier = useNotifierStore();
+        const notifier = useNotifierStore()
         notifier.setNotification({
           title: 'We are so sorry!',
           text: 'Something went wrong when searching - please try again',
           srvMessage: error,
           type: 'error',
           timeout: false
-        });
+        })
 
         this.setLoadingStatus(false)
       }
@@ -131,19 +131,19 @@ export const useSearchStore = defineStore('search', {
       this.setLoadingStatus(true)
 
       try {
-        const result = await requestService.fireImageSearchRequest(params.query);
+        const result = await requestService.fireImageSearchRequest(params.query)
 
         this.results = result.response
         this.setLoadingStatus(false)
       } catch (error){
-        const notifier = useNotifierStore();
+        const notifier = useNotifierStore()
         notifier.setNotification({
           title: 'We are so sorry!',
           text: 'Something went wrong when searching - please try again',
           srvMessage: error,
           type: 'error',
           timeout: false
-        });
+        })
 
         this.setLoadingStatus(false)
       }
@@ -152,20 +152,20 @@ export const useSearchStore = defineStore('search', {
       this.setLoadingStatus(true)
 
       try {
-        const result = await requestService.getNormalizedUrlSearch(params.query, params.facets, params.options);
+        const result = await requestService.getNormalizedUrlSearch(params.query, params.facets, params.options)
 
         this.results = result.response
         this.query =  params.preNormalizedQuery //data.result.responseHeader.params.q
         this.setLoadingStatus(false)
       } catch (error){
-        const notifier = useNotifierStore();
+        const notifier = useNotifierStore()
         notifier.setNotification({
           title: 'We are so sorry!',
           text: 'Something went wrong when searching - please try again',
           srvMessage: error,
           type: 'error',
           timeout: false
-        });
+        })
 
         this.setLoadingStatus(false)
       }
@@ -175,20 +175,20 @@ export const useSearchStore = defineStore('search', {
       this.setFacetLoadingStatus(true)
 
       try {
-        const result = await requestService.getNormalizedUrlFacets(params.query, params.facets, params.options);
+        const result = await requestService.getNormalizedUrlFacets(params.query, params.facets, params.options)
 
         this.facets = result
         this.setFacetLoadingStatus(false)
         // this.facetLoading = false
       } catch (error){
-        const notifier = useNotifierStore();
+        const notifier = useNotifierStore()
         notifier.setNotification({
           title: 'We are so sorry!',
           text: 'Something went wrong when searching - please try again',
           srvMessage: error,
           type: 'error',
           timeout: false
-        });
+        })
 
         // this.setLoadingStatus(false)
         this.setFacetLoadingStatus(false)
@@ -199,20 +199,20 @@ export const useSearchStore = defineStore('search', {
       this.setFacetLoadingStatus(true)
 
       try {
-        const result = await requestService.fireFacetRequest(params.query, params.facets, params.options);
+        const result = await requestService.fireFacetRequest(params.query, params.facets, params.options)
 
         this.facets = result
         // this.facetLoading = false
         this.setFacetLoadingStatus(false)
       } catch (error){
-        const notifier = useNotifierStore();
+        const notifier = useNotifierStore()
         notifier.setNotification({
           title: 'We are so sorry!',
           text: 'Something went wrong when searching - please try again',
           srvMessage: error,
           type: 'error',
           timeout: false
-        });
+        })
 
         this.setFacetLoadingStatus(false)
         // this.setLoadingStatus(false)

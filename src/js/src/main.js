@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
-import router from './router';
+import router from './router'
 import Axios from 'axios'
 import VTooltip from 'v-tooltip'
 import { setServerConfigInApp } from './configs/configHelper'
@@ -13,7 +13,7 @@ Axios.get(import.meta.env.BASE_URL + 'services/frontend/properties/solrwaybackwe
         setServerConfigInApp(response.data)
 
         const pinia = createPinia()
-        const app = createApp(App);
+        const app = createApp(App)
 
         app.use(pinia)
         app.use(router)

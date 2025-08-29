@@ -1,5 +1,5 @@
 // Global notifier state
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
 import { useSearchStore } from '../store/search.store'
 
 export const useNotifierStore = defineStore('notifier', {

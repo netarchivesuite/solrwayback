@@ -1,15 +1,15 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router'
 import SolrWayback from '../views/SolrWayback.vue'
 
 
-const devRoutes = [];
+const devRoutes = []
 
 if (import.meta.env.DEV || import.meta.env.MODE === 'preview') {
   devRoutes.push({
     path: '/solrwayback_index_page.html',
     name: 'SolrWaybackDev',
     component: SolrWayback,
-  });
+  })
 }
 
 export const routes = {
@@ -67,8 +67,8 @@ export const routes = {
       component: () => import(/* webpackChunkName: "Linkgraph" */ '@/components/ToolboxComponents/LinkGraph.vue')
     }
   ]
-};
+}
 
-const router = createRouter(routes);
+const router = createRouter(routes)
 
-export default router;
+export default router

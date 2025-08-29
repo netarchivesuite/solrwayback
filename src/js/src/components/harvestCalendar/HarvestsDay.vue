@@ -44,7 +44,7 @@ export default {
     },
 
     formatHumanDate(date, showWeekday = false) {
-      return toHumanDate(date, showWeekday);
+      return toHumanDate(date, showWeekday)
     },
 
     formatHumanDateTime(date) {

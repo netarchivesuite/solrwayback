@@ -59,7 +59,7 @@ import SearchFacetOptions from './../SearchFacetOptions.vue'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
 import ImageSearchResults from './ImageSearchResults.vue'
 import configs from '../../configs'
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent } from 'vue'
 
 
 export default {
@@ -121,12 +121,12 @@ export default {
     SingleEntryComponent(type) {
       //console.log('search result type', type)
       switch(type) {
-      case 'Web Page': return this.$options.components.SearchSingleItemWeb;
-      case 'Image': return this.$options.components.SearchSingleItemImage;
-      case 'Twitter Tweet': return this.$options.components.SearchSingleItemTweet;
+      case 'Web Page': return this.$options.components.SearchSingleItemWeb
+      case 'Image': return this.$options.components.SearchSingleItemImage
+      case 'Twitter Tweet': return this.$options.components.SearchSingleItemTweet
       case 'Video':
-      case 'Audio': return this.$options.components.SearchSingleItemVideoAudio;
-      default: return this.$options.components.SearchSingleItemDefault;
+      case 'Audio': return this.$options.components.SearchSingleItemVideoAudio
+      default: return this.$options.components.SearchSingleItemDefault
     }
     }
   }

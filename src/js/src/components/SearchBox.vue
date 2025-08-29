@@ -149,7 +149,7 @@ export default {
   },
   watch: {
     'searchStore.query': function (val) {
-      this.futureQuery = val;
+      this.futureQuery = val
     }
   }, 
   mounted () {

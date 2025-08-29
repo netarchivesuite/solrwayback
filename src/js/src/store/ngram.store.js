@@ -1,5 +1,5 @@
 // Global ngram state.
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
 import { useNotifierStore } from '../store/notifier.store'
 import { useSearchStore } from '../store/search.store'
 
@@ -59,8 +59,8 @@ export const useNgramStore = defineStore('ngram', {
             this.setLoadingStatus(false)
           },
           error => {
-            const notifier = useNotifierStore();
-            const search = useSearchStore();
+            const notifier = useNotifierStore()
+            const search = useSearchStore()
             if (error.response.status === 400 && error.response.data.startsWith('Tag syntax not accepted')) {
               notifier.setNotification({
                 title: 'We are so sorry!',

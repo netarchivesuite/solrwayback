@@ -137,14 +137,14 @@ export default {
       },
 
       formatHumanDate(date, showWeekday = false) {
-        return toHumanDate(date, showWeekday);
+        return toHumanDate(date, showWeekday)
       },
 
       formatNumber(value) {
         if (!isNaN(value)) {
-          return value.toLocaleString();
+          return value.toLocaleString()
         }
-        return value;
+        return value
       }
   }
 }

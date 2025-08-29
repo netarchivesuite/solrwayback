@@ -37,7 +37,7 @@ async function fireSearchRequest (query, facets, options) {
   const url = 'services/frontend/solr/search/results/' + `?query=${encodeURIComponent(query) + facetsStr + optionString}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
     let returnObj = response.data
 
     if(options.grouping === false) {
@@ -60,7 +60,7 @@ async function fireImageSearchRequest(query) {
   const url = 'services/frontend/images/search/' + `?query=${encodeURIComponent(query)}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
     let returnObj = response.data
 
     returnObj = dataTransformationHelper.transformImageResponse(returnObj,'image')
@@ -85,7 +85,7 @@ async function fireFacetRequest (query, facets, options) {
   const url = 'services/frontend/solr/search/facets/' + `?query=${encodeURIComponent(query) + facetsStr + optionString}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
     
     return response.data.facet_counts
 
@@ -99,7 +99,7 @@ async function fireImagesRequest (source_file_path, offset) {
   const url = 'services/frontend/images/htmlpage/' + `?source_file_path=${encodeURIComponent(source_file_path)}&offset=${offset}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -113,7 +113,7 @@ async function fireLookupRequest(id) {
   const url = 'services/frontend/solr/idlookup/' + `?id=${id}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -139,7 +139,7 @@ async function getNormalizedURL(query) {
   const url =  `services/frontend/util/normalizeurl/?url=${encodeURIComponent(query)}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data.url
 
@@ -179,7 +179,7 @@ async function getHarvestDates(harvestUrl) {
   const url = 'services/frontend/harvestDates/' + `?url=${harvestUrl}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -193,7 +193,7 @@ async function getAboutText() {
   const url = 'services/frontend/help/about/'
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -207,7 +207,7 @@ async function getSearchGuidelines() {
   const url = 'services/frontend/help/search/'
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -221,7 +221,7 @@ async function getCollectionInfo() {
   const url = 'services/frontend/help/collection/'
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -235,7 +235,7 @@ async function getHarvestedPageResources(source_file_path, offset) {
   const url = `services/timestampsforpage/?source_file_path=${encodeURIComponent(source_file_path)}&offset=${offset}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -253,7 +253,7 @@ async function getDomainStatistics(domain, startDate, endDate, timeScale) {
   const url = `services/statistics/domain/?domain=${domain + settings}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -275,7 +275,7 @@ async function getNgramNetarchive(params){
   url = `services/frontend/smurf/text/?q=${encodeURIComponent(params.query) + settings}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -289,7 +289,7 @@ async function fireGeoImageSearchRequest(query,latitude,longitude,radius) {
   const url = 'services/frontend/images/search/location/' + `?query=${query}&latitude=${latitude}&longitude=${longitude}&d=${radius}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
     let returnObj = response.data
 
     returnObj = dataTransformationHelper.transformImageResponse(returnObj,'geoImage')
@@ -307,7 +307,7 @@ async function getPWID(sourceFilePath, offset) {
   const url = `services/generatepwid/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -321,7 +321,7 @@ async function getWarcHeader(sourceFilePath, offset) {
   const url = `services/warc/header/?source_file_path=${encodeURIComponent(sourceFilePath)}&offset=${offset}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -335,7 +335,7 @@ async function getLinkGraph(domain, facetLimit, ingoing, dateStart, dateEnd) {
   const url = `services/frontend/tools/linkgraph/?domain=${domain}&facetLimit=${facetLimit}&ingoing=${ingoing}&dateStart=${dateStart}&dateEnd=${dateEnd}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
@@ -349,7 +349,7 @@ async function getMoreFacets(domain, query, appliedFacets) {
   const url = `services/frontend/solr/search/facets/loadmore/?facetfield=${domain}&grouping=false&query=${encodeURIComponent(query) + appliedFacets}`
 
   try{
-    const response = await axios.get(url);
+    const response = await axios.get(url)
 
     return response.data
 
