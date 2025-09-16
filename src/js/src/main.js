@@ -8,7 +8,17 @@ import { setServerConfigInApp } from './configs/configHelper'
 
 import './assets/styles/main.scss'
 
-Axios.get(import.meta.env.BASE_URL + 'services/frontend/properties/solrwaybackweb/')
+console.log("good morning!", import.meta.env.VITE_TEST_BACKEND);
+
+const baseURL = import.meta.env.DEV
+  ? import.meta.env.VITE_TEST_BACKEND   // from .env.development
+  : import.meta.env.BASE_URL;           // from vite.config.js or .env.production
+
+  if (import.meta.env.DEV) {
+  Axios.defaults.baseURL = '/'; // ensure relative URLs are root-based in dev
+}
+
+Axios.get(baseURL + 'services/frontend/properties/solrwaybackweb/')
     .then(response => {
         setServerConfigInApp(response.data)
 
