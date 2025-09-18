@@ -65,15 +65,11 @@ watch: {
   methods: {
     fillData() {
       if (!this.ngramStore.datasets.length) return;
-      console.log("new data, yayayayayay!");
       // Prepare datacollection
       this.datacollection = {
         labels: ChartHelpers.getChartLabels(this.ngramStore.labels, this.ngramStore.scale),
         datasets: ChartHelpers.getChartDataSet(this.ngramStore.datasets),
       };
-
-      console.log(this.datacollection);
-
       // Redraw chart whenever data updates
       this.redrawChart();
     },
