@@ -7,7 +7,7 @@ This require the index has been build with warc-indexer version 3.4.0+. If norma
 See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
 
 * Added functionality to the DOMAIN STATS tool in the toolbox. Added a visualisation for average context length over time and a toggle button for showing the graphs combined or on individual canvases. Thanks to @VictorHarbo for this feature
-
+* Added start script to start both Tomcat and Solr in root folder of SolrWayback Bundle (Linux+Windows)
 
 5.2.1
 -----

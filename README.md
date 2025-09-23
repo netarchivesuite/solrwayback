@@ -182,9 +182,13 @@ Unzip and follow the instructions below.
 If you encounter any errors when running a script during installation or setup, try change the permissions for the file (`startup.sh` etc.). On Linux and mac, this can be done with the following command: `chmod +x filename.sh`
 
 ### 2) STARTING SOLRWAYBACK
-SolrWayback requires both Solr and Tomcat to be running. These processes are started and stopped separately with the following commands:
+SolrWayback requires both Solr and Tomcat to be running.
+In the root of the SolrWayback Bundle there is a script to start both Solr and Tomcat
 
+* Linux: `./solrwayback_bundle.sh start` or `./solrwayback_bundle.sh stop`  (`chmod +x solrwayback_bundle.sh` if not executable)
+* Windows `solrwayback_bundle.sh start` or `solrwayback_bundle.sh stop`
 
+The Tomcat and Solr processes can also be started and stopped separately with the following commands:
 #### Tomcat:  
 
 * Start tomcat: `tomcat-9/bin/startup.sh`  
