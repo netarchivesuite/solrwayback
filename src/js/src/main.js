@@ -8,7 +8,15 @@ import { setServerConfigInApp } from './configs/configHelper'
 
 import './assets/styles/main.scss'
 
-Axios.get(import.meta.env.BASE_URL + 'services/frontend/properties/solrwaybackweb/')
+const baseURL = import.meta.env.DEV
+  ? '/' 
+  : import.meta.env.BASE_URL;
+
+  if (import.meta.env.DEV) {
+      Axios.defaults.baseURL = '/';
+}
+
+Axios.get(baseURL + 'services/frontend/properties/solrwaybackweb/')
     .then(response => {
         setServerConfigInApp(response.data)
 
