@@ -15,15 +15,16 @@
         <tbody>
           <tr>
             <td>First harvest:</td>
-            <td>{{ harvestData.fromDate | human-date }}</td>
+            <!-- <td>{{ harvestData.fromDate | human-date }}</td> -->
+            <td>{{ formatHumanDate(harvestData.fromDate) }}</td>
           </tr>
           <tr>
             <td>Latest harvest:</td>
-            <td>{{ harvestData.toDate | human-date }}</td>
+            <td>{{ formatHumanDate(harvestData.toDate) }}</td>
           </tr>
           <tr>
             <td>Total harvests:</td>
-            <td>{{ harvestData.numberOfHarvests | formatted-number }}</td>
+            <td>{{ formatNumber(harvestData.numberOfHarvests) }}</td>
           </tr>
         </tbody>
       </table>
@@ -67,15 +68,12 @@ import { requestService } from '../services/RequestService'
 import {groupHarvestDatesByYearAndMonth} from '../components/harvestCalendar/tranformers/transformerMain'
 import {calculateLinearActivityLevel, calculateLogarithmicActivityLevel} from '../components/harvestCalendar/plugins/tranformationHelpers'
 import {toHumanDate} from '../components/harvestCalendar/util'
-import YearMonthGraph from '../components/harvestCalendar/YearMonthGraph'
-import AllYearsGraph from '../components/harvestCalendar/AllYearsGraph'
-import WeekGraph from '../components/harvestCalendar/WeekGraph'
-import Notifications from '../components/notifications/Notifications'
-import { mapActions } from 'vuex'
-import Vue from 'vue'
-import VTooltip from 'v-tooltip'
-
-Vue.use(VTooltip)
+import YearMonthGraph from '../components/harvestCalendar/YearMonthGraph.vue'
+import AllYearsGraph from '../components/harvestCalendar/AllYearsGraph.vue'
+import WeekGraph from '../components/harvestCalendar/WeekGraph.vue'
+import Notifications from '../components/notifications/Notifications.vue'
+import { mapActions } from 'pinia'
+import { useNotifierStore } from '../store/notifier.store'
 
 
 export default {
@@ -85,18 +83,6 @@ export default {
     AllYearsGraph,
     WeekGraph,
     Notifications
-  },
-
-  filters: {
-  'human-date': function (date, showWeekday = false) {
-      return toHumanDate(date, showWeekday)
-    },
-   'formatted-number': function (value) {
-       if (!isNaN(value)) {
-        return value.toLocaleString()
-    }
-    return value
-   }
   },
   
   data () {
@@ -134,27 +120,38 @@ export default {
   },
   
   methods: {
-    ...mapActions('Notifier', {
+    ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
     }),
-     showYearWeek(year) {
-            this.year = year
-            this.view = 'year-week'
-        },
-        showYearMonth() {
-            this.year = null
-            this.view = 'year-month'
-        },
-        showAllYears() {
-            this.year = null
-            this.view = 'all-years'
+    showYearWeek(year) {
+          this.year = year
+          this.view = 'year-week'
+      },
+      showYearMonth() {
+          this.year = null
+          this.view = 'year-month'
+      },
+      showAllYears() {
+          this.year = null
+          this.view = 'all-years'
+      },
+
+      formatHumanDate(date, showWeekday = false) {
+        return toHumanDate(date, showWeekday)
+      },
+
+      formatNumber(value) {
+        if (!isNaN(value)) {
+          return value.toLocaleString()
         }
+        return value
+      }
   }
 }
 
 </script>
 
 <style lang="scss">
-  @import '../assets/styles/harvestCalendar.scss'; 
+  @use '../assets/styles/harvestCalendar.scss'; 
 </style>
     

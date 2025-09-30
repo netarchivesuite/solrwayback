@@ -31,9 +31,10 @@
 </template>
 <script>
 
-import { mapState, mapActions } from 'vuex'
+import { mapStores, mapActions } from 'pinia'
+import { useSearchStore } from '../../store/search.store'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
-import SearchMasonryImage from './../searchSingleItemComponents/SearchMasonryImage'
+import SearchMasonryImage from './../searchSingleItemComponents/SearchMasonryImage.vue'
 
 export default {
   name: 'ImageSearchResults',
@@ -53,16 +54,17 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      query: state => state.Search.query,
-      solrSettings: state => state.Search.solrSettings
-    }),
+    // ...mapState({
+    //   query: state => state.Search.query,
+    //   solrSettings: state => state.Search.solrSettings
+    // }),
+    ...mapStores(useSearchStore)
   },
   mounted () {
   },
   
   methods: {
-    ...mapActions('Search', {
+    ...mapActions(useSearchStore, {
       requestSearch: 'requestSearch',
       requestFacets: 'requestFacets',
       updateSolrSettingOffset:'updateSolrSettingOffset'

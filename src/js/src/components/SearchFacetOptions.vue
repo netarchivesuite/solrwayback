@@ -1,11 +1,11 @@
 <template>
   <div class="facets">
-    <h2 v-if="checkForFacets(facets.facet_fields)">
+    <h2 v-if="checkForFacets(this.searchStore.facets.facet_fields)">
       Facets
     </h2>
-    <div v-if="facetLoading && !loading" class="spinner" />
-    <div v-if="!facetLoading && checkForFacets(facets.facet_fields)" class="allFacets">
-      <div v-for="(facetCategory, index) in Object.entries(facets.facet_fields)" :key="index" class="facetCategory">
+    <div v-if="this.searchStore.facetLoading && !this.searchStore.loading" class="spinner" />
+    <div v-if="!this.searchStore.facetLoading && checkForFacets(this.searchStore.facets.facet_fields)" class="allFacets">
+      <div v-for="(facetCategory, index) in Object.entries(this.searchStore.facets.facet_fields)" :key="index" class="facetCategory">
         <div class="facetCategoryName">
           {{ facetCategory[0] }}
         </div> 
@@ -15,13 +15,13 @@
              @click="facetIndex % 2 === 0 ? applyFacet(facetCategory[0], facet, $event) : null">
           {{ facetIndex % 2 === 0 ? facet || "Unknown" : "(" + facet.toLocaleString("en") + ")" }}
         </div>
-        <div v-show="extraFacetLoading === facetCategory[0]" class="extraFacetsloading" />
+        <div v-show="this.searchStore.extraFacetLoading === facetCategory[0]" class="extraFacetsloading" />
         <!-- here we're excluding the crawl_year facets, because OP don't want a show more on those -->
         <div v-if="facetCategory[1].length >= 20 && facetCategory[0] !== 'crawl_year'" class="moreFacets">
           <div v-if="facetCategory[1].length > 20" class="facetArrow up">
             ︿
           </div>
-          <button :disabled="!!extraFacetLoading" class="moreFacetText" @click="determineFacetAction(facetCategory[0], facetCategory[1].length)">
+          <button :disabled="!!this.searchStore.extraFacetLoading" class="moreFacetText" @click="determineFacetAction(facetCategory[0], facetCategory[1].length)">
             {{ determineText(facetCategory[0], facetCategory[1].length) }} 
           </button>
           <div v-if="facetCategory[1].length === 20" class="facetArrow down">
@@ -35,7 +35,8 @@
 
 <script>
 
-import { mapState, mapActions } from 'vuex'
+import { mapStores, mapActions } from 'pinia'
+import { useSearchStore } from '../store/search.store'
 import HistoryRoutingUtils from './../mixins/HistoryRoutingUtils'
 import { requestService } from '../services/RequestService'
 
@@ -44,18 +45,19 @@ export default {
   name: 'SearchFacetOptions',
   mixins: [HistoryRoutingUtils],
   computed: {
-    ...mapState({
-      searchAppliedFacets: state => state.Search.searchAppliedFacets,
-      facets: state => state.Search.facets,
-      query: state => state.Search.query,
-      solrSettings: state => state.Search.solrSettings,
-      loading: state => state.Search.loading,
-      facetLoading: state => state.Search.facetLoading,
-      extraFacetLoading: state => state.Search.extraFacetLoading
-    })
+    // ...mapState({
+    //   searchAppliedFacets: state => state.Search.searchAppliedFacets,
+    //   facets: state => state.Search.facets,
+    //   query: state => state.Search.query,
+    //   solrSettings: state => state.Search.solrSettings,
+    //   loading: state => state.Search.loading,
+    //   facetLoading: state => state.Search.facetLoading,
+    //   extraFacetLoading: state => state.Search.extraFacetLoading
+    // })
+    ...mapStores(useSearchStore)
   },
   methods: {
-    ...mapActions('Search', {
+    ...mapActions(useSearchStore, {
       updateSolrSettingOffset:'updateSolrSettingOffset',
       addToSearchAppliedFacets:'addToSearchAppliedFacets',
       addSpecificRequestedFacets:'addSpecificRequestedFacets',
@@ -73,33 +75,33 @@ export default {
       return length <= 20 ? 'more ' + facet + 's' : 'less ' + facet + 's'
     },
     requestAdditionalFacets(facetArea) {
-      let structuredQuery = this.query
-      let appliedFacets = this.searchAppliedFacets.join('')
+      let structuredQuery = this.searchStore.query
+      let appliedFacets = this.searchStore.searchAppliedFacets.join('')
       this.addSpecificRequestedFacets({facet:facetArea, query:structuredQuery, appliedFacets:appliedFacets})
     },
     applyFacet(facetCategory, facet, event) {
       let facetAllreadyApplied = false
       let newFacet = '&fq=' + facetCategory + ':"' + facet + '"'
-      this.searchAppliedFacets.forEach((facet) => {
+      this.searchStore.searchAppliedFacets.forEach((facet) => {
         facet === newFacet ? facetAllreadyApplied = true : null
       })
       if(!facetAllreadyApplied) {
         if(event.ctrlKey || event.metaKey) {
-            const localSolrSettings = JSON.parse(JSON.stringify(this.solrSettings))
-            const localFacets = [...this.searchAppliedFacets]
+            const localSolrSettings = JSON.parse(JSON.stringify(this.searchStore.solrSettings))
+            const localFacets = [...this.searchStore.searchAppliedFacets]
             localFacets.push(newFacet)
             localSolrSettings.offset = 0
-            window.open(this.$_getResolvedUrl('Search', this.query, localFacets, localSolrSettings).href, '_blank')
+            window.open(this.$_getResolvedUrl('Search', this.searchStore.query, localFacets, localSolrSettings).href, '_blank')
           }
           else {
             this.updateSolrSettingOffset(0)
             this.addToSearchAppliedFacets(newFacet)
-            this.$_pushSearchHistory('Search', this.query, this.searchAppliedFacets, this.solrSettings)
+            this.$_pushSearchHistory('Search', this.searchStore.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings)
         }
       }
       else if(facetAllreadyApplied && event.ctrlKey ||
               facetAllReadyApplied && event.metaKey) {
-        window.open(this.$_getResolvedUrl('Search', this.query, this.searchAppliedFacets, this.solrSettings).href, '_blank')
+        window.open(this.$_getResolvedUrl('Search', this.searchStore.query, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings).href, '_blank')
       }
     },
     checkForFacets(facets) {

@@ -1,7 +1,7 @@
 <template>
-  <div v-if="Object.keys(results).length > 0" class="resultAndFacetContainer">
+  <div v-if="Object.keys(this.searchStore.results).length > 0" class="resultAndFacetContainer">
     <div class="facetContainer">
-      <search-facet-options v-if="results.searchType === 'post'" />
+      <search-facet-options v-if="this.searchStore.results.searchType === 'post'" />
     </div>
     <div class="resultContainer">
       <search-result-export v-if="configs" :configs="configs" />
@@ -10,21 +10,24 @@
                               class="visualizeButton"
                               @click="showVisualizedResult('visualization')" />
       <!-- HERE COMES RESULTS // Figure out if this should be splitted out into a new component -->
-      <post-search-results v-if="results.searchType === 'post'" />
+      <post-search-results v-if="this.searchStore.results.searchType === 'post'" />
       <!-- HERE COMES PICTURES -->
-      <image-search-results v-if="results.searchType === 'image'" :img-results="results" />
+      <image-search-results v-if="this.searchStore.results.searchType === 'image'" :img-results="this.searchStore.results" />
     </div>
     <div class="marginContainer" />
   </div>
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+
+import { mapStores, mapActions } from 'pinia'
+import { useModalStore } from '../../store/modal.store'
+import { useSearchStore } from '../../store/search.store'
 import SearchFacetOptions from './../SearchFacetOptions.vue'
 import HistoryRoutingUtils from './../../mixins/HistoryRoutingUtils'
-import ImageSearchResults from './ImageSearchResults'
-import PostSearchResults from './PostSearchResults'
-import SearchResultExport from './SearchResultExport'
+import ImageSearchResults from './ImageSearchResults.vue'
+import PostSearchResults from './PostSearchResults.vue'
+import SearchResultExport from './SearchResultExport.vue'
 import configs from '../../configs'
 
 export default {
@@ -42,14 +45,15 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      results: state => state.Search.results,
-      showModal: state => state.Modal.showModal,
-      currentModal: state => state.Modal.currentModal
-    }),
+    // ...mapState({
+    //   results: state => state.Search.results,
+    //   showModal: state => state.Modal.showModal,
+    //   currentModal: state => state.Modal.currentModal
+    // }),
+    ...mapStores(useModalStore, useSearchStore)
   },
   methods: {
-    ...mapActions('Modal', {
+    ...mapActions(useModalStore, {
       updateShowModal:'updateShowModal',
       updateCurrentModal:'updateCurrentModal'
     }),

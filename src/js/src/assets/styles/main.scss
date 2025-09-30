@@ -1,5 +1,5 @@
-@import 'global';
-@import 'styleVariables';
-@import 'search';
-@import 'results';
+@use 'global';
+@use 'styleVariables';
+@use 'search';
+@use 'results';
 //More imports to come as project grows

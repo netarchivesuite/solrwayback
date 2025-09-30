@@ -14,16 +14,10 @@
       </transition>
       <notifications />
       <h1><a :href="baseUrl" class="noDecoration">Solr<span>Wayback</span></a></h1>
-      <search-box />
-      <all-search-results />
+      <h3>Page Not Found</h3>
+      <p>We're sorry the page you were looking for does not exist</p>
+      <p>{{ baseUrl }}</p>
       <about-component />
-      <primary-modal v-if="this.modalStore.showModal" />
-      <transition name="loading-overlay">
-        <div v-if="scrolledFromTop" class="topTopArrow" @click="backToTop">
-          ↑
-        </div>
-      </transition>
-    <!--<router-link class="aboutLink" to="/about">Om Solrwayback search</router-link> -->
     </div>
     <div />
   </div>
@@ -35,7 +29,7 @@
  import AllSearchResults from '../components/searchResults/AllSearchResults.vue'
  import Notifications from '../components/notifications/Notifications.vue'
  import LoadingOverlay from '../components/LoadingOverlay.vue'
- import SearchUtils from './../mixins/SearchUtils'
+ import SearchUtils from '../mixins/SearchUtils'
  import { mapStores, mapActions } from 'pinia'
  import { useModalStore } from '../store/modal.store'
  import { useSearchStore } from '../store/search.store'
@@ -43,10 +37,8 @@
  import Configs from '../configs'
 
 export default {
-  name: 'SolrWayback',
+  name: 'NotFound',
    components: {
-   SearchBox,
-   AllSearchResults,
    Notifications,
    LoadingOverlay,
    AboutComponent,

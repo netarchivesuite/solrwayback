@@ -3,7 +3,7 @@
  */
 export function getArrayOfMonths() {
   return [...Array(12).keys()]       // [0, 1, 2, ..., 11]
-};
+}
 
 
 /**

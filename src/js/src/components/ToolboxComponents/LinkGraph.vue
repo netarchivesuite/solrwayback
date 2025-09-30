@@ -56,11 +56,12 @@
 </template>
 
 <script>
-import VueSlider from 'vue-slider-component'
-import 'vue-slider-component/theme/default.css'
+import VueSlider from 'vue-3-slider-component'
+//import 'vue-3-slider-component/theme/default.css'
 import StringManipulationUtils from './../../mixins/StringManipulationUtils'
 import { requestService } from '../../services/RequestService'
-import * as d3 from 'd3'
+// import * as d3 from 'd3'
+// import d3 from 'd3'
 import configs from './../../configs'
 
 export default {
@@ -88,7 +89,7 @@ export default {
         document.getElementById('svgDiagram').setAttribute('height', height + 'px')
       }
     })
-    const routerQuery = this.$router.history.current.query
+    const routerQuery = this.$route.query
     if(routerQuery.domain) {
       routerQuery.domain ? this.domain = routerQuery.domain : null
       routerQuery.dateStart ? this.sliderValues[0] = parseInt(routerQuery.dateStart) : null

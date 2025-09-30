@@ -2,7 +2,7 @@
   <div class="SingleEntryStandardInfo">
     <div class="scoreInfo">
       <p class="textAlignRight">
-        #<span class="highlightText">{{ solrSettings.offset + rank + 1 }}</span>
+        #<span class="highlightText">{{ this.searchStore.solrSettings.offset + rank + 1 }}</span>
       </p>
       <p>score: <span class="highlightText"> {{ result.score }}</span></p>
     </div>
@@ -52,8 +52,8 @@
 <script>
 import configs from '../../configs'
 import { isPlaybackDisabled } from '../../configs/configHelper'
-import { mapState } from 'vuex'
-
+import { mapStores, mapActions } from 'pinia'
+import { useSearchStore } from '../../store/search.store'
 
 export default {
   name: 'SearchSingleItemStandardInfo',
@@ -68,9 +68,10 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      solrSettings: state => state.Search.solrSettings
-    }),
+    // ...mapState({
+    //   solrSettings: state => state.Search.solrSettings
+    // }),
+    ...mapStores(useSearchStore)
   },
   methods: {
     refactoredDate(date) {

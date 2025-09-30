@@ -3,16 +3,18 @@
  * 
  */
 
-import {mapActions, mapState} from 'vuex'
+import { mapStores } from 'pinia'
+import { useNgramStore } from '../store/ngram.store'
 
 
  export default {
   computed: {
-    ...mapState({
-      datasets: state => state.Ngram.datasets,
-      labels: state => state.Ngram.labels
+    // ...mapState({
+    //   datasets: state => state.Ngram.datasets,
+    //   labels: state => state.Ngram.labels
      
-    })
+    // })
+    ...mapStores(useNgramStore)
   },
   methods: {
   
@@ -86,7 +88,7 @@ import {mapActions, mapState} from 'vuex'
             let innerValue = row[j] === null ? '' : row[j].toString()
             if (row[j] instanceof Date) {
                 innerValue = row[j].toLocaleString()
-            };
+            }
             let result = innerValue.replace(/"/g, '""')
             if (result.search(/("|,|\n)/g) >= 0)
                 result = '"' + result + '"'

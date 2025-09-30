@@ -1,35 +1,36 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import App from './App.vue'
-import VueRouter from 'vue-router'
-import { routes } from './router/routes'
-import store from './store'
+import router from './router'
 import Axios from 'axios'
+import VTooltip from 'v-tooltip'
 import { setServerConfigInApp } from './configs/configHelper'
 
 import './assets/styles/main.scss'
 
-Vue.config.productionTip = false
+const baseURL = import.meta.env.DEV
+  ? '/' 
+  : import.meta.env.BASE_URL;
 
-Axios.get('services/frontend/properties/solrwaybackweb/')
+  if (import.meta.env.DEV) {
+      Axios.defaults.baseURL = '/';
+}
+
+Axios.get(baseURL + 'services/frontend/properties/solrwaybackweb/')
     .then(response => {
         setServerConfigInApp(response.data)
-        initializeVue(response.data['webapp.baseurl'])
+
+        const pinia = createPinia()
+        const app = createApp(App)
+
+        app.use(pinia)
+        app.use(router)
+        app.use(VTooltip)
+
+        app.mount('#app')
     })
-    .catch(error => initializeVue('/'))
-
-function initializeVue(appBaseURL){
-  const router = new VueRouter({
-    mode: 'history',
-    base: appBaseURL,
-    routes
-  })
- 
-  Vue.use(VueRouter)
-
-  new Vue({
-    router,
-    store,
-    render: h => h(App)
-  }).$mount('#app')
+    .catch(error => {
+        // TODO - unsure what best to do here (Ben)
+        console.error("Failed to load server config", error)
+    })
   
-}

@@ -1,7 +1,7 @@
 import {getHarvestsForDay} from '../harvestDateHelper'
 import {sortDatesDescending} from '../util'
-import getDaysInYear from 'date-fns/get_days_in_year'
-import addDays from 'date-fns/add_days'
+import getDaysInYear from 'date-fns/getDaysInYear'
+import addDays from 'date-fns/addDays'
 
 /**
  * Returns the data object of weeks:

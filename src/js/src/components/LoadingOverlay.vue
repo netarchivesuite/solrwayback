@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading" class="loadingScreen">
+  <div v-if="this.searchStore.loading" class="loadingScreen">
     <div class="spinner">
       <span class="lookingGlass" />
       <div v-for="row in rows" :key="row" class="row">
@@ -12,7 +12,9 @@
   </div>
 </template>
 <script>
-import { mapState, mapActions } from 'vuex'
+
+import { mapStores } from 'pinia'
+import { useSearchStore } from '../store/search.store'
 
 export default {
   name: 'LoadingOverlay',
@@ -23,9 +25,10 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      loading: state => state.Search.loading,
-    })
+    // ...mapState({
+    //   loading: state => state.Search.loading,
+    // })
+    ...mapStores(useSearchStore)
   },
   methods: {
     getLine(lineOptions, number) {

@@ -26,14 +26,15 @@
 
 <script>
 import { requestService } from '../services/RequestService'
-import HarvestResources from '../components/harvestTimeResources/HarvestResources'
-import HarvestResourcesMissing from '../components/harvestTimeResources/HarvestResourcesMissing'
-import HarvestPagePreview from '../components/harvestTimeResources/HarvestPagePreview'
-import HarvestMaxTimeDifference from '../components/harvestTimeResources/HarvestMaxTimeDifference'
+import HarvestResources from '../components/harvestTimeResources/HarvestResources.vue'
+import HarvestResourcesMissing from '../components/harvestTimeResources/HarvestResourcesMissing.vue'
+import HarvestPagePreview from '../components/harvestTimeResources/HarvestPagePreview.vue'
+import HarvestMaxTimeDifference from '../components/harvestTimeResources/HarvestMaxTimeDifference.vue'
 
-import Notifications from '../components/notifications/Notifications'
+import Notifications from '../components/notifications/Notifications.vue'
 import {toHumanDate} from '../components/harvestCalendar/util'
-import {mapActions} from 'vuex'
+import { mapActions } from 'pinia'
+import { useNotifierStore } from '../store/notifier.store'
 
 export default {
   name: 'PageHarvestData',
@@ -74,7 +75,7 @@ export default {
   },
 
   methods: {
-     ...mapActions('Notifier', {
+     ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
     }),
 
@@ -86,5 +87,5 @@ export default {
 </script>
 
 <style lang="scss">
-  @import '../assets/styles/harvestTimes.scss'; 
+  @use '../assets/styles/harvestTimes.scss'; 
 </style>

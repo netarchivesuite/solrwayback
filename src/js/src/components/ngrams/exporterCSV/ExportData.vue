@@ -10,7 +10,7 @@
           <div>Format: <span class="dataFormat">CSV</span></div>  
           <div> Graphs in the data set:</div>
           <ul>
-            <li v-for="(query, index) in datasetQueries"
+            <li v-for="(query, index) in this.ngramStore.datasetQueries"
                 :key="index">
               {{ query }}
             </li>
@@ -26,7 +26,10 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+
+import { mapStores, mapActions } from 'pinia'
+import { useNgramStore } from '../../../store/ngram.store'
+import { useNotifierStore } from '../../../store/notifier.store'
 import ExportHelper from '../../../mixins/ExportCSVUtils'
 
 export default {
@@ -40,17 +43,19 @@ export default {
 },
 
   computed: {
-    ...mapState({
-      notifications: state => state.Notifier.notifications,
-      datasets: state => state.Ngram.datasets,
-      datasetQueries: state => state.Ngram.datasetQueries
-    }),
+    // ...mapState({
+    //   notifications: state => state.Notifier.notifications,
+    //   datasets: state => state.Ngram.datasets,
+    //   datasetQueries: state => state.Ngram.datasetQueries
+    // }),
+    ...mapStores(useNgramStore, useNotifierStore)
   },
 
   
 
   methods: {
-  ...mapActions('Ngram', {
+    // TODO - possible old bug, was originally pointing at the Ngram store
+  ...mapActions(useNotifierStore, {
       dismissNotification: 'dismissNotification'
       
   }),

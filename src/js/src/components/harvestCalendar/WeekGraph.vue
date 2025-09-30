@@ -29,8 +29,8 @@
 
 
 import {toHumanDate} from './util'
-import ColorLegend from './ColorLegend'
-import HarvestsDay from './HarvestsDay'
+import ColorLegend from './ColorLegend.vue'
+import HarvestsDay from './HarvestsDay.vue'
 
 export default {
   name: 'WeekGraph',

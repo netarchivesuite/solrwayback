@@ -6,22 +6,23 @@
     <button class="closeButton" @click="closeModal()">
       ✕
     </button>
-    <div :class="currentModal === 'gpssearch' ? 'modalContent gpssearch' : 'modalContent'">
-      <search-guidelines v-if="currentModal === 'guidelines'" />
-      <search-visualization v-if="currentModal === 'visualization'" />
-      <gps-search v-if="currentModal === 'gpssearch'" />
-      <collection-info v-if="currentModal === 'collectioninfo'" />
+    <div :class="this.modalStore.currentModal === 'gpssearch' ? 'modalContent gpssearch' : 'modalContent'">
+      <search-guidelines v-if="this.modalStore.currentModal === 'guidelines'" />
+      <search-visualization v-if="this.modalStore.currentModal === 'visualization'" />
+      <gps-search v-if="this.modalStore.currentModal === 'gpssearch'" />
+      <collection-info v-if="this.modalStore.currentModal === 'collectioninfo'" />
     </div>
   </div>
 </template>
 
 <script>
 
-import SearchGuidelines from './SearchGuidelines'
-import SearchVisualization from './SearchVisualization'
-import GpsSearch from './GpsSearch'
-import CollectionInfo from './CollectionInfo'
-import { mapState, mapActions } from 'vuex'
+import SearchGuidelines from './SearchGuidelines.vue'
+import SearchVisualization from './SearchVisualization.vue'
+import GpsSearch from './GpsSearch.vue'
+import CollectionInfo from './CollectionInfo.vue'
+import { mapStores, mapActions } from 'pinia'
+import { useModalStore } from '../../store/modal.store'
 
 export default {
   name: 'PrimaryModal',
@@ -32,21 +33,22 @@ export default {
     CollectionInfo
   },
   computed: {
-    ...mapState({
-      showModal: state => state.Modal.showModal,
-      currentModal: state => state.Modal.currentModal,
-    })
+    // ...mapState({
+    //   showModal: state => state.Modal.showModal,
+    //   currentModal: state => state.Modal.currentModal,
+    // })
+    ...mapStores(useModalStore)
   },
   mounted() {
     this.$refs.modalContainer.focus()
 },
   methods: {
-       ...mapActions('Modal', {
+       ...mapActions(useModalStore, {
       updateShowModal:'updateShowModal',
       updateCurrentModal:'updateCurrentModal'
     }),
     closeModal() {
-      this.updateShowModal(!this.showModal)
+      this.updateShowModal(!this.modalStore.showModal)
       this.updateCurrentModal('')
     },
   }

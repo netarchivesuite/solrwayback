@@ -1,7 +1,8 @@
+
 export default {
   methods: {
     $_pushSearchHistory(destination, query, appliedFacets, solrSettings) {
-    const currentParams = this.$router.history.current.query
+    const currentParams = this.$route.query
     if(this.checkForChangesInQuery(query, currentParams, solrSettings, appliedFacets)) {
       this.$router.push({name: destination, query: { query: query,
                                                      grouping: solrSettings.grouping,

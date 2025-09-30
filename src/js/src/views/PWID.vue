@@ -18,9 +18,10 @@
 
 <script>
 import { requestService } from '../services/RequestService'
-import Notifications from '../components/notifications/Notifications'
+import Notifications from '../components/notifications/Notifications.vue'
  import {copyTextToClipboard} from '../utils/globalUtils'
-import { mapActions } from 'vuex'
+import { mapActions } from 'pinia'
+import { useNotifierStore } from '../store/notifier.store'
 
 export default {
   name: 'PWID',
@@ -62,7 +63,7 @@ export default {
   },
   
   methods: {
-    ...mapActions('Notifier', {
+    ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
     }),
     
@@ -81,7 +82,7 @@ export default {
 </script>
 
 <style lang="scss">
-  @import '../assets/styles/pwid.scss'; 
+  @use '../assets/styles/pwid.scss'; 
 </style>
 
     

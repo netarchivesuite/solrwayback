@@ -1,4 +1,4 @@
-import * as d3 from 'd3'
+// import * as d3 from 'd3'
 import StringManipulationUtils from './../../mixins/StringManipulationUtils'
 
 export default {

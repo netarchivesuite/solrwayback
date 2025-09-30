@@ -1,7 +1,7 @@
 <template>
   <div class="searchBoxContainer">
     <transition name="loading-overlay">
-      <div v-if="loading" class="spinner" />
+      <div v-if="this.ngramStore.loading" class="spinner" />
     </transition>
     <div v-if="searcBoxClass() === 'urlNotTrue' && searchType === 'tags'" class="badTagQueryNotice">
       You don't need <span v-if="searchQuery.includes('<')" class="queryErrorColor">&lt;</span><span v-if="searchQuery.includes('>')" class="queryErrorColor">&gt;</span> when searching for tags
@@ -19,7 +19,7 @@
               type="submit">
         <div id="magnifyingGlass" />
       </button>
-      <button v-if="searchQuery !== '' || datasets.length !== 0"
+      <button v-if="searchQuery !== '' || this.ngramStore.datasets.length !== 0"
               id="clearSubmit"
               title="Clear search and results"
               type="button"
@@ -45,7 +45,7 @@
                            @enddate="(edate) => endDate = edate" 
                            @timescale="(ts) => timeScale = ts" />
     </form>
-    <div v-if="searchQuery === '' || datasets.length === 0">
+    <div v-if="searchQuery === '' || this.ngramStore.datasets.length === 0">
       <h1><span class="ngramAboutHeaderStart">Visualization</span> of search query overtime</h1>
 
       <p class="ngramAbout">
@@ -67,7 +67,10 @@
 </template> 
 
 <script>
-import { mapState, mapActions } from 'vuex'
+
+import { mapStores, mapActions } from 'pinia'
+import { useNgramStore } from '../../../store/ngram.store'
+import { useNotifierStore } from '../../../store/notifier.store'
 import TimePeriodRefiner from './../../TimePeriodRefiner.vue'
 export default {
   name: 'SearchBox',
@@ -86,17 +89,18 @@ export default {
   },
   
   computed: {
-    ...mapState({
-     query: state => state.Ngram.query,
-     datasets: state => state.Ngram.datasets,
-     loading: state => state.Ngram.loading,
-     datasetQueries: state => state.Ngram.datasetQueries
+    // ...mapState({
+    //  query: state => state.Ngram.query,
+    //  datasets: state => state.Ngram.datasets,
+    //  loading: state => state.Ngram.loading,
+    //  datasetQueries: state => state.Ngram.datasetQueries
     
-    })
+    // })
+    ...mapStores(useNgramStore)
   },
   
   watch: {
-    query: function (val) {
+    'ngramStore.query': function (val) {
       this.searchQuery  = val
     },
     
@@ -109,23 +113,23 @@ export default {
     endDate : function (){this.resetResults()},
     timeScale : function (){this.resetResults()}
   },
-  beforeDestroy() {
+  beforeUnmount() {
         this.resetSearchState()
   },
   
   methods: {
-    ...mapActions('Ngram', {
+    ...mapActions(useNgramStore, {
       resetSearchState:'resetState',
       doSearch:'doSearch',
       setSearchType:'setSearchType',
       updateQuery:'updateQuery'
     }),
-    ...mapActions('Notifier', {
+    ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
      
     }),
     submitSearch() {
-      if (this.datasetQueries.includes(this.searchQuery.toLowerCase())) {
+      if (this.ngramStore.datasetQueries.includes(this.searchQuery.toLowerCase())) {
          this.setNotification({
           	title: `Sorry - you have already searched for ${this.searchQuery}`,
             text: this.searchQuery.toLowerCase() === 'tenebrous horse' ? 'Try a new and exciting one - so many queries out there' : 'Try a new and exciting one like "tenebrous horse"',
@@ -148,8 +152,8 @@ export default {
       this.$refs.refiner.resetAll()
     },
     resetResults(){
-      var oldQuery = this.query
-      if (this.datasets.length != 0) {
+      var oldQuery = this.ngramStore.query
+      if (this.ngramStore.datasets.length != 0) {
         this.resetSearchState()
       }
       this.updateQuery(oldQuery)

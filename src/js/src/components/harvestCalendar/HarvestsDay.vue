@@ -1,9 +1,9 @@
 <template>
   <div id="harvests-for-day">
-    <h3>Harvests for {{ date | human-date }}</h3>
+    <h3>Harvests for {{ formatHumanDate(date) }}</h3>
     <ol>
       <li v-for="(harvest, index) in harvests" :key="index">
-        <a :href="generateLink(harvest)" target="_blank">{{ harvest | human-date-and-time }}</a>
+        <a :href="generateLink(harvest)" target="_blank">{{ formatHumanDateTime(harvest) }}</a>
       </li>
     </ol>
   </div>
@@ -19,18 +19,6 @@ export default {
   components: {  
    
   },
-  filters: {
-  'human-date': function (date, showWeekday = false) {
-      return toHumanDate(date, showWeekday)
-    },
-
-  'human-date-and-time': function (date) {
-       if (date instanceof Date) {
-        return toHumanDate(date) + ` ${date.getHours() < 10 ? '0' + date.getHours() : date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`
-    }
-    return date
-    }
-   },
 
   props: {
     harvests: {
@@ -53,6 +41,17 @@ export default {
     generateLink(harvest) {
       const solrWaybackUrl = configs.playbackConfig.solrwaybackBaseURL 
       return `${solrWaybackUrl}services/web/${format(harvest, 'YYYYMMDDHHmmss')}/${this.url}`
+    },
+
+    formatHumanDate(date, showWeekday = false) {
+      return toHumanDate(date, showWeekday)
+    },
+
+    formatHumanDateTime(date) {
+      if (date instanceof Date) {
+        return toHumanDate(date) + ` ${date.getHours() < 10 ? '0' + date.getHours() : date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}`
+      }
+      return date
     }
   }
 }

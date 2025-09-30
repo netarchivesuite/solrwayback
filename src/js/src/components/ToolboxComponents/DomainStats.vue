@@ -5,51 +5,97 @@
     </h2>
     <div class="domainContentContainer">
       <div class="domainContentSettings">
-        <input v-model="domain"
-               placeholder="Enter domain, like 'kb.dk'"
-               :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
-               @keyup.enter="loadGraphData(domain)">
-        <time-period-refiner ref="refiner"
-                             class="refiner"
-                             @startdate="(sdate) => startDate = sdate"
-                             @enddate="(edate) => endDate = edate" />
+        <input
+          v-model="domain"
+          placeholder="Enter domain, like 'kb.dk'"
+          :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
+          @keyup.enter="loadGraphData(domain)"
+        >
+        <time-period-refiner
+          ref="refiner"
+          class="refiner"
+          @startdate="(sdate) => startDate = sdate"
+          @enddate="(edate) => endDate = edate"
+        />
         <div class="generateButtonContainer contain">
-          <button :disabled="loading" class="domainStatsButton" @click.prevent="loadGraphData(domain)">
+          <button
+            :disabled="loading"
+            class="domainStatsButton"
+            @click.prevent="loadGraphData(domain)"
+          >
             Generate
           </button>
         
           <!-- Toggle Button -->
-          <button class="toggleViewButton" @click="toggleChartView">
+          <button
+            class="toggleViewButton"
+            @click="toggleChartView"
+          >
             {{ showCombinedChart ? 'Show Individual Charts' : 'Show Combined Chart' }}
           </button>
         </div>
       </div>
-      <div v-if="loading" class="spinner" />
+      <div
+        v-if="loading"
+        class="spinner"
+      />
       <!-- Combined Chart -->
-      <div v-show="!loading && rawData && showCombinedChart" id="lineContainer">
-        <canvas id="line-chart" width="800" height="450"></canvas>
+      <div
+        v-show="!loading && rawData && showCombinedChart"
+        id="lineContainer"
+      >
+        <canvas
+          id="line-chart"
+          width="800"
+          height="450"
+        />
       </div>
       <!-- Individual Charts -->
-      <div v-show="!loading && rawData && !showCombinedChart" id="individualChartsContainer">
+      <div
+        v-show="!loading && rawData && !showCombinedChart"
+        id="individualChartsContainer"
+      >
         <div class="chartWrapper">
-          <canvas id="size-chart" width="400" height="300"></canvas>
+          <canvas
+            id="size-chart"
+            width="400"
+            height="300"
+          />
         </div>
         <div class="chartWrapper">
-          <canvas id="pages-chart" width="400" height="300"></canvas>
+          <canvas
+            id="pages-chart"
+            width="400"
+            height="300"
+          />
         </div>
         <div class="chartWrapper">
-          <canvas id="links-chart" width="400" height="300"></canvas>
+          <canvas
+            id="links-chart"
+            width="400"
+            height="300"
+          />
         </div>
         <div class="chartWrapper">
-          <canvas id="textsize-chart" width="400" height="300"></canvas>
+          <canvas
+            id="textsize-chart"
+            width="400"
+            height="300"
+          />
         </div>
       </div>
-      <div v-if="rawData !== null && !loading" id="tableContainer">
+      <div
+        v-if="rawData !== null && !loading"
+        id="tableContainer"
+      >
         <table id="domainGrowthTable">
           <thead>
             <tr>
               <th />
-              <th v-for="(item, index) in rawData" :key="index">
+              <th
+                v-for="(item, index) in rawData"
+                :key="index"
+              >
                 {{ $_displayDate(item.date, timeScale) }}
               </th>
             </tr>
@@ -57,25 +103,37 @@
           <tbody>
             <tr>
               <td>Size in kilobytes</td>
-              <td v-for="(item, index) in rawData" :key="index">
+              <td
+                v-for="(item, index) in rawData"
+                :key="index"
+              >
                 {{ item.sizeInKb.toLocaleString("en") }}
               </td>
             </tr>
             <tr>
               <td>Pages</td>
-              <td v-for="(item, index) in rawData" :key="index">
+              <td
+                v-for="(item, index) in rawData"
+                :key="index"
+              >
                 {{ item.totalPages.toLocaleString("en") }}
               </td>
             </tr>
             <tr>
               <td>Ingoing links</td>
-              <td v-for="(item, index) in rawData" :key="index">
+              <td
+                v-for="(item, index) in rawData"
+                :key="index"
+              >
                 {{ item.ingoingLinks.toLocaleString("en") }}
               </td>
             </tr>
-            <tr>
+            <tr v-if="item?.contentTextLength">
               <td>Avg. page size in characters</td>
-              <td v-for="(item, index) in rawData" :key="index">
+              <td
+                v-for="(item, index) in rawData"
+                :key="index"
+              >
                 {{ item.contentTextLength.toLocaleString("en") }}
               </td>
             </tr>
@@ -88,7 +146,8 @@
 
 <script>
 
-import { mapActions } from 'vuex'
+import { mapActions } from 'pinia'
+import { useNotifierStore } from '../../store/notifier.store'
 import { requestService } from '../../services/RequestService'
 import domainScript from './ToolboxResources/domainStats'
 import StringManipulationUtils from './../../mixins/StringManipulationUtils'
@@ -121,7 +180,7 @@ export default {
   },
 
   methods: {
-    ...mapActions('Notifier', {
+    ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
     }),
 

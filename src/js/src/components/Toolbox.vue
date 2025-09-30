@@ -39,11 +39,11 @@
 </template>
 
 <script>
-import Wordcloud from './ToolboxComponents/Wordcloud'
-import LinkGraph from './ToolboxComponents/LinkGraph'
-import DomainStats from './ToolboxComponents/DomainStats'
-import GephiExport from './ToolboxComponents/GephiExport'
-import NgramNetarchive from './ToolboxComponents/NgramNetarchive'
+import Wordcloud from './ToolboxComponents/Wordcloud.vue'
+import LinkGraph from './ToolboxComponents/LinkGraph.vue'
+import DomainStats from './ToolboxComponents/DomainStats.vue'
+import GephiExport from './ToolboxComponents/GephiExport.vue'
+import NgramNetarchive from './ToolboxComponents/NgramNetarchive.vue'
 
 
 export default {
