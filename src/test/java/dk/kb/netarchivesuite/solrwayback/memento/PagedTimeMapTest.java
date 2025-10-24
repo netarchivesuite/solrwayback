@@ -41,10 +41,10 @@ public class PagedTimeMapTest {
     @BeforeClass
     public static void setUp() throws Exception {
         log.info("Setting up embedded server");
-        PropertiesLoader.initProperties();
+        PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
         PropertiesLoader.MEMENTO_TIMEMAP_PAGINGLIMIT = 1;
         PropertiesLoader.MEMENTO_TIMEMAP_PAGESIZE = 5;
-        PropertiesLoaderWeb.initProperties();
+        PropertiesLoaderWeb.initProperties(UnitTestUtils.getFile("properties/solrwaybackweb_unittest.properties").getPath());
 
         // Embedded Solr 9.1+ must have absolute home both as env and explicit param
         Path solrHome = Path.of(SOLR_HOME).toAbsolutePath();
