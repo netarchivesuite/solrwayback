@@ -3,6 +3,8 @@ package dk.kb.netarchivesuite.solrwayback.parsers;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,10 +41,11 @@ public class HtmlParserUrlRewriterTest {
 
         // Need this to ensure that the normaliser has a known setting
         PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
+        PropertiesLoaderWeb.initProperties(UnitTestUtils.getFile("properties/solrwaybackweb_unittest.properties").getPath());
         Normalisation.setTypeFromConfig();
-
-        // We need this so that we know what the Solr server is set to
-        PropertiesLoader.WAYBACK_BASEURL = "http://localhost:0000/solrwayback/";
+        
+        // We need this so that we know what the Solr server is set to. This is written in the unit test expected files
+        PropertiesLoader.WAYBACK_BASEURL = "http://localhost:0000/solrwayback/"; 
     }
 
     @Test
@@ -155,7 +158,7 @@ public class HtmlParserUrlRewriterTest {
         ParseResult rewritten = HtmlParserUrlRewriter.replaceLinks(
                 input, "http://example.com/somefolder/", "2020-04-30T13:07:00",
                 RewriteTestHelper.createOXResolver(expectedNotFound >= 0));
-
+        
         assertEquals("The result should be as expected for test '" + testPrefix + "' ",
                      normalise(expected), normalise(rewritten.getReplaced()));
         assertEquals("The number of replaced links should be as expected",
