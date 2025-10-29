@@ -240,7 +240,7 @@ public class NetarchiveSolrClient {
          
          setSolrParams(solrQuery);
 
-         NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
+         NoOpResponseParser rawnResponseParser = new NoOpResponseParser();
          rawJsonResponseParser.setWriterType("json");
 
          QueryRequest req = new QueryRequest(solrQuery);

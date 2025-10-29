@@ -1,4 +1,7 @@
-About us<br> Welcome to the Danish Netarchive.<br> 
-For more information see <A href='http://netarkivet.dk/in-english/' target='_new'> Danish Netarchive </a>. <br>
-<br> 
-The Royal Danish Library.
+<h1>This is the default SolrWayback <b>about us</b> text. </h1>
+
+The text is intended to have information about the archive.
+
+Change the property <b>about.text.file</b> in <b>solrwaybackweb.properties</b> to point on a local file with the 
+full absolute file path. Use HTML markup but with the html/body start and end tag.
+

@@ -1,15 +1,17 @@
 <h1>About the collection</h1>
 <h2> General Information </h2>
 <p>
-The Danish Netarchive is responsible for collecting and preserving the Danish part of the Internet as part of the Danish Legal Deposit Act.
-Our goal is to ensure the material can be used for future research purposes.
+This is the default example template for the 'About The Collection' text.<br>
+Change the property <b>collection.text.file</b> in <b>solrwaybackweb.properties</b> to point on a local file with the 
+full absolute file path. Use HTML markup but with the html/body start and end tag.
+
 </p>
 
 <p>
 Our collection has been collected through four primary strategies for collecting.  
 </p>
 <br>
-<h4>Harvest strategy</h4>
+<h4>Harvest strategy example</h4>
  <ul>
   <li>Cross-sectional collection which takes a snapshot of all Danish domains up to four times a year</li>
   <li>Selective collection from the following types of websites: all Danish news media (ranging from 12 times daily to weekly), political parties, organisations and associations, ministries and agencies, selected profiles from social media, YouTube videos (for example weekly)</li>
@@ -17,18 +19,3 @@ Our collection has been collected through four primary strategies for collecting
   <li>Special collections for example based on research requests</li>
 </ul> 
 <br>
-<p>
-The amount of material in the archive is constantly growing. At the beginning of 2022, it contained approximately 850 TB and over 34 billion objects.
-The collected material can only be used for research purposes because it contains sensitive personal information.
-When working with the web archive it is important to be aware of flaws and misrepresentations in the collection.
-In the following section we are describing and presenting known flaws in our archive.
-</p> <br>
-
-<h2>Harvest year XXXX</h2>
-<p>
-When examining the size of the archive on a yearly basis it seems like there is an extraordinary dip in amount af data in year XXXX.
-In fact, this is not a loss of data or the result of a narrow harvest. Instead it is a result af a compression of the harvested data.
-So even though the collection from this year seems smaller messured on size in bytes, it is in fact bigger than the year before messured in numbers of pages harvested.
-</p><br> 
-<h2>dr.dk</h2>
-dr.dk is the domain for the national broadcasting service in Denmark. Our harvests from dr.dk are reliable in size and content.
