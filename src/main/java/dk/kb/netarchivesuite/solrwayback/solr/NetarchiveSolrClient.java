@@ -214,43 +214,6 @@ public class NetarchiveSolrClient {
         return facetList;
     }
 
-    
-    
-
-    /*
-    public String getRawSolrQuery(String query,List<String> fq,String fieldList, int rows, int startRow,HashMap<String,String> rawQueryParams)  throws Exception{        
-         SolrQuery  solrQuery = new SolrQuery(query);
-         solrQuery.setRows(rows);
-         solrQuery.setStart(startRow);
-         if (fieldList != null && !fieldList.equals("")) {                    
-             solrQuery.setFields(fieldList.split(","));             
-         }
-         
-         if ( fq != null) {
-             for (String filter : fq) {
-                 solrQuery.add("fq",filter);
-             }
-         }
-         
-         if ( rawQueryParams != null) {
-             for (String param : rawQueryParams.keySet()) {                 
-                 solrQuery.add(param,rawQueryParams.get(param));
-             }
-         }
-         
-         setSolrParams(solrQuery);
-
-         NoOpResponseParser rawnResponseParser = new NoOpResponseParser();
-         rawJsonResponseParser.setWriterType("json");
-
-         QueryRequest req = new QueryRequest(solrQuery);
-         req.setResponseParser(rawJsonResponseParser);
-         
-         NamedList<Object> resp = solrServer.request(req);        
-         String jsonResponse = (String) resp.get("response");        
-         return jsonResponse;                          
-     }
-    */
 
     /*
      * The logic for getting the 4 dates in 2 queries is too complicated, and only
