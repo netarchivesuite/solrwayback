@@ -11,6 +11,8 @@ See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
 * Fixed some unittest that depended on System Locale or property files in home folder. Closing https://github.com/netarchivesuite/solrwayback/issues/475
 * Created default text template files for "About the Collection" and "About us" instead of the default Royal Danish Library ones.
 
+* Bumped commons-fileupload from v1.3.3 -> 1.6.0
+
 5.2.1
 -----
 * Fixed memento null-pointer.
