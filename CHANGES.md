@@ -14,6 +14,7 @@ See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
 * Improve test coverage for multiple classes:
   * JsonUtils
   * StreamingRawZipExport
+  * All Memento related classes
   
 5.2.1
 -----
