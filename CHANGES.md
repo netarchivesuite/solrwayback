@@ -13,7 +13,8 @@ See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
 
 * Improve test coverage for multiple classes:
   * JsonUtils
-  * 
+  * StreamingRawZipExport
+  
 5.2.1
 -----
 * Fixed memento null-pointer.
