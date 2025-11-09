@@ -205,6 +205,7 @@
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
       <version>1.6.0</version>
+      <scope>test</scope>
     </dependency>
 
     <!--  delete?
