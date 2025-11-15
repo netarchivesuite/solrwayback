@@ -16,6 +16,9 @@ See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
   * StreamingRawZipExport
   * All Memento related classes
   * WordCloudImageGenerator
+  * Facade, Specifically the methods related to:
+    * Smurf visualisation
+    * Wordcloud generation
   
 5.2.1
 -----
