@@ -14,6 +14,16 @@ See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
 
 * Bumped commons-fileupload from v1.3.3 -> 1.6.0
 
+* Improve test coverage for multiple classes:
+  * JsonUtils
+  * StreamingRawZipExport
+  * All Memento related classes
+  * WordCloudImageGenerator
+  * Facade, Specifically the methods related to:
+    * Smurf visualisation
+    * Wordcloud generation
+  * ImageUtils
+
 5.2.1
 -----
 * Fixed memento null-pointer.

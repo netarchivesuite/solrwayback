@@ -45,12 +45,21 @@ public class JsonUtils {
 		return value;
 	}
 
+	/**
+	 * Extract values from each JSONObject in the provided list using the given
+	 * path and add them to the supplied collection.
+	 */
 	public static <T extends Collection<String>> void addAllValues(ArrayList<JSONObject> jsonList, T values, String path) {
 		for (JSONObject obj : jsonList) {
 			addAllValues(obj, values, path);
 		}
 	}
 
+	/**
+	 * Extract a value from the provided JSONObject at the given dot-separated
+	 * path and add it to the provided collection. Supports array traversal
+	 * using tokens that end with "[]" (for example "users[].name").
+	 */
 	public static <T extends Collection<String>> void addAllValues(JSONObject json, T values, String path) {
 		// Split in tokens on .
 		String[] tokens = path.split("\\."); // Have to escape the dot
@@ -100,6 +109,10 @@ public class JsonUtils {
 		return null; // none of the paths found a value
 	}
 
+	/**
+	 * Return the named child JSONObject if present, otherwise return null.
+	 * Any exception encountered while retrieving the child object is caught and null is returned.
+	 */
 	public static JSONObject getSubObjectIfExists(JSONObject json, String subJsonObject) {
 		try {
 			return json.getJSONObject(subJsonObject);
@@ -110,7 +123,7 @@ public class JsonUtils {
 
 	}
 
-	/*
+	/**
 	 * Transform JSONArray into List<JSONObject>
 	 */
 	private static ArrayList<JSONObject> array2List(JSONArray array) {
@@ -121,12 +134,23 @@ public class JsonUtils {
 		return list;
 	}
 
-	// ends with []
+	/**
+	 * Return true if the path token denotes an array (i.e. ends with "[]").
+	 *
+	 * @param element path token
+	 * @return true when token ends with "[]"
+	 */
 	private static boolean isArrayPath(String element) {
 		return element.endsWith("[]");
 	}
 
-	// foo | foo[] -> foo
+	/**
+	 * Return the element name without the trailing "[]" if present.
+	 * E.g: foo | foo[] -> foo
+     *
+	 * @param element token possibly ending with "[]"
+	 * @return element name without array suffix
+	 */
 	private static String elementName(String element) {
 		return element.endsWith("[]") ? element.substring(0, element.length() - 2) : element;
 	}
