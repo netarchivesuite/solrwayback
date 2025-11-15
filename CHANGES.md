@@ -19,7 +19,8 @@ See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
   * Facade, Specifically the methods related to:
     * Smurf visualisation
     * Wordcloud generation
-  
+  * ImageUtils
+
 5.2.1
 -----
 * Fixed memento null-pointer.
