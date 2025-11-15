@@ -15,6 +15,7 @@ See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
   * JsonUtils
   * StreamingRawZipExport
   * All Memento related classes
+  * WordCloudImageGenerator
   
 5.2.1
 -----
