@@ -6,8 +6,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -51,9 +49,7 @@ public class StreamingRawZipExportTest {
         meta.setUrl("http://example.com/abc"); // setter normalizes slashes
         meta.setMimetype("text/html; charset=UTF-8");
 
-        Method m = StreamingRawZipExport.class.getDeclaredMethod("createFilename", WarcMetadataFromSolr.class);
-        m.setAccessible(true);
-        String filename = (String) m.invoke(zipExport, meta);
+        String filename = zipExport.createFilename(meta);
         assertEquals("id_http_examplecom_abc.html", filename);
     }
 
@@ -66,13 +62,11 @@ public class StreamingRawZipExportTest {
         meta.setUrl("http://example.com/1");
         meta.setMimetype("application/octet-stream");
         // fileExtension null -> .dat
-        Method m = StreamingRawZipExport.class.getDeclaredMethod("createFilename", WarcMetadataFromSolr.class);
-        m.setAccessible(true);
-        String filenameDat = (String) m.invoke(zipExport, meta);
+        String filenameDat = zipExport.createFilename(meta);
         assertTrue(filenameDat.endsWith(".dat"));
 
         meta.setFileExtension("png");
-        String filenamePng = (String) m.invoke(zipExport, meta);
+        String filenamePng = zipExport.createFilename(meta);
         assertTrue(filenamePng.endsWith(".png"));
     }
 
@@ -87,9 +81,7 @@ public class StreamingRawZipExportTest {
         doc.setField("url", "http://ex/1");
 
         WarcMetadataFromSolr meta = new WarcMetadataFromSolr();
-        Method m = StreamingRawZipExport.class.getDeclaredMethod("extractMetadata", SolrDocument.class, WarcMetadataFromSolr.class);
-        m.setAccessible(true);
-        Object ret = m.invoke(zipExport, doc, meta);
+        SolrDocument ret = zipExport.extractMetadata(doc, meta);
         assertSame(doc, ret);
         assertEquals("png", meta.getFileExtension());
         assertEquals("image/png", meta.getMimetype());
@@ -104,13 +96,8 @@ public class StreamingRawZipExportTest {
         doc.setField("source_file_path", "nonexistent");
         doc.setField("source_file_offset", 123L);
 
-        Method m = StreamingRawZipExport.class.getDeclaredMethod("safeGetArcEntry", SolrDocument.class);
-        m.setAccessible(true);
-        try {
-            m.invoke(null, doc);
-        } catch (InvocationTargetException e) {
-            throw e.getCause();
-        }
+        // Direct call should throw RuntimeException wrapping the original exception
+        StreamingRawZipExport.safeGetArcEntry(doc);
     }
 
     /** Add ArcEntry to zip and stream its binary content. */
@@ -131,10 +118,8 @@ public class StreamingRawZipExportTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ZipOutputStream zos = new ZipOutputStream(baos);
 
-        // Reflect to call private method and then call the method to add entry to zip
-        Method m = StreamingRawZipExport.class.getDeclaredMethod("addArcEntryToZip", ArcEntry.class, ZipOutputStream.class, WarcMetadataFromSolr.class);
-        m.setAccessible(true);
-        Object ret = m.invoke(zipExport, entry, zos, meta);
+        // Call protected method directly to add entry to zip
+        ArcEntry ret = zipExport.addArcEntryToZip(entry, zos, meta);
         assertSame(entry, ret);
         zos.close();
 
@@ -145,9 +130,7 @@ public class StreamingRawZipExportTest {
         assertNotNull(ze);
         String name = ze.getName();
         // normalize the expected filename the same way the implementation does
-        Method createMethod = StreamingRawZipExport.class.getDeclaredMethod("createFilename", WarcMetadataFromSolr.class);
-        createMethod.setAccessible(true);
-        String expectedName = (String) createMethod.invoke(zipExport, meta);
+        String expectedName = zipExport.createFilename(meta);
         assertEquals(expectedName, name);
 
         // read entry content
