@@ -59,7 +59,7 @@ public class StreamingRawZipExport {
      * @param warcMetadata  Object to save metadata information to.
      * @return              The input SolrDocument is returned, which makes this method stream compliant.
      */
-    private SolrDocument extractMetadata(SolrDocument doc, WarcMetadataFromSolr warcMetadata) {
+    protected SolrDocument extractMetadata(SolrDocument doc, WarcMetadataFromSolr warcMetadata) {
         warcMetadata.setFileExtension((String) doc.getFieldValue("content_type_ext"));
         warcMetadata.setMimetype((String) doc.getFieldValue("content_type"));
         warcMetadata.setId((String) doc.getFieldValue("id"));
@@ -73,7 +73,7 @@ public class StreamingRawZipExport {
      * @param doc represents a SolrDocument, which contains info on the ARC/WARC filepath and offset for entries.
      * @return     an arc entry, from the filepath and offset delivered by the solr document.
      */
-    private static ArcEntry safeGetArcEntry(SolrDocument doc) {
+    protected static ArcEntry safeGetArcEntry(SolrDocument doc) {
         try {
             return Facade.getArcEntry((String) doc.getFieldValue("source_file_path"), (long) doc.getFieldValue("source_file_offset"));
         } catch (Exception e) {
@@ -87,7 +87,7 @@ public class StreamingRawZipExport {
      * @param zos   which entries gets added to.
      * @return      the input arc/warc entry, for further use in a stream.
      */
-    private ArcEntry addArcEntryToZip(ArcEntry entry, ZipOutputStream zos, WarcMetadataFromSolr warcMetadata) {
+    protected ArcEntry addArcEntryToZip(ArcEntry entry, ZipOutputStream zos, WarcMetadataFromSolr warcMetadata) {
         String filename = createFilename(warcMetadata);
         ZipEntry zipArcEntry = new ZipEntry(filename);
 
@@ -109,7 +109,7 @@ public class StreamingRawZipExport {
      * @param warcMetadata  contains the timestamp, id, originalUrl and file extension, which is used to create the filename.
      * @return              a string in the format timestamp_id_originalUrlStrippedForNonASCIIChars.extension.
      */
-     private String createFilename(WarcMetadataFromSolr warcMetadata) {
+     protected String createFilename(WarcMetadataFromSolr warcMetadata) {
 
         String filename;
         if (warcMetadata.getMimetype().contains("text/html")) {
