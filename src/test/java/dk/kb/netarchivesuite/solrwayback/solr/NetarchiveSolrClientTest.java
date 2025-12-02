@@ -3,6 +3,8 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,6 +21,10 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -43,13 +49,10 @@ public class NetarchiveSolrClientTest {
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer, "netarchivebuilder");
 
+        SolrTestUtils utils = new SolrTestUtils(); // Initialize static docs
+
         // Initialize NetarchiveSolrClient with embedded server for tests
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
-
-        // Clean and fill
-        embeddedServer.deleteByQuery("*:*");
-        fillSolr();
-        embeddedServer.commit();
     }
 
     @Before
@@ -155,6 +158,93 @@ public class NetarchiveSolrClientTest {
         assertEquals("id should match", id, first.path("id").asText());
         assertEquals("title should match", title, first.path("title").asText());
         assertEquals("domain should match", domain, first.path("domain").asText());
+    }
+
+    @Test
+    public void testFindNearestHarvestTimeForMultipleUrlsFullFields() throws Exception {
+        // Prepare a clean index with two URLs, each having two harvests at different times
+        embeddedServer.deleteByQuery("*:*");
+
+        embeddedServer.add(SolrTestUtils.doc1);
+        embeddedServer.add(SolrTestUtils.doc2);
+        embeddedServer.add(SolrTestUtils.doc3);
+        embeddedServer.add(SolrTestUtils.doc4);
+        embeddedServer.commit();
+        NetarchiveSolrClient client = NetarchiveSolrClient.getInstance();
+        ArrayList<IndexDoc> results = client.findNearestHarvestTimeForMultipleUrlsFullFields(
+                Arrays.asList(SolrTestUtils.url1, SolrTestUtils.url2), "2019-03-15T12:11:00Z");
+
+        // Expect two results, one per URL
+        assertEquals(2, results.size());
+
+        // Map url -> crawl_date for easy assertions
+        Map<String, String> map = new HashMap<>();
+        for (IndexDoc idx : results) {
+            map.put(idx.getUrl(), idx.getCrawlDate());
+        }
+
+        // url1: nearest to 12:11 is 12:00 (diff 11m) vs 12:30 (19m)
+        assertEquals("2019-03-15T12:00:00Z", map.get(SolrTestUtils.url1));
+        // url2: nearest to 12:11 is 12:45 (diff 34m) vs 11:00 (71m)
+        assertEquals("2019-03-15T12:45:00Z", map.get(SolrTestUtils.url2));
+
+        // Assert that the returned IndexDocs contain the expected fields
+        Map<String, String> srcMap = new HashMap<>();
+        for (IndexDoc idx : results) {
+            assertNotNull("id should be present", idx.getId());
+            assertNotNull("url should be present", idx.getUrl());
+            assertNotNull("url_norm should be present", idx.getUrl_norm());
+            assertNotNull("source_file_path should be present", idx.getSource_file_path());
+            assertTrue("offset should be >= 0", idx.getOffset() >= 0);
+            assertNotNull("crawlDate should be present", idx.getCrawlDate());
+            assertNotNull("contentType should be present", idx.getContentType());
+            srcMap.put(idx.getUrl(), idx.getSource_file_path());
+        }
+        assertEquals("file1_offset", srcMap.get(SolrTestUtils.url1));
+        assertEquals("file4_offset", srcMap.get(SolrTestUtils.url2));
+    }
+
+    @Test
+    public void testFindNearestHarvestTimeForMultipleUrlsFewFields() throws Exception {
+        // Prepare a clean index with two URLs, each having two harvests at different times
+        embeddedServer.deleteByQuery("*:*");
+
+        embeddedServer.add(SolrTestUtils.doc1);
+        embeddedServer.add(SolrTestUtils.doc2);
+        embeddedServer.add(SolrTestUtils.doc3);
+        embeddedServer.add(SolrTestUtils.doc4);
+        embeddedServer.commit();
+
+        NetarchiveSolrClient client = NetarchiveSolrClient.getInstance();
+        ArrayList<IndexDocShort> results = client.findNearestHarvestTimeForMultipleUrlsFewFields(
+                Arrays.asList(SolrTestUtils.url1, SolrTestUtils.url2), "2019-03-15T12:11:00Z");
+
+        // Expect two results, one per URL
+        assertEquals(2, results.size());
+
+        // Map url -> crawl_date for easy assertions
+        Map<String, String> map = new HashMap<>();
+        for (IndexDocShort idx : results) {
+            map.put(idx.getUrl(), idx.getCrawlDate());
+        }
+
+        // url1: nearest to 12:11 is 12:00:00
+        assertEquals("2019-03-15T12:00:00Z", map.get(SolrTestUtils.url1));
+        // url2: nearest to 12:11 is 12:45:00
+        assertEquals("2019-03-15T12:45:00Z", map.get(SolrTestUtils.url2));
+
+        // Assert short fields are returned and correct
+        Map<String, String> srcMapShort = new HashMap<>();
+        for (IndexDocShort idx : results) {
+            assertNotNull("url should be present", idx.getUrl());
+            assertNotNull("url_norm should be present", idx.getUrl_norm());
+            assertNotNull("source_file_path should be present", idx.getSource_file_path());
+            assertTrue("offset should be >= 0", idx.getOffset() >= 0);
+            assertNotNull("crawlDate should be present", idx.getCrawlDate());
+            srcMapShort.put(idx.getUrl(), idx.getSource_file_path());
+        }
+        assertEquals("file1_offset", srcMapShort.get(SolrTestUtils.url1));
+        assertEquals("file4_offset", srcMapShort.get(SolrTestUtils.url2));
     }
 
 }
