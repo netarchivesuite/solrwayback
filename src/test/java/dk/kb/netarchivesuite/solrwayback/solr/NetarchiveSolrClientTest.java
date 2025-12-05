@@ -49,7 +49,8 @@ public class NetarchiveSolrClientTest {
         coreContainer.load();
         embeddedServer = new EmbeddedSolrServer(coreContainer, "netarchivebuilder");
 
-        SolrTestUtils utils = new SolrTestUtils(); // Initialize static docs
+        // Initialize static test docs
+        new SolrTestUtils();
 
         // Initialize NetarchiveSolrClient with embedded server for tests
         NetarchiveSolrTestClient.initializeOverLoadUnitTest(embeddedServer);
@@ -245,6 +246,23 @@ public class NetarchiveSolrClientTest {
         }
         assertEquals("file1_offset", srcMapShort.get(SolrTestUtils.url1));
         assertEquals("file4_offset", srcMapShort.get(SolrTestUtils.url2));
+    }
+
+    @Test
+    public void testIsSolrAvailable() {
+        NetarchiveSolrClient client = NetarchiveSolrClient.getInstance();
+        // By default (test initialization) there is no IndexWatcher, so availability should be undetermined (null)
+        assertNull("isSolrAvailable should be null when IndexWatcher is not started", client.isSolrAvailable());
+
+        // Simulate index status changes by toggling the protected field directly (same package access)
+        client.solrAvailable = Boolean.TRUE;
+        assertTrue("isSolrAvailable should return true after setting solrAvailable to true", client.isSolrAvailable());
+
+        client.solrAvailable = Boolean.FALSE;
+        assertFalse("isSolrAvailable should return false after setting solrAvailable to false", client.isSolrAvailable());
+
+        // Reset to null to avoid side effects for other tests
+        client.solrAvailable = null;
     }
 
 }
