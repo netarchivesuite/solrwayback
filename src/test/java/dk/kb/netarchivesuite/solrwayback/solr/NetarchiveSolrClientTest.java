@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
+import dk.kb.netarchivesuite.solrwayback.service.dto.FacetCount;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
 import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
@@ -23,7 +24,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -265,4 +268,118 @@ public class NetarchiveSolrClientTest {
         client.solrAvailable = null;
     }
 
+    @Test
+    public void testGetDomainFacets() throws Exception {
+        // Clear index and add documents demonstrating ingoing and outgoing links
+        embeddedServer.deleteByQuery("*:*");
+
+        // Doc A: domain alpha links to beta and gamma
+        SolrInputDocument a = new SolrInputDocument();
+        a.setField("id", "a");
+        a.setField("domain", "alpha.com");
+        a.setField("links_domains", Arrays.asList("beta.com", "gamma.com"));
+        a.setField("crawl_date", DateUtils.solrTimestampToJavaDate("2020-01-15T12:00:00Z"));
+        embeddedServer.add(a);
+
+        // Doc B: domain beta links to alpha
+        SolrInputDocument b = new SolrInputDocument();
+        b.setField("id", "b");
+        b.setField("domain", "beta.com");
+        b.setField("links_domains", Arrays.asList("alpha.com"));
+        b.setField("crawl_date", DateUtils.solrTimestampToJavaDate("2020-01-16T12:00:00Z"));
+        embeddedServer.add(b);
+
+        // Doc C: domain gamma links to alpha
+        SolrInputDocument c = new SolrInputDocument();
+        c.setField("id", "c");
+        c.setField("domain", "gamma.com");
+        c.setField("links_domains", Arrays.asList("alpha.com"));
+        c.setField("crawl_date", DateUtils.solrTimestampToJavaDate("2020-01-17T12:00:00Z"));
+        embeddedServer.add(c);
+
+        // Commit
+        embeddedServer.commit();
+
+        NetarchiveSolrClient client = NetarchiveSolrClient.getInstance();
+
+        Date start = DateUtils.solrTimestampToJavaDate("2020-01-01T00:00:00Z");
+        Date end = DateUtils.solrTimestampToJavaDate("2020-12-31T23:59:59Z");
+
+        // Outgoing for alpha.com should include beta.com and gamma.com
+        List<FacetCount> outgoing = client.getDomainFacets("alpha.com", 10, false, start, end);
+        assertNotNull(outgoing);
+        // Convert to map for easy lookup
+        Map<String, Long> outMap = new HashMap<>();
+        for (FacetCount fc : outgoing) {
+            outMap.put(fc.getValue(), fc.getCount());
+        }
+        assertEquals(Long.valueOf(1), outMap.get("beta.com"));
+        assertEquals(Long.valueOf(1), outMap.get("gamma.com"));
+
+        // Ingoing for alpha.com should include beta.com and gamma.com (both link to alpha)
+        List<FacetCount> ingoing = client.getDomainFacets("alpha.com", 10, true, start, end);
+        assertNotNull(ingoing);
+        Map<String, Long> inMap = new HashMap<>();
+        for (FacetCount fc : ingoing) {
+            inMap.put(fc.getValue(), fc.getCount());
+        }
+        // beta and gamma should be present
+        assertEquals(Long.valueOf(1), inMap.get("beta.com"));
+        assertEquals(Long.valueOf(1), inMap.get("gamma.com"));
+    }
+
+    @Test
+    public void testGetWayBackStatistics() throws Exception {
+        // Prepare a clean index with two harvests for same url_norm in the same domain
+        embeddedServer.deleteByQuery("*:*");
+
+        String urlNorm = "http://example.com/page/wayback";
+        String domain = "example.com";
+
+        SolrInputDocument before = new SolrInputDocument();
+        before.setField("id", "wb_before");
+        before.setField("url_norm", urlNorm);
+        before.setField("url", "http://example.com/page/wayback");
+        before.setField("domain", domain);
+        before.setField("content_length", 1000);
+        before.setField("crawl_date", DateUtils.solrTimestampToJavaDate("2019-03-15T11:00:00Z"));
+
+        SolrInputDocument after = new SolrInputDocument();
+        after.setField("id", "wb_after");
+        after.setField("url_norm", urlNorm);
+        after.setField("url", "http://example.com/page/wayback");
+        after.setField("domain", domain);
+        after.setField("content_length", 3000);
+        after.setField("crawl_date", DateUtils.solrTimestampToJavaDate("2019-03-15T12:30:00Z"));
+
+        embeddedServer.add(before);
+        embeddedServer.add(after);
+        embeddedServer.commit();
+
+        NetarchiveSolrClient client = NetarchiveSolrClient.getInstance();
+
+        // Call the method for a timestamp between the two harvests
+        WaybackStatistics stats = client.getWayBackStatistics(200, "http://example.com/page/wayback", urlNorm, "2019-03-15T12:00:00Z");
+
+        assertNotNull(stats);
+        // Url and url_norm should be set
+        assertEquals(urlNorm, stats.getUrl_norm());
+        assertEquals("http://example.com/page/wayback", stats.getUrl());
+
+        // The earliest and latest harvests should be the ones we inserted
+        assertEquals("2019-03-15T11:00:00Z", stats.getFirstHarvestDate());
+        assertEquals("2019-03-15T12:30:00Z", stats.getLastHarvestDate());
+
+        // Next (after the input date) should be 12:30 and previous should be 11:00
+        assertEquals("2019-03-15T12:30:00Z", stats.getNextHarvestDate());
+        assertEquals("2019-03-15T11:00:00Z", stats.getPreviousHarvestDate());
+
+        // Number of harvests should be after+before+1 (as implemented)
+        assertEquals(3L, stats.getNumberOfHarvest());
+
+        // Domain aggregates
+        assertEquals(domain, stats.getDomain());
+        assertEquals(2L, stats.getNumberHarvestDomain());
+        assertEquals(4000L, stats.getDomainHarvestTotalContentLength());
+    }
 }
