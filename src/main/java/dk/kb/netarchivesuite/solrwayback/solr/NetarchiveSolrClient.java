@@ -1078,6 +1078,11 @@ public class NetarchiveSolrClient {
                 .orElse(null);
     }
 
+    /**
+     * Merges the contents of the additional SolrDocumentList into the main one.
+     * @param main the main SolrDocumentList.
+     * @param additional the additional SolrDocumentList to merge into the main one.
+     */
     public static void mergeInto(SolrDocumentList main, SolrDocumentList additional) {
         if (additional == null) {
             return;

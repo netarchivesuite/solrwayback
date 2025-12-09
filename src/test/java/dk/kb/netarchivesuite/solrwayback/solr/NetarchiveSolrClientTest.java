@@ -3,16 +3,15 @@ package dk.kb.netarchivesuite.solrwayback.solr;
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
-import dk.kb.netarchivesuite.solrwayback.service.dto.FacetCount;
-import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
-import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDocShort;
-import dk.kb.netarchivesuite.solrwayback.service.dto.SearchResult;
+import dk.kb.netarchivesuite.solrwayback.service.dto.*;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.NodeConfig;
 import org.junit.AfterClass;
@@ -382,4 +381,51 @@ public class NetarchiveSolrClientTest {
         assertEquals(2L, stats.getNumberHarvestDomain());
         assertEquals(4000L, stats.getDomainHarvestTotalContentLength());
     }
+
+    @Test
+    public void testMergeInto() {
+        SolrDocumentList main = new SolrDocumentList();
+        SolrDocument doc1 = new SolrDocument();
+        doc1.setField("id", "1");
+        main.add(doc1);
+        main.setNumFound(5);
+
+        SolrDocumentList additional = new SolrDocumentList();
+        SolrDocument doc2 = new SolrDocument();
+        doc2.setField("id", "2");
+        SolrDocument doc3 = new SolrDocument();
+        doc3.setField("id", "3");
+        additional.add(doc2);
+        additional.add(doc3);
+        additional.setNumFound(3);
+
+        NetarchiveSolrClient.mergeInto(main, additional);
+
+        // size = existing 1 + 2 added
+        assertEquals(3, main.size());
+        // numFound should be summed
+        assertEquals(8L, main.getNumFound());
+    }
+
+    @Test
+    public void testMergeIntoNullAdditional() {
+        SolrDocumentList main = new SolrDocumentList();
+        SolrDocument doc1 = new SolrDocument();
+        doc1.setField("id", "only");
+        main.add(doc1);
+        main.setNumFound(4);
+
+        int originalSize = main.size();
+        long originalNumFound = main.getNumFound();
+        Float originalMaxScore = main.getMaxScore();
+        String originalDocId = main.get(0).getFieldValue("id").toString();
+
+        NetarchiveSolrClient.mergeInto(main, null);
+
+        assertEquals(originalSize, main.size());
+        assertEquals(originalNumFound, main.getNumFound());
+        assertEquals(originalMaxScore, main.getMaxScore());
+        assertEquals(originalDocId, main.get(0).getFieldValue("id"));
+    }
+
 }
