@@ -38,7 +38,6 @@ export default {
   },
   
   methods: {
-    
     generateLink(harvest) {
       const solrWaybackUrl = configs.playbackConfig.solrwaybackBaseURL 
       return `${solrWaybackUrl}services/web/${format(harvest, 'YYYYMMDDHHmmss')}/${this.url}`
