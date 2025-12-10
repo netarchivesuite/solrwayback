@@ -202,6 +202,7 @@ public class QueryHistoryResource {
         
         int actionNumber = 1;
         String lastQuery = null;
+        boolean lastWasPlayback = false;
         
         for (Map<String, String> entry : history) {
             String url = entry.get("url");
@@ -218,6 +219,7 @@ public class QueryHistoryResource {
                     sb.append("Query: ").append(query).append("\n");
                     sb.append("-----------------------\n");
                     lastQuery = query;
+                    lastWasPlayback = false;
                 }
             } else if (url.contains("/services/web/") && entry.containsKey("waybackDate")) {
                 // Playback URL
@@ -227,16 +229,18 @@ public class QueryHistoryResource {
                 sb.append("Action Number: ").append(actionNumber++).append("\n");
                 
                 // Distinguish between clicks from search results vs. links within playback
-                if (lastQuery != null) {
-                    sb.append("Found interesting search result and clicked it from search results:\n");
+                if (lastWasPlayback) {
+                    sb.append("Followed a link in playback:\n");
                 } else {
-                    sb.append("Clicked on a link from a playback page.\n");
+                    sb.append("Found interesting search result and clicked it from search results:\n");
                 }
                 
                 sb.append("SolrWayback Playback URL clicked.\n");
                 sb.append("Archive Date: ").append(waybackDate).append("\n");
                 sb.append("Original URL: ").append(originalUrl != null ? originalUrl : "unknown").append("\n");
                 sb.append("-----------------------\n");
+                
+                lastWasPlayback = true;
             }
         }
         
