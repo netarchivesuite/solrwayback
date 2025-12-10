@@ -1,3 +1,4 @@
+import { trackSearch } from '../utils/queryHistoryTracker'
 
 export default {
   methods: {
@@ -12,6 +13,14 @@ export default {
                                                      facets:appliedFacets.join(''),
                                                      sort:solrSettings.sort
                                                      } })
+      // Track search in session storage (runs after routing completes)
+      setTimeout(() => {
+        try {
+          trackSearch(query, appliedFacets, solrSettings, window.location.origin)
+        } catch (e) {
+          console.warn('Query history tracking failed:', e)
+        }
+      }, 0)
       }
     },
     $_pushCleanHistory(destination) {

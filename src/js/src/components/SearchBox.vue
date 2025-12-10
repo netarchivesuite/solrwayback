@@ -92,6 +92,7 @@
             <span class="gpsText">GPS Image Search</span>
             <span class="gpsIcon" />
           </button>
+          <query-history-button />
         </div>
       </form>
       <applied-search-facets />
@@ -114,6 +115,7 @@ import SearchboxUtils from './../mixins/SearchboxUtils'
 import SearchUtils from './../mixins/SearchUtils'
 import SearchUploadFile from './SearchUploadFile.vue'
 import Toolbox from './Toolbox.vue'
+import QueryHistoryButton from './QueryHistoryButton.vue'
 import {debounce} from './../utils/globalUtils'
 import { isUploadFileSearchDisabled } from '../configs/configHelper'
 
@@ -122,6 +124,7 @@ export default {
     AppliedSearchFacets,
     SearchUploadFile,
     Toolbox,
+    QueryHistoryButton,
     },
   mixins: [HistoryRoutingUtils, SearchUtils, SearchboxUtils],
   data () {
