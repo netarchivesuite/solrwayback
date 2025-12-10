@@ -193,31 +193,80 @@ public class QueryHistoryResource {
     }
 
     /**
-     * Format history entries as text file content
+     * Format history entries as text file content in the SolrWaybackQueryHistory format
      */
     private String formatHistoryAsText(List<Map<String, String>> history) {
         StringBuilder sb = new StringBuilder();
-        sb.append("# SolrWayback Query History\n");
-        sb.append("# Generated: ").append(DATE_FORMAT.format(new Date())).append("\n");
-        sb.append("# Total entries: ").append(history.size()).append("\n");
-        sb.append("#\n");
-        sb.append("# Format: [timestamp] URL [waybackDate] [originalUrl]\n");
-        sb.append("#\n\n");
+        sb.append("SolrWayback Query History\n");
+        sb.append("=========================\n\n");
+        
+        int actionNumber = 1;
+        String lastQuery = null;
         
         for (Map<String, String> entry : history) {
-            sb.append("[").append(entry.get("timestamp")).append("] ");
-            sb.append(entry.get("url"));
+            String url = entry.get("url");
             
-            if (entry.containsKey("waybackDate")) {
-                sb.append(" [").append(entry.get("waybackDate")).append("]");
+            // Determine if this is a search query or playback URL
+            if (url.contains("/search?query=")) {
+                // Extract query from search URL
+                String query = extractQueryFromUrl(url);
+                
+                // Only output if query changed
+                if (query != null && !query.equals(lastQuery)) {
+                    sb.append("Action Number: ").append(actionNumber++).append("\n");
+                    sb.append("SolrWayback Query changed.\n");
+                    sb.append("Query: ").append(query).append("\n");
+                    sb.append("-----------------------\n");
+                    lastQuery = query;
+                }
+            } else if (url.contains("/services/web/") && entry.containsKey("waybackDate")) {
+                // Playback URL
+                String waybackDate = entry.get("waybackDate");
+                String originalUrl = entry.get("originalUrl");
+                
+                sb.append("Action Number: ").append(actionNumber++).append("\n");
+                
+                // Distinguish between clicks from search results vs. links within playback
+                if (lastQuery != null) {
+                    sb.append("Found interesting search result and clicked it from search results:\n");
+                } else {
+                    sb.append("Clicked on a link from a playback page.\n");
+                }
+                
+                sb.append("SolrWayback Playback URL clicked.\n");
+                sb.append("Archive Date: ").append(waybackDate).append("\n");
+                sb.append("Original URL: ").append(originalUrl != null ? originalUrl : "unknown").append("\n");
+                sb.append("-----------------------\n");
             }
-            if (entry.containsKey("originalUrl")) {
-                sb.append(" [").append(entry.get("originalUrl")).append("]");
-            }
-            
-            sb.append("\n");
         }
         
         return sb.toString();
+    }
+    
+    /**
+     * Extract the query parameter from a search URL
+     */
+    private String extractQueryFromUrl(String url) {
+        try {
+            int queryStart = url.indexOf("query=");
+            if (queryStart == -1) return null;
+            
+            queryStart += 6; // Skip "query="
+            int queryEnd = url.indexOf("&", queryStart);
+            if (queryEnd == -1) queryEnd = url.length();
+            
+            String query = url.substring(queryStart, queryEnd);
+            
+            // URL decode the query
+            query = java.net.URLDecoder.decode(query, "UTF-8");
+            
+            // Replace + with space if not decoded
+            query = query.replace("+", " ");
+            
+            return query;
+        } catch (Exception e) {
+            log.warn("Failed to extract query from URL: {}", url, e);
+            return null;
+        }
     }
 }
