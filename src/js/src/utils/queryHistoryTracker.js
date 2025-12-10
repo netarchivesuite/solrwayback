@@ -112,9 +112,44 @@ export function trackSearch(query, appliedFacets, solrSettings, baseUrl = '') {
 /**
  * Track a playback URL (when user clicks on archived content)
  * @param {string} playbackUrl - The full playback URL
+ * @param {string} waybackDate - The archive date (YYYYMMDDHHMMSS format)
+ * @param {string} originalUrl - The original URL being archived
  */
-export function trackPlayback(playbackUrl) {
-  addToQueryHistory(playbackUrl)
+export function trackPlayback(playbackUrl, waybackDate = null, originalUrl = null) {
+  // Store as an object with metadata
+  try {
+    if (typeof sessionStorage === 'undefined' || typeof window === 'undefined') {
+      return
+    }
+    
+    const history = getQueryHistory()
+    
+    // If the URL is relative, make it absolute
+    let fullUrl = playbackUrl
+    if (!playbackUrl.startsWith('http')) {
+      fullUrl = window.location.origin + '/' + playbackUrl.replace(/^\/+/, '')
+    }
+    
+    // Add new entry with timestamp and metadata
+    const entry = {
+      url: fullUrl,
+      timestamp: new Date().toISOString(),
+      waybackDate: waybackDate,
+      originalUrl: originalUrl
+    }
+    
+    history.push(entry)
+    
+    // Save back to session storage
+    sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history))
+    
+    // Dispatch custom event to notify listeners
+    window.dispatchEvent(new CustomEvent('queryHistoryUpdated', { 
+      detail: { count: history.length } 
+    }))
+  } catch (error) {
+    console.error('An error occurred when adding playback action to interaction history:', error)
+  }
 }
 
 /**
@@ -145,24 +180,53 @@ function parseSolrWaybackParams(url) {
  * @returns {object|null} Object containing date and url, or null if invalid
  */
 function parseArchivedUrl(decodedUrl) {
-  const prefix = '/solrwayback/services/web/'
-  
-  if (!decodedUrl.includes(prefix)) {
-    return null
+  // Handle /services/web/ format (standard playback)
+  const webPrefix = '/services/web/'
+  if (decodedUrl.includes(webPrefix)) {
+    const idx = decodedUrl.indexOf(webPrefix)
+    const remainder = decodedUrl.substring(idx + webPrefix.length)
+    const parts = remainder.split('/', 2)
+    
+    if (parts.length === 2) {
+      return {
+        date: parts[0],
+        url: parts[1]
+      }
+    }
   }
   
-  const idx = decodedUrl.indexOf(prefix)
-  const remainder = decodedUrl.substring(idx + prefix.length)
-  const parts = remainder.split('/', 2)
-  
-  if (parts.length !== 2) {
-    return null
+  // Handle viewForward format (warc file offset playback)
+  if (decodedUrl.includes('services/viewForward')) {
+    const urlObj = new URL(decodedUrl)
+    const params = new URLSearchParams(urlObj.search)
+    const sourceFile = params.get('source_file_path')
+    const offset = params.get('offset')
+    
+    if (sourceFile && offset) {
+      return {
+        date: 'N/A',
+        url: `WARC: ${sourceFile} @ offset ${offset}`
+      }
+    }
   }
   
-  return {
-    date: parts[0],
-    url: parts[1]
+  // Handle external playback engines with date/url format
+  // Format: http://playback-engine.com/YYYYMMDDHHMMSS/http://original-url.com
+  const datePattern = /\/(\d{14})\//
+  const match = decodedUrl.match(datePattern)
+  
+  if (match) {
+    const dateStr = match[1]
+    const idx = decodedUrl.indexOf(`/${dateStr}/`)
+    const originalUrl = decodedUrl.substring(idx + dateStr.length + 2)
+    
+    return {
+      date: dateStr,
+      url: originalUrl
+    }
   }
+  
+  return null
 }
 
 /**
@@ -235,21 +299,30 @@ export function parseHistory() {
     counter++
     const decoded = decodeURIComponent(entry.url)
     
-    // Check if it's a playback URL
-    if (decoded.includes('/solrwayback/services/web/')) {
-      const archived = parseArchivedUrl(decoded)
-      if (archived) {
-        output += formatPlaybackEntry(archived, counter, lastWasClick)
-        lastWasClick = true
-        return
-      }
-    }
-    
-    // Check if it's a search URL
-    if (decoded.includes('/solrwayback/search?query=')) {
+    // Check if it's a search URL first (more specific pattern)
+    if (decoded.includes('/search?query=') || decoded.includes('search?query=')) {
       const params = parseSolrWaybackParams(entry.url)
       output += formatSearchEntry(params, counter)
       lastWasClick = false
+      return
+    }
+    
+    // Check if we have metadata from the entry (new format)
+    if (entry.waybackDate && entry.originalUrl) {
+      const archived = {
+        date: entry.waybackDate,
+        url: entry.originalUrl
+      }
+      output += formatPlaybackEntry(archived, counter, lastWasClick)
+      lastWasClick = true
+      return
+    }
+    
+    // Otherwise, try to parse as playback URL (legacy/fallback)
+    const archived = parseArchivedUrl(decoded)
+    if (archived) {
+      output += formatPlaybackEntry(archived, counter, lastWasClick)
+      lastWasClick = true
     }
   })
   

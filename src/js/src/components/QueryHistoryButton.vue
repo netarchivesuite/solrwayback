@@ -11,56 +11,52 @@
 </template>
 
 <script>
-import { getQueryHistoryCount, downloadHistory } from '../utils/queryHistoryTracker'
-
 /**
  * QueryHistoryButton Component
  * 
  * Provides a UI button for downloading the current session's query history.
- * Uses utility functions from queryHistoryTracker for all functionality.
+ * All tracking is done server-side; this component just calls the backend APIs.
  */
 export default {
   name: 'QueryHistoryButton',
   
   data() {
     return {
-      historyCount: 0
+      historyCount: 0,
+      pollInterval: null
     }
   },
   
   mounted() {
-    // Initialize history count (with error handling)
-    try {
+    this.updateHistoryCount()
+    
+    // Poll for count updates every 2 seconds
+    this.pollInterval = setInterval(() => {
       this.updateHistoryCount()
-      
-      // Listen for storage events to update count
-      if (typeof window !== 'undefined') {
-        window.addEventListener('storage', this.updateHistoryCount)
-        window.addEventListener('queryHistoryUpdated', this.updateHistoryCount)
-      }
-    } catch (e) {
-      console.warn('Query history button initialization failed:', e)
-      this.historyCount = 0
-    }
+    }, 2000)
   },
   
   beforeUnmount() {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('storage', this.updateHistoryCount)
-      window.removeEventListener('queryHistoryUpdated', this.updateHistoryCount)
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval)
     }
   },
   
   methods: {
     /**
-     * Update the history count from session storage
+     * Fetch history count from server
      */
-    updateHistoryCount() {
+    async updateHistoryCount() {
       try {
-        this.historyCount = getQueryHistoryCount()
+        const response = await fetch(`${window.location.origin}/solrwayback/services/queryhistory/count`, {
+          credentials: 'same-origin'
+        })
+        if (response.ok) {
+          const data = await response.json()
+          this.historyCount = data.count || 0
+        }
       } catch (e) {
         console.warn('Failed to get query history count:', e)
-        this.historyCount = 0
       }
     },
     
@@ -75,18 +71,32 @@ export default {
     },
     
     /**
-     * Handle the download button click
+     * Download history file from server
      */
-    handleDownload() {
+    async handleDownload() {
       if (this.historyCount === 0) {
         return
       }
       
       try {
-        // Call the download function from the utility module
-        downloadHistory()
+        const response = await fetch(`${window.location.origin}/solrwayback/services/queryhistory/download`, {
+          credentials: 'same-origin'
+        })
         
-        // Optionally show a notification
+        if (!response.ok) {
+          throw new Error('Failed to download history')
+        }
+        
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = 'query_history.txt'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        
         this.$emit('history-downloaded', this.historyCount)
       } catch (e) {
         console.error('Failed to download query history:', e)

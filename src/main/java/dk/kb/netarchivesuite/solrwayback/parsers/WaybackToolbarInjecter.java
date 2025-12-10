@@ -234,6 +234,36 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     "               document.getElementById(\"tegModal\").style.display = \"none\";" +
     "           }" +
     "       </script>" +
+    "       <script type=\"text/javascript\">" +
+    "           (function(){" +
+    "               var baseUrl = '" + PropertiesLoader.WAYBACK_BASEURL + "';" +
+    "               var lastUrl = location.href;" +
+    "               function trackPlayback(url){" +
+    "                   var match = url.match(/\\/services\\/web\\/(\\d{14})\\/(.*?)(?:[?#]|$)/);" +
+    "                   if(!match) return;" +
+    "                   try{" +
+    "                       fetch(baseUrl + 'services/queryhistory/track/playback', {" +
+    "                           method: 'POST'," +
+    "                           headers: {'Content-Type': 'application/json'}," +
+    "                           credentials: 'same-origin'," +
+    "                           body: JSON.stringify({" +
+    "                               url: url," +
+    "                               waybackDate: match[1]," +
+    "                               originalUrl: match[2]" +
+    "                           })" +
+    "                       });" +
+    "                   }catch(e){console.error('Query history tracking error:', e);}" +
+    "               }" +
+    "               trackPlayback(location.href);" +
+    "               setInterval(function(){" +
+    "                   var currentUrl = location.href;" +
+    "                   if(currentUrl !== lastUrl){" +
+    "                       trackPlayback(currentUrl);" +
+    "                       lastUrl = currentUrl;" +
+    "                   }" +
+    "               }, 500);" +
+    "           })();" +
+    "       </script>" +
     "   </div>" +
     "<!-- END WAYBACK TOOLBAR INSERT -->";
   return inject;

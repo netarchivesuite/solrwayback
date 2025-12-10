@@ -3,7 +3,7 @@
     <h3>Harvests for {{ formatHumanDate(date) }}</h3>
     <ol>
       <li v-for="(harvest, index) in harvests" :key="index">
-        <a :href="generateLink(harvest)" target="_blank">{{ formatHumanDateTime(harvest) }}</a>
+        <a :href="generateLink(harvest)" target="_blank" @click="handleHarvestClick($event, harvest)">{{ formatHumanDateTime(harvest) }}</a>
       </li>
     </ol>
   </div>
@@ -38,6 +38,10 @@ export default {
   },
   
   methods: {
+    handleHarvestClick(event, harvest) {
+      // No client-side tracking needed - server handles it all via injected script in playback pages
+    },
+    
     generateLink(harvest) {
       const solrWaybackUrl = configs.playbackConfig.solrwaybackBaseURL 
       return `${solrWaybackUrl}services/web/${format(harvest, 'YYYYMMDDHHmmss')}/${this.url}`

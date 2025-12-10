@@ -1,5 +1,3 @@
-import { trackSearch } from '../utils/queryHistoryTracker'
-
 export default {
   methods: {
     $_pushSearchHistory(destination, query, appliedFacets, solrSettings) {
@@ -13,14 +11,35 @@ export default {
                                                      facets:appliedFacets.join(''),
                                                      sort:solrSettings.sort
                                                      } })
-      // Track search in session storage (runs after routing completes)
+      // Track search on server (runs after routing completes)
       setTimeout(() => {
-        try {
-          trackSearch(query, appliedFacets, solrSettings, window.location.origin)
-        } catch (e) {
-          console.warn('Query history tracking failed:', e)
-        }
+        this.$_trackSearchOnServer(query, appliedFacets, solrSettings)
       }, 0)
+      }
+    },
+    async $_trackSearchOnServer(query, appliedFacets, solrSettings) {
+      try {
+        // Build the search URL
+        const params = new URLSearchParams({
+          query: query,
+          grouping: solrSettings.grouping,
+          imgSearch: solrSettings.imgSearch,
+          offset: solrSettings.imgSearch === true ? 0 : solrSettings.offset,
+          urlSearch: solrSettings.urlSearch,
+          facets: appliedFacets.join(''),
+          sort: solrSettings.sort
+        })
+        const url = `${window.location.origin}${window.location.pathname}#/search?${params.toString()}`
+        
+        // Send to server
+        await fetch(`${window.location.origin}/solrwayback/services/queryhistory/track/search`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ url })
+        })
+      } catch (e) {
+        console.warn('Query history tracking failed:', e)
       }
     },
     $_pushCleanHistory(destination) {

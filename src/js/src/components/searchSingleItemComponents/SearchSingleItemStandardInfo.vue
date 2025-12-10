@@ -14,7 +14,9 @@
           <span title="Playback has been disabled in the configuration">{{ result.title || `${result.content_type_norm} - no title` }}</span>
         </span>
         <span v-else>
-          <a :href="getPlaybackURL(result.source_file_path, result.source_file_offset,result.wayback_date, result.url)" target="_blank">
+          <a :href="getPlaybackURL(result.source_file_path, result.source_file_offset,result.wayback_date, result.url)" 
+             target="_blank"
+             @click="handlePlaybackClick($event, getPlaybackURL(result.source_file_path, result.source_file_offset,result.wayback_date, result.url), result.wayback_date, result.url)">
             <span>{{ result.title || `${result.content_type_norm} - no title` }}</span>
           </a>
         </span>
@@ -24,7 +26,8 @@
          :href="getAlternativePlaybackEngineLink(result.wayback_date, result.url, result.collection, result.collection_id)"
          title="Alternative playback engine"
          class="alternativePlaybackLink"
-         target="_blank" />
+         target="_blank"
+         @click="handlePlaybackClick($event, getAlternativePlaybackEngineLink(result.wayback_date, result.url, result.collection, result.collection_id), result.wayback_date, result.url)" />
     </p>
     <p class="entryInfo type">
       <span class="attri">type:</span> <span class="val">{{ result.content_type_norm }}, {{ result.type }} @ {{ result.domain }}</span>
@@ -74,6 +77,10 @@ export default {
     ...mapStores(useSearchStore)
   },
   methods: {
+    handlePlaybackClick(event, url, waybackDate, originalUrl) {
+      // No client-side tracking needed - server handles it all via injected script in playback pages
+    },
+    
     refactoredDate(date) {
       date = date.toString()
       return date.substring(6,8) + '/' + date.substring(4,6) + '-' + date.substring(0,4)
