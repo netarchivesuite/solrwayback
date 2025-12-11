@@ -71,24 +71,18 @@ public class QueryHistoryResource {
             List<Map<String, String>> history = getHistory(session);
             
             String url = (String) data.get("url");
-            String waybackDate = (String) data.get("waybackDate");
             String originalUrl = (String) data.get("originalUrl");
             String timestamp = DATE_FORMAT.format(new Date());
             
             Map<String, String> entry = new HashMap<>();
-            entry.put("url", url);
+            entry.put("url", url);  // Store the full playback URL for identification
+            entry.put("originalUrl", originalUrl);  // Store original URL separately
             entry.put("timestamp", timestamp);
-            if (waybackDate != null) {
-                entry.put("waybackDate", waybackDate);
-            }
-            if (originalUrl != null) {
-                entry.put("originalUrl", originalUrl);
-            }
             
             history.add(entry);
             session.setAttribute(SESSION_KEY, history);
             
-            log.debug("Tracked playback: {} ({})", originalUrl, waybackDate);
+            log.debug("Tracked playback: {}", url);
             
             return Response.ok()
                     .entity(Map.of("success", true, "count", history.size()))
@@ -127,32 +121,33 @@ public class QueryHistoryResource {
     }
 
     /**
-     * Download history as text file
+     * Download history as JSON file
      */
     @GET
     @Path("download")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response downloadHistory(@Context HttpServletRequest request) {
         try {
             HttpSession session = request.getSession(false);
             if (session == null) {
-                return Response.ok("# No query history available\n")
-                        .header("Content-Disposition", "attachment; filename=\"query_history.txt\"")
+                List<Map<String, Object>> emptyHistory = new ArrayList<>();
+                return Response.ok(emptyHistory)
+                        .header("Content-Disposition", "attachment; filename=\"query_history.json\"")
                         .build();
             }
             
             List<Map<String, String>> history = getHistory(session);
-            String content = formatHistoryAsText(history);
+            List<Map<String, Object>> formattedHistory = formatHistoryAsJson(history);
             
-            log.info("Downloading query history with {} entries", history.size());
+            log.info("Downloading query history with {} entries", formattedHistory.size());
             
-            return Response.ok(content)
-                    .header("Content-Disposition", "attachment; filename=\"query_history.txt\"")
+            return Response.ok(formattedHistory)
+                    .header("Content-Disposition", "attachment; filename=\"query_history.json\"")
                     .build();
         } catch (Exception e) {
             log.error("Error downloading history", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error generating history file: " + e.getMessage())
+                    .entity(Map.of("error", "Error generating history file: " + e.getMessage()))
                     .build();
         }
     }
@@ -193,58 +188,75 @@ public class QueryHistoryResource {
     }
 
     /**
-     * Format history entries as text file content in the SolrWaybackQueryHistory format
+     * Format history entries as JSON array
      */
-    private String formatHistoryAsText(List<Map<String, String>> history) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SolrWayback Query History\n");
-        sb.append("=========================\n\n");
+    private List<Map<String, Object>> formatHistoryAsJson(List<Map<String, String>> history) {
+        List<Map<String, Object>> result = new ArrayList<>();
         
         int actionNumber = 1;
-        String lastQuery = null;
+        String lastUrl = null;
         boolean lastWasPlayback = false;
         
         for (Map<String, String> entry : history) {
             String url = entry.get("url");
+            String timestamp = entry.get("timestamp");
+            String originalUrl = entry.get("originalUrl");
+
             
             // Determine if this is a search query or playback URL
             if (url.contains("/search?query=")) {
-                // Extract query from search URL
-                String query = extractQueryFromUrl(url);
-                
-                // Only output if query changed
-                if (query != null && !query.equals(lastQuery)) {
-                    sb.append("Action Number: ").append(actionNumber++).append("\n");
-                    sb.append("SolrWayback Query changed.\n");
-                    sb.append("Query: ").append(query).append("\n");
-                    sb.append("-----------------------\n");
-                    lastQuery = query;
+                // Only output if URL changed (covers query changes AND facet changes)
+                if (!url.equals(lastUrl)) {
+                    Map<String, Object> jsonEntry = new LinkedHashMap<>();
+                    jsonEntry.put("number", actionNumber++);
+                    jsonEntry.put("action", "query");
+                    jsonEntry.put("date", timestamp);
+                    jsonEntry.put("url", originalUrl != null ? originalUrl : "unknown");
+                    
+                    // Extract query
+                    String query = extractQueryFromUrl(url);
+                    if (query != null) {
+                        jsonEntry.put("query", query);
+                    }
+                    
+                    // Extract facets and filter queries
+                    String facets = extractFacetsFromUrl(url);
+                    if (facets != null && !facets.isEmpty()) {
+                        jsonEntry.put("facets", facets);
+                        
+                        // Extract filter queries from facets
+                        List<String> filterQueries = extractFilterQueries(facets);
+                        if (!filterQueries.isEmpty()) {
+                            jsonEntry.put("filterQueries", filterQueries);
+                        }
+                    }
+                    
+                    result.add(jsonEntry);
+                    lastUrl = url;
                     lastWasPlayback = false;
                 }
-            } else if (url.contains("/services/web/") && entry.containsKey("waybackDate")) {
+            } else if (url.contains("/services/web/")) {
                 // Playback URL
-                String waybackDate = entry.get("waybackDate");
-                String originalUrl = entry.get("originalUrl");
-                
-                sb.append("Action Number: ").append(actionNumber++).append("\n");
+                Map<String, Object> jsonEntry = new LinkedHashMap<>();
+                jsonEntry.put("number", actionNumber++);
                 
                 // Distinguish between clicks from search results vs. links within playback
                 if (lastWasPlayback) {
-                    sb.append("Followed a link in playback:\n");
+                    jsonEntry.put("action", "playback link clicked");
                 } else {
-                    sb.append("Found interesting search result and clicked it from search results:\n");
+                    jsonEntry.put("action", "search result clicked");
                 }
                 
-                sb.append("SolrWayback Playback URL clicked.\n");
-                sb.append("Archive Date: ").append(waybackDate).append("\n");
-                sb.append("Original URL: ").append(originalUrl != null ? originalUrl : "unknown").append("\n");
-                sb.append("-----------------------\n");
+                jsonEntry.put("date", timestamp);
+                jsonEntry.put("url", originalUrl != null ? originalUrl : "unknown");
                 
+                result.add(jsonEntry);
+                lastUrl = null;  // Reset so next search is always tracked
                 lastWasPlayback = true;
             }
         }
         
-        return sb.toString();
+        return result;
     }
     
     /**
@@ -272,5 +284,58 @@ public class QueryHistoryResource {
             log.warn("Failed to extract query from URL: {}", url, e);
             return null;
         }
+    }
+    
+    /**
+     * Extract the facets parameter from a search URL
+     */
+    private String extractFacetsFromUrl(String url) {
+        try {
+            int facetsStart = url.indexOf("facets=");
+            if (facetsStart == -1) return null;
+            
+            facetsStart += 7; // Skip "facets="
+            int facetsEnd = url.indexOf("&", facetsStart);
+            if (facetsEnd == -1) facetsEnd = url.length();
+            
+            String facets = url.substring(facetsStart, facetsEnd);
+            
+            // URL decode the facets
+            facets = java.net.URLDecoder.decode(facets, "UTF-8");
+            
+            return facets.isEmpty() ? null : facets;
+        } catch (Exception e) {
+            log.warn("Failed to extract facets from URL: {}", url, e);
+            return null;
+        }
+    }
+    
+    /**
+     * Extract individual filter queries from the facets parameter
+     * Example: "&fq=domain:example.com&fq=crawl_year:2020" -> ["domain:example.com", "crawl_year:2020"]
+     */
+    private List<String> extractFilterQueries(String facets) {
+        List<String> filterQueries = new ArrayList<>();
+        if (facets == null || facets.isEmpty()) {
+            return filterQueries;
+        }
+        
+        try {
+            // Split by &fq= to get individual filter queries
+            String[] parts = facets.split("&fq=");
+            for (String part : parts) {
+                if (!part.isEmpty() && !part.equals("fq=")) {
+                    // Remove leading "fq=" if present
+                    String fq = part.startsWith("fq=") ? part.substring(3) : part;
+                    if (!fq.isEmpty()) {
+                        filterQueries.add(fq);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to extract filter queries from facets: {}", facets, e);
+        }
+        
+        return filterQueries;
     }
 }

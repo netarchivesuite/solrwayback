@@ -91,7 +91,7 @@ export default {
         const url = window.URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
-        link.download = 'query_history.txt'
+        link.download = 'query_history.json'
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
