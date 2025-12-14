@@ -84,6 +84,7 @@
             <span class="collectionInfoText">About the collection</span>
             <span class="collectionInfoIcon" />
           </button>
+          <query-history-button />
           <button class="toolbox" @click.prevent="toggleToolbox()">
             <span class="toolboxText">Toolbox</span>
             <span class="toolboxIcon" />
@@ -92,7 +93,6 @@
             <span class="gpsText">GPS Image Search</span>
             <span class="gpsIcon" />
           </button>
-          <query-history-button />
         </div>
       </form>
       <applied-search-facets />
