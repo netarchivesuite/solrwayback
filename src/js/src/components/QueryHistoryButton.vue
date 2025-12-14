@@ -15,7 +15,7 @@
  * QueryHistoryButton Component
  * 
  * Provides a UI button for downloading the current session's query history.
- * All tracking is done server-side; this component primarily calls the backend APIs.
+ * All tracking is done server-side. This component primarily calls the backend APIs.
  */
 export default {
   name: 'QueryHistoryButton',
@@ -87,8 +87,8 @@ export default {
           throw new Error('Failed to download history')
         }
         
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
+        const content = await response.blob()
+        const url = window.URL.createObjectURL(content)
         const link = document.createElement('a')
         link.href = url
         link.download = 'query_history.json'
