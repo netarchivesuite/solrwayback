@@ -72,8 +72,9 @@ public class QueryHistoryResource {
             
             String url = (String) data.get("url");
             String originalUrl = (String) data.get("originalUrl");
-            String timestamp = DATE_FORMAT.format(new Date());
-            
+            String timestamp = (String) data.get("waybackDate");
+
+
             Map<String, String> entry = new HashMap<>();
             entry.put("url", url);  // Store the full playback URL for identification
             entry.put("originalUrl", originalUrl);  // Store original URL separately
@@ -210,9 +211,8 @@ public class QueryHistoryResource {
                     Map<String, Object> jsonEntry = new LinkedHashMap<>();
                     jsonEntry.put("number", actionNumber++);
                     jsonEntry.put("action", "query");
-                    jsonEntry.put("date", timestamp);
-                    jsonEntry.put("url", originalUrl != null ? originalUrl : "unknown");
-                    
+
+
                     // Extract query
                     String query = extractQueryFromUrl(url);
                     if (query != null) {
@@ -246,7 +246,7 @@ public class QueryHistoryResource {
                 } else {
                     jsonEntry.put("action", "search result clicked");
                 }
-                
+
                 jsonEntry.put("date", timestamp);
                 jsonEntry.put("url", originalUrl != null ? originalUrl : "unknown");
                 
