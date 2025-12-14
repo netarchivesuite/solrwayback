@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import java.io.InputStream;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,7 +21,29 @@ import dk.kb.netarchivesuite.solrwayback.solr.WaybackStatistics;
 
 public class WaybackToolbarInjecter {
   private static final Logger log = LoggerFactory.getLogger(WaybackToolbarInjecter.class);
+  private static String trackingScript = null;
   
+  /**
+   * Load the tracking script from resources and cache it.
+   * The __WAYBACK_BASEURL__ placeholder will be replaced with the actual base URL.
+   */
+  private static String loadTrackingScript() {
+    if (trackingScript == null) {
+      try (InputStream is = WaybackToolbarInjecter.class.getResourceAsStream("/playback-tracker.js")) {
+        if (is == null) {
+          log.warn("playback-tracker.js not found in resources, query history tracking will not work");
+          return "";
+        }
+        String script = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        trackingScript = script.replace("__WAYBACK_BASEURL__", PropertiesLoader.WAYBACK_BASEURL);
+        log.info("Loaded query history tracking script from resources");
+      } catch (Exception e) {
+        log.error("Failed to load playback-tracker.js", e);
+        trackingScript = "";
+      }
+    }
+    return trackingScript;
+  }
 
   
   public static void main(String[] args) throws Exception{
@@ -235,34 +259,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     "           }" +
     "       </script>" +
     "       <script type=\"text/javascript\">" +
-    "           (function(){" +
-    "               var baseUrl = '" + PropertiesLoader.WAYBACK_BASEURL + "';" +
-    "               var lastUrl = location.href;" +
-    "               function trackPlayback(url){" +
-    "                   var match = url.match(/\\/services\\/web\\/(\\d{14})\\/(.*?)(?:[?#]|$)/);" +
-    "                   if(!match) return;" +
-    "                   try{" +
-    "                       fetch(baseUrl + 'services/queryhistory/track/playback', {" +
-    "                           method: 'POST'," +
-    "                           headers: {'Content-Type': 'application/json'}," +
-    "                           credentials: 'same-origin'," +
-    "                           body: JSON.stringify({" +
-    "                               url: url," +
-    "                               waybackDate: match[1]," +
-    "                               originalUrl: match[2]" +
-    "                           })" +
-    "                       });" +
-    "                   }catch(e){console.error('Query history tracking error:', e);}" +
-    "               }" +
-    "               trackPlayback(location.href);" +
-    "               setInterval(function(){" +
-    "                   var currentUrl = location.href;" +
-    "                   if(currentUrl !== lastUrl){" +
-    "                       trackPlayback(currentUrl);" +
-    "                       lastUrl = currentUrl;" +
-    "                   }" +
-    "               }, 500);" +
-    "           })();" +
+    loadTrackingScript() +
     "       </script>" +
     "   </div>" +
     "<!-- END WAYBACK TOOLBAR INSERT -->";
