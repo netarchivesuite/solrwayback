@@ -15,7 +15,7 @@
  * QueryHistoryButton Component
  * 
  * Provides a UI button for downloading the current session's query history.
- * All tracking is done server-side; this component just calls the backend APIs.
+ * All tracking is done server-side; this component primarily calls the backend APIs.
  */
 export default {
   name: 'QueryHistoryButton',
@@ -30,7 +30,7 @@ export default {
   mounted() {
     this.updateHistoryCount()
     
-    // Poll for count updates every 2 seconds
+    // Check for count updates every 2 seconds
     this.pollInterval = setInterval(() => {
       this.updateHistoryCount()
     }, 2000)
@@ -44,7 +44,7 @@ export default {
   
   methods: {
     /**
-     * Fetch history count from server
+     * Fetch history count from server. Used to update button state.
      */
     async updateHistoryCount() {
       try {
