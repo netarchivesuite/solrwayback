@@ -114,11 +114,7 @@ export default {
   cursor: pointer;
   text-transform: uppercase;
   color: var(--main-highlight-color);
-  margin-left: 10px;
-  margin-right: 0px;
   padding: 0px;
-  float: right;
-  margin-top: -4px;
 }
 
 .queryHistoryButton:disabled {
