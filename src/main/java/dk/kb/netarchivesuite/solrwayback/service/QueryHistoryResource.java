@@ -37,6 +37,8 @@ public class QueryHistoryResource {
     public Response trackSearch(@Context HttpServletRequest request, Map<String, Object> data) {
         try {
             HttpSession session = request.getSession(true);
+            session.setMaxInactiveInterval(43200); // 12 hours
+
             List<Map<String, String>> history = getHistory(session);
             
             String url = (String) data.get("url");
@@ -72,6 +74,7 @@ public class QueryHistoryResource {
     public Response trackPlayback(@Context HttpServletRequest request, Map<String, Object> data) {
         try {
             HttpSession session = request.getSession(true);
+            session.setMaxInactiveInterval(43200); // 12 hours
             List<Map<String, String>> history = getHistory(session);
             
             String url = (String) data.get("url");
