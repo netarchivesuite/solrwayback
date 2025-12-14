@@ -9,8 +9,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static dk.kb.netarchivesuite.solrwayback.util.DateUtils.convertWaybackDate2SolrDate;
+import static java.net.URLDecoder.decode;
 
 /**
  * REST resource for tracking query history in session storage.
@@ -72,24 +76,22 @@ public class QueryHistoryResource {
             
             String url = (String) data.get("url");
             String originalUrl = (String) data.get("originalUrl");
-            String timestamp = (String) data.get("waybackDate");
-
+            String timestamp = convertWaybackDate2SolrDate((String) data.get("waybackDate"));
 
             Map<String, String> entry = new HashMap<>();
-            entry.put("url", url);  // Store the full playback URL for identification
-            entry.put("originalUrl", originalUrl);  // Store original URL separately
+            entry.put("url", url);
+            entry.put("originalUrl", originalUrl);
             entry.put("timestamp", timestamp);
             
             history.add(entry);
             session.setAttribute(SESSION_KEY, history);
-            
             log.debug("Tracked playback: {}", url);
             
             return Response.ok()
                     .entity(Map.of("success", true, "count", history.size()))
                     .build();
         } catch (Exception e) {
-            log.error("Error tracking playback", e);
+            log.error("Error tracking playback for url", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(Map.of("success", false, "error", e.getMessage()))
                     .build();
@@ -154,7 +156,7 @@ public class QueryHistoryResource {
     }
 
     /**
-     * Clear history (optional endpoint for testing)
+     * Clear history from session
      */
     @POST
     @Path("clear")
@@ -179,7 +181,6 @@ public class QueryHistoryResource {
     /**
      * Get history list from session, creating if necessary
      */
-    @SuppressWarnings("unchecked")
     private List<Map<String, String>> getHistory(HttpSession session) {
         Object historyObj = session.getAttribute(SESSION_KEY);
         if (historyObj instanceof List) {
@@ -203,54 +204,16 @@ public class QueryHistoryResource {
             String timestamp = entry.get("timestamp");
             String originalUrl = entry.get("originalUrl");
 
-            
             // Determine if this is a search query or playback URL
             if (url.contains("/search?query=")) {
                 // Only output if URL changed (covers query changes AND facet changes)
                 if (!url.equals(lastUrl)) {
-                    Map<String, Object> jsonEntry = new LinkedHashMap<>();
-                    jsonEntry.put("number", actionNumber++);
-                    jsonEntry.put("action", "query");
-
-
-                    // Extract query
-                    String query = extractQueryFromUrl(url);
-                    if (query != null) {
-                        jsonEntry.put("query", query);
-                    }
-                    
-                    // Extract facets and filter queries
-                    String facets = extractFacetsFromUrl(url);
-                    if (facets != null && !facets.isEmpty()) {
-                        jsonEntry.put("facets", facets);
-                        
-                        // Extract filter queries from facets
-                        List<String> filterQueries = extractFilterQueries(facets);
-                        if (!filterQueries.isEmpty()) {
-                            jsonEntry.put("filterQueries", filterQueries);
-                        }
-                    }
-                    
-                    result.add(jsonEntry);
+                    actionNumber = populateQueryEntry(actionNumber, url, result);
                     lastUrl = url;
                     lastWasPlayback = false;
                 }
             } else if (url.contains("/services/web/")) {
-                // Playback URL
-                Map<String, Object> jsonEntry = new LinkedHashMap<>();
-                jsonEntry.put("number", actionNumber++);
-                
-                // Distinguish between clicks from search results vs. links within playback
-                if (lastWasPlayback) {
-                    jsonEntry.put("action", "playback link clicked");
-                } else {
-                    jsonEntry.put("action", "search result clicked");
-                }
-
-                jsonEntry.put("date", timestamp);
-                jsonEntry.put("url", originalUrl != null ? originalUrl : "unknown");
-                
-                result.add(jsonEntry);
+                actionNumber = populateResultEntries(actionNumber, lastWasPlayback, timestamp, originalUrl, result);
                 lastUrl = null;  // Reset so next search is always tracked
                 lastWasPlayback = true;
             }
@@ -258,23 +221,78 @@ public class QueryHistoryResource {
         
         return result;
     }
-    
+
+    /**
+     * Populate a playback link entry in the result list. Destinguishes between clicks from search results vs. links within playback.
+     */
+    private static int populateResultEntries(int actionNumber, boolean lastWasPlayback, String timestamp, String originalUrl, List<Map<String, Object>> result) {
+        // Playback URL
+        Map<String, Object> jsonEntry = new LinkedHashMap<>();
+        jsonEntry.put("number", actionNumber++);
+
+        // Distinguish between clicks from search results vs. links within playback
+        if (lastWasPlayback) {
+            jsonEntry.put("action", "playback link clicked");
+        } else {
+            jsonEntry.put("action", "search result clicked");
+        }
+
+        jsonEntry.put("date", timestamp);
+        jsonEntry.put("url", originalUrl != null ? originalUrl : "unknown");
+
+        result.add(jsonEntry);
+        return actionNumber;
+    }
+
+    /**
+     * Populate a query entry in the result list
+     */
+    private int populateQueryEntry(int actionNumber, String url, List<Map<String, Object>> result) {
+        Map<String, Object> jsonEntry = new LinkedHashMap<>();
+        jsonEntry.put("number", actionNumber++);
+        jsonEntry.put("action", "query");
+
+        // Extract query
+        String query = extractQueryFromUrl(url);
+        if (query != null) {
+            jsonEntry.put("query", query);
+        }
+        // Extract facets and filter queries
+        String facets = extractFacetsFromUrl(url);
+        if (facets != null && !facets.isEmpty()) {
+            jsonEntry.put("facets", facets);
+
+            // Extract filter queries from facets
+            List<String> filterQueries = extractFilterQueries(facets);
+            if (!filterQueries.isEmpty()) {
+                jsonEntry.put("filterQueries", filterQueries);
+            }
+        }
+
+        result.add(jsonEntry);
+        return actionNumber;
+    }
+
     /**
      * Extract the query parameter from a search URL
      */
     private String extractQueryFromUrl(String url) {
         try {
             int queryStart = url.indexOf("query=");
-            if (queryStart == -1) return null;
+            if (queryStart == -1) {
+                return null;
+            }
             
             queryStart += 6; // Skip "query="
             int queryEnd = url.indexOf("&", queryStart);
-            if (queryEnd == -1) queryEnd = url.length();
+            if (queryEnd == -1) {
+                queryEnd = url.length();
+            }
             
             String query = url.substring(queryStart, queryEnd);
             
             // URL decode the query
-            query = java.net.URLDecoder.decode(query, "UTF-8");
+            query = decode(query, StandardCharsets.UTF_8);
             
             // Replace + with space if not decoded
             query = query.replace("+", " ");
@@ -292,16 +310,20 @@ public class QueryHistoryResource {
     private String extractFacetsFromUrl(String url) {
         try {
             int facetsStart = url.indexOf("facets=");
-            if (facetsStart == -1) return null;
+            if (facetsStart == -1){
+                return null;
+            }
             
             facetsStart += 7; // Skip "facets="
             int facetsEnd = url.indexOf("&", facetsStart);
-            if (facetsEnd == -1) facetsEnd = url.length();
+            if (facetsEnd == -1){
+                facetsEnd = url.length();
+            }
             
             String facets = url.substring(facetsStart, facetsEnd);
             
             // URL decode the facets
-            facets = java.net.URLDecoder.decode(facets, "UTF-8");
+            facets = decode(facets, StandardCharsets.UTF_8);
             
             return facets.isEmpty() ? null : facets;
         } catch (Exception e) {
