@@ -247,15 +247,6 @@ public class NetarchiveSolrClient {
      * particular URL (url_norm) around the given Solr timestamp?". It performs a small number of
      * targeted Solr queries (typically two or three) and aggregates the results into a
      * {@link WaybackStatistics} object.
-     * <p>
-     * What this method returns:
-     * <ul>
-     *   <li>lastHarvestDate / firstHarvestDate — the newest and oldest crawl dates known for the URL</li>
-     *   <li>nextHarvestDate / previousHarvestDate — nearest harvests after/before the provided crawlDate (if any)</li>
-     *   <li>numberOfHarvest: how many harvests were found spanning the two queries (plus the input point)</li>
-     *   <li>domain: the domain for the URL (extracted from result documents)
-     *   <li>numberHarvestDomain, domainHarvestTotalContentLength, contentTextLength — simple domain-level aggregates</li>
-     * </ul>
      *
      * @param statusCode HTTP-like status code to attach to the returned statistics (informational)
      * @param url the original URL (used for reporting only)
