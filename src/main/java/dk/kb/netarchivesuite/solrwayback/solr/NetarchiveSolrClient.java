@@ -139,8 +139,18 @@ public class NetarchiveSolrClient {
         return solrAvailable;
     }
 
-    /*
-     * Delegate
+
+    /**
+     * Retrieve domain facets for a given domain.
+     * <p>
+     * This method delegates to either {@link #getDomainFacetsIngoing(String, int, Date, Date)} or
+     * {@link #getDomainFacetsOutgoing(String, int, Date, Date)} depending on the {@code ingoing} flag.
+     * @param domain to get facets for
+     * @param facetLimit the maximum number of facet values to return
+     * @param ingoing if true, return domains that link to {@code domain}; if false, return domains that {@code domain} links to
+     * @param crawlDateStart start of crawl date range (inclusive)
+     * @param crawlDateEnd end of crawl date range (inclusive)
+     * @return list of {@link FacetCount} objects representing facet values and counts
      */
     public List<FacetCount> getDomainFacets(String domain, int facetLimit, boolean ingoing, Date crawlDateStart, Date crawlDateEnd) throws Exception {
 
@@ -151,9 +161,17 @@ public class NetarchiveSolrClient {
         }
     }
 
-    /*
-     * Get other domains linking to this domain
+    /**
+     * Returns a list of domains that link to the provided {@code domain} within the given crawl date range.
+     * The method executes a facet query on the {@code domain} field for documents that contain
+     * {@code links_domains:"<domain>"} while excluding documents where {@code domain} equals the provided
+     * {@code domain} (to avoid self-links).
      *
+     * @param domain to find incoming links for
+     * @param facetLimit maximum number of facet values to return
+     * @param crawlDateStart start of crawl date range (inclusive)
+     * @param crawlDateEnd end of crawl date range (inclusive)
+     * @return list of {@link FacetCount} with domain names and counts
      */
     public List<FacetCount> getDomainFacetsIngoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception {
 
@@ -162,6 +180,7 @@ public class NetarchiveSolrClient {
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery("links_domains:\"" + domain + "\" AND -domain:\"" + domain + "\"");
+
         solrQuery.setRows(0);
         solrQuery.set("facet", "true");
         solrQuery.add("facet.field", "domain");
@@ -181,8 +200,15 @@ public class NetarchiveSolrClient {
         return facetList;
     }
 
-    /*
-     * Get the domains this domain links to this domain
+    /**
+     * Returns a list of domains that the provided {@code domain} links to within the given crawl date range.
+     * The method facets on the {@code links_domains} field for documents where {@code domain:"<domain>"}.
+     *
+     * @param domain to find outgoing links for
+     * @param facetLimit maximum number of facet values to return
+     * @param crawlDateStart start of crawl date range (inclusive)
+     * @param crawlDateEnd end of crawl date range (inclusive)
+     * @return list of {@link FacetCount} with domain names and counts
      */
     public List<FacetCount> getDomainFacetsOutgoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception {
 
@@ -214,19 +240,28 @@ public class NetarchiveSolrClient {
         return facetList;
     }
 
-
-    /*
-     * The logic for getting the 4 dates in 2 queries is too complicated, and only
-     * gives small performance boost...
+    /**
+     * Collects a compact set of statistics about a single URL around a given crawl timestamp.
+     * <p>
+     * This method is designed to answer the question "what is the harvesting history for this
+     * particular URL (url_norm) around the given Solr timestamp?". It performs a small number of
+     * targeted Solr queries (typically two or three) and aggregates the results into a
+     * {@link WaybackStatistics} object.
+     *
+     * @param statusCode HTTP-like status code to attach to the returned statistics (informational)
+     * @param url the original URL (used for reporting only)
+     * @param url_norm the normalized URL (used for querying the index)
+     * @param crawlDate an ISO Solr timestamp representing the time of interest (e.g. nearest harvest)
+     * @return a populated {@link WaybackStatistics} instance with harvest and domain-level aggregates
+     * @throws Exception on Solr query/communication failures or unexpected response shapes
      */
     public WaybackStatistics getWayBackStatistics(int statusCode, String url, String url_norm, String crawlDate) throws Exception {
         final long startNS = System.nanoTime();
         WaybackStatistics stats = new WaybackStatistics();
-        stats.setStatusCode(statusCode); // this is know when calling the method, so no need to extract it from Solr.
+        stats.setStatusCode(statusCode); // this is known when calling the method, so no need to extract it from Solr.
         stats.setUrl(url);
         stats.setUrl_norm(url_norm);
-        // These will only be set if they are different from input (end points). So set
-        // them below
+        // These will only be set if they are different from input (end points). So set them below
         stats.setLastHarvestDate(crawlDate);
         stats.setFirstHarvestDate(crawlDate);
 
@@ -258,7 +293,7 @@ public class NetarchiveSolrClient {
                 stats.setLastHarvestDate(DateUtils.getSolrDate((Date) fieldStats.getMax()));
                 String next = DateUtils.getSolrDate((Date) fieldStats.getMin());
                 if (!crawlDate.equals(next)) {
-                    stats.setNextHarvestDate(next);// Dont want same as next
+                    stats.setNextHarvestDate(next);// Don't want same as next
                 }
             }
         }
@@ -292,7 +327,7 @@ public class NetarchiveSolrClient {
         long callDomain = -1;
         long callDomainSolr = -1;
         if (domain == null) {
-            // This can happen if we only have 1 harvest. It will not be include in the
+            // This can happen if we only have 1 harvest. It will not be included in the
             // {x,*] og [*,x } since x is not included
             solrQuery = new SolrQuery("url_norm:\"" + url_norm + "\"");
             solrQuery.setRows(1);
@@ -303,7 +338,7 @@ public class NetarchiveSolrClient {
             rsp = solrServer.query(solrQuery, METHOD.POST);
             callDomain += System.nanoTime();
             callDomainSolr = rsp.getQTime();
-            if (rsp.getResults().size() == 0) {
+            if (rsp.getResults().isEmpty()) {
                 return stats; // url never found.
             }
             domain = (String) rsp.getResults().get(0).getFieldValue("domain");
@@ -942,7 +977,7 @@ public class NetarchiveSolrClient {
      * This implementation performs a full resolve of all URLs before delivery, which delays the time before first
      * delivered {@code Solrdocument} and introduces a memory overhead: This method should only be called for a limited
      * amount of URLs, such as 1000-10,000.
-     <p>
+     * <p>
      * If a document cannot be resolved using direct matching with {@code url_norm:<normURL>}, lenient matching is used.
      * Lenient first locates the {@code url_norm} closest to the original URL, then feeds that {@code url_norm} to
      * time prioritized resolving. When producing {@link SolrDocument}s, a normalised version of the original URL is
@@ -1034,6 +1069,11 @@ public class NetarchiveSolrClient {
                 .orElse(null);
     }
 
+    /**
+     * Merges the contents of the additional SolrDocumentList into the main one.
+     * @param main the main SolrDocumentList.
+     * @param additional the additional SolrDocumentList to merge into the main one.
+     */
     public static void mergeInto(SolrDocumentList main, SolrDocumentList additional) {
         if (additional == null) {
             return;
@@ -1510,7 +1550,8 @@ public class NetarchiveSolrClient {
         QueryRequest req = new QueryRequest(solrQuery);
         req.setResponseParser(rawJsonResponseParser);
         NamedList<Object> resp = solrServer.request(req);
-        String jsonResponse = (String) resp.get("response");
+        SolrDocumentList response_content = (SolrDocumentList) resp.get("response");
+        String jsonResponse = response_content.jsonStr();
         return jsonResponse;
     }
 
