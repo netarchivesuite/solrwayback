@@ -23,6 +23,8 @@ See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
     * Smurf visualisation
     * Wordcloud generation
   * ImageUtils
+  * NetarchiveSolrClient
+  * SolrStreamingExportClient
 
 5.2.1
 -----
