@@ -18,6 +18,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,7 +40,8 @@ public class NetarchiveSolrClientTest {
     private static CoreContainer coreContainer = null;
     private static EmbeddedSolrServer embeddedServer = null;
     private static final int TEST_DOCS = 50;
-
+    private static final Logger log = LoggerFactory.getLogger(NetarchiveSolrClientTest.class);
+    
     @BeforeClass
     public static void setUp() throws Exception {
         PropertiesLoader.initProperties(UnitTestUtils.getFile("properties/solrwayback_unittest.properties").getPath());
@@ -146,7 +149,7 @@ public class NetarchiveSolrClientTest {
         // Request only id and title in the field list
         String jsonResponse = client.idLookupResponse(id, "id,title,domain");
 
-        System.out.println("JSON Response: " + jsonResponse);
+        log.debug("JSON Response: " + jsonResponse);
         assertNotNull("idLookupResponse should not return null", jsonResponse);
 
         // Parse JSON using Jackson and assert structure/contents
