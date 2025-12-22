@@ -216,7 +216,7 @@ public class QueryHistoryResource {
                     lastWasPlayback = false;
                 }
             } else if (url.contains("/services/web/")) {
-                actionNumber = populateResultEntries(actionNumber, lastWasPlayback, timestamp, originalUrl, result);
+                actionNumber = populateResultEntries(actionNumber, lastWasPlayback, timestamp, originalUrl, result, url);
                 lastUrl = null;  // Reset so next search is always tracked
                 lastWasPlayback = true;
             }
@@ -228,7 +228,7 @@ public class QueryHistoryResource {
     /**
      * Populate a playback link entry in the result list. Destinguishes between clicks from search results vs. links within playback.
      */
-    private static int populateResultEntries(int actionNumber, boolean lastWasPlayback, String timestamp, String originalUrl, List<Map<String, Object>> result) {
+    private static int populateResultEntries(int actionNumber, boolean lastWasPlayback, String timestamp, String originalUrl, List<Map<String, Object>> result, String url) {
         // Playback URL
         Map<String, Object> jsonEntry = new LinkedHashMap<>();
         jsonEntry.put("number", actionNumber++);
@@ -242,6 +242,7 @@ public class QueryHistoryResource {
 
         jsonEntry.put("date", timestamp);
         jsonEntry.put("url", originalUrl != null ? originalUrl : "unknown");
+        jsonEntry.put("archivedUrl", url);
 
         result.add(jsonEntry);
         return actionNumber;
