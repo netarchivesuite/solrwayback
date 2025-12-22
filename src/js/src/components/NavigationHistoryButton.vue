@@ -1,24 +1,24 @@
 <template>
   <button 
-    class="queryHistoryButton" 
+    class="navigationHistoryButton" 
     :disabled="historyCount === 0"
     :title="getButtonTitle()"
     @click.prevent="handleDownload">
-    <span class="queryHistoryText">Query History</span>
-    <span class="queryHistoryIcon" />
+    <span class="navigationHistoryText">Navigation History</span>
+    <span class="navigationHistoryIcon" />
     <span v-if="historyCount > 0" class="historyCount">{{ historyCount }}</span>
   </button>
 </template>
 
 <script>
 /**
- * QueryHistoryButton Component
+ * NavigationHistoryButton Component
  * 
  * Provides a UI button for downloading the current session's query history.
  * All tracking is done server-side. This component primarily calls the backend APIs.
  */
 export default {
-  name: 'QueryHistoryButton',
+  name: 'NavigationHistoryButton',
   
   data() {
     return {
@@ -48,7 +48,7 @@ export default {
      */
     async updateHistoryCount() {
       try {
-        const response = await fetch(`${window.location.origin}/solrwayback/services/queryhistory/count`, {
+        const response = await fetch(`${window.location.origin}/solrwayback/services/navigationhistory/count`, {
           credentials: 'same-origin'
         })
         if (response.ok) {
@@ -79,7 +79,7 @@ export default {
       }
       
       try {
-        const response = await fetch(`${window.location.origin}/solrwayback/services/queryhistory/download`, {
+        const response = await fetch(`${window.location.origin}/solrwayback/services/navigationhistory/download`, {
           credentials: 'same-origin'
         })
         
@@ -107,7 +107,7 @@ export default {
 </script>
 
 <style scoped>
-.queryHistoryButton {
+.navigationHistoryButton {
   position: relative;
   background-color: white;
   border: 0px;
@@ -117,19 +117,19 @@ export default {
   padding: 0px;
 }
 
-.queryHistoryButton:disabled {
+.navigationHistoryButton:disabled {
   cursor: not-allowed;
   color: #696969;
   opacity: 0.6;
 }
 
-.queryHistoryText {
+.navigationHistoryText {
   border-bottom: 1px solid var(--secondary-highlight-color);
   margin-right: 5px;
   display: inline-block;
 }
 
-.queryHistoryIcon {
+.navigationHistoryIcon {
   background-image: url('../assets/icons/download.svg');
   height: 16px;
   position: relative;

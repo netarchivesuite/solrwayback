@@ -20,10 +20,10 @@ import static java.net.URLDecoder.decode;
  * REST resource for tracking query history in session storage.
  * Provides endpoints for tracking search queries, playback navigation, and downloading history.
  */
-@Path("/queryhistory/")
-public class QueryHistoryResource {
+@Path("/navigationhistory/")
+public class NavigationHistoryResource {
 
-    private static final Logger log = LoggerFactory.getLogger(QueryHistoryResource.class);
+    private static final Logger log = LoggerFactory.getLogger(NavigationHistoryResource.class);
     private static final String SESSION_KEY = "solrwayback_query_history";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 

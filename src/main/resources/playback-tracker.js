@@ -22,7 +22,7 @@
         }
         
         try {
-            fetch(baseUrl + 'services/queryhistory/track/playback', {
+            fetch(baseUrl + 'services/navigationhistory/track/playback', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

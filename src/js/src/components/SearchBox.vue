@@ -115,7 +115,7 @@ import SearchboxUtils from './../mixins/SearchboxUtils'
 import SearchUtils from './../mixins/SearchUtils'
 import SearchUploadFile from './SearchUploadFile.vue'
 import Toolbox from './Toolbox.vue'
-import QueryHistoryButton from './QueryHistoryButton.vue'
+import NavigationHistoryButton from './NavigationHistoryButton.vue'
 import {debounce} from './../utils/globalUtils'
 import { isUploadFileSearchDisabled } from '../configs/configHelper'
 
@@ -124,7 +124,7 @@ export default {
     AppliedSearchFacets,
     SearchUploadFile,
     Toolbox,
-    QueryHistoryButton,
+    NavigationHistoryButton,
     },
   mixins: [HistoryRoutingUtils, SearchUtils, SearchboxUtils],
   data () {

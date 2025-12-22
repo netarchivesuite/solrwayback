@@ -32,7 +32,7 @@ export default {
         const url = `${window.location.origin}${window.location.pathname}#/search?${params.toString()}`
         
         // Send to server
-        await fetch(`${window.location.origin}/solrwayback/services/queryhistory/track/search`, {
+        await fetch(`${window.location.origin}/solrwayback/services/navigationhistory/track/search`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin',
