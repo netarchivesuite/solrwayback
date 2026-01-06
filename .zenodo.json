@@ -1,0 +1,66 @@
+{
+  "title": "SolrWayback",
+  "description": "SolrWayback is a web application for browsing historical harvested ARC/WARC files similar to the Internet Archive Wayback Machine. It runs on a Solr server containing ARC/WARC files indexed using the warc-indexer and provides features including free text search, interactive link graphs, export to WARC/ZIP/CSV formats, wordcloud generation, n-gram visualization, image search, geo-search, and more.",
+  "creators": [
+    {
+      "name": "Egense, Thomas",
+      "affiliation": "Royal Danish Library",
+      "orcid": "https://orcid.org/0009-0007-6371-4966"
+    },
+    {
+      "name": "Eskildsen, Toke",
+      "affiliation": "Royal Danish Library"
+    },
+    {
+      "name": "Lauridsen, Jesper",
+      "affiliation": "Royal Danish Library"
+    },
+    {
+      "name": "O'Brien, Ben",
+      "affiliation": "NZ Webarchive, National Library of New Zealand"
+    },
+    {
+      "name": "Jackson, Andy",
+      "affiliation": "British Library"
+    },
+    {
+      "name": "Bellony, Leslie",
+      "affiliation": "Bibliothèque nationale de France"
+    },
+    {
+      "name": "Thøgersen, Jørn",
+      "affiliation": "Aarhus University",
+      "orcid": "https://orcid.org/0009-0000-8837-1057"
+    },
+    {
+      "name": "Johnston, Victor Harbo",
+      "affiliation": "Aarhus University",
+      "orcid": "https://orcid.org/0000-0003-0087-1220"
+    }
+  ],
+  "keywords": [
+    "web archiving",
+    "WARC",
+    "ARC",
+    "wayback machine",
+    "solr",
+    "digital preservation",
+    "web archive playback",
+    "memento"
+  ],
+  "license": {
+    "id": "Apache-2.0"
+  },
+  "upload_type": "software",
+  "access_right": "open",
+  "language": "eng",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/netarchivesuite/solrwayback",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ],
+  "grants": []
+}
+
