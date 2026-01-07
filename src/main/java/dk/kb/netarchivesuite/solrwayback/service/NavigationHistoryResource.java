@@ -11,6 +11,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static dk.kb.netarchivesuite.solrwayback.util.DateUtils.convertWaybackDate2SolrDate;
@@ -25,7 +28,8 @@ public class NavigationHistoryResource {
 
     private static final Logger log = LoggerFactory.getLogger(NavigationHistoryResource.class);
     private static final String SESSION_KEY = "solrwayback_query_history";
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
      * Track a search query
@@ -42,7 +46,7 @@ public class NavigationHistoryResource {
             List<Map<String, String>> history = getHistory(session);
             
             String url = (String) data.get("url");
-            String timestamp = DATE_FORMAT.format(new Date());
+            String timestamp = DATE_FORMAT.format(LocalDateTime.now());
             
             Map<String, String> entry = new HashMap<>();
             entry.put("url", url);
