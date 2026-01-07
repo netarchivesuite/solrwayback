@@ -4,9 +4,16 @@
     :disabled="historyCount === 0"
     :title="getButtonTitle()"
     @click.prevent="handleDownload">
-    <span class="navigationHistoryText">Navigation History</span>
-    <span class="navigationHistoryIcon" />
-    <span v-if="historyCount > 0" class="historyCount">{{ historyCount }}</span>
+    
+    <span v-if="historyCount > 0">
+      <span class="navigationHistoryText">Navigation History</span>
+      <span class="navigationHistoryIcon"></span>
+      <span class="historyCount">{{ historyCount }}</span>
+    </span>
+    
+    <span v-else>
+      <span class="navigationHistoryText">No History</span>
+    </span>
   </button>
 </template>
 
