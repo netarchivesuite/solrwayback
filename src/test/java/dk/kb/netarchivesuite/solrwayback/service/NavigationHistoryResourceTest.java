@@ -620,8 +620,47 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         assertEquals("search result clicked", entity.get(3).get("action"));
     }
 
-    // Helper methods
+    /**
+     * Test that adding an entry which would make the history exceed the limit returns 413 and does not mutate session.
+     */
+    @Test
+    public void testTrackSearchRejectsWhenHistoryTooLarge() {
+        // Setup
+        when(mockRequest.getSession(true)).thenReturn(mockSession);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(null);
 
+        // Temporarily set MAX_HISTORY_BYTES to a very very small value so a normal entry will exceed it and throw 413
+        long original = NavigationHistoryResource.MAX_HISTORY_BYTES;
+        NavigationHistoryResource.MAX_HISTORY_BYTES = 1L;
+
+        try {
+            Map<String, Object> data = new HashMap<>();
+            data.put("url", "tiny");
+
+            // Execute
+            Response response = resource.trackSearch(mockRequest, data);
+
+            // Verify
+            assertEquals(413, response.getStatus());
+            Map<String, Object> entity = (Map<String, Object>) response.getEntity();
+            assertFalse((Boolean) entity.get("success"));
+            assertEquals("Navigation history size limit exceeded", entity.get("error"));
+
+            // Argument capture to verify session was not mutated bu storing the session key
+            ArgumentCaptor<Object> attrCaptor = ArgumentCaptor.forClass(Object.class);
+            verify(mockSession, atLeastOnce()).setAttribute(eq(SESSION_KEY), attrCaptor.capture());
+            Object stored = attrCaptor.getValue();
+            assertTrue(stored instanceof List);
+            List<?> storedList = (List<?>) stored;
+            // The stored history should be empty because the add was rejected
+            assertEquals(0, storedList.size());
+        } finally {
+            // Restore original limit
+            NavigationHistoryResource.MAX_HISTORY_BYTES = original;
+        }
+    }
+
+    // Helper methods
     private Map<String, String> createHistoryEntry(String url, String timestamp) {
         Map<String, String> entry = new HashMap<>();
         entry.put("url", url);

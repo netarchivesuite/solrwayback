@@ -30,7 +30,7 @@ public class NavigationHistoryResource {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // Maximum allowed size of the stored history in bytes (25 MB)
-    private static final long MAX_HISTORY_BYTES = 25L * 1024L * 1024L;
+    public static long MAX_HISTORY_BYTES = 25L * 1024L * 1024L;
 
     /**
      * Track a search query
@@ -209,16 +209,21 @@ public class NavigationHistoryResource {
     /**
      * Get history list from session, creating if necessary
      */
+    @SuppressWarnings("unchecked")
     private List<Map<String, String>> getHistory(HttpSession session) {
         Object historyObj = session.getAttribute(SESSION_KEY);
         if (historyObj instanceof List) {
             return (List<Map<String, String>>) historyObj;
         }
-        return new ArrayList<>();
+        // create, persist and return an empty history so other callers always get a session-backed list
+        List<Map<String, String>> newHistory = new ArrayList<>();
+        session.setAttribute(SESSION_KEY, newHistory);
+        return newHistory;
     }
 
     /**
      * Check whether the serialized history exceeds the maximum allowed size.
+     * Uses the project's JsonUtils to convert to JSON and measures UTF-8 bytes.
      */
     private boolean isTooLarge(List<Map<String, String>> history) {
         try {
