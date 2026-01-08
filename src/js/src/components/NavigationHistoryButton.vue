@@ -4,7 +4,7 @@
     :disabled="historyCount === 0"
     :title="getButtonTitle()"
     @click.prevent="handleDownload">
-    
+
     <span v-if="historyCount > 0">
       <span class="navigationHistoryText">Navigation History</span>
       <span class="navigationHistoryIcon"></span>
@@ -12,7 +12,7 @@
     </span>
     
     <span v-else>
-      <span class="navigationHistoryText">No History</span>
+      <span class="navigationHistoryText">Navigation History</span>
     </span>
   </button>
 </template>

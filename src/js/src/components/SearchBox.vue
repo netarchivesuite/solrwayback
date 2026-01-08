@@ -84,7 +84,7 @@
             <span class="collectionInfoText">About the collection</span>
             <span class="collectionInfoIcon" />
           </button>
-          <query-history-button />
+          <navigation-history-button />
           <button class="toolbox" @click.prevent="toggleToolbox()">
             <span class="toolboxText">Toolbox</span>
             <span class="toolboxIcon" />
