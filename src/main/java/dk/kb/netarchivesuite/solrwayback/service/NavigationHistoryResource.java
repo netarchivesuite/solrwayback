@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
+import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.NavigationHistoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,14 +11,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static dk.kb.netarchivesuite.solrwayback.util.DateUtils.convertWaybackDate2SolrDate;
-import static java.net.URLDecoder.decode;
 
 /**
  * REST resource for tracking query history in session storage.
@@ -30,6 +28,9 @@ public class NavigationHistoryResource {
     private static final String SESSION_KEY = "solrwayback_query_history";
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    // Maximum allowed size of the stored history in bytes (25 MB)
+    private static final long MAX_HISTORY_BYTES = 25L * 1024L * 1024L;
 
     /**
      * Track a search query
@@ -44,19 +45,29 @@ public class NavigationHistoryResource {
             session.setMaxInactiveInterval(43200); // 12 hours
 
             List<Map<String, String>> history = getHistory(session);
-            
+
             String url = (String) data.get("url");
             String timestamp = DATE_FORMAT.format(LocalDateTime.now());
-            
+
             Map<String, String> entry = new HashMap<>();
             entry.put("url", url);
             entry.put("timestamp", timestamp);
-            
+
+            // Check size before mutating the session-stored list
+            List<Map<String, String>> updatedHistory = new ArrayList<>(history);
+            updatedHistory.add(entry);
+            if (isTooLarge(updatedHistory)) {
+                log.warn("Navigation history would exceed {} bytes, rejecting new entry", MAX_HISTORY_BYTES);
+                return Response.status(413)
+                        .entity(Map.of("success", false, "error", "Navigation history size limit exceeded"))
+                        .build();
+            }
+
             history.add(entry);
             session.setAttribute(SESSION_KEY, history);
-            
+
             log.debug("Tracked search query: {}", url);
-            
+
             return Response.ok()
                     .entity(Map.of("success", true, "count", history.size()))
                     .build();
@@ -80,7 +91,7 @@ public class NavigationHistoryResource {
             HttpSession session = request.getSession(true);
             session.setMaxInactiveInterval(43200); // 12 hours
             List<Map<String, String>> history = getHistory(session);
-            
+
             String url = (String) data.get("url");
             String originalUrl = (String) data.get("originalUrl");
             String timestamp = convertWaybackDate2SolrDate((String) data.get("waybackDate"));
@@ -89,11 +100,21 @@ public class NavigationHistoryResource {
             entry.put("url", url);
             entry.put("originalUrl", originalUrl);
             entry.put("timestamp", timestamp);
-            
+
+            // Check size before mutating the session-stored list
+            List<Map<String, String>> updatedHistory = new ArrayList<>(history);
+            updatedHistory.add(entry);
+            if (isTooLarge(updatedHistory)) {
+                log.warn("Navigation history would exceed {} bytes, rejecting new entry", MAX_HISTORY_BYTES);
+                return Response.status(413)
+                        .entity(Map.of("success", false, "error", "Navigation history size limit exceeded"))
+                        .build();
+            }
+
             history.add(entry);
             session.setAttribute(SESSION_KEY, history);
             log.debug("Tracked playback: {}", url);
-            
+
             return Response.ok()
                     .entity(Map.of("success", true, "count", history.size()))
                     .build();
@@ -145,12 +166,12 @@ public class NavigationHistoryResource {
                         .header("Content-Disposition", "attachment; filename=\"query_history.json\"")
                         .build();
             }
-            
+
             List<Map<String, String>> history = getHistory(session);
             List<Map<String, Object>> formattedHistory = NavigationHistoryUtils.formatHistoryAsJson(history);
-            
+
             log.info("Downloading query history with {} entries", formattedHistory.size());
-            
+
             return Response.ok(formattedHistory)
                     .header("Content-Disposition", "attachment; filename=\"query_history.json\"")
                     .build();
@@ -194,6 +215,21 @@ public class NavigationHistoryResource {
             return (List<Map<String, String>>) historyObj;
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * Check whether the serialized history exceeds the maximum allowed size.
+     */
+    private boolean isTooLarge(List<Map<String, String>> history) {
+        try {
+            String json = JsonUtils.toJSON(history);
+            long bytes = json.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+            return bytes > MAX_HISTORY_BYTES;
+        } catch (RuntimeException e) {
+            // If we cannot measure size for some reason, log a warning and allow the operation.
+            log.warn("Could not determine size of navigation history, allowing update", e);
+            return false;
+        }
     }
 
 }
