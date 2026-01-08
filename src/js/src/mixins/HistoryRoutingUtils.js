@@ -1,4 +1,7 @@
+import NavigationTrackingUtils from './NavigationTrackingUtils'
+
 export default {
+  mixins: [NavigationTrackingUtils],
   methods: {
     $_pushSearchHistory(destination, query, appliedFacets, solrSettings) {
     const currentParams = this.$route.query
@@ -15,31 +18,6 @@ export default {
       setTimeout(() => {
         this.$_trackSearchOnServer(query, appliedFacets, solrSettings)
       }, 0)
-      }
-    },
-    async $_trackSearchOnServer(query, appliedFacets, solrSettings) {
-      try {
-        // Build the search URL
-        const params = new URLSearchParams({
-          query: query,
-          grouping: solrSettings.grouping,
-          imgSearch: solrSettings.imgSearch,
-          offset: solrSettings.imgSearch === true ? 0 : solrSettings.offset,
-          urlSearch: solrSettings.urlSearch,
-          facets: appliedFacets.join(''),
-          sort: solrSettings.sort
-        })
-        const url = `${window.location.origin}${window.location.pathname}#/search?${params.toString()}`
-        
-        // Send to server
-        await fetch(`${window.location.origin}/solrwayback/services/navigationhistory/track/search`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify({ url })
-        })
-      } catch (e) {
-        console.warn('Query history tracking failed:', e)
       }
     },
     $_pushCleanHistory(destination) {
