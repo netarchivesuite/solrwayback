@@ -2,6 +2,12 @@
 
 UNRELEASED
 -----
+
+
+
+5.4.0
+-----
+* Frontend upgraded from VUE2 to VUE3. Components still needs to rewritten to VUE3 Composition API. Thanks to Ben O'Brien (@obrienben) for the upgrade.
 * Remove port in the url_norm field.  This wil fix playback for very old ARC files from IA (1995-2002). They have port:80 in the ARC HTTP-header. 
 This require the index has been build with warc-indexer version 3.4.0+. If normalisation mode is set to LEGACY in solrwayback.properties the port will not be removed.
 See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
