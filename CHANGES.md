@@ -14,6 +14,7 @@ See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
 
 * Added functionality to the DOMAIN STATS tool in the toolbox. Added a visualisation for average context length over time and a toggle button for showing the graphs combined or on individual canvases. Thanks to @VictorHarbo for this feature
 * Added start script to start both Tomcat and Solr in root folder of SolrWayback Bundle (Linux+Windows)
+* Added Navigation History tracker - a feature for documenting the browsing path of a user through the archive. Thanks to @VictorHarbo and @Jorntx at the WEBCHILD-project for implementing this feature.
 * Fixed some unittest that depended on System Locale or property files in home folder. Closing https://github.com/netarchivesuite/solrwayback/issues/475
 * Created default text template files for "About the Collection" and "About us" instead of the default Royal Danish Library ones.
 * Bumped Jackson dependencies from 2.14.0 to 2.20.0

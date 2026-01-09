@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.parsers;
 
+import java.io.InputStream;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,7 +21,29 @@ import dk.kb.netarchivesuite.solrwayback.solr.WaybackStatistics;
 
 public class WaybackToolbarInjecter {
   private static final Logger log = LoggerFactory.getLogger(WaybackToolbarInjecter.class);
+  private static String trackingScript = null;
   
+  /**
+   * Load the tracking script from resources and cache it.
+   * The __WAYBACK_BASEURL__ placeholder will be replaced with the actual base URL.
+   */
+  private static String loadTrackingScript() {
+    if (trackingScript == null) {
+      try (InputStream is = WaybackToolbarInjecter.class.getResourceAsStream("/playback-tracker.js")) {
+        if (is == null) {
+          log.warn("playback-tracker.js not found in resources, query history tracking will not work");
+          return "";
+        }
+        String script = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        trackingScript = script.replace("__WAYBACK_BASEURL__", PropertiesLoader.WAYBACK_BASEURL);
+        log.info("Loaded query history tracking script from resources");
+      } catch (Exception e) {
+        log.error("Failed to load playback-tracker.js", e);
+        trackingScript = "";
+      }
+    }
+    return trackingScript;
+  }
 
   
   public static void main(String[] args) throws Exception{
@@ -233,6 +257,9 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     "           function closeModal(){" +
     "               document.getElementById(\"tegModal\").style.display = \"none\";" +
     "           }" +
+    "       </script>" +
+    "       <script type=\"text/javascript\">" +
+    loadTrackingScript() +
     "       </script>" +
     "   </div>" +
     "<!-- END WAYBACK TOOLBAR INSERT -->";

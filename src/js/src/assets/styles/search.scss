@@ -293,9 +293,10 @@ color:var(--secondary-text-color);
 	padding-bottom: 10px;
 	text-transform: uppercase;
 	margin-bottom: 10px;
-	//display: flex;
-	//cursor: pointer;
-	//justify-content: space-between;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: center;
 	font-size: 80%;
 }
 
@@ -335,12 +336,10 @@ color:var(--secondary-text-color);
   padding-right:0px;
   border: 0px;
   margin:0px;
-  margin-top: -4px;
 	//border-bottom: 1px solid var(--secondary-highlight-color);
 	background-color: transparent;
 	color: var(--main-highlight-color);
 	cursor: pointer;
-	float: right;
 }
 
 .searchForm .tools .toolboxText, .searchForm .gpsText, .searchForm .collectionInfoText {
@@ -393,11 +392,7 @@ color:var(--secondary-text-color);
   cursor: pointer;
   text-transform: uppercase;
   color:var(--main-highlight-color);
-  margin-left:10px;
-  margin-right:0px;
   padding:0px;
-  float:right;
-  margin-top:-4px;
 }
 
 .gpsIcon {
