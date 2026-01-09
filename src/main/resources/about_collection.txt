@@ -3,7 +3,7 @@
 <p>
 This is the default example template for the 'About The Collection' text.<br>
 Change the property <b>collection.text.file</b> in <b>solrwaybackweb.properties</b> to point on a local file with the 
-full absolute file path. Use HTML markup but with the html/body start and end tag.
+full absolute file path. Use HTML markup but without the html/body start and end tag.
 
 </p>
 
