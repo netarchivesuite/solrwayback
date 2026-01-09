@@ -19,6 +19,7 @@ public class SolrWaybackApplication extends Application {
             SolrWaybackResource.class,
             SolrWaybackResourceWeb.class,
             SolrWaybackMementoAPI.class,
+            NavigationHistoryResource.class,
             ServiceExceptionMapper.class
             ));
     }

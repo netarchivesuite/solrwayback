@@ -1,5 +1,7 @@
+import NavigationTrackingUtils from './NavigationTrackingUtils'
 
 export default {
+  mixins: [NavigationTrackingUtils],
   methods: {
     $_pushSearchHistory(destination, query, appliedFacets, solrSettings) {
     const currentParams = this.$route.query
@@ -12,6 +14,10 @@ export default {
                                                      facets:appliedFacets.join(''),
                                                      sort:solrSettings.sort
                                                      } })
+      // Track search on server (runs after routing completes)
+      setTimeout(() => {
+        this.$_trackSearchOnServer(query, appliedFacets, solrSettings)
+      }, 0)
       }
     },
     $_pushCleanHistory(destination) {
