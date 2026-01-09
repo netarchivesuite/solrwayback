@@ -3,19 +3,6 @@
 <p>
 This is the default example template for the 'About The Collection' text.<br>
 Change the property <b>collection.text.file</b> in <b>solrwaybackweb.properties</b> to point on a local file with the 
-full absolute file path. Use HTML markup but with the html/body start and end tag.
-
+full absolute file path. Use HTML markup but without the html/body start and end tag.
 </p>
 
-<p>
-Our collection has been collected through four primary strategies for collecting.  
-</p>
-<br>
-<h4>Harvest strategy example</h4>
- <ul>
-  <li>Cross-sectional collection which takes a snapshot of all Danish domains up to four times a year</li>
-  <li>Selective collection from the following types of websites: all Danish news media (ranging from 12 times daily to weekly), political parties, organisations and associations, ministries and agencies, selected profiles from social media, YouTube videos (for example weekly)</li>
-  <li>Event collection of two or three events annually (for example parliamentary elections or the Corona pandemic)</li>
-  <li>Special collections for example based on research requests</li>
-</ul> 
-<br>
