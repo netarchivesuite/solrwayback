@@ -84,6 +84,7 @@
             <span class="collectionInfoText">About the collection</span>
             <span class="collectionInfoIcon" />
           </button>
+          <navigation-history-button />
           <button class="toolbox" @click.prevent="toggleToolbox()">
             <span class="toolboxText">Toolbox</span>
             <span class="toolboxIcon" />
@@ -114,6 +115,7 @@ import SearchboxUtils from './../mixins/SearchboxUtils'
 import SearchUtils from './../mixins/SearchUtils'
 import SearchUploadFile from './SearchUploadFile.vue'
 import Toolbox from './Toolbox.vue'
+import NavigationHistoryButton from './NavigationHistoryButton.vue'
 import {debounce} from './../utils/globalUtils'
 import { isUploadFileSearchDisabled } from '../configs/configHelper'
 
@@ -122,6 +124,7 @@ export default {
     AppliedSearchFacets,
     SearchUploadFile,
     Toolbox,
+    NavigationHistoryButton,
     },
   mixins: [HistoryRoutingUtils, SearchUtils, SearchboxUtils],
   data () {
