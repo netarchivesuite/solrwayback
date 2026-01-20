@@ -1550,7 +1550,7 @@ public class NetarchiveSolrClient {
         QueryRequest req = new QueryRequest(solrQuery);
         req.setResponseParser(rawJsonResponseParser);
         NamedList<Object> resp = solrServer.request(req);
-        String jsonResponse = (String) resp.get("response");
+        String jsonResponse = resp.get("response").toString();
         return jsonResponse;
     }
 
