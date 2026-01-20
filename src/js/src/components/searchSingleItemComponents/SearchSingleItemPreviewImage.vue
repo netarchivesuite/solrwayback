@@ -16,7 +16,7 @@
         <span>Search for image</span>
       </router-link>
       <router-link :to="$_startPageSearchFromImage(item.urlNorm ? item.urlNorm : urlNorm)">
-        <span>Pages linking to image {{ item.urlNorm }} | {{ urlNorm }}</span>
+        <span>Pages linking to image {{ item.urlNorm ? item.urlNorm : urlNorm }}</span>
       </router-link>
     </div>
   </div>
