@@ -7,7 +7,7 @@ UNRELEASED
 5.4.1
 -----
 Fix regression error introduced in query history feature.
-Download SolrWayback Bundle: https://github.com/netarchivesuite/solrwayback/releases/tag/5.4.1
+Download SolrWayback Bundle: https://github.com/netarchivesuite/solrwayback/releases/download/5.4.1/solrwayback_package_5.4.1.zip
 
 5.4.0
 -----
