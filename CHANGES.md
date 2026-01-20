@@ -1,6 +1,10 @@
 # SolrWayback changelog
 
 UNRELEASED
+
+
+
+5.4.0
 -----
 * Warc-Indexer updated to version 3.4.0 in SolrWayback bundle. Changelog for Warc-Indexer 3.4.0 https://github.com/netarchivesuite/warc-indexer/releases/tag/3.4.0
 * Remove port in the url_norm field.  This wil fix playback for very old ARC files from IA (1995-2002). They have port:80 in the ARC HTTP-header. 
