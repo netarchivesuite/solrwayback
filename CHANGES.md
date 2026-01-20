@@ -1,20 +1,18 @@
 # SolrWayback changelog
 
 UNRELEASED
------
 
 
 
 5.4.0
 -----
-* Frontend upgraded from VUE2 to VUE3. Components still needs to rewritten to VUE3 Composition API. Thanks to Ben O'Brien (@obrienben) for the upgrade.
+* Warc-Indexer updated to version 3.4.0 in SolrWayback bundle. Changelog for Warc-Indexer 3.4.0 https://github.com/netarchivesuite/warc-indexer/releases/tag/3.4.0
 * Remove port in the url_norm field.  This wil fix playback for very old ARC files from IA (1995-2002). They have port:80 in the ARC HTTP-header. 
 This require the index has been build with warc-indexer version 3.4.0+. If normalisation mode is set to LEGACY in solrwayback.properties the port will not be removed.
 See https://github.com/ukwa/webarchive-discovery/issues/284 for more information
 
 * Added functionality to the DOMAIN STATS tool in the toolbox. Added a visualisation for average context length over time and a toggle button for showing the graphs combined or on individual canvases. Thanks to @VictorHarbo for this feature
 * Added start script to start both Tomcat and Solr in root folder of SolrWayback Bundle (Linux+Windows)
-* Added Navigation History tracker - a feature for documenting the browsing path of a user through the archive. Thanks to @VictorHarbo and @Jorntx at the WEBCHILD-project for implementing this feature.
 * Fixed some unittest that depended on System Locale or property files in home folder. Closing https://github.com/netarchivesuite/solrwayback/issues/475
 * Created default text template files for "About the Collection" and "About us" instead of the default Royal Danish Library ones.
 * Bumped Jackson dependencies from 2.14.0 to 2.20.0
