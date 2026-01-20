@@ -4,6 +4,11 @@ UNRELEASED
 
 
 
+5.4.1
+-----
+Fix regression error introduced in query history feature.
+Download SolrWayback Bundle: https://github.com/netarchivesuite/solrwayback/releases/tag/5.4.1
+
 5.4.0
 -----
 * Warc-Indexer updated to version 3.4.0 in SolrWayback bundle. Changelog for Warc-Indexer 3.4.0 https://github.com/netarchivesuite/warc-indexer/releases/tag/3.4.0
