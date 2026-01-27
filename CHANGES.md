@@ -2,12 +2,12 @@
 
 UNRELEASED
 
-
+* Fixed regression error in harvest calendar from VUE2 to VUE3 upgrade.
 
 5.4.1
 -----
-Fix regression error introduced in query history feature.
-Download SolrWayback Bundle: https://github.com/netarchivesuite/solrwayback/releases/download/5.4.1/solrwayback_package_5.4.1.zip
+* Fixed regression error introduced in query history feature.
+* Download SolrWayback Bundle: https://github.com/netarchivesuite/solrwayback/releases/download/5.4.1/solrwayback_package_5.4.1.zip
 
 5.4.0
 -----
