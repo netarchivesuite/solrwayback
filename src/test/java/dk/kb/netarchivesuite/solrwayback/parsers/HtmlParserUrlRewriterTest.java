@@ -99,6 +99,21 @@ public class HtmlParserUrlRewriterTest {
         assertRewrite("script", 0);
     }
 
+    
+    
+    
+    @Test 
+    public void testMetaContentRefreshUrl() throws Exception{
+        String html =            
+        "<html><head>"+         
+        "<meta http-equiv=\"refresh\" content=\"0;URL=http://www.domainsomething.dk/index.shtml>"   
+        +"<title>Test metaContentRefesh</title></head><body></body></html>";                
+        String replaced = HtmlParserUrlRewriter.replaceMetaRefreshForHtml(html, "20230907191706");
+        String newUrl="url=http://localhost:0000/solrwayback/services/web/20230907191706/http://www.domainsomething.dk/index.shtml";        
+        assertTrue(replaced.toLowerCase().indexOf(newUrl) >0);
+    }
+        
+    
     @Test
     public void testEncodingRewriting() throws Exception {
         assertRewrite("encoding", 0);

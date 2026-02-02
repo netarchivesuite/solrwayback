@@ -25,7 +25,10 @@ public class HtmlPlayback  extends PlaybackHandler{
     
 
      ParseResult htmlReplaced = HtmlParserUrlRewriter.replaceLinks(arc, lenient);
-      String textReplaced=htmlReplaced.getReplaced();
+     String textReplaced=htmlReplaced.getReplaced();
+     //Meta content special parse since it does not follow the nomral replacement rules. The URL value is part of a whole attribut value. 
+     textReplaced=HtmlParserUrlRewriter.replaceMetaRefreshForHtml(textReplaced,arc.getWaybackDate());
+     htmlReplaced.setReplaced(textReplaced);
 
       boolean xhtml = doc.getContentType().toLowerCase().contains("application/xhtml");
     //Inject tooolbar
@@ -33,7 +36,7 @@ public class HtmlPlayback  extends PlaybackHandler{
         textReplaced = WaybackToolbarInjecter.injectWaybacktoolBar(doc.getSource_file_path(),doc.getOffset(),htmlReplaced , xhtml);
      }
 
-     arc.setStringContent(textReplaced);
+     arc.setStringContent(textReplaced);    
 
      log.info("Generating webpage total processing:"+(System.currentTimeMillis()-start) + " "+doc.getSource_file_path()+ " "+ doc.getOffset() +" "+arc.getUrl());
      arc.setHasBeenDecompressed(true);
