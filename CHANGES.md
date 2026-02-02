@@ -3,6 +3,7 @@
 UNRELEASED
 
 * Fixed regression error in harvest calendar from VUE2 to VUE3 upgrade.
+* Meta refresh tag (almost works as 302 MOVED), is now also url replaced since serviceworker do not catch this. Closing #https://github.com/netarchivesuite/solrwayback/issues/490
 
 5.4.1
 -----
