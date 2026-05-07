@@ -304,6 +304,17 @@
         <filtering>true</filtering>
       </resource>
     </resources>
+    <testResources>
+        <testResource>
+            <directory>src/test/resources</directory>
+        </testResource>
+        <testResource>
+            <directory>src/bundle/solr_config/conf/</directory>
+            <includes>
+                <include>schema.xml</include>
+            </includes>
+        </testResource>
+    </testResources>
 
     <plugins>
       <plugin>
