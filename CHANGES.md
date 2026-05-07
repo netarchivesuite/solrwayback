@@ -1,7 +1,8 @@
 # SolrWayback changelog
 
 UNRELEASED
-
+* Four new fields (inactive) added to solr:
+* Navigation tracker auto poll increased from 2 seconds to 60 seconds.
 
 5.4.2
 -----
