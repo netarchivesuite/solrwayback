@@ -37,10 +37,10 @@ export default {
   mounted() {
     this.updateHistoryCount()
     
-    // Check for count updates every 2 seconds
+    // Check for count updates every 60 seconds
     this.pollInterval = setInterval(() => {
       this.updateHistoryCount()
-    }, 2000)
+    }, 60000)
   },
   
   beforeUnmount() {

@@ -1,7 +1,8 @@
 # SolrWayback changelog
 
 UNRELEASED
-
+* Four new fields (inactive) added to Solr: nsfw_probability,is_nsfw,is_virus And virus_description. Fields are inactive in default solrwayback bundle.
+* Navigation tracker auto poll increased from 2 seconds to 60 seconds.
 
 5.4.2
 -----
