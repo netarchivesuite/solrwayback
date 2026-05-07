@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.util;
 
+import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -12,6 +14,11 @@ import static org.junit.Assert.assertEquals;
 
 public class PathResolverTest {
 
+    @Before
+     public void setupGlobalConfig() {
+        // This runs once before all tests in this class
+        Normalisation.setType(Normalisation.NormaliseType.NORMAL);
+    }
 
     @Test
     public void testMementoResolvingHttpsAndSingleSlashc() throws URISyntaxException {
