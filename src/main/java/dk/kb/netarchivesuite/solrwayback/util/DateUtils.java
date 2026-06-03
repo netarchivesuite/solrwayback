@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -283,5 +284,18 @@ public class DateUtils {
         timestamp = timestampBuilder.toString();
         log.info("Timestamp is now: '{}'", timestamp);
         return timestamp;
+    }
+
+    /**
+     * Returns the current date as a string in the form YYYYMMDD.
+     *
+     * @return the formatted date string
+     */
+    public static String currentDateYYYYMMDD() {
+        LocalDate today = LocalDate.now();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+        return today.format(formatter);
     }
 }
