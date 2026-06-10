@@ -36,11 +36,6 @@ export default {
   name: 'ExportData',
   
   mixins: [ExportHelper],
-  data: function() {
-    return {
-          submittedQueries: this.datasetQueries
-      }
-},
 
   computed: {
     // ...mapState({
