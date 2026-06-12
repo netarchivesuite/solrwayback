@@ -93,12 +93,22 @@ export default {
         if (!response.ok) {
           throw new Error('Failed to download history')
         }
-        
+
+
+       // Parse filename header
+       const disposition = response.headers.get('content-disposition') || ''
+       let filename = 'query_history.json'     // fallback
+       const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+       if (match && match[1]) {
+         // strip surrounding quotes if any
+         filename = match[1].replace(/['"]/g, '')
+       }
+
         const content = await response.blob()
         const url = window.URL.createObjectURL(content)
         const link = document.createElement('a')
         link.href = url
-        link.download = 'query_history.json'
+        link.download = filename
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)

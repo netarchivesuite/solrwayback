@@ -1,6 +1,7 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.NavigationHistoryAction;
 import dk.kb.netarchivesuite.solrwayback.util.NavigationHistoryUtils;
 import org.junit.Before;
@@ -270,6 +271,8 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
      */
     @Test
     public void testDownloadHistoryNoSession() {
+        String currentDate = DateUtils.currentDateYYYYMMDD();
+
         // Setup
         when(mockRequest.getSession(false)).thenReturn(null);
 
@@ -281,7 +284,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         List<Map<String, Object>> entity = (List<Map<String, Object>>) response.getEntity();
         assertNotNull(entity);
         assertEquals(0, entity.size());
-        assertEquals("attachment; filename=\"query_history.json\"",
+        assertEquals("attachment; filename=\"" + currentDate + "_query_history.json\"",
                      response.getHeaderString("Content-Disposition"));
     }
 

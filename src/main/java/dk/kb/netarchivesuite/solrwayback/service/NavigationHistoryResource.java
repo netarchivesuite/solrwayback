@@ -1,5 +1,6 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
+import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.NavigationHistoryUtils;
 import org.slf4j.Logger;
@@ -164,12 +165,14 @@ public class NavigationHistoryResource {
     @Path("download")
     @Produces(MediaType.APPLICATION_JSON)
     public Response downloadHistory(@Context HttpServletRequest request) {
+        String currentDate = DateUtils.currentDateYYYYMMDD();
+
         try {
             HttpSession session = request.getSession(false);
             if (session == null) {
                 List<Map<String, Object>> emptyHistory = new ArrayList<>();
                 return Response.ok(emptyHistory)
-                        .header("Content-Disposition", "attachment; filename=\"query_history.json\"")
+                        .header("Content-Disposition", "attachment; filename=\"" + currentDate + "_query_history.json\"")
                         .build();
             }
 
@@ -179,7 +182,7 @@ public class NavigationHistoryResource {
             log.info("Downloading query history with {} entries", formattedHistory.size());
 
             return Response.ok(formattedHistory)
-                    .header("Content-Disposition", "attachment; filename=\"query_history.json\"")
+                    .header("Content-Disposition", "attachment; filename=\"" + currentDate + "_query_history.json\"")
                     .build();
         } catch (Exception e) {
             log.error("Error downloading history", e);
