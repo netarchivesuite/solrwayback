@@ -10,8 +10,6 @@
       </button>
       <canvas
         id="ngramChart"
-        width="600"
-        height="300"
       />
     </div>
     <div v-if="downloadOpen">
@@ -35,7 +33,7 @@ export default {
       datacollection: {},
       downloadOpen: false,
       chartInstance: null,
-      options: ChartHelpers.getChartOptions(null, this.scale),
+      options: ChartHelpers.getChartOptions(null, ''),
     };
   },
   computed: {
@@ -49,11 +47,11 @@ watch: {
     deep: true
   },
   'ngramStore.searchType'() {
-    this.options = ChartHelpers.getChartOptions(this.ngramStore.searchType, this.ngramStore.scale);
+    this.options = ChartHelpers.getChartOptions(this.ngramStore.searchType, this.ngramStore.timeScale);
     this.redrawChart();
   },
-  'ngramStore.scale'() {
-    this.options = ChartHelpers.getChartOptions(this.ngramStore.searchType, this.ngramStore.scale);
+  'ngramStore.timeScale'() {
+    this.options = ChartHelpers.getChartOptions(this.ngramStore.searchType, this.ngramStore.timeScale);
     this.redrawChart();
   }
 },
@@ -67,7 +65,8 @@ watch: {
       if (!this.ngramStore.datasets.length) return;
       // Prepare datacollection
       this.datacollection = {
-        labels: ChartHelpers.getChartLabels(this.ngramStore.labels, this.ngramStore.scale),
+        labels: ChartHelpers.getChartLabels(this.ngramStore.labels, this.ngramStore.timeScale),
+        rawLabels: this.ngramStore.labels,
         datasets: ChartHelpers.getChartDataSet(this.ngramStore.datasets),
       };
       // Redraw chart whenever data updates
@@ -81,7 +80,8 @@ watch: {
     'ngramChart',
     this.datacollection.labels,
     this.datacollection.datasets, // <-- pass all datasets now
-    'Count'
+    this.options,
+    this.datacollection.rawLabels
   );
 }
 
@@ -110,9 +110,18 @@ watch: {
 }
 
 #ngramChart {
-  max-height:300px !important;
-
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  height: 320px;
+}
+
 .download:hover {
   border: 2px solid white;
   background-color: var(--secondary-bg-color);

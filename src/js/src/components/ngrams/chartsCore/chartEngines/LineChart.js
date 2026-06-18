@@ -1,18 +1,6 @@
 // chartsCore/chartEngines/LineChart.js
 import { Chart } from 'chart.js';
 
-// Optional global plugin: fill background white before drawing
-Chart.plugins.register({
-  beforeDraw: function(chart) {
-    const ctx = chart.chart.ctx;
-    ctx.save();
-    ctx.globalCompositeOperation = 'destination-over';
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, chart.width, chart.height);
-    ctx.restore();
-  }
-});
-
 // Keep track of chart instances so we can destroy/reuse
 const chartInstances = {};
 
@@ -21,54 +9,65 @@ const chartInstances = {};
  * @param {string} elementId - ID of the canvas element.
  * @param {Array<string>} chartLabels - X-axis labels.
  * @param {Array<Object>} datasets - Array of dataset objects: { data, label, borderColor }
- * @param {string} yAxisLabel - Label for the y-axis.
+ * @param {Object} chartOptions - Chart.js options object.
+ * @param {Array<string>} rawLabels - Raw labels used for click callbacks.
  * @returns {Chart} - Chart.js instance
  */
-export function drawSingleLineChart(elementId, chartLabels, datasets, yAxisLabel = 'Count') {
-  const ctx = document.getElementById(elementId);
-  if (!ctx) return null;
+export function drawSingleLineChart(elementId, chartLabels, datasets, chartOptions = {}, rawLabels = chartLabels) {
+  const canvas = document.getElementById(elementId);
+  if (!canvas) return null;
 
   // Destroy previous chart if exists
   if (chartInstances[elementId]) {
     chartInstances[elementId].destroy();
   }
 
-  chartInstances[elementId] = new Chart(ctx, {
+  const defaultOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    title: {
+      display: true,
+      text: ''
+    },
+    legend: {
+      display: true
+    },
+    scales: {
+      yAxes: [{
+        ticks: { beginAtZero: true },
+        scaleLabel: {
+          display: true,
+          labelString: 'Count'
+        }
+      }],
+      xAxes: [{
+        scaleLabel: {
+          display: true,
+          labelString: 'X'
+        }
+      }]
+    }
+  };
+
+  const mergedOptions = {
+    ...defaultOptions,
+    ...chartOptions,
+    scales: chartOptions.scales || defaultOptions.scales,
+  };
+
+  chartInstances[elementId] = new Chart(canvas, {
     type: 'line',
     data: {
       labels: chartLabels,
+      rawLabels,
       datasets: datasets.map(ds => ({
-        data: ds.data,
-        label: ds.label,
+        ...ds,
         borderColor: ds.borderColor || 'blue',
-        fill: false
+        fill: ds.fill === undefined ? false : ds.fill
       }))
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      title: {
-        display: true,
-        text: ''
-      },
-      legend: {
-        display: true
-      },
-      scales: {
-        yAxes: [{
-          ticks: { beginAtZero: true },
-          scaleLabel: {
-            display: !!yAxisLabel,
-            labelString: yAxisLabel
-          }
-        }],
-        xAxes: [{
-          scaleLabel: {
-            display: true,
-            labelString: 'X'
-          }
-        }]
-      }
+      ...mergedOptions
     }
   });
 
