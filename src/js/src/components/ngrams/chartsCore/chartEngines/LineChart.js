@@ -73,3 +73,10 @@ export function drawSingleLineChart(elementId, chartLabels, datasets, chartOptio
 
   return chartInstances[elementId];
 }
+
+export function clearChart(elementId) {
+  if (chartInstances[elementId]) {
+    chartInstances[elementId].destroy();
+    delete chartInstances[elementId];
+  }
+}

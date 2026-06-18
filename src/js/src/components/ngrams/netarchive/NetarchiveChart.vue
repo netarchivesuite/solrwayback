@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { drawSingleLineChart } from '../chartsCore/chartEngines/LineChart';
+import { drawSingleLineChart, clearChart } from '../chartsCore/chartEngines/LineChart';
 import ChartHelpers from '../chartsCore/chartHelpers';
 import ExportData from '../exporterCSV/ExportData.vue';
 import { mapStores } from 'pinia';
@@ -42,7 +42,13 @@ export default {
 watch: {
   'ngramStore.datasets': {
     handler() {
-      this.fillData();
+      if (!this.ngramStore.datasets.length) {
+        clearChart('ngramChart');
+        this.chartInstance = null;
+        this.datacollection = {};
+      } else {
+        this.fillData();
+      }
     },
     deep: true
   },
@@ -74,7 +80,7 @@ watch: {
     },
 
     redrawChart() {
-  if (!this.datacollection || !this.datacollection.datasets.length) return;
+  if (!this.datacollection?.datasets?.length) return;
 
   this.chartInstance = drawSingleLineChart(
     'ngramChart',
