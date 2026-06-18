@@ -45,7 +45,7 @@
                            @enddate="(edate) => endDate = edate" 
                            @timescale="(ts) => timeScale = ts" />
     </form>
-    <div v-if="searchQuery === '' || this.ngramStore.datasets.length === 0">
+    <div v-if="!hasSearched">
       <h1><span class="ngramAboutHeaderStart">Visualization</span> of search query overtime</h1>
 
       <p class="ngramAbout">
@@ -79,12 +79,13 @@ export default {
   },
  
   data () {
-    return {    
+    return {
         searchQuery:'',
         searchType:'text',
         startDate:'',
         endDate:'',
         timeScale:'',
+        hasSearched: false,
     }
   },
   
@@ -140,6 +141,7 @@ export default {
           if (this.searchType === 'tags') {
             this.rinseQuery()
           }
+          this.hasSearched = true
           this.doSearch({query:this.searchQuery, searchType:this.searchType, startDate:this.startDate, endDate:this.endDate, timeScale:this.timeScale})
           
       }
@@ -148,6 +150,7 @@ export default {
       return  this.searchType === 'tags' ? 'Search for a HTML tag without < >' : 'Enter search term'
     },
     resetState() {
+      this.hasSearched = false
       this.resetSearchState()
       this.$refs.refiner.resetAll()
     },
