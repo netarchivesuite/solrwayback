@@ -38,7 +38,7 @@
     "sass": "^1.55.0",
     "unplugin-vue-components": "^28.5.0",
     "v-tooltip": "^1.1.6",
-    "vite": "^6.3.5",
+    "vite": "^6.4.2",
     "vitest": "^3.2.6"
   }
 }
