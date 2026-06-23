@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.solr;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -21,7 +23,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 
 import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.NoOpResponseParser;
+import org.apache.solr.client.solrj.impl.InputStreamResponseParser;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.*;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -1414,15 +1416,7 @@ public class NetarchiveSolrClient {
         }
 
 
-        NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
-        rawJsonResponseParser.setWriterType("json");
-
-        QueryRequest req = new QueryRequest(solrQuery);
-        req.setResponseParser(rawJsonResponseParser);
-
-        NamedList<Object> resp = solrServer.request(req);
-        String jsonResponse = (String) resp.get("response");
-        return jsonResponse;
+        return requestRawJson(solrQuery);
     }
 
     public String searchJsonResponseOnlyFacetsLoadMore( String query, List<String> fq, String facetField, boolean revisits) throws Exception {
@@ -1458,17 +1452,7 @@ public class NetarchiveSolrClient {
             }
         }
 
-
-
-        NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
-        rawJsonResponseParser.setWriterType("json");
-
-        QueryRequest req = new QueryRequest(solrQuery);
-        req.setResponseParser(rawJsonResponseParser);
-
-        NamedList<Object> resp = solrServer.request(req);
-        String jsonResponse = (String) resp.get("response");
-        return jsonResponse;
+        return requestRawJson(solrQuery);
     }
 
     public String searchJsonResponseNoFacets(String query, List<String> fq, boolean grouping, boolean revisits, Integer start, String sort) throws Exception {
@@ -1516,15 +1500,7 @@ public class NetarchiveSolrClient {
         }
 
 
-        NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
-        rawJsonResponseParser.setWriterType("json");
-
-        QueryRequest req = new QueryRequest(solrQuery);
-        req.setResponseParser(rawJsonResponseParser);
-
-        NamedList<Object> resp = solrServer.request(req);
-        String jsonResponse = (String) resp.get("response");
-        return jsonResponse;
+        return requestRawJson(solrQuery);
     }
 
     /*
@@ -1544,14 +1520,32 @@ public class NetarchiveSolrClient {
             solrQuery.set("fl",fieldList);
         }
 
-        NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
-        rawJsonResponseParser.setWriterType("json");
+        return requestRawJson(solrQuery);
+    }
 
+    /**
+     * Executes the given query and returns the raw JSON response body as a String.
+     * <p>
+     * Uses {@link InputStreamResponseParser}, which streams the response body directly instead of
+     * buffering it into a parsed {@link NamedList}. The stream is fully read and closed here.
+     *
+     * @param solrQuery the query to execute against {@link #solrServer}.
+     * @return the raw response body produced by Solr's {@code wt=json} writer.
+     */
+    private String requestRawJson(SolrQuery solrQuery) throws Exception {
         QueryRequest req = new QueryRequest(solrQuery);
-        req.setResponseParser(rawJsonResponseParser);
+        req.setResponseParser(new InputStreamResponseParser("json"));
+
         NamedList<Object> resp = solrServer.request(req);
-        String jsonResponse = resp.get("response").toString();
-        return jsonResponse;
+        int status = (int) resp.get("responseStatus");
+        try (InputStream stream = (InputStream) resp.get("stream")) {
+            String jsonResponse = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            if (status != 200) {
+                throw new SolrServerException(
+                        "Solr returned HTTP status " + status + " for query " + solrQuery + ": " + jsonResponse);
+            }
+            return jsonResponse;
+        }
     }
 
     /*
@@ -1671,15 +1665,7 @@ public class NetarchiveSolrClient {
         for (String filter : fq) {
             solrQuery.addFilterQuery(filter);
         }
-        NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
-        rawJsonResponseParser.setWriterType("json");
-
-        QueryRequest req = new QueryRequest(solrQuery);
-        req.setResponseParser(rawJsonResponseParser);
-
-        NamedList<Object> resp = solrServer.request(req);
-        String jsonResponse = (String) resp.get("response");
-        return jsonResponse;
+        return requestRawJson(solrQuery);
     }
 
     // returns JSON. Response not supported by SolrJ
@@ -1708,15 +1694,7 @@ public class NetarchiveSolrClient {
         for (String filter : fq) {
             solrQuery.addFilterQuery(filter);
         }
-        NoOpResponseParser rawJsonResponseParser = new NoOpResponseParser();
-        rawJsonResponseParser.setWriterType("json");
-
-        QueryRequest req = new QueryRequest(solrQuery);
-        req.setResponseParser(rawJsonResponseParser);
-
-        NamedList<Object> resp = solrServer.request(req);
-        String jsonResponse = (String) resp.get("response");
-        return jsonResponse;
+        return requestRawJson(solrQuery);
     }
 
     /**
