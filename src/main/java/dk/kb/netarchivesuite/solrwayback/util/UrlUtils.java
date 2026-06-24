@@ -17,10 +17,6 @@ public class UrlUtils {
 
     private static final Logger log = LoggerFactory.getLogger(UrlUtils.class);
 
-    // Splits an http URL into host (group 1), an optional :port (group 2) and the remainder (group 3).
-    private static final Pattern HTTP_AUTHORITY = Pattern.compile("http://([^/:]+)(:\\d+)?(/.*|)");
-
-
     public static void main(String[] args) throws Exception{
 
         //System.out.println(isUrlWithDomain("http://Portal_gfx/KL/farvepakker/topmenu/topmenu_markering_groen_mBo.gif"));
@@ -49,14 +45,8 @@ public class UrlUtils {
         
         //This is default behavior.
         if (!Normalisation.getType().equals(Normalisation.NormaliseType.LEGACY)){
-            // Some documents are indexed with the default port present in url_norm (e.g.
-            // http://example.com:80/...), while the NORMAL normaliser strips the port. Query for both
-            // forms so the lookup matches either variant.
-            String urlWithDefaultPort = addDefaultHttpPort(urlNormFixed);
-            if (urlWithDefaultPort == null) {
-                return "url_norm:\"" + urlNormFixed + "\"";
-            }
-            return "url_norm:(\"" + urlNormFixed + "\" OR \"" + urlWithDefaultPort + "\")";
+            String query ="url_norm:\"" + urlNormFixed + "\"";
+            return query;
         }
         
         //Everything below here an be deleted when legacy normaliser is no longer supported                
@@ -93,22 +83,6 @@ public class UrlUtils {
         
         
         
-    }
-    
-    
-    
-    /**
-     * Returns a copy of the given http URL with the default port {@code :80} inserted after the host, so a
-     * lookup can also match documents that were indexed with the (redundant) default port in {@code url_norm}.
-     * @param url an http URL, expected to be already canonicalised (no port).
-     * @return the URL with {@code :80} added, or {@code null} if it is not a plain http URL or already has a port.
-     */
-    protected static String addDefaultHttpPort(String url){
-        Matcher m = HTTP_AUTHORITY.matcher(url);
-        if (!m.matches() || m.group(2) != null) { // Not http:// or a port is already present
-            return null;
-        }
-        return "http://" + m.group(1) + ":80" + m.group(3);
     }
 
     /*

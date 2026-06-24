@@ -135,10 +135,6 @@ public class PathResolver {
                 return resource.downloadRaw(doc.getSource_file_path(), doc.getOffset());
             }
 
-            // Normalise the URL so the Solr lookup matches the canonical url_norm stored in the index
-            // (removes port and www-prefix, rewrites https→http etc.). Done after the relative-url check
-            // above, since canonicalisation would otherwise turn a relative leak into an absolute url.
-            url = Normalisation.canonicaliseURL(url);
 
             log.debug("Resolving SolrDoc for URL:'{}' with solrDate:'{}'", url, solrDate);
 

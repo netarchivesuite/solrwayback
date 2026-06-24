@@ -151,31 +151,12 @@ public class PathResolverWaybackAPIResolverTest {
     }
 
     @Test
-    public void testSingleSlashHttpsIsNormalisedAndRewrittenToHttp() throws Exception {
-        // The single slash is repaired to "https://", and canonicalisation then rewrites https → http.
-        String solrUrl = resolveAndCaptureSolrUrl(
-                "http://localhost:8080/solrwayback/services" + BASE_PATH + WAYBACK_DATE + "/https:/example.com/page.html");
-
-        assertEquals("http://example.com/page.html", solrUrl);
-    }
-
-    @Test
     public void testUrlWithQueryParametersIsPreserved() throws Exception {
         String solrUrl = resolveAndCaptureSolrUrl(
                 "http://localhost:8080/solrwayback/services" + BASE_PATH + WAYBACK_DATE + "/http://example.com/search?q=foo&x=1");
 
         assertEquals("http://example.com/search?q=foo&x=1", solrUrl);
     }
-
-    @Test
-    public void testUrlWithWWWGetsRemoved() throws Exception {
-        String solrUrl = resolveAndCaptureSolrUrl(
-                "http://localhost:8080/solrwayback/services" + BASE_PATH + WAYBACK_DATE + "/http://www.elvalledeloscaidos.es:80/img/loteria%202012.txt");
-
-        // www-prefix removed and (in NORMAL mode) the port stripped, matching the canonical url_norm in the index.
-        assertEquals("http://elvalledeloscaidos.es/img/loteria%202012.txt", solrUrl);
-    }
-
 
     /**
      * The Wayback date in the request URI is split off from the URL and converted to a Solr timestamp before the

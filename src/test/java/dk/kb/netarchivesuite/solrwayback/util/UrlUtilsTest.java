@@ -10,36 +10,6 @@ import org.junit.Test;
 public class UrlUtilsTest {
 
   @Test
-  public void testAddDefaultHttpPort() {
-    assertEquals("http://example.com:80/img/horse.png",
-                 UrlUtils.addDefaultHttpPort("http://example.com/img/horse.png"));
-    // Domain-only url (always ends with a slash in the index).
-    assertEquals("http://example.com:80/", UrlUtils.addDefaultHttpPort("http://example.com/"));
-    // Already has a port: leave it to the caller (returns null).
-    assertNull(UrlUtils.addDefaultHttpPort("http://example.com:8080/img/horse.png"));
-    // Not a plain http url.
-    assertNull(UrlUtils.addDefaultHttpPort("https://example.com/"));
-  }
-
-  @Test
-  public void testFixNormaliseUrlQueryMatchesBothPortForms() throws Exception {
-    NormaliseType original = Normalisation.getType();
-    try {
-      Normalisation.setType(NormaliseType.NORMAL);
-      // The canonical (port-less) form and the :80 variant should both be queried, so a document indexed
-      // as http://www.elvalledeloscaidos.es:80/... is still found.
-      assertEquals(
-          "url_norm:(\"http://elvalledeloscaidos.es/img/loteria%202012.txt\" OR " +
-          "\"http://elvalledeloscaidos.es:80/img/loteria%202012.txt\")",
-          UrlUtils.fixLegacyNormaliseUrlErrorQuery("http://www.elvalledeloscaidos.es:80/img/loteria%202012.txt"));
-    } finally {
-      Normalisation.setType(original);
-    }
-  }
-
-  
-  
-  @Test
   public void testDomain() {
     String url="http://teg-desktop.sb.statsbiblioteket.dk:8080/test/images/horse.png"; //with port        
     assertEquals("teg-desktop.sb.statsbiblioteket.dk",UrlUtils.getDomain(url));      
