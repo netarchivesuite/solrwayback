@@ -55,6 +55,11 @@ public class NetarchiveSolrClient {
     private static final Logger log = LoggerFactory.getLogger(NetarchiveSolrClient.class);
     private static final long M = 1000000; // ns -> ms
 
+    /** Key under which {@link #requestRawJson} stashes the materialized JSON body into the
+     *  (possibly cached) response NamedList, so repeated/cached queries don't re-read the
+     *  already-consumed InputStream from {@link InputStreamResponseParser}. */
+    private static final String RAW_JSON_KEY = "solrwaybackRawJson";
+
     protected static SolrClient solrServer;
     protected static SolrClient noCacheSolrServer;
     protected static NetarchiveSolrClient instance = null;
@@ -1537,13 +1542,29 @@ public class NetarchiveSolrClient {
         req.setResponseParser(new InputStreamResponseParser("json"));
 
         NamedList<Object> resp = solrServer.request(req);
-        int status = (int) resp.get("responseStatus");
-        try (InputStream stream = (InputStream) resp.get("stream")) {
-            String jsonResponse = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+
+        // CachingSolrClient caches and re-serves this NamedList for repeated queries, but
+        // InputStreamResponseParser puts a single-use InputStream ("stream") in it. The stream can
+        // only be read once, so on a cache hit it is already closed (-> IOException: closed).
+        // Materialize the body to a String once and stash it back into the NamedList, so subsequent
+        // cache hits return the String instead of re-reading the closed stream. Synchronize so
+        // concurrent callers that share the cached NamedList don't race on the one-shot stream.
+        synchronized (resp) {
+            Object cachedJson = resp.get(RAW_JSON_KEY);
+            if (cachedJson != null) {
+                return (String) cachedJson;
+            }
+
+            int status = (int) resp.get(InputStreamResponseParser.HTTP_STATUS_KEY);
+            String jsonResponse;
+            try (InputStream stream = (InputStream) resp.get(InputStreamResponseParser.STREAM_KEY)) {
+                jsonResponse = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            }
             if (status != 200) {
                 throw new SolrServerException(
                         "Solr returned HTTP status " + status + " for query " + solrQuery + ": " + jsonResponse);
             }
+            resp.add(RAW_JSON_KEY, jsonResponse);
             return jsonResponse;
         }
     }
