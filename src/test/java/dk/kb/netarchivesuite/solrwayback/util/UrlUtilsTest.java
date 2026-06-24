@@ -2,8 +2,6 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import static org.junit.Assert.*;
 
-import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
-import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation.NormaliseType;
 import org.junit.Test;
 
 
