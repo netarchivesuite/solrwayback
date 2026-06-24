@@ -3,6 +3,12 @@
 UNRELEASED
 * Four new fields (inactive) added to Solr: nsfw_probability,is_nsfw,is_virus And virus_description. Fields are inactive in default solrwayback bundle.
 * Navigation tracker auto poll increased from 2 seconds to 60 seconds.
+* Fixed playback of resources that were indexed with the default port present in url_norm (e.g. http://example.com:80/...). The url lookup now matches both the port-less and the :80 form, so documents from indexes built with mixed port normalisation can still be played back.
+* The wayback playback resolver (PathResolver.waybackAPIResolverHelper) now canonicalises the requested url before the Solr lookup, so the looked-up url matches the canonical url_norm stored in the index.
+* Improve test coverage for url normalisation:
+  * NormalisationStandard.canonicaliseURL
+  * PathResolver.waybackAPIResolverHelper
+  * UrlUtils url_norm query building and default-port handling
 
 5.4.2
 -----
