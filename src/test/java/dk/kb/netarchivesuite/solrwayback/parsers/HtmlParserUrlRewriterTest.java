@@ -191,12 +191,13 @@ public class HtmlParserUrlRewriterTest {
      */
     private String normalise(String text) {
         return Arrays.stream(
-                text.replace("> <!--", ">\n<!--") // JSoup won't put comments on their own lines
-                        .replace("</style> <a", "</style>\n<a") // JSoup strangeness with lines starting with <a...>
-                        .replace("</a> <a", "</a>\n<a")
-                        .replace("--> <a", "-->\n<a")
+                // Put every tag boundary on its own line and collapse whitespace runs so that the comparison is
+                // insensitive to JSoup's pretty-printing, which differs between JSoup versions (e.g. whether
+                // adjacent inline elements, comments or <br> are separated by a newline, a space or nothing).
+                text.replaceAll(">\\s*<", ">\n<")
                         .split("\n"))
                 .map(String::trim)
+                .map(line -> line.replaceAll("\\s+", " "))
                 .filter(line -> !line.isEmpty())
                 .collect(Collectors.joining("\n"));
     }
