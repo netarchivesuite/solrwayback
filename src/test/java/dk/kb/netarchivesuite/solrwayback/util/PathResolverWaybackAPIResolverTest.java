@@ -28,9 +28,6 @@ import java.net.URI;
  * {@code http:/} → {@code http://}). The URL and date that {@code waybackAPIResolverHelper} would query Solr
  * with are captured and asserted.</p>
  *
- * <p>Note: concrete classes such as {@link SolrWaybackResource} and {@link NetarchiveSolrClient} are not
- * mocked with Mockito here (the inline mock maker cannot instrument them in this JVM); lightweight test
- * subclasses are used instead. Only the JAX-RS interfaces are mocked.</p>
  */
 public class PathResolverWaybackAPIResolverTest {
 
