@@ -74,13 +74,4 @@ public class PathResolverTest {
 
         assertEquals("http://kb.dk/", result.toString());
     }
-
-
-    @Test
-    public void testResolvingOfTxtFile(){
-
-    }
-
-
-
 }
