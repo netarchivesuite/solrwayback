@@ -1148,6 +1148,8 @@ public class NetarchiveSolrClient {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 
+        log.debug("Performing Solr Query for findClosestHarvestTimeForUrl: '{}' and timestamp: '{}'", query, timeStamp);
+
         solrQuery.setFilterQueries(SolrUtils.NO_REVISIT_FILTER); // No binary for revists.
 
         solrQuery.set("facet", "false"); // very important. Must overwrite to false. Facets are very slow and expensive.
