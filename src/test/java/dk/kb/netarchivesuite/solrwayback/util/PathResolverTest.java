@@ -76,5 +76,11 @@ public class PathResolverTest {
     }
 
 
+    @Test
+    public void testResolvingOfTxtFile(){
+
+    }
+
+
 
 }
