@@ -131,34 +131,33 @@
       <dependency>
         <groupId>org.apache.solr</groupId>
         <artifactId>solr-solrj</artifactId>
-        <version>9.7.0</version>
+        <version>9.10.1</version>
       </dependency>
 
       <dependency>
         <groupId>org.apache.solr</groupId>
         <artifactId>solr-test-framework</artifactId>
-        <version>9.7.0</version>
+        <version>9.10.1</version>
         <scope>test</scope>      
       </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.solr/solr-core -->
       <dependency>
           <groupId>org.apache.solr</groupId>
           <artifactId>solr-core</artifactId>
-          <version>9.7.0</version>
+          <version>9.10.1</version>
           <scope>test</scope>
         <exclusions>
-         <exclusion>
+          <exclusion>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-        </exclusion>
-      
-      </exclusions>
+          </exclusion>
+        </exclusions>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core -->
       <dependency>
           <groupId>org.apache.lucene</groupId>
           <artifactId>lucene-core</artifactId>
-          <version>9.11.1</version>
+          <version>9.12.1</version>
           <scope>test</scope>
       </dependency>
 
