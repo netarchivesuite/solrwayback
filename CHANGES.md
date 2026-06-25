@@ -19,7 +19,8 @@
 * Fixed ngram chart sizing and ensured full options are passed to the chart engine
 
 ### Dependencies
-* Upgraded Solr dependencies to 9.10.1
+* Upgraded Solr dependencies:
+  * `solr@9.10.1`
 * Upgraded frontend dependencies:
   * `vite@^6.4.2`
   * `vitest@^3.2.6`
