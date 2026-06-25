@@ -7,6 +7,8 @@ UNRELEASED
   * NormalisationStandard.canonicaliseURL
   * PathResolver.waybackAPIResolverHelper
   * UrlUtils url_norm query building and default-port handling
+* Upgraded Solr dependencies to 9.10.1
+* Switched from deprecated NoOpResponseParser to the new InputStreamResponseParser. Caching of SolrResponses is now handled by storing the response in the NetarchiveSolrClient.
 
 5.4.2
 -----
