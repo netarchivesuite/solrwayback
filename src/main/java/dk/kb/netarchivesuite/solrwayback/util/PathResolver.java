@@ -76,6 +76,27 @@ public class PathResolver {
         return uri;
     }
 
+    /**
+     * Resolves a Wayback playback request and returns the response used to play back the harvested resource.
+     * The requested URL and Wayback date are extracted from the path (they are read from {@code uriInfo}
+     * rather than the {@code path} parameter.). The closest harvest to the requested date is located and played back:
+     * <ul>
+     *     <li>If the URL has no domain it is treated as a relative link and resolved against the "referer"
+     *         header, then served raw.</li>
+     *     <li>If the closest harvest is an HTML page whose crawl date differs from the requested date, the
+     *         request is redirected so the date in the URL matches the actual crawl time of the document.</li>
+     *     <li>Otherwise the harvested resource is played back directly.</li>
+     * </ul>
+     * @param resource    the SolrWayback resource used to perform the actual playback/download.
+     * @param basePath    the last part of the path before the Wayback date begins, e.g. "/web/" or "/lenient/web/".
+     * @param uriInfo     contains information of the full URI requested from the browser.
+     * @param httpRequest the incoming request, used to read the "referer" header for relative URLs.
+     * @param path        the path containing the Wayback date and URL-R.
+     * @param lenient     whether playback should be performed in lenient mode.
+     * @return            a {@link Response} playing back the resource, or a redirect to the canonical crawl-date URL.
+     * @throws SolrWaybackServiceException if resolving or playing back the resource fails, e.g. when the URL
+     *                                     has never been harvested.
+     */
     public static Response waybackAPIResolverHelper(
             SolrWaybackResource resource,
             String basePath, // "/lenient/web/" or "/web/"
@@ -114,9 +135,11 @@ public class PathResolver {
                 return resource.downloadRaw(doc.getSource_file_path(), doc.getOffset());
             }
 
+
+            log.debug("Resolving SolrDoc for URL:'{}' with solrDate:'{}'", url, solrDate);
+
             //log.info("solrDate="+solrDate +" , url="+url);
             IndexDoc doc = NetarchiveSolrClient.getInstance().findClosestHarvestTimeForUrl(url, solrDate);
-
 
             if (doc == null) {
                 log.info("Url has never been harvested:" + url);

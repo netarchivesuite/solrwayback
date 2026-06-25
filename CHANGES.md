@@ -3,6 +3,10 @@
 UNRELEASED
 * Four new fields (inactive) added to Solr: nsfw_probability,is_nsfw,is_virus And virus_description. Fields are inactive in default solrwayback bundle.
 * Navigation tracker auto poll increased from 2 seconds to 60 seconds.
+* Improve test coverage for url normalisation:
+  * NormalisationStandard.canonicaliseURL
+  * PathResolver.waybackAPIResolverHelper
+  * UrlUtils url_norm query building and default-port handling
 * Upgraded Solr dependencies to 9.10.1
 * Switched from deprecated NoOpResponseParser to the new InputStreamResponseParser. Caching of SolrResponses is now handled by storing the response in the NetarchiveSolrClient.
 

@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public class UrlUtils {
 
     private static final Logger log = LoggerFactory.getLogger(UrlUtils.class);
-    
+
     public static void main(String[] args) throws Exception{
 
         //System.out.println(isUrlWithDomain("http://Portal_gfx/KL/farvepakker/topmenu/topmenu_markering_groen_mBo.gif"));
@@ -44,9 +44,9 @@ public class UrlUtils {
         urlNormFixed = urlNormFixed.replace("\\", "\\\\"); // Solr encoded
         
         //This is default behavior.
-        if (!Normalisation.getType().equals(Normalisation.NormaliseType.LEGACY)){              
+        if (!Normalisation.getType().equals(Normalisation.NormaliseType.LEGACY)){
             String query ="url_norm:\"" + urlNormFixed + "\"";
-            return query;            
+            return query;
         }
         
         //Everything below here an be deleted when legacy normaliser is no longer supported                
@@ -84,9 +84,7 @@ public class UrlUtils {
         
         
     }
-    
-    
-    
+
     /*
      * Must start with http:// and have a domain(must have . as one of the characters)
      *
