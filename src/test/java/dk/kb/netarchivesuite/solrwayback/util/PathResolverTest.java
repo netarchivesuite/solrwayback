@@ -74,7 +74,4 @@ public class PathResolverTest {
 
         assertEquals("http://kb.dk/", result.toString());
     }
-
-
-
 }

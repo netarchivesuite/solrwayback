@@ -19,17 +19,23 @@ import { useNgramStore } from '../store/ngram.store'
   methods: {
   
     $_doCSVExport() {
+      const { datasets, labels } = this.ngramStore
+
+      if (!datasets.length) {
+        return
+      }
+
       //The arrays for constructing the dataset that's needed for the CSV engine
       let dateCount = [], totalCount = []
       let description = ['Date', 'Total_documents']
       
       //Populate the "total count of documents in index" (totalCount) array with a series of 
       //total counts pr. dates. We only need this series once because it is the same for all queries
-      Object.keys(this.datasets[0])
+      Object.keys(datasets[0])
       .filter(value => value === 'total')
-      .map(e => totalCount.push(this.datasets[0][e]))
+      .map(e => totalCount.push(datasets[0][e]))
   
-      this.datasets.forEach((dataEntry, i) => {
+      datasets.forEach((dataEntry, i) => {
      
         //Add queries to descripion array which will serve as our 'first row' containing labels and queries
       Object.keys(dataEntry)
@@ -42,7 +48,7 @@ import { useNgramStore } from '../store/ngram.store'
       .map(e => dateCount.push(dataEntry[e]))
       })
       
-      const finalDataset = this.createFinalDataSet(totalCount, dateCount, description)
+      const finalDataset = this.createFinalDataSet(totalCount, dateCount, description, labels)
       const filename = this.getFileName()  
       this.exportToCSV(finalDataset, filename)
     },
@@ -54,7 +60,7 @@ import { useNgramStore } from '../store/ngram.store'
        return  `Netarchive-ngram-${date}-${time}.csv`
     },
 
-    createFinalDataSet(totalCount, dateCount, description){
+    createFinalDataSet(totalCount, dateCount, description, labels){
       let finalDataset = []
        // We need to get the start year so we know how many 'year rows' to generate 
       // Push this first row to the final dataset (holds the queries)
@@ -62,7 +68,7 @@ import { useNgramStore } from '../store/ngram.store'
       //Loop the total count pr. year and create all the rows with [year, total_count (for year), count for query, count for query...]
       totalCount[0].forEach((entry, i) => {
         let dataEntrySet = []
-        dataEntrySet.push(this.labels[i])
+        dataEntrySet.push(labels[i])
         dataEntrySet.push(entry)
         //We loop year data for every query the user has sumbitted
         dateCount.forEach((countEntry, j) => {

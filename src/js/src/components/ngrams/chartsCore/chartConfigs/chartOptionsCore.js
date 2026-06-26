@@ -27,8 +27,8 @@ export default {
     return {
      tooltips:this.getTooltipOptions(),
      scales: this.getScalesOptions(scale),
-     //responsive: true,
-     maintainAspectRatio: true,
+     responsive: true,
+     maintainAspectRatio: false,
      onClick: (evt, chartObj) => {
        this.getChartPointCallback(evt, chartObj, searchType, scale)
     }

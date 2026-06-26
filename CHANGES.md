@@ -1,10 +1,35 @@
 # SolrWayback changelog
 
-UNRELEASED
-* Four new fields (inactive) added to Solr: nsfw_probability,is_nsfw,is_virus And virus_description. Fields are inactive in default solrwayback bundle.
+## [UNRELEASED]
+
+### Added
+* Four new fields (inactive) added to Solr: nsfw_probability, is_nsfw, is_virus and virus_description. Fields are inactive in default solrwayback bundle.
+
+### Changed
 * Navigation tracker auto poll increased from 2 seconds to 60 seconds.
-* Upgraded Solr dependencies to 9.10.1
 * Switched from deprecated NoOpResponseParser to the new InputStreamResponseParser. Caching of SolrResponses is now handled by storing the response in the NetarchiveSolrClient.
+
+### Fixed
+* About text no longer reappears when manually clearing the ngram search query
+* Ngram chart is now properly cleared when the search box clear function is invoked
+* Fixed bug preventing searches from being performed when clicking on data points on ngram chart
+* Resolved bouncing/layout shift of the search box during ngram searches
+* Fixed TypeError: undefined is not an object crash when performing ngram searches
+* Fixed TypeError: undefined is not an object crash when exporting ngram chart data
+* Fixed ngram chart sizing and ensured full options are passed to the chart engine
+
+### Dependencies
+* Upgraded Solr dependencies:
+  * `solr@9.10.1`
+* Upgraded frontend dependencies:
+  * `vite@^6.4.2`
+  * `vitest@^3.2.6`
+
+### Tests
+* Improve test coverage for url normalisation:
+  * NormalisationStandard.canonicaliseURL
+  * PathResolver.waybackAPIResolverHelper
+  * UrlUtils url_norm query building and default-port handling
 
 5.4.2
 -----

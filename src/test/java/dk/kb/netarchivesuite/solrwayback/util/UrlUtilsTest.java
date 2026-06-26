@@ -7,8 +7,6 @@ import org.junit.Test;
 
 public class UrlUtilsTest {
 
-  
-  
   @Test
   public void testDomain() {
     String url="http://teg-desktop.sb.statsbiblioteket.dk:8080/test/images/horse.png"; //with port        
