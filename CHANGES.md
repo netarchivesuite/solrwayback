@@ -2,11 +2,18 @@
 
 ## [UNRELEASED]
 
+
+5.4.3
+-----
+
 ### Added
+* New solr fields has been added. The SolrWayback GUI has not implemented the feature yet for similarity search. The new fields can still be used for search.
 * Four new fields (inactive) added to Solr: nsfw_probability, is_nsfw, is_virus and virus_description. Fields are inactive in default solrwayback bundle.
+* New fields for image hashes added to Solr. P-hash and PDQ-hash (with dihedral variations) are calculated. For details see version 3.5 changes for warc-indexer: https://github.com/netarchivesuite/warc-indexer/blob/master/CHANGES.md
+
 
 ### Changed
-* Navigation tracker auto poll increased from 2 seconds to 60 seconds.
+* Navigation tracker auto poll increased from 2 seconds to 60 seconds (auto poll will be removed in a later version)
 * Switched from deprecated NoOpResponseParser to the new InputStreamResponseParser. Caching of SolrResponses is now handled by storing the response in the NetarchiveSolrClient.
 
 ### Fixed
