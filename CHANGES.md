@@ -8,8 +8,9 @@
 
 ### Added
 * New solr fields has been added. The SolrWayback GUI has not implemented the feature yet for similarity search. The new fields can still be used for search.
-* Four new fields (inactive) added to Solr: nsfw_probability, is_nsfw, is_virus and virus_description. Fields are inactive in default solrwayback bundle.
+* Four new fields added to Solr: nsfw_probability, is_nsfw, is_virus and virus_description. They will only be populated if warc-safe enrichment is enabled.
 * New fields for image hashes added to Solr. P-hash and PDQ-hash (with dihedral variations) are calculated. For details see version 3.5 changes for warc-indexer: https://github.com/netarchivesuite/warc-indexer/blob/master/CHANGES.md
+ This feature will make it possible to detect visual identical image that is not exact binary hash match. This include scaling and rotations etc.
 
 
 ### Changed
