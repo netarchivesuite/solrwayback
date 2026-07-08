@@ -372,6 +372,49 @@ This schema is for Solr 9+
         <field name="is_virus" type="boolean" />
         <field name="virus_description" type="string" />
         
+        
+          
+         <!-- Perceptual image hashes for near-duplicate image detection.
+         PDQ hash (256-bit) is Meta's perceptual hash algorithm, well-suited for
+         large-scale image similarity search. All 8 dihedral variants (4 rotations
+         x 2 mirror orientations) are stored, derived from a single pipeline pass
+         at no extra cost. This allows rotation- and mirror-robust matching without
+         storing multiple copies of the image.
+         pHash (64-bit) is a classic DCT-based perceptual hash, complementary to
+         PDQ for secondary similarity filtering.
+         Hamming distance is used to measure similarity: PDQ threshold <= 31 (of 256),
+         pHash threshold <= 10 (of 64). -->
+
+        <field name="image_pdq_hash"            type="string" indexed="true" stored="true"/>
+        <field name="image_pdq_rotate90_hash"   type="string" indexed="true" stored="true"/>
+        <field name="image_pdq_rotate180_hash"  type="string" indexed="true" stored="true"/>
+        <field name="image_pdq_rotate270_hash"  type="string" indexed="true" stored="true"/>
+        <field name="image_pdq_flipX_hash"      type="string" indexed="true" stored="true"/>
+        <field name="image_pdq_flipY_hash"      type="string" indexed="true" stored="true"/>
+        <field name="image_pdq_flipPlus1_hash"  type="string" indexed="true" stored="true"/>
+        <field name="image_pdq_flipMinus1_hash" type="string" indexed="true" stored="true"/>
+        <field name="image_p_hash"              type="string" indexed="true" stored="true"/>
+
+        <!-- PDQ hash band fields for approximate similarity search (LSH banding).
+        Each PDQ dihedral hash is split into 8 bands of 8 characters (32 bits)
+        using PdqHasher.splitIntoBands(). One dynamic field pattern per dihedral
+        variant covers bands 0-7, e.g. image_pdq_original_band_0 through
+        image_pdq_original_band_7. See:
+        https://www.cs.toronto.edu/~norouzi/research/papers/multi_index_hashing.pdf -->
+        <dynamicField name="image_pdq_original_band_*"   type="string" indexed="true" stored="false"/>
+        <dynamicField name="image_pdq_rotate90_band_*"    type="string" indexed="true" stored="false"/>
+        <dynamicField name="image_pdq_rotate180_band_*"   type="string" indexed="true" stored="false"/>
+        <dynamicField name="image_pdq_rotate270_band_*"   type="string" indexed="true" stored="false"/>
+        <dynamicField name="image_pdq_flipX_band_*"       type="string" indexed="true" stored="false"/>
+        <dynamicField name="image_pdq_flipY_band_*"       type="string" indexed="true" stored="false"/>
+        <dynamicField name="image_pdq_flipPlus1_band_*"   type="string" indexed="true" stored="false"/>
+        <dynamicField name="image_pdq_flipMinus1_band_*"  type="string" indexed="true" stored="false"/>
+
+        <!-- pHash band fields. pHash (64-bit) splits into 2 bands of 8 characters (32 bits each)
+        using PhashHasher.splitIntoBands(). Allowed band values are 0 and 1,
+        e.g. image_p_hash_band_0 and image_p_hash_band_1. -->
+        <dynamicField name="image_p_hash_band_*"          type="string" indexed="true" stored="false"/>
+        
         <!-- Dynamic fields intended for intstitution-specific fields without changing the schema.
              (yes, the arc_*-fields above should have been dynamic fields instead of hardcoded)
               TODO: Add DocValues-enabled variants (take care not to change existing definitions) -->
