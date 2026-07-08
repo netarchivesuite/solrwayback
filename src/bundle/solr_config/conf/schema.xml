@@ -410,6 +410,10 @@ This schema is for Solr 9+
         <dynamicField name="image_pdq_flipPlus1_band_*"   type="string" indexed="true" stored="false"/>
         <dynamicField name="image_pdq_flipMinus1_band_*"  type="string" indexed="true" stored="false"/>
 
+        <!-- pHash band fields. pHash (64-bit) splits into 2 bands of 8 characters (32 bits each)
+        using PhashHasher.splitIntoBands(). Allowed band values are 0 and 1,
+        e.g. image_p_hash_band_0 and image_p_hash_band_1. -->
+        <dynamicField name="image_p_hash_band_*"          type="string" indexed="true" stored="false"/>
         
         <!-- Dynamic fields intended for intstitution-specific fields without changing the schema.
              (yes, the arc_*-fields above should have been dynamic fields instead of hardcoded)
