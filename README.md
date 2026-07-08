@@ -27,8 +27,9 @@ SolrWayback comes with multiple features:
 * Visualisation of search result by domain.
 * Visualisation of various domain statistics over time such as size, number of in- and outgoing links.
 * Large scale export of link graphs in Gephi format. (See https://labs.statsbiblioteket.dk/linkgraph/)
-* Image search similar to google images.
+* Image search similar to google images by text search
 * Image geo search by location on map using EXIF metadata information in images.
+* Image similarity search using p-hash and PDQ-hash values for images.
 * Search by upload of a file. (e.g., image, PDF) to see if the resource has been harvested and find HTML pages using the image.
 * View all fields indexed for a resource and show warc-header for records.
 * Configure alternative playback engine to any playback engine using the playback-API such as OpenWayback or pywb.
