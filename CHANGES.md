@@ -12,7 +12,7 @@
 * New fields for image hashes added to Solr. P-hash and PDQ-hash (with dihedral variations) are calculated. For details see version 3.5 changes for warc-indexer: https://github.com/netarchivesuite/warc-indexer/blob/master/CHANGES.md
  This feature will make it possible to detect visual identical image that is not exact binary hash match. This include scaling,rotations, image filters etc.
  The feature is default enabled and require new solr configuration(schema.xml) is upload Solr cloud. Can be disabled in the warc-indexer config3.xml
- See the READMNE.md file in the solr_config folder to see how to upload a new configuration to Solr cloud.
+ See the README.md file in the solr_config folder to see how to upload a new configuration to Solr cloud.
  
 ### Changed
 * Navigation tracker auto poll increased from 2 seconds to 60 seconds (auto poll will be removed in a later version)
