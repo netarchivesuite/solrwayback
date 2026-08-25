@@ -68,6 +68,8 @@ public class NetarchiveSolrClient {
     private final AtomicLong lenientAttempts = new AtomicLong(0);
     private final AtomicLong lenientSuccesses = new AtomicLong(0);
 
+    private static final int MAX_REDIRECT_DEPTH = 3;
+    
     protected Boolean solrAvailable = null;
 
     protected NetarchiveSolrClient() { // private. Singleton
@@ -1136,10 +1138,18 @@ public class NetarchiveSolrClient {
     }
 
 
+    
     /*
      * Notice here do we not fix url_norm
      */
     public IndexDoc findClosestHarvestTimeForUrl(String url, String timeStamp) throws Exception {
+        return findClosestHarvestTimeForUrl(url, timeStamp, 0);
+    }
+    
+    
+    
+    //Will follow redirects and return final URL that is not a redirect
+    private IndexDoc findClosestHarvestTimeForUrl(String url, String timeStamp, int redirectDepth) throws Exception {
 
         if (url == null || timeStamp == null) {
             throw new IllegalArgumentException("harvestUrl or timeStamp is null"); // Can happen for url-rewrites that are not corrected
@@ -1150,7 +1160,12 @@ public class NetarchiveSolrClient {
 
         String urlNormQuery = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);
 
-        String query = urlNormQuery +" AND status_code:200"; //Maybe also allow 400 and 404?: (status_code:200 OR status_code:400 OR status_code:404).          
+        // Was hardcoded to status_code:200, which meant a URL that only exists in the
+        // index as a redirect was never found at all. Broadened to include every
+        // redirect status SolrWayback can follow (see isRedirectStatus) so we can
+        // detect one and chase it down below. 303/307/308 included since SolrWayback
+        // always replays as GET, so their method-preservation semantics don't matter here.
+        String query = urlNormQuery;
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
@@ -1212,7 +1227,7 @@ public class NetarchiveSolrClient {
             // If redirect, do not return the same url as this will give endless redirect.
             // This can happen due to the http://www.test.dk http://test.dk is normalized to
             // the same.
-            if (doc.getStatusCode() >= 300 && doc.getStatusCode() < 400) {
+            if (isRedirectStatus(doc.getStatusCode())) {
                 if (doc.getUrl().equals(url)) { // Do not return the same for redirect.
                     log.info("Stopping endless direct for url:" + url + " and found url:" + doc.getUrl());
                     continue; // skip
@@ -1231,7 +1246,29 @@ public class NetarchiveSolrClient {
         if (bestIndex != 0) {
             log.warn("Fixed Solr time sort bug, found a better match, # result:" + bestIndex);
         }
-        return indexDocs.get(bestIndex);
+
+        IndexDoc best = indexDocs.get(bestIndex);
+
+        // Follow a redirect to its target instead of returning the redirect document
+        // itself, so a URL that only ever exists in the index as a redirect still
+        // resolves to real content. Capped at MAX_REDIRECT_DEPTH hops to guard
+        // against a redirect loop (e.g. A -> B -> A).
+        if (isRedirectStatus(best.getStatusCode())) {
+            String redirectTarget = best.getRedirectToNorm();
+            if (redirectTarget == null || redirectTarget.isEmpty()) {
+                log.warn("Redirect (status " + best.getStatusCode() + ") for url:" + url + " has no redirect_to_norm value, returning the redirect document as-is.");
+                return best;
+            }
+            if (redirectDepth >= MAX_REDIRECT_DEPTH) {
+                log.warn("Reached max redirect depth (" + MAX_REDIRECT_DEPTH + ") resolving url:" + url + ", returning the redirect document as-is to avoid an endless loop.");
+                return best;
+            }
+            log.info("Following redirect (status " + best.getStatusCode() + ") from url:" + url + " to:" + redirectTarget + " (hop " + (redirectDepth + 1) + ")");
+            IndexDoc resolved = findClosestHarvestTimeForUrl(redirectTarget, timeStamp, redirectDepth + 1);
+            return resolved != null ? resolved : best; // fall back to the redirect doc if nothing found downstream
+        }
+
+        return best;
     }
 
     /**
@@ -1813,4 +1850,10 @@ public class NetarchiveSolrClient {
     public long getLenientSuccesses() {
         return lenientSuccesses.get();
     }
+    
+    private static boolean isRedirectStatus(int statusCode) {
+        return statusCode == 301 || statusCode == 302 || statusCode == 303
+            || statusCode == 307 || statusCode == 308;
+    }
+
 }
