@@ -472,9 +472,14 @@ public class HtmlParserUrlRewriter {
             Document doc, String element, String attribute, UnaryOperator<String> transformer) {
         for (Element e : doc.select(element)) {
             String content = attribute == null || attribute.isEmpty() ? e.data() : e.attr(attribute);
+                    
             if (content == null  || content.trim().isEmpty()){
                 continue;
+            }            
+            if(content.toLowerCase().trim().startsWith("javascript:")){                
+                continue;// this is allowed for HREF. Should refactor href replacement in custom method.              
             }
+            
             String newContent = transformer.apply(content);
             if (newContent != null && !newContent.equals(content)) {
                 if (attribute == null || attribute.isEmpty()) {
