@@ -1,7 +1,8 @@
 # SolrWayback changelog
 
 ## [UNRELEASED]
-
+### Fixed
+* Fixed bug resolving redirect chain. Closing #https://github.com/netarchivesuite/solrwayback/issues/507
 
 5.4.3
 -----
