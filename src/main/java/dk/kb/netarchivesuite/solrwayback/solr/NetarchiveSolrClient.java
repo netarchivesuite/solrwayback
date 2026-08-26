@@ -1158,7 +1158,7 @@ public class NetarchiveSolrClient {
         // normalize will remove last slash if not slashpage
         boolean slashLast = url.endsWith("/");
 
-        String urlNormQuery = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);
+        String urlNormQuery = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url); //TODO just call normal normaliser when legacy support is removed
 
         // Was hardcoded to status_code:200, which meant a URL that only exists in the
         // index as a redirect was never found at all. Broadened to include every
@@ -1229,7 +1229,7 @@ public class NetarchiveSolrClient {
             // the same.
             if (isRedirectStatus(doc.getStatusCode())) {
                 if (doc.getUrl().equals(url)) { // Do not return the same for redirect.
-                    log.info("Stopping endless direct for url:" + url + " and found url:" + doc.getUrl());
+                    log.warn("Stopping endless direct for url:" + url + " and found url:" + doc.getUrl());
                     continue; // skip
                 }
             }
