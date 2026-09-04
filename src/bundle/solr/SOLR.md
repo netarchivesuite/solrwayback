@@ -49,6 +49,16 @@ solr-9/bin/solr create_collection -c netarchivebuilder -d solr9/discovery/conf/ 
 ```
 Visit http://localhost:8983/solr/#/~cloud?view=graph to check that there is now a collection called `netarchivebuilder` with 2 active shards.
 
+### Index data outside Solr home
+
+From Solr 9, index files must live under Solr home unless you allow another path. If the index is on a separate volume (or any directory outside Solr home), set `solr.allowPaths` before starting Solr, for example in `solr-9/bin/solr.in.sh`:
+
+```
+SOLR_OPTS="$SOLR_OPTS -Dsolr.allowPaths=/path/to/index"
+```
+
+You can also set `<str name="allowPaths">` in `solr.xml`. Without this, Solr refuses to create or load a collection whose `dataDir` is outside Solr home.
+
 ### Solr tricks
 
 Delete all documents in the index:
