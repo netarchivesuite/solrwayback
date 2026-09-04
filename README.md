@@ -133,13 +133,16 @@ Absolute URL live-leaks (starting with http://domain...) will not be caught and 
 #### Warc indexer
 Documents in SolrWayback are indexed through the [warc-indexer](https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer), which is maintained by The British Library. This is a fundamental tool for indexing WARC files in SolrWayback and furthermore it is included in the [SolrWayback bundle](https://github.com/netarchivesuite/solrwayback/releases).
 
+#### Extended Solr guide
+If you install Solr separately instead of using the Solr that ships in the bundle, see the [Extended Solr guide](src/bundle/solr/SOLR.md). That guide covers Solr 9 Cloud, including uploading the webarchive-discovery Solr configuration and creating the `netarchivebuilder` collection.
+
  
 ## Requirements
  * Works on macOS/Linux/Windows
  * Java 11 (tested with OpenJDK) 
  * A nice collection of ARC/WARC files or harvest your own with Heritrix, Webrecorder, Brozzler, Wget, etc. 
  * Tomcat 9+ or another J2EE server for deploying the WAR-file
- * A Solr 9+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT+
+ * A Solr 9+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT+. For a separate Solr 9 Cloud install (not the bundle Solr), see the [Extended Solr guide](src/bundle/solr/SOLR.md).
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage for developers.
@@ -235,10 +238,11 @@ THREADS=2 ./warc-indexer.sh warcs1/*
 This will start indexing files from the folder warcs1 using 2 threads. Assigning a higher number of threads than CPU cores available will result in slower indexing. Each indexing job require 1GB of RAM, so this can also be a limiting factor.
 
 
-To create custom collections in your index, you can  populate the collection and collectionid field in Solr with custom values. This can be done with the following command during indexing:
+To create custom collections in your index, you can populate the `collection`, `collection_id` and `institution` fields in Solr with custom values. Pass them to the warc-indexer during indexing:
 ```
-THREADS=4 INDEXER_CUSTOM="--collection_id  collection1 --collection corona2021" ./warc-indexer.sh warcs1/*
+THREADS=4 INDEXER_CUSTOM="--collection-id collection1 --collection corona2021 --institution institution1" ./warc-indexer.sh warcs1/*
 ```
+The indexer CLI uses hyphens (`--collection-id`, `--collection`, `--institution`). Older warc-indexer releases used `--collection_id`.
 
 You can then enable faceting on these fields in the property file: `solrwaybackweb.properties`.
 
@@ -319,6 +323,7 @@ an index of about 1TB having 500M documents and this requires changing the Solr 
 
 Storing the index on a SSD drive is required to reach acceptable performance for searches.
 For collections larger than this limit Solr Cloud is required instead of the stand alone Solr that comes with the SolrWayback Bundle.
+See the [Extended Solr guide](src/bundle/solr/SOLR.md) for a Solr 9 Cloud setup that uses the webarchive-discovery Solr configuration to create the collection.
 A more advanced distributed indexing flow can be handled by the archon/arctika index workflow. See: https://github.com/netarchivesuite/netsearch 
 
  
