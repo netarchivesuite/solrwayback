@@ -48,7 +48,7 @@ The International Internet Preservation Consortium (IIPC) has also made multiple
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" />
 </p>
 <p align="center">
- Lising of search results with facets.
+ Listing of search results with facets.
 </p>
 
 <p align="center"> 
@@ -179,7 +179,7 @@ Unzip and follow the instructions below.
 
 * Copy `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to the `user/home/` folder. 
 
-* **Windows only:** Create an enviroment value that points to the folder with java11 or java 17 : `JAVA_HOME=C:\Program Files\Java\jdk-11`
+* **Windows only:** Create an environment value that points to the folder with java11 or java 17 : `JAVA_HOME=C:\Program Files\Java\jdk-11`
 
 * **Optional:** For screenshot previews to work you may have to edit the file `properties/solrwayback.properties` and change the value of the last two properties : `chrome.command`  and `screenshot.temp.imagedir`.
   Chrome(Chromium) must be installed for preview of images to work.
@@ -267,7 +267,7 @@ The Solr log-file is in the folder solr-9/server/logs. See solr.log or solr-8983
 
 
 ### 5) CUSTOMIZATION 
-Many custom properties in solrwaybackweb.properties can be changed. There are documention above most of the properties.
+Many custom properties in solrwaybackweb.properties can be changed. There is documentation above most of the properties.
 Tomcat needs to be restart to load changes. Here are a few properties that must collections want to customize.
 This is a list of properties most collections want to change.
 
