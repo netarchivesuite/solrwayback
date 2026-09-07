@@ -109,13 +109,28 @@ public class SolrWaybackResource {
   
   
   @GET
-  @Path("statistics/domain")
+  @Path("statistics/url")
   @Produces({ MediaType.APPLICATION_JSON})
-  public  List<DomainStatistics> statisticsDomain (@QueryParam("domain") String domain, @QueryParam("startdate") String startdate,
+  public  List<DomainStatistics> statisticsDomainHost (@QueryParam("domain") String domain, @QueryParam("host") String host, @QueryParam("startdate") String startdate,
           @QueryParam("enddate") String enddate, @QueryParam("scale") String scale) throws SolrWaybackServiceException {
       int limit = 90;
       LocalDate start = LocalDate.parse(startdate, DateTimeFormatter.ISO_DATE);
       LocalDate end = LocalDate.parse(enddate, DateTimeFormatter.ISO_DATE);
+      
+      String target = null;
+      boolean isDomain = true;
+      if (domain != null && host != null) {
+          throw new InvalidArgumentServiceException("Use either domain or host, not both.");
+      }
+      if (domain != null) {
+          target = domain;
+          isDomain = true;
+      } else if (host != null) {
+          target = host;
+          isDomain = false;
+      } else {
+          throw new InvalidArgumentServiceException("Either domain or host is required.");
+      }
       
       // If the period is too big for the scale, block the statistics
       int buckets = DateUtils.calculateBucket(start, end, scale);
@@ -125,7 +140,7 @@ public class SolrWaybackResource {
           throw new InvalidArgumentServiceException(msg);
       }
       try {
-        return Facade.statisticsDomain(domain, start , end, scale);
+        return Facade.statisticsDomainHost(target, isDomain, start , end, scale);
       } catch (Exception e) {
           throw handleServiceExceptions(e);
       }

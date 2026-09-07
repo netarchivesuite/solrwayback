@@ -7,7 +7,7 @@
       <div class="linkGraphSettings">
         <div class="linkGraphDomainContainer contain">
           <input v-model="domain"
-                 placeholder="Enter domain, like 'kb.dk'"
+                 :placeholder="getPlaceholder()"
                  :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
                  @keyup.enter="!loading ? loadLinkGraph(domain) : null">
         </div>
@@ -37,8 +37,16 @@
                  type="radio"
                  value="false">
           <label class="label" for="linkGraphRadioTwo">Outgoing</label>
-        </div> 
+        </div>
+      <div class="domainHostChoiceContainer contain">
+        <label class="domainHostChoiceLabel label">Search for:</label>
+        <input id="domainHostChoiceRadioOne" v-model="isDomain" type="radio" :value="true">
+        <label class="label" for="domainHostChoiceRadioOne">domain</label>
+        <input id="domainHostChoiceRadioTwo" v-model="isDomain" type="radio" :value="false">
+        <label class="label" for="domainHostChoiceRadioTwo">host</label>
       </div>
+    </div>
+
       <div class="sliderContainer">
         <label class="linkGraphLabel">Time frame:</label>
         <vue-slider v-model="sliderValues"
@@ -80,6 +88,7 @@ export default {
       ingoing:false,
       loading:false,
       domain:'',
+      isDomain: true
     }
   },
   mounted () {
@@ -99,13 +108,13 @@ export default {
         routerQuery.ingoing === 'true' ? this.ingoing = true : this.ingoing = false
       }
       this.loading = true
-      requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1]).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
+      requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1], this.isDomain).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
     }
   },
   methods: {
     loadLinkGraph(domain) {
       this.loading = true
-      requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1]).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
+      requestService.getLinkGraph(this.domain,this.linkNumber, this.ingoing, this.sliderValues[0], this.sliderValues[1], this.isDomain).then(result => (this.buildSvg(result)), error => console.log('Error, no link graph created.'))
     },
     createDateFromNumber(date) {
       const time = new Date(date)
@@ -294,7 +303,7 @@ export default {
             document.getElementById('graphContainer').innerHTML = ''
             _this.loading = true
             _this.domain = domain
-            requestService.getLinkGraph(domain,_this.linkNumber, _this.ingoing, _this.sliderValues[0], _this.sliderValues[1])
+            requestService.getLinkGraph(domain,_this.linkNumber, _this.ingoing, _this.sliderValues[0], _this.sliderValues[1], _this.isDomain)
             .then(result => (_this.buildSvg(result)), error => console.log('Error, no link graph created.'))
           })
 
@@ -316,6 +325,9 @@ export default {
       })
       this.loading = false
     },
+    getPlaceholder() {
+      return this.isDomain ? "Enter domain, like 'kb.dk'" : "Enter host, like 'pro.kb.dk'"
+    }
   }
 }
 </script>

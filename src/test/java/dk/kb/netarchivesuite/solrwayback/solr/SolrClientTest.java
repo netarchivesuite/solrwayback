@@ -164,7 +164,7 @@ public class SolrClientTest {
     Date start= new Date(System.currentTimeMillis()-25L*365*86400*1000); //25 years ago
     Date end = new Date();
 
-    List<FacetCount>  fc = solr.getDomainFacets("denstoredanske.dk",20, true, start,end);      
+    List<FacetCount>  fc = solr.getLinksFacets("denstoredanske.dk", true, 20, true, start, end);
 
     for (FacetCount f : fc){
       System.out.println(f.getValue() +" : " +f.getCount());
@@ -180,7 +180,7 @@ public class SolrClientTest {
     Date start= new Date(System.currentTimeMillis()-25L*365*86400*1000); //25 years ago
     Date end = new Date();
 
-    List<FacetCount>  fc = solr.getDomainFacetsIngoing("denstoredanske.dk",10000, start,end);      
+    List<FacetCount>  fc = solr.getLinksFacetsIngoing("denstoredanske.dk", true, 10000, start, end);
 
     for (FacetCount f : fc){
       System.out.println(f.getValue() +" : " +f.getCount());

@@ -15,11 +15,11 @@
         <button :class="currentTool === 'wordcloud' ? 'activeTool' : ''" @click="setCurrentTool('wordcloud')">
           Wordcloud
         </button>
+        <button :class="currentTool === 'stats' ? 'activeTool' : ''" @click="setCurrentTool('stats')">
+          Stats
+        </button>
         <button :class="currentTool === 'linkgraph' ? 'activeTool' : ''" @click="setCurrentTool('linkgraph')">
           Link graph
-        </button>
-        <button :class="currentTool === 'domainstats' ? 'activeTool' : ''" @click="setCurrentTool('domainstats')">
-          Domain stats
         </button>
         <button :class="currentTool === 'gephiexport' ? 'activeTool' : ''" @click="setCurrentTool('gephiexport')">
           Link graph Gephi export
@@ -31,7 +31,7 @@
       </div>
       <wordcloud v-if="currentTool === 'wordcloud'" />
       <link-graph v-if="currentTool === 'linkgraph'" />
-      <domain-stats v-if="currentTool === 'domainstats'" />
+      <domain-stats v-if="currentTool === 'stats'" />
       <gephi-export v-if="currentTool === 'gephiexport'" />
       <ngram-netarchive v-if="currentTool === 'ngramnetarchive'" />
     </div>

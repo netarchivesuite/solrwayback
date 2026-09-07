@@ -252,14 +252,15 @@ public class Facade {
 
     /**
      * Get statistics for a specific domain.
-     * @param domain the domain to get statistics for, e.g. "example.com".
+     * @param target the domain or host to get statistics for, e.g. "example.com".
+     * @param isDomain true if the statics are for the domain, false if they are for the host
      * @param start the start date for the statistics, in ISO format (YYYY-MM-DD).
      * @param end the end date for the statistics, in ISO format (YYYY-MM-DD).
      * @param scale the time scale for the statistics, e.g. "day", "month", "year".
-     * @return a List of DomainStatistics objects containing the statistics for the domain.
+     * @return a List of DomainStatistics objects containing the statistics for the domain (or host).
      */
-    public static List<DomainStatistics> statisticsDomain(String domain, LocalDate start, LocalDate end, String scale) throws Exception {
-        log.info("Statistics for domain: " + domain + ", startdate:" + start.toString() + ", enddate:" + end.toString() + ", timescale:" + scale);
+    public static List<DomainStatistics> statisticsDomainHost(String target, Boolean isDomain, LocalDate start, LocalDate end, String scale) throws Exception {
+        log.info("Statistics for target: " + target + ", startdate:" + start.toString() + ", enddate:" + end.toString() + ", timescale:" + scale);
 
         List<DomainStatistics> stats = new ArrayList<>();
         String dateStr = "";
@@ -269,7 +270,7 @@ public class Facade {
             dateStr = period.first().format(DateTimeFormatter.ISO_DATE);
             nextDateStr = period.second().format(DateTimeFormatter.ISO_DATE);
             
-            DomainStatistics stat = NetarchiveSolrClient.getInstance().domainStatistics(domain, dateStr, nextDateStr);
+            DomainStatistics stat = NetarchiveSolrClient.getInstance().statisticsDomainHost(target, isDomain, dateStr, nextDateStr);
             stats.add(stat);
         }
         return stats;
@@ -464,10 +465,16 @@ public class Facade {
     /*
      * Can be deleted when frontend has switched
      */
-    public static BufferedImage wordCloudForDomain(String domain) throws Exception {
-        log.info("getting wordcloud for url:" + domain);
-        String query = "domain:\"" + domain + "\"";
-        String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query,null); // Only contains the required fields for this method
+    public static BufferedImage wordCloud(String target, boolean isDomain) throws Exception {
+        log.info("getting wordcloud for url: {}", target);
+
+        String query;
+        if (isDomain) {
+            query = "domain:\"" + target + "\"";
+        } else {
+            query = "host:\"" + target + "\"";
+        }
+        String text = NetarchiveSolrClient.getInstance().getConcatedTextFromHtmlForQuery(query, null); // Only contains the required fields for this method
         BufferedImage bufferedImage = WordCloudImageGenerator.wordCloudForDomain(text);
 
         return bufferedImage;
@@ -778,25 +785,25 @@ public class Facade {
     }
 
 
-    public static D3Graph waybackgraph(String domain, int facetLimit, boolean ingoing, String dateStart, String dateEnd) throws Exception {
+    public static D3Graph waybackgraph(String target, boolean isDomain, int facetLimit, boolean ingoing, String dateStart, String dateEnd) throws Exception {
 
 
         Date start = new Date(Long.valueOf(dateStart));
         Date end = new Date(Long.valueOf(dateEnd));
 
-        log.info("Creating graph for domain:" + domain + " ingoing:" + ingoing + " and facetLimit:" + facetLimit +" start:"+start +" end:"+end);
+        log.info("Creating graph for target:" + target + " ingoing:" + ingoing + " and facetLimit:" + facetLimit + " start:" +start + " end:" + end);
 
-        List<FacetCount> facets = NetarchiveSolrClient.getInstance().getDomainFacets(domain, facetLimit, ingoing, start, end);
+        List<FacetCount> facets = NetarchiveSolrClient.getInstance().getLinksFacets(target, isDomain, facetLimit, ingoing, start, end);
 
 
         HashMap<String, List<FacetCount>> domainFacetMap = new HashMap<String, List<FacetCount>>();
         // Also find facet for all facets from first call.
-        domainFacetMap.put(domain, facets); // add this center domain
+        domainFacetMap.put(target, facets); // add this center domain
 
         // Do all queries
         for (FacetCount f : facets) {
             String facetDomain = f.getValue();
-            List<FacetCount> fc = NetarchiveSolrClient.getInstance().getDomainFacets(facetDomain, facetLimit, ingoing, start, end);
+            List<FacetCount> fc = NetarchiveSolrClient.getInstance().getLinksFacets(facetDomain, isDomain, facetLimit, ingoing, start, end);
             domainFacetMap.put(f.getValue(), fc);
         }
 
@@ -811,7 +818,7 @@ public class Facade {
         }
 
 
-        D3Graph g = mapDomainsToD3LinkGraph(domain, ingoing, domainFacetMap, allDomains);
+        D3Graph g = mapDomainsToD3LinkGraph(target, ingoing, domainFacetMap, allDomains);
         return g;
     }
 

@@ -300,16 +300,30 @@ public class SolrWaybackResourceWeb {
      */
     
     @GET
-    @Path("/wordcloud/domain")
+    @Path("/wordcloud/url")
     @Produces("image/png")
-    public Response  wordCloudForDomain(@QueryParam("domain") String domain) throws SolrWaybackServiceException {
-      try {                        
-          BufferedImage image = Facade.wordCloudForDomain(domain);           
-          return convertToPng(image);
-          
-      } catch (Exception e) {           
-        throw handleServiceExceptions(e);
-      }
+    public Response wordCloud(@QueryParam("domain") String domain, @QueryParam("host") String host) throws SolrWaybackServiceException {
+        try {
+            String target = null;
+            boolean isDomain = true;
+            if (domain != null && host != null) {
+                throw new InvalidArgumentServiceException("Use either domain or host, not both.");
+            }
+            if (domain != null) {
+                target = domain;
+                isDomain = true;
+            } else if (host != null) {
+                target = host;
+                isDomain = false;
+            } else {
+                throw new InvalidArgumentServiceException("Either domain or host is required.");
+            }
+            BufferedImage image = Facade.wordCloud(target, isDomain);
+            return convertToPng(image);
+            
+        } catch (Exception e) {
+            throw handleServiceExceptions(e);
+        }
     }
 
     @GET
@@ -496,31 +510,48 @@ public class SolrWaybackResourceWeb {
     @GET
     @Path("/tools/linkgraph")
     @Produces(MediaType.APPLICATION_JSON)
-    public D3Graph waybackgraph(@QueryParam("domain") String domain, @QueryParam("ingoing") Boolean ingoing, @QueryParam("facetLimit") Integer facetLimit, @QueryParam("dateStart") String dateStart, @QueryParam("dateEnd") String dateEnd) throws SolrWaybackServiceException {
-      try{        
-        int fLimit =10;//Default
-        boolean in=false;//Default
-        if (facetLimit != null){
-          fLimit=facetLimit.intValue();
-        }
-        if(ingoing != null){
-          in=ingoing.booleanValue();
-        }
+    public D3Graph waybackgraph(@QueryParam("domain") String domain, @QueryParam("host") String host,
+            @QueryParam("ingoing") Boolean ingoing, @QueryParam("facetLimit") Integer facetLimit,
+            @QueryParam("dateStart") String dateStart, @QueryParam("dateEnd") String dateEnd)
+            throws SolrWaybackServiceException {
+        try {
+            String target = null;
+            boolean isDomain = true;
+            if (domain != null && host != null) {
+                throw new InvalidArgumentServiceException("Use either domain or host, not both.");
+            }
+            if (domain != null) {
+                target = domain;
+                isDomain = true;
+            } else if (host != null) {
+                target = host;
+                isDomain = false;
+            } else {
+                throw new InvalidArgumentServiceException("Either domain or host is required.");
+            }
+            int fLimit = 10;// Default
+            boolean in = false;// Default
+            if (facetLimit != null) {
+                fLimit = facetLimit.intValue();
+            }
+            if (ingoing != null) {
+                in = ingoing.booleanValue();
+            }
 
-        // Default dates if not in input        
-       if (dateStart == null) {
-          int startYear=PropertiesLoaderWeb.ARCHIVE_START_YEAR;        
-          dateStart = ""+new GregorianCalendar(startYear, 00, 1).getTime();
-       }
-       if (dateEnd== null) {
-           dateEnd=""+System.currentTimeMillis();
-       }
-        
-        return Facade.waybackgraph(domain, fLimit,in,dateStart,dateEnd);        
+            // Default dates if not in input
+            if (dateStart == null) {
+                int startYear = PropertiesLoaderWeb.ARCHIVE_START_YEAR;
+                dateStart = "" + new GregorianCalendar(startYear, 00, 1).getTime();
+            }
+            if (dateEnd == null) {
+                dateEnd = "" + System.currentTimeMillis();
+            }
 
-      } catch (Exception e) {
-        throw handleServiceExceptions(e);
-      }
+            return Facade.waybackgraph(target, isDomain, fLimit, in, dateStart, dateEnd);
+
+        } catch (Exception e) {
+            throw handleServiceExceptions(e);
+        }
 
     }
     

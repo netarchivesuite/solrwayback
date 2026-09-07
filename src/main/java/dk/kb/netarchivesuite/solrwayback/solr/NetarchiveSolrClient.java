@@ -150,56 +150,62 @@ public class NetarchiveSolrClient {
 
 
     /**
-     * Retrieve domain facets for a given domain.
+     * Retrieve domain/host facets for a given domain/host.
      * <p>
-     * This method delegates to either {@link #getDomainFacetsIngoing(String, int, Date, Date)} or
-     * {@link #getDomainFacetsOutgoing(String, int, Date, Date)} depending on the {@code ingoing} flag.
-     * @param domain to get facets for
+     * This method delegates to either {@link #getLinksFacetsIngoing(String, boolean, int, Date, Date)} or
+     * {@link #getLinksFacetsOutgoing(String, boolean, int, Date, Date)} depending on the {@code ingoing} flag.
+     * @param target or host to get facets for
+     * @param isDomain to determinate if it's a domain or an host
      * @param facetLimit the maximum number of facet values to return
-     * @param ingoing if true, return domains that link to {@code domain}; if false, return domains that {@code domain} links to
+     * @param ingoing if true, return domains/hosts that link to {@code target}; if false, return domains that {@code target} links to
      * @param crawlDateStart start of crawl date range (inclusive)
      * @param crawlDateEnd end of crawl date range (inclusive)
      * @return list of {@link FacetCount} objects representing facet values and counts
      */
-    public List<FacetCount> getDomainFacets(String domain, int facetLimit, boolean ingoing, Date crawlDateStart, Date crawlDateEnd) throws Exception {
+    public List<FacetCount> getLinksFacets(String target, boolean isDomain, int facetLimit, boolean ingoing, Date crawlDateStart, Date crawlDateEnd) throws Exception {
 
         if (ingoing) {
-            return getDomainFacetsIngoing(domain, facetLimit, crawlDateStart, crawlDateEnd);
+            return getLinksFacetsIngoing(target, isDomain, facetLimit, crawlDateStart, crawlDateEnd);
         } else {
-            return getDomainFacetsOutgoing(domain, facetLimit, crawlDateStart, crawlDateEnd);
+            return getLinksFacetsOutgoing(target, isDomain, facetLimit, crawlDateStart, crawlDateEnd);
         }
     }
 
     /**
-     * Returns a list of domains that link to the provided {@code domain} within the given crawl date range.
-     * The method executes a facet query on the {@code domain} field for documents that contain
-     * {@code links_domains:"<domain>"} while excluding documents where {@code domain} equals the provided
-     * {@code domain} (to avoid self-links).
+     * Returns a list of domains or hosts that link to the provided {@code target} within the given crawl date range.
+     * The method executes depending on the parameter {@code isDomain} :
+     * <ul><li>a facet query on the {@code domain} field for documents that contain {@code links_domains:"<target>"} 
+     * while excluding documents where {@code domain} equals the provided {@code target} (to avoid self-links),</li>
+     * <li>a facet query on the {@code host} field for documents that contain {@code links_hosts:"<target>"} 
+     * while excluding documents where {@code host} equals the provided {@code target} (to avoid self-links)</li></ul>
      *
-     * @param domain to find incoming links for
+     * @param target to find incoming links for
+     * @param isDomain to determinate if it's a domain or an host
      * @param facetLimit maximum number of facet values to return
      * @param crawlDateStart start of crawl date range (inclusive)
      * @param crawlDateEnd end of crawl date range (inclusive)
-     * @return list of {@link FacetCount} with domain names and counts
+     * @return list of {@link FacetCount} with domain/host names and counts
      */
-    public List<FacetCount> getDomainFacetsIngoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception {
+    public List<FacetCount> getLinksFacetsIngoing(String target, boolean isDomain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception {
+
+        String parameter = isDomain ? "domain" : "host";
 
         String dateStart = DateUtils.getSolrDate(crawlDateStart);
         String dateEnd = DateUtils.getSolrDate(crawlDateEnd);
 
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("links_domains:\"" + domain + "\" AND -domain:\"" + domain + "\"");
+        solrQuery.setQuery("links_" + parameter + "s:\"" + target + "\" AND -" + parameter + ":\"" + target + "\"");
 
         solrQuery.setRows(0);
         solrQuery.set("facet", "true");
-        solrQuery.add("facet.field", "domain");
+        solrQuery.add("facet.field", parameter);
         solrQuery.add("facet.limit", "" + facetLimit);
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
 
         solrQuery.add("fl","id");
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
-        List<FacetCount> facetList = new ArrayList<FacetCount>();
-        FacetField facet = rsp.getFacetField("domain");
+        List<FacetCount> facetList = new ArrayList<>();
+        FacetField facet = rsp.getFacetField(parameter);
         for (Count c : facet.getValues()) {
             FacetCount fc = new FacetCount();
             fc.setValue(c.getName());
@@ -210,36 +216,41 @@ public class NetarchiveSolrClient {
     }
 
     /**
-     * Returns a list of domains that the provided {@code domain} links to within the given crawl date range.
-     * The method facets on the {@code links_domains} field for documents where {@code domain:"<domain>"}.
+     * Returns a list of domains that the provided {@code target} links to within the given crawl date range.
+     * Depending on the parameter {@code isDomain},the method facets 
+     * <ul><li>on the {@code links_domains} field for documents where {@code domain:"<target>"}. if {@code isDomain} is true</li>
+     * <li>on the {@code links_hosts} field for documents where {@code host:"<target>"}. if {@code isDomain} is false</li></ul>
      *
-     * @param domain to find outgoing links for
+     * @param target to find outgoing links for
+     * @param isDomain to determinate if it's a domain or an host
      * @param facetLimit maximum number of facet values to return
      * @param crawlDateStart start of crawl date range (inclusive)
      * @param crawlDateEnd end of crawl date range (inclusive)
-     * @return list of {@link FacetCount} with domain names and counts
+     * @return list of {@link FacetCount} with domain/host names and counts
      */
-    public List<FacetCount> getDomainFacetsOutgoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception {
+    public List<FacetCount> getLinksFacetsOutgoing(String target, boolean isDomain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception {
+
+        String parameter = isDomain ? "domain" : "host";
 
         String dateStart = DateUtils.getSolrDate(crawlDateStart);
         String dateEnd = DateUtils.getSolrDate(crawlDateEnd);
 
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("domain:\"" + domain + "\"");
+        solrQuery.setQuery(parameter + ":\"" + target + "\"");
 
         solrQuery.setRows(0);
         solrQuery.set("facet", "true");
-        solrQuery.add("facet.field", "links_domains");
+        solrQuery.add("facet.field", "links_" + parameter + "s");
         solrQuery.add("facet.limit", "" + (facetLimit + 1)); // +1 because itself will be removed and is almost certain of resultset is self-linking
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
         solrQuery.add("fl","id");                                                                                                                                                                  // request
         QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not cache
-        List<FacetCount> facetList = new ArrayList<FacetCount>();
-        FacetField facet = rsp.getFacetField("links_domains");
+        List<FacetCount> facetList = new ArrayList<>();
+        FacetField facet = rsp.getFacetField("links_" + parameter + "s");
 
         // We have to remove the domain itself.
         for (Count c : facet.getValues()) {
-            if (!c.getName().equalsIgnoreCase(domain)) {
+            if (!c.getName().equalsIgnoreCase(target)) {
                 FacetCount fc = new FacetCount();
                 fc.setValue(c.getName());
                 fc.setCount(c.getCount());
@@ -1608,32 +1619,42 @@ public class NetarchiveSolrClient {
         }
     }
 
-    /*
+    /**
      * Uses the stats component and hyperloglog for ultra fast performance instead
      * of grouping, which does not work well over many shards.
      * <p>
-     * Extract statistics for a given domain and year. Number of unique pages (very
-     * precise due to hyperloglog) Number of ingoing links (very precise due to
-     * hyperloglog) Total size (of the unique pages). (not so precise due, tests
-     * show max 10% error, less for if there are many pages)
+     * Extract statistics for a given domain or host and year. 
+     * Number of unique pages (very precise due to hyperloglog).
+     * Number of ingoing links (very precise due to hyperloglog).
+     * Total size (of the unique pages). (not so precise due, tests show max 10% error, less for if there are many pages).
+     * </p>
+     * @param target or host to get statistics for
+     * @param isDomain to determinate if it's a domain or an host
+     * @param startDate used to limit crawl dates returned
+     * @param endDate used to limit crawl dates returned
+     * @return {@link DomainStatistics} statistics for domain or host
      */
-    public DomainStatistics domainStatistics(String domain, String startDate, String endDate) throws Exception {
+    public DomainStatistics statisticsDomainHost(String target, Boolean isDomain, String startDate, String endDate) throws Exception {
 
         DomainStatistics stats = new DomainStatistics();
         stats.setDate(startDate);
-        stats.setDomain(domain);
+        stats.setDomain(target);
 
-        String searchString = "domain:\"" + domain + "\"";
+        String searchField = "domain";
+        if (Boolean.FALSE.equals(isDomain)) {
+            searchField = "host";
+        }
+        String searchString = searchField + ":\"" + target + "\"";
 
         QueryResponse statsResponse = getStatsResponse(startDate, endDate, searchString);
 
         Map<String, FieldStatsInfo> statsMap = statsResponse.getFieldStatsInfo();
         addSolrStatsToDomainStatisticsObject(statsMap, stats);
 
-        QueryResponse linksStatsResponse = getLinksStatsResponse(domain, startDate, endDate);
+        QueryResponse linksStatsResponse = getLinksStatsResponse(target, startDate, endDate, isDomain);
         Map<String, FieldStatsInfo> stats2 = linksStatsResponse.getFieldStatsInfo();
 
-        FieldStatsInfo statsLinks = stats2.get("domain");
+        FieldStatsInfo statsLinks = stats2.get(searchField);
         long links_cardinality = statsLinks.getCardinality();
         stats.setIngoingLinks((int) links_cardinality);
 
@@ -1670,17 +1691,21 @@ public class NetarchiveSolrClient {
      * @param endDate used to limit crawl dates returned.
      * @return a {@link QueryResponse} object with SolrStats available for ingoing links
      */
-    private static QueryResponse getLinksStatsResponse(String domain, String startDate, String endDate) throws SolrServerException, IOException {
+    private static QueryResponse getLinksStatsResponse(String domain, String startDate, String endDate, Boolean isDomain) throws SolrServerException, IOException {
         // Links
-        String searchString = "domain:\"" + domain + "\"";
+    	String searchField = "domain";
+        if (Boolean.FALSE.equals(isDomain)) {
+            searchField = "host";
+        }
+        String searchString = searchField + ":\"" + domain + "\"";
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("links_domains:\"" + domain + "\" -" + searchString); // links to, but not from same domain
+        solrQuery.setQuery("links_"+ searchField +"s:\"" + domain + "\" -" + searchString); // links to, but not from same domain
         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
         solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + "T23:59:59Z]");
         solrQuery.setRows(0);
         solrQuery.add("stats", "true");
         solrQuery.add("fl", "id");
-        solrQuery.add("stats.field", "{!cardinality=true}domain"); // Important, use cardinality and not unique.
+        solrQuery.add("stats.field", "{!cardinality=true}"+ searchField); // Important, use cardinality and not unique.
         return solrServer.query(solrQuery);
     }
 

@@ -6,23 +6,36 @@
     <div class="wordcloudContainer">
       <div class="wordcloudExplanation">
         <input v-model="domain"
-               placeholder="Enter domain, like 'kb.dk'"
+               :placeholder="getPlaceholder()"
                :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
-               @keyup.enter="setDomainImage()">
-        <button :disabled="loadingImage" class="wordcloudButton" @click.prevent="setDomainImage()">
+               @keyup.enter="setWordcloudImage()">
+        <div class="domainHostChoiceSettings">
+          <div class="domainHostChoiceContainer contain">
+            <label class="domainHostChoiceLabel label">Search for:</label>
+            <input id="domainHostChoiceRadioOne" v-model="isDomain" type="radio" :value="true">
+            <label class="label" for="domainHostChoiceRadioOne">domain</label>
+            <input id="domainHostChoiceRadioTwo" v-model="isDomain" type="radio" :value="false">
+            <label class="label" for="domainHostChoiceRadioTwo">host</label>
+          </div>
+        </div>
+        <button :disabled="loadingImage" class="wordcloudButton" @click.prevent="setWordcloudImage()">
           Create wordcloud
         </button>
         <br>
         <p>
-          Simply enter the domain you wish to see a wordcloud of, and generate the wordcloud. The image is generated in real time, so it might take some time.
+          Enter the domain or the host you wish to see a wordcloud of, and generate the wordcloud. The image is generated in real time, so it might take some time.
         </p>
         <br>
         <p>
-          The domain entered must be without http://www, and only contain the trailing domain, like 'kb.dk' or 'statsbiblioteket.dk'.
+          The domain entered must be without http://www, and only contain the trailing domain, like 'kb.dk'.
         </p>
         <br>
         <p>
-          If the image returned is black, it simply means the archive holds no data on the entered domain.
+          The host entered must also be without http:// or www, and only contain the trailing host, like 'pro.kb.dk'.
+        </p>
+        <br>
+        <p>
+          If the image returned is black, it simply means the archive holds no data on the entered domain or host.
         </p>
       </div>
       <div class="imgContainer">
@@ -48,18 +61,25 @@ export default {
   data() {
     return {
       domain:'',
+      isDomain: true,
       imgSrc:'',
       loadingImage:false
     }
   },
   mounted () {
-    this.domain = '',
+    this.domain = ''
     this.imgSrc = ''
+    this.isDomain = true
+
   },
   methods: {
-    setDomainImage() {
+    setWordcloudImage() {
         this.loadingImage = true
-        this.imgSrc = 'services/frontend/wordcloud/domain?domain=' + this.domain + '&time=' + new Date().getTime()
+        const paramName = this.isDomain ? 'domain' : 'host'
+        this.imgSrc = `services/frontend/wordcloud/url?${paramName}=${encodeURIComponent(this.domain)}&time=${Date.now()}`
+    },
+    getPlaceholder() {
+      return this.isDomain ? "Enter domain, like 'kb.dk'" : "Enter host, like 'pro.kb.dk'"
     },
     doneLoading() {
     this.loadingImage = false
