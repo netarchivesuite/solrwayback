@@ -133,8 +133,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
   }
   
   private static String generateToolbarHtml(ParseResult htmlParsed, WaybackStatistics stats, String source_file_path, long offset) throws Exception{
-    
-  
+     
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     Date d = dateFormat.parse(stats.getHarvestDate());
         
@@ -262,8 +261,41 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     loadTrackingScript() +
     "       </script>" +
     "   </div>" +
+    "   <script type=\"text/javascript\">" +
+    generateLocationShimScript() +
+    "   </script>" +      
     "<!-- END WAYBACK TOOLBAR INSERT -->";
   return inject;
+  }
+  
+  private static String generateLocationShimScript() {
+      return
+      "   window._WB_wombat_location = (function() {" +
+      "       var marker = '/services/web/';" +
+      "       function ctx() {" +
+      "           var href = window.location.href;" +
+      "           var idx = href.indexOf(marker);" +
+      "           if (idx === -1) { return null; }" +
+      "           var after = href.substring(idx + marker.length);" +
+      "           var slashIdx = after.indexOf('/');" +
+      "           if (slashIdx === -1) { return null; }" +
+      "           return { prefix: href.substring(0, idx + marker.length), ts: after.substring(0, slashIdx), orig: after.substring(slashIdx + 1) };" +
+      "       }" +
+      "       function toPlayback(target) {" +
+      "           var c = ctx();" +
+      "           if (!c) { return target; }" +
+      "           try { return c.prefix + c.ts + '/' + new URL(target, c.orig).href; }" +
+      "           catch (e) { return target; }" +
+      "       }" +
+      "       return {" +
+      "           get href() { var c = ctx(); return c ? c.orig : window.location.href; }," +
+      "           set href(url) { window.location.href = toPlayback(url); }," +
+      "           assign: function(url) { window.location.assign(toPlayback(url)); }," +
+      "           replace: function(url) { window.location.replace(toPlayback(url)); }," +
+      "           toString: function() { var c = ctx(); return c ? c.orig : window.location.href; }" +
+      "       };" +
+      "   })();" +
+      "   document._WB_wombat_location = window._WB_wombat_location;";
   }
   
   private static String generateWaybackLinkFromCrawlDateAndUrl(String url, String crawlDate) throws Exception{

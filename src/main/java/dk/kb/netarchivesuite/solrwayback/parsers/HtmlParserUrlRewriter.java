@@ -56,6 +56,9 @@ public class HtmlParserUrlRewriter {
     //replacing urls that points into the world outside solrwayback because they are never harvested
     public static final String NOT_FOUND_LINK = PropertiesLoader.WAYBACK_BASEURL + "services/notfound/";
 
+    
+    
+    
     public static void main(String[] args) throws Exception{
         //		String css= new String(Files.readAllBytes(Paths.get("/home/teg/gamespot.css")));
 
@@ -276,18 +279,34 @@ public class HtmlParserUrlRewriter {
 
     private static void rewriteInlineScripts(
             Document doc, String crawlDate, Map<String, IndexDocShort> urlReplaceMap) {
-        processElement(doc, "script", null, (content) -> {
+        for (Element scriptEl : doc.select("script")) {
+            String type = scriptEl.attr("type");
+            if (!type.isEmpty() && !isJavaScriptType(type)) {
+                continue; // e.g. application/json templates - not executable JS, don't rewrite
+            }
+            String content = scriptEl.data();
+            if (content == null || content.trim().isEmpty()) {
+                continue;
+            }
             try {
                 ParseResult scriptResult = ScriptRewriter.getInstance().replaceLinks(
                         content, doc.baseUri(), crawlDate, urlReplaceMap, RewriterBase.PACKAGING.inline, true);
-                return scriptResult.getReplaced();
+                String newContent = scriptResult.getReplaced();
+                if (newContent != null && !newContent.equals(content)) {
+                    scriptEl.html(newContent.replace("\n", RewriterBase.NEWLINE_PLACEHOLDER));
+                }
             } catch (Exception e) {
                 log.warn("Exception while parsing inline script for " + doc.baseUri() + " " + crawlDate, e);
-                return content;
             }
-        });
+        }
     }
 
+    private static boolean isJavaScriptType(String type) {
+        String t = type.trim().toLowerCase();
+        return t.isEmpty() || t.equals("text/javascript") || t.equals("application/javascript")
+                || t.equals("module") || t.equals("text/babel") || t.equals("application/ecmascript");
+    }
+    
     /**
      * Generic transformer creator that normalises the incoming URL and return a link to an archived version,
      * if such a version exists. Else a {@code notfound} link is returned.

@@ -31,6 +31,48 @@ import java.util.regex.Pattern;
 public class ScriptRewriter extends RewriterBase {
     private static Log log = LogFactory.getLog(ScriptRewriter.class);
 
+    // ... existing JSON_KEY_PATTERN, JSON_XML_BASEURL_PATTERN, instance, getInstance() unchanged ...
+
+    // --- location / navigation rewriting (JS-source level) ---
+    // Rewrites direct references to the unforgeable `location` object so they resolve to
+    // `_WB_wombat_location` at runtime instead - a plain, patchable object injected by the
+    // wayback toolbar. This is necessary because Location.prototype.href/assign/replace are
+    // spec-mandated [LegacyUnforgeable] and cannot be monkey-patched at runtime in a
+    // standards-compliant browser (confirmed empirically: Firefox throws
+    // "TypeError: can't redefine non-configurable property \"href\"").
+    //
+    // Order matters: each pattern is applied to the result of the previous one, so
+    // window./document./this.location are consumed first, leaving only genuinely bare
+    // `location` tokens for the remaining two patterns.
+    private static final Pattern LOC_WINDOW_PATTERN     = Pattern.compile("\\bwindow\\.location\\b");
+    private static final Pattern LOC_DOCUMENT_PATTERN   = Pattern.compile("\\bdocument\\.location\\b");
+    private static final Pattern LOC_THIS_PATTERN       = Pattern.compile("\\bthis\\.location\\b");
+    private static final Pattern LOC_BARE_PROP_PATTERN  = Pattern.compile("\\blocation\\.");
+    private static final Pattern LOC_BARE_ASSIGN_PATTERN = Pattern.compile("\\blocation\\s*=(?!=)");
+
+    /**
+     * Rewrites direct JS-source references to {@code location} (window/document/this/bare) so
+     * they resolve to the {@code _WB_wombat_location} shim at runtime instead of the real,
+     * unforgeable {@code Location} object. This lets page-jump-style widgets - and any other
+     * script performing client-side navigation via {@code location.href = ...} or
+     * {@code location.assign(...)} - be redirected back into playback instead of leaking to
+     * the live web.
+     * <p>
+     * Best-effort regex substitution, not a full JS parse - shares pywb's known limitation:
+     * it will not catch access via an alias (e.g. {@code var l = window.location; l.href = x}),
+     * only direct textual references to {@code location}.
+     * @param content JavaScript source.
+     * @return content with location references rewritten to the wombat shim.
+     */
+    public static String rewriteLocationReferences(String content) {
+        content = LOC_WINDOW_PATTERN.matcher(content).replaceAll("window._WB_wombat_location");
+        content = LOC_DOCUMENT_PATTERN.matcher(content).replaceAll("document._WB_wombat_location");
+        content = LOC_THIS_PATTERN.matcher(content).replaceAll("this._WB_wombat_location");
+        content = LOC_BARE_PROP_PATTERN.matcher(content).replaceAll("_WB_wombat_location.");
+        content = LOC_BARE_ASSIGN_PATTERN.matcher(content).replaceAll("_WB_wombat_location.href =");
+        return content;
+    }
+    
 	// TODO: How about escaped " in the values?
 	private static Pattern JSON_KEY_PATTERN = Pattern.compile(
 			"(?s)\"?(?:href|uri|url|playable_url_dash|playable_url|playable_url_quality_hd)\"?\\s*[=:]\\s*\"([^\"]+)\"");
@@ -51,16 +93,20 @@ public class ScriptRewriter extends RewriterBase {
 		return PACKAGING.identity;
 	}
 
-	@Override
-	protected String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap) {
-		// NOTE: We could also use SOLRWAYBACK_SERVICE.downloadRaw to make a best-guess for URLs in scripts
-		UnaryOperator<String> rawURLTransformer =
-				createURLTransformer(baseURL, crawlDate, true,
-									 SOLRWAYBACK_SERVICE.fail, SOLRWAYBACK_SERVICE_FALLBACK.delay,
-									 null, urlMap);
-		UnaryOperator<String> rawProcessor = createProcessorChain(rawURLTransformer);
-		return rawProcessor.apply(content);
-	}
+
+@Override
+protected String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap) {
+    UnaryOperator<String> rawURLTransformer =
+            createURLTransformer(baseURL, crawlDate, true,
+                                 SOLRWAYBACK_SERVICE.fail, SOLRWAYBACK_SERVICE_FALLBACK.delay,
+                                 null, urlMap);
+    UnaryOperator<String> rawProcessor = createProcessorChain(rawURLTransformer);
+    content = rawProcessor.apply(content);
+    content = rewriteLocationReferences(content);
+    return content;
+}
+
+	
 
 	@Override
 	public Set<String> getResourceURLs(String content) {
