@@ -311,8 +311,6 @@ public class HtmlParserUrlRewriter {
 
     private static boolean isJavaScriptType(String type) {
         String t = type == null ? "" : type.trim().toLowerCase();
-      System.out.println("type t:"+t);
-      log.error("type t:"+t);
       return t.isEmpty() || t.equals("text/javascript") || t.equals("application/javascript")
                 || t.equals("module") || t.equals("text/babel") || t.equals("application/ecmascript");
     }
