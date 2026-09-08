@@ -94,17 +94,15 @@ public class ScriptRewriter extends RewriterBase {
 	}
 
 
-@Override
-protected String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap) {
-    UnaryOperator<String> rawURLTransformer =
-            createURLTransformer(baseURL, crawlDate, true,
+        @Override
+        protected String replaceLinks(String content, String baseURL, String crawlDate, Map<String, IndexDocShort> urlMap) {
+             UnaryOperator<String> rawURLTransformer =
+             createURLTransformer(baseURL, crawlDate, true,
                                  SOLRWAYBACK_SERVICE.fail, SOLRWAYBACK_SERVICE_FALLBACK.delay,
                                  null, urlMap);
-    UnaryOperator<String> rawProcessor = createProcessorChain(rawURLTransformer);
-    content = rawProcessor.apply(content);
-    content = rewriteLocationReferences(content);
-    return content;
-}
+            UnaryOperator<String> rawProcessor = createProcessorChain(rawURLTransformer);
+            return rawProcessor.apply(content);
+       }
 
 	
 

@@ -280,18 +280,26 @@ public class HtmlParserUrlRewriter {
     private static void rewriteInlineScripts(
             Document doc, String crawlDate, Map<String, IndexDocShort> urlReplaceMap) {
         for (Element scriptEl : doc.select("script")) {
-            String type = scriptEl.attr("type");
-            if (!type.isEmpty() && !isJavaScriptType(type)) {
-                continue; // e.g. application/json templates - not executable JS, don't rewrite
-            }
             String content = scriptEl.data();
             if (content == null || content.trim().isEmpty()) {
                 continue;
             }
             try {
+                // URL rewriting applies to every <script> tag unconditionally, including
+                // type="application/json" payloads - ScriptRewriter's JSON_KEY_PATTERN
+                // intentionally rewrites "uri"/"url" style JSON key-values too.
                 ParseResult scriptResult = ScriptRewriter.getInstance().replaceLinks(
                         content, doc.baseUri(), crawlDate, urlReplaceMap, RewriterBase.PACKAGING.inline, true);
                 String newContent = scriptResult.getReplaced();
+
+                // location -> _WB_wombat_location rewriting must only apply to actual executable
+                // JavaScript, never to JSON payloads, which may legitimately contain the literal
+                // text "location" as an unrelated JSON key or value.
+                String type = scriptEl.attr("type");
+                if (isJavaScriptType(type)) {
+                    newContent = ScriptRewriter.rewriteLocationReferences(newContent);
+                }
+
                 if (newContent != null && !newContent.equals(content)) {
                     scriptEl.html(newContent.replace("\n", RewriterBase.NEWLINE_PLACEHOLDER));
                 }
@@ -302,8 +310,10 @@ public class HtmlParserUrlRewriter {
     }
 
     private static boolean isJavaScriptType(String type) {
-        String t = type.trim().toLowerCase();
-        return t.isEmpty() || t.equals("text/javascript") || t.equals("application/javascript")
+        String t = type == null ? "" : type.trim().toLowerCase();
+      System.out.println("type t:"+t);
+      log.error("type t:"+t);
+      return t.isEmpty() || t.equals("text/javascript") || t.equals("application/javascript")
                 || t.equals("module") || t.equals("text/babel") || t.equals("application/ecmascript");
     }
     
