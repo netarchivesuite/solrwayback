@@ -240,6 +240,10 @@ public class HtmlParserUrlRewriter {
         processMultiAttribute(doc, "img", "data-srcset", rewriterRaw);
         processMultiAttribute(doc, "source", "srcset", rewriterRaw);
 
+        
+        processElement(doc, "video", "abs:src", rewriterRaw);
+        processElement(doc, "audio", "abs:src", rewriterRaw);
+        
         // Full content processing
         // TODO: Why the raw rewrite? Shouldn't this be view?
         UnaryOperator<String> rewriterRawAmpersand = (sourceURL) -> {
@@ -383,6 +387,9 @@ public class HtmlParserUrlRewriter {
         processElementRegexp(doc, "meta", null, collector, META_REFRESH_URL_PATTERN);
         processElementRegexp(doc, "*", "style", collector, STYLE_ELEMENT_BACKGROUND_PATTERN, CSS_URL_PATTERN);
 
+        processElement(doc, "video", "abs:src", collector);
+        processElement(doc, "audio", "abs:src", collector);
+        
         // Get URLs from the ScriptRewriter
         processElement(doc, "script", null, (content) -> {
             urlSet.addAll(ScriptRewriter.getInstance().getResourceURLs(content, baseURL));

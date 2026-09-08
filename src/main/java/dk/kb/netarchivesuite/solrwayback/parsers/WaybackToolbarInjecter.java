@@ -346,7 +346,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
       "   })();" +
       "   document._WB_wombat_location = window._WB_wombat_location;" +
       "   (function() {" +
-      "       function patchFrameSrc(proto) {" +
+      "       function patchSrcProperty(proto) {" +
       "           if (!proto) { return; }" +
       "           var desc = Object.getOwnPropertyDescriptor(proto, 'src');" +
       "           if (!desc || !desc.set || !desc.get) { return; }" +
@@ -358,18 +358,20 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
       "                   configurable: true" +
       "               });" +
       "           } catch (e) {" +
-      "               console.warn('SolrWayback: could not shim frame src for JS-navigation live-leak protection', e);" +
+      "               console.warn('SolrWayback: could not shim src property for JS-navigation live-leak protection', e);" +
       "           }" +
       "       }" +
-      "       patchFrameSrc(window.HTMLIFrameElement && window.HTMLIFrameElement.prototype);" +
-      "       patchFrameSrc(window.HTMLFrameElement && window.HTMLFrameElement.prototype);" +
+      "       patchSrcProperty(window.HTMLIFrameElement && window.HTMLIFrameElement.prototype);" +
+      "       patchSrcProperty(window.HTMLFrameElement && window.HTMLFrameElement.prototype);" +
+      "       patchSrcProperty(window.HTMLMediaElement && window.HTMLMediaElement.prototype);" + // covers both <video> and <audio>
       "   })();" +
       "   (function() {" +
       "       var realSetAttribute = Element.prototype.setAttribute;" +
+      "       var srcTags = { iframe: true, frame: true, video: true, audio: true, source: true };" +
       "       Element.prototype.setAttribute = function(name, value) {" +
       "           if (typeof name === 'string' && name.toLowerCase() === 'src') {" +
       "               var tag = this.tagName ? this.tagName.toLowerCase() : '';" +
-      "               if (tag === 'iframe' || tag === 'frame') {" +
+      "               if (srcTags[tag]) {" +
       "                   value = window._WB_wombat_toPlayback(value);" +
       "               }" +
       "           }" +
