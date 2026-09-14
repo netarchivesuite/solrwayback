@@ -1143,13 +1143,42 @@ public class NetarchiveSolrClient {
      * Notice here do we not fix url_norm
      */
     public IndexDoc findClosestHarvestTimeForUrl(String url, String timeStamp) throws Exception {
-        return findClosestHarvestTimeForUrl(url, timeStamp, 0);
+        return findClosestHarvestTimeForUrl(url, timeStamp, 0,null);
     }
     
     
-    
-    //Will follow redirects and return final URL that is not a redirect
-    private IndexDoc findClosestHarvestTimeForUrl(String url, String timeStamp, int redirectDepth) throws Exception {
+    /**
+     * Finds the harvested version of {@code url} that is closest in time to {@code timeStamp}, resolving
+     * redirects (HTTP 301, 302, 303, 307, 308) to their target document instead of returning the redirect
+     * record itself.
+     * <p>
+     * If the closest matching document is a redirect, this method follows {@code redirect_to_norm} and
+     * recurses to resolve the actual target, up to {@link #MAX_REDIRECT_DEPTH} hops. This guards against
+     * both a genuine redirect loop (e.g. A -&gt; B -&gt; A) and a data-normalization collision, where a
+     * redirect's target normalizes to the exact same {@code url_norm} as its own source record (e.g. a
+     * protocol-only redirect from {@code http://example.com/page} to {@code https://example.com/page}
+     * collapsing to the same normalized URL). In the latter case, {@code avoidId} ensures the redirect
+     * record is excluded from its own result set on the next call, so it cannot resolve to itself and
+     * loop.
+     *
+     * @param url       the URL to look up.
+     * @param timeStamp the target harvest time to match against, in the format {@code yyyy-MM-dd'T'HH:mm:ssZ}.
+     * @param redirectDepth the number of redirect hops already followed to reach this call. Starts at
+     *                      {@code 0} for the initial (public) call; incremented by 1 on each recursive
+     *                      redirect-following call. Once this reaches {@link #MAX_REDIRECT_DEPTH}, the
+     *                      method stops following further redirects and returns the redirect record as-is,
+     *                      to guard against an endless loop.
+     * @param avoidId   optional; the Solr {@code id} of a document that must not be returned by this call.
+     *                  Used only to break redirect loops: when following a redirect, the calling record's
+     *                  own {@code id} is passed as {@code avoidId} for the recursive call, so a redirect
+     *                  can never resolve back to itself even if its target normalizes to the exact same
+     *                  {@code url_norm} as its own record. Pass {@code null} when there is no record to
+     *                  avoid (e.g. the initial, non-recursive call).
+     * @return the closest matching {@link IndexDoc}, with any redirect already resolved to its target; or
+     *         {@code null} if no matching document exists.
+     * @throws Exception on a Solr query failure or a timestamp parsing failure.   
+     */
+    private IndexDoc findClosestHarvestTimeForUrl(String url, String timeStamp, int redirectDepth, String avoidId) throws Exception {
 
         if (url == null || timeStamp == null) {
             throw new IllegalArgumentException("harvestUrl or timeStamp is null"); // Can happen for url-rewrites that are not corrected
@@ -1158,13 +1187,12 @@ public class NetarchiveSolrClient {
         // normalize will remove last slash if not slashpage
         boolean slashLast = url.endsWith("/");
 
-        String urlNormQuery = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url); //TODO just call normal normaliser when legacy support is removed
+        String urlNormQuery = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);
 
-        // Was hardcoded to status_code:200, which meant a URL that only exists in the
-        // index as a redirect was never found at all. Broadened to include every
-        // redirect status SolrWayback can follow (see isRedirectStatus) so we can
-        // detect one and chase it down below. 303/307/308 included since SolrWayback
-        // always replays as GET, so their method-preservation semantics don't matter here.
+        // No status_code restriction: return whatever was actually captured closest
+        // in time -- 200, a 4xx/5xx error page, 204/205, etc. -- for historical
+        // accuracy. Redirects (301/302/303/307/308) are resolved to their target
+        // below rather than returned directly.
         String query = urlNormQuery;
 
         SolrQuery solrQuery = new SolrQuery();
@@ -1194,12 +1222,7 @@ public class NetarchiveSolrClient {
         }
         ArrayList<IndexDoc> indexDocs = SolrUtils.solrDocList2IndexDoc(docs);
 
-        // Return the one nearest
-        int bestIndex = 0; // This would be correct if solr could sort correct.
-        // Solr uses a precisionsStep you can define in schema.xml if you want precision
-        // to seconds. But this is not done in warc-indexer 3.0 schema.
-        // Instead we extract the top 10 and find the nearest but checking against all.
-
+        int bestIndex = -1; // -1 means: no eligible candidate found yet
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         long inputCrawlDate = dateFormat.parse(timeStamp).getTime(); // From the input
         long bestMatchDifference = Long.MAX_VALUE;
@@ -1207,6 +1230,12 @@ public class NetarchiveSolrClient {
         for (int i = 0; i < indexDocs.size(); i++) {
 
             IndexDoc doc = indexDocs.get(i);
+
+            if (avoidId != null && avoidId.equals(doc.getId())) {
+                log.info("Skipping solr id:" + doc.getId() + " for url:" + url + ", it is the redirect record we came from.");
+                continue;
+            }
+
             boolean docHasSlashLast = doc.getUrl().endsWith("/");
             // small hack to make sure http/https not are mixed. Protocol is not into the
             // schema yet. Would be nice if protocol was a field in schema
@@ -1229,7 +1258,7 @@ public class NetarchiveSolrClient {
             // the same.
             if (isRedirectStatus(doc.getStatusCode())) {
                 if (doc.getUrl().equals(url)) { // Do not return the same for redirect.
-                    log.warn("Stopping endless direct for url:" + url + " and found url:" + doc.getUrl());
+                    log.info("Stopping endless direct for url:" + url + " and found url:" + doc.getUrl());
                     continue; // skip
                 }
             }
@@ -1243,16 +1272,15 @@ public class NetarchiveSolrClient {
             }
         }
 
+        if (bestIndex == -1) {
+            return null;
+        }
         if (bestIndex != 0) {
             log.warn("Fixed Solr time sort bug, found a better match, # result:" + bestIndex);
         }
 
         IndexDoc best = indexDocs.get(bestIndex);
 
-        // Follow a redirect to its target instead of returning the redirect document
-        // itself, so a URL that only ever exists in the index as a redirect still
-        // resolves to real content. Capped at MAX_REDIRECT_DEPTH hops to guard
-        // against a redirect loop (e.g. A -> B -> A).
         if (isRedirectStatus(best.getStatusCode())) {
             String redirectTarget = best.getRedirectToNorm();
             if (redirectTarget == null || redirectTarget.isEmpty()) {
@@ -1264,7 +1292,7 @@ public class NetarchiveSolrClient {
                 return best;
             }
             log.info("Following redirect (status " + best.getStatusCode() + ") from url:" + url + " to:" + redirectTarget + " (hop " + (redirectDepth + 1) + ")");
-            IndexDoc resolved = findClosestHarvestTimeForUrl(redirectTarget, timeStamp, redirectDepth + 1);
+            IndexDoc resolved = findClosestHarvestTimeForUrl(redirectTarget, timeStamp, redirectDepth + 1, best.getId());
             return resolved != null ? resolved : best; // fall back to the redirect doc if nothing found downstream
         }
 
