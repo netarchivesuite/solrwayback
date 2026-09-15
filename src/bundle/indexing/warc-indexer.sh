@@ -30,7 +30,7 @@ THREADS_DEFAULT="2"
 
 : ${WARCS:="$@"}
 
-: ${INDEXER_JAR:="${WI_HOME}/warc-indexer-3.5.0-jar-with-dependencies.jar"}
+: ${INDEXER_JAR:="${WI_HOME}/warc-indexer-3.5.1-jar-with-dependencies.jar"}
 : ${INDEXER_MEM:="2048M"}
 : ${INDEXER_CONFIG:="${WI_HOME}/config3.conf"}
 : ${INDEXER_CUSTOM:=""} # Custom arguments, e.g. "--collection OurHeritage2020" goes here
