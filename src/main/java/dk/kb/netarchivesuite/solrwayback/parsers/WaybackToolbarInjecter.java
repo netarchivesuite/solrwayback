@@ -133,8 +133,7 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
   }
   
   private static String generateToolbarHtml(ParseResult htmlParsed, WaybackStatistics stats, String source_file_path, long offset) throws Exception{
-    
-  
+     
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     Date d = dateFormat.parse(stats.getHarvestDate());
         
@@ -262,8 +261,123 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
     loadTrackingScript() +
     "       </script>" +
     "   </div>" +
+    "   <script type=\"text/javascript\">" +
+    generateNavigationLeakShimScript() +
+    "   </script>" +      
     "<!-- END WAYBACK TOOLBAR INSERT -->";
   return inject;
+  }
+  
+  
+  
+  /**
+   * Builds an inline JavaScript block that protects SolrWayback playback against live leaks
+   * caused by client-side JavaScript navigation and frame manipulation, using the same
+   * technique as wombat.js (as used by pywb/OpenWayback): rather than modifying the real
+   * browser APIs directly, a small shim is interposed in front of each API so that calls
+   * meant for the live web are transparently redirected back into playback instead.
+   * <p>
+   * This is necessary because SolrWayback's static HTML/attribute rewriter (see
+   * {@link HtmlParserUrlRewriter}) can only rewrite URLs that are already present as literal
+   * text in the page or its scripts at rewrite time. URLs computed or assigned at runtime -
+   * e.g. in response to a button click - are invisible to it and, left unhandled, navigate or
+   * load directly against the live web instead of the archive.
+   * <p>
+   * Three objects are shimmed:
+   * <ol>
+   *     <li><b>{@code window.location} / {@code document.location}</b> - exposed to scripts as
+   *     {@code window._WB_wombat_location} (a plain, patchable object standing in for the real
+   *     one). This indirection is required because {@code Location.prototype.href},
+   *     {@code .assign()} and {@code .replace()} are specified as {@code [LegacyUnforgeable]}
+   *     and cannot be overridden directly on the real {@code Location} object in a
+   *     standards-compliant browser - confirmed empirically via a
+   *     {@code TypeError: can't redefine non-configurable property "href"} thrown by Firefox.
+   *     Scripts must therefore be rewritten at the source-text level to reference
+   *     {@code _WB_wombat_location} instead of {@code location} directly; see
+   *     {@link ScriptRewriter#rewriteLocationReferences}.</li>
+   *     <li><b>{@code HTMLIFrameElement.prototype.src} / {@code HTMLFrameElement.prototype.src}</b> -
+   *     patched directly via {@code Object.defineProperty}, since (unlike {@code Location}) this
+   *     property is ordinary and configurable. Catches dynamically created frames whose target
+   *     is set via JavaScript property assignment, e.g. {@code iframe.src = url}.</li>
+   *     <li><b>{@code Element.prototype.setAttribute}</b> - patched once, globally, since
+   *     {@code setAttribute} is shared across all element types rather than living per-element
+   *     like {@code .src} does. The wrapper only intervenes when the attribute name is
+   *     {@code src} and the target element is an {@code <iframe>} or {@code <frame>}; all other
+   *     calls pass through unmodified. Catches the same class of dynamic frame leak as above,
+   *     but via {@code iframe.setAttribute('src', url)} instead of the property - a separate
+   *     code path not covered by the property patch alone.</li>
+   * </ol>
+   * Known gaps, not covered by this shim: frames injected via {@code document.write()} with a
+   * literal {@code src} in the written markup (the HTML parser sets attributes directly while
+   * parsing, bypassing both the property and {@code setAttribute} patches above), and
+   * {@code setAttributeNS()}.
+   *
+   * @return a {@code <script>}-ready JavaScript string (without the surrounding {@code <script>}
+   *         tags) to be injected into every played-back page, before any of the page's own
+   *         scripts execute.
+   */
+  private static String generateNavigationLeakShimScript() {
+      return
+      "   window._WB_wombat_location = (function() {" +
+      "       var marker = '/services/web/';" +
+      "       function ctx() {" +
+      "           var href = window.location.href;" +
+      "           var idx = href.indexOf(marker);" +
+      "           if (idx === -1) { return null; }" +
+      "           var after = href.substring(idx + marker.length);" +
+      "           var slashIdx = after.indexOf('/');" +
+      "           if (slashIdx === -1) { return null; }" +
+      "           return { prefix: href.substring(0, idx + marker.length), ts: after.substring(0, slashIdx), orig: after.substring(slashIdx + 1) };" +
+      "       }" +
+      "       function toPlayback(target) {" +
+      "           var c = ctx();" +
+      "           if (!c) { return target; }" +
+      "           try { return c.prefix + c.ts + '/' + new URL(target, c.orig).href; }" +
+      "           catch (e) { return target; }" +
+      "       }" +
+      "       window._WB_wombat_toPlayback = toPlayback;" +
+      "       return {" +
+      "           get href() { var c = ctx(); return c ? c.orig : window.location.href; }," +
+      "           set href(url) { window.location.href = toPlayback(url); }," +
+      "           assign: function(url) { window.location.assign(toPlayback(url)); }," +
+      "           replace: function(url) { window.location.replace(toPlayback(url)); }," +
+      "           toString: function() { var c = ctx(); return c ? c.orig : window.location.href; }" +
+      "       };" +
+      "   })();" +
+      "   document._WB_wombat_location = window._WB_wombat_location;" +
+      "   (function() {" +
+      "       function patchSrcProperty(proto) {" +
+      "           if (!proto) { return; }" +
+      "           var desc = Object.getOwnPropertyDescriptor(proto, 'src');" +
+      "           if (!desc || !desc.set || !desc.get) { return; }" +
+      "           var realGet = desc.get, realSet = desc.set;" +
+      "           try {" +
+      "               Object.defineProperty(proto, 'src', {" +
+      "                   get: function() { return realGet.call(this); }," +
+      "                   set: function(url) { realSet.call(this, window._WB_wombat_toPlayback(url)); }," +
+      "                   configurable: true" +
+      "               });" +
+      "           } catch (e) {" +
+      "               console.warn('SolrWayback: could not shim src property for JS-navigation live-leak protection', e);" +
+      "           }" +
+      "       }" +
+      "       patchSrcProperty(window.HTMLIFrameElement && window.HTMLIFrameElement.prototype);" +
+      "       patchSrcProperty(window.HTMLFrameElement && window.HTMLFrameElement.prototype);" +
+      "       patchSrcProperty(window.HTMLMediaElement && window.HTMLMediaElement.prototype);" + // covers both <video> and <audio>
+      "   })();" +
+      "   (function() {" +
+      "       var realSetAttribute = Element.prototype.setAttribute;" +
+      "       var srcTags = { iframe: true, frame: true, video: true, audio: true, source: true };" +
+      "       Element.prototype.setAttribute = function(name, value) {" +
+      "           if (typeof name === 'string' && name.toLowerCase() === 'src') {" +
+      "               var tag = this.tagName ? this.tagName.toLowerCase() : '';" +
+      "               if (srcTags[tag]) {" +
+      "                   value = window._WB_wombat_toPlayback(value);" +
+      "               }" +
+      "           }" +
+      "           return realSetAttribute.call(this, name, value);" +
+      "       };" +
+      "   })();";
   }
   
   private static String generateWaybackLinkFromCrawlDateAndUrl(String url, String crawlDate) throws Exception{

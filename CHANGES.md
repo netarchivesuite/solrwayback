@@ -4,6 +4,18 @@
 ### Fixed
 * Fixed bug resolving redirect chain. Closing #https://github.com/netarchivesuite/solrwayback/issues/507
 
+- **Live-leak on client-side JavaScript navigation.** SolrWayback playback could leak to the live web when a page's own JavaScript changed navigation or frame targets after load, since these leaks occur at runtime and are invisible to the static HTML/attribute URL rewriter. Fixed using a wombat.js-style approach — inline and external JavaScript is rewritten at serve time so relevant browser APIs resolve to shim objects/functions instead of their native (in some cases unforgeable/non-patchable) equivalents, which then redirect through playback instead of the live site. Specific cases fixed:
+  - `location.href = url` / `location.assign()` / `location.replace()` in inline `<script>` blocks
+  - Same, in externally loaded `.js` files served via `downloadRaw`
+  - Dynamically created `<iframe>`/`<frame>` elements with `src` set via JavaScript property assignment (e.g. `iframe.src = url`)
+  - Same, when set via `setAttribute('src', url)` instead of the property
+
+### Known limitations (not yet covered)
+  - `<iframe>`/`<frame>` elements injected via `document.write()` with a literal `src` in the written markup
+  - `setAttributeNS()` (namespace-aware attribute setting)
+  - POST-request playback (separate, larger structural gap — not related to JavaScript rewriting and not fixable until Warc-Indexer does post-append)
+
+
 5.4.3
 -----
 
