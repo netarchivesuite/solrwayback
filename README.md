@@ -5,8 +5,8 @@
 
 
 
-## SolrWayback 5.4.3 software bundle has been released
-SolrWayback bundle release 5.4.3 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/download/5.4.3/solrwayback_package_5.4.3.zip
+## SolrWayback 5.5.0 software bundle has been released
+SolrWayback bundle release 5.5.0 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/download/5.5.0/solrwayback_package_5.5.0.zip
 
 The bundle is the recommended way to get started with SolrWayback. You download the bundle, follow the installation guide and index your own WARC files. Then you are up to speed. 
 
