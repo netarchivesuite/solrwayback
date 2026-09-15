@@ -1264,16 +1264,6 @@ public class NetarchiveSolrClient {
                 continue;
             }
 
-            // If redirect, do not return the same url as this will give endless redirect.
-            // This can happen due to the http://www.test.dk http://test.dk is normalized to
-            // the same.
-            if (isRedirectStatus(doc.getStatusCode())) {
-                if (doc.getUrl().equals(url)) { // Do not return the same for redirect.
-                    log.info("Stopping endless direct for url:" + url + " and found url:" + doc.getUrl());
-                    continue; // skip
-                }
-            }
-
             String crawlDateDoc = doc.getCrawlDate();
             long crawlDateForDocument = dateFormat.parse(crawlDateDoc).getTime(); // For this document
             long thisMatch = Math.abs(inputCrawlDate - crawlDateForDocument);
