@@ -1,6 +1,11 @@
 # SolrWayback changelog
 
 ## [UNRELEASED]
+
+
+5.5.0
+-----
+
 ### Fixed
 * Fixed bug resolving redirect chain. Closing #https://github.com/netarchivesuite/solrwayback/issues/507
 
@@ -15,6 +20,10 @@
   - `setAttributeNS()` (namespace-aware attribute setting)
   - POST-request playback (separate, larger structural gap — not related to JavaScript rewriting and not fixable until Warc-Indexer does post-append)
 
+
+### Added
+  - WordCloud and linkgraph in the toolbox can now also search by host and not only domain. Thanks to Leslie Bellony from BnF for implementing this.
+  - Improved Solr documentation, thanks to @AzazelSensei.
 
 5.4.3
 -----
