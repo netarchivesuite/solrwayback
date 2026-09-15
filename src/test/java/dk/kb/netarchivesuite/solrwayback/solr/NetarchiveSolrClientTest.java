@@ -306,7 +306,7 @@ public class NetarchiveSolrClientTest {
         Date end = DateUtils.solrTimestampToJavaDate("2020-12-31T23:59:59Z");
 
         // Outgoing for alpha.com should include beta.com and gamma.com
-        List<FacetCount> outgoing = client.getDomainFacets("alpha.com", 10, false, start, end);
+        List<FacetCount> outgoing = client.getLinksFacets("alpha.com", true, 10, false, start, end);
         assertNotNull(outgoing);
         // Convert to map for easy lookup
         Map<String, Long> outMap = new HashMap<>();
@@ -317,7 +317,7 @@ public class NetarchiveSolrClientTest {
         assertEquals(Long.valueOf(1), outMap.get("gamma.com"));
 
         // Ingoing for alpha.com should include beta.com and gamma.com (both link to alpha)
-        List<FacetCount> ingoing = client.getDomainFacets("alpha.com", 10, true, start, end);
+        List<FacetCount> ingoing = client.getLinksFacets("alpha.com", true, 10, true, start, end);
         assertNotNull(ingoing);
         Map<String, Long> inMap = new HashMap<>();
         for (FacetCount fc : ingoing) {

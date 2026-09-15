@@ -60,71 +60,95 @@ import dk.kb.netarchivesuite.solrwayback.util.UrlUtils;
 @Path("/")
 public class SolrWaybackResource {
 
-    private static final Logger log = LoggerFactory.getLogger(SolrWaybackResource.class);
 
-    /*
-     * Only for debugging/error finding. Not called from SolrWayback frontend. Can
-     * be improved to not also load binary which are not shown.
-     */
-    @GET
-    @Path("warc/header/parsed")
-    @Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
-    public ArcEntry getArcEntry(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
-        try {
-            ArcEntry arcEntry = Facade.getArcEntry(source_file_path, offset);
-            return arcEntry;
-        } catch (Exception e) {
-            throw handleServiceExceptions(e);
-        }
-    }
+  private static final Logger log = LoggerFactory.getLogger(SolrWaybackResource.class);
+  
+  
+  /*
+   * Only for debugging/error finding. Not called from SolrWayback frontend.
+   * Can be improved to not also load binary which are not shown. 
+   */
+  @GET
+  @Path("warc/header/parsed")
+  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+  public ArcEntry getArcEntry(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
+      try {                                                                                      
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+        return arcEntry;                              
+      } catch (Exception e) {         
+          throw handleServiceExceptions(e);
+      }
+  }
+  
+  
+  @GET
+  @Path("warc/header")
+  @Produces({ MediaType.TEXT_PLAIN})
+  public String getWarcHeader( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
+      try {                                                                                      
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+        return arcEntry.getHeader();                              
+      } catch (Exception e) {         
+          throw handleServiceExceptions(e);
+      }
+  }
+  
+  @GET
+  @Path("warc/parsed")
+  @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+  public ArcEntry getWarcParsed( @QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
+      try {                                                                                      
+        ArcEntry arcEntry= Facade.getArcEntry(source_file_path, offset);
+         return arcEntry;                              
+      } catch (Exception e) {         
+          throw handleServiceExceptions(e);
+      }
+  }
+  
+ 
+  
+  
+  
+  @GET
+  @Path("statistics/url")
+  @Produces({ MediaType.APPLICATION_JSON})
+  public  List<DomainStatistics> statisticsDomainHost (@QueryParam("domain") String domain, @QueryParam("host") String host, @QueryParam("startdate") String startdate,
+          @QueryParam("enddate") String enddate, @QueryParam("scale") String scale) throws SolrWaybackServiceException {
+      int limit = 90;
+      LocalDate start = LocalDate.parse(startdate, DateTimeFormatter.ISO_DATE);
+      LocalDate end = LocalDate.parse(enddate, DateTimeFormatter.ISO_DATE);
+      
+      String target = null;
+      boolean isDomain = true;
+      if (domain != null && host != null) {
+          throw new InvalidArgumentServiceException("Use either domain or host, not both.");
+      }
+      if (domain != null) {
+          target = domain;
+          isDomain = true;
+      } else if (host != null) {
+          target = host;
+          isDomain = false;
+      } else {
+          throw new InvalidArgumentServiceException("Either domain or host is required.");
+      }
+      
+      // If the period is too big for the scale, block the statistics
+      int buckets = DateUtils.calculateBucket(start, end, scale);
+      if (buckets > limit) {
+          String msg = "The defined period (" + buckets + ") is too large to match with the scale (limit: " + limit + " " + scale.toLowerCase() + "s)";
+          log.error(msg);
+          throw new InvalidArgumentServiceException(msg);
+      }
+      try {
+        return Facade.statisticsDomainHost(target, isDomain, start , end, scale);
+      } catch (Exception e) {
+          throw handleServiceExceptions(e);
+      }
+  }
+  
+   
 
-    @GET
-    @Path("warc/header")
-    @Produces({ MediaType.TEXT_PLAIN })
-    public String getWarcHeader(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset) throws SolrWaybackServiceException {
-        try {
-            ArcEntry arcEntry = Facade.getArcEntry(source_file_path, offset);
-            return arcEntry.getHeader();
-        } catch (Exception e) {
-            throw handleServiceExceptions(e);
-        }
-    }
-
-    @GET
-    @Path("warc/parsed")
-    @Produces(MediaType.APPLICATION_JSON + "; charset=UTF-8")
-    public ArcEntry getWarcParsed(@QueryParam("source_file_path") String source_file_path, @QueryParam("offset") long offset)
-            throws SolrWaybackServiceException {
-        try {
-            ArcEntry arcEntry = Facade.getArcEntry(source_file_path, offset);
-            return arcEntry;
-        } catch (Exception e) {
-            throw handleServiceExceptions(e);
-        }
-    }
-
-    @GET
-    @Path("statistics/domain")
-    @Produces({ MediaType.APPLICATION_JSON })
-    public List<DomainStatistics> statisticsDomain(@QueryParam("domain") String domain, @QueryParam("startdate") String startdate,
-            @QueryParam("enddate") String enddate, @QueryParam("scale") String scale) throws SolrWaybackServiceException {
-        int limit = 90;
-        LocalDate start = LocalDate.parse(startdate, DateTimeFormatter.ISO_DATE);
-        LocalDate end = LocalDate.parse(enddate, DateTimeFormatter.ISO_DATE);
-
-        // If the period is too big for the scale, block the statistics
-        int buckets = DateUtils.calculateBucket(start, end, scale);
-        if (buckets > limit) {
-            String msg = "The defined period (" + buckets + ") is too large to match with the scale (limit: " + limit + " " + scale.toLowerCase() + "s)";
-            log.error(msg);
-            throw new InvalidArgumentServiceException(msg);
-        }
-        try {
-            return Facade.statisticsDomain(domain, start, end, scale);
-        } catch (Exception e) {
-            throw handleServiceExceptions(e);
-        }
-    }
 
     @GET
     @Path("/image")

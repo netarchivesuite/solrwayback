@@ -46,6 +46,7 @@ public class WordCloudTest {
         createTestDocument(3, "word frequency analysis and word cloud image generation", "example.com");
         createTestDocument(4, "the quick brown fox jumps over the lazy dog and the cat", "test.com");
         createTestDocument(5, "cloud computing with word processing software", "example.com");
+        createTestDocument(5, "test host domain word cloud", "domain.com", "host.domain.com");
 
         embeddedServer.commit();
     }
@@ -60,6 +61,9 @@ public class WordCloudTest {
         }
     }
 
+    private void createTestDocument(int id, String textContent, String domain) throws Exception {
+        createTestDocument(id, textContent, domain, null);
+    }
     /**
      * Helper method to create and add a test document to the embedded Solr server.
      *
@@ -68,12 +72,15 @@ public class WordCloudTest {
      * @param domain      Domain associated with the document.
      * @throws Exception if there is an error adding the document.
      */
-    private void createTestDocument(int id, String textContent, String domain) throws Exception {
+    private void createTestDocument(int id, String textContent, String domain, String host) throws Exception {
         SolrInputDocument document = new SolrInputDocument();
         document.addField("id", "doc" + id);
         document.addField("url", "http://" + domain + "/page" + id);
         document.addField("url_norm", "http://" + domain + "/page" + id);
         document.addField("domain", domain);
+        if (host!= null) {
+            document.addField("host", host);
+        }
         document.addField("content_type_norm", "html");
         document.addField("record_type", "response");
         document.addField("source_file_path", "test.warc");
@@ -92,13 +99,27 @@ public class WordCloudTest {
     }
 
     /**
-     * Test the deprecated wordCloudForDomain method.
+     * Test the deprecated wordCloud method.
      * Verifies that a BufferedImage is generated for a domain query.
      */
     @Test
     public void testWordCloudForDomain() throws Exception {
         String domain = "example.com";
-        BufferedImage result = Facade.wordCloudForDomain(domain);
+        BufferedImage result = Facade.wordCloud(domain, true);
+        
+        // Verify image was generated with correct size
+        assertEquals("Image should have expected width", 800, result.getWidth());
+        assertEquals("Image should have expected height", 600, result.getHeight());
+    }
+
+    /**
+     * Test the deprecated wordCloud method.
+     * Verifies that a BufferedImage is generated for a host query.
+     */
+    @Test
+    public void testWordCloudForHost() throws Exception {
+        String host = "host.domain.com";
+        BufferedImage result = Facade.wordCloud(host, false);
 
         // Verify image was generated with correct size
         assertEquals("Image should have expected width", 800, result.getWidth());
@@ -116,6 +137,22 @@ public class WordCloudTest {
         
         BufferedImage result = Facade.wordCloudForQuery(query, filter);
 
+        // Verify image was generated with correct size
+        assertEquals("Image should have expected width", 800, result.getWidth());
+        assertEquals("Image should have expected height", 600, result.getHeight());
+    }
+    
+    /**
+     * Test wordCloudForQuery with query and filter.
+     * Verifies that a BufferedImage is generated for a custom query.
+     */
+    @Test
+    public void testWordCloudForQuery_WithHostFilter() throws Exception {
+        String query = "host:host.domain.com";
+        String filter = "content_type_norm:html";
+        
+        BufferedImage result = Facade.wordCloudForQuery(query, filter);
+        
         // Verify image was generated with correct size
         assertEquals("Image should have expected width", 800, result.getWidth());
         assertEquals("Image should have expected height", 600, result.getHeight());
@@ -273,8 +310,8 @@ public class WordCloudTest {
         embeddedServer.commit();
         
         String domain = "unique.com";
-        BufferedImage result = Facade.wordCloudForDomain(domain);
-
+        BufferedImage result = Facade.wordCloud(domain, true);
+        
         // Verify image was generated
         assertNotNull("Word cloud image should not be null", result);
         assertTrue("Image width should be greater than 0", result.getWidth() > 0);
@@ -286,8 +323,37 @@ public class WordCloudTest {
         // Should find at least one of our distinctive words
         boolean hasDistinctiveWord = wordFreq.stream()
                 .anyMatch(w -> "unique".equals(w.getWord()) || 
+                        "special".equals(w.getWord()) || 
+                        "distinctive".equals(w.getWord()));
+        assertTrue("Should find distinctive words from the domain", hasDistinctiveWord);
+    }
+    /**
+     * Test word cloud generation with specific domain query.
+     * Verifies that domain filtering works correctly.
+     */
+    @Test
+    public void testWordCloudForHost_SpecificHost() throws Exception {
+        // Add a document with very distinctive text for a different domain
+        embeddedServer.deleteByQuery("*:*");
+        createTestDocument(100, "unique special distinctive remarkable extraordinary", "specific.com", "host.specific.com");
+        embeddedServer.commit();
+        
+        String host = "host.specific.com";
+        BufferedImage result = Facade.wordCloud(host, false);
+
+        // Verify image was generated
+        assertNotNull("Word cloud image should not be null", result);
+        assertTrue("Image width should be greater than 0", result.getWidth() > 0);
+        
+        // Verify word frequency for the same domain
+        List<WordCloudWordAndCount> wordFreq = Facade.wordCloudWordFrequency("host:\"" + host + "\"", null);
+        assertNotNull("Word frequency should not be null", wordFreq);
+        
+        // Should find at least one of our distinctive words
+        boolean hasDistinctiveWord = wordFreq.stream()
+                .anyMatch(w -> "unique".equals(w.getWord()) || 
                                "special".equals(w.getWord()) || 
                                "distinctive".equals(w.getWord()));
-        assertTrue("Should find distinctive words from the domain", hasDistinctiveWord);
+        assertTrue("Should find distinctive words from the host", hasDistinctiveWord);
     }
 }
