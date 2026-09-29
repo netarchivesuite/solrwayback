@@ -47,8 +47,8 @@ public class ScriptRewriter extends RewriterBase {
     private static final Pattern LOC_WINDOW_PATTERN     = Pattern.compile("\\bwindow\\.location\\b");
     private static final Pattern LOC_DOCUMENT_PATTERN   = Pattern.compile("\\bdocument\\.location\\b");
     private static final Pattern LOC_THIS_PATTERN       = Pattern.compile("\\bthis\\.location\\b");
-    private static final Pattern LOC_BARE_PROP_PATTERN  = Pattern.compile("\\blocation\\.");
-    private static final Pattern LOC_BARE_ASSIGN_PATTERN = Pattern.compile("\\blocation\\s*=(?!=)");
+    private static final Pattern LOC_BARE_PROP_PATTERN   = Pattern.compile("(?<!\\.)\\blocation\\.");
+    private static final Pattern LOC_BARE_ASSIGN_PATTERN = Pattern.compile("(?<!\\.)\\blocation\\s*=(?!=)");
 
     /**
      * Rewrites direct JS-source references to {@code location} (window/document/this/bare) so
