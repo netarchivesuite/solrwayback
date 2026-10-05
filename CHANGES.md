@@ -2,6 +2,11 @@
 
 ## [UNRELEASED]
 
+### Added
+* "Search for similar images" link added next to images in search results (image/geo search grid, single-image result view, and images embedded in HTML page results). It calls a new endpoint, `GET services/frontend/images/search/pdqhash?id=<solr_id>`, which looks up the source image's PDQ perceptual hash and returns visually similar images found in the index.
+* The similarity lookup checks all 8 dihedral variants of the PDQ hash (90°-step rotations and mirror reflections), so rotated or flipped near-duplicates are matched too, not just the original orientation.
+* This completes the frontend side of the PDQ-hash image fields added to Solr in 5.4.3, which at the time had no GUI support for similarity search.
+
 
 5.5.0
 -----
