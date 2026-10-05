@@ -268,7 +268,7 @@ public class Facade {
         }
         ImageDihedralHashesAndQuery pdqBandQuery = ImageUtils.buildPdqBandQuery(image);
         SearchResult search = NetarchiveSolrClient.getInstance().search(pdqBandQuery.getDihedralQueryString(), 500);
-        log.info("query:" + pdqBandQuery.getDihedralQueryString());
+        //log.info("query:" + pdqBandQuery.getDihedralQueryString());
         List<IndexDoc> results = search.getResults();
         List<IndexDoc> resultsFiltered = new ArrayList<IndexDoc>(); // Only keep those with hamming distance <31
 
