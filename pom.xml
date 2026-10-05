@@ -179,6 +179,13 @@
       <version>0.1.2</version>
     </dependency>
 
+    <!--p-hash and PDQ-hash for images-->
+   <dependency>
+       <groupId>io.github.netarchivesuite</groupId>
+       <artifactId>image-hashes</artifactId>
+       <version>1.1.1</version>
+   </dependency>
+
 
     <!-- Support for SVG and other image types. -->
     <!-- Can render some SVG (and scale them), but causes a lot more trouble that it is worth for now.

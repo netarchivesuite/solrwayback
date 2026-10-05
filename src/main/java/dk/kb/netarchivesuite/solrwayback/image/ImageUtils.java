@@ -7,6 +7,7 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import dk.kb.images.hash.PdqHasher;
 import dk.kb.netarchivesuite.solrwayback.util.InputStreamUtils;
 
 public class ImageUtils {
@@ -42,6 +43,53 @@ public class ImageUtils {
         return Math.min(scalex, scaley);
 
     }
-
+    
+    /**
+     * Builds a Solr OR query string that searches all 64 band fields for
+     * near-duplicate images similar to the given query image.
+     *
+     * <p>The query image is hashed into all 8 dihedral variants (rotations
+     * and mirrors) in a single pipeline pass. Each of the 8 hashes is then
+     * split into 8 bands of 8 characters using
+     * {@link PdqHasher#splitIntoBands(String)}, producing 64 Solr field
+     * probes in total (8 dihedral variants × 8 bands).
+     *
+     * <p>Example output fragment:
+     * <pre>
+     *   image_pdq_original_band_0:fca62ca1 OR
+     *   image_pdq_original_band_1:631bcb7a OR ... OR
+     *   image_pdq_flipMinus1_band_7:d823e31c
+     * </pre>
+     *
+     * <p>The resulting query should be used as a coarse candidate filter.
+     * Results must be post-filtered by computing the full Hamming distance
+     * between the candidate's stored {@code image_pdq_hash} and the query
+     * hash to remove false positives. See
+     * {@link PdqHasher#hammingDistance(String, String)} and the PDQ
+     * similarity threshold of ≤ 31 (out of 256).
+     *
+     * @param queryImage the query image to search for near-duplicates of
+     * @return ImageDihedralHashesAndQuery  that contains all 8 dihedral pdq-hashes and solr query search for to match all 64 variations.
+     */
+    public static ImageDihedralHashesAndQuery buildPdqBandQuery(BufferedImage queryImage) {
+        ImageDihedralHashesAndQuery  imageDihedralHashesAndQuery= new ImageDihedralHashesAndQuery(); 
+        String[] dihedralHashes = PdqHasher.getAllDihedralHashes(queryImage);
+        StringBuilder query = new StringBuilder();
+        boolean first = true;
+        for (int d = 0; d < dihedralHashes.length; d++) {
+            String dihedralName = PdqHasher.DIHEDRAL_NAMES[d];
+            String[] bands = PdqHasher.splitIntoBands(dihedralHashes[d]);
+            for (int b = 0; b < bands.length; b++) {
+                if (!first) query.append(" OR ");
+                query.append("image_pdq_").append(dihedralName)
+                     .append("_band_").append(b)
+                     .append(":").append(bands[b]);
+                first = false;
+            }
+        }
+        imageDihedralHashesAndQuery.setDihedralPdqHashes(dihedralHashes);
+        imageDihedralHashesAndQuery.setDihedralQueryString(query.toString());
+        return imageDihedralHashesAndQuery;
+    }
     
 }

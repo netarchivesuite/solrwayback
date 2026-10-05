@@ -20,6 +20,9 @@
       <router-link :to="$_startPageSearchFromImage(result.urlNorm)">
         <span @click="closeModalIfOpen()">Pages linking to image</span>
       </router-link>
+      <router-link :to="$_startPdqImageSearchFromImage(result.id)">
+        <span @click="closeModalIfOpen()">Search for similar images</span>
+      </router-link>
     </div>
   </div>
 </template>

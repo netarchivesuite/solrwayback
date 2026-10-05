@@ -158,12 +158,16 @@ export default {
   mounted () {
     const routerQuery = this.$route.query
     if(routerQuery.query) {
-      this.futureQuery =  routerQuery.query
+      routerQuery.pdqSearch === 'true' || routerQuery.pdqSearch === true ? this.updateSolrSettingPdqSearch(true) : this.updateSolrSettingPdqSearch(false)
+      // A 'find similar images' (PDQ hash) search is driven by the Solr document id of the source image,
+      // not a user-entered query - don't show that id in the search box. The regular 'image' search
+      // (and all other search types) keep showing the query text as before.
+      this.futureQuery = (routerQuery.pdqSearch === 'true' || routerQuery.pdqSearch === true) ? '' : routerQuery.query
       if(routerQuery.facets) {
       let newFacets = routerQuery.facets.split('&fq=')
       newFacets.shift()
       newFacets.length > 0 ? newFacets.forEach((item) => {
-        this.addToSearchAppliedFacets('&fq=' + item)  
+        this.addToSearchAppliedFacets('&fq=' + item)
       }) : null
       }
       routerQuery.grouping === 'true' || routerQuery.grouping === true ? this.updateSolrSettingGrouping(true) : this.updateSolrSettingGrouping(false)
@@ -171,7 +175,8 @@ export default {
       routerQuery.urlSearch === 'true' || routerQuery.urlSearch === true ? this.updateSolrSettingUrlSearch(true) : this.updateSolrSettingUrlSearch(false)
       routerQuery.offset ? this.updateSolrSettingOffset(Number(routerQuery.offset)) : this.updateSolrSettingOffset(0)
           routerQuery.sort ? this.updateSolrSettingSort(routerQuery.sort) : this.updateSolrSettingSort('score desc')
-      this.$_determineNewSearch(this.futureQuery, false)
+      // Always fire the search with the real query/id from the URL, regardless of what is shown in the search box above.
+      this.$_determineNewSearch(routerQuery.query, false)
       }
       else {
         //If we mount and there is no query, we just make sure to empty the state, results and facets for good measure.
@@ -196,6 +201,7 @@ export default {
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
+      updateSolrSettingPdqSearch:'updateSolrSettingPdqSearch',
       updateSolrSettingOffset:'updateSolrSettingOffset',
       updateSolrSettingSort:'updateSolrSettingSort',
       emptySearchAppliedFacets:'emptySearchAppliedFacets'
