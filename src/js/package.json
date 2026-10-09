@@ -21,7 +21,7 @@
     "leaflet.markercluster": "^1.5.3",
     "pinia": "^3.0.2",
     "video.js": "8.23.3",
-    "vue": "^3.5.13",
+    "vue": "^3.5.43",
     "vue-3-slider-component": "^1.0.2",
     "vue-chartjs": "^3.5.1",
     "vue-router": "^4.5.1"
