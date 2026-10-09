@@ -44,6 +44,7 @@ public class ImageSearchExecutor {
                        desc.setHash(current.getHash());
                        desc.setOffset(current.getOffset());                       
                        desc.setUrl_norm(current.getUrl_norm());
+                       desc.setId(current.getId());
                        ArrayList<ArcEntryDescriptor> single = new ArrayList<> ();
                        single.add(desc);
                        return single;

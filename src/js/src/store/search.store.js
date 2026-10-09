@@ -17,6 +17,7 @@ export const useSearchStore = defineStore('search', {
       offset:0,
       imgSearch:false,
       urlSearch:false,
+      pdqSearch:false,
       sort:'score desc'
     },
     loading:false,
@@ -54,6 +55,9 @@ export const useSearchStore = defineStore('search', {
     },
     updateSolrSettingUrlSearch ( param ) {
       this.solrSettings.urlSearch = param
+    },
+    updateSolrSettingPdqSearch ( param ) {
+      this.solrSettings.pdqSearch = param
     },
     updateSolrSettingSort ( param ) {
       this.solrSettings.sort = param
@@ -140,6 +144,27 @@ export const useSearchStore = defineStore('search', {
         notifier.setNotification({
           title: 'We are so sorry!',
           text: 'Something went wrong when searching - please try again',
+          srvMessage: error,
+          type: 'error',
+          timeout: false
+        })
+
+        this.setLoadingStatus(false)
+      }
+    },
+    async requestPdqImageSearch ( params ) {
+      this.setLoadingStatus(true)
+
+      try {
+        const result = await requestService.firePdqImageSearchRequest(params.id)
+
+        this.results = result.response
+        this.setLoadingStatus(false)
+      } catch (error){
+        const notifier = useNotifierStore()
+        notifier.setNotification({
+          title: 'We are so sorry!',
+          text: 'Something went wrong when searching for similar images - please try again',
           srvMessage: error,
           type: 'error',
           timeout: false

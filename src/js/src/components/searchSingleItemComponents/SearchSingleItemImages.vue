@@ -20,6 +20,7 @@
                                         :item="item"
                                         :hash="hash"
                                         :url-norm="urlNorm"
+                                        :id="id"
                                         @toggle-fullimage="toggleFullImage" />
     </div>
   </div>
@@ -55,6 +56,10 @@ export default {
       required:true
     },
     urlNorm: {
+      type:String,
+      required: true
+    },
+    id: {
       type:String,
       required: true
     }

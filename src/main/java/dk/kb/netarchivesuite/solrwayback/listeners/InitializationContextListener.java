@@ -1,6 +1,8 @@
 package dk.kb.netarchivesuite.solrwayback.listeners;
 
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -12,6 +14,7 @@ import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoaderWeb;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 
+import javax.imageio.ImageReader;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
@@ -25,7 +28,17 @@ public class InitializationContextListener implements ServletContextListener {
     // this is called by the web-container before opening up for requests.(defined in web.xml)
     public void contextInitialized(ServletContextEvent event) {
 
-        log.info("solrwayback starting up...");
+        log.info("solrwayback starting up...");        
+        try {           
+           javax.imageio.ImageIO.scanForPlugins(); 
+            Iterator<ImageReader> it = javax.imageio.ImageIO.getImageReadersByFormatName("webp");
+           log.info("ImageIO loaded WebP image reader: " + it.hasNext());   
+        }
+        catch(Exception e) {
+            log.warn("ImageIO does not support WebP image format");
+        }
+       
+        
         Properties props = new Properties();
         try {
           

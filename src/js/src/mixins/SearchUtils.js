@@ -20,6 +20,7 @@ export default {
       updateSolrSettingGrouping:'updateSolrSettingGrouping',
       updateSolrSettingImgSearch:'updateSolrSettingImgSearch',
       updateSolrSettingUrlSearch:'updateSolrSettingUrlSearch',
+      updateSolrSettingPdqSearch:'updateSolrSettingPdqSearch',
       updateSolrSettingOffset:'updateSolrSettingOffset',
       updatePreNormalizedQuery:'updatePreNormalizedQuery',
       updateNormalizedQuery:'updateNormalizedQuery',
@@ -27,6 +28,7 @@ export default {
       clearFacets:'clearFacets',
       requestSearch:'requestSearch',
       requestImageSearch:'requestImageSearch',
+      requestPdqImageSearch:'requestPdqImageSearch',
       requestUrlSearch:'requestUrlSearch',
       requestNormalizedFacets:'requestNormalizedFacets',
       requestFacets:'requestFacets'
@@ -70,6 +72,11 @@ export default {
       this.requestImageSearch({query:futureQuery})
       updateHistory ? this.$_pushSearchHistory('Search', futureQuery, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings) : null
     },
+    // Deliver a 'find similar images' (PDQ hash) search. futureQuery is the Solr document id of the source image.
+    deliverPdqImageSearchRequest(futureQuery, updateHistory) {
+      this.requestPdqImageSearch({id:futureQuery})
+      updateHistory ? this.$_pushSearchHistory('Search', futureQuery, this.searchStore.searchAppliedFacets, this.searchStore.solrSettings) : null
+    },
     // Check if there has been any changes to the query
     queryHasChanged(query) {
       return query !== this.searchStore.query
@@ -80,7 +87,10 @@ export default {
       this.updateNormalizedQuery(null)
       this.clearResults()
       !pagnation ? this.clearFacets() : null
-      this.updateQuery(futureQuery)
+      // A 'find similar images' (PDQ hash) search is driven by the Solr document id of the source image,
+      // not a user-entered query - don't show that id in the search box. The regular 'image' search
+      // (and all other search types) keep showing the query text as before.
+      this.updateQuery(this.searchStore.solrSettings.pdqSearch ? '' : futureQuery)
     },
     // Disect the query for URL searching
     disectQueryForNewUrlSearch(futureQuery) {
@@ -100,7 +110,10 @@ export default {
       //console.log('we have these solrsettings: ', this.solrSettings)
       //console.log('and these facets', this.searchAppliedFacets)
       this.prepareStateForNewSearch(futureQuery, pagnation)
-      if(this.searchStore.solrSettings.imgSearch) {
+      if(this.searchStore.solrSettings.pdqSearch) {
+        this.deliverPdqImageSearchRequest(futureQuery, updateHistory)
+      }
+      else if(this.searchStore.solrSettings.imgSearch) {
         this.deliverImgSearchRequest(futureQuery ,updateHistory)
       }
       else if(this.searchStore.solrSettings.urlSearch) {

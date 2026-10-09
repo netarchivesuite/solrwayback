@@ -1,10 +1,13 @@
 package dk.kb.netarchivesuite.solrwayback.facade;
 
+import dk.kb.images.hash.PdqHasher;
 import dk.kb.netarchivesuite.solrwayback.concurrency.ImageSearchExecutor;
 import dk.kb.netarchivesuite.solrwayback.export.ContentStreams;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingRawZipExport;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrExportBufferedInputStream;
 import dk.kb.netarchivesuite.solrwayback.export.StreamingSolrWarcExportBufferedInputStream;
+import dk.kb.netarchivesuite.solrwayback.image.ImageDihedralHashesAndQuery;
+import dk.kb.netarchivesuite.solrwayback.image.ImageUtils;
 import dk.kb.netarchivesuite.solrwayback.parsers.ArcParserFileResolver;
 import dk.kb.netarchivesuite.solrwayback.parsers.DomainStatisticsForDomainParser;
 import dk.kb.netarchivesuite.solrwayback.parsers.HtmlParserUrlRewriter;
@@ -58,6 +61,7 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.ws.rs.core.StreamingOutput;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -232,6 +236,62 @@ public class Facade {
         log.debug("Found at least {} images in {}ms ({} images/second), searching for '{}'",
                   images.size(), searchTimeMS, searchTimeMS == 0 ? "N/A" : (images.size()*1000/searchTimeMS), query);
         return images;
+    }
+    
+    
+
+
+    /**
+     * Builds a Solr OR query string that searches all 64 band fields for
+     * near-duplicate images similar to the given query image.
+     * 
+     * @param id for an image
+     * @return up to 500 images conceptual identical images. Will also find rotated
+     *         or flipped versions of the image.
+     */
+    public static ArrayList<ArcEntryDescriptor> findImageSimilarityPdqHash(String id) throws Exception {
+
+        ArcEntryDescriptor arcEntryDescriptor = NetarchiveSolrClient.getInstance().imageIdLookup(id);
+        ArcEntry arcEntry = getArcEntry(arcEntryDescriptor.getSource_file_path(), arcEntryDescriptor.getOffset());
+
+        BufferedImage image = null;
+        BufferedInputStream bis = arcEntry.getBinaryRaw();
+        try {
+            image = ImageIO.read(bis);
+        } finally {
+            bis.close();
+        }
+
+        if (image == null) {
+            log.warn("Unsupported image format for id:" + id);
+            return new ArrayList<ArcEntryDescriptor>();
+        }
+        ImageDihedralHashesAndQuery pdqBandQuery = ImageUtils.buildPdqBandQuery(image);
+        SearchResult search = NetarchiveSolrClient.getInstance().search(pdqBandQuery.getDihedralQueryString(), 500);
+        //log.info("query:" + pdqBandQuery.getDihedralQueryString());
+        List<IndexDoc> results = search.getResults();
+        List<IndexDoc> resultsFiltered = new ArrayList<IndexDoc>(); // Only keep those with hamming distance <31
+
+        // Filter images and only keep those that are within the PDQ-hash
+        for (IndexDoc candidate : results) {
+            String candidateHash = candidate.getImagePdqHash();
+            if (candidateHash == null) {
+                log.info("skipping candidate with no pdq hash: " + candidate.getId());
+                continue;
+            }            
+            int minDistance = PdqHasher.minHammingDistance(pdqBandQuery.getDihedralPdqHashes(), candidateHash);
+
+            if (minDistance <= 31) {
+                // genuine near-duplicate — keep it
+                resultsFiltered.add(candidate);
+            } else {
+                log.debug("removed pdq hash candidate with id::" + candidate.getId());
+            }
+        }
+
+        ArrayList<ArcEntryDescriptor> extractImages = ImageSearchExecutor.extractImages(resultsFiltered);
+        return extractImages;
+
     }
     
     public static ArrayList<ArcEntryDescriptor> oldfindImages(String searchText) throws Exception {
@@ -1186,7 +1246,8 @@ public class Facade {
             imageUrl.setDownloadUrl(downloadLink);
             imageUrl.setHash(entry.getHash());
             imageUrl.setUrlNorm(entry.getUrl_norm());
-
+            imageUrl.setId(entry.getId());
+            
             imageUrl.setLastModified(entry.getLastModifiedLong());
             String exifLocation = entry.getExifLocation();
             if (exifLocation != null) {
@@ -1214,7 +1275,9 @@ public class Facade {
             imageUrl.setDownloadUrl(downloadLink);
             imageUrl.setHash(entry.getHash());
             imageUrl.setUrlNorm(entry.getUrl_norm());
+            imageUrl.setId(entry.getId());
             imageUrls.add(imageUrl);
+            
         }
         return imageUrls;
     }
