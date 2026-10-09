@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@sideway/formula": "^3.0.1",
-    "axios": "^1.10.0",
+    "axios": "^1.20.0",
     "chart.js": "^2.9.4",
     "core-js": "^3.44.0",
     "d3": "3.5.17",
