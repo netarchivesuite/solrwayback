@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class ImageUrl {
 
+  private String id; //Solr id 
   private String downloadUrl;
   private String imageUrl; 
   private String hash;
@@ -13,6 +14,7 @@ public class ImageUrl {
   private Double longitude;
   private String resourceName;
   private long lastModified;
+  
   
   public ImageUrl(){    
   }
@@ -80,6 +82,14 @@ public class ImageUrl {
 
   public void setResourceName(String resourceName) {
     this.resourceName = resourceName;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }     
     
 }

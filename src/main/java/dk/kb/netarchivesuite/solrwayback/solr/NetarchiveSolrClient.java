@@ -1576,6 +1576,29 @@ public class NetarchiveSolrClient {
         return requestRawJson(solrQuery);
     }
 
+    
+    /**
+     * 
+     *
+     */
+    public ArcEntryDescriptor imageIdLookup(String id) throws Exception {
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.set("rows", "1");
+        solrQuery.set("q", "id:\"" + id + "\"");               
+        solrQuery.set("facet", "false");
+        solrQuery.set("fl",SolrUtils.arcEntryDescriptorFieldList);
+        solrQuery.setFilterQueries("content_type_norm:image");
+
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        if (rsp.getResults().getNumFound()==0) {
+            throw new IllegalArgumentException("Image with id not found:"+id);
+        }        
+        SolrDocumentList docs = rsp.getResults();        
+        ArcEntryDescriptor arcEntryDescriptor = SolrUtils.solrDocument2ArcEntryDescriptor(docs.get(0));        
+        return arcEntryDescriptor;       
+    }
+    
+    
     /*
      * field list is a comma seperated list of fields. If null all fields will loaded
      *

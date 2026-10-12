@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class ArcEntryDescriptor {
 
+    private String id; //this is the solr id
     private String source_file_path;
     private String url;
     private String url_norm;
@@ -62,6 +63,15 @@ public class ArcEntryDescriptor {
 
     public void setUrl_norm(String url_norm) {
       this.url_norm = url_norm;
+    }
+
+    
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

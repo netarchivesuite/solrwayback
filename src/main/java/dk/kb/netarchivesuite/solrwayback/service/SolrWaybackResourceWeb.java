@@ -26,7 +26,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.UriInfo;
 
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryPercentilesStatistics;
 import dk.kb.netarchivesuite.solrwayback.service.dto.statistics.QueryStatistics;
@@ -271,6 +270,19 @@ public class SolrWaybackResourceWeb {
     public  ArrayList<ImageUrl> imagesSearch(@QueryParam("query") String query) throws SolrWaybackServiceException {
       try {                                          
         ArrayList<ArcEntryDescriptor> img = Facade.findImages(query);
+        return Facade.arcEntrys2Images(img);                                                            
+      } catch (Exception e) {           
+        throw handleServiceExceptions(e);
+      }
+    }
+    
+    
+    @GET
+    @Path("/images/search/pdqhash")
+    @Produces(MediaType.APPLICATION_JSON +"; charset=UTF-8")
+    public  ArrayList<ImageUrl> imagesSearchSimilarty(@QueryParam("id") String id ) throws SolrWaybackServiceException {
+      try {                                          
+        ArrayList<ArcEntryDescriptor> img = Facade.findImageSimilarityPdqHash(id);
         return Facade.arcEntrys2Images(img);                                                            
       } catch (Exception e) {           
         throw handleServiceExceptions(e);

@@ -18,6 +18,9 @@
       <router-link :to="$_startPageSearchFromImage(item.urlNorm ? item.urlNorm : urlNorm)">
         <span>Pages linking to image</span>
       </router-link>
+      <router-link :to="$_startPdqImageSearchFromImage(item.id ? item.id : id)">
+        <span>Search for similar images</span>
+      </router-link>
     </div>
   </div>
 </template>
@@ -53,6 +56,10 @@ export default {
       required:true
     },
     urlNorm: {
+      type:String,
+      required: true
+    },
+    id: {
       type:String,
       required: true
     },

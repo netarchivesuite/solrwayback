@@ -8,6 +8,7 @@ export const requestService = {
   fireLookupRequest,
   fireImagesRequest,
   fireImageSearchRequest,
+  firePdqImageSearchRequest,
   uploadFileRequest,
   getHarvestDates,
   getNormalizedUrlSearch,
@@ -64,6 +65,24 @@ async function fireImageSearchRequest(query) {
     let returnObj = response.data
 
     returnObj = dataTransformationHelper.transformImageResponse(returnObj,'image')
+
+    return returnObj
+
+  } catch (error){
+    return Promise.reject(error)
+  }
+
+}
+
+async function firePdqImageSearchRequest(id) {
+  // Find perceptually similar images (PDQ hash) to the image with this Solr document id
+  const url = 'services/frontend/images/search/pdqhash' + `?id=${encodeURIComponent(id)}`
+
+  try{
+    const response = await axios.get(url)
+    let returnObj = response.data
+
+    returnObj = dataTransformationHelper.transformImageResponse(returnObj,'pdqImage')
 
     return returnObj
 
