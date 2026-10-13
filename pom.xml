@@ -66,8 +66,13 @@
       <artifactId>jakarta.ws.rs-api</artifactId>
       <version>3.1.0</version>
       <scope>test</scope>
-    </dependency>
-
+    </dependency>    
+  <dependency>
+  <groupId>jakarta.annotation</groupId>
+  <artifactId>jakarta.annotation-api</artifactId>
+  <version>2.1.1</version>
+  <scope>test</scope>
+</dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxrs</artifactId>
@@ -414,8 +419,7 @@
               <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
-              <nodeVersion>v18.19.1</nodeVersion>
-              <npmVersion>9.2.0</npmVersion>
+              <nodeVersion>v24.21.0</nodeVersion>
               <installDirectory>target</installDirectory>
             </configuration>
           </execution>

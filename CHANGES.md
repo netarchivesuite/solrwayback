@@ -7,7 +7,7 @@
 * The similarity lookup checks all 8 dihedral variants of the PDQ hash (90°-step rotations and mirror reflections), so rotated or flipped near-duplicates are matched too, not just the original orientation.
 * This completes the frontend side of the PDQ-hash image fields added to Solr in 5.4.3, which at the time had no GUI support for similarity search.
 * Added support for image format WebP required for calculating PDQ-Hash/pHash (com.twelvemonkeys.imageio dependency)
-
+* Upgraded a few backend and  many frontend third part dependencies.
 
 
 5.5.0
