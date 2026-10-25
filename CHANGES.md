@@ -5,6 +5,11 @@ UNRELEASED
 * Navigation tracker auto poll increased from 2 seconds to 60 seconds.
 * Upgraded Solr dependencies to 9.10.1
 * Switched from deprecated NoOpResponseParser to the new InputStreamResponseParser. Caching of SolrResponses is now handled by storing the response in the NetarchiveSolrClient.
+* Improve test coverage for playback classes:
+  * HtmlPlayback
+  * CssPlayback
+  * JavascriptPlayback
+* Bumped mockito-inline from 3.4.0 to 4.11.0 (test only). Required for mocking classes and static methods on Java 17.
 
 5.4.2
 -----
