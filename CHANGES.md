@@ -46,6 +46,11 @@
 ### Changed
 * Navigation tracker auto poll increased from 2 seconds to 60 seconds (auto poll will be removed in a later version)
 * Switched from deprecated NoOpResponseParser to the new InputStreamResponseParser. Caching of SolrResponses is now handled by storing the response in the NetarchiveSolrClient.
+* Improve test coverage for playback classes:
+  * HtmlPlayback
+  * CssPlayback
+  * JavascriptPlayback
+* Bumped mockito-inline from 3.4.0 to 4.11.0 (test only). Required for mocking classes and static methods on Java 17.
 
 ### Fixed
 * About text no longer reappears when manually clearing the ngram search query
