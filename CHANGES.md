@@ -9,6 +9,8 @@
 * Added support for image format WebP required for calculating PDQ-Hash/pHash (com.twelvemonkeys.imageio dependency)
 * Upgraded a few backend and  many frontend third part dependencies.
 
+### Changed
+* Increased temporary Tika disk swap space from 100M to 1G during indexing (config3.conf). For large payloads this will be required for Droid-light detection.
 
 5.5.0
 -----
