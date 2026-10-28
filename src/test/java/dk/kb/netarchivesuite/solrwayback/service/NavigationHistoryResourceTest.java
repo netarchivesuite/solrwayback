@@ -169,6 +169,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         data.put("referrer", "http://localhost:8080/solrwayback/search/test?query=test");
         data.put("navigationType", "navigate");
         data.put("clickSource", null);
+        data.put("tabId", "tab-a");
 
         // Execute
         Response response = resource.trackPlayback(mockRequest, data);
@@ -179,6 +180,31 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
         List<Map<String, String>> capturedHistory = historyCaptor.getValue();
         assertEquals(NavigationHistoryAction.SEARCH_RESULT_CLICKED.name(), capturedHistory.get(0).get("action"));
+        assertEquals("tab-a", capturedHistory.get(0).get("tabId"));
+        assertEquals("http://localhost:8080/solrwayback/search/test?query=test", capturedHistory.get(0).get("referrer"));
+    }
+
+    /**
+     * Test that the tab ID sent with a search is stored
+     */
+    @Test
+    public void testTrackSearchStoresTabId() {
+        // Setup
+        when(mockRequest.getSession(true)).thenReturn(mockSession);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(null);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("url", "http://localhost:8080/solrwayback/#/search?query=test");
+        data.put("tabId", "tab-a");
+
+        // Execute
+        resource.trackSearch(mockRequest, data);
+
+        // Verify
+        ArgumentCaptor<List> historyCaptor = ArgumentCaptor.forClass(List.class);
+        verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
+        Map<String, String> entry = (Map<String, String>) historyCaptor.getValue().get(0);
+        assertEquals("tab-a", entry.get("tabId"));
     }
 
     /**
@@ -188,6 +214,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
     public void testTrackFailedPlayback() {
         // Setup
         when(mockRequest.getHeader("Sec-Fetch-Dest")).thenReturn("document");
+        when(mockRequest.getHeader("Referer")).thenReturn("http://localhost:8080/solrwayback/services/web/20051102141713/http://www.yahooligans.com");
         when(mockRequest.getSession(false)).thenReturn(mockSession);
         when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new ArrayList<>());
 
@@ -203,6 +230,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         assertEquals(NavigationHistoryAction.PLAYBACK_FAILED.name(), entry.get("action"));
         assertEquals("http://yahooligans.yahoo.com/content/news/", entry.get("originalUrl"));
         assertEquals("2005-11-02T14:17:13Z", entry.get("date"));
+        assertEquals("http://localhost:8080/solrwayback/services/web/20051102141713/http://www.yahooligans.com", entry.get("referrer"));
         assertNotNull(entry.get("timestamp"));
     }
 
@@ -591,6 +619,45 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
     }
 
     /**
+     * Test that entries are exported with the tab they happened in and the entry they were opened from, when the
+     * user opens two results from one search in separate tabs and clicks around in both.
+     */
+    @Test
+    public void testDownloadHistoryLinksTabsAndParents() {
+        // Setup
+        String base = "http://localhost:8080/solrwayback/";
+        String searchPage = base + "search?query=yahooligans&grouping=false&facets=&sort=score%20desc";
+        String result1 = base + "services/web/20051102141713/http://www.yahooligans.com";
+        String page1 = base + "services/web/20051102141713/http://www.yahooligans.com/Arts/";
+        String result2 = base + "services/web/20000607214855/http://www4.yahooligans.com:80/";
+
+        List<Map<String, String>> history = new ArrayList<>();
+        history.add(createEntry("url", base + "#/search?query=yahooligans&grouping=false&facets=", "tabId", "search-tab"));
+        history.add(createEntry("url", result1, "action", "SEARCH_RESULT_CLICKED", "tabId", "tab-b", "referrer", searchPage));
+        history.add(createEntry("url", page1, "action", "PLAYBACK_LINK_CLICKED", "tabId", "tab-b", "referrer", result1 + "#top"));
+        history.add(createEntry("url", base + "services/web/20051102141713/http://yahooligans.yahoo.com/content/news/",
+                "action", "PLAYBACK_FAILED", "referrer", page1));
+        history.add(createEntry("url", result2, "action", "SEARCH_RESULT_CLICKED", "tabId", "tab-c", "referrer", searchPage));
+        history.add(createEntry("url", result1, "action", "BROWSER_HISTORY_NAVIGATION", "tabId", "tab-b", "referrer", searchPage));
+
+        when(mockRequest.getSession(false)).thenReturn(mockSession);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+
+        // Execute
+        Response response = resource.downloadHistory(mockRequest);
+
+        // Verify
+        List<Map<String, Object>> entity = (List<Map<String, Object>>) response.getEntity();
+        assertEquals(6, entity.size());
+        Integer[] expectedTabs = {1, 2, 2, 2, 3, 2};
+        Integer[] expectedFrom = {null, 1, 2, 3, 1, null};
+        for (int i = 0; i < entity.size(); i++) {
+            assertEquals("tab of entry " + (i + 1), expectedTabs[i], entity.get(i).get("tab"));
+            assertEquals("from of entry " + (i + 1), expectedFrom[i], entity.get(i).get("from"));
+        }
+    }
+
+    /**
      * Test downloading history filters duplicate search queries
      */
     @Test
@@ -804,6 +871,14 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
     }
 
     // Helper methods
+    private Map<String, String> createEntry(String... keysAndValues) {
+        Map<String, String> entry = new HashMap<>();
+        for (int i = 0; i < keysAndValues.length; i += 2) {
+            entry.put(keysAndValues[i], keysAndValues[i + 1]);
+        }
+        return entry;
+    }
+
     private Map<String, String> createHistoryEntry(String url, String timestamp) {
         Map<String, String> entry = new HashMap<>();
         entry.put("url", url);

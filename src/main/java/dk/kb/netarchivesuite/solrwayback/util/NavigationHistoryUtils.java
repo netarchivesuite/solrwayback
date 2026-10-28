@@ -5,9 +5,11 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 import static java.net.URLDecoder.decode;
@@ -208,6 +210,7 @@ public class NavigationHistoryUtils {
         int actionNumber = 1;
         String lastUrl = null;
         boolean lastWasPlayback = false;
+        EntryLinker linker = new EntryLinker();
 
         for (Map<String, String> entry : history) {
             String url = entry.get("url");
@@ -221,6 +224,7 @@ public class NavigationHistoryUtils {
                 // Only output if URL changed (covers query changes AND facet changes)
                 if (!url.equals(lastUrl)) {
                     actionNumber = populateQueryEntry(actionNumber, timestamp, url, result);
+                    linker.link(result.get(result.size() - 1), entry, NavigationHistoryAction.QUERY);
                     lastUrl = url;
                     lastWasPlayback = false;
                 }
@@ -232,12 +236,87 @@ public class NavigationHistoryUtils {
                     action = lastWasPlayback ? NavigationHistoryAction.PLAYBACK_LINK_CLICKED : NavigationHistoryAction.SEARCH_RESULT_CLICKED;
                 }
                 actionNumber = populateResultEntries(actionNumber, action, timestamp, date, originalUrl, result, url);
+                linker.link(result.get(result.size() - 1), entry, action);
                 lastUrl = null;  // Reset so next search is always tracked
                 lastWasPlayback = true;
             }
         }
 
         return result;
+    }
+
+    /**
+     * Links exported entries to the browser tab they happened in ("tab", numbered from 1 in order of appearance)
+     * and to the earlier entry for the page they were opened from ("from"), found from the stored referrer.
+     */
+    private static class EntryLinker {
+        private final Map<String, Integer> tabNumbers = new HashMap<>();
+        // Exported playback entries by playback URL, the most recent one wins
+        private final Map<String, Map<String, Object>> playbacks = new HashMap<>();
+        // Exported query entries, most recent last
+        private final List<Map<String, Object>> queries = new ArrayList<>();
+
+        void link(Map<String, Object> jsonEntry, Map<String, String> entry, NavigationHistoryAction action) {
+            // Back/forward and reload report the referrer of the original page load, not where the user came from
+            boolean hasParent = action != NavigationHistoryAction.QUERY
+                    && action != NavigationHistoryAction.BROWSER_HISTORY_NAVIGATION
+                    && action != NavigationHistoryAction.PAGE_RELOADED;
+            Map<String, Object> parent = hasParent ? findParent(entry.get("referrer")) : null;
+            if (parent != null) {
+                jsonEntry.put("from", parent.get("number"));
+            }
+
+            // Failed playback has no tab ID of its own, it happened in the tab of the page it was opened from
+            Object tab = tabNumber(entry.get("tabId"));
+            if (tab == null && parent != null) {
+                tab = parent.get("tab");
+            }
+            if (tab != null) {
+                jsonEntry.put("tab", tab);
+            }
+
+            if (action == NavigationHistoryAction.QUERY) {
+                queries.add(jsonEntry);
+            } else {
+                playbacks.put(withoutFragment(entry.get("url")), jsonEntry);
+            }
+        }
+
+        private Integer tabNumber(String tabId) {
+            if (tabId == null || tabId.isEmpty()) {
+                return null;
+            }
+            return tabNumbers.computeIfAbsent(tabId, id -> tabNumbers.size() + 1);
+        }
+
+        private Map<String, Object> findParent(String referrer) {
+            if (referrer == null || referrer.isEmpty()) {
+                return null;
+            }
+            Map<String, Object> playback = playbacks.get(withoutFragment(referrer));
+            if (playback != null || referrer.contains("/services/") || !referrer.contains("query=")) {
+                return playback;
+            }
+
+            // A search page: the most recent search for the same query and facets
+            String query = extractQueryFromUrl(referrer);
+            String facets = extractFacetsFromUrl(referrer);
+            for (int i = queries.size() - 1; i >= 0; i--) {
+                Map<String, Object> queryEntry = queries.get(i);
+                if (Objects.equals(query, queryEntry.get("query")) && Objects.equals(facets, queryEntry.get("facets"))) {
+                    return queryEntry;
+                }
+            }
+            return null;
+        }
+
+        private static String withoutFragment(String url) {
+            if (url == null) {
+                return null;
+            }
+            int hashIndex = url.indexOf('#');
+            return hashIndex == -1 ? url : url.substring(0, hashIndex);
+        }
     }
 
     /**

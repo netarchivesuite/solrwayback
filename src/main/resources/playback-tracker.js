@@ -14,6 +14,33 @@
     // Clicks on playback links are kept in localStorage, so the page they open can read them, also in a new tab
     var CLICKS_KEY = 'solrwaybackNavigationClicks';
     var CLICK_MAX_AGE_MS = 60000;
+    // Per-tab ID kept in sessionStorage, shared with the search page (NavigationTrackingUtils.js)
+    var TAB_ID_KEY = 'solrwaybackTabId';
+    var tabId = getTabId();
+
+    /**
+     * The ID of this browser tab, so entries from different tabs can be told apart in the history.
+     */
+    function getTabId() {
+        try {
+            var id = sessionStorage.getItem(TAB_ID_KEY);
+            try {
+                // Tabs opened by script get a copy of the opener's sessionStorage, and with it the opener's ID
+                if (id && window.opener && window.opener.sessionStorage.getItem(TAB_ID_KEY) === id) {
+                    id = null;
+                }
+            } catch (e) {
+                // Opener on another origin
+            }
+            if (!id) {
+                id = Date.now().toString(36) + Math.random().toString(36).substring(2, 10);
+                sessionStorage.setItem(TAB_ID_KEY, id);
+            }
+            return id;
+        } catch (e) {
+            return null;
+        }
+    }
 
     function withoutFragment(url) {
         var hashIndex = url.indexOf('#');
@@ -127,7 +154,8 @@
         var data = {
             url: url,
             waybackDate: match[1],
-            originalUrl: match[2]
+            originalUrl: match[2],
+            tabId: tabId
         };
         for (var key in navigation) {
             data[key] = navigation[key];
@@ -168,7 +196,7 @@
     setInterval(function() {
         var currentUrl = location.href;
         if (currentUrl !== lastUrl) {
-            trackPlayback(currentUrl, { sameDocument: true });
+            trackPlayback(currentUrl, { sameDocument: true, referrer: lastUrl });
             lastUrl = currentUrl;
         }
     }, 500);

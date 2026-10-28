@@ -57,6 +57,7 @@ public class NavigationHistoryResource {
             Map<String, String> entry = new HashMap<>();
             entry.put("url", url);
             entry.put("timestamp", timestamp);
+            entry.put("tabId", (String) data.get("tabId"));
 
             if (!addToHistory(session, history, entry)) {
                 return historyTooLargeResponse();
@@ -93,9 +94,10 @@ public class NavigationHistoryResource {
             String archivalDate = convertWaybackDate2SolrDate((String) data.get("waybackDate"));
             // Truncate to seconds so we don't include fractional seconds (e.g. 2026-03-02T18:05:57Z)
             String timestamp = DATE_FORMAT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS));
+            String referrer = (String) data.get("referrer");
             NavigationHistoryAction action = NavigationHistoryUtils.classifyPlayback(
                     url,
-                    (String) data.get("referrer"),
+                    referrer,
                     (String) data.get("navigationType"),
                     (String) data.get("clickSource"),
                     Boolean.TRUE.equals(data.get("sameDocument")));
@@ -106,6 +108,8 @@ public class NavigationHistoryResource {
             entry.put("date", archivalDate);
             entry.put("timestamp", timestamp);
             entry.put("action", action.name());
+            entry.put("tabId", (String) data.get("tabId"));
+            entry.put("referrer", referrer);
 
             if (!addToHistory(session, history, entry)) {
                 return historyTooLargeResponse();
@@ -149,6 +153,8 @@ public class NavigationHistoryResource {
             entry.put("date", convertWaybackDate2SolrDate(waybackDate));
             entry.put("timestamp", DATE_FORMAT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS)));
             entry.put("action", NavigationHistoryAction.PLAYBACK_FAILED.name());
+            // The not found page cannot report its tab, the export takes the tab of the referring page instead
+            entry.put("referrer", request.getHeader("Referer"));
 
             if (addToHistory(session, getHistory(session), entry)) {
                 log.debug("Tracked failed playback: {}", archivedUrl);
