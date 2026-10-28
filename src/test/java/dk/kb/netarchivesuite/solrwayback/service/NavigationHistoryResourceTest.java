@@ -1,9 +1,10 @@
 package dk.kb.netarchivesuite.solrwayback.service;
 
 import dk.kb.netarchivesuite.solrwayback.UnitTestUtils;
+import dk.kb.netarchivesuite.solrwayback.service.NavigationHistoryResource.History;
+import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.NavigationHistoryAction;
-import dk.kb.netarchivesuite.solrwayback.util.NavigationHistoryUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,6 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -61,10 +65,10 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
 
         // Verify session interactions
         verify(mockSession).setMaxInactiveInterval(43200);
-        ArgumentCaptor<List> historyCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<History> historyCaptor = ArgumentCaptor.forClass(History.class);
         verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
 
-        List<Map<String, String>> capturedHistory = historyCaptor.getValue();
+        List<Map<String, String>> capturedHistory = historyCaptor.getValue().entries();
         assertEquals(1, capturedHistory.size());
         assertEquals("http://localhost:8080/search?query=test", capturedHistory.get(0).get("url"));
         assertNotNull(capturedHistory.get(0).get("timestamp"));
@@ -84,7 +88,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         existingHistory.add(existingEntry);
 
         when(mockRequest.getSession(true)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(existingHistory);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(existingHistory));
 
         Map<String, Object> data = new HashMap<>();
         data.put("url", "http://localhost:8080/search?query=second");
@@ -143,10 +147,10 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
 
         // Verify session interactions
         verify(mockSession).setMaxInactiveInterval(43200);
-        ArgumentCaptor<List> historyCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<History> historyCaptor = ArgumentCaptor.forClass(History.class);
         verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
 
-        List<Map<String, String>> capturedHistory = historyCaptor.getValue();
+        List<Map<String, String>> capturedHistory = historyCaptor.getValue().entries();
         assertEquals(1, capturedHistory.size());
         assertEquals("http://example.com/page.html", capturedHistory.get(0).get("originalUrl"));
         assertNotNull(capturedHistory.get(0).get("timestamp"));
@@ -176,9 +180,9 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
 
         // Verify
         assertEquals(200, response.getStatus());
-        ArgumentCaptor<List> historyCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<History> historyCaptor = ArgumentCaptor.forClass(History.class);
         verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
-        List<Map<String, String>> capturedHistory = historyCaptor.getValue();
+        List<Map<String, String>> capturedHistory = historyCaptor.getValue().entries();
         assertEquals(NavigationHistoryAction.SEARCH_RESULT_CLICKED.name(), capturedHistory.get(0).get("action"));
         assertEquals("tab-a", capturedHistory.get(0).get("tabId"));
         assertEquals("http://localhost:8080/solrwayback/search/test?query=test", capturedHistory.get(0).get("referrer"));
@@ -201,9 +205,9 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         resource.trackSearch(mockRequest, data);
 
         // Verify
-        ArgumentCaptor<List> historyCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<History> historyCaptor = ArgumentCaptor.forClass(History.class);
         verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
-        Map<String, String> entry = (Map<String, String>) historyCaptor.getValue().get(0);
+        Map<String, String> entry = historyCaptor.getValue().entries().get(0);
         assertEquals("tab-a", entry.get("tabId"));
     }
 
@@ -216,7 +220,8 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         when(mockRequest.getHeader("Sec-Fetch-Dest")).thenReturn("document");
         when(mockRequest.getHeader("Referer")).thenReturn("http://localhost:8080/solrwayback/services/web/20051102141713/http://www.yahooligans.com");
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new ArrayList<>());
+        History history = new History();
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
 
         // Execute
         NavigationHistoryResource.trackFailedPlayback(mockRequest,
@@ -224,9 +229,8 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
                 "20051102141713", "http://yahooligans.yahoo.com/content/news/");
 
         // Verify
-        ArgumentCaptor<List> historyCaptor = ArgumentCaptor.forClass(List.class);
-        verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
-        Map<String, String> entry = (Map<String, String>) historyCaptor.getValue().get(0);
+        assertEquals(1, history.size());
+        Map<String, String> entry = history.entries().get(0);
         assertEquals(NavigationHistoryAction.PLAYBACK_FAILED.name(), entry.get("action"));
         assertEquals("http://yahooligans.yahoo.com/content/news/", entry.get("originalUrl"));
         assertEquals("2005-11-02T14:17:13Z", entry.get("date"));
@@ -285,7 +289,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         existingHistory.add(existingEntry);
 
         when(mockRequest.getSession(true)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(existingHistory);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(existingHistory));
 
         Map<String, Object> data = new HashMap<>();
         data.put("url", "http://localhost:8080/services/web/20210101120000/http://example.com/second.html");
@@ -350,7 +354,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
     public void testGetCountEmptyHistory() {
         // Setup
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new ArrayList<>());
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History());
 
         // Execute
         Response response = resource.getCount(mockRequest);
@@ -373,7 +377,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         history.add(createHistoryEntry("url3", "2025-12-22 10:02:00"));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.getCount(mockRequest);
@@ -413,7 +417,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
     public void testDownloadHistoryEmptyHistory() {
         // Setup
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new ArrayList<>());
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History());
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -436,7 +440,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         history.add(createSearchEntry("http://localhost:8080/search?query=example", "2025-12-22 10:01:00"));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -471,7 +475,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         history.add(createSearchEntry(urlWithFacets, "2025-12-22 10:00:00"));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -508,7 +512,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         ));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -551,7 +555,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         ));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -602,7 +606,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         ));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -641,7 +645,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         history.add(createEntry("url", result1, "action", "BROWSER_HISTORY_NAVIGATION", "tabId", "tab-b", "referrer", searchPage));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -669,7 +673,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         history.add(createSearchEntry("http://localhost:8080/search?query=different", "2025-12-22 10:00:02"));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -693,7 +697,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         history.add(createSearchEntry("http://localhost:8080/search?query=hello+world", "2025-12-22 10:00:00"));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -739,7 +743,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         history.add(createHistoryEntry("url2", "2025-12-22 10:01:00"));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.clearHistory(mockRequest);
@@ -782,7 +786,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         history.add(createSearchEntry("http://localhost:8080/search?query=%22exact+phrase%22", "2025-12-22 10:00:00"));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -819,7 +823,7 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         ));
 
         when(mockRequest.getSession(false)).thenReturn(mockSession);
-        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new History(history));
 
         // Execute
         Response response = resource.downloadHistory(mockRequest);
@@ -862,12 +866,78 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
             assertFalse((Boolean) entity.get("success"));
             assertEquals("Navigation history size limit exceeded", entity.get("error"));
 
-            // Verify session was not mutated — setAttribute must never be called with the history key when rejected
-            verify(mockSession, never()).setAttribute(eq(SESSION_KEY), any());
+            // Verify the entry was not stored
+            ArgumentCaptor<History> historyCaptor = ArgumentCaptor.forClass(History.class);
+            verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
+            assertEquals(0, historyCaptor.getValue().size());
         } finally {
             // Restore original limit
             NavigationHistoryResource.MAX_HISTORY_BYTES = original;
         }
+    }
+
+    /**
+     * Test that the size of the history is counted as the size of the whole history as JSON
+     */
+    @Test
+    public void testHistorySizeLimitMatchesJsonSize() {
+        Map<String, String> first = createHistoryEntry("url1", "2025-12-22 10:00:00");
+        Map<String, String> second = createHistoryEntry("url2", "2025-12-22 10:01:00");
+        long original = NavigationHistoryResource.MAX_HISTORY_BYTES;
+        NavigationHistoryResource.MAX_HISTORY_BYTES = JsonUtils.toJSON(List.of(first, second)).length();
+
+        try {
+            History history = new History();
+            assertTrue(history.add(first));
+            assertTrue(history.add(second));
+            assertFalse(history.add(createHistoryEntry("url3", "2025-12-22 10:02:00")));
+            assertEquals(2, history.size());
+        } finally {
+            NavigationHistoryResource.MAX_HISTORY_BYTES = original;
+        }
+    }
+
+    /**
+     * Test that no entries are lost when requests from the same session add to the history at the same time
+     */
+    @Test
+    public void testHistoryConcurrentAdds() throws InterruptedException {
+        History history = new History();
+        ExecutorService executor = Executors.newFixedThreadPool(8);
+        for (int i = 0; i < 1000; i++) {
+            String url = "url" + i;
+            executor.execute(() -> history.add(createHistoryEntry(url, "2025-12-22 10:00:00")));
+        }
+        executor.shutdown();
+        assertTrue(executor.awaitTermination(30, TimeUnit.SECONDS));
+
+        assertEquals(1000, history.size());
+    }
+
+    /**
+     * Test that a history stored as a plain list by an earlier version is converted and kept
+     */
+    @Test
+    public void testTrackSearchConvertsListHistory() {
+        // Setup
+        List<Map<String, String>> listHistory = new ArrayList<>();
+        listHistory.add(createSearchEntry("http://localhost:8080/search?query=first", "2025-12-22 10:00:00"));
+        when(mockRequest.getSession(true)).thenReturn(mockSession);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(listHistory);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("url", "http://localhost:8080/search?query=second");
+
+        // Execute
+        resource.trackSearch(mockRequest, data);
+
+        // Verify
+        ArgumentCaptor<History> historyCaptor = ArgumentCaptor.forClass(History.class);
+        verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
+        List<Map<String, String>> entries = historyCaptor.getValue().entries();
+        assertEquals(2, entries.size());
+        assertEquals("http://localhost:8080/search?query=first", entries.get(0).get("url"));
+        assertEquals("http://localhost:8080/search?query=second", entries.get(1).get("url"));
     }
 
     // Helper methods

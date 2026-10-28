@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation.NormaliseType;
+import dk.kb.netarchivesuite.solrwayback.service.NavigationHistoryResource.History;
 import dk.kb.netarchivesuite.solrwayback.service.SolrWaybackResource;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
@@ -23,8 +24,6 @@ import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -182,7 +181,6 @@ public class PathResolverWaybackAPIResolverTest {
     public void testNeverHarvestedPageIsTrackedAsFailedPlayback() throws Exception {
         new CapturingSolrClient(null).install();
         HttpSession session = Mockito.mock(HttpSession.class);
-        Mockito.when(session.getAttribute("solrwayback_query_history")).thenReturn(new ArrayList<>());
         Mockito.when(httpRequest.getSession(false)).thenReturn(session);
         Mockito.when(httpRequest.getHeader("Sec-Fetch-Dest")).thenReturn("document");
         Mockito.when(uriInfo.getRequestUri()).thenReturn(URI.create(
@@ -195,9 +193,9 @@ public class PathResolverWaybackAPIResolverTest {
             assertTrue(e.getCause() instanceof NotFoundServiceException);
         }
 
-        ArgumentCaptor<List> historyCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<History> historyCaptor = ArgumentCaptor.forClass(History.class);
         Mockito.verify(session).setAttribute(Mockito.eq("solrwayback_query_history"), historyCaptor.capture());
-        Map<String, String> entry = (Map<String, String>) historyCaptor.getValue().get(0);
+        Map<String, String> entry = historyCaptor.getValue().entries().get(0);
         assertEquals(NavigationHistoryAction.PLAYBACK_FAILED.name(), entry.get("action"));
         assertEquals("http://example.com/missing.html", entry.get("originalUrl"));
         assertTrue(entry.get("url").endsWith("services/web/" + WAYBACK_DATE + "/http://example.com/missing.html"));

@@ -13,6 +13,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -29,6 +31,8 @@ public class NavigationHistoryResource {
 
     private static final Logger log = LoggerFactory.getLogger(NavigationHistoryResource.class);
     private static final String SESSION_KEY = "solrwayback_query_history";
+    // Guards creating the history of a session
+    private static final Object SESSION_LOCK = new Object();
 
     // Use ISO-8601 UTC format, e.g. 2005-01-01T12:00:00Z
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ISO_INSTANT;
@@ -48,7 +52,7 @@ public class NavigationHistoryResource {
             HttpSession session = request.getSession(true);
             session.setMaxInactiveInterval(43200); // 12 hours
 
-            List<Map<String, String>> history = getHistory(session);
+            History history = getHistory(session, true);
 
             String url = (String) data.get("url");
             // Truncate to seconds so we don't include fractional seconds (e.g. 2026-03-02T18:05:57Z)
@@ -59,7 +63,7 @@ public class NavigationHistoryResource {
             entry.put("timestamp", timestamp);
             entry.put("tabId", (String) data.get("tabId"));
 
-            if (!addToHistory(session, history, entry)) {
+            if (!history.add(entry)) {
                 return historyTooLargeResponse();
             }
 
@@ -87,7 +91,7 @@ public class NavigationHistoryResource {
         try {
             HttpSession session = request.getSession(true);
             session.setMaxInactiveInterval(43200); // 12 hours
-            List<Map<String, String>> history = getHistory(session);
+            History history = getHistory(session, true);
 
             String url = (String) data.get("url");
             String originalUrl = (String) data.get("originalUrl");
@@ -111,7 +115,7 @@ public class NavigationHistoryResource {
             entry.put("tabId", (String) data.get("tabId"));
             entry.put("referrer", referrer);
 
-            if (!addToHistory(session, history, entry)) {
+            if (!history.add(entry)) {
                 return historyTooLargeResponse();
             }
             log.debug("Tracked playback ({}): {}", action, url);
@@ -130,7 +134,7 @@ public class NavigationHistoryResource {
     /**
      * Track a page that was requested for playback but has never been harvested. Called from playback itself,
      * as the tracking script is not part of the not found page. Only requests for a whole page are tracked, not
-     * missing images, stylesheets, frames etc., and only for sessions that already have a navigation history.
+     * missing images, stylesheets, frames etc., and only for sessions that exist.
      *
      * @param request     the playback request
      * @param archivedUrl the requested playback URL
@@ -156,7 +160,7 @@ public class NavigationHistoryResource {
             // The not found page cannot report its tab, the export takes the tab of the referring page instead
             entry.put("referrer", request.getHeader("Referer"));
 
-            if (addToHistory(session, getHistory(session), entry)) {
+            if (getHistory(session, true).add(entry)) {
                 log.debug("Tracked failed playback: {}", archivedUrl);
             }
         } catch (Exception e) {
@@ -188,11 +192,8 @@ public class NavigationHistoryResource {
     public Response getCount(@Context HttpServletRequest request) {
         try {
             HttpSession session = request.getSession(false);
-            int count = 0;
-            if (session != null) {
-                List<Map<String, String>> history = getHistory(session);
-                count = history.size();
-            }
+            History history = session == null ? null : getHistory(session, false);
+            int count = history == null ? 0 : history.size();
             return Response.ok()
                     .entity(Map.of("count", count))
                     .build();
@@ -222,8 +223,9 @@ public class NavigationHistoryResource {
                         .build();
             }
 
-            List<Map<String, String>> history = getHistory(session);
-            List<Map<String, Object>> formattedHistory = NavigationHistoryUtils.formatHistoryAsJson(history);
+            History history = getHistory(session, false);
+            List<Map<String, String>> entries = history == null ? new ArrayList<>() : history.entries();
+            List<Map<String, Object>> formattedHistory = NavigationHistoryUtils.formatHistoryAsJson(entries);
 
             log.info("Downloading query history with {} entries", formattedHistory.size());
 
@@ -262,35 +264,28 @@ public class NavigationHistoryResource {
     }
 
     /**
-     * Get history list from session, creating if necessary
+     * Get history from session.
+     *
+     * @param create whether to create an empty history if the session has none
+     * @return the history, or null if the session has none and create is false
      */
     @SuppressWarnings("unchecked")
-    private static List<Map<String, String>> getHistory(HttpSession session) {
-        Object historyObj = session.getAttribute(SESSION_KEY);
-        if (historyObj instanceof List) {
-            return (List<Map<String, String>>) historyObj;
+    private static History getHistory(HttpSession session, boolean create) {
+        // Locked so that concurrent requests from a new session do not each store a history of their own
+        synchronized (SESSION_LOCK) {
+            Object historyObj = session.getAttribute(SESSION_KEY);
+            if (historyObj instanceof History) {
+                return (History) historyObj;
+            }
+            if (historyObj == null && !create) {
+                return null;
+            }
+            History history = historyObj instanceof List
+                    ? new History((List<Map<String, String>>) historyObj)
+                    : new History();
+            session.setAttribute(SESSION_KEY, history);
+            return history;
         }
-        // Return a new empty list; the caller is responsible for persisting it via setAttribute
-        return new ArrayList<>();
-    }
-
-    /**
-     * Add an entry to the history stored in the session, unless that would make the history too large.
-     *
-     * @return false if the entry was rejected because of the size limit
-     */
-    private static boolean addToHistory(HttpSession session, List<Map<String, String>> history, Map<String, String> entry) {
-        // Check size before mutating the session-stored list
-        List<Map<String, String>> updatedHistory = new ArrayList<>(history);
-        updatedHistory.add(entry);
-        if (isTooLarge(updatedHistory)) {
-            log.warn("Navigation history would exceed {} bytes, rejecting new entry", MAX_HISTORY_BYTES);
-            return false;
-        }
-
-        history.add(entry);
-        session.setAttribute(SESSION_KEY, history);
-        return true;
     }
 
     private static Response historyTooLargeResponse() {
@@ -300,18 +295,70 @@ public class NavigationHistoryResource {
     }
 
     /**
-     * Check whether the serialized history exceeds the maximum allowed size.
-     * Uses the project's JsonUtils to convert to JSON and measures UTF-8 bytes.
+     * The navigation history of one session. 
+     * Multiple requests from a session can run at the same time, e.g. from
+     * several tabs, so the entries are only accessed through the synchronized methods of this class.
      */
-    private static boolean isTooLarge(List<Map<String, String>> history) {
-        try {
-            String json = JsonUtils.toJSON(history);
-            long bytes = json.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
-            return bytes > MAX_HISTORY_BYTES;
-        } catch (RuntimeException e) {
-            // If we cannot measure size for some reason, log a warning and allow the operation.
-            log.warn("Could not determine size of navigation history, allowing update", e);
-            return false;
+    public static class History implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private final List<Map<String, String>> entries = new ArrayList<>();
+        // Size of the entries as a JSON array, kept up to date so the whole history is not serialized on every add
+        private long bytes = 2; // []
+
+        History() {
+        }
+
+        History(List<Map<String, String>> existing) {
+            for (Map<String, String> entry : existing) {
+                append(entry, entryBytes(entry));
+            }
+        }
+
+        /**
+         * Add an entry, unless that would make the history too large.
+         *
+         * @return false if the entry was rejected because of the size limit
+         */
+        synchronized boolean add(Map<String, String> entry) {
+            long entryBytes = entryBytes(entry);
+            if (bytes + entryBytes > MAX_HISTORY_BYTES) {
+                log.warn("Navigation history would exceed {} bytes, rejecting new entry", MAX_HISTORY_BYTES);
+                return false;
+            }
+            append(entry, entryBytes);
+            return true;
+        }
+
+        public synchronized int size() {
+            return entries.size();
+        }
+
+        /**
+         * @return a copy of the entries, safe to use while other requests add to the history
+         */
+        public synchronized List<Map<String, String>> entries() {
+            return new ArrayList<>(entries);
+        }
+
+        private void append(Map<String, String> entry, long entryBytes) {
+            entries.add(entry);
+            bytes += entryBytes;
+        }
+
+        /**
+         * The UTF-8 size of the entry as JSON.
+         * This includes the separating comma if it is not the first entry.
+         */
+        private long entryBytes(Map<String, String> entry) {
+            long separator = entries.isEmpty() ? 0 : 1;
+            try {
+                return JsonUtils.toJSON(entry).getBytes(StandardCharsets.UTF_8).length + separator;
+            } catch (RuntimeException e) {
+                // If we cannot measure size for some reason, log a warning and allow the operation.
+                log.warn("Could not determine size of navigation history entry, allowing update", e);
+                return separator;
+            }
         }
     }
 
