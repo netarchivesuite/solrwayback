@@ -154,6 +154,96 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
 
     
     /**
+     * Test that the action is decided when playback is tracked, from how the page was reached
+     */
+    @Test
+    public void testTrackPlaybackStoresAction() {
+        // Setup
+        when(mockRequest.getSession(true)).thenReturn(mockSession);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(null);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("url", "http://localhost:8080/solrwayback/services/web/20201231120000/http://example.com/page.html");
+        data.put("originalUrl", "http://example.com/page.html");
+        data.put("waybackDate", "20201231120000");
+        data.put("referrer", "http://localhost:8080/solrwayback/search/test?query=test");
+        data.put("navigationType", "navigate");
+        data.put("clickSource", null);
+
+        // Execute
+        Response response = resource.trackPlayback(mockRequest, data);
+
+        // Verify
+        assertEquals(200, response.getStatus());
+        ArgumentCaptor<List> historyCaptor = ArgumentCaptor.forClass(List.class);
+        verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
+        List<Map<String, String>> capturedHistory = historyCaptor.getValue();
+        assertEquals(NavigationHistoryAction.SEARCH_RESULT_CLICKED.name(), capturedHistory.get(0).get("action"));
+    }
+
+    /**
+     * Test that a failed playback of a page is added to an existing history
+     */
+    @Test
+    public void testTrackFailedPlayback() {
+        // Setup
+        when(mockRequest.getHeader("Sec-Fetch-Dest")).thenReturn("document");
+        when(mockRequest.getSession(false)).thenReturn(mockSession);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(new ArrayList<>());
+
+        // Execute
+        NavigationHistoryResource.trackFailedPlayback(mockRequest,
+                "http://localhost:8080/solrwayback/services/web/20051102141713/http://yahooligans.yahoo.com/content/news/",
+                "20051102141713", "http://yahooligans.yahoo.com/content/news/");
+
+        // Verify
+        ArgumentCaptor<List> historyCaptor = ArgumentCaptor.forClass(List.class);
+        verify(mockSession).setAttribute(eq(SESSION_KEY), historyCaptor.capture());
+        Map<String, String> entry = (Map<String, String>) historyCaptor.getValue().get(0);
+        assertEquals(NavigationHistoryAction.PLAYBACK_FAILED.name(), entry.get("action"));
+        assertEquals("http://yahooligans.yahoo.com/content/news/", entry.get("originalUrl"));
+        assertEquals("2005-11-02T14:17:13Z", entry.get("date"));
+        assertNotNull(entry.get("timestamp"));
+    }
+
+    /**
+     * Test that missing resources on a page, e.g. images, are not tracked as failed playback
+     */
+    @Test
+    public void testTrackFailedPlaybackIgnoresResources() {
+        // Setup
+        when(mockRequest.getHeader("Sec-Fetch-Dest")).thenReturn("image");
+        when(mockRequest.getSession(false)).thenReturn(mockSession);
+
+        // Execute
+        NavigationHistoryResource.trackFailedPlayback(mockRequest,
+                "http://localhost:8080/solrwayback/services/web/20051102141713/http://example.com/logo.gif",
+                "20051102141713", "http://example.com/logo.gif");
+
+        // Verify
+        verify(mockSession, never()).setAttribute(eq(SESSION_KEY), any());
+    }
+
+    /**
+     * Test that failed playback falls back to the Accept header and does not create a session
+     */
+    @Test
+    public void testTrackFailedPlaybackWithoutSession() {
+        // Setup
+        when(mockRequest.getHeader("Accept")).thenReturn("text/html,application/xhtml+xml,*/*;q=0.8");
+        when(mockRequest.getSession(false)).thenReturn(null);
+
+        // Execute
+        NavigationHistoryResource.trackFailedPlayback(mockRequest,
+                "http://localhost:8080/solrwayback/services/web/20051102141713/http://example.com/",
+                "20051102141713", "http://example.com/");
+
+        // Verify
+        verify(mockRequest).getSession(false);
+        verify(mockRequest, never()).getSession(true);
+    }
+
+    /**
      * Test tracking playback with multiple entries
      */
     @Test
@@ -453,6 +543,54 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
     }
 
     /**
+     * Test that the tracked action is exported instead of guessing from the order. Two results opened from the
+     * same search are both search results, and failed playback is exported as its own action.
+     */
+    @Test
+    public void testDownloadHistoryUsesTrackedAction() {
+        // Setup
+        List<Map<String, String>> history = new ArrayList<>();
+        history.add(createSearchEntry("http://localhost:8080/search?query=yahooligans", "2026-03-20T11:15:00Z"));
+        history.add(createPlaybackEntry(
+            "http://localhost:8080/services/web/20051102141713/http://www.yahooligans.com",
+            "http://www.yahooligans.com",
+            "2026-03-20T11:16:13Z",
+            "2005-11-02T14:17:13Z",
+            NavigationHistoryAction.SEARCH_RESULT_CLICKED
+        ));
+        history.add(createPlaybackEntry(
+            "http://localhost:8080/services/web/20051102141713/http://yahooligans.yahoo.com/content/news/",
+            "http://yahooligans.yahoo.com/content/news/",
+            "2026-03-20T11:17:42Z",
+            "2005-11-02T14:17:13Z",
+            NavigationHistoryAction.PLAYBACK_FAILED
+        ));
+        history.add(createPlaybackEntry(
+            "http://localhost:8080/services/web/20000607214855/http://www4.yahooligans.com:80/",
+            "http://www4.yahooligans.com:80/",
+            "2026-03-20T11:17:50Z",
+            "2000-06-07T21:48:55Z",
+            NavigationHistoryAction.SEARCH_RESULT_CLICKED
+        ));
+
+        when(mockRequest.getSession(false)).thenReturn(mockSession);
+        when(mockSession.getAttribute(SESSION_KEY)).thenReturn(history);
+
+        // Execute
+        Response response = resource.downloadHistory(mockRequest);
+
+        // Verify
+        assertEquals(200, response.getStatus());
+        List<Map<String, Object>> entity = (List<Map<String, Object>>) response.getEntity();
+        assertEquals(4, entity.size());
+        assertEquals(NavigationHistoryAction.SEARCH_RESULT_CLICKED, entity.get(1).get("action"));
+        assertEquals(NavigationHistoryAction.PLAYBACK_FAILED, entity.get(2).get("action"));
+        assertEquals("http://yahooligans.yahoo.com/content/news/", entity.get(2).get("url"));
+        assertEquals("2026-03-20T11:17:42Z", entity.get(2).get("timestamp"));
+        assertEquals(NavigationHistoryAction.SEARCH_RESULT_CLICKED, entity.get(3).get("action"));
+    }
+
+    /**
      * Test downloading history filters duplicate search queries
      */
     @Test
@@ -691,6 +829,12 @@ public class NavigationHistoryResourceTest extends UnitTestUtils {
         entry.put("originalUrl", originalUrl);
         entry.put("timestamp", timestamp);
         entry.put("date", date);
+        return entry;
+    }
+
+    private Map<String, String> createPlaybackEntry(String url, String originalUrl, String timestamp, String date, NavigationHistoryAction action) {
+        Map<String, String> entry = createPlaybackEntry(url, originalUrl, timestamp, date);
+        entry.put("action", action.name());
         return entry;
     }
 }

@@ -135,20 +135,61 @@ public class NavigationHistoryUtils {
     }
 
     /**
-     * Populate a playback link entry in the result list. Distinguishes between clicks from search results vs. links within playback.
+     * Decide how a playback page was reached, from what the browser reported when the page was shown.
+     *
+     * @param url            the playback URL, e.g. https://host/solrwayback/services/web/20051102141713/http://example.com/
+     * @param referrer       {@code document.referrer} of the playback page, may be null or empty
+     * @param navigationType the browser's navigation type: "navigate", "reload" or "back_forward", may be null
+     * @param clickSource    "toolbar" or "page link" if the previous page recorded a click on a link to this page, else null
+     * @param sameDocument   true if the URL changed without loading a new page (anchor or history.pushState)
      */
-    public static int populateResultEntries(int actionNumber, boolean lastWasPlayback, String timestamp, String date, String originalUrl, List<Map<String, Object>> result, String url) {
+    public static NavigationHistoryAction classifyPlayback(String url, String referrer, String navigationType, String clickSource, boolean sameDocument) {
+        // Determine how a playback page was reached
+        if (sameDocument) {
+            return NavigationHistoryAction.PLAYBACK_NAVIGATION;
+        }
+        if ("back_forward".equals(navigationType)) {
+            return NavigationHistoryAction.BROWSER_HISTORY_NAVIGATION;
+        }
+        if ("reload".equals(navigationType)) {
+            return NavigationHistoryAction.PAGE_RELOADED;
+        }
+        if ("toolbar".equals(clickSource)) {
+            return NavigationHistoryAction.TOOLBAR_LINK_CLICKED;
+        }
+        if ("page link".equals(clickSource)) {
+            return NavigationHistoryAction.PLAYBACK_LINK_CLICKED;
+        }
+        if (referrer == null || referrer.isEmpty()) {
+            return NavigationHistoryAction.DIRECT_NAVIGATION;
+        }
+
+        // The SolrWayback frontend and playback share the base URL, e.g. https://host/solrwayback/
+        int servicesIndex = url == null ? -1 : url.indexOf("services/");
+        if (servicesIndex == -1 || !referrer.startsWith(url.substring(0, servicesIndex))) {
+            return NavigationHistoryAction.OTHER_NAVIGATION;
+        }
+        String page = referrer.substring(servicesIndex);
+        if (page.startsWith("services/web/") || page.startsWith("services/lenient/web/") || page.startsWith("services/view")) {
+            return NavigationHistoryAction.PLAYBACK_NAVIGATION;
+        }
+        if (page.startsWith("calendar")) {
+            return NavigationHistoryAction.CALENDAR_LINK_CLICKED;
+        }
+        if (page.isEmpty() || page.startsWith("search") || page.startsWith("?")) {
+            return NavigationHistoryAction.SEARCH_RESULT_CLICKED;
+        }
+        return NavigationHistoryAction.OTHER_NAVIGATION;
+    }
+
+    /**
+     * Populate a playback entry in the result list.
+     */
+    public static int populateResultEntries(int actionNumber, NavigationHistoryAction action, String timestamp, String date, String originalUrl, List<Map<String, Object>> result, String url) {
         // Playback URL
         Map<String, Object> jsonEntry = new LinkedHashMap<>();
         jsonEntry.put("number", actionNumber++);
-
-        // Distinguish between clicks from search results vs. links within playback
-        if (lastWasPlayback) {
-            jsonEntry.put("action", NavigationHistoryAction.PLAYBACK_LINK_CLICKED);
-        } else {
-            jsonEntry.put("action", NavigationHistoryAction.SEARCH_RESULT_CLICKED);
-        }
-
+        jsonEntry.put("action", action);
         jsonEntry.put("timestamp", timestamp);
         jsonEntry.put("date", date);
         jsonEntry.put("url", originalUrl != null ? originalUrl : "unknown");
@@ -173,6 +214,7 @@ public class NavigationHistoryUtils {
             String timestamp = entry.get("timestamp");
             String date = entry.get("date");
             String originalUrl = entry.get("originalUrl");
+            NavigationHistoryAction storedAction = parseAction(entry.get("action"));
 
             // Determine if this is a search query or playback URL
             if (url.contains("/search?query=")) {
@@ -182,13 +224,34 @@ public class NavigationHistoryUtils {
                     lastUrl = url;
                     lastWasPlayback = false;
                 }
-            } else if (url.contains("/services/web/")) {
-                actionNumber = populateResultEntries(actionNumber, lastWasPlayback, timestamp, date, originalUrl, result, url);
+            } else if (storedAction != null || url.contains("/services/web/")) {
+                // Entries tracked before the action was recorded fall back to guessing from the order:
+                // the first playback after a search is a search result, the following ones are links
+                NavigationHistoryAction action = storedAction;
+                if (action == null) {
+                    action = lastWasPlayback ? NavigationHistoryAction.PLAYBACK_LINK_CLICKED : NavigationHistoryAction.SEARCH_RESULT_CLICKED;
+                }
+                actionNumber = populateResultEntries(actionNumber, action, timestamp, date, originalUrl, result, url);
                 lastUrl = null;  // Reset so next search is always tracked
                 lastWasPlayback = true;
             }
         }
 
         return result;
+    }
+
+    /**
+     * Parse the action stored with a history entry, or null if none or unknown.
+     */
+    private static NavigationHistoryAction parseAction(String action) {
+        if (action == null) {
+            return null;
+        }
+        try {
+            return NavigationHistoryAction.valueOf(action);
+        } catch (IllegalArgumentException e) {
+            log.warn("Unknown navigation history action: {}", action);
+            return null;
+        }
     }
 }

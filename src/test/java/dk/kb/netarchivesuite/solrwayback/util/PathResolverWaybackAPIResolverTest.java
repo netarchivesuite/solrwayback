@@ -2,22 +2,30 @@ package dk.kb.netarchivesuite.solrwayback.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation.NormaliseType;
 import dk.kb.netarchivesuite.solrwayback.service.SolrWaybackResource;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
+import dk.kb.netarchivesuite.solrwayback.service.exception.NotFoundServiceException;
 import dk.kb.netarchivesuite.solrwayback.service.exception.SolrWaybackServiceException;
 import dk.kb.netarchivesuite.solrwayback.solr.NetarchiveSolrClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Unit tests for {@link PathResolver#waybackAPIResolverHelper}.
@@ -165,5 +173,33 @@ public class PathResolverWaybackAPIResolverTest {
                 "http://localhost:8080/solrwayback/services" + BASE_PATH + WAYBACK_DATE + "/http://example.com/page.html");
 
         assertEquals("2012-01-01T12:00:00Z", solrClient.capturedDate);
+    }
+
+    /**
+     * A page that has never been harvested is added to the navigation history as failed playback.
+     */
+    @Test
+    public void testNeverHarvestedPageIsTrackedAsFailedPlayback() throws Exception {
+        new CapturingSolrClient(null).install();
+        HttpSession session = Mockito.mock(HttpSession.class);
+        Mockito.when(session.getAttribute("solrwayback_query_history")).thenReturn(new ArrayList<>());
+        Mockito.when(httpRequest.getSession(false)).thenReturn(session);
+        Mockito.when(httpRequest.getHeader("Sec-Fetch-Dest")).thenReturn("document");
+        Mockito.when(uriInfo.getRequestUri()).thenReturn(URI.create(
+                "http://localhost:8080/solrwayback/services" + BASE_PATH + WAYBACK_DATE + "/http://example.com/missing.html"));
+
+        try {
+            PathResolver.waybackAPIResolverHelper(stubResource(), BASE_PATH, uriInfo, httpRequest, "ignored", false);
+            fail("Expected the never harvested page to fail");
+        } catch (RuntimeException e) {
+            assertTrue(e.getCause() instanceof NotFoundServiceException);
+        }
+
+        ArgumentCaptor<List> historyCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(session).setAttribute(Mockito.eq("solrwayback_query_history"), historyCaptor.capture());
+        Map<String, String> entry = (Map<String, String>) historyCaptor.getValue().get(0);
+        assertEquals(NavigationHistoryAction.PLAYBACK_FAILED.name(), entry.get("action"));
+        assertEquals("http://example.com/missing.html", entry.get("originalUrl"));
+        assertTrue(entry.get("url").endsWith("services/web/" + WAYBACK_DATE + "/http://example.com/missing.html"));
     }
 }

@@ -2,6 +2,7 @@ package dk.kb.netarchivesuite.solrwayback.service;
 
 import dk.kb.netarchivesuite.solrwayback.util.DateUtils;
 import dk.kb.netarchivesuite.solrwayback.util.JsonUtils;
+import dk.kb.netarchivesuite.solrwayback.util.NavigationHistoryAction;
 import dk.kb.netarchivesuite.solrwayback.util.NavigationHistoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,18 +58,9 @@ public class NavigationHistoryResource {
             entry.put("url", url);
             entry.put("timestamp", timestamp);
 
-            // Check size before mutating the session-stored list
-            List<Map<String, String>> updatedHistory = new ArrayList<>(history);
-            updatedHistory.add(entry);
-            if (isTooLarge(updatedHistory)) {
-                log.warn("Navigation history would exceed {} bytes, rejecting new entry", MAX_HISTORY_BYTES);
-                return Response.status(413)
-                        .entity(Map.of("success", false, "error", "Navigation history size limit exceeded"))
-                        .build();
+            if (!addToHistory(session, history, entry)) {
+                return historyTooLargeResponse();
             }
-
-            history.add(entry);
-            session.setAttribute(SESSION_KEY, history);
 
             log.debug("Tracked search query: {}", url);
 
@@ -101,26 +93,24 @@ public class NavigationHistoryResource {
             String archivalDate = convertWaybackDate2SolrDate((String) data.get("waybackDate"));
             // Truncate to seconds so we don't include fractional seconds (e.g. 2026-03-02T18:05:57Z)
             String timestamp = DATE_FORMAT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS));
+            NavigationHistoryAction action = NavigationHistoryUtils.classifyPlayback(
+                    url,
+                    (String) data.get("referrer"),
+                    (String) data.get("navigationType"),
+                    (String) data.get("clickSource"),
+                    Boolean.TRUE.equals(data.get("sameDocument")));
 
             Map<String, String> entry = new HashMap<>();
             entry.put("url", url);
             entry.put("originalUrl", originalUrl);
             entry.put("date", archivalDate);
             entry.put("timestamp", timestamp);
+            entry.put("action", action.name());
 
-            // Check size before mutating the session-stored list
-            List<Map<String, String>> updatedHistory = new ArrayList<>(history);
-            updatedHistory.add(entry);
-            if (isTooLarge(updatedHistory)) {
-                log.warn("Navigation history would exceed {} bytes, rejecting new entry", MAX_HISTORY_BYTES);
-                return Response.status(413)
-                        .entity(Map.of("success", false, "error", "Navigation history size limit exceeded"))
-                        .build();
+            if (!addToHistory(session, history, entry)) {
+                return historyTooLargeResponse();
             }
-
-            history.add(entry);
-            session.setAttribute(SESSION_KEY, history);
-            log.debug("Tracked playback: {}", url);
+            log.debug("Tracked playback ({}): {}", action, url);
 
             return Response.ok()
                     .entity(Map.of("success", true, "count", history.size()))
@@ -131,6 +121,56 @@ public class NavigationHistoryResource {
                     .entity(Map.of("success", false, "error", e.getMessage()))
                     .build();
         }
+    }
+
+    /**
+     * Track a page that was requested for playback but has never been harvested. Called from playback itself,
+     * as the tracking script is not part of the not found page. Only requests for a whole page are tracked, not
+     * missing images, stylesheets, frames etc., and only for sessions that already have a navigation history.
+     *
+     * @param request     the playback request
+     * @param archivedUrl the requested playback URL
+     * @param waybackDate the requested capture date, e.g. 20051102141713
+     * @param originalUrl the requested URL of the original resource
+     */
+    public static void trackFailedPlayback(HttpServletRequest request, String archivedUrl, String waybackDate, String originalUrl) {
+        try {
+            if (!isPageRequest(request)) {
+                return;
+            }
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                return;
+            }
+
+            Map<String, String> entry = new HashMap<>();
+            entry.put("url", archivedUrl);
+            entry.put("originalUrl", originalUrl);
+            entry.put("date", convertWaybackDate2SolrDate(waybackDate));
+            entry.put("timestamp", DATE_FORMAT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS)));
+            entry.put("action", NavigationHistoryAction.PLAYBACK_FAILED.name());
+
+            if (addToHistory(session, getHistory(session), entry)) {
+                log.debug("Tracked failed playback: {}", archivedUrl);
+            }
+        } catch (Exception e) {
+            // Tracking must never break playback
+            log.warn("Error tracking failed playback for url: {}", archivedUrl, e);
+        }
+    }
+
+    /**
+     * Whether the request is for a page shown in the browser window, as opposed to a resource on a page.
+     * Uses the Sec-Fetch-Dest header and falls back to the Accept header for browsers without it.
+     */
+    static boolean isPageRequest(HttpServletRequest request) {
+        // Sec-Fetch-Header describes what the browser is doing with the request.
+        String fetchDest = request.getHeader("Sec-Fetch-Dest");
+        if (fetchDest != null) {
+            return "document".equals(fetchDest);
+        }
+        String accept = request.getHeader("Accept");
+        return accept != null && accept.contains("text/html");
     }
 
     /**
@@ -219,7 +259,7 @@ public class NavigationHistoryResource {
      * Get history list from session, creating if necessary
      */
     @SuppressWarnings("unchecked")
-    private List<Map<String, String>> getHistory(HttpSession session) {
+    private static List<Map<String, String>> getHistory(HttpSession session) {
         Object historyObj = session.getAttribute(SESSION_KEY);
         if (historyObj instanceof List) {
             return (List<Map<String, String>>) historyObj;
@@ -229,10 +269,35 @@ public class NavigationHistoryResource {
     }
 
     /**
+     * Add an entry to the history stored in the session, unless that would make the history too large.
+     *
+     * @return false if the entry was rejected because of the size limit
+     */
+    private static boolean addToHistory(HttpSession session, List<Map<String, String>> history, Map<String, String> entry) {
+        // Check size before mutating the session-stored list
+        List<Map<String, String>> updatedHistory = new ArrayList<>(history);
+        updatedHistory.add(entry);
+        if (isTooLarge(updatedHistory)) {
+            log.warn("Navigation history would exceed {} bytes, rejecting new entry", MAX_HISTORY_BYTES);
+            return false;
+        }
+
+        history.add(entry);
+        session.setAttribute(SESSION_KEY, history);
+        return true;
+    }
+
+    private static Response historyTooLargeResponse() {
+        return Response.status(413)
+                .entity(Map.of("success", false, "error", "Navigation history size limit exceeded"))
+                .build();
+    }
+
+    /**
      * Check whether the serialized history exceeds the maximum allowed size.
      * Uses the project's JsonUtils to convert to JSON and measures UTF-8 bytes.
      */
-    private boolean isTooLarge(List<Map<String, String>> history) {
+    private static boolean isTooLarge(List<Map<String, String>> history) {
         try {
             String json = JsonUtils.toJSON(history);
             long bytes = json.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;

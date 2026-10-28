@@ -3,6 +3,7 @@ package dk.kb.netarchivesuite.solrwayback.util;
 import dk.kb.netarchivesuite.solrwayback.facade.Facade;
 import dk.kb.netarchivesuite.solrwayback.normalise.Normalisation;
 import dk.kb.netarchivesuite.solrwayback.properties.PropertiesLoader;
+import dk.kb.netarchivesuite.solrwayback.service.NavigationHistoryResource;
 import dk.kb.netarchivesuite.solrwayback.service.SolrWaybackResource;
 import dk.kb.netarchivesuite.solrwayback.service.dto.IndexDoc;
 import dk.kb.netarchivesuite.solrwayback.service.exception.InternalServiceException;
@@ -143,6 +144,9 @@ public class PathResolver {
 
             if (doc == null) {
                 log.info("Url has never been harvested:" + url);
+                // Track a failed playback in the navigation history
+                String archivedUrl = PropertiesLoader.WAYBACK_BASEURL + "services" + basePath + waybackDate + "/" + url;
+                NavigationHistoryResource.trackFailedPlayback(httpRequest, archivedUrl, waybackDate, url);
                 throw new NotFoundServiceException("Url has never been harvested:" + url);
             }
 
