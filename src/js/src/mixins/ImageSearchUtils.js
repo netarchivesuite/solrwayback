@@ -21,5 +21,9 @@ export default {
     $_startImageSearchFromImage(searchItem) {
       return '/search?query=' + 'hash:"' + encodeURIComponent(searchItem) + '"' + '&offset=0&grouping=' + this.searchStore.solrSettings.grouping + '&imgSearch=false&urlSearch=false&facets='
     },
+    // Build a link that triggers a 'find similar images' (PDQ hash) search for the image with this Solr document id.
+    $_startPdqImageSearchFromImage(id) {
+      return '/search?query=' + encodeURIComponent(id) + '&offset=0&grouping=' + this.searchStore.solrSettings.grouping + '&imgSearch=false&urlSearch=false&pdqSearch=true&facets='
+    },
   }
 }

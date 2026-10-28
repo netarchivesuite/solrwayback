@@ -1,8 +1,12 @@
 # SolrWayback
 [![DOI](https://zenodo.org/badge/81312331.svg)](https://doi.org/10.5281/zenodo.18197485)
 
-## SolrWayback 5.4.2 software bundle has been released
-SolrWayback bundle release 5.4.2 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/download/5.4.2/solrwayback_package_5.4.2.zip
+
+
+
+
+## SolrWayback 5.5.0 software bundle has been released
+SolrWayback bundle release 5.5.0 can be downloaded here: https://github.com/netarchivesuite/solrwayback/releases/download/5.5.0/solrwayback_package_5.5.0.zip
 
 The bundle is the recommended way to get started with SolrWayback. You download the bundle, follow the installation guide and index your own WARC files. Then you are up to speed. 
 
@@ -23,8 +27,9 @@ SolrWayback comes with multiple features:
 * Visualisation of search result by domain.
 * Visualisation of various domain statistics over time such as size, number of in- and outgoing links.
 * Large scale export of link graphs in Gephi format. (See https://labs.statsbiblioteket.dk/linkgraph/)
-* Image search similar to google images.
+* Image search similar to google images by text search
 * Image geo search by location on map using EXIF metadata information in images.
+* Image similarity search using p-hash and PDQ-hash values for images.
 * Search by upload of a file. (e.g., image, PDF) to see if the resource has been harvested and find HTML pages using the image.
 * View all fields indexed for a resource and show warc-header for records.
 * Configure alternative playback engine to any playback engine using the playback-API such as OpenWayback or pywb.
@@ -43,7 +48,7 @@ The International Internet Preservation Consortium (IIPC) has also made multiple
    <img src="https://github.com/netarchivesuite/solrwayback/blob/master/doc/solrwayback_search.png?raw=true" />
 </p>
 <p align="center">
- Lising of search results with facets.
+ Listing of search results with facets.
 </p>
 
 <p align="center"> 
@@ -128,13 +133,16 @@ Absolute URL live-leaks (starting with http://domain...) will not be caught and 
 #### Warc indexer
 Documents in SolrWayback are indexed through the [warc-indexer](https://github.com/ukwa/webarchive-discovery/tree/master/warc-indexer), which is maintained by The British Library. This is a fundamental tool for indexing WARC files in SolrWayback and furthermore it is included in the [SolrWayback bundle](https://github.com/netarchivesuite/solrwayback/releases).
 
+#### Extended Solr guide
+If you install Solr separately instead of using the Solr that ships in the bundle, see the [Extended Solr guide](src/bundle/solr/SOLR.md). That guide covers Solr 9 Cloud, including uploading the webarchive-discovery Solr configuration and creating the `netarchivebuilder` collection.
+
  
 ## Requirements
  * Works on macOS/Linux/Windows
  * Java 11 (tested with OpenJDK) 
  * A nice collection of ARC/WARC files or harvest your own with Heritrix, Webrecorder, Brozzler, Wget, etc. 
  * Tomcat 9+ or another J2EE server for deploying the WAR-file
- * A Solr 9+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT+
+ * A Solr 9+ server with the index build from the Arc/Warc files using the Warc-Indexer version 3.2.0-SNAPSHOT+. For a separate Solr 9 Cloud install (not the bundle Solr), see the [Extended Solr guide](src/bundle/solr/SOLR.md).
  * (Optional) chrome/(chromium) installed for page previews to work. (headless chrome) 
  
 ## Build and usage for developers.
@@ -174,7 +182,7 @@ Unzip and follow the instructions below.
 
 * Copy `properties/solrwayback.properties` and `properties/solrwaybackweb.properties` to the `user/home/` folder. 
 
-* **Windows only:** Create an enviroment value that points to the folder with java11 or java 17 : `JAVA_HOME=C:\Program Files\Java\jdk-11`
+* **Windows only:** Create an environment value that points to the folder with java11 or java 17 : `JAVA_HOME=C:\Program Files\Java\jdk-11`
 
 * **Optional:** For screenshot previews to work you may have to edit the file `properties/solrwayback.properties` and change the value of the last two properties : `chrome.command`  and `screenshot.temp.imagedir`.
   Chrome(Chromium) must be installed for preview of images to work.
@@ -230,10 +238,11 @@ THREADS=2 ./warc-indexer.sh warcs1/*
 This will start indexing files from the folder warcs1 using 2 threads. Assigning a higher number of threads than CPU cores available will result in slower indexing. Each indexing job require 1GB of RAM, so this can also be a limiting factor.
 
 
-To create custom collections in your index, you can  populate the collection and collectionid field in Solr with custom values. This can be done with the following command during indexing:
+To create custom collections in your index, you can populate the `collection`, `collection_id` and `institution` fields in Solr with custom values. Pass them to the warc-indexer during indexing:
 ```
-THREADS=4 INDEXER_CUSTOM="--collection_id  collection1 --collection corona2021" ./warc-indexer.sh warcs1/*
+THREADS=4 INDEXER_CUSTOM="--collection-id collection1 --collection corona2021 --institution institution1" ./warc-indexer.sh warcs1/*
 ```
+The indexer CLI uses hyphens (`--collection-id`, `--collection`, `--institution`). Older warc-indexer releases used `--collection_id`.
 
 You can then enable faceting on these fields in the property file: `solrwaybackweb.properties`.
 
@@ -262,7 +271,7 @@ The Solr log-file is in the folder solr-9/server/logs. See solr.log or solr-8983
 
 
 ### 5) CUSTOMIZATION 
-Many custom properties in solrwaybackweb.properties can be changed. There are documention above most of the properties.
+Many custom properties in solrwaybackweb.properties can be changed. There is documentation above most of the properties.
 Tomcat needs to be restart to load changes. Here are a few properties that must collections want to customize.
 This is a list of properties most collections want to change.
 
@@ -314,6 +323,7 @@ an index of about 1TB having 500M documents and this requires changing the Solr 
 
 Storing the index on a SSD drive is required to reach acceptable performance for searches.
 For collections larger than this limit Solr Cloud is required instead of the stand alone Solr that comes with the SolrWayback Bundle.
+See the [Extended Solr guide](src/bundle/solr/SOLR.md) for a Solr 9 Cloud setup that uses the webarchive-discovery Solr configuration to create the collection.
 A more advanced distributed indexing flow can be handled by the archon/arctika index workflow. See: https://github.com/netarchivesuite/netsearch 
 
  

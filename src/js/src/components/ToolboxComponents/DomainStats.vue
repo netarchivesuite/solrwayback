@@ -1,13 +1,13 @@
 <template>
   <div class="domainStatsContainer">
     <h2 class="toolboxHeadline">
-      Domain stats
+      Stats
     </h2>
     <div class="domainContentContainer">
       <div class="domainContentSettings">
         <input
           v-model="domain"
-          placeholder="Enter domain, like 'kb.dk'"
+          :placeholder="getPlaceholder()"
           :class="$_checkDomain(domain) ? '' : 'urlNotTrue'"
           @keyup.enter="loadGraphData(domain)"
         >
@@ -17,7 +17,16 @@
           @startdate="(sdate) => startDate = sdate"
           @enddate="(edate) => endDate = edate"
         />
-        <div class="generateButtonContainer contain">
+        <div class="domainHostChoiceSettings">
+          <div class="domainHostChoiceContainer contain">
+            <label class="domainHostChoiceLabel label">Search for:</label>
+            <input id="domainHostChoiceRadioOne" v-model="isDomain" type="radio" :value="true">
+            <label class="label" for="domainHostChoiceRadioOne">domain</label>
+            <input id="domainHostChoiceRadioTwo" v-model="isDomain" type="radio" :value="false">
+            <label class="label" for="domainHostChoiceRadioTwo">host</label>
+          </div>
+        </div>
+        <div class="generateButtonContainer contain refiner">
           <button
             :disabled="loading"
             class="domainStatsButton"
@@ -175,10 +184,13 @@ export default {
       startDate:'',
       endDate:'',
       timeScale:'',
-      showCombinedChart: true
+      showCombinedChart: true,
+      isDomain: true
     }
   },
-
+  mounted () {
+      isDomain: true
+  },
   methods: {
     ...mapActions(useNotifierStore, {
       setNotification: 'setNotification'
@@ -202,7 +214,7 @@ export default {
       // this.rawData = null
       this.loading = true
       this.timeScale = this.$refs.refiner.timeScaleInput
-      requestService.getDomainStatistics(this.prepareDomainForGetRequest(),this.startDate, this.endDate, this.timeScale)
+      requestService.getDomainStatistics(this.prepareDomainForGetRequest(),this.startDate, this.endDate, this.timeScale, this.isDomain)
         .then(result => {
           this.sanitizeResponseData(result)
           this.loading = false // <-- Move this line up
@@ -306,6 +318,9 @@ export default {
       domainScript.drawCombinedChart(this.graphData.chartLabels, this.graphData.sizeInKb,
                              this.graphData.numberOfPages, this.graphData.ingoingLinks,
                              this.graphData.textSize)
+    },
+    getPlaceholder() {
+      return this.isDomain ? "Enter domain, like 'kb.dk'" : "Enter host, like 'pro.kb.dk'"
     }
   }
 }

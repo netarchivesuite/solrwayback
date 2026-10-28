@@ -7,7 +7,76 @@
 
 ### Changed
 * Navigation tracker auto poll increased from 2 seconds to 60 seconds.
+* "Search for similar images" link added next to images in search results (image/geo search grid, single-image result view, and images embedded in HTML page results). It calls a new endpoint, `GET services/frontend/images/search/pdqhash?id=<solr_id>`, which looks up the source image's PDQ perceptual hash and returns visually similar images found in the index.
+* The similarity lookup checks all 8 dihedral variants of the PDQ hash (90°-step rotations and mirror reflections), so rotated or flipped near-duplicates are matched too, not just the original orientation.
+* This completes the frontend side of the PDQ-hash image fields added to Solr in 5.4.3, which at the time had no GUI support for similarity search.
+* Added support for image format WebP required for calculating PDQ-Hash/pHash (com.twelvemonkeys.imageio dependency)
+* Upgraded a few backend and  many frontend third part dependencies.
+* Increased temporary Tika disk swap space from 100M to 1G during indexing (config3.conf). For large payloads this will be required for Droid-light detection.
+
+5.5.0
+-----
+
+### Fixed
+* Fixed bug resolving redirect chain. Closing #https://github.com/netarchivesuite/solrwayback/issues/507
+
+- **Live-leak on client-side JavaScript navigation.** SolrWayback playback could leak to the live web when a page's own JavaScript changed navigation or frame targets after load, since these leaks occur at runtime and are invisible to the static HTML/attribute URL rewriter. Fixed using a wombat.js-style approach — inline and external JavaScript is rewritten at serve time so relevant browser APIs resolve to shim objects/functions instead of their native (in some cases unforgeable/non-patchable) equivalents, which then redirect through playback instead of the live site. Specific cases fixed:
+  - `location.href = url` / `location.assign()` / `location.replace()` in inline `<script>` blocks
+  - Same, in externally loaded `.js` files served via `downloadRaw`
+  - Dynamically created `<iframe>`/`<frame>` elements with `src` set via JavaScript property assignment (e.g. `iframe.src = url`)
+  - Same, when set via `setAttribute('src', url)` instead of the property
+
+### Known limitations (not yet covered)
+  - `<iframe>`/`<frame>` elements injected via `document.write()` with a literal `src` in the written markup
+  - `setAttributeNS()` (namespace-aware attribute setting)
+  - POST-request playback (separate, larger structural gap — not related to JavaScript rewriting and not fixable until Warc-Indexer does post-append)
+
+
+### Added
+  - WordCloud and linkgraph in the toolbox can now also search by host and not only domain. Thanks to Leslie Bellony from BnF for implementing this.
+  - Improved Solr documentation, thanks to @AzazelSensei.
+
+5.4.3
+-----
+
+### Added
+* New solr fields has been added. The SolrWayback GUI has not implemented the feature yet for similarity search. The new fields can still be used for search.
+* Four new fields added to Solr: nsfw_probability, is_nsfw, is_virus and virus_description. They will only be populated if warc-safe enrichment is enabled.
+* New fields for image hashes added to Solr. P-hash and PDQ-hash (with dihedral variations) are calculated. For details see version 3.5 changes for warc-indexer: https://github.com/netarchivesuite/warc-indexer/blob/master/CHANGES.md
+ This feature will make it possible to detect visual identical image that is not exact binary hash match. This include scaling,rotations, image filters etc.
+ The feature is default enabled and require new solr configuration(schema.xml) is upload Solr cloud. Can be disabled in the warc-indexer config3.xml
+ See the README.md file in the solr_config folder to see how to upload a new configuration to Solr cloud.
+ 
+### Changed
+* Navigation tracker auto poll increased from 2 seconds to 60 seconds (auto poll will be removed in a later version)
 * Switched from deprecated NoOpResponseParser to the new InputStreamResponseParser. Caching of SolrResponses is now handled by storing the response in the NetarchiveSolrClient.
+* Improve test coverage for playback classes:
+  * HtmlPlayback
+  * CssPlayback
+  * JavascriptPlayback
+* Bumped mockito-inline from 3.4.0 to 4.11.0 (test only). Required for mocking classes and static methods on Java 17.
+
+### Fixed
+* About text no longer reappears when manually clearing the ngram search query
+* Ngram chart is now properly cleared when the search box clear function is invoked
+* Fixed bug preventing searches from being performed when clicking on data points on ngram chart
+* Resolved bouncing/layout shift of the search box during ngram searches
+* Fixed TypeError: undefined is not an object crash when performing ngram searches
+* Fixed TypeError: undefined is not an object crash when exporting ngram chart data
+* Fixed ngram chart sizing and ensured full options are passed to the chart engine
+
+### Dependencies
+* Upgraded Solr dependencies:
+  * `solr@9.10.1`
+* Upgraded frontend dependencies:
+  * `vite@^6.4.2`
+  * `vitest@^3.2.6`
+
+### Tests
+* Improve test coverage for url normalisation:
+  * NormalisationStandard.canonicaliseURL
+  * PathResolver.waybackAPIResolverHelper
+  * UrlUtils url_norm query building and default-port handling
 
 ### Fixed
 * About text no longer reappears when manually clearing the ngram search query

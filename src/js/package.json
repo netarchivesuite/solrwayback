@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@sideway/formula": "^3.0.1",
-    "axios": "^1.10.0",
+    "axios": "^1.20.0",
     "chart.js": "^2.9.4",
     "core-js": "^3.44.0",
     "d3": "3.5.17",
@@ -21,7 +21,7 @@
     "leaflet.markercluster": "^1.5.3",
     "pinia": "^3.0.2",
     "video.js": "8.23.3",
-    "vue": "^3.5.13",
+    "vue": "^3.5.43",
     "vue-3-slider-component": "^1.0.2",
     "vue-chartjs": "^3.5.1",
     "vue-router": "^4.5.1"
@@ -33,12 +33,12 @@
     "@vue/eslint-config-prettier": "^10.2.0",
     "cross-env": "^7.0.3",
     "eslint": "^9.32.0",
-    "eslint-plugin-vue": "^10.4.0",
+    "eslint-plugin-vue": "^10.11.1",
     "prettier": "^3.5.3",
     "sass": "^1.55.0",
     "unplugin-vue-components": "^28.5.0",
     "v-tooltip": "^1.1.6",
-    "vite": "^6.4.2",
-    "vitest": "^3.2.6"
+    "vite": "^6.4.5",
+    "vitest": "^5.0.3"
   }
 }

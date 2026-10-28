@@ -68,6 +68,8 @@ public class NetarchiveSolrClient {
     private final AtomicLong lenientAttempts = new AtomicLong(0);
     private final AtomicLong lenientSuccesses = new AtomicLong(0);
 
+    private static final int MAX_REDIRECT_DEPTH = 3;
+    
     protected Boolean solrAvailable = null;
 
     protected NetarchiveSolrClient() { // private. Singleton
@@ -148,56 +150,62 @@ public class NetarchiveSolrClient {
 
 
     /**
-     * Retrieve domain facets for a given domain.
+     * Retrieve domain/host facets for a given domain/host.
      * <p>
-     * This method delegates to either {@link #getDomainFacetsIngoing(String, int, Date, Date)} or
-     * {@link #getDomainFacetsOutgoing(String, int, Date, Date)} depending on the {@code ingoing} flag.
-     * @param domain to get facets for
+     * This method delegates to either {@link #getLinksFacetsIngoing(String, boolean, int, Date, Date)} or
+     * {@link #getLinksFacetsOutgoing(String, boolean, int, Date, Date)} depending on the {@code ingoing} flag.
+     * @param target or host to get facets for
+     * @param isDomain to determinate if it's a domain or an host
      * @param facetLimit the maximum number of facet values to return
-     * @param ingoing if true, return domains that link to {@code domain}; if false, return domains that {@code domain} links to
+     * @param ingoing if true, return domains/hosts that link to {@code target}; if false, return domains that {@code target} links to
      * @param crawlDateStart start of crawl date range (inclusive)
      * @param crawlDateEnd end of crawl date range (inclusive)
      * @return list of {@link FacetCount} objects representing facet values and counts
      */
-    public List<FacetCount> getDomainFacets(String domain, int facetLimit, boolean ingoing, Date crawlDateStart, Date crawlDateEnd) throws Exception {
+    public List<FacetCount> getLinksFacets(String target, boolean isDomain, int facetLimit, boolean ingoing, Date crawlDateStart, Date crawlDateEnd) throws Exception {
 
         if (ingoing) {
-            return getDomainFacetsIngoing(domain, facetLimit, crawlDateStart, crawlDateEnd);
+            return getLinksFacetsIngoing(target, isDomain, facetLimit, crawlDateStart, crawlDateEnd);
         } else {
-            return getDomainFacetsOutgoing(domain, facetLimit, crawlDateStart, crawlDateEnd);
+            return getLinksFacetsOutgoing(target, isDomain, facetLimit, crawlDateStart, crawlDateEnd);
         }
     }
 
     /**
-     * Returns a list of domains that link to the provided {@code domain} within the given crawl date range.
-     * The method executes a facet query on the {@code domain} field for documents that contain
-     * {@code links_domains:"<domain>"} while excluding documents where {@code domain} equals the provided
-     * {@code domain} (to avoid self-links).
+     * Returns a list of domains or hosts that link to the provided {@code target} within the given crawl date range.
+     * The method executes depending on the parameter {@code isDomain} :
+     * <ul><li>a facet query on the {@code domain} field for documents that contain {@code links_domains:"<target>"} 
+     * while excluding documents where {@code domain} equals the provided {@code target} (to avoid self-links),</li>
+     * <li>a facet query on the {@code host} field for documents that contain {@code links_hosts:"<target>"} 
+     * while excluding documents where {@code host} equals the provided {@code target} (to avoid self-links)</li></ul>
      *
-     * @param domain to find incoming links for
+     * @param target to find incoming links for
+     * @param isDomain to determinate if it's a domain or an host
      * @param facetLimit maximum number of facet values to return
      * @param crawlDateStart start of crawl date range (inclusive)
      * @param crawlDateEnd end of crawl date range (inclusive)
-     * @return list of {@link FacetCount} with domain names and counts
+     * @return list of {@link FacetCount} with domain/host names and counts
      */
-    public List<FacetCount> getDomainFacetsIngoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception {
+    public List<FacetCount> getLinksFacetsIngoing(String target, boolean isDomain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception {
+
+        String parameter = isDomain ? "domain" : "host";
 
         String dateStart = DateUtils.getSolrDate(crawlDateStart);
         String dateEnd = DateUtils.getSolrDate(crawlDateEnd);
 
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("links_domains:\"" + domain + "\" AND -domain:\"" + domain + "\"");
+        solrQuery.setQuery("links_" + parameter + "s:\"" + target + "\" AND -" + parameter + ":\"" + target + "\"");
 
         solrQuery.setRows(0);
         solrQuery.set("facet", "true");
-        solrQuery.add("facet.field", "domain");
+        solrQuery.add("facet.field", parameter);
         solrQuery.add("facet.limit", "" + facetLimit);
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
 
         solrQuery.add("fl","id");
         QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
-        List<FacetCount> facetList = new ArrayList<FacetCount>();
-        FacetField facet = rsp.getFacetField("domain");
+        List<FacetCount> facetList = new ArrayList<>();
+        FacetField facet = rsp.getFacetField(parameter);
         for (Count c : facet.getValues()) {
             FacetCount fc = new FacetCount();
             fc.setValue(c.getName());
@@ -208,36 +216,41 @@ public class NetarchiveSolrClient {
     }
 
     /**
-     * Returns a list of domains that the provided {@code domain} links to within the given crawl date range.
-     * The method facets on the {@code links_domains} field for documents where {@code domain:"<domain>"}.
+     * Returns a list of domains that the provided {@code target} links to within the given crawl date range.
+     * Depending on the parameter {@code isDomain},the method facets 
+     * <ul><li>on the {@code links_domains} field for documents where {@code domain:"<target>"}. if {@code isDomain} is true</li>
+     * <li>on the {@code links_hosts} field for documents where {@code host:"<target>"}. if {@code isDomain} is false</li></ul>
      *
-     * @param domain to find outgoing links for
+     * @param target to find outgoing links for
+     * @param isDomain to determinate if it's a domain or an host
      * @param facetLimit maximum number of facet values to return
      * @param crawlDateStart start of crawl date range (inclusive)
      * @param crawlDateEnd end of crawl date range (inclusive)
-     * @return list of {@link FacetCount} with domain names and counts
+     * @return list of {@link FacetCount} with domain/host names and counts
      */
-    public List<FacetCount> getDomainFacetsOutgoing(String domain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception {
+    public List<FacetCount> getLinksFacetsOutgoing(String target, boolean isDomain, int facetLimit, Date crawlDateStart, Date crawlDateEnd) throws Exception {
+
+        String parameter = isDomain ? "domain" : "host";
 
         String dateStart = DateUtils.getSolrDate(crawlDateStart);
         String dateEnd = DateUtils.getSolrDate(crawlDateEnd);
 
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("domain:\"" + domain + "\"");
+        solrQuery.setQuery(parameter + ":\"" + target + "\"");
 
         solrQuery.setRows(0);
         solrQuery.set("facet", "true");
-        solrQuery.add("facet.field", "links_domains");
+        solrQuery.add("facet.field", "links_" + parameter + "s");
         solrQuery.add("facet.limit", "" + (facetLimit + 1)); // +1 because itself will be removed and is almost certain of resultset is self-linking
         solrQuery.addFilterQuery("crawl_date:[" + dateStart + " TO " + dateEnd + "]");
         solrQuery.add("fl","id");                                                                                                                                                                  // request
         QueryResponse rsp = noCacheSolrServer.query(solrQuery, METHOD.POST); //do not cache
-        List<FacetCount> facetList = new ArrayList<FacetCount>();
-        FacetField facet = rsp.getFacetField("links_domains");
+        List<FacetCount> facetList = new ArrayList<>();
+        FacetField facet = rsp.getFacetField("links_" + parameter + "s");
 
         // We have to remove the domain itself.
         for (Count c : facet.getValues()) {
-            if (!c.getName().equalsIgnoreCase(domain)) {
+            if (!c.getName().equalsIgnoreCase(target)) {
                 FacetCount fc = new FacetCount();
                 fc.setValue(c.getName());
                 fc.setCount(c.getCount());
@@ -1136,10 +1149,47 @@ public class NetarchiveSolrClient {
     }
 
 
+    
     /*
      * Notice here do we not fix url_norm
      */
     public IndexDoc findClosestHarvestTimeForUrl(String url, String timeStamp) throws Exception {
+        return findClosestHarvestTimeForUrl(url, timeStamp, 0,null);
+    }
+    
+    
+    /**
+     * Finds the harvested version of {@code url} that is closest in time to {@code timeStamp}, resolving
+     * redirects (HTTP 301, 302, 303, 307, 308) to their target document instead of returning the redirect
+     * record itself.
+     * <p>
+     * If the closest matching document is a redirect, this method follows {@code redirect_to_norm} and
+     * recurses to resolve the actual target, up to {@link #MAX_REDIRECT_DEPTH} hops. This guards against
+     * both a genuine redirect loop (e.g. A -&gt; B -&gt; A) and a data-normalization collision, where a
+     * redirect's target normalizes to the exact same {@code url_norm} as its own source record (e.g. a
+     * protocol-only redirect from {@code http://example.com/page} to {@code https://example.com/page}
+     * collapsing to the same normalized URL). In the latter case, {@code avoidId} ensures the redirect
+     * record is excluded from its own result set on the next call, so it cannot resolve to itself and
+     * loop.
+     *
+     * @param url       the URL to look up.
+     * @param timeStamp the target harvest time to match against, in the format {@code yyyy-MM-dd'T'HH:mm:ssZ}.
+     * @param redirectDepth the number of redirect hops already followed to reach this call. Starts at
+     *                      {@code 0} for the initial (public) call; incremented by 1 on each recursive
+     *                      redirect-following call. Once this reaches {@link #MAX_REDIRECT_DEPTH}, the
+     *                      method stops following further redirects and returns the redirect record as-is,
+     *                      to guard against an endless loop.
+     * @param avoidId   optional; the Solr {@code id} of a document that must not be returned by this call.
+     *                  Used only to break redirect loops: when following a redirect, the calling record's
+     *                  own {@code id} is passed as {@code avoidId} for the recursive call, so a redirect
+     *                  can never resolve back to itself even if its target normalizes to the exact same
+     *                  {@code url_norm} as its own record. Pass {@code null} when there is no record to
+     *                  avoid (e.g. the initial, non-recursive call).
+     * @return the closest matching {@link IndexDoc}, with any redirect already resolved to its target; or
+     *         {@code null} if no matching document exists.
+     * @throws Exception on a Solr query failure or a timestamp parsing failure.   
+     */
+    private IndexDoc findClosestHarvestTimeForUrl(String url, String timeStamp, int redirectDepth, String avoidId) throws Exception {
 
         if (url == null || timeStamp == null) {
             throw new IllegalArgumentException("harvestUrl or timeStamp is null"); // Can happen for url-rewrites that are not corrected
@@ -1150,7 +1200,11 @@ public class NetarchiveSolrClient {
 
         String urlNormQuery = UrlUtils.fixLegacyNormaliseUrlErrorQuery(url);
 
-        String query = urlNormQuery +" AND status_code:200"; //Maybe also allow 400 and 404?: (status_code:200 OR status_code:400 OR status_code:404).          
+        // No status_code restriction: return whatever was actually captured closest
+        // in time -- 200, a 4xx/5xx error page, 204/205, etc. -- for historical
+        // accuracy. Redirects (301/302/303/307/308) are resolved to their target
+        // below rather than returned directly.
+        String query = urlNormQuery;
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
@@ -1179,12 +1233,7 @@ public class NetarchiveSolrClient {
         }
         ArrayList<IndexDoc> indexDocs = SolrUtils.solrDocList2IndexDoc(docs);
 
-        // Return the one nearest
-        int bestIndex = 0; // This would be correct if solr could sort correct.
-        // Solr uses a precisionsStep you can define in schema.xml if you want precision
-        // to seconds. But this is not done in warc-indexer 3.0 schema.
-        // Instead we extract the top 10 and find the nearest but checking against all.
-
+        int bestIndex = -1; // -1 means: no eligible candidate found yet
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         long inputCrawlDate = dateFormat.parse(timeStamp).getTime(); // From the input
         long bestMatchDifference = Long.MAX_VALUE;
@@ -1192,6 +1241,12 @@ public class NetarchiveSolrClient {
         for (int i = 0; i < indexDocs.size(); i++) {
 
             IndexDoc doc = indexDocs.get(i);
+
+            if (avoidId != null && avoidId.equals(doc.getId())) {
+                log.info("Skipping solr id:" + doc.getId() + " for url:" + url + ", it is the redirect record we came from.");
+                continue;
+            }
+
             boolean docHasSlashLast = doc.getUrl().endsWith("/");
             // small hack to make sure http/https not are mixed. Protocol is not into the
             // schema yet. Would be nice if protocol was a field in schema
@@ -1209,16 +1264,6 @@ public class NetarchiveSolrClient {
                 continue;
             }
 
-            // If redirect, do not return the same url as this will give endless redirect.
-            // This can happen due to the http://www.test.dk http://test.dk is normalized to
-            // the same.
-            if (doc.getStatusCode() >= 300 && doc.getStatusCode() < 400) {
-                if (doc.getUrl().equals(url)) { // Do not return the same for redirect.
-                    log.info("Stopping endless direct for url:" + url + " and found url:" + doc.getUrl());
-                    continue; // skip
-                }
-            }
-
             String crawlDateDoc = doc.getCrawlDate();
             long crawlDateForDocument = dateFormat.parse(crawlDateDoc).getTime(); // For this document
             long thisMatch = Math.abs(inputCrawlDate - crawlDateForDocument);
@@ -1228,10 +1273,31 @@ public class NetarchiveSolrClient {
             }
         }
 
+        if (bestIndex == -1) {
+            return null;
+        }
         if (bestIndex != 0) {
             log.warn("Fixed Solr time sort bug, found a better match, # result:" + bestIndex);
         }
-        return indexDocs.get(bestIndex);
+
+        IndexDoc best = indexDocs.get(bestIndex);
+
+        if (isRedirectStatus(best.getStatusCode())) {
+            String redirectTarget = best.getRedirectToNorm();
+            if (redirectTarget == null || redirectTarget.isEmpty()) {
+                log.warn("Redirect (status " + best.getStatusCode() + ") for url:" + url + " has no redirect_to_norm value, returning the redirect document as-is.");
+                return best;
+            }
+            if (redirectDepth >= MAX_REDIRECT_DEPTH) {
+                log.warn("Reached max redirect depth (" + MAX_REDIRECT_DEPTH + ") resolving url:" + url + ", returning the redirect document as-is to avoid an endless loop.");
+                return best;
+            }
+            log.info("Following redirect (status " + best.getStatusCode() + ") from url:" + url + " to:" + redirectTarget + " (hop " + (redirectDepth + 1) + ")");
+            IndexDoc resolved = findClosestHarvestTimeForUrl(redirectTarget, timeStamp, redirectDepth + 1, best.getId());
+            return resolved != null ? resolved : best; // fall back to the redirect doc if nothing found downstream
+        }
+
+        return best;
     }
 
     /**
@@ -1510,6 +1576,29 @@ public class NetarchiveSolrClient {
         return requestRawJson(solrQuery);
     }
 
+    
+    /**
+     * 
+     *
+     */
+    public ArcEntryDescriptor imageIdLookup(String id) throws Exception {
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.set("rows", "1");
+        solrQuery.set("q", "id:\"" + id + "\"");               
+        solrQuery.set("facet", "false");
+        solrQuery.set("fl",SolrUtils.arcEntryDescriptorFieldList);
+        solrQuery.setFilterQueries("content_type_norm:image");
+
+        QueryResponse rsp = solrServer.query(solrQuery, METHOD.POST);
+        if (rsp.getResults().getNumFound()==0) {
+            throw new IllegalArgumentException("Image with id not found:"+id);
+        }        
+        SolrDocumentList docs = rsp.getResults();        
+        ArcEntryDescriptor arcEntryDescriptor = SolrUtils.solrDocument2ArcEntryDescriptor(docs.get(0));        
+        return arcEntryDescriptor;       
+    }
+    
+    
     /*
      * field list is a comma seperated list of fields. If null all fields will loaded
      *
@@ -1571,32 +1660,42 @@ public class NetarchiveSolrClient {
         }
     }
 
-    /*
+    /**
      * Uses the stats component and hyperloglog for ultra fast performance instead
      * of grouping, which does not work well over many shards.
      * <p>
-     * Extract statistics for a given domain and year. Number of unique pages (very
-     * precise due to hyperloglog) Number of ingoing links (very precise due to
-     * hyperloglog) Total size (of the unique pages). (not so precise due, tests
-     * show max 10% error, less for if there are many pages)
+     * Extract statistics for a given domain or host and year. 
+     * Number of unique pages (very precise due to hyperloglog).
+     * Number of ingoing links (very precise due to hyperloglog).
+     * Total size (of the unique pages). (not so precise due, tests show max 10% error, less for if there are many pages).
+     * </p>
+     * @param target or host to get statistics for
+     * @param isDomain to determinate if it's a domain or an host
+     * @param startDate used to limit crawl dates returned
+     * @param endDate used to limit crawl dates returned
+     * @return {@link DomainStatistics} statistics for domain or host
      */
-    public DomainStatistics domainStatistics(String domain, String startDate, String endDate) throws Exception {
+    public DomainStatistics statisticsDomainHost(String target, Boolean isDomain, String startDate, String endDate) throws Exception {
 
         DomainStatistics stats = new DomainStatistics();
         stats.setDate(startDate);
-        stats.setDomain(domain);
+        stats.setDomain(target);
 
-        String searchString = "domain:\"" + domain + "\"";
+        String searchField = "domain";
+        if (Boolean.FALSE.equals(isDomain)) {
+            searchField = "host";
+        }
+        String searchString = searchField + ":\"" + target + "\"";
 
         QueryResponse statsResponse = getStatsResponse(startDate, endDate, searchString);
 
         Map<String, FieldStatsInfo> statsMap = statsResponse.getFieldStatsInfo();
         addSolrStatsToDomainStatisticsObject(statsMap, stats);
 
-        QueryResponse linksStatsResponse = getLinksStatsResponse(domain, startDate, endDate);
+        QueryResponse linksStatsResponse = getLinksStatsResponse(target, startDate, endDate, isDomain);
         Map<String, FieldStatsInfo> stats2 = linksStatsResponse.getFieldStatsInfo();
 
-        FieldStatsInfo statsLinks = stats2.get("domain");
+        FieldStatsInfo statsLinks = stats2.get(searchField);
         long links_cardinality = statsLinks.getCardinality();
         stats.setIngoingLinks((int) links_cardinality);
 
@@ -1633,17 +1732,21 @@ public class NetarchiveSolrClient {
      * @param endDate used to limit crawl dates returned.
      * @return a {@link QueryResponse} object with SolrStats available for ingoing links
      */
-    private static QueryResponse getLinksStatsResponse(String domain, String startDate, String endDate) throws SolrServerException, IOException {
+    private static QueryResponse getLinksStatsResponse(String domain, String startDate, String endDate, Boolean isDomain) throws SolrServerException, IOException {
         // Links
-        String searchString = "domain:\"" + domain + "\"";
+    	String searchField = "domain";
+        if (Boolean.FALSE.equals(isDomain)) {
+            searchField = "host";
+        }
+        String searchString = searchField + ":\"" + domain + "\"";
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("links_domains:\"" + domain + "\" -" + searchString); // links to, but not from same domain
+        solrQuery.setQuery("links_"+ searchField +"s:\"" + domain + "\" -" + searchString); // links to, but not from same domain
         solrQuery.addFilterQuery("content_type_norm:html AND status_code:200");
         solrQuery.addFilterQuery("crawl_date:[" + startDate + "T00:00:00Z TO " + endDate + "T23:59:59Z]");
         solrQuery.setRows(0);
         solrQuery.add("stats", "true");
         solrQuery.add("fl", "id");
-        solrQuery.add("stats.field", "{!cardinality=true}domain"); // Important, use cardinality and not unique.
+        solrQuery.add("stats.field", "{!cardinality=true}"+ searchField); // Important, use cardinality and not unique.
         return solrServer.query(solrQuery);
     }
 
@@ -1813,4 +1916,10 @@ public class NetarchiveSolrClient {
     public long getLenientSuccesses() {
         return lenientSuccesses.get();
     }
+    
+    private static boolean isRedirectStatus(int statusCode) {
+        return statusCode == 301 || statusCode == 302 || statusCode == 303
+            || statusCode == 307 || statusCode == 308;
+    }
+
 }

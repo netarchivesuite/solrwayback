@@ -8,6 +8,7 @@ export const requestService = {
   fireLookupRequest,
   fireImagesRequest,
   fireImageSearchRequest,
+  firePdqImageSearchRequest,
   uploadFileRequest,
   getHarvestDates,
   getNormalizedUrlSearch,
@@ -64,6 +65,24 @@ async function fireImageSearchRequest(query) {
     let returnObj = response.data
 
     returnObj = dataTransformationHelper.transformImageResponse(returnObj,'image')
+
+    return returnObj
+
+  } catch (error){
+    return Promise.reject(error)
+  }
+
+}
+
+async function firePdqImageSearchRequest(id) {
+  // Find perceptually similar images (PDQ hash) to the image with this Solr document id
+  const url = 'services/frontend/images/search/pdqhash' + `?id=${encodeURIComponent(id)}`
+
+  try{
+    const response = await axios.get(url)
+    let returnObj = response.data
+
+    returnObj = dataTransformationHelper.transformImageResponse(returnObj,'pdqImage')
 
     return returnObj
 
@@ -245,12 +264,13 @@ async function getHarvestedPageResources(source_file_path, offset) {
 
 }
 
-async function getDomainStatistics(domain, startDate, endDate, timeScale) {
+async function getDomainStatistics(target, startDate, endDate, timeScale, isDomain) {
   let settings = ''
   if (timeScale != null && timeScale != '') {
       settings = '&startdate=' + startDate +'&enddate='+ endDate + '&scale=' + timeScale
   }
-  const url = `services/statistics/domain/?domain=${domain + settings}`
+  const paramName = isDomain ? 'domain' : 'host'
+  const url = `services/statistics/url?${paramName}=${target + settings}`
 
   try{
     const response = await axios.get(url)
@@ -331,8 +351,9 @@ async function getWarcHeader(sourceFilePath, offset) {
 
 }
 
-async function getLinkGraph(domain, facetLimit, ingoing, dateStart, dateEnd) {
-  const url = `services/frontend/tools/linkgraph/?domain=${domain}&facetLimit=${facetLimit}&ingoing=${ingoing}&dateStart=${dateStart}&dateEnd=${dateEnd}`
+async function getLinkGraph(target, facetLimit, ingoing, dateStart, dateEnd, isDomain) {
+  const paramName = isDomain ? 'domain' : 'host'
+  const url = `services/frontend/tools/linkgraph/?${paramName}=${target}&facetLimit=${facetLimit}&ingoing=${ingoing}&dateStart=${dateStart}&dateEnd=${dateEnd}`
 
   try{
     const response = await axios.get(url)

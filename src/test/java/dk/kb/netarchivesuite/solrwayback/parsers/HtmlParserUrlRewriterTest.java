@@ -191,10 +191,14 @@ public class HtmlParserUrlRewriterTest {
      */
     private String normalise(String text) {
         return Arrays.stream(
-                // Put every tag boundary on its own line and collapse whitespace runs so that the comparison is
-                // insensitive to JSoup's pretty-printing, which differs between JSoup versions (e.g. whether
-                // adjacent inline elements, comments or <br> are separated by a newline, a space or nothing).
-                text.replaceAll(">\\s*<", ">\n<")
+                // Put every tag boundary on its own line - regardless of whether there was already whitespace
+                // there - and collapse whitespace runs, so that the comparison is insensitive to JSoup's
+                // pretty-printing, which differs between JSoup versions. This covers not only whitespace-only
+                // gaps between adjacent tags, but also e.g. whether a text node (such as "Hello" in
+                // "<div>Hello</div>") is kept inline with its surrounding tags or placed on its own line, and
+                // how much whitespace padding is used around a tag boundary.
+                text.replaceAll(">", ">\n")
+                        .replaceAll("<", "\n<")
                         .split("\n"))
                 .map(String::trim)
                 .map(line -> line.replaceAll("\\s+", " "))

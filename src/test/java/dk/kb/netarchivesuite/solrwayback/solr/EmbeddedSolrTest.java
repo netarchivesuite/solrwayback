@@ -99,5 +99,71 @@ public class EmbeddedSolrTest {
        assertEquals("2018-03-15T12:37:32Z", result.getCrawlDate());       
     }
     
+    
+    @Test
+    public void testRedirectChainResolvesToFinalDocument() throws Exception {
+      
+        indexRedirectChainTestData();
+
+        //Notice crawldate is 1 day before page harvested for testing.
+        IndexDoc result = server.findClosestHarvestTimeForUrl("http://test.domain/redirect1", "2026-08-25T00:00:0Z"); 
+     
+        System.out.println(result.getUrl());
+        System.out.println(result.getCrawlDate());
+        System.out.println(result.getStatusCode());
+        assertEquals("http://test.domain/final", result.getUrl()); //Resolved through 2 redirects.
+        assertEquals(200, result.getStatusCode());        
+    }
+    
+
+    private static void indexRedirectChainTestData() throws Exception {
+        String url1 = "http://test.domain/redirect1";
+        String url2 = "http://test.domain/redirect2";
+        String urlFinal = "http://test.domain/final";
+
+        // 1) redirect1 -> redirect2
+        SolrInputDocument redirect1 = new SolrInputDocument();
+        redirect1.addField("source_file_offset", 1000);
+        redirect1.addField("id", "redirect1");
+        redirect1.addField("title", "redirect1");
+        redirect1.addField("url", url1);
+        redirect1.addField("url_norm", url1);
+        redirect1.addField("record_type", "response");
+        redirect1.addField("source_file_path", "some.warc");
+        redirect1.addField("status_code", "302");
+        redirect1.addField("crawl_date", "2026-08-26T00:00:00Z");
+        redirect1.addField("redirect_to_norm", url2); // points to the NEXT record, not itself
+
+        // 2) redirect2 -> final
+        SolrInputDocument redirect2 = new SolrInputDocument();
+        redirect2.addField("source_file_offset", 2000);
+        redirect2.addField("id", "redirect2");
+        redirect2.addField("title", "redirect2");
+        redirect2.addField("url", url2);
+        redirect2.addField("url_norm", url2);
+        redirect2.addField("record_type", "response");
+        redirect2.addField("source_file_path", "some.warc");
+        redirect2.addField("status_code", "302");
+        redirect2.addField("crawl_date", "2026-08-26T00:00:01Z");
+        redirect2.addField("redirect_to_norm", urlFinal);
+
+        // 3) final 200 response — the actual page content
+        SolrInputDocument finalDoc = new SolrInputDocument();
+        finalDoc.addField("source_file_offset", 3000);
+        finalDoc.addField("id", "final");
+        finalDoc.addField("title", "final");
+        finalDoc.addField("url", urlFinal);
+        finalDoc.addField("url_norm", urlFinal);
+        finalDoc.addField("record_type", "response");
+        finalDoc.addField("source_file_path", "some.warc");
+        finalDoc.addField("status_code", "200");
+        finalDoc.addField("crawl_date", "2026-08-26T00:00:02Z");
+        // no redirect_to_norm on a 200 — nothing to redirect to
+
+        embeddedServer.add(redirect1);
+        embeddedServer.add(redirect2);
+        embeddedServer.add(finalDoc);
+        embeddedServer.commit();
+    }
 
 }
