@@ -3,14 +3,16 @@
 ## [UNRELEASED]
 
 ### Added
+* Four new fields (inactive) added to Solr: nsfw_probability, is_nsfw, is_virus and virus_description. Fields are inactive in default solrwayback bundle.
+
+### Changed
+* Navigation tracker auto poll increased from 2 seconds to 60 seconds.
 * "Search for similar images" link added next to images in search results (image/geo search grid, single-image result view, and images embedded in HTML page results). It calls a new endpoint, `GET services/frontend/images/search/pdqhash?id=<solr_id>`, which looks up the source image's PDQ perceptual hash and returns visually similar images found in the index.
 * The similarity lookup checks all 8 dihedral variants of the PDQ hash (90°-step rotations and mirror reflections), so rotated or flipped near-duplicates are matched too, not just the original orientation.
 * This completes the frontend side of the PDQ-hash image fields added to Solr in 5.4.3, which at the time had no GUI support for similarity search.
 * Added support for image format WebP required for calculating PDQ-Hash/pHash (com.twelvemonkeys.imageio dependency)
 * Upgraded a few backend and  many frontend third part dependencies.
 * Navigation history export now separates browsing in different tabs. Each entry has a "tab" number (1, 2, 3... in order of appearance) and, when known, a "from" field with the number of the entry for the page it was opened from, so e.g. two results opened in separate tabs from the same search both point to that search.
-
-### Changed
 * Increased temporary Tika disk swap space from 100M to 1G during indexing (config3.conf). For large payloads this will be required for Droid-light detection.
 
 ### Fixed
@@ -58,6 +60,28 @@
   * CssPlayback
   * JavascriptPlayback
 * Bumped mockito-inline from 3.4.0 to 4.11.0 (test only). Required for mocking classes and static methods on Java 17.
+
+### Fixed
+* About text no longer reappears when manually clearing the ngram search query
+* Ngram chart is now properly cleared when the search box clear function is invoked
+* Fixed bug preventing searches from being performed when clicking on data points on ngram chart
+* Resolved bouncing/layout shift of the search box during ngram searches
+* Fixed TypeError: undefined is not an object crash when performing ngram searches
+* Fixed TypeError: undefined is not an object crash when exporting ngram chart data
+* Fixed ngram chart sizing and ensured full options are passed to the chart engine
+
+### Dependencies
+* Upgraded Solr dependencies:
+  * `solr@9.10.1`
+* Upgraded frontend dependencies:
+  * `vite@^6.4.2`
+  * `vitest@^3.2.6`
+
+### Tests
+* Improve test coverage for url normalisation:
+  * NormalisationStandard.canonicaliseURL
+  * PathResolver.waybackAPIResolverHelper
+  * UrlUtils url_norm query building and default-port handling
 
 ### Fixed
 * About text no longer reappears when manually clearing the ngram search query
