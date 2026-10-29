@@ -5,9 +5,11 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 import static java.net.URLDecoder.decode;
@@ -135,20 +137,61 @@ public class NavigationHistoryUtils {
     }
 
     /**
-     * Populate a playback link entry in the result list. Distinguishes between clicks from search results vs. links within playback.
+     * Decide how a playback page was reached, from what the browser reported when the page was shown.
+     *
+     * @param url            the playback URL, e.g. https://host/solrwayback/services/web/20051102141713/http://example.com/
+     * @param referrer       {@code document.referrer} of the playback page, may be null or empty
+     * @param navigationType the browser's navigation type: "navigate", "reload" or "back_forward", may be null
+     * @param clickSource    "toolbar" or "page link" if the previous page recorded a click on a link to this page, else null
+     * @param sameDocument   true if the URL changed without loading a new page (anchor or history.pushState)
      */
-    public static int populateResultEntries(int actionNumber, boolean lastWasPlayback, String timestamp, String date, String originalUrl, List<Map<String, Object>> result, String url) {
+    public static NavigationHistoryAction classifyPlayback(String url, String referrer, String navigationType, String clickSource, boolean sameDocument) {
+        // Determine how a playback page was reached
+        if (sameDocument) {
+            return NavigationHistoryAction.PLAYBACK_NAVIGATION;
+        }
+        if ("back_forward".equals(navigationType)) {
+            return NavigationHistoryAction.BROWSER_HISTORY_NAVIGATION;
+        }
+        if ("reload".equals(navigationType)) {
+            return NavigationHistoryAction.PAGE_RELOADED;
+        }
+        if ("toolbar".equals(clickSource)) {
+            return NavigationHistoryAction.TOOLBAR_LINK_CLICKED;
+        }
+        if ("page link".equals(clickSource)) {
+            return NavigationHistoryAction.PLAYBACK_LINK_CLICKED;
+        }
+        if (referrer == null || referrer.isEmpty()) {
+            return NavigationHistoryAction.DIRECT_NAVIGATION;
+        }
+
+        // The SolrWayback frontend and playback share the base URL, e.g. https://host/solrwayback/
+        int servicesIndex = url == null ? -1 : url.indexOf("services/");
+        if (servicesIndex == -1 || !referrer.startsWith(url.substring(0, servicesIndex))) {
+            return NavigationHistoryAction.OTHER_NAVIGATION;
+        }
+        String page = referrer.substring(servicesIndex);
+        if (page.startsWith("services/web/") || page.startsWith("services/lenient/web/") || page.startsWith("services/view")) {
+            return NavigationHistoryAction.PLAYBACK_NAVIGATION;
+        }
+        if (page.startsWith("calendar")) {
+            return NavigationHistoryAction.CALENDAR_LINK_CLICKED;
+        }
+        if (page.isEmpty() || page.startsWith("search") || page.startsWith("?")) {
+            return NavigationHistoryAction.SEARCH_RESULT_CLICKED;
+        }
+        return NavigationHistoryAction.OTHER_NAVIGATION;
+    }
+
+    /**
+     * Populate a playback entry in the result list.
+     */
+    public static int populateResultEntries(int actionNumber, NavigationHistoryAction action, String timestamp, String date, String originalUrl, List<Map<String, Object>> result, String url) {
         // Playback URL
         Map<String, Object> jsonEntry = new LinkedHashMap<>();
         jsonEntry.put("number", actionNumber++);
-
-        // Distinguish between clicks from search results vs. links within playback
-        if (lastWasPlayback) {
-            jsonEntry.put("action", NavigationHistoryAction.PLAYBACK_LINK_CLICKED);
-        } else {
-            jsonEntry.put("action", NavigationHistoryAction.SEARCH_RESULT_CLICKED);
-        }
-
+        jsonEntry.put("action", action);
         jsonEntry.put("timestamp", timestamp);
         jsonEntry.put("date", date);
         jsonEntry.put("url", originalUrl != null ? originalUrl : "unknown");
@@ -167,28 +210,127 @@ public class NavigationHistoryUtils {
         int actionNumber = 1;
         String lastUrl = null;
         boolean lastWasPlayback = false;
+        EntryLinker linker = new EntryLinker();
 
         for (Map<String, String> entry : history) {
             String url = entry.get("url");
             String timestamp = entry.get("timestamp");
             String date = entry.get("date");
             String originalUrl = entry.get("originalUrl");
+            NavigationHistoryAction storedAction = parseAction(entry.get("action"));
 
             // Determine if this is a search query or playback URL
             if (url.contains("/search?query=")) {
                 // Only output if URL changed (covers query changes AND facet changes)
                 if (!url.equals(lastUrl)) {
                     actionNumber = populateQueryEntry(actionNumber, timestamp, url, result);
+                    linker.link(result.get(result.size() - 1), entry, NavigationHistoryAction.QUERY);
                     lastUrl = url;
                     lastWasPlayback = false;
                 }
-            } else if (url.contains("/services/web/")) {
-                actionNumber = populateResultEntries(actionNumber, lastWasPlayback, timestamp, date, originalUrl, result, url);
+            } else if (storedAction != null || url.contains("/services/web/")) {
+                // Entries tracked before the action was recorded fall back to guessing from the order:
+                // the first playback after a search is a search result, the following ones are links
+                NavigationHistoryAction action = storedAction;
+                if (action == null) {
+                    action = lastWasPlayback ? NavigationHistoryAction.PLAYBACK_LINK_CLICKED : NavigationHistoryAction.SEARCH_RESULT_CLICKED;
+                }
+                actionNumber = populateResultEntries(actionNumber, action, timestamp, date, originalUrl, result, url);
+                linker.link(result.get(result.size() - 1), entry, action);
                 lastUrl = null;  // Reset so next search is always tracked
                 lastWasPlayback = true;
             }
         }
 
         return result;
+    }
+
+    /**
+     * Links exported entries to the browser tab they happened in ("tab", numbered from 1 in order of appearance)
+     * and to the earlier entry for the page they were opened from ("from"), found from the stored referrer.
+     */
+    private static class EntryLinker {
+        private final Map<String, Integer> tabNumbers = new HashMap<>();
+        // Exported playback entries by playback URL, the most recent one wins
+        private final Map<String, Map<String, Object>> playbacks = new HashMap<>();
+        // Exported query entries, most recent last
+        private final List<Map<String, Object>> queries = new ArrayList<>();
+
+        void link(Map<String, Object> jsonEntry, Map<String, String> entry, NavigationHistoryAction action) {
+            // Back/forward and reload report the referrer of the original page load, not where the user came from
+            boolean hasParent = action != NavigationHistoryAction.QUERY
+                    && action != NavigationHistoryAction.BROWSER_HISTORY_NAVIGATION
+                    && action != NavigationHistoryAction.PAGE_RELOADED;
+            Map<String, Object> parent = hasParent ? findParent(entry.get("referrer")) : null;
+            if (parent != null) {
+                jsonEntry.put("from", parent.get("number"));
+            }
+
+            // Failed playback has no tab ID of its own, it happened in the tab of the page it was opened from
+            Object tab = tabNumber(entry.get("tabId"));
+            if (tab == null && parent != null) {
+                tab = parent.get("tab");
+            }
+            if (tab != null) {
+                jsonEntry.put("tab", tab);
+            }
+
+            if (action == NavigationHistoryAction.QUERY) {
+                queries.add(jsonEntry);
+            } else {
+                playbacks.put(withoutFragment(entry.get("url")), jsonEntry);
+            }
+        }
+
+        private Integer tabNumber(String tabId) {
+            if (tabId == null || tabId.isEmpty()) {
+                return null;
+            }
+            return tabNumbers.computeIfAbsent(tabId, id -> tabNumbers.size() + 1);
+        }
+
+        private Map<String, Object> findParent(String referrer) {
+            if (referrer == null || referrer.isEmpty()) {
+                return null;
+            }
+            Map<String, Object> playback = playbacks.get(withoutFragment(referrer));
+            if (playback != null || referrer.contains("/services/") || !referrer.contains("query=")) {
+                return playback;
+            }
+
+            // A search page: the most recent search for the same query and facets
+            String query = extractQueryFromUrl(referrer);
+            String facets = extractFacetsFromUrl(referrer);
+            for (int i = queries.size() - 1; i >= 0; i--) {
+                Map<String, Object> queryEntry = queries.get(i);
+                if (Objects.equals(query, queryEntry.get("query")) && Objects.equals(facets, queryEntry.get("facets"))) {
+                    return queryEntry;
+                }
+            }
+            return null;
+        }
+
+        private static String withoutFragment(String url) {
+            if (url == null) {
+                return null;
+            }
+            int hashIndex = url.indexOf('#');
+            return hashIndex == -1 ? url : url.substring(0, hashIndex);
+        }
+    }
+
+    /**
+     * Parse the action stored with a history entry, or null if none or unknown.
+     */
+    private static NavigationHistoryAction parseAction(String action) {
+        if (action == null) {
+            return null;
+        }
+        try {
+            return NavigationHistoryAction.valueOf(action);
+        } catch (IllegalArgumentException e) {
+            log.warn("Unknown navigation history action: {}", action);
+            return null;
+        }
     }
 }
