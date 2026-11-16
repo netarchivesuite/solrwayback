@@ -327,7 +327,10 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
       "           var after = href.substring(idx + marker.length);" +
       "           var slashIdx = after.indexOf('/');" +
       "           if (slashIdx === -1) { return null; }" +
-      "           return { prefix: href.substring(0, idx + marker.length), ts: after.substring(0, slashIdx), orig: after.substring(slashIdx + 1) };" +
+      "           var orig = after.substring(slashIdx + 1);" +
+      "           var parsed = null;" +
+      "           try { parsed = new URL(orig); } catch (e) { parsed = null; }" +
+      "           return { prefix: href.substring(0, idx + marker.length), ts: after.substring(0, slashIdx), orig: orig, parsed: parsed };" +
       "       }" +
       "       function toPlayback(target) {" +
       "           var c = ctx();" +
@@ -336,11 +339,25 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
       "           catch (e) { return target; }" +
       "       }" +
       "       window._WB_wombat_toPlayback = toPlayback;" +
+      "       function prop(name) {" +
+      "           var c = ctx();" +
+      "           if (c && c.parsed) { return c.parsed[name]; }" +
+      "           return window.location[name];" +
+      "       }" +
       "       return {" +
       "           get href() { var c = ctx(); return c ? c.orig : window.location.href; }," +
       "           set href(url) { window.location.href = toPlayback(url); }," +
+      "           get hostname() { return prop('hostname'); }," +
+      "           get host() { return prop('host'); }," +
+      "           get pathname() { return prop('pathname'); }," +
+      "           get search() { return prop('search'); }," +
+      "           get hash() { return prop('hash'); }," +
+      "           get port() { return prop('port'); }," +
+      "           get protocol() { return prop('protocol'); }," +
+      "           get origin() { return prop('origin'); }," +
       "           assign: function(url) { window.location.assign(toPlayback(url)); }," +
       "           replace: function(url) { window.location.replace(toPlayback(url)); }," +
+      "           reload: function() { window.location.reload(); }," +
       "           toString: function() { var c = ctx(); return c ? c.orig : window.location.href; }" +
       "       };" +
       "   })();" +
@@ -376,6 +393,23 @@ public static String injectWaybacktoolBar(IndexDoc indexDoc, ParseResult htmlPar
       "               }" +
       "           }" +
       "           return realSetAttribute.call(this, name, value);" +
+      "       };" +
+      "   })();" +
+      "   (function() {" +
+      "       var realPushState = History.prototype.pushState;" +
+      "       var realReplaceState = History.prototype.replaceState;" +
+      "       function rewriteArgs(args) {" +
+      "           if (args.length < 3 || args[2] == null) { return args; }" +
+      "           var fixed = Array.prototype.slice.call(args);" +
+      "           try { fixed[2] = window._WB_wombat_toPlayback(args[2]); }" +
+      "           catch (e) { console.warn('SolrWayback: could not shim history URL for JS-navigation live-leak protection', e); }" +
+      "           return fixed;" +
+      "       }" +
+      "       History.prototype.pushState = function(state, title, url) {" +
+      "           return realPushState.apply(this, rewriteArgs(arguments));" +
+      "       };" +
+      "       History.prototype.replaceState = function(state, title, url) {" +
+      "           return realReplaceState.apply(this, rewriteArgs(arguments));" +
       "       };" +
       "   })();";
   }
